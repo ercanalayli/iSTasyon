@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>iSTasyon · Stok Kart</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#080B0F;--s1:#0E1318;--s2:#131A22;--s3:#1A2330;
+  --bd:rgba(100,180,255,0.07);--bd2:rgba(100,180,255,0.14);
+  --tx:#E8F0F8;--tx2:#8AA4BF;--tx3:#445566;
+  --ac:#3B82F6;--acl:rgba(59,130,246,0.12);
+  --g:#10B981;--gl:rgba(16,185,129,0.1);
+  --r:#EF4444;--rl:rgba(239,68,68,0.1);
+  --a:#F59E0B;--al:rgba(245,158,11,0.1);
+  --p:#8B5CF6;--pl:rgba(139,92,246,0.1);
+  --rad:14px;
+  --safe:env(safe-area-inset-top,20px);
+  --safeb:env(safe-area-inset-bottom,16px);
+}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Syne',sans-serif;overflow:hidden}
+body{display:flex;flex-direction:column;max-width:440px;margin:0 auto;position:relative}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(59,130,246,0.06),transparent),
+             radial-gradient(ellipse 40% 40% at 10% 90%,rgba(139,92,246,0.04),transparent);}
+
+/* HEADER */
+.hdr{padding:calc(var(--safe)+10px) 18px 12px;flex-shrink:0;position:relative;z-index:10;
+  background:rgba(8,11,15,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);}
+.hdr-row{display:flex;align-items:center;gap:10px}
+.hdr-back{width:34px;height:34px;border-radius:9px;background:var(--s2);border:1px solid var(--bd);
+  display:grid;place-items:center;font-size:16px;cursor:pointer;flex-shrink:0;
+  transition:all .15s;text-decoration:none;color:var(--tx);}
+.hdr-back:active{transform:scale(.92)}
+.hdr-ara{flex:1;display:flex;align-items:center;gap:8px;
+  background:var(--s2);border:1.5px solid var(--bd);border-radius:10px;padding:8px 12px;}
+.hdr-ara input{flex:1;background:none;border:none;outline:none;color:var(--tx);
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:600;}
+.hdr-ara input::placeholder{color:var(--tx3)}
+
+/* LİSTE */
+.liste-ekran{flex:1;overflow-y:auto;padding:12px 16px 24px;-webkit-overflow-scrolling:touch;position:relative;z-index:1}
+.liste-ekran::-webkit-scrollbar{display:none}
+
+.filtre-bar{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
+.filtre-bar::-webkit-scrollbar{display:none}
+.filtre-chip{flex-shrink:0;padding:5px 12px;border-radius:20px;
+  background:var(--s2);border:1px solid var(--bd);
+  font-size:10px;font-weight:700;color:var(--tx3);cursor:pointer;transition:all .15s;}
+.filtre-chip.aktif{background:var(--acl);border-color:var(--ac);color:var(--ac)}
+
+.stok-item{
+  display:flex;align-items:center;gap:12px;
+  background:var(--s1);border:1px solid var(--bd);border-radius:var(--rad);
+  padding:12px 14px;margin-bottom:7px;cursor:pointer;transition:all .15s;
+  position:relative;overflow:hidden;
+}
+.stok-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--renk,var(--ac));border-radius:2px 0 0 2px;}
+.stok-item:active{transform:scale(.98);background:var(--s2)}
+.si-ikon{width:40px;height:40px;border-radius:11px;flex-shrink:0;
+  display:grid;place-items:center;font-size:18px;background:var(--s3);}
+.si-bilgi{flex:1;min-width:0}
+.si-ad{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si-alt{display:flex;gap:6px;align-items:center;margin-top:4px}
+.si-tag{padding:2px 7px;border-radius:4px;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.si-sag{text-align:right;flex-shrink:0}
+.si-ciro{font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:var(--g)}
+.si-stok{font-size:10px;margin-top:3px;font-weight:700;padding:2px 7px;border-radius:4px}
+.stok-iyi{background:var(--gl);color:var(--g)}
+.stok-az{background:var(--al);color:var(--a)}
+.stok-kritik{background:var(--rl);color:var(--r)}
+
+.stok-bar{height:3px;background:var(--s3);border-radius:2px;margin-top:6px;overflow:hidden}
+.stok-bar-ic{height:3px;border-radius:2px;transition:width .6s ease}
+
+.bolum-bas{font-size:9px;font-weight:800;color:var(--tx3);text-transform:uppercase;
+  letter-spacing:.15em;margin:14px 0 8px 2px}
+
+/* DETAY */
+.detay-ekran{position:absolute;inset:0;background:var(--bg);z-index:20;
+  display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);}
+.detay-ekran.aktif{transform:translateX(0)}
+
+.detay-hdr{padding:calc(var(--safe)+10px) 18px 0;flex-shrink:0;
+  background:rgba(8,11,15,0.95);backdrop-filter:blur(20px);}
+.dh-row{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--bd);}
+.dh-back{width:34px;height:34px;border-radius:9px;background:var(--s2);border:1px solid var(--bd);
+  display:grid;place-items:center;font-size:16px;cursor:pointer;flex-shrink:0;transition:all .15s;}
+.dh-back:active{transform:scale(.92)}
+.dh-bilgi{flex:1;min-width:0}
+.dh-ad{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dh-alt{font-size:10px;color:var(--tx3);margin-top:2px;font-family:'DM Mono',monospace}
+
+.tab-bar{display:flex;gap:0;padding:0 16px;border-bottom:1px solid var(--bd);overflow-x:auto;flex-shrink:0;}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab-btn{padding:10px 14px;font-size:10px;font-weight:800;color:var(--tx3);
+  white-space:nowrap;cursor:pointer;border-bottom:2px solid transparent;
+  transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;
+  font-family:'Syne',sans-serif;}
+.tab-btn.aktif{color:var(--ac);border-bottom-color:var(--ac)}
+
+.detay-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 16px 24px;-webkit-overflow-scrolling:touch;}
+.detay-scroll::-webkit-scrollbar{display:none}
+
+.sekme{display:none}
+.sekme.aktif{display:block}
+
+/* KARTLAR */
+.kart{background:var(--s1);border:1px solid var(--bd);border-radius:var(--rad);
+  padding:14px;margin-bottom:10px;}
+.kart-bas{font-size:9px;font-weight:800;color:var(--tx3);text-transform:uppercase;
+  letter-spacing:.12em;margin-bottom:10px}
+
+/* ÖZET BANNER */
+.ozet-banner{background:linear-gradient(135deg,var(--s2),var(--s3));
+  border:1px solid var(--bd2);border-radius:var(--rad);padding:16px;margin-bottom:10px;
+  position:relative;overflow:hidden;}
+.ob-bg{position:absolute;right:-10px;top:50%;transform:translateY(-50%);
+  font-size:80px;opacity:.04;pointer-events:none;}
+.ob-ikon{font-size:28px;margin-bottom:6px}
+.ob-ad{font-size:18px;font-weight:800;line-height:1.2;margin-bottom:2px}
+.ob-kod{font-size:10px;color:var(--tx3);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-bottom:10px}
+.ob-kpi{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.ob-k{background:rgba(255,255,255,0.03);border-radius:9px;padding:8px 10px;}
+.ob-k .lbl{font-size:8px;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.ob-k .val{font-size:14px;font-weight:800;font-family:'DM Mono',monospace;margin-top:3px}
+
+/* STOK METRE */
+.stok-metre{margin-bottom:10px}
+.sm-row{display:flex;justify-content:space-between;margin-bottom:6px}
+.sm-lbl{font-size:11px;font-weight:700}
+.sm-val{font-size:11px;font-family:'DM Mono',monospace;font-weight:700}
+.sm-bar{height:10px;background:var(--s3);border-radius:5px;overflow:hidden;margin-bottom:4px}
+.sm-bar-ic{height:10px;border-radius:5px;transition:width .8s ease}
+.sm-kritik-cizgi{position:relative;height:0}
+.sm-kritik-cizgi::after{content:'KRİTİK';position:absolute;top:-18px;
+  font-size:7px;font-weight:800;color:var(--r);letter-spacing:.06em;}
+
+/* AYLIK TABLO */
+.aylik-tablo{background:var(--s1);border:1px solid var(--bd);border-radius:var(--rad);overflow:hidden;margin-bottom:10px;}
+.at-bas{display:grid;grid-template-columns:60px 1fr 1fr 1fr 1fr;
+  padding:7px 12px;border-bottom:1px solid var(--bd);background:var(--s2);}
+.at-hdr{font-size:8px;font-weight:800;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;text-align:right}
+.at-hdr:first-child{text-align:left}
+.at-satir{display:grid;grid-template-columns:60px 1fr 1fr 1fr 1fr;
+  padding:9px 12px;border-bottom:1px solid var(--bd);}
+.at-satir:last-child{border-bottom:none}
+.at-satir.vurgu{background:var(--acl)}
+.at-h{font-size:11px;font-weight:600;text-align:right;font-family:'DM Mono',monospace}
+.at-h:first-child{text-align:left;font-family:'Syne',sans-serif;color:var(--tx2);font-size:10px}
+.at-h.yesil{color:var(--g)}
+.at-h.mor{color:var(--p)}
+
+/* ALİŞ GEÇMİŞİ */
+.alis-satir{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--bd);}
+.alis-satir:last-child{border-bottom:none}
+.as-tarih{font-size:10px;font-family:'DM Mono',monospace;color:var(--tx3);flex-shrink:0;width:80px}
+.as-bilgi{flex:1}
+.as-tedarikci{font-size:12px;font-weight:700}
+.as-adet{font-size:10px;color:var(--tx3);margin-top:2px}
+.as-fiyat{text-align:right;flex-shrink:0}
+.as-birim{font-size:14px;font-weight:800;font-family:'DM Mono',monospace;color:var(--p)}
+.as-toplam{font-size:10px;color:var(--tx3);margin-top:2px}
+
+/* CARİ SIRALA */
+.cari-satir{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--bd);}
+.cari-satir:last-child{border-bottom:none}
+.cs-sira{width:22px;height:22px;border-radius:6px;flex-shrink:0;
+  display:grid;place-items:center;font-size:9px;font-weight:800;background:var(--s2);color:var(--tx3);}
+.cs-sira.bir{background:var(--al);color:var(--a)}
+.cs-bilgi{flex:1;min-width:0}
+.cs-ad{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cs-alt{font-size:10px;color:var(--tx3);margin-top:2px}
+.cs-sag{text-align:right;flex-shrink:0}
+.cs-adet{font-size:13px;font-weight:800;font-family:'DM Mono',monospace}
+.cs-ciro{font-size:10px;color:var(--tx3);margin-top:2px}
+.cs-bar{height:3px;background:var(--s3);border-radius:2px;margin-top:5px}
+.cs-bar-ic{height:3px;border-radius:2px;background:linear-gradient(90deg,var(--ac),var(--p));transition:width .7s ease}
+
+/* KARŞILAŞTIRMA */
+.kars-row{display:flex;justify-content:space-between;margin-bottom:4px}
+.kars-bar-wrap{height:8px;background:var(--s3);border-radius:4px;position:relative;overflow:hidden;margin-bottom:10px}
+.kars-bar{height:8px;border-radius:4px;position:absolute;top:0;left:0;transition:width .7s ease}
+</style>
+</head>
+<body>
+
+<!-- LİSTE EKRANI -->
+<div style="display:flex;flex-direction:column;height:100%;position:relative;z-index:1">
+  <div class="hdr">
+    <div class="hdr-row">
+      <a class="hdr-back" href="index.html">←</a>
+      <div id="hdrFirmaAd" style="flex:1;font-size:12px;font-weight:700;color:var(--tx2);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px">—</div>
+      <div class="hdr-ara">
+        <span style="font-size:14px;color:var(--tx3)">🔍</span>
+        <input id="araInput" type="text" placeholder="Ürün ara..."
+          oninput="stokFiltrele(this.value)"
+          autocomplete="off" autocorrect="off" autocapitalize="off">
+      </div>
+    </div>
+  </div>
+
+  <div class="liste-ekran">
+    <div class="filtre-bar" id="filtreBari">
+      <div class="filtre-chip aktif" onclick="kategoriSec('Tümü',this)">Tümü</div>
+      <div class="filtre-chip" onclick="kategoriSec('ANTİBİYOTİK',this)">Antibiyotik</div>
+      <div class="filtre-chip" onclick="kategoriSec('ANALJEZİK',this)">Analjezik</div>
+      <div class="filtre-chip" onclick="kategoriSec('VİTAMİN',this)">Vitamin</div>
+      <div class="filtre-chip" onclick="kategoriSec('MDF',this)">MDF</div>
+      <div class="filtre-chip" onclick="kategoriSec('KAPLAMA',this)">Kaplama</div>
+    </div>
+    <div class="bolum-bas">📦 Tüm Ürünler</div>
+    <div id="stokListesi"></div>
+  </div>
+</div>
+
+<!-- DETAY EKRANI -->
+<div class="detay-ekran" id="detayEkran">
+  <div class="detay-hdr">
+    <div class="dh-row">
+      <div class="dh-back" onclick="geriGit()">←</div>
+      <div class="dh-bilgi">
+        <div class="dh-ad" id="dhAd">—</div>
+        <div class="dh-alt" id="dhAlt">—</div>
+      </div>
+      <div id="dhStok" style="padding:4px 10px;border-radius:6px;font-size:10px;font-weight:800"></div>
+    </div>
+    <div class="tab-bar">
+      <button class="tab-btn aktif" onclick="sekme('ozet',this)">Özet</button>
+      <button class="tab-btn" onclick="sekme('aylik',this)">Aylık</button>
+      <button class="tab-btn" onclick="sekme('alis',this)">Alış</button>
+      <button class="tab-btn" onclick="sekme('cariler',this)">Cariler</button>
+      <button class="tab-btn" onclick="sekme('karsilastirma',this)">Karşılaştırma</button>
+    </div>
+  </div>
+  <div class="detay-scroll" id="detayScroll">
+    <div class="sekme aktif" id="t-ozet"></div>
+    <div class="sekme" id="t-aylik"></div>
+    <div class="sekme" id="t-alis"></div>
+    <div class="sekme" id="t-cariler"></div>
+    <div class="sekme" id="t-karsilastirma"></div>
+  </div>
+</div>
+
+<script>
+
+// ══ ORTAK OTURUM SİSTEMİ (index.html ile senkron) ══
+function oturumAl(){
+  try{
+    const s=JSON.parse(localStorage.getItem('ist_ses')||'{}');
+    if(!s.id||!s.mail||Date.now()-s.t>86400000){ location.href='index.html'; return null; }
+    const firmalar=firmalariAl();
+    const f=firmalar.find(x=>x.id===s.id&&x.mail.toLowerCase()===s.mail);
+    if(!f){ location.href='index.html'; return null; }
+    return f;
+  }catch(e){ location.href='index.html'; return null; }
+}
+
+function firmalariAl(){
+  const def=[
+    {id:'alkam',   ad:'Alkam Mali Müşavirlik',mail:'ercanalayli@gmail.com',pass:'290900',  admin:true, tip:'hizmet',renk:'#4F8EF7',sehir:'Bursa',kaynak:'Dahili'},
+    {id:'woodlent',ad:'Woodlent',             mail:'patron@woodlent.com', pass:'Wood2025!',admin:false,tip:'uretim',renk:'#7B3F00',sehir:'Bursa',kaynak:'iSTasyon.xlsx'},
+    {id:'alayli',  ad:'Alaylı Medikal',        mail:'patron@alayli.com',   pass:'Alayli2025!',admin:false,tip:'saglik',renk:'#26C9A0',sehir:'Bursa',kaynak:'BizimHesap'},
+  ];
+  try{ const s=localStorage.getItem('ist_firmalar'); return s?JSON.parse(s):def; }
+  catch(e){ return def; }
+}
+
+const TIP_IKON={uretim:'🏭',alsat:'🛒',hizmet:'💼',saglik:'🏥',insaat:'🏗',tarim:'🌱'};
+
+const STOKLAR = [
+  {
+    id:'S001', ad:'Amoksisilin 500mg', kod:'AMX500', kategori:'ANTİBİYOTİK', ikon:'💊',renk:'#3B82F6',
+    stok:{mevcut:840, min:200, max:2000, birim:'Kutu'},
+    ozet:{bu_yil_ciro:55200,gecen_yil_ciro:48300,bu_yil_adet:1840,gecen_yil_adet:2100,
+          brut_marj:38, son_alis_fiyat:23.50, bu_yil_ort_alis:24.00, gecen_yil_ort_alis:19.00},
+    aylik:[
+      {ay:'Oca',adet:160,ciro:4800, maliyet:3840,ort_satis:30.0,gecen_yil_adet:180,gecen_yil_ciro:4140},
+      {ay:'Şub',adet:142,ciro:4260, maliyet:3337,ort_satis:30.0,gecen_yil_adet:162,gecen_yil_ciro:3726},
+      {ay:'Mar',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,   gecen_yil_adet:200,gecen_yil_ciro:4600},
+      {ay:'Nis',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,   gecen_yil_adet:168,gecen_yil_ciro:3864},
+      {ay:'May',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,   gecen_yil_adet:174,gecen_yil_ciro:4002},
+      {ay:'Haz',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,   gecen_yil_adet:158,gecen_yil_ciro:3634},
+      {ay:'Tem',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,   gecen_yil_adet:176,gecen_yil_ciro:4048},
+      {ay:'Ağu',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,   gecen_yil_adet:162,gecen_yil_ciro:3726},
+      {ay:'Eyl',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,   gecen_yil_adet:180,gecen_yil_ciro:4140},
+      {ay:'Eki',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,   gecen_yil_adet:196,gecen_yil_ciro:4508},
+      {ay:'Kas',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,   gecen_yil_adet:182,gecen_yil_ciro:4186},
+      {ay:'Ara',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,   gecen_yil_adet:162,gecen_yil_ciro:3726},
+    ],
+    alis_gecmisi:[
+      {tarih:'2026-02-14',tedarikci:'Eksen İlaç',    adet:400,birim_fiyat:23.50,toplam:9400},
+      {tarih:'2026-01-10',tedarikci:'Eksen İlaç',    adet:500,birim_fiyat:23.00,toplam:11500},
+      {tarih:'2025-12-05',tedarikci:'Atabay İlaç',   adet:400,birim_fiyat:22.00,toplam:8800},
+      {tarih:'2025-11-02',tedarikci:'Eksen İlaç',    adet:500,birim_fiyat:20.50,toplam:10250},
+      {tarih:'2025-10-01',tedarikci:'Nobel İlaç',    adet:300,birim_fiyat:19.00,toplam:5700},
+    ],
+    cariler:[
+      {ad:'Eczane Yıldız', bu_yil:480,gecen_yil:520,ciro:14400},
+      {ad:'Bursa Medikal',  bu_yil:310,gecen_yil:290,ciro:9300},
+      {ad:'Sağlık Market',  bu_yil:280,gecen_yil:340,ciro:8400},
+      {ad:'Merkez Eczane',  bu_yil:210,gecen_yil:180,ciro:6300},
+      {ad:'Hayat Eczanesi', bu_yil:160,gecen_yil:200,ciro:4800},
+    ],
+  },
+  {
+    id:'S002', ad:'Parol Extra 500mg', kod:'PRL500', kategori:'ANALJEZİK', ikon:'💊',renk:'#10B981',
+    stok:{mevcut:1240, min:300, max:3000, birim:'Kutu'},
+    ozet:{bu_yil_ciro:64600,gecen_yil_ciro:58800,bu_yil_adet:3800,gecen_yil_adet:4200,
+          brut_marj:52, son_alis_fiyat:8.20, bu_yil_ort_alis:8.20, gecen_yil_ort_alis:6.00},
+    aylik:[
+      {ay:'Oca',adet:340,ciro:5780,maliyet:2788,ort_satis:17.0,gecen_yil_adet:380,gecen_yil_ciro:5320},
+      {ay:'Şub',adet:320,ciro:5440,maliyet:2624,ort_satis:17.0,gecen_yil_adet:360,gecen_yil_ciro:5040},
+      {ay:'Mar',adet:0,  ciro:0,   maliyet:0,   ort_satis:0,   gecen_yil_adet:400,gecen_yil_ciro:5600},
+      {ay:'Nis',adet:0,  ciro:0,   maliyet:0,   ort_satis:0,   gecen_yil_adet:320,gecen_yil_ciro:4480},
+      {ay:'May',adet:0,  ciro:0,   maliyet:0,   ort_satis:0,   gecen_yil_adet:340,gecen_yil_ciro:4760},
+      {ay:'Haz',adet:0,  ciro:0,   maliyet:0,   ort_satis:0,   gecen_yil_adet:360,gecen_yil_ciro:5040},
+      {ay:'Tem',adet:0,  ciro:0,   maliyet:0,   ort_satis:0,   gecen_yil_adet:380,gecen_yil_ciro:5320},
+      {ay:'Ağu',adet:0,  ciro:0,   maliyet:0,   ort_satis:0,   gecen_yil_adet:340,gecen_yil_ciro:4760},
+      {ay:'Eyl',adet:0,  ciro:0,   maliyet:0,   ort_satis:0,   gecen_yil_adet:360,gecen_yil_ciro:5040},
+      {ay:'Eki',adet:0,  ciro:0,   maliyet:0,   ort_satis:0,   gecen_yil_adet:380,gecen_yil_ciro:5320},
+      {ay:'Kas',adet:0,  ciro:0,   maliyet:0,   ort_satis:0,   gecen_yil_adet:200,gecen_yil_ciro:2800},
+      {ay:'Ara',adet:0,  ciro:0,   maliyet:0,   ort_satis:0,   gecen_yil_adet:380,gecen_yil_ciro:5320},
+    ],
+    alis_gecmisi:[
+      {tarih:'2026-02-20',tedarikci:'Atabay İlaç', adet:600,birim_fiyat:8.20,toplam:4920},
+      {tarih:'2026-01-15',tedarikci:'Atabay İlaç', adet:800,birim_fiyat:8.20,toplam:6560},
+      {tarih:'2025-12-10',tedarikci:'Nobel İlaç',  adet:600,birim_fiyat:7.50,toplam:4500},
+      {tarih:'2025-11-05',tedarikci:'Atabay İlaç', adet:700,birim_fiyat:7.00,toplam:4900},
+      {tarih:'2025-10-01',tedarikci:'Nobel İlaç',  adet:500,birim_fiyat:6.00,toplam:3000},
+    ],
+    cariler:[
+      {ad:'Bursa Medikal',  bu_yil:920,gecen_yil:1100,ciro:15640},
+      {ad:'Eczane Yıldız',  bu_yil:740,gecen_yil:680, ciro:12580},
+      {ad:'Hayat Eczanesi', bu_yil:510,gecen_yil:620, ciro:8670},
+      {ad:'Merkez Eczane',  bu_yil:380,gecen_yil:420, ciro:6460},
+      {ad:'Sağlık Market',  bu_yil:250,gecen_yil:380, ciro:4250},
+    ],
+  },
+  {
+    id:'S003', ad:'MDF 18mm', kod:'MDF18', kategori:'MDF', ikon:'🪵',renk:'#F59E0B',
+    stok:{mevcut:180, min:200, max:1000, birim:'Levha'},
+    ozet:{bu_yil_ciro:124000,gecen_yil_ciro:108000,bu_yil_adet:1240,gecen_yil_adet:1200,
+          brut_marj:30, son_alis_fiyat:72.0, bu_yil_ort_alis:72.0, gecen_yil_ort_alis:62.0},
+    aylik:[
+      {ay:'Oca',adet:120,ciro:12000,maliyet:8640,ort_satis:100.0,gecen_yil_adet:108,gecen_yil_ciro:9720},
+      {ay:'Şub',adet:110,ciro:11000,maliyet:7920,ort_satis:100.0,gecen_yil_adet:100,gecen_yil_ciro:9000},
+      {ay:'Mar',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,    gecen_yil_adet:96, gecen_yil_ciro:8640},
+      {ay:'Nis',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,    gecen_yil_adet:88, gecen_yil_ciro:7920},
+      {ay:'May',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,    gecen_yil_adet:92, gecen_yil_ciro:8280},
+      {ay:'Haz',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,    gecen_yil_adet:96, gecen_yil_ciro:8640},
+      {ay:'Tem',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,    gecen_yil_adet:104,gecen_yil_ciro:9360},
+      {ay:'Ağu',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,    gecen_yil_adet:100,gecen_yil_ciro:9000},
+      {ay:'Eyl',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,    gecen_yil_adet:108,gecen_yil_ciro:9720},
+      {ay:'Eki',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,    gecen_yil_adet:112,gecen_yil_ciro:10080},
+      {ay:'Kas',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,    gecen_yil_adet:108,gecen_yil_ciro:9720},
+      {ay:'Ara',adet:0,  ciro:0,    maliyet:0,   ort_satis:0,    gecen_yil_adet:88, gecen_yil_ciro:7920},
+    ],
+    alis_gecmisi:[
+      {tarih:'2026-02-12',tedarikci:'Yıldız Levha', adet:200,birim_fiyat:72.0,toplam:14400},
+      {tarih:'2026-01-08',tedarikci:'Yıldız Levha', adet:250,birim_fiyat:72.0,toplam:18000},
+      {tarih:'2025-12-04',tedarikci:'Kastamonu OSB',adet:200,birim_fiyat:68.0,toplam:13600},
+      {tarih:'2025-11-01',tedarikci:'Yıldız Levha', adet:220,birim_fiyat:65.0,toplam:14300},
+      {tarih:'2025-10-03',tedarikci:'Kastamonu OSB',adet:200,birim_fiyat:62.0,toplam:12400},
+    ],
+    cariler:[
+      {ad:'Takdim Mobilya', bu_yil:340,gecen_yil:300,ciro:34000},
+      {ad:'Üçel Mobilya',   bu_yil:280,gecen_yil:260,ciro:28000},
+      {ad:'Bursa Ahşap',    bu_yil:240,gecen_yil:220,ciro:24000},
+      {ad:'Yıldız Mobilya', bu_yil:200,gecen_yil:180,ciro:20000},
+      {ad:'Form Dekorasyon',bu_yil:180,gecen_yil:240,ciro:18000},
+    ],
+  },
+  {
+    id:'S004', ad:'Kaplama Ceviz', kod:'KPL-CEV', kategori:'KAPLAMA', ikon:'🪵',renk:'#8B5CF6',
+    stok:{mevcut:420, min:100, max:800, birim:'m²'},
+    ozet:{bu_yil_ciro:86400,gecen_yil_ciro:72000,bu_yil_adet:720,gecen_yil_adet:648,
+          brut_marj:35, son_alis_fiyat:78.0, bu_yil_ort_alis:78.0, gecen_yil_ort_alis:68.0},
+    aylik:[
+      {ay:'Oca',adet:72,ciro:8640,maliyet:5616,ort_satis:120.0,gecen_yil_adet:60,gecen_yil_ciro:6600},
+      {ay:'Şub',adet:68,ciro:8160,maliyet:5304,ort_satis:120.0,gecen_yil_adet:56,gecen_yil_ciro:6160},
+      {ay:'Mar',adet:0, ciro:0,   maliyet:0,   ort_satis:0,    gecen_yil_adet:52,gecen_yil_ciro:5720},
+      {ay:'Nis',adet:0, ciro:0,   maliyet:0,   ort_satis:0,    gecen_yil_adet:48,gecen_yil_ciro:5280},
+      {ay:'May',adet:0, ciro:0,   maliyet:0,   ort_satis:0,    gecen_yil_adet:52,gecen_yil_ciro:5720},
+      {ay:'Haz',adet:0, ciro:0,   maliyet:0,   ort_satis:0,    gecen_yil_adet:56,gecen_yil_ciro:6160},
+      {ay:'Tem',adet:0, ciro:0,   maliyet:0,   ort_satis:0,    gecen_yil_adet:60,gecen_yil_ciro:6600},
+      {ay:'Ağu',adet:0, ciro:0,   maliyet:0,   ort_satis:0,    gecen_yil_adet:52,gecen_yil_ciro:5720},
+      {ay:'Eyl',adet:0, ciro:0,   maliyet:0,   ort_satis:0,    gecen_yil_adet:56,gecen_yil_ciro:6160},
+      {ay:'Eki',adet:0, ciro:0,   maliyet:0,   ort_satis:0,    gecen_yil_adet:60,gecen_yil_ciro:6600},
+      {ay:'Kas',adet:0, ciro:0,   maliyet:0,   ort_satis:0,    gecen_yil_adet:52,gecen_yil_ciro:5720},
+      {ay:'Ara',adet:0, ciro:0,   maliyet:0,   ort_satis:0,    gecen_yil_adet:44,gecen_yil_ciro:4840},
+    ],
+    alis_gecmisi:[
+      {tarih:'2026-02-18',tedarikci:'Ege Kaplama', adet:150,birim_fiyat:78.0,toplam:11700},
+      {tarih:'2026-01-12',tedarikci:'Ege Kaplama', adet:180,birim_fiyat:78.0,toplam:14040},
+      {tarih:'2025-12-08',tedarikci:'Bursa Ahşap', adet:140,birim_fiyat:72.0,toplam:10080},
+      {tarih:'2025-11-04',tedarikci:'Ege Kaplama', adet:160,birim_fiyat:70.0,toplam:11200},
+      {tarih:'2025-10-02',tedarikci:'Bursa Ahşap', adet:120,birim_fiyat:68.0,toplam:8160},
+    ],
+    cariler:[
+      {ad:'Takdim Mobilya', bu_yil:200,gecen_yil:170,ciro:24000},
+      {ad:'Özgür Dekor',    bu_yil:180,gecen_yil:160,ciro:21600},
+      {ad:'Üçel Mobilya',   bu_yil:140,gecen_yil:120,ciro:16800},
+      {ad:'Yıldız Mobilya', bu_yil:120,gecen_yil:100,ciro:14400},
+      {ad:'Form Dekorasyon',bu_yil:80, gecen_yil:98, ciro:9600},
+    ],
+  },
+];
+
+// ── YARDIMCILAR ──────────────────────────────────────────────────────────────
+function para(n){if(!n&&n!==0)return'—';if(n>=1000000)return'₺'+(n/1e6).toFixed(1)+'M';if(n>=1000)return'₺'+Math.round(n/1000)+'K';return'₺'+Math.round(n).toLocaleString('tr-TR');}
+function stokDurum(s){const yuzde=s.mevcut/s.max*100;return yuzde<(s.min/s.max*100)?'KRİTİK':yuzde<30?'AZ':'NORMAL';}
+function stokRenk(d){return d==='NORMAL'?'var(--g)':d==='AZ'?'var(--a)':'var(--r)';}
+function stokBg(d){return d==='NORMAL'?'var(--gl)':d==='AZ'?'var(--al)':'var(--rl)';}
+function stokSinif(d){return d==='NORMAL'?'stok-iyi':d==='AZ'?'stok-az':'stok-kritik';}
+
+let aktifKategori='Tümü';
+let aktifStok=null;
+
+// ── LİSTE ────────────────────────────────────────────────────────────────────
+function renderListe(liste){
+  document.getElementById('stokListesi').innerHTML = liste.map(s=>{
+    const durum=stokDurum(s.stok);
+    const yuzde=Math.min(100,Math.round(s.stok.mevcut/s.stok.max*100));
+    const barRenk=durum==='NORMAL'?'var(--g)':durum==='AZ'?'var(--a)':'var(--r)';
+    return`<div class="stok-item" style="--renk:${s.renk}" onclick="stokAc('${s.id}')">
+      <div class="si-ikon">${s.ikon}</div>
+      <div class="si-bilgi">
+        <div class="si-ad">${s.ad}</div>
+        <div class="si-alt">
+          <span class="si-tag" style="background:${s.renk}22;color:${s.renk}">${s.kategori}</span>
+          <span style="font-size:10px;color:var(--tx3);font-family:'DM Mono',monospace">${s.kod}</span>
+        </div>
+        <div class="stok-bar">
+          <div class="stok-bar-ic" style="width:${yuzde}%;background:${barRenk}"></div>
+        </div>
+      </div>
+      <div class="si-sag">
+        <div class="si-ciro">${para(s.ozet.bu_yil_ciro)}</div>
+        <div class="si-stok ${stokSinif(durum)}">${s.stok.mevcut} ${s.stok.birim}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function stokFiltrele(q){
+  const liste = STOKLAR.filter(s=>{
+    const katOk = aktifKategori==='Tümü' || s.kategori===aktifKategori;
+    const araOk = !q || s.ad.toLowerCase().includes(q.toLowerCase()) || s.kod.toLowerCase().includes(q.toLowerCase());
+    return katOk && araOk;
+  });
+  renderListe(liste);
+}
+
+function kategoriSec(kat, el){
+  aktifKategori=kat;
+  document.querySelectorAll('.filtre-chip').forEach(c=>c.classList.remove('aktif'));
+  el.classList.add('aktif');
+  stokFiltrele(document.getElementById('araInput').value);
+}
+
+// ── DETAY ────────────────────────────────────────────────────────────────────
+function stokAc(id){
+  aktifStok=STOKLAR.find(s=>s.id===id);
+  if(!aktifStok) return;
+  const s=aktifStok;
+  const durum=stokDurum(s.stok);
+
+  document.getElementById('dhAd').textContent=s.ad;
+  document.getElementById('dhAlt').textContent=`${s.kod} · ${s.stok.mevcut} ${s.stok.birim}`;
+  document.getElementById('dhStok').textContent=durum;
+  document.getElementById('dhStok').style.background=stokBg(durum);
+  document.getElementById('dhStok').style.color=stokRenk(durum);
+
+  renderOzet(s);
+  renderAylik(s);
+  renderAlis(s);
+  renderCariler(s);
+  renderKarsilastirma(s);
+
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('aktif',i===0));
+  document.querySelectorAll('.sekme').forEach((s,i)=>s.classList.toggle('aktif',i===0));
+  document.getElementById('detayScroll').scrollTop=0;
+  document.getElementById('detayEkran').classList.add('aktif');
+}
+
+function geriGit(){
+  document.getElementById('detayEkran').classList.remove('aktif');
+}
+
+function sekme(id,btn){
+  document.querySelectorAll('.sekme').forEach(s=>s.classList.remove('aktif'));
+  document.getElementById('t-'+id).classList.add('aktif');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('aktif'));
+  btn.classList.add('aktif');
+  document.getElementById('detayScroll').scrollTop=0;
+}
+
+// ── ÖZET ─────────────────────────────────────────────────────────────────────
+function renderOzet(s){
+  const o=s.ozet;
+  const st=s.stok;
+  const durum=stokDurum(st);
+  const yuzde=Math.min(100,Math.round(st.mevcut/st.max*100));
+  const kritikYuzde=Math.round(st.min/st.max*100);
+  const deg=o.gecen_yil_ciro>0?Math.round((o.bu_yil_ciro-o.gecen_yil_ciro)/o.gecen_yil_ciro*100):0;
+  const maliyet_deg=o.gecen_yil_ort_alis>0?Math.round((o.bu_yil_ort_alis-o.gecen_yil_ort_alis)/o.gecen_yil_ort_alis*100):0;
+
+  document.getElementById('t-ozet').innerHTML=`
+    <div class="ozet-banner">
+      <div class="ob-bg">${s.ikon}</div>
+      <div class="ob-ikon">${s.ikon}</div>
+      <div class="ob-ad">${s.ad}</div>
+      <div class="ob-kod">${s.kod} · ${s.kategori}</div>
+      <div class="ob-kpi">
+        <div class="ob-k"><div class="lbl">Bu Yıl Ciro</div><div class="val" style="color:var(--g)">${para(o.bu_yil_ciro)}</div></div>
+        <div class="ob-k"><div class="lbl">Geçen Yıl</div><div class="val" style="color:var(--tx2)">${para(o.gecen_yil_ciro)}</div></div>
+        <div class="ob-k"><div class="lbl">Değişim</div><div class="val" style="color:${deg>=0?'var(--g)':'var(--r)'}">${deg>=0?'▲':'▼'}%${Math.abs(deg)}</div></div>
+      </div>
+    </div>
+
+    <div class="kart">
+      <div class="kart-bas">Stok Durumu</div>
+      <div class="sm-row">
+        <div class="sm-lbl" style="color:${stokRenk(durum)}">${durum} · ${st.mevcut} ${st.birim}</div>
+        <div class="sm-val" style="color:${stokRenk(durum)}">%${yuzde}</div>
+      </div>
+      <div class="sm-bar">
+        <div class="sm-bar-ic" id="stokMetreBar" style="width:0%;background:${stokRenk(durum)}"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--tx3);margin-top:4px">
+        <span>Min: ${st.min}</span><span>Maks: ${st.max}</span>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="kart">
+        <div class="kart-bas">Son Alış</div>
+        <div style="font-size:20px;font-weight:800;font-family:'DM Mono',monospace;color:var(--p)">₺${o.son_alis_fiyat}</div>
+        <div style="font-size:9px;color:var(--tx3);margin-top:4px">Bu yıl ort: ₺${o.bu_yil_ort_alis}</div>
+      </div>
+      <div class="kart">
+        <div class="kart-bas">Maliyet Trendi</div>
+        <div style="font-size:20px;font-weight:800;font-family:'DM Mono',monospace;color:${maliyet_deg<=0?'var(--g)':'var(--r)'}">
+          ${maliyet_deg<=0?'▼':'▲'}%${Math.abs(maliyet_deg)}
+        </div>
+        <div style="font-size:9px;color:var(--tx3);margin-top:4px">G.yıl: ₺${o.gecen_yil_ort_alis}</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="kart">
+        <div class="kart-bas">Bu Yıl Adet</div>
+        <div style="font-size:20px;font-weight:800;font-family:'DM Mono',monospace;color:var(--ac)">${o.bu_yil_adet.toLocaleString('tr-TR')}</div>
+        <div style="font-size:9px;color:var(--tx3);margin-top:4px">G.yıl: ${o.gecen_yil_adet.toLocaleString('tr-TR')}</div>
+      </div>
+      <div class="kart">
+        <div class="kart-bas">Brüt Marj</div>
+        <div style="font-size:20px;font-weight:800;font-family:'DM Mono',monospace;color:${o.brut_marj>=40?'var(--g)':o.brut_marj>=25?'var(--a)':'var(--r)'}">%${o.brut_marj}</div>
+        <div style="font-size:9px;color:var(--tx3);margin-top:4px">Ciro üzerinden</div>
+      </div>
+    </div>`;
+
+  setTimeout(()=>{
+    const el=document.getElementById('stokMetreBar');
+    if(el) el.style.width=yuzde+'%';
+  },100);
+}
+
+// ── AYLIK ─────────────────────────────────────────────────────────────────────
+function renderAylik(s){
+  document.getElementById('t-aylik').innerHTML=`
+    <div class="bolum-bas">Aylık Satış Detayı</div>
+    <div class="aylik-tablo">
+      <div class="at-bas">
+        <div class="at-hdr">Ay</div>
+        <div class="at-hdr">Adet</div>
+        <div class="at-hdr">Ciro</div>
+        <div class="at-hdr">Maliyet</div>
+        <div class="at-hdr">G.Yıl</div>
+      </div>
+      ${s.aylik.map(a=>{
+        const aktif=a.adet>0;
+        return`<div class="at-satir${aktif?' vurgu':''}">
+          <div class="at-h">${a.ay}</div>
+          <div class="at-h ${aktif?'yesil':''}">${a.adet>0?a.adet:a.gecen_yil_adet>0?'—':'—'}</div>
+          <div class="at-h ${aktif?'yesil':''}">${a.ciro>0?para(a.ciro):'—'}</div>
+          <div class="at-h mor">${a.maliyet>0?para(a.maliyet):'—'}</div>
+          <div class="at-h" style="color:var(--tx3)">${para(a.gecen_yil_ciro)}</div>
+        </div>`;
+      }).join('')}
+      <div class="at-satir" style="background:var(--s2)">
+        <div class="at-h" style="font-weight:800">Toplam</div>
+        <div class="at-h yesil">${s.aylik.reduce((t,a)=>t+a.adet,0).toLocaleString('tr-TR')}</div>
+        <div class="at-h yesil">${para(s.aylik.reduce((t,a)=>t+a.ciro,0))}</div>
+        <div class="at-h mor">${para(s.aylik.reduce((t,a)=>t+a.maliyet,0))}</div>
+        <div class="at-h" style="color:var(--tx3)">${para(s.aylik.reduce((t,a)=>t+a.gecen_yil_ciro,0))}</div>
+      </div>
+    </div>`;
+}
+
+// ── ALIŞ GEÇMİŞİ ─────────────────────────────────────────────────────────────
+function renderAlis(s){
+  const ortFiyat=s.alis_gecmisi.reduce((t,a)=>t+a.birim_fiyat,0)/s.alis_gecmisi.length;
+  document.getElementById('t-alis').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="kart">
+        <div class="kart-bas">Son Alış</div>
+        <div style="font-size:20px;font-weight:800;font-family:'DM Mono',monospace;color:var(--p)">₺${s.ozet.son_alis_fiyat}</div>
+        <div style="font-size:9px;color:var(--tx3);margin-top:4px">${s.alis_gecmisi[0]?.tarih||'—'}</div>
+      </div>
+      <div class="kart">
+        <div class="kart-bas">Ort. Alış</div>
+        <div style="font-size:20px;font-weight:800;font-family:'DM Mono',monospace;color:var(--ac)">₺${ortFiyat.toFixed(2)}</div>
+        <div style="font-size:9px;color:var(--tx3);margin-top:4px">Son 5 alış</div>
+      </div>
+    </div>
+    <div class="bolum-bas">Alış Geçmişi</div>
+    <div class="fatura-listesi" style="background:var(--s1);border:1px solid var(--bd);border-radius:var(--rad);overflow:hidden">
+      ${s.alis_gecmisi.map((a,i)=>`
+        <div class="alis-satir">
+          <div class="as-tarih">${a.tarih}</div>
+          <div class="as-bilgi">
+            <div class="as-tedarikci">${a.tedarikci}</div>
+            <div class="as-adet">${a.adet.toLocaleString('tr-TR')} ${s.stok.birim}</div>
+          </div>
+          <div class="as-fiyat">
+            <div class="as-birim">₺${a.birim_fiyat.toFixed(2)}</div>
+            <div class="as-toplam">${para(a.toplam)}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ── CARİLER ─────────────────────────────────────────────────────────────────
+function renderCariler(s){
+  const maxAdet=Math.max(...s.cariler.map(c=>c.bu_yil));
+  document.getElementById('t-cariler').innerHTML=`
+    <div class="bolum-bas">En Çok Alan Cariler (Bu Yıl)</div>
+    <div style="background:var(--s1);border:1px solid var(--bd);border-radius:var(--rad);overflow:hidden">
+      ${s.cariler.map((c,i)=>`
+        <div class="cari-satir">
+          <div class="cs-sira ${i===0?'bir'}">${i+1}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <div class="cs-bilgi">
+                <div class="cs-ad">${c.ad}</div>
+                <div class="cs-alt">G.Yıl: ${c.gecen_yil.toLocaleString('tr-TR')} adet</div>
+              </div>
+              <div class="cs-sag">
+                <div class="cs-adet">${c.bu_yil.toLocaleString('tr-TR')}</div>
+                <div class="cs-ciro">${para(c.ciro)}</div>
+              </div>
+            </div>
+            <div class="cs-bar">
+              <div class="cs-bar-ic cari-bar-ic" data-w="${Math.round(c.bu_yil/maxAdet*100)}" style="width:0%"></div>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+
+  setTimeout(()=>{
+    document.querySelectorAll('.cari-bar-ic').forEach(el=>{
+      el.style.width=el.dataset.w+'%';
+    });
+  },100);
+}
+
+// ── KARŞILAŞTIRMA ─────────────────────────────────────────────────────────────
+function renderKarsilastirma(s){
+  const o=s.ozet;
+  const maxC=Math.max(o.bu_yil_ciro,o.gecen_yil_ciro);
+  const maxA=Math.max(o.bu_yil_adet,o.gecen_yil_adet);
+
+  document.getElementById('t-karsilastirma').innerHTML=`
+    <div class="kart">
+      <div class="kart-bas">Yıllık Ciro</div>
+      <div style="margin-bottom:8px">
+        <div class="kars-row"><span style="font-size:11px;font-weight:700;color:var(--ac)">Bu Yıl</span><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--ac)">${para(o.bu_yil_ciro)}</span></div>
+        <div class="kars-bar-wrap"><div class="kars-bar" id="cByBar" style="width:0%;background:var(--ac)"></div></div>
+      </div>
+      <div>
+        <div class="kars-row"><span style="font-size:11px;font-weight:700;color:var(--tx3)">Geçen Yıl</span><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--tx3)">${para(o.gecen_yil_ciro)}</span></div>
+        <div class="kars-bar-wrap"><div class="kars-bar" id="cGyBar" style="width:0%;background:var(--tx3);opacity:.5"></div></div>
+      </div>
+    </div>
+
+    <div class="kart">
+      <div class="kart-bas">Yıllık Adet</div>
+      <div style="margin-bottom:8px">
+        <div class="kars-row"><span style="font-size:11px;font-weight:700;color:var(--g)">Bu Yıl</span><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--g)">${o.bu_yil_adet.toLocaleString('tr-TR')}</span></div>
+        <div class="kars-bar-wrap"><div class="kars-bar" id="aByBar" style="width:0%;background:var(--g)"></div></div>
+      </div>
+      <div>
+        <div class="kars-row"><span style="font-size:11px;font-weight:700;color:var(--tx3)">Geçen Yıl</span><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--tx3)">${o.gecen_yil_adet.toLocaleString('tr-TR')}</span></div>
+        <div class="kars-bar-wrap"><div class="kars-bar" id="aGyBar" style="width:0%;background:var(--tx3);opacity:.5"></div></div>
+      </div>
+    </div>
+
+    <div class="kart">
+      <div class="kart-bas">Alış Fiyatı Trendi</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:9px;color:var(--tx3);margin-bottom:2px">Bu Yıl Ort.</div>
+          <div style="font-size:20px;font-weight:800;font-family:'DM Mono',monospace;color:var(--p)">₺${o.bu_yil_ort_alis}</div>
+        </div>
+        <div style="font-size:24px;color:var(--tx3)">→</div>
+        <div style="text-align:right">
+          <div style="font-size:9px;color:var(--tx3);margin-bottom:2px">Geçen Yıl</div>
+          <div style="font-size:20px;font-weight:800;font-family:'DM Mono',monospace;color:var(--tx2)">₺${o.gecen_yil_ort_alis}</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px;background:var(--s2);border-radius:8px;text-align:center">
+        <span style="font-size:12px;font-weight:700;color:${o.bu_yil_ort_alis<=o.gecen_yil_ort_alis?'var(--g)':'var(--r)'}">
+          ${o.bu_yil_ort_alis<=o.gecen_yil_ort_alis?'▼ Maliyet düştü':'▲ Maliyet arttı'}
+          %${Math.abs(Math.round((o.bu_yil_ort_alis-o.gecen_yil_ort_alis)/o.gecen_yil_ort_alis*100))}
+        </span>
+      </div>
+    </div>
+
+    <div class="bolum-bas">Aylık Karşılaştırma</div>
+    <div class="aylik-tablo">
+      <div class="at-bas" style="grid-template-columns:60px 1fr 1fr 1fr">
+        <div class="at-hdr">Ay</div>
+        <div class="at-hdr">Bu Yıl</div>
+        <div class="at-hdr">G. Yıl</div>
+        <div class="at-hdr">Fark</div>
+      </div>
+      ${s.aylik.filter(a=>a.ciro>0||a.gecen_yil_ciro>0).map(a=>{
+        const fark=a.ciro-a.gecen_yil_ciro;
+        return`<div class="at-satir" style="grid-template-columns:60px 1fr 1fr 1fr">
+          <div class="at-h">${a.ay}</div>
+          <div class="at-h ${a.ciro>0?'yesil':''}">${a.ciro>0?para(a.ciro):'—'}</div>
+          <div class="at-h" style="color:var(--tx3)">${para(a.gecen_yil_ciro)}</div>
+          <div class="at-h" style="color:${fark>=0?'var(--g)':'var(--r)'}">${fark>=0?'+':''}${para(fark)}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+  setTimeout(()=>{
+    const set=(id,w)=>{const el=document.getElementById(id);if(el)el.style.width=w+'%';};
+    set('cByBar',Math.round(o.bu_yil_ciro/maxC*100));
+    set('cGyBar',Math.round(o.gecen_yil_ciro/maxC*100));
+    set('aByBar',Math.round(o.bu_yil_adet/maxA*100));
+    set('aGyBar',Math.round(o.gecen_yil_adet/maxA*100));
+  },100);
+}
+
+// ── BAŞLAT ────────────────────────────────────────────────────────────────────
+renderListe(STOKLAR);
+
+const sesyon=oturumAl();
+</script>
+</body>
+</html>
