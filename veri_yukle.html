@@ -402,15 +402,15 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <div style="font-size:9px;font-weight:800;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px">API Key</div>
       <input id="bhKey" type="text" placeholder="API Key (FirmID)" value="0075B067430344968D95C925E19B75B4"
         style="width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:9px;padding:10px 12px;color:var(--tx);font-size:12px;font-family:'DM Mono',monospace;outline:none;"
-        oninput="bhKeyKontrol()">
+        oninput="if(typeof bhKeyKontrol==='function')bhKeyKontrol()">
     </div>
     <div style="margin-bottom:10px">
       <div style="font-size:9px;font-weight:800;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px">Token (isteğe bağlı)</div>
       <input id="bhToken" type="password" placeholder="BizimHesap token — yoksa boş bırak"
         style="width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:9px;padding:10px 12px;color:var(--tx);font-size:12px;font-family:'DM Mono',monospace;outline:none;">
     </div>
-    <button id="btnBizimhesap" onclick="bizimhesapCek()" disabled
-      style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--ac),#6366f1);color:#fff;font-size:13px;font-weight:800;font-family:'Syne',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;opacity:.5">
+    <button id="btnBizimhesap" onclick="bizimhesapCek()"
+      style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--ac),#6366f1);color:#fff;font-size:13px;font-weight:800;font-family:'Syne',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;opacity:1">
       <span>🔄</span><span>Verileri Güncelle</span>
     </button>
     <button onclick="bhKeySakla()" style="width:100%;padding:9px;border-radius:9px;border:1px solid var(--bd2);background:var(--s2);color:var(--tx2);font-size:11px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;margin-top:8px">💾 Key'i Kaydet</button>
@@ -548,13 +548,11 @@ function adminGeriDon(){
 
 
 
-const TIP_IKON={uretim:'🏭',alsat:'🛒',hizmet:'💼',saglik:'🏥',insaat:'🏗',tarim:'🌱'};
 if(!SESYON) throw new Error('Oturum yok');
 
 // ══ ORTAK OTURUM SİSTEMİ (index.html ile senkron) ══
 
 
-const TIP_IKON={uretim:'🏭',alsat:'🛒',hizmet:'💼',saglik:'🏥',insaat:'🏗',tarim:'🌱'};
 
 // ── YARDIMCILAR ──────────────────────────────────────────────────────────────
 const AYLAR_TR = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
