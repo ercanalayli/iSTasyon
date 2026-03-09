@@ -34,6 +34,9 @@ function bhKeySakla(){
 }
 
 async function bizimhesapCek(){
+  // Supabase proxy URL — deploy sonrası buraya yapıştır
+  const PROXY_URL = 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy';
+
   const key = document.getElementById('bhKey').value.trim() || '0075B067430344968D95C925E19B75B4';
   const tokenEl = document.getElementById('bhToken');
   const token = tokenEl ? tokenEl.value.trim() : '';
@@ -57,8 +60,11 @@ async function bizimhesapCek(){
   log('📦 Ürünler alınıyor...');
   progress(15, 'Ürün listesi sorgulanıyor...');
   try {
-    const r1 = await fetch('https://bizimhesap.com/api/b2b/products', {
-      method: 'GET', headers: HEADERS, mode: 'cors'
+    const r1 = await fetch(PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? PROXY_URL : 'https://bizimhesap.com/api/b2b/products', {
+      method: PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? 'POST' : 'GET',
+      headers: PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? {'Content-Type':'application/json'} : HEADERS,
+      mode: 'cors',
+      body: PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? JSON.stringify({key:key, endpoint:'https://bizimhesap.com/api/b2b/products'}) : undefined
     });
     if(r1.ok){
       const d1 = await r1.json();
@@ -76,8 +82,11 @@ async function bizimhesapCek(){
   progress(40, 'Stok bilgileri alınıyor...');
   log('📊 Stok sorgulanıyor...');
   try {
-    const r2 = await fetch('https://bizimhesap.com/api/b2b/inventory', {
-      method: 'GET', headers: HEADERS, mode: 'cors'
+    const r2 = await fetch(PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? PROXY_URL : 'https://bizimhesap.com/api/b2b/inventory', {
+      method: PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? 'POST' : 'GET',
+      headers: PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? {'Content-Type':'application/json'} : HEADERS,
+      mode: 'cors',
+      body: PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? JSON.stringify({key:key, endpoint:'https://bizimhesap.com/api/b2b/inventory'}) : undefined
     });
     if(r2.ok){
       const d2 = await r2.json();
