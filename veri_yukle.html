@@ -162,11 +162,13 @@ async function bizimhesapCek(){
 (function(){
   try{
     const api=JSON.parse(localStorage.getItem('ist_api')||'{}');
-    if(api.bizimhesap?.key){
-      const el=document.getElementById('bhKey');
-      if(el){el.value=api.bizimhesap.key;bhKeyKontrol();}
+    const el=document.getElementById('bhKey');
+    if(el){
+      if(api.bizimhesap?.key) el.value=api.bizimhesap.key;
+      // Key zaten input'ta varsa (hardcoded) aktif et
+      setTimeout(bhKeyKontrol, 100);
     }
-  }catch(e){}
+  }catch(e){ setTimeout(bhKeyKontrol, 100); }
 })();
 // ── BAŞLAT ──────────────────────────────────────────────────────────────────
 (function(){
