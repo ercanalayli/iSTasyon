@@ -7,7 +7,209 @@
 <title>iSTasyon · Veri Yükle</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
-const sesyon=oturumAl();
+
+
+// ── BİZİMHESAP API ──────────────────────────────────────────────────────────
+function bhKeyKontrol(){
+  const key=document.getElementById('bhKey').value.trim();
+  const btn=document.getElementById('btnBizimhesap');
+  const dur=document.getElementById('bhDurum');
+  if(key.length>8){
+    btn.disabled=false;btn.style.opacity='1';
+    dur.textContent='HAZIR';dur.style.background='var(--gl)';dur.style.color='var(--g)';
+  } else {
+    btn.disabled=true;btn.style.opacity='.5';
+    dur.textContent='KEY GEREKLİ';dur.style.background='var(--s3)';dur.style.color='var(--tx3)';
+  }
+}
+
+function bhKeySakla(){
+  const key=document.getElementById('bhKey').value.trim();
+  if(!key){alert('API Key boş olamaz');return;}
+  const api=JSON.parse(localStorage.getItem('ist_api')||'{}');
+  api.bizimhesap={key};
+  localStorage.setItem('ist_api',JSON.stringify(api));
+  const dur=document.getElementById('bhDurum');
+  dur.textContent='KAYDEDİLDİ ✓';
+  setTimeout(()=>{dur.textContent='HAZIR';},1500);
+}
+
+async function bizimhesapCek(){
+  const key = document.getElementById('bhKey').value.trim() || '0075B067430344968D95C925E19B75B4';
+  const tokenEl = document.getElementById('bhToken');
+  const token = tokenEl ? tokenEl.value.trim() : '';
+  if(!key) return;
+
+  const btn=document.getElementById('btnBizimhesap');
+  const dur=document.getElementById('bhDurum');
+  btn.disabled=true; btn.style.opacity='.7';
+  btn.innerHTML='<span>⏳</span><span>Veriler alınıyor...</span>';
+  dur.textContent='BAĞLANIYOR'; dur.style.background='var(--al)'; dur.style.color='var(--a)';
+  document.getElementById('progressKart').classList.add('aktif');
+
+  // ── Gerçek API çağrısı ─────────────────────────────────────────────────
+  const HEADERS = {'Key': key};
+  if(token) HEADERS['Token'] = token;
+
+  let apiBasarili = false;
+  let urunler = [], faturalar = [], cariler = [];
+
+  // 1. Ürün listesi
+  log('📦 Ürünler alınıyor...');
+  progress(15, 'Ürün listesi sorgulanıyor...');
+  try {
+    const r1 = await fetch('https://bizimhesap.com/api/b2b/products', {
+      method: 'GET', headers: HEADERS, mode: 'cors'
+    });
+    if(r1.ok){
+      const d1 = await r1.json();
+      urunler = Array.isArray(d1) ? d1 : (d1.data || d1.products || []);
+      log('✅ ' + urunler.length + ' ürün alındı');
+      apiBasarili = true;
+    } else {
+      log('⚠ Ürünler: HTTP ' + r1.status);
+    }
+  } catch(e) {
+    log('⚠ Ürünler CORS hatası — ' + e.message.slice(0,40));
+  }
+
+  // 2. Depo / stok
+  progress(40, 'Stok bilgileri alınıyor...');
+  log('📊 Stok sorgulanıyor...');
+  try {
+    const r2 = await fetch('https://bizimhesap.com/api/b2b/inventory', {
+      method: 'GET', headers: HEADERS, mode: 'cors'
+    });
+    if(r2.ok){
+      const d2 = await r2.json();
+      log('✅ Stok verisi alındı');
+    } else {
+      log('⚠ Stok: HTTP ' + r2.status);
+    }
+  } catch(e) {
+    log('⚠ Stok CORS hatası');
+  }
+
+  progress(70, 'Veriler işleniyor...');
+  await new Promise(r=>setTimeout(r,400));
+
+  // ── Sonuç ─────────────────────────────────────────────────────────────
+  let veri;
+  if(apiBasarili && urunler.length > 0){
+    // Gerçek veri işle
+    log('🔄 Veriler iSTasyon formatına dönüştürülüyor...');
+    const toplam_ciro = urunler.reduce((t,u)=>t+(parseFloat(u.price||u.Price||u.satisFiyat||0)*parseFloat(u.stock||u.Stock||u.stok||1)),0);
+    veri = {
+      firma: SESYON.ad, firmaId: aktifFirmaId(), yil: 2025,
+      tip: 'bizimhesap', kaynak: 'BizimHesap API (Gerçek)',
+      toplam_ciro: Math.round(toplam_ciro),
+      urunler: urunler.slice(0,200).map(u=>({
+        ad: u.name||u.Name||u.urunAd||String(u.id||''),
+        kod: String(u.id||u.productCode||''),
+        kategori: u.category||u.Category||u.kategori||'Genel',
+        ciro25: parseFloat(u.price||0)*parseFloat(u.stock||1),
+        adet25: parseFloat(u.stock||u.Stock||0),
+      })),
+      tarih: new Date().toISOString(),
+    };
+    log('✅ ' + urunler.length + ' ürün işlendi');
+  } else {
+    // CORS engeli — demo veri + uyarı
+    log('⚠ API direkt erişilemiyor (CORS). Demo veri yüklendi.');
+    log('ℹ Gerçek veri için Netlify Function gerekiyor.');
+    veri = {
+      firma: 'Alaylı Medikal', firmaId: 'alayli', yil: 2025,
+      tip: 'bizimhesap', kaynak: 'BizimHesap (Demo — CORS kısıtı)',
+      toplam_ciro: 1840000, toplam_kar: 620000, toplam_gider: 380000, net_kar: 240000,
+      brut_marj: 33.7, net_marj: 13.0,
+      aylik_ciro: [128000,142000,156000,138000,168000,172000,158000,164000,178000,152000,166000,118000],
+      urunler: [
+        {ad:'İşitme Cihazı A Serisi',kategori:'İşitme',ciro25:420000,adet25:84,ciro24:380000},
+        {ad:'İşitme Cihazı B Serisi',kategori:'İşitme',ciro25:310000,adet25:62,ciro24:290000},
+        {ad:'Kulak Kalıbı',kategori:'Aksesuar',ciro25:180000,adet25:360,ciro24:165000},
+        {ad:'Pil Seti',kategori:'Aksesuar',ciro25:95000,adet25:1900,ciro24:88000},
+        {ad:'Temizlik Seti',kategori:'Bakım',ciro25:72000,adet25:720,ciro24:65000},
+      ],
+      giderler:[{kalem:'Personel',toplam:180000},{kalem:'Kira',toplam:96000},{kalem:'Teknik Servis',toplam:62000},{kalem:'Diğer',toplam:42000}],
+      tarih: new Date().toISOString(),
+    };
+  }
+
+  localStorage.setItem('ist_veri_' + aktifFirmaId(), JSON.stringify(veri));
+  progress(100, 'Tamamlandı!');
+
+  setTimeout(()=>{
+    document.getElementById('progressKart').classList.remove('aktif');
+    btn.disabled=false; btn.style.opacity='1';
+    if(apiBasarili){
+      btn.innerHTML='<span>✅</span><span>Gerçek Veri Yüklendi!</span>';
+      btn.style.background='linear-gradient(135deg,var(--g),#059669)';
+      dur.textContent='BAĞLI'; dur.style.background='var(--gl)'; dur.style.color='var(--g)';
+    } else {
+      btn.innerHTML='<span>⚠</span><span>Demo Yüklendi (CORS)</span>';
+      btn.style.background='linear-gradient(135deg,var(--a),#d97706)';
+      dur.textContent='CORS'; dur.style.background='rgba(245,158,11,.15)'; dur.style.color='var(--a)';
+    }
+    sonGuncellemeGoster();
+    setTimeout(()=>{
+      btn.innerHTML='<span>🔄</span><span>Verileri Güncelle</span>';
+      btn.style.background='linear-gradient(135deg,var(--ac),#6366f1)';
+    },4000);
+  },400);
+}
+
+// Kayıtlı API key yükle
+(function(){
+  try{
+    const api=JSON.parse(localStorage.getItem('ist_api')||'{}');
+    if(api.bizimhesap?.key){
+      const el=document.getElementById('bhKey');
+      if(el){el.value=api.bizimhesap.key;bhKeyKontrol();}
+    }
+  }catch(e){}
+})();
+// ── BAŞLAT ──────────────────────────────────────────────────────────────────
+(function(){
+  const hdr=document.getElementById('hdrFirmaAd'); if(hdr) hdr.textContent=SESYON.ad;
+  // API tab için BizimHesap tab oluştur
+  apiTabOlustur();
+})();
+
+function apiTabOlustur(){
+  // Format chip'ine BizimHesap API ekle
+  const fr=document.querySelector('.format-row');
+  if(fr && !document.getElementById('bhApiChip')){
+    const chip=document.createElement('div');
+    chip.id='bhApiChip';
+    chip.className='format-chip aktif';
+    chip.innerHTML='<div class="dot"></div>BizimHesap API';
+    fr.appendChild(chip);
+  }
+}
+
+// Sayfa yüklenince son güncellemeyi göster
+window.addEventListener('load', ()=>{
+  sonGuncellemeGoster();
+});
+
+function sonGuncellemeGoster(){
+  try{
+    const veri=JSON.parse(localStorage.getItem('ist_veri_'+aktifFirmaId())||'null');
+    if(!veri) return;
+    const tarih=new Date(veri.tarih);
+    const msg='Son güncelleme: '+tarih.toLocaleDateString('tr-TR')+' '+tarih.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})+' · '+SESYON.ad;
+    let banner=document.getElementById('sonGuncellemeBanner');
+    if(!banner){
+      banner=document.createElement('div');
+      banner.id='sonGuncellemeBanner';
+      banner.style.cssText='background:var(--gl);border:1px solid rgba(16,185,129,.3);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:11px;font-weight:700;color:var(--g);display:flex;align-items:center;gap:8px;';
+      banner.innerHTML='<span>✓</span><span id="sgMsg"></span>';
+      const scroll=document.querySelector('.scroll');
+      if(scroll) scroll.insertBefore(banner, scroll.firstChild);
+    }
+    document.getElementById('sgMsg').textContent=msg;
+  }catch(e){}
+}
 </script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -166,6 +368,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <div class="hdr">
   <div class="hdr-row">
     <a class="hdr-back" href="index.html">←</a>
+    <div id="hdrFirmaAd" style="flex:1;font-size:11px;font-weight:700;color:var(--tx2);text-align:center"></div>
     <div>
       <div class="hdr-title">📥 Veri Yükle</div>
       <div class="hdr-sub">iSTasyon · Excel / iSTasyon.xlsx</div>
@@ -180,6 +383,35 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div class="format-chip aktif"><div class="dot"></div>iSTasyon.xlsx</div>
     <div class="format-chip aktif"><div class="dot"></div>WERP.xlsx</div>
     <div class="format-chip"><div class="dot"></div>BizimHesap (yakında)</div>
+  </div>
+
+
+  <!-- BİZİMHESAP API GÜNCELLE -->
+  <div id="bhApiPanel" style="background:var(--s1);border:1px solid var(--bd);border-radius:var(--rad);padding:16px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="width:34px;height:34px;border-radius:9px;background:rgba(245,158,11,0.1);display:grid;place-items:center;font-size:18px">💼</div>
+      <div>
+        <div style="font-size:13px;font-weight:800">BizimHesap · Otomatik Güncelle</div>
+        <div style="font-size:10px;color:var(--tx3)">API Key ile tek tuş güncelleme</div>
+      </div>
+      <div id="bhDurum" style="margin-left:auto;font-size:9px;font-weight:800;padding:4px 8px;border-radius:6px;background:var(--s3);color:var(--tx3)">KEY GEREKLİ</div>
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:9px;font-weight:800;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px">API Key</div>
+      <input id="bhKey" type="text" placeholder="API Key (FirmID)" value="0075B067430344968D95C925E19B75B4"
+        style="width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:9px;padding:10px 12px;color:var(--tx);font-size:12px;font-family:'DM Mono',monospace;outline:none;"
+        oninput="bhKeyKontrol()">
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:9px;font-weight:800;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px">Token (isteğe bağlı)</div>
+      <input id="bhToken" type="password" placeholder="BizimHesap token — yoksa boş bırak"
+        style="width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:9px;padding:10px 12px;color:var(--tx);font-size:12px;font-family:'DM Mono',monospace;outline:none;">
+    </div>
+    <button id="btnBizimhesap" onclick="bizimhesapCek()" disabled
+      style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--ac),#6366f1);color:#fff;font-size:13px;font-weight:800;font-family:'Syne',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;opacity:.5">
+      <span>🔄</span><span>Verileri Güncelle</span>
+    </button>
+    <button onclick="bhKeySakla()" style="width:100%;padding:9px;border-radius:9px;border:1px solid var(--bd2);background:var(--s2);color:var(--tx2);font-size:11px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;margin-top:8px">💾 Key'i Kaydet</button>
   </div>
 
   <!-- DROP ZONE -->
@@ -240,27 +472,85 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 <script>
 
-// ══ ORTAK OTURUM SİSTEMİ (index.html ile senkron) ══
+// ══ OTURUM SİSTEMİ ══════════════════════════════
+const ADMIN_MAIL='ercanalayli@gmail.com';
+function firmalariAl(){
+  const def=[
+    {id:'alkam',ad:'Alkam Mali Müşavirlik',mail:ADMIN_MAIL,pass:'290900',admin:true,tip:'hizmet',renk:'#4F8EF7',sehir:'Bursa',kaynak:'Dahili'},
+    {id:'woodlent',ad:'Woodlent',mail:'patron@woodlent.com',pass:'Wood2025!',admin:false,tip:'uretim',renk:'#7B3F00',sehir:'Bursa',kaynak:'iSTasyon.xlsx'},
+    {id:'alayli',ad:'Alaylı Medikal',mail:'patron@alayli.com',pass:'Alayli2025!',admin:false,tip:'saglik',renk:'#26C9A0',sehir:'Bursa',kaynak:'BizimHesap'},
+  ];
+  try{const s=localStorage.getItem('ist_firmalar');if(!s)return def;const k=JSON.parse(s);const a=k.find(f=>f.id==='alkam');if(a)a.admin=true;return k;}catch(e){return def;}
+}
 function oturumAl(){
   try{
     const s=JSON.parse(localStorage.getItem('ist_ses')||'{}');
-    if(!s.id||!s.mail||Date.now()-s.t>86400000){ location.href='index.html'; return null; }
-    const firmalar=firmalariAl();
-    const f=firmalar.find(x=>x.id===s.id&&x.mail.toLowerCase()===s.mail);
-    if(!f){ location.href='index.html'; return null; }
+    if(!s.id||!s.mail||(Date.now()-s.t)>86400000){location.href='index.html';return null;}
+    const f=firmalariAl().find(x=>x.id===s.id&&x.mail.toLowerCase()===s.mail.toLowerCase());
+    if(!f){location.href='index.html';return null;}
     return f;
-  }catch(e){ location.href='index.html'; return null; }
+  }catch(e){location.href='index.html';return null;}
+}
+const TIP_IKON={uretim:'🏭',alsat:'🛒',hizmet:'💼',saglik:'🏥',insaat:'🏗',tarim:'🌱'};
+const SESYON=oturumAl();
+if(!SESYON) throw new Error('Oturum yok');
+
+// ── AKTİF FİRMA — Admin başka firma görüntülüyorsa onu kullan ───────────────
+function aktifFirmaId(){
+  // Admin başka firma seçtiyse onu kullan
+  const aktif = localStorage.getItem('ist_aktif_firma');
+  if(aktif && aktif !== SESYON.id){
+    // Sadece admin başka firmayı görebilir
+    if(SESYON.admin) return aktif;
+  }
+  return SESYON.id;
 }
 
-function firmalariAl(){
-  const def=[
-    {id:'alkam',   ad:'Alkam Mali Müşavirlik',mail:'ercanalayli@gmail.com',pass:'290900',  admin:true, tip:'hizmet',renk:'#4F8EF7',sehir:'Bursa',kaynak:'Dahili'},
-    {id:'woodlent',ad:'Woodlent',             mail:'patron@woodlent.com', pass:'Wood2025!',admin:false,tip:'uretim',renk:'#7B3F00',sehir:'Bursa',kaynak:'iSTasyon.xlsx'},
-    {id:'alayli',  ad:'Alaylı Medikal',        mail:'patron@alayli.com',   pass:'Alayli2025!',admin:false,tip:'saglik',renk:'#26C9A0',sehir:'Bursa',kaynak:'BizimHesap'},
-  ];
-  try{ const s=localStorage.getItem('ist_firmalar'); return s?JSON.parse(s):def; }
-  catch(e){ return def; }
+// aktifFirmaId kullanarak firmayı al
+function aktifFirmaObjesi(){
+  const id = aktifFirmaId();
+  return firmalariAl().find(f=>f.id===id) || SESYON;
 }
+
+// ── Header firma badge güncelle ──────────────────────────────────────────────
+function headerFirmaBadgeGuncelle(){
+  const id = aktifFirmaId();
+  const firma = aktifFirmaObjesi();
+  
+  // hdrFirmaAd varsa güncelle
+  const el = document.getElementById('hdrFirmaAd');
+  if(el) el.textContent = firma.ad;
+  
+  // Admin başka firma görüntülüyorsa banner göster
+  if(SESYON.admin && id !== SESYON.id){
+    let banner = document.getElementById('firmaBanner');
+    if(!banner){
+      banner = document.createElement('div');
+      banner.id = 'firmaBanner';
+      banner.style.cssText = 'position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:9998;background:linear-gradient(135deg,#7B3F00,#5a2d00);color:#FFD580;font-size:11px;font-weight:800;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid rgba(255,213,128,0.3)';
+      banner.innerHTML = '<span>👁 <span id="bannerFirmaAd"></span> görüntüleniyor</span><button onclick="adminGeriDon()" style="background:rgba(255,255,255,0.15);border:none;color:#FFD580;font-size:10px;font-weight:800;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:inherit">← Panele Dön</button>';
+      document.body.prepend(banner);
+    }
+    document.getElementById('bannerFirmaAd').textContent = firma.ad;
+  }
+}
+
+function adminGeriDon(){
+  localStorage.setItem('ist_aktif_firma', '');
+  location.href = 'index.html';
+}
+
+
+
+// ══ OTURUM SİSTEMİ ══════════════════════════════
+
+
+
+const TIP_IKON={uretim:'🏭',alsat:'🛒',hizmet:'💼',saglik:'🏥',insaat:'🏗',tarim:'🌱'};
+if(!SESYON) throw new Error('Oturum yok');
+
+// ══ ORTAK OTURUM SİSTEMİ (index.html ile senkron) ══
+
 
 const TIP_IKON={uretim:'🏭',alsat:'🛒',hizmet:'💼',saglik:'🏥',insaat:'🏗',tarim:'🌱'};
 
@@ -362,112 +652,131 @@ function dosyaAl(file){
 // ── WERP / iSTasyon PARSER ─────────────────────────────────────────────────
 function parseWERP(wb){
   const result = {firma:'Woodlent', yil:2025, tip:'istasyon'};
+  const num = v => (v===null||v===undefined||v==='')?0:parseFloat(v)||0;
 
-  // MASTER_ERP — ürünler
+  // ── MASTER_ERP — ürünler (25 vs 26 karşılaştırmalı) ───────────────────
   if(wb.SheetNames.includes('MASTER_ERP')){
-    const ws = wb.Sheets['MASTER_ERP'];
-    const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
-
-    // Başlık satırı bul (ÜRÜN KODU içeren)
-    let baslikIdx = rows.findIndex(r=>r && r.some && r.some(c=>String(c||'').includes('ÜRÜN KODU')));
-    if(baslikIdx < 0) baslikIdx = 1;
-
-    const baslik = rows[baslikIdx];
-    const kolIdx = {
-      kod: baslik.indexOf('ÜRÜN KODU'),
-      ad: baslik.indexOf('ÜRÜN'),
-      kat: baslik.indexOf('KATEGORİ'),
-      adet25: baslik.indexOf('TADET25'),
-      ciro25: baslik.indexOf('TCİRO25'),
-      maliyet25: baslik.indexOf('TMALİYET25'),
-      kar25: baslik.indexOf('TKAR25'),
-      marj25: baslik.indexOf('T%25'),
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets['MASTER_ERP'],{header:1,defval:null});
+    let bIdx = rows.findIndex(r=>r&&r.some(c=>String(c||'').includes('ÜRÜN KODU')));
+    if(bIdx<0) bIdx=1;
+    const b=rows[bIdx];
+    const ci={
+      kod:b.indexOf('ÜRÜN KODU'),ad:b.indexOf('ÜRÜN'),kat:b.indexOf('KATEGORİ'),
+      a25:b.indexOf('TADET25'),c25:b.indexOf('TCİRO25'),m25:b.indexOf('TMALİYET25'),
+      k25:b.indexOf('TKAR25'),pct25:b.indexOf('T%25'),
+      a26:b.indexOf('TADET26'),c26:b.indexOf('TCİRO26'),
     };
-
-    const urunler = [];
-    for(let i=baslikIdx+1; i<rows.length; i++){
-      const r = rows[i];
-      if(!r || !r[kolIdx.kod]) continue;
-      const ciro = parseFloat(r[kolIdx.ciro25])||0;
-      if(ciro <= 0) continue;
+    const urunler=[];
+    for(let i=bIdx+1;i<rows.length;i++){
+      const r=rows[i]; if(!r||!r[ci.kod]) continue;
+      const ciro=num(r[ci.c25]); if(ciro<=0) continue;
       urunler.push({
-        kod: String(r[kolIdx.kod]||''),
-        ad: String(r[kolIdx.ad]||''),
-        kategori: String(r[kolIdx.kat]||''),
-        adet25: parseFloat(r[kolIdx.adet25])||0,
-        ciro25: ciro,
-        maliyet25: parseFloat(r[kolIdx.maliyet25])||0,
-        kar25: parseFloat(r[kolIdx.kar25])||0,
-        marj25: Math.round((parseFloat(r[kolIdx.marj25])||0)*100*10)/10,
+        kod:String(r[ci.kod]||''),ad:String(r[ci.ad]||''),kategori:String(r[ci.kat]||'Diğer'),
+        ciro25:ciro,ciro24:num(r[ci.c26]),
+        adet25:num(r[ci.a25]),adet24:num(r[ci.a26]),
+        maliyet25:num(r[ci.m25]),kar25:num(r[ci.k25]),
+        marj25:Math.round(num(r[ci.pct25])*100*10)/10,
       });
     }
-
     urunler.sort((a,b)=>b.ciro25-a.ciro25);
-    result.urunler = urunler;
-    result.toplam_urun = urunler.length;
-    result.toplam_ciro = urunler.reduce((t,u)=>t+u.ciro25,0);
-    result.toplam_maliyet = urunler.reduce((t,u)=>t+u.maliyet25,0);
-    result.toplam_kar = urunler.reduce((t,u)=>t+u.kar25,0);
-    result.toplam_adet = urunler.reduce((t,u)=>t+u.adet25,0);
-    result.brut_marj = result.toplam_ciro>0?Math.round(result.toplam_kar/result.toplam_ciro*100*10)/10:0;
-
-    // Kategori dağılımı
-    const katMap = {};
-    urunler.forEach(u=>{
-      katMap[u.kategori]=(katMap[u.kategori]||0)+u.ciro25;
-    });
-    result.kategoriler = Object.entries(katMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    log(`📦 ${urunler.length} ürün okundu`);
+    result.urunler=urunler;
+    result.toplam_ciro=urunler.reduce((t,u)=>t+u.ciro25,0);
+    result.toplam_maliyet=urunler.reduce((t,u)=>t+u.maliyet25,0);
+    result.toplam_kar=urunler.reduce((t,u)=>t+u.kar25,0);
+    result.brut_marj=result.toplam_ciro>0?Math.round(result.toplam_kar/result.toplam_ciro*100*10)/10:0;
+    const katMap={};
+    urunler.forEach(u=>{katMap[u.kategori]=(katMap[u.kategori]||0)+u.ciro25;});
+    result.kategoriler=Object.entries(katMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    log('📦 '+urunler.length+' ürün okundu');
   }
 
-  // YÖN_PLUS — aylık ciro
+  // ── YÖN_RAPOR — kâr zinciri + müşteri listesi ─────────────────────────
+  if(wb.SheetNames.includes('YÖN_RAPOR')){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets['YÖN_RAPOR'],{header:1,defval:null});
+    const musteriler=[];
+    for(const row of rows){
+      const kalem=String(row[0]||'').replace(/[💰🏁↳]/g,'').trim().toUpperCase();
+      const tutar=num(row[1]);
+      if(tutar!==0){
+        if(kalem.includes('TOPLAM SATIŞ') && !result.toplam_ciro_yon) result.toplam_ciro_yon=Math.abs(tutar);
+        else if(kalem==='BRÜT KAR') result.brut_kar_yon=tutar;
+        else if(kalem.includes('BRÜT KAR MARJI')) result.brut_marj_pct=Math.round(tutar*100*100)/100;
+        else if(kalem.includes('TOPLAM GİDER')) result.toplam_gider_yon=Math.abs(tutar);
+        else if(kalem.includes('VERGİ ÖNCESİ KAR')) result.vergi_oncesi_kar=tutar;
+        else if(kalem.includes('KURUMLAR VERGİSİ')) result.kurumlar_vergisi=Math.abs(tutar);
+        else if(kalem.includes('NET KAR') && !kalem.includes('MARJ')) result.net_kar=tutar;
+        else if(kalem.includes('NET KAR MARJI')) result.net_marj_pct=Math.round(tutar*100*100)/100;
+      }
+      // Müşteri satırı: [sıra_sayı, ad_string, ciro_sayı, pay_sayı]
+      if(typeof row[0]==='number' && typeof row[1]==='string' && typeof row[2]==='number' && row[2]>0){
+        musteriler.push({ad:row[1].trim(),yillik_ciro:row[2],pay:Math.round((row[3]||0)*100*100)/100});
+      }
+    }
+    if(musteriler.length>0){ result.musteriler=musteriler; log('👥 '+musteriler.length+' müşteri okundu'); }
+    if(result.net_kar) log('💰 Kâr zinciri: Net Kâr='+Math.round(result.net_kar).toLocaleString('tr-TR'));
+  }
+
+  // ── YÖN_PLUS — aylık ciro/kâr (kategori toplamı) ─────────────────────
   if(wb.SheetNames.includes('YÖN_PLUS')){
-    const ws = wb.Sheets['YÖN_PLUS'];
-    const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
-
-    // TOPLAM satırını bul
-    const toplamSatir = rows.find(r=>r&&r[0]==='TOPLAM');
-    if(toplamSatir){
-      result.aylik_ciro = [];
-      result.aylik_maliyet = [];
-      result.aylik_kar = [];
-      for(let i=0;i<12;i++){
-        const base = i*5+1;
-        result.aylik_ciro.push(parseFloat(toplamSatir[base+1])||0);
-        result.aylik_maliyet.push(parseFloat(toplamSatir[base+2])||0);
-        result.aylik_kar.push(parseFloat(toplamSatir[base+3])||0);
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets['YÖN_PLUS'],{header:1,defval:null});
+    const ayRow=rows[0]; const metRow=rows[1];
+    const AY_TR=['OCAK','ŞUBAT','MART','NİSAN','MAYIS','HAZİRAN','TEMMUZ','AĞUSTOS','EYLÜL','EKİM','KASIM','ARALIK'];
+    const ayCols={};
+    for(let i=0;i<ayRow.length;i++){
+      if(!ayRow[i]||typeof ayRow[i]!=='string') continue;
+      for(let ai=0;ai<AY_TR.length;ai++){
+        if(ayRow[i].toUpperCase().includes(AY_TR[ai])&&!ayCols[ai]){
+          ayCols[ai]={adet:null,ciro:null,kar:null};
+          for(let j=i+1;j<Math.min(i+8,metRow.length);j++){
+            const m=String(metRow[j]||'').toUpperCase();
+            if(m.includes('ADET')&&!ayCols[ai].adet) ayCols[ai].adet=j;
+            else if(m.includes('CİRO')&&!ayCols[ai].ciro) ayCols[ai].ciro=j;
+            else if(m.includes('KAR')&&!m.includes('MARJ')&&!ayCols[ai].kar) ayCols[ai].kar=j;
+          }
+        }
       }
-      log(`📈 12 aylık ciro verisi alındı`);
     }
+    const aC=[0,0,0,0,0,0,0,0,0,0,0,0];
+    const aK=[0,0,0,0,0,0,0,0,0,0,0,0];
+    const aA=[0,0,0,0,0,0,0,0,0,0,0,0];
+    for(let ri=2;ri<rows.length;ri++){
+      const r=rows[ri];
+      if(!r||!r[0]||['SATIŞLAR','TOPLAM','GN TOPLAM'].includes(String(r[0]).trim().toUpperCase())) continue;
+      for(const [ai,cols] of Object.entries(ayCols)){
+        const i=parseInt(ai);
+        if(cols.ciro!==null) aC[i]+=num(r[cols.ciro]);
+        if(cols.kar!==null)  aK[i]+=num(r[cols.kar]);
+        if(cols.adet!==null) aA[i]+=num(r[cols.adet]);
+      }
+    }
+    result.aylik_ciro=aC; result.aylik_kar=aK; result.aylik_adet=aA;
+    const aktifAylar=aC.filter(v=>v>0).length;
+    log('📈 '+aktifAylar+' aylık ciro verisi alındı (YÖN_PLUS)');
   }
 
-  // Giderler
+  // ── Giderler ─────────────────────────────────────────────────────────
   if(wb.SheetNames.includes('Giderler')){
-    const ws = wb.Sheets['Giderler'];
-    const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
-
-    result.giderler = [];
-    // Toplam satırı
-    const toplamSatir = rows.find(r=>r&&r[0]==='TOPLAM'&&typeof r[1]==='number');
-    if(toplamSatir){
-      result.gider_aylik = [1,2,3,4,5,6,7,8,9,10,11,12].map(i=>parseFloat(toplamSatir[i])||0);
-      result.toplam_gider = result.gider_aylik.reduce((t,g)=>t+g,0);
-    }
-
-    // Kalemler (satır 3'ten itibaren)
-    let baslikSatir = rows.findIndex(r=>r&&r[0]==='GİDERLER');
-    if(baslikSatir >= 0){
-      for(let i=baslikSatir+1; i<Math.min(baslikSatir+25, rows.length); i++){
-        const r=rows[i];
-        if(!r||!r[0]||['TOPLAM','KURUMLAR TOPLAM'].includes(String(r[0]).trim())) continue;
-        const aylik = [1,2,3,4,5,6,7,8,9,10,11,12].map(j=>parseFloat(r[j])||0);
-        const toplam = aylik.reduce((t,v)=>t+v,0);
-        if(toplam>0) result.giderler.push({kalem:String(r[0]).trim(), aylik, toplam});
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets['Giderler'],{header:1,defval:null});
+    const giderler=[];
+    let baslik=rows.findIndex(r=>r&&r[0]&&String(r[0]).includes('GİDERLER'));
+    const aylikG=[0,0,0,0,0,0,0,0,0,0,0,0];
+    for(let i=(baslik>=0?baslik+1:3);i<rows.length;i++){
+      const r=rows[i]; if(!r||!r[0]) continue;
+      const kalem=String(r[0]).trim();
+      if(!kalem||['TOPLAM','GN TOPLAM','KDV','KURUMLAR'].some(k=>kalem.toUpperCase().includes(k))) continue;
+      const aylik=[1,2,3,4,5,6,7,8,9,10,11,12].map(j=>num(r[j]));
+      const toplam=aylik.reduce((t,v)=>t+v,0);
+      if(toplam>0){
+        giderler.push({kalem,aylik,toplam});
+        aylik.forEach((v,i)=>aylikG[i]+=v);
       }
     }
-    result.giderler.sort((a,b)=>b.toplam-a.toplam);
-    if(result.toplam_gider) result.net_kar = (result.toplam_kar||0) - result.toplam_gider;
-    log(`💼 ${result.giderler.length} gider kalemi okundu`);
+    giderler.sort((a,b)=>b.toplam-a.toplam);
+    result.giderler=giderler;
+    result.aylik_gider=aylikG;
+    if(!result.toplam_gider) result.toplam_gider=aylikG.reduce((t,v)=>t+v,0);
+    if(!result.net_kar && result.toplam_kar) result.net_kar=result.toplam_kar-result.toplam_gider;
+    log('💼 '+giderler.length+' gider kalemi okundu');
   }
 
   return result;
