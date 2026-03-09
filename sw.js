@@ -1,4 +1,4 @@
-const CACHE = 'istasyon-v1';
+const CACHE = 'istasyon-v5';
 const FILES = [
   '/istasyon.html',
   '/manifest.json'
