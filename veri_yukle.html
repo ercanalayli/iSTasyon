@@ -34,9 +34,7 @@ function bhKeySakla(){
 }
 
 async function bizimhesapCek(){
-  // Supabase proxy URL — deploy sonrası buraya yapıştır
   const PROXY_URL = 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy';
-
   const key = document.getElementById('bhKey').value.trim() || '0075B067430344968D95C925E19B75B4';
   const tokenEl = document.getElementById('bhToken');
   const token = tokenEl ? tokenEl.value.trim() : '';
@@ -49,22 +47,17 @@ async function bizimhesapCek(){
   dur.textContent='BAĞLANIYOR'; dur.style.background='var(--al)'; dur.style.color='var(--a)';
   document.getElementById('progressKart').classList.add('aktif');
 
-  // ── Gerçek API çağrısı ─────────────────────────────────────────────────
-  const HEADERS = {'Key': key};
-  if(token) HEADERS['Token'] = token;
-
   let apiBasarili = false;
   let urunler = [], faturalar = [], cariler = [];
 
-  // 1. Ürün listesi
+  // 1. Ürün listesi — Supabase proxy üzerinden
   log('📦 Ürünler alınıyor...');
   progress(15, 'Ürün listesi sorgulanıyor...');
   try {
-    const r1 = await fetch(PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? PROXY_URL : 'https://bizimhesap.com/api/b2b/products', {
-      method: PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? 'POST' : 'GET',
-      headers: PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? {'Content-Type':'application/json'} : HEADERS,
-      mode: 'cors',
-      body: PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? JSON.stringify({key:key, endpoint:'https://bizimhesap.com/api/b2b/products'}) : undefined
+    const r1 = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({key:key, endpoint:'https://bizimhesap.com/api/b2b/products'})
     });
     if(r1.ok){
       const d1 = await r1.json();
@@ -75,18 +68,17 @@ async function bizimhesapCek(){
       log('⚠ Ürünler: HTTP ' + r1.status);
     }
   } catch(e) {
-    log('⚠ Ürünler CORS hatası — ' + e.message.slice(0,40));
+    log('⚠ Proxy hatası — ' + e.message.slice(0,60));
   }
 
-  // 2. Depo / stok
+  // 2. Stok — Supabase proxy üzerinden
   progress(40, 'Stok bilgileri alınıyor...');
   log('📊 Stok sorgulanıyor...');
   try {
-    const r2 = await fetch(PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? PROXY_URL : 'https://bizimhesap.com/api/b2b/inventory', {
-      method: PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? 'POST' : 'GET',
-      headers: PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? {'Content-Type':'application/json'} : HEADERS,
-      mode: 'cors',
-      body: PROXY_URL !== 'https://iilfwosoroflzubkaryj.supabase.co/functions/v1/bizimhesap-proxy' ? JSON.stringify({key:key, endpoint:'https://bizimhesap.com/api/b2b/inventory'}) : undefined
+    const r2 = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({key:key, endpoint:'https://bizimhesap.com/api/b2b/inventory'})
     });
     if(r2.ok){
       const d2 = await r2.json();
@@ -95,7 +87,7 @@ async function bizimhesapCek(){
       log('⚠ Stok: HTTP ' + r2.status);
     }
   } catch(e) {
-    log('⚠ Stok CORS hatası');
+    log('⚠ Stok proxy hatası');
   }
 
   progress(70, 'Veriler işleniyor...');
