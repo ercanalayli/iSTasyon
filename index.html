@@ -1,104 +1,284 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>ERPALTH Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body {
-      font-family: Arial;
-      background: #111;
-      color: #fff;
-      padding: 20px;
-    }
-    h1 {
-      margin-bottom: 30px;
-    }
-    .card {
-      background: #1e1e1e;
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 30px;
-    }
-  </style>
-</head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iSTasyon — Patron Paneli</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --bg:#080c10; --surface:#0f1520; --border:#1e2a3a;
+    --accent:#00e5a0; --accent2:#0099ff; --warn:#ff6b35;
+    --text:#e8f0fe; --muted:#5a7080; --card:#111b28;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.25;pointer-events:none;z-index:0}
+  .wrap{max-width:1400px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
 
+  /* LOADER */
+  #loader{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:18px;transition:opacity .5s}
+  #loader.gone{opacity:0;pointer-events:none}
+  .ld-logo{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:6px;color:var(--accent)}
+  .ld-bar{width:180px;height:2px;background:var(--border);border-radius:1px;overflow:hidden}
+  .ld-fill{height:100%;background:var(--accent);animation:ld 1.4s ease forwards}
+  @keyframes ld{from{width:0}to{width:100%}}
+  .ld-txt{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px}
+
+  /* HEADER */
+  header{border-bottom:1px solid var(--border);padding:18px 0;position:sticky;top:0;background:rgba(8,12,16,.96);backdrop-filter:blur(12px);z-index:100}
+  .hdr{display:flex;align-items:center;justify-content:space-between}
+  .logo{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:4px;color:var(--accent)}
+  .logo span{color:var(--muted)}
+  .hdr-r{display:flex;align-items:center;gap:14px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:blink 2s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+  .hdr-txt{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)}
+
+  /* DATE + FILTER */
+  .date-row{padding:22px 0 6px;display:flex;align-items:baseline;gap:12px}
+  .date-big{font-size:34px;font-weight:800}
+  .date-sub{color:var(--muted);font-size:13px}
+  .filters{display:flex;gap:8px;padding:10px 0 22px;flex-wrap:wrap}
+  .fb{font-family:'Space Mono',monospace;font-size:10px;padding:5px 13px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;letter-spacing:1px;transition:all .15s}
+  .fb:hover,.fb.on{border-color:var(--accent);color:var(--accent);background:rgba(0,229,160,.07)}
+
+  /* KPI */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px 22px;position:relative;overflow:hidden;transition:border-color .2s}
+  .kpi:hover{border-color:var(--accent)}
+  .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent)}
+  .kpi-lbl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+  .kpi-val{font-size:26px;font-weight:800;line-height:1}
+  .kpi-val.g{color:var(--accent)} .kpi-val.b{color:var(--accent2)} .kpi-val.w{color:var(--warn)}
+  .kpi-d{font-family:'Space Mono',monospace;font-size:10px;margin-top:5px;color:var(--muted)}
+  .kpi-d.up{color:var(--accent)} .kpi-d.dn{color:var(--warn)}
+
+  /* GRID */
+  .g2{display:grid;grid-template-columns:1fr 360px;gap:14px;margin-bottom:14px}
+  @media(max-width:860px){.g2{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px 22px}
+  .ctitle{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+  .cbadge{background:rgba(0,229,160,.1);color:var(--accent);border:1px solid rgba(0,229,160,.2);border-radius:4px;padding:2px 7px;font-size:9px}
+  .ch{position:relative;height:210px}
+
+  /* TOP PRODUCTS */
+  .plist{display:flex;flex-direction:column;gap:10px}
+  .prow{display:flex;align-items:center;gap:10px}
+  .prank{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);width:16px;flex-shrink:0}
+  .pwrap{flex:1;min-width:0}
+  .pname{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+  .pbar{height:3px;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .7s ease}
+  .pval{font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);flex-shrink:0;min-width:72px;text-align:right}
+
+  /* CATEGORY */
+  .crows{display:flex;flex-direction:column;gap:11px}
+  .crow{display:flex;flex-direction:column;gap:3px}
+  .crow-h{display:flex;justify-content:space-between}
+  .cname{font-size:12px} .cval{font-family:'Space Mono',monospace;font-size:11px;color:var(--accent)}
+  .cbg{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+  .cfill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .8s ease}
+
+  /* TABLE */
+  .tbl-w{overflow-x:auto;margin-top:14px}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  thead th{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left;padding:7px 10px;border-bottom:1px solid var(--border)}
+  tbody tr{border-bottom:1px solid rgba(30,42,58,.4);transition:background .1s}
+  tbody tr:hover{background:rgba(0,229,160,.02)}
+  td{padding:9px 10px;color:var(--text)}
+  td.m{font-family:'Space Mono',monospace;font-size:10px}
+  td.g{color:var(--accent);font-family:'Space Mono',monospace;font-size:10px}
+  td.mu{color:var(--muted)}
+</style>
+</head>
 <body>
 
-<h1>📊 ERPALTH Dashboard</h1>
-
-<div class="card">
-  <h2>📅 Günlük Ciro</h2>
-  <canvas id="ciroChart"></canvas>
+<div id="loader">
+  <div class="ld-logo">iSTASYON</div>
+  <div class="ld-bar"><div class="ld-fill"></div></div>
+  <div class="ld-txt">VERİ YÜKLENİYOR</div>
 </div>
 
-<div class="card">
-  <h2>📦 Kategori Dağılımı</h2>
-  <canvas id="kategoriChart"></canvas>
+<header><div class="wrap"><div class="hdr">
+  <div class="logo">iSTASYON <span>/ PATRON PANELİ</span></div>
+  <div class="hdr-r">
+    <div class="dot"></div>
+    <span class="hdr-txt">CANLI</span>
+    <span class="hdr-txt" id="lupd">—</span>
+  </div>
+</div></div></header>
+
+<div class="wrap">
+  <div class="date-row">
+    <div class="date-big" id="dlbl">—</div>
+    <div class="date-sub">ALAYLI MEDİKAL</div>
+  </div>
+
+  <div class="filters">
+    <button class="fb" onclick="sf('dun',this)">DÜN</button>
+    <button class="fb" onclick="sf('bugun',this)">BUGÜN</button>
+    <button class="fb on" onclick="sf('hafta',this)">7 GÜN</button>
+    <button class="fb" onclick="sf('ay',this)">BU AY</button>
+    <button class="fb" onclick="sf('yil',this)">BU YIL</button>
+    <button class="fb" onclick="load()">↻</button>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="kpi-lbl">Toplam Ciro</div><div class="kpi-val g" id="k1">—</div><div class="kpi-d" id="k1d">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">İşlem Sayısı</div><div class="kpi-val b" id="k2">—</div><div class="kpi-d" id="k2d">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">Ortalama Satış</div><div class="kpi-val" id="k3">—</div><div class="kpi-d">işlem başına</div></div>
+    <div class="kpi"><div class="kpi-lbl">En Yüksek</div><div class="kpi-val w" id="k4">—</div><div class="kpi-d" id="k4d" style="font-size:9px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div></div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ctitle">SON 7 GÜN TRENDİ <span class="cbadge" id="t7">—</span></div>
+      <div class="ch"><canvas id="tC"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ctitle">EN ÇOK SATAN</div>
+      <div class="plist" id="plist"><div style="color:var(--muted);font-size:11px">yükleniyor...</div></div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ctitle">KATEGORİ BAZLI</div>
+      <div class="crows" id="cats"><div style="color:var(--muted);font-size:11px">yükleniyor...</div></div>
+    </div>
+    <div class="card">
+      <div class="ctitle">MÜŞTERİ DAĞILIMI</div>
+      <div class="ch" style="height:190px"><canvas id="mC"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:40px">
+    <div class="ctitle">SATIŞLAR <span class="cbadge" id="tc">—</span></div>
+    <div class="tbl-w">
+      <table><thead><tr>
+        <th>TARİH</th><th>ÜRÜN / HİZMET</th><th>MÜŞTERİ</th><th>KATEGORİ</th><th>ADET</th><th>CİRO</th>
+      </tr></thead><tbody id="tb"></tbody></table>
+    </div>
+  </div>
 </div>
 
 <script>
-const SUPABASE_URL = "https://iilfwosoroflzubkaryj.supabase.co";
-const SUPABASE_KEY = "sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW";
+const SB_URL='https://iilfwosoroflzubkaryj.supabase.co';
+const SB_KEY='sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
+const db=supabase.createClient(SB_URL,SB_KEY);
+let tCI=null,mCI=null,cur='hafta';
 
-async function getData() {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/sales_raw?select=*`,
-    {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`
-      }
-    }
-  );
-  return res.json();
+const pad=n=>String(n).padStart(2,'0');
+const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+function fTL(n){if(!n)return'₺0';if(n>=1e6)return'₺'+(n/1e6).toFixed(1)+'M';if(n>=1000)return'₺'+(n/1000).toFixed(1)+'K';return'₺'+n.toLocaleString('tr-TR',{maximumFractionDigits:0})}
+
+function range(f){
+  const n=new Date();
+  if(f==='bugun'){const t=fmt(n);return{s:t,e:t,l:'BUGÜN'}}
+  if(f==='dun'){const d=new Date(n);d.setDate(d.getDate()-1);const t=fmt(d);return{s:t,e:t,l:'DÜN'}}
+  if(f==='hafta'){const d=new Date(n);d.setDate(d.getDate()-6);return{s:fmt(d),e:fmt(n),l:'SON 7 GÜN'}}
+  if(f==='ay'){return{s:fmt(new Date(n.getFullYear(),n.getMonth(),1)),e:fmt(n),l:'BU AY'}}
+  if(f==='yil'){return{s:fmt(new Date(n.getFullYear(),0,1)),e:fmt(n),l:'BU YIL'}}
 }
 
-async function init() {
-  const data = await getData();
+function sf(f,el){cur=f;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));el.classList.add('on');load()}
 
-  // Günlük ciro
-  const ciroMap = {};
-  data.forEach(row => {
-    if (!ciroMap[row.tarih]) ciroMap[row.tarih] = 0;
-    ciroMap[row.tarih] += Number(row.ciro);
-  });
+async function load(){
+  const r=range(cur);
+  document.getElementById('dlbl').textContent=r.l;
+  const{data}=await db.from('sales_raw').select('*').gte('tarih',r.s).lte('tarih',r.e).order('tarih',{ascending:false});
+  if(!data)return;
 
-  const dates = Object.keys(ciroMap);
-  const ciro = Object.values(ciroMap);
+  const tot=data.reduce((s,x)=>s+(parseFloat(x.ciro)||0),0);
+  const cnt=data.length;
+  const ort=cnt?tot/cnt:0;
+  const mx=data.reduce((m,x)=>(parseFloat(x.ciro)||0)>(parseFloat(m.ciro)||0)?x:m,{ciro:0});
 
-  new Chart(document.getElementById("ciroChart"), {
-    type: "line",
-    data: {
-      labels: dates,
-      datasets: [{
-        label: "Ciro",
-        data: ciro
-      }]
-    }
-  });
+  document.getElementById('k1').textContent=fTL(tot);
+  document.getElementById('k1d').textContent=cnt+' işlemde toplam';
+  document.getElementById('k2').textContent=cnt.toLocaleString('tr-TR');
+  document.getElementById('k2d').textContent=r.l+' toplamı';
+  document.getElementById('k3').textContent=fTL(ort);
+  document.getElementById('k4').textContent=fTL(parseFloat(mx.ciro)||0);
+  document.getElementById('k4d').textContent=(mx.urun||'—').substring(0,35);
+  document.getElementById('lupd').textContent=new Date().toLocaleTimeString('tr-TR');
+  document.getElementById('tc').textContent=cnt+' KAYIT';
 
-  // Kategori dağılımı
-  const kategoriMap = {};
-  data.forEach(row => {
-    if (!kategoriMap[row.kategori]) kategoriMap[row.kategori] = 0;
-    kategoriMap[row.kategori] += Number(row.ciro);
-  });
-
-  new Chart(document.getElementById("kategoriChart"), {
-    type: "bar",
-    data: {
-      labels: Object.keys(kategoriMap),
-      datasets: [{
-        label: "Kategori",
-        data: Object.values(kategoriMap)
-      }]
-    }
-  });
+  trend();topProd(data);cats(data);musteri(data);tablo(data.slice(0,60));
 }
 
-init();
+async function trend(){
+  const days=[],labels=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(fmt(d));labels.push(pad(d.getDate())+'/'+pad(d.getMonth()+1))}
+  const{data}=await db.from('sales_raw').select('tarih,ciro').gte('tarih',days[0]).lte('tarih',days[6]);
+  const by={};days.forEach(d=>by[d]=0);
+  (data||[]).forEach(r=>{const t=(r.tarih||'').substring(0,10);if(by[t]!==undefined)by[t]+=parseFloat(r.ciro)||0});
+  const vals=days.map(d=>by[d]);
+  document.getElementById('t7').textContent=fTL(vals.reduce((a,b)=>a+b,0))+' toplam';
+  if(tCI)tCI.destroy();
+  const ctx=document.getElementById('tC').getContext('2d');
+  const g=ctx.createLinearGradient(0,0,0,210);g.addColorStop(0,'rgba(0,229,160,.28)');g.addColorStop(1,'rgba(0,229,160,0)');
+  tCI=new Chart(ctx,{type:'line',data:{labels,datasets:[{data:vals,borderColor:'#00e5a0',borderWidth:2,backgroundColor:g,fill:true,tension:.4,pointBackgroundColor:'#00e5a0',pointRadius:3,pointHoverRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fTL(c.raw)}}},scales:{x:{grid:{color:'rgba(30,42,58,.6)'},ticks:{color:'#5a7080',font:{family:'Space Mono',size:9}}},y:{grid:{color:'rgba(30,42,58,.6)'},ticks:{color:'#5a7080',font:{family:'Space Mono',size:9},callback:v=>fTL(v)}}}}});
+}
+
+function topProd(data){
+  const by={};
+  data.forEach(r=>{const k=(r.urun||'—').substring(0,38);by[k]=(by[k]||0)+(parseFloat(r.ciro)||0)});
+  const s=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const mx=s[0]?.[1]||1;
+  document.getElementById('plist').innerHTML=s.map(([n,v],i)=>`
+    <div class="prow">
+      <div class="prank">${i+1}</div>
+      <div class="pwrap">
+        <div class="pname">${n}</div>
+        <div class="pbar" style="width:${(v/mx*100).toFixed(0)}%"></div>
+      </div>
+      <div class="pval">${fTL(v)}</div>
+    </div>`).join('');
+}
+
+function cats(data){
+  const by={};
+  data.forEach(r=>{const k=r.kategori||'DİĞER';by[k]=(by[k]||0)+(parseFloat(r.ciro)||0)});
+  const s=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const tot=s.reduce((x,[,v])=>x+v,0)||1;
+  document.getElementById('cats').innerHTML=s.map(([c,v])=>`
+    <div class="crow">
+      <div class="crow-h"><span class="cname">${c}</span><span class="cval">${fTL(v)}</span></div>
+      <div class="cbg"><div class="cfill" style="width:${(v/tot*100).toFixed(0)}%"></div></div>
+    </div>`).join('');
+}
+
+function musteri(data){
+  const by={};
+  data.forEach(r=>{const k=(r.unvan||'DİĞER').substring(0,22);by[k]=(by[k]||0)+(parseFloat(r.ciro)||0)});
+  const s=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  if(!s.length)return;
+  if(mCI)mCI.destroy();
+  const ctx=document.getElementById('mC').getContext('2d');
+  mCI=new Chart(ctx,{type:'doughnut',data:{labels:s.map(([k])=>k),datasets:[{data:s.map(([,v])=>v),backgroundColor:['#00e5a0','#0099ff','#ff6b35','#a855f7','#fbbf24'],borderColor:'#111b28',borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#5a7080',font:{family:'Space Mono',size:8},boxWidth:8,padding:8}},tooltip:{callbacks:{label:c=>' '+fTL(c.raw)}}}}});
+}
+
+function tablo(data){
+  document.getElementById('tb').innerHTML=data.map(r=>`
+    <tr>
+      <td class="m mu">${r.tarih||'—'}</td>
+      <td>${(r.urun||'—').substring(0,42)}</td>
+      <td class="mu">${(r.unvan||'—').substring(0,22)}</td>
+      <td class="mu">${r.kategori||'—'}</td>
+      <td class="m">${r.adet||0}</td>
+      <td class="g">${fTL(parseFloat(r.ciro)||0)}</td>
+    </tr>`).join('');
+}
+
+window.addEventListener('load',async()=>{
+  await load();
+  setTimeout(()=>document.getElementById('loader').classList.add('gone'),900);
+  setInterval(load,5*60*1000);
+});
 </script>
-
 </body>
 </html>
