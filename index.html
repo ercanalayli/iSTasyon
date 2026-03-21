@@ -186,7 +186,7 @@ textarea.winput{resize:vertical;min-height:70px}
     </div>
     <div class="nav-tabs">
       <div class="tab on" onclick="showPage('ana',this)">📊 GENEL</div>
-      <div class="tab" onclick="showPage('karsilastir',this)">🏢 FİRMALAR</div>
+
       <div class="tab" onclick="showPage('urun',this)">📦 ÜRÜNLER</div>
       <div class="tab" onclick="showPage('rapor',this)">📅 AYLIK</div>
       <div class="tab" onclick="showPage('wp',this)">💬 BİLDİRİM</div>
@@ -235,17 +235,7 @@ textarea.winput{resize:vertical;min-height:70px}
   <div class="card"><div class="card-lbl">⚡ AperiON Analiz</div><div id="alerts"></div></div>
 </div>
 
-<!-- ═══ FİRMALAR ═══ -->
-<div id="pg-karsilastir" class="page">
-  <div class="fbar">
-    <span class="fbar-lbl">Dönem</span>
-    <button class="fb" onclick="setMode('month',this,true)">Bu Ay</button>
-    <button class="fb on" onclick="setMode('year',this,true)">Bu Yıl</button>
-    <button class="fb" onclick="setMode('all',this,true)">Tümü</button>
-  </div>
-  <div class="compare-grid" id="compareGrid"></div>
-  <div class="card" style="margin-top:14px"><div class="card-lbl">Firma Ciro Karşılaştırması</div><div class="ch" style="height:220px"><canvas id="cCompare"></canvas></div></div>
-</div>
+
 
 <!-- ═══ ÜRÜNLER ═══ -->
 <div id="pg-urun" class="page">
