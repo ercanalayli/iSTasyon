@@ -3,462 +3,157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AperiON — Veri Yükle</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<title>AperiON Veri Yükle</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<style>
-:root{--bg:#07080d;--s1:#0e0f18;--s2:#141520;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.15);--accent:#00e5ff;--green:#00ff88;--orange:#ff6b35;--purple:#a78bfa;--danger:#ff4d6d;--warn:#fbbf24;--text:#dde1f0;--muted:#5a5f7a;--muted2:#8890b0;--mono:'Space Mono',monospace;--sans:'Syne',sans-serif}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 40% at 50% -5%,rgba(0,229,255,.05),transparent),linear-gradient(rgba(0,229,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.02) 1px,transparent 1px);background-size:100%,48px 48px,48px 48px}
-nav{position:sticky;top:0;z-index:100;background:rgba(7,8,13,.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
-.brand{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--accent);letter-spacing:1px}
-.brand span{color:var(--muted);font-size:12px;font-weight:400}
-.nav-back{font-family:var(--mono);font-size:11px;color:var(--muted);text-decoration:none;padding:7px 14px;border:1px solid var(--border);border-radius:6px;transition:all .15s}
-.nav-back:hover{border-color:var(--accent);color:var(--accent)}
-.wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:40px 24px 80px}
-h1{font-size:32px;font-weight:800;letter-spacing:-1.5px;margin-bottom:6px}
-h1 em{font-style:normal;color:var(--accent)}
-.subtitle{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:36px}
-.firma-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:28px}
-.firma-card{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all .18s;text-align:center}
-.firma-card:hover,.firma-card.on{border-color:var(--green);background:rgba(0,255,136,.05)}
-.firma-ico{font-size:24px;margin-bottom:8px}
-.firma-name{font-size:12px;font-weight:700}
-.firma-sub{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:3px}
-.upload-zone{border:2px dashed var(--border2);border-radius:14px;padding:48px 24px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:24px;background:var(--s1)}
-.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(0,229,255,.04)}
-.upload-zone.has-file{border-color:var(--green);background:rgba(0,255,136,.04)}
-.upload-ico{font-size:40px;margin-bottom:12px}
-.upload-title{font-size:16px;font-weight:700;margin-bottom:6px}
-.upload-sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
-.upload-file-name{font-family:var(--mono);font-size:12px;color:var(--green);margin-top:10px}
-#fileInput{display:none}
-.settings-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-.field{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:14px}
-.field-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
-.field input,.field select{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:8px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none}
-.field input:focus,.field select:focus{border-color:var(--accent)}
-.preview-card{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px}
-.preview-title{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.preview-stats{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px}
-.pstat{text-align:center}
-.pstat-val{font-size:22px;font-weight:800;color:var(--accent)}
-.pstat-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1px}
-.preview-table{width:100%;border-collapse:collapse;font-size:11px}
-.preview-table th{font-family:var(--mono);font-size:9px;color:var(--muted);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);letter-spacing:1px;text-transform:uppercase}
-.preview-table td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.03);font-family:var(--mono)}
-.preview-table tr:last-child td{border:none}
-.tc{color:var(--accent)}.tg{color:var(--green)}.tm{color:var(--muted2)}
-.log-box{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;font-family:var(--mono);font-size:11px;max-height:200px;overflow-y:auto;margin-bottom:20px;line-height:1.8}
-.log-line.ok{color:var(--green)}.log-line.err{color:var(--danger)}.log-line.info{color:var(--muted2)}.log-line.warn{color:var(--warn)}
-.progress-wrap{background:var(--border);border-radius:4px;height:6px;margin-bottom:8px;overflow:hidden}
-.progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:4px;transition:width .3s ease;width:0%}
-.progress-txt{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center}
-.btn-row{display:flex;gap:12px;flex-wrap:wrap}
-.btn{padding:12px 28px;border-radius:8px;border:none;cursor:pointer;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.5px;transition:all .18s}
-.btn.primary{background:rgba(0,229,255,.15);color:var(--accent);border:1px solid rgba(0,229,255,.3)}
-.btn.primary:hover{background:rgba(0,229,255,.28)}
-.btn.success{background:rgba(0,255,136,.15);color:var(--green);border:1px solid rgba(0,255,136,.3)}
-.btn.success:hover{background:rgba(0,255,136,.28)}
-.btn.danger{background:rgba(255,77,109,.1);color:var(--danger);border:1px solid rgba(255,77,109,.25)}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.history-list{list-style:none}
-.history-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
-.history-item:last-child{border:none}
-.hi-ico{font-size:14px}.hi-txt{flex:1;font-size:12px}.hi-time{font-family:var(--mono);font-size:9px;color:var(--muted)}
-</style>
+
 </head>
-<body>
-<nav>
-  <div class="brand">AperiON <span>// Veri Yükleme Merkezi</span></div>
-  <a class="nav-back" href="index.html">← Dashboard</a>
-</nav>
-<div class="wrap">
-  <h1><em>AperiON</em> Veri Yükle</h1>
-  <div class="subtitle">EXCEL DOSYANIZI SÜRÜKLEYIN — OTOMATİK OKUR, SUPABASE'E YAZAR</div>
+<body style="background:#0b0f19;color:white;font-family:Arial;padding:20px">
 
-  <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">1 — Firma Seçin</div>
-  <div class="firma-grid">
-    <div class="firma-card on" onclick="firmaSeç('woodlet',this)"><div class="firma-ico">🪵</div><div class="firma-name">Woodlet</div><div class="firma-sub">WERP Excel</div></div>
-    <div class="firma-card" onclick="firmaSeç('alayli',this)"><div class="firma-ico">🏥</div><div class="firma-name">Alayli Medikal</div><div class="firma-sub">BizimHesap Export</div></div>
-    <div class="firma-card" onclick="firmaSeç('elit',this)"><div class="firma-ico">🥩</div><div class="firma-name">Elit Et</div><div class="firma-sub">BizimHesap Export</div></div>
-    <div class="firma-card" onclick="firmaSeç('odyoform',this)"><div class="firma-ico">👂</div><div class="firma-name">Odyoform</div><div class="firma-sub">BizimHesap Export</div></div>
-    <div class="firma-card" onclick="firmaSeç('alkam',this)"><div class="firma-ico">📊</div><div class="firma-name">Alkam</div><div class="firma-sub">Mali Müşavirlik</div></div>
-  </div>
+<h2>AperiON Veri Yükle</h2>
 
-  <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">2 — Dosya Seçin</div>
-  <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-    <div class="upload-ico">📂</div>
-    <div class="upload-title">Excel Dosyasını Buraya Sürükleyin</div>
-    <div class="upload-sub">.xlsx veya .xls — WERP_2025.xlsx, BizimHesap export, herhangi format</div>
-    <div class="upload-file-name" id="fileName"></div>
-  </div>
-  <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="dosyaSeç(this.files[0])">
+<input type="file" id="fileInput" />
+<br><br>
 
-  <div class="settings-row">
-    <div class="field">
-      <div class="field-lbl">Yükleme Modu</div>
-      <select id="uploadMode">
-        <option value="append">Ekle (mevcut veriye ekle)</option>
-        <option value="replace_period">Dönemi değiştir</option>
-        <option value="replace_all">Tümünü sil ve yeniden yaz</option>
-      </select>
-    </div>
-    <div class="field">
-      <div class="field-lbl">Paket Boyutu</div>
-      <select id="batchSize">
-        <option value="100">100 satır/paket (güvenli)</option>
-        <option value="250" selected>250 satır/paket (önerilen)</option>
-        <option value="500">500 satır/paket (hızlı)</option>
-      </select>
-    </div>
-  </div>
+<button onclick="dosyaOku()">Analiz Et</button>
+<button onclick="yukle()">Supabase'e Yükle</button>
 
-  <div class="preview-card" id="previewCard" style="display:none">
-    <div class="preview-title">📋 Önizleme <span id="previewBadge" style="background:rgba(0,255,136,.15);color:var(--green);padding:2px 8px;border-radius:4px;font-size:9px"></span></div>
-    <div class="preview-stats" id="previewStats"></div>
-    <div style="overflow-x:auto">
-      <table class="preview-table">
-        <thead><tr><th>Tarih</th><th>Fatura No</th><th>Müşteri</th><th>Ürün</th><th>Miktar</th><th>Tutar</th></tr></thead>
-        <tbody id="previewBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="log-box" id="logBox"><div class="log-line info">AperiON Veri Motoru hazır. Firma seçin, dosya yükleyin...</div></div>
-
-  <div id="progressWrap" style="display:none;margin-bottom:16px">
-    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
-    <div class="progress-txt" id="progressTxt">0%</div>
-  </div>
-
-  <div class="btn-row" style="margin-bottom:32px">
-    <button class="btn primary" id="btnParse" onclick="dosyaOku()" disabled>📖 Analiz Et</button>
-    <button class="btn success" id="btnUpload" onclick="supabaseYukle()" disabled>⚡ Supabase'e Yükle</button>
-    <button class="btn danger" onclick="temizle()">🗑️ Temizle</button>
-  </div>
-
-  <div class="preview-card">
-    <div class="preview-title">📜 Yükleme Geçmişi</div>
-    <ul class="history-list" id="historyList"></ul>
-  </div>
-</div>
+<pre id="log"></pre>
 
 <script>
-const SURL='https://iilfwosoroflzubkaryj.supabase.co';
-const SKEY='sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
-const db=supabase.createClient(SURL,SKEY);
 
-const FIRMALAR={
-  woodlet:{name:'Woodlet',parser:'werp'},
-  alayli:{name:'Alayli Medikal',parser:'bh'},
-  elit:{name:'Elit Et Ürünleri',parser:'bh'},
-  odyoform:{name:'Odyoform',parser:'bh'},
-  alkam:{name:'Alkam Mali Müşavirlik',parser:'bh'},
-};
+// 🔥 SUPABASE
+const supabase = window.supabase.createClient(
+  "https://iilfwosoroflzubkaryj.supabase.co",
+  "sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW"
+);
 
-let secilenFirma='woodlet', secilenDosya=null, parsedRows=[];
+let parsed = [];
+let dataType = "sales";
 
-const fmt=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':n.toFixed(0);
-
-function log(msg,type='info'){
-  const box=document.getElementById('logBox');
-  const d=document.createElement('div');d.className='log-line '+type;
-  d.textContent=`[${new Date().toLocaleTimeString('tr-TR')}] ${msg}`;
-  box.appendChild(d);box.scrollTop=box.scrollHeight;
+// LOG
+function log(t){
+  document.getElementById("log").innerText += "\\n" + t;
 }
 
-function firmaSeç(id,el){
-  secilenFirma=id;
-  document.querySelectorAll('.firma-card').forEach(c=>c.classList.remove('on'));
-  el.classList.add('on');
-  log(`Firma: ${FIRMALAR[id].name}`,'info');
-}
-
-const dz=document.getElementById('dropZone');
-dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
-dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
-dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');dosyaSeç(e.dataTransfer.files[0])});
-
-function dosyaSeç(file){
-  if(!file||!file.name.match(/\.xlsx?$/i)){log('Sadece .xlsx dosyası!','err');return;}
-  secilenDosya=file;
-  document.getElementById('fileName').textContent='📄 '+file.name+' ('+Math.round(file.size/1024)+' KB)';
-  dz.classList.add('has-file');
-  document.getElementById('btnParse').disabled=false;
-  log('Dosya: '+file.name,'ok');
-}
-
+// 📂 DOSYA OKU
 function dosyaOku(){
-  if(!secilenDosya)return;
-  log('Parse ediliyor...','info');
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
-      const f=FIRMALAR[secilenFirma];
-      parsedRows=f.parser==='werp'?parseWERP(wb):parseBH(wb);
-      if(!parsedRows.length){log('Veri bulunamadı!','warn');return;}
-      log(`✅ ${parsedRows.length} satır parse edildi`,'ok');
-      onizle(parsedRows);
-      document.getElementById('btnUpload').disabled=false;
-    }catch(err){log('Parse hatası: '+err.message,'err');console.error(err);}
+  const file = document.getElementById("fileInput").files[0];
+  if(!file){ log("Dosya seç"); return; }
+
+  if(file.name.toLowerCase().includes("musteri")){
+    dataType = "customers";
+  }else{
+    dataType = "sales";
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const wb = XLSX.read(e.target.result, {type:"array"});
+
+    if(dataType==="customers"){
+      parsed = parseCustomers(wb);
+    }else{
+      parsed = parseSales(wb);
+    }
+
+    log("Parsed: " + parsed.length);
   };
-  reader.readAsArrayBuffer(secilenDosya);
+  reader.readAsArrayBuffer(file);
 }
 
-function parseWERP(wb){
-  const rows=[];
-  const ayAd=['','Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-  for(const name of wb.SheetNames){
-    const m=name.match(/^(\d{1,2})(\d{2})$/);
-    if(!m)continue;
-    const ay=parseInt(m[1]),yil=2000+parseInt(m[2]);
-    log(`  ${ayAd[ay]} ${yil} okunuyor...`,'info');
-    const ws=wb.Sheets[name];
-    const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-    let hr=-1;
-    for(let i=0;i<data.length;i++){if(data[i].some(c=>String(c).includes('FATURA TAR'))){hr=i;break;}}
-    if(hr<0)continue;
-    const h=data[hr].map(c=>String(c).trim().toUpperCase());
-    const col=k=>h.indexOf(k);
-    const fcol=(...keys)=>{for(const k of keys){const i=h.findIndex(x=>x.includes(k));if(i>=0)return i;}return -1;};
-    const iD=col('FATURA TAR'),iF=fcol('FATURA NO'),iU=fcol('UNVAN'),iK=col('KOD');
-    const iM2=fcol('CİNSİ','MALIN/HİZMET'),iMi=col('MİKTAR'),iT=col('TUTAR');
-    let sayac=0;
-    for(let i=hr+2;i<data.length;i++){
-      const r=data[i];
-      if(!r||r.every(c=>!c))continue;
-      const tarihRaw=r[iD];if(!tarihRaw)continue;
-      let tISO='';
-      try{
-        const d=tarihRaw instanceof Date?tarihRaw:new Date(tarihRaw);
-        if(!isNaN(d))tISO=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      }catch(e){}
-      if(!tISO)continue;
-      const ciro=parseFloat(String(r[iT]||0).replace(/[^0-9.,-]/g,'').replace(',','.'))||0;
-      const adet=parseFloat(String(r[iMi]||1).replace(',','.'))||1;
-      rows.push({
-        tarih:tISO,
-        fatura_no:String(r[iF]||'').trim(),
-        urun:String(r[iM2]||'').trim().substring(0,500)||'EMPTY',
-        urun_kod:String(r[iK]||'').trim(),
-        adet,
-        ciro,
-        unvan:String(r[iU]||FIRMALAR[secilenFirma].name).trim().substring(0,200),
-        kategori:null,
-        kaynak:'excel',
-        firma_id:secilenFirma,
-        firma_adi:FIRMALAR[secilenFirma].name,
-        yil:parseInt(tISO.substring(0,4)),
-        ay:parseInt(tISO.substring(5,7)),
-      });
-      sayac++;
-    }
-    log(`    ✓ ${sayac} satır`,'ok');
-  }
-  return rows;
-}
+// 👥 CUSTOMER PARSER
+function parseCustomers(wb){
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const data = XLSX.utils.sheet_to_json(ws,{header:1});
 
-function parseBH(wb){
-  const rows=[];
-  const ws=wb.Sheets[wb.SheetNames[0]];
-  const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-  let hr=-1;
-  for(let i=0;i<Math.min(data.length,10);i++){
-    if(data[i].some(c=>String(c).toLowerCase().includes('tarih'))){hr=i;break;}
-  }
-  if(hr<0){log('Header bulunamadı','warn');return[];}
-  const h=data[hr].map(c=>String(c).trim().toLowerCase().replace(/ı/g,'i').replace(/ş/g,'s').replace(/ç/g,'c').replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ö/g,'o'));
-  const fc=(...keys)=>{for(const k of keys){const i=h.findIndex(x=>x.includes(k));if(i>=0)return i;}return -1;};
-  const iD=fc('tarih'),iU=fc('aciklama','urun','hizmet','cinsi'),iMi=fc('miktar','adet');
-  const iT=fc('tutar','ciro','toplam'),iMus=fc('musteri','cari','unvan'),iK=fc('kategori','sinif');
-  for(let i=hr+1;i<data.length;i++){
-    const r=data[i];if(!r||r.every(c=>!c))continue;
-    const tr=r[iD];if(!tr)continue;
-    let tISO='';
-    try{
-      const d=tr instanceof Date?tr:new Date(tr);
-      if(!isNaN(d))tISO=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    }catch(e){}
-    if(!tISO)continue;
+  const h = data[0].map(x=>String(x).toLowerCase());
+
+  const find = k => h.findIndex(x=>x.includes(k));
+
+  const iKod = find("kod");
+  const iUnvan = find("unvan");
+
+  const rows = [];
+
+  for(let i=1;i<data.length;i++){
+    const r = data[i];
+    if(!r || r.length===0) continue;
+
     rows.push({
-      tarih:tISO,
-      urun:(iU>=0?String(r[iU]||''):'EMPTY').trim().substring(0,500),
-      adet:iMi>=0?parseFloat(String(r[iMi]||1).replace(',','.'))||1:1,
-      ciro:parseFloat(String(r[iT]||0).replace(/[^0-9.,-]/g,'').replace(',','.'))||0,
-      unvan:(iMus>=0?String(r[iMus]||FIRMALAR[secilenFirma].name):'').trim().substring(0,200),
-      kategori:iK>=0?String(r[iK]||'').trim()||null:null,
-      kaynak:'excel',
-      firma_id:secilenFirma,
-      firma_adi:FIRMALAR[secilenFirma].name,
-      yil:parseInt(tISO.substring(0,4)),
-      ay:parseInt(tISO.substring(5,7)),
+      cari_kod: r[iKod] || "",
+      cari_unvan: r[iUnvan] || ""
     });
   }
+
   return rows;
 }
 
-function onizle(rows){
-  const tc=rows.reduce((s,r)=>s+(+r.ciro||0),0);
-  const ta=rows.reduce((s,r)=>s+(+r.adet||0),0);
-  const aylar=[...new Set(rows.map(r=>r.tarih?.substring(0,7)).filter(Boolean))].sort();
-  document.getElementById('previewCard').style.display='block';
-  document.getElementById('previewBadge').textContent=rows.length+' SATIR';
-  document.getElementById('previewStats').innerHTML=`
-    <div class="pstat"><div class="pstat-val tc">${rows.length.toLocaleString('tr')}</div><div class="pstat-lbl">SATIR</div></div>
-    <div class="pstat"><div class="pstat-val" style="color:var(--green)">₺${fmt(tc)}</div><div class="pstat-lbl">TOPLAM CİRO</div></div>
-    <div class="pstat"><div class="pstat-val" style="color:var(--orange)">${Math.round(ta).toLocaleString('tr')}</div><div class="pstat-lbl">TOPLAM ADET</div></div>
-    <div class="pstat"><div class="pstat-val" style="color:var(--purple)">${aylar.length}</div><div class="pstat-lbl">AY</div></div>
-    <div class="pstat"><div class="pstat-val" style="color:var(--warn);font-size:14px">${aylar[0]||'—'} → ${aylar.at(-1)||'—'}</div><div class="pstat-lbl">DÖNEM</div></div>`;
-  document.getElementById('previewBody').innerHTML=rows.slice(0,8).map(r=>`
-    <tr><td class="tm">${r.tarih||'—'}</td><td class="tm">${(r.fatura_no||'—').substring(0,12)}</td>
-    <td>${(r.unvan||'—').substring(0,20)}</td><td>${(r.urun||'—').substring(0,30)}</td>
-    <td class="tc">${(+r.adet||0).toLocaleString('tr')}</td><td class="tg">₺${fmt(+r.ciro||0)}</td></tr>`).join('');
+// 💰 SALES PARSER
+function parseSales(wb){
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const data = XLSX.utils.sheet_to_json(ws,{header:1});
+
+  const rows = [];
+
+  for(let i=1;i<data.length;i++){
+    const r = data[i];
+    if(!r || r.length===0) continue;
+
+    rows.push({
+      urun: r[0] || "",
+      adet: Number(r[1]) || 1,
+      ciro: Number(r[2]) || 0
+    });
+  }
+
+  return rows;
 }
 
-async function supabaseYukle(){
-  if(!parsedRows.length)return;
+// 🚀 YÜKLE
+async function yukle(){
 
-  const btnUpload=document.getElementById('btnUpload');
-  const progressWrap=document.getElementById('progressWrap');
-  const progressBar=document.getElementById('progressBar');
-  const progressTxt=document.getElementById('progressTxt');
+  if(parsed.length===0){
+    log("Veri yok");
+    return;
+  }
 
-  const mode=document.getElementById('uploadMode').value;
-  const batch=parseInt(document.getElementById('batchSize').value,10);
+  const { data:userData } = await supabase.auth.getUser();
+  const user = userData.user;
 
-  btnUpload.disabled=true;
-  progressWrap.style.display='block';
-  progressBar.style.width='0%';
-  progressTxt.textContent='0%';
+  if(!user){
+    log("Login ol");
+    return;
+  }
 
-  try{
-    const { data: authData, error: authError } = await db.auth.getUser();
-    if(authError) throw authError;
+  const { data:profile } = await supabase
+    .from("aperion_users")
+    .select("company_id")
+    .eq("id", user.id)
+    .single();
 
-    const user=authData?.user;
-    if(!user){
-      log('Giriş yapılmamış. Önce login ol.','err');
-      btnUpload.disabled=false;
-      return;
-    }
+  const company_id = profile.company_id;
 
-    const { data: profile, error: profileError } = await db
-      .from('aperion_users')
-      .select('company_id')
-      .eq('id', user.id)
-      .single();
+  const table = dataType==="customers" ? "customers" : "sales_raw";
 
-    if(profileError) throw profileError;
-    if(!profile?.company_id){
-      log('aperion_users içinde company_id bulunamadı.','err');
-      btnUpload.disabled=false;
-      return;
-    }
+  const payload = parsed.map(x=>({
+    ...x,
+    company_id
+  }));
 
-    const currentCompanyId=profile.company_id;
-    log(`Company bağlandı: ${currentCompanyId}`,'ok');
+  const { error } = await supabase
+    .from(table)
+    .insert(payload);
 
-    if(mode==='replace_all'){
-      log('Bu company için seçili firma verileri siliniyor...','warn');
-      const { error: delError } = await db
-        .from('sales_raw')
-        .delete()
-        .eq('company_id', currentCompanyId)
-        .eq('firma_id', secilenFirma);
-
-      if(delError) throw delError;
-      log('Silindi','ok');
-    }else if(mode==='replace_period'){
-      const aylar=[...new Set(parsedRows.map(r=>`${r.yil}-${String(r.ay).padStart(2,'0')}`))];
-      for(const ym of aylar){
-        const [y,m]=ym.split('-');
-        const { error: delPeriodError } = await db
-          .from('sales_raw')
-          .delete()
-          .eq('company_id', currentCompanyId)
-          .eq('firma_id', secilenFirma)
-          .eq('yil', +y)
-          .eq('ay', +m);
-
-        if(delPeriodError) throw delPeriodError;
-      }
-      log(`${aylar.length} ay temizlendi`,'ok');
-    }
-
-    let total=0,errors=0;
-    const batches=[];
-    for(let i=0;i<parsedRows.length;i+=batch)batches.push(parsedRows.slice(i,i+batch));
-    log(`${parsedRows.length} satır, ${batches.length} paket`,'info');
-
-    for(let i=0;i<batches.length;i++){
-      const batchWithCompany=batches[i].map(r=>({
-        ...r,
-        company_id: currentCompanyId
-      }));
-
-      const { data, error } = await db
-        .from('sales_raw')
-        .insert(batchWithCompany)
-        .select('id');
-
-      if(error){
-        log(`Paket ${i+1} hatası: ${error.message}`,'err');
-        console.error(error);
-        errors++;
-      }else{
-        total += data?.length || batchWithCompany.length;
-      }
-
-      const pct=Math.round((i+1)/batches.length*100);
-      progressBar.style.width=pct+'%';
-      progressTxt.textContent=`${pct}% — ${total} kayıt`;
-      await new Promise(r=>setTimeout(r,50));
-    }
-
-    log(`✅ ${total} kayıt yüklendi${errors?', '+errors+' hata':''}!`,'ok');
-
-    const hist=JSON.parse(localStorage.getItem('aperion_history')||'[]');
-    hist.unshift({
-      firma:FIRMALAR[secilenFirma].name,
-      dosya:secilenDosya.name,
-      sayi:total,
-      tarih:new Date().toLocaleString('tr-TR')
-    });
-    localStorage.setItem('aperion_history',JSON.stringify(hist.slice(0,20)));
-    renderGecmis();
-
-  }catch(err){
-    log('Yükleme hatası: '+(err?.message||err),'err');
-    console.error(err);
-  }finally{
-    btnUpload.disabled=false;
+  if(error){
+    log("Hata: " + error.message);
+  }else{
+    log("Yüklendi ✅");
   }
 }
 
-function temizle(){
-  secilenDosya=null;parsedRows=[];
-  document.getElementById('fileName').textContent='';
-  document.getElementById('dropZone').classList.remove('has-file');
-  document.getElementById('previewCard').style.display='none';
-  document.getElementById('progressWrap').style.display='none';
-  document.getElementById('btnParse').disabled=true;
-  document.getElementById('btnUpload').disabled=true;
-  document.getElementById('logBox').innerHTML='<div class="log-line info">Temizlendi.</div>';
-}
-
-function renderGecmis(){
-  const hist=JSON.parse(localStorage.getItem('aperion_history')||'[]');
-  document.getElementById('historyList').innerHTML=hist.length?hist.map(h=>`
-    <li class="history-item"><span class="hi-ico">✅</span>
-    <span class="hi-txt"><strong>${h.firma}</strong> — ${h.dosya} — ${h.sayi} kayıt</span>
-    <span class="hi-time">${h.tarih}</span></li>`).join(''):'<li style="font-family:var(--mono);font-size:11px;color:var(--muted);padding:12px 0">Henüz yükleme yok</li>';
-}
-
-window.addEventListener('load',renderGecmis);
 </script>
+
 </body>
 </html>
