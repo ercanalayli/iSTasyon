@@ -526,6 +526,7 @@ function renderFirmaPie(){
 
 // ── KARŞILAŞTIRMA ─────────────────────────────────────────────────────────────
 function renderCompare(){
+  if(!document.getElementById('compareGrid'))return;
   const bF={};
   RAW.forEach(r=>{
     const id=r.firma_id||'?';
@@ -549,6 +550,7 @@ function renderCompare(){
     </div>`;
   }).join('');
 
+  if(!document.getElementById('cCompare'))return;
   // Bar chart
   if(cmpChart)cmpChart.destroy();
   cmpChart=new Chart(document.getElementById('cCompare'),{
