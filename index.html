@@ -49,13 +49,14 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,8,13,.92);backdrop-filte
 /* ── FIRMA SEÇICI ── */
 .firma-bar{display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap}
 .firma-btn{
-  display:flex;align-items:center;gap:7px;padding:8px 16px;
-  border-radius:8px;border:1px solid var(--border);background:var(--s1);
-  color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;
-  transition:all .18s;letter-spacing:.5px
+  display:flex;align-items:center;gap:6px;padding:7px 14px;
+  border-radius:0;border:none;border-bottom:2px solid transparent;
+  background:transparent;color:var(--muted);
+  font-family:var(--mono);font-size:10px;cursor:pointer;
+  transition:all .15s;white-space:nowrap;letter-spacing:.5px
 }
-.firma-btn:hover{border-color:var(--border2);color:var(--text)}
-.firma-btn.on{color:#000;font-weight:700}
+.firma-btn:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.firma-btn.on{color:#000;font-weight:700;border-bottom-color:currentColor}
 .firma-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .firma-count{font-size:9px;opacity:.7;margin-left:2px}
 
@@ -186,7 +187,6 @@ textarea.winput{resize:vertical;min-height:70px}
     </div>
     <div class="nav-tabs">
       <div class="tab on" onclick="showPage('ana',this)">📊 GENEL</div>
-
       <div class="tab" onclick="showPage('urun',this)">📦 ÜRÜNLER</div>
       <div class="tab" onclick="showPage('rapor',this)">📅 AYLIK</div>
       <div class="tab" onclick="showPage('wp',this)">💬 BİLDİRİM</div>
@@ -199,14 +199,13 @@ textarea.winput{resize:vertical;min-height:70px}
       <button onclick="logout()" style="font-family:var(--mono);font-size:9px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:4px;padding:4px 8px;cursor:pointer">ÇIKIŞ</button>
     </div>
   </div>
+  <!-- FİRMA SEKMELERİ — 2. satır nav -->
+  <div style="border-top:1px solid var(--border);background:rgba(7,8,13,.95)">
+    <div id="firmaBar" style="max-width:1500px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:4px;overflow-x:auto"></div>
+  </div>
 </nav>
 
 <div class="wrap">
-
-<!-- FIRMA BAR -->
-<div class="firma-bar" id="firmaBar">
-  <span style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px">FİRMA:</span>
-</div>
 
 <!-- ═══ GENEL ═══ -->
 <div id="pg-ana" class="page on">
@@ -410,26 +409,37 @@ function filtered(){
 
 // ── FİRMA BAR ────────────────────────────────────────────────────────────────
 function buildFirmaBar(){
-  const firmaIds=['all',...new Set(RAW.map(r=>r.firma_id).filter(Boolean))];
   const bar=document.getElementById('firmaBar');
   bar.innerHTML='<span style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px">FİRMA:</span>';
-  firmaIds.forEach(id=>{
+  
+  // Sabit firma listesi — veri olsun olmasın hepsi görünsün
+  const firmaList=['all','alayli','woodlet','elit','odyoform','alkam','yenicespor'];
+  
+  firmaList.forEach(id=>{
     const f=FIRMALAR[id]||{name:id,color:'#888',icon:'🏢'};
     const cnt=id==='all'?RAW.length:RAW.filter(r=>r.firma_id===id).length;
     const btn=document.createElement('button');
     btn.className='firma-btn'+(id===curFirma?' on':'');
-    btn.style.setProperty('--fc',f.color);
-    if(id===curFirma){btn.style.background=f.color;btn.style.borderColor=f.color;}
+    if(id===curFirma){btn.style.background=f.color;btn.style.borderColor=f.color;btn.style.color='#000';}
     btn.innerHTML=`<span class="firma-dot" style="background:${f.color}"></span>${f.icon} ${f.name}<span class="firma-count">(${cnt.toLocaleString('tr')})</span>`;
-    btn.onclick=()=>{curFirma=id;buildFirmaBar();renderAll();};
+    btn.onclick=()=>{
+      curFirma=id;
+      curMode='week'; // dönem sıfırla
+      // Tüm dönem butonlarını güncelle
+      document.querySelectorAll('.fbar .fb').forEach(b=>b.classList.remove('on'));
+      document.querySelectorAll('.fbar .fb').forEach(b=>{if(b.textContent.trim()==='7 Gün')b.classList.add('on');});
+      buildFirmaBar();
+      renderAll();
+    };
     bar.appendChild(btn);
   });
+
   // Firma select'leri güncelle
   ['urunFirma','raporFirma'].forEach(sid=>{
     const s=document.getElementById(sid);if(!s)return;
     const v=s.value;
     s.innerHTML='<option value="">Tüm Firmalar</option>';
-    [...new Set(RAW.map(r=>r.firma_id).filter(Boolean))].forEach(id=>{
+    firmaList.filter(id=>id!=='all').forEach(id=>{
       const f=FIRMALAR[id]||{name:id};
       s.innerHTML+=`<option value="${id}">${f.icon||''} ${f.name}</option>`;
     });
@@ -447,7 +457,7 @@ async function loadData(){
     if(CURRENT_USER&&CURRENT_USER.rol!=='admin'&&CURRENT_USER.firma_id!=='all'){
       q=q.eq('firma_id',CURRENT_USER.firma_id);
     }
-    const{data,error}=await q.limit(5000);
+    const{data,error}=await q.limit(10000);
     if(error){console.error('Data hatası:',error);return[];}
     return data||[];
   }catch(e){console.error(e);return[];}
