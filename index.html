@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
@@ -193,8 +193,10 @@ textarea.winput{resize:vertical;min-height:70px}
     </div>
     <div class="nav-right">
       <a class="nav-upload" href="veri_yukle.html">⬆ VERİ YÜKLE</a>
+      <span id="userInfo" style="font-family:var(--mono);font-size:9px;color:var(--purple);letter-spacing:.5px"></span>
       <div class="live"><div class="ldot"></div><span class="ltxt">CANLI</span></div>
       <span class="clk" id="clk">--:--:--</span>
+      <button onclick="logout()" style="font-family:var(--mono);font-size:9px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:4px;padding:4px 8px;cursor:pointer">ÇIKIŞ</button>
     </div>
   </div>
 </nav>
@@ -351,6 +353,33 @@ textarea.winput{resize:vertical;min-height:70px}
 const SURL='https://iilfwosoroflzubkaryj.supabase.co';
 const SKEY='sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
 const db=supabase.createClient(SURL,SKEY);
+
+// ── AUTH KONTROL ─────────────────────────────────────────────────────────────
+let CURRENT_USER = null;
+
+async function checkAuth(){
+  const{data:{session}}=await db.auth.getSession();
+  if(!session){window.location.href='login.html';return false;}
+  const stored=localStorage.getItem('aperion_user');
+  if(stored) CURRENT_USER=JSON.parse(stored);
+  else{
+    const{data}=await db.from('aperion_users').select('*').eq('user_id',session.user.id).single();
+    CURRENT_USER=data;
+    if(data) localStorage.setItem('aperion_user',JSON.stringify(data));
+  }
+  // Nav'da kullanıcı bilgisi göster
+  if(CURRENT_USER){
+    const dot=document.getElementById('userInfo');
+    if(dot) dot.textContent=`${CURRENT_USER.firma_adi} · ${CURRENT_USER.rol==='admin'?'👑 Admin':'👤 Görüntüleyici'}`;
+  }
+  return true;
+}
+
+async function logout(){
+  await db.auth.signOut();
+  localStorage.removeItem('aperion_user');
+  window.location.href='login.html';
+}
 
 const FIRMALAR={
   all:    {name:'Tüm Firmalar',color:'#00e5ff',icon:'🌐'},
@@ -675,6 +704,15 @@ setInterval(()=>{const n=new Date();document.getElementById('clk').textContent=`
 
 // ── BAŞLAT ───────────────────────────────────────────────────────────────────
 window.addEventListener('load',async()=>{
+  const authOk=await checkAuth();
+  if(!authOk)return;
+
+  // Admin değilse firma barını kilitle
+  if(CURRENT_USER&&CURRENT_USER.rol!=='admin'){
+    curFirma=CURRENT_USER.firma_id;
+    document.getElementById('firmaBar').style.display='none';
+  }
+
   loadWP();
   await refresh();
   document.getElementById('loading').style.transition='opacity .4s';
