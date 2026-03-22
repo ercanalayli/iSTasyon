@@ -358,28 +358,14 @@ const db=supabase.createClient(SURL,SKEY);
 let CURRENT_USER = null;
 
 async function checkAuth(){
-  try{
-    const{data:{session}}=await db.auth.getSession();
-    if(!session){
-      window.location.replace('login.html');
-      return false;
-    }
-    // Kullanıcı bilgisi localStorage'dan al
-    const stored=localStorage.getItem('aperion_user');
-    if(stored){
-      try{CURRENT_USER=JSON.parse(stored);}catch(e){}
-    }
-    // localStorage'da yoksa varsayılan admin yap
-    if(!CURRENT_USER){
-      CURRENT_USER={firma_id:'all',firma_adi:'Admin',rol:'admin'};
-    }
-    const el=document.getElementById('userInfo');
-    if(el) el.textContent=`${CURRENT_USER.firma_adi} · ${CURRENT_USER.rol==='admin'?'👑':'👤'}`;
-    return true;
-  }catch(e){
-    console.error('Auth hatası:',e);
-    return true;
-  }
+  // Auth kontrolü geçici olarak devre dışı
+  CURRENT_USER={firma_id:'all',firma_adi:'ErpaltH Admin',rol:'admin'};
+  return true;
+}
+
+async function logout(){
+  localStorage.removeItem('aperion_user');
+  window.location.replace('login.html');
 }
 
 async function logout(){
