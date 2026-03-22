@@ -189,6 +189,7 @@ textarea.winput{resize:vertical;min-height:70px}
       <div class="tab on" onclick="showPage('ana',this)">📊 GENEL</div>
       <div class="tab" onclick="showPage('urun',this)">📦 ÜRÜNLER</div>
       <div class="tab" onclick="showPage('rapor',this)">📅 AYLIK</div>
+      <div class="tab" onclick="showPage('yeni',this);loadYenicespor()">⚽ YENİCESPOR</div>
       <div class="tab" onclick="showPage('wp',this)">💬 BİLDİRİM</div>
     </div>
     <div class="nav-right">
@@ -342,6 +343,52 @@ textarea.winput{resize:vertical;min-height:70px}
       <div id="wpPrev" style="background:var(--s2);border-radius:6px;padding:12px;font-family:var(--mono);font-size:11px;line-height:1.8;min-height:100px;white-space:pre-line;border:1px solid var(--border)">—</div>
       <button class="wbtn pr" onclick="buildPrev()" style="margin-top:10px">Önizle</button>
     </div>
+  </div>
+</div>
+
+<!-- ═══ YENİCESPOR ═══ -->
+<div id="pg-yeni" class="page">
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap">
+    <div style="font-size:28px;font-weight:800;letter-spacing:-1px">⚽ YENİCESPOR <span style="color:var(--green);font-size:14px;font-weight:400;font-family:var(--mono)">Finans v4.2</span></div>
+    <div class="fbar" style="margin:0;flex:1">
+      <span class="fbar-lbl">Dönem</span>
+      <button class="fb" onclick="setYeniMode('month',this)">Bu Ay</button>
+      <button class="fb on" onclick="setYeniMode('year',this)">Bu Yıl</button>
+      <button class="fb" onclick="setYeniMode('all',this)">Tümü</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid" style="margin-bottom:18px">
+    <div class="kpi g"><div class="kpi-lbl">Toplam Gelir</div><div class="kpi-val" id="yKpiGelir">—</div><div class="kpi-sub">₺</div></div>
+    <div class="kpi d"><div class="kpi-lbl">Toplam Gider</div><div class="kpi-val" id="yKpiGider">—</div><div class="kpi-sub">₺</div></div>
+    <div class="kpi c"><div class="kpi-lbl">Net Bakiye</div><div class="kpi-val" id="yKpiBakiye">—</div><div class="kpi-sub">gelir - gider</div></div>
+    <div class="kpi o"><div class="kpi-lbl">İşlem Sayısı</div><div class="kpi-val" id="yKpiIslem">—</div><div class="kpi-sub">hareket</div></div>
+    <div class="kpi p"><div class="kpi-lbl">Üye Aidat</div><div class="kpi-val" id="yKpiAidat">—</div><div class="kpi-sub">tahsilat</div></div>
+    <div class="kpi w"><div class="kpi-lbl">Kasa</div><div class="kpi-val" id="yKpiKasa">—</div><div class="kpi-sub">mevcut</div></div>
+  </div>
+
+  <!-- Grafik + Tablo -->
+  <div class="ch-row">
+    <div class="card">
+      <div class="card-lbl">Aylık Gelir / Gider Trendi</div>
+      <div class="ch"><canvas id="yTrendChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Kategori Dağılımı</div>
+      <div class="ch"><canvas id="yKatChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Son hareketler -->
+  <div class="card" style="margin-top:14px">
+    <div class="card-lbl">Son Hareketler</div>
+    <table class="ptable" id="yHareketTable">
+      <thead><tr>
+        <th>Tarih</th><th>Açıklama</th><th>Tür</th><th>Tutar</th><th>Kasa</th>
+      </tr></thead>
+      <tbody id="yHareketBody"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">Yükleniyor...</td></tr></tbody>
+    </table>
   </div>
 </div>
 
@@ -735,6 +782,118 @@ window.addEventListener('load',async()=>{
   setTimeout(()=>document.getElementById('loading').style.display='none',400);
   setInterval(refresh,5*60*1000);
 });
+
+// ── YENİCESPOR ───────────────────────────────────────────────────────────────
+const YURL='https://vkyqbjddiayxpfeeqkjz.supabase.co';
+const YKEY='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
+const ydb=supabase.createClient(YURL,YKEY);
+let yMode='year',yTChart=null,yKChart=null;
+
+function setYeniMode(m,btn){
+  yMode=m;
+  if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+  loadYenicespor();
+}
+
+function getYeniRange(m){
+  const t=new Date();
+  const fmtD=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const today=fmtD(new Date(t.getFullYear(),t.getMonth(),t.getDate()));
+  if(m==='month') return{from:fmtD(new Date(t.getFullYear(),t.getMonth(),1)),to:today};
+  if(m==='year')  return{from:`${t.getFullYear()}-01-01`,to:today};
+  return{from:'2020-01-01',to:today};
+}
+
+async function loadYenicespor(){
+  try{
+    const{from,to}=getYeniRange(yMode);
+    let q=ydb.from('transactions').select('*');
+    if(from)q=q.gte('date',from).lte('date',to);
+    const{data:txns,error}=await q.order('date',{ascending:false}).limit(5000);
+    if(error){
+      document.getElementById('yHareketBody').innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:20px">Bağlantı hatası: ${error.message}</td></tr>`;
+      return;
+    }
+    if(!txns||!txns.length){
+      document.getElementById('yHareketBody').innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">Bu dönemde veri yok</td></tr>';
+      ['yKpiGelir','yKpiGider','yKpiBakiye','yKpiIslem','yKpiAidat','yKpiKasa'].forEach(id=>document.getElementById(id).textContent='₺0');
+      return;
+    }
+
+    // KPIs
+    const topGelir=txns.filter(t=>t.type==='income'||(+t.amount||0)>0).reduce((s,t)=>s+Math.abs(+t.amount||0),0);
+    const topGider=txns.filter(t=>t.type==='expense'||(+t.amount||0)<0).reduce((s,t)=>s+Math.abs(+t.amount||0),0);
+    const net=topGelir-topGider;
+    document.getElementById('yKpiGelir').textContent='₺'+fmt(topGelir);
+    document.getElementById('yKpiGider').textContent='₺'+fmt(topGider);
+    document.getElementById('yKpiBakiye').textContent=(net>=0?'+':'-')+'₺'+fmt(Math.abs(net));
+    document.getElementById('yKpiBakiye').style.color=net>=0?'var(--green)':'var(--danger)';
+    document.getElementById('yKpiIslem').textContent=txns.length.toLocaleString('tr');
+
+    // Aidat
+    const topAidat=txns.filter(t=>(t.category||'').toLowerCase().includes('aidat')||(t.type||'').toLowerCase().includes('dues'))
+      .reduce((s,t)=>s+Math.abs(+t.amount||0),0);
+    document.getElementById('yKpiAidat').textContent='₺'+fmt(topAidat);
+
+    // Kasa
+    const{data:kasalar}=await ydb.from('cash_registers').select('balance,name').order('updated_at',{ascending:false}).limit(3);
+    const topKasa=(kasalar||[]).reduce((s,k)=>s+(+k.balance||0),0);
+    document.getElementById('yKpiKasa').textContent='₺'+fmt(topKasa);
+
+    // Trend grafik
+    const byAy={};
+    txns.forEach(t=>{
+      const ay=t.date?.substring(0,7);if(!ay)return;
+      if(!byAy[ay])byAy[ay]={gelir:0,gider:0};
+      const tutar=+t.amount||0;
+      if(t.type==='income'||tutar>0) byAy[ay].gelir+=Math.abs(tutar);
+      else byAy[ay].gider+=Math.abs(tutar);
+    });
+    const aylar=Object.keys(byAy).sort();
+    if(yTChart)yTChart.destroy();
+    yTChart=new Chart(document.getElementById('yTrendChart'),{
+      type:'bar',
+      data:{labels:aylar.map(a=>a.substring(5)+'.'+a.substring(0,4)),
+        datasets:[
+          {label:'Gelir',data:aylar.map(a=>byAy[a].gelir),backgroundColor:'rgba(0,255,136,.4)',borderColor:'#00ff88',borderWidth:1,borderRadius:3},
+          {label:'Gider',data:aylar.map(a=>byAy[a].gider),backgroundColor:'rgba(255,77,109,.4)',borderColor:'#ff4d6d',borderWidth:1,borderRadius:3},
+        ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#dde1f0',font:{family:'Syne',size:10}}}},
+        scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a5f7a',font:{size:9}}},
+          y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a5f7a',font:{size:9},callback:v=>'₺'+fmt(v)}}}}
+    });
+
+    // Kategori
+    const byKat={};
+    txns.forEach(t=>{const k=t.category||t.type||'Diğer';byKat[k]=(byKat[k]||0)+Math.abs(+t.amount||0);});
+    const ke=Object.entries(byKat).sort((a,b)=>b[1]-a[1]).slice(0,7);
+    if(yKChart)yKChart.destroy();
+    yKChart=new Chart(document.getElementById('yKatChart'),{
+      type:'doughnut',
+      data:{labels:ke.map(([k])=>k),datasets:[{data:ke.map(([,v])=>v),
+        backgroundColor:['#00ff88','#ff4d6d','#00e5ff','#a78bfa','#fbbf24','#ff6b35','#06d6a0'],borderWidth:0,hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{color:'#dde1f0',font:{size:10},boxWidth:10,padding:8}}}}
+    });
+
+    // Son hareketler
+    document.getElementById('yHareketBody').innerHTML=txns.slice(0,25).map(t=>{
+      const tutar=+t.amount||0;
+      const gelir=t.type==='income'||tutar>0;
+      return`<tr>
+        <td style="font-family:var(--mono);font-size:10px;color:var(--muted)">${t.date?.substring(0,10)||'—'}</td>
+        <td style="font-size:12px">${(t.description||t.notes||t.aciklama||'—').substring(0,45)}</td>
+        <td><span style="font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:4px;background:${gelir?'rgba(0,255,136,.15)':'rgba(255,77,109,.15)'};color:${gelir?'var(--green)':'var(--danger)'}">${t.category||t.type||'—'}</span></td>
+        <td style="font-family:var(--mono);font-size:11px;font-weight:700;color:${gelir?'var(--green)':'var(--danger)'}">${gelir?'+':'-'}₺${fmt(Math.abs(tutar))}</td>
+        <td style="font-family:var(--mono);font-size:10px;color:var(--muted2)">${t.cash_register_name||t.kasa||'—'}</td>
+      </tr>`;}).join('');
+
+  }catch(e){
+    console.error('Yenicespor:',e);
+    document.getElementById('yHareketBody').innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:20px">Hata: ${e.message}</td></tr>`;
+  }
+}
 </script>
 </body>
 </html>
