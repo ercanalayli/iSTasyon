@@ -233,19 +233,27 @@ function parseWERP(wb){
       if(!r||r.every(c=>!c))continue;
       const tarihRaw=r[iD];if(!tarihRaw)continue;
       let tISO='';
-      try{const d=tarihRaw instanceof Date?tarihRaw:new Date(tarihRaw);
-        if(!isNaN(d))tISO=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}catch(e){}
+      try{
+        const d=tarihRaw instanceof Date?tarihRaw:new Date(tarihRaw);
+        if(!isNaN(d))tISO=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      }catch(e){}
       if(!tISO)continue;
       const ciro=parseFloat(String(r[iT]||0).replace(/[^0-9.,-]/g,'').replace(',','.'))||0;
       const adet=parseFloat(String(r[iMi]||1).replace(',','.'))||1;
       rows.push({
-        tarih:tISO,fatura_no:String(r[iF]||'').trim(),
+        tarih:tISO,
+        fatura_no:String(r[iF]||'').trim(),
         urun:String(r[iM2]||'').trim().substring(0,500)||'EMPTY',
         urun_kod:String(r[iK]||'').trim(),
-        adet,ciro,unvan:String(r[iU]||FIRMALAR[secilenFirma].name).trim().substring(0,200),
-        kategori:null,kaynak:'excel',
-        firma_id:secilenFirma,firma_adi:FIRMALAR[secilenFirma].name,
-        yil:parseInt(tISO.substring(0,4)),ay:parseInt(tISO.substring(5,7)),
+        adet,
+        ciro,
+        unvan:String(r[iU]||FIRMALAR[secilenFirma].name).trim().substring(0,200),
+        kategori:null,
+        kaynak:'excel',
+        firma_id:secilenFirma,
+        firma_adi:FIRMALAR[secilenFirma].name,
+        yil:parseInt(tISO.substring(0,4)),
+        ay:parseInt(tISO.substring(5,7)),
       });
       sayac++;
     }
@@ -271,16 +279,23 @@ function parseBH(wb){
     const r=data[i];if(!r||r.every(c=>!c))continue;
     const tr=r[iD];if(!tr)continue;
     let tISO='';
-    try{const d=tr instanceof Date?tr:new Date(tr);if(!isNaN(d))tISO=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}catch(e){}
+    try{
+      const d=tr instanceof Date?tr:new Date(tr);
+      if(!isNaN(d))tISO=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }catch(e){}
     if(!tISO)continue;
     rows.push({
-      tarih:tISO,urun:(iU>=0?String(r[iU]||''):'EMPTY').trim().substring(0,500),
+      tarih:tISO,
+      urun:(iU>=0?String(r[iU]||''):'EMPTY').trim().substring(0,500),
       adet:iMi>=0?parseFloat(String(r[iMi]||1).replace(',','.'))||1:1,
       ciro:parseFloat(String(r[iT]||0).replace(/[^0-9.,-]/g,'').replace(',','.'))||0,
       unvan:(iMus>=0?String(r[iMus]||FIRMALAR[secilenFirma].name):'').trim().substring(0,200),
       kategori:iK>=0?String(r[iK]||'').trim()||null:null,
-      kaynak:'excel',firma_id:secilenFirma,firma_adi:FIRMALAR[secilenFirma].name,
-      yil:parseInt(tISO.substring(0,4)),ay:parseInt(tISO.substring(5,7)),
+      kaynak:'excel',
+      firma_id:secilenFirma,
+      firma_adi:FIRMALAR[secilenFirma].name,
+      yil:parseInt(tISO.substring(0,4)),
+      ay:parseInt(tISO.substring(5,7)),
     });
   }
   return rows;
@@ -306,41 +321,122 @@ function onizle(rows){
 
 async function supabaseYukle(){
   if(!parsedRows.length)return;
+
+  const btnUpload=document.getElementById('btnUpload');
+  const progressWrap=document.getElementById('progressWrap');
+  const progressBar=document.getElementById('progressBar');
+  const progressTxt=document.getElementById('progressTxt');
+
   const mode=document.getElementById('uploadMode').value;
-  const batch=parseInt(document.getElementById('batchSize').value);
-  document.getElementById('btnUpload').disabled=true;
-  document.getElementById('progressWrap').style.display='block';
+  const batch=parseInt(document.getElementById('batchSize').value,10);
 
-  if(mode==='replace_all'){
-    log('Firma verileri siliniyor...','warn');
-    await db.from('sales_raw').delete().eq('firma_id',secilenFirma);
-    log('Silindi','ok');
-  }else if(mode==='replace_period'){
-    const aylar=[...new Set(parsedRows.map(r=>`${r.yil}-${String(r.ay).padStart(2,'0')}`))];
-    for(const ym of aylar){const[y,m]=ym.split('-');await db.from('sales_raw').delete().eq('firma_id',secilenFirma).eq('yil',+y).eq('ay',+m);}
-    log(`${aylar.length} ay temizlendi`,'ok');
+  btnUpload.disabled=true;
+  progressWrap.style.display='block';
+  progressBar.style.width='0%';
+  progressTxt.textContent='0%';
+
+  try{
+    const { data: authData, error: authError } = await db.auth.getUser();
+    if(authError) throw authError;
+
+    const user=authData?.user;
+    if(!user){
+      log('Giriş yapılmamış. Önce login ol.','err');
+      btnUpload.disabled=false;
+      return;
+    }
+
+    const { data: profile, error: profileError } = await db
+      .from('aperion_users')
+      .select('company_id')
+      .eq('id', user.id)
+      .single();
+
+    if(profileError) throw profileError;
+    if(!profile?.company_id){
+      log('aperion_users içinde company_id bulunamadı.','err');
+      btnUpload.disabled=false;
+      return;
+    }
+
+    const currentCompanyId=profile.company_id;
+    log(`Company bağlandı: ${currentCompanyId}`,'ok');
+
+    if(mode==='replace_all'){
+      log('Bu company için seçili firma verileri siliniyor...','warn');
+      const { error: delError } = await db
+        .from('sales_raw')
+        .delete()
+        .eq('company_id', currentCompanyId)
+        .eq('firma_id', secilenFirma);
+
+      if(delError) throw delError;
+      log('Silindi','ok');
+    }else if(mode==='replace_period'){
+      const aylar=[...new Set(parsedRows.map(r=>`${r.yil}-${String(r.ay).padStart(2,'0')}`))];
+      for(const ym of aylar){
+        const [y,m]=ym.split('-');
+        const { error: delPeriodError } = await db
+          .from('sales_raw')
+          .delete()
+          .eq('company_id', currentCompanyId)
+          .eq('firma_id', secilenFirma)
+          .eq('yil', +y)
+          .eq('ay', +m);
+
+        if(delPeriodError) throw delPeriodError;
+      }
+      log(`${aylar.length} ay temizlendi`,'ok');
+    }
+
+    let total=0,errors=0;
+    const batches=[];
+    for(let i=0;i<parsedRows.length;i+=batch)batches.push(parsedRows.slice(i,i+batch));
+    log(`${parsedRows.length} satır, ${batches.length} paket`,'info');
+
+    for(let i=0;i<batches.length;i++){
+      const batchWithCompany=batches[i].map(r=>({
+        ...r,
+        company_id: currentCompanyId
+      }));
+
+      const { data, error } = await db
+        .from('sales_raw')
+        .insert(batchWithCompany)
+        .select('id');
+
+      if(error){
+        log(`Paket ${i+1} hatası: ${error.message}`,'err');
+        console.error(error);
+        errors++;
+      }else{
+        total += data?.length || batchWithCompany.length;
+      }
+
+      const pct=Math.round((i+1)/batches.length*100);
+      progressBar.style.width=pct+'%';
+      progressTxt.textContent=`${pct}% — ${total} kayıt`;
+      await new Promise(r=>setTimeout(r,50));
+    }
+
+    log(`✅ ${total} kayıt yüklendi${errors?', '+errors+' hata':''}!`,'ok');
+
+    const hist=JSON.parse(localStorage.getItem('aperion_history')||'[]');
+    hist.unshift({
+      firma:FIRMALAR[secilenFirma].name,
+      dosya:secilenDosya.name,
+      sayi:total,
+      tarih:new Date().toLocaleString('tr-TR')
+    });
+    localStorage.setItem('aperion_history',JSON.stringify(hist.slice(0,20)));
+    renderGecmis();
+
+  }catch(err){
+    log('Yükleme hatası: '+(err?.message||err),'err');
+    console.error(err);
+  }finally{
+    btnUpload.disabled=false;
   }
-
-  let total=0,errors=0;
-  const batches=[];
-  for(let i=0;i<parsedRows.length;i+=batch)batches.push(parsedRows.slice(i,i+batch));
-  log(`${parsedRows.length} satır, ${batches.length} paket`,'info');
-
-  for(let i=0;i<batches.length;i++){
-    const{data,error}=await db.from('sales_raw').insert(batches[i]).select('id');
-    if(error){log(`Paket ${i+1} hatası: ${error.message}`,'err');errors++;}
-    else total+=data.length;
-    const pct=Math.round((i+1)/batches.length*100);
-    document.getElementById('progressBar').style.width=pct+'%';
-    document.getElementById('progressTxt').textContent=`${pct}% — ${total} kayıt`;
-    await new Promise(r=>setTimeout(r,50));
-  }
-  log(`✅ ${total} kayıt yüklendi${errors?', '+errors+' hata':''}!`,'ok');
-  document.getElementById('btnUpload').disabled=false;
-  const hist=JSON.parse(localStorage.getItem('aperion_history')||'[]');
-  hist.unshift({firma:FIRMALAR[secilenFirma].name,dosya:secilenDosya.name,sayi:total,tarih:new Date().toLocaleString('tr-TR')});
-  localStorage.setItem('aperion_history',JSON.stringify(hist.slice(0,20)));
-  renderGecmis();
 }
 
 function temizle(){
