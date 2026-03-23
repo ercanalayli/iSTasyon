@@ -899,41 +899,6 @@ async function loadYenicespor(){
     document.getElementById('yHareketBody').innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:20px">Hata: ${e.message}</td></tr>`;
   }
 }
-
-    // Kasa
-    const{data:kasalar}=await ydb.from('cash_registers').select('balance,name').order('updated_at',{ascending:false}).limit(3);
-    const topKasa=(kasalar||[]).reduce((s,k)=>s+(+k.balance||0),0);
-    document.getElementById('yKpiKasa').textContent='₺'+fmt(topKasa);
-
-    // Trend grafik
-    const byAy={};
-    txns.forEach(t=>{
-      const ay=t.txn_date?.substring(0,7);if(!ay)return;
-      if(!byAy[ay])byAy[ay]={gelir:0,gider:0};
-      const tutar=+t.amount||0;
-      if(t.txn_type==='income'||tutar>0) byAy[ay].gelir+=Math.abs(tutar);
-      else byAy[ay].gider+=Math.abs(tutar);
-    });
-    const aylar=Object.keys(byAy).sort();
-    if(yTChart)yTChart.destroy();
-    yTChart=new Chart(document.getElementById('yTrendChart'),{
-      type:'bar',
-      data:{labels:aylar.map(a=>a.substring(5)+'.'+a.substring(0,4)),
-        datasets:[
-          {label:'Gelir',data:aylar.map(a=>byAy[a].gelir),backgroundColor:'rgba(0,255,136,.4)',borderColor:'#00ff88',borderWidth:1,borderRadius:3},
-          {label:'Gider',data:aylar.map(a=>byAy[a].gider),backgroundColor:'rgba(255,77,109,.4)',borderColor:'#ff4d6d',borderWidth:1,borderRadius:3},
-        ]},
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{labels:{color:'#dde1f0',font:{size:10}}}},
-        scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a5f7a',font:{size:9}}},
-          y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a5f7a',font:{size:9},callback:v=>'₺'+fmt(v)}}}}
-    });
-
-    // Kategori
-    const byKat={};
-    txns.forEach(t=>{const k=t.category||t.txn_type||'Diğer';byKat[k]=(byKat[k]||0)+Math.abs(+t.amount||0);});
-
-}
 </script>
 </body>
 </html>
