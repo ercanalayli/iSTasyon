@@ -808,8 +808,8 @@ async function loadYenicespor(){
   try{
     const{from,to}=getYeniRange(yMode);
     let q=ydb.from('transactions').select('*');
-    if(from)q=q.gte('date',from).lte('date',to);
-    const{data:txns,error}=await q.order('date',{ascending:false}).limit(5000);
+    if(from)q=q.gte('txn_date',from).lte('txn_date',to);
+    const{data:txns,error}=await q.order('txn_date',{ascending:false}).limit(5000);
     if(error){
       document.getElementById('yHareketBody').innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:20px">Bağlantı hatası: ${error.message}</td></tr>`;
       return;
@@ -821,8 +821,8 @@ async function loadYenicespor(){
     }
 
     // KPIs
-    const topGelir=txns.filter(t=>t.type==='income'||(+t.amount||0)>0).reduce((s,t)=>s+Math.abs(+t.amount||0),0);
-    const topGider=txns.filter(t=>t.type==='expense'||(+t.amount||0)<0).reduce((s,t)=>s+Math.abs(+t.amount||0),0);
+    const topGelir=txns.filter(t=>t.txn_type==='income'||(+t.amount||0)>0).reduce((s,t)=>s+Math.abs(+t.amount||0),0);
+    const topGider=txns.filter(t=>t.txn_type==='expense'||(+t.amount||0)<0).reduce((s,t)=>s+Math.abs(+t.amount||0),0);
     const net=topGelir-topGider;
     document.getElementById('yKpiGelir').textContent='₺'+fmt(topGelir);
     document.getElementById('yKpiGider').textContent='₺'+fmt(topGider);
@@ -831,7 +831,7 @@ async function loadYenicespor(){
     document.getElementById('yKpiIslem').textContent=txns.length.toLocaleString('tr');
 
     // Aidat
-    const topAidat=txns.filter(t=>(t.category||'').toLowerCase().includes('aidat')||(t.type||'').toLowerCase().includes('dues'))
+    const topAidat=txns.filter(t=>(t.category||'').toLowerCase().includes('aidat')||(t.txn_type||'').toLowerCase().includes('dues'))
       .reduce((s,t)=>s+Math.abs(+t.amount||0),0);
     document.getElementById('yKpiAidat').textContent='₺'+fmt(topAidat);
 
@@ -843,10 +843,10 @@ async function loadYenicespor(){
     // Trend grafik
     const byAy={};
     txns.forEach(t=>{
-      const ay=t.date?.substring(0,7);if(!ay)return;
+      const ay=t.txn_date?.substring(0,7);if(!ay)return;
       if(!byAy[ay])byAy[ay]={gelir:0,gider:0};
       const tutar=+t.amount||0;
-      if(t.type==='income'||tutar>0) byAy[ay].gelir+=Math.abs(tutar);
+      if(t.txn_type==='income'||tutar>0) byAy[ay].gelir+=Math.abs(tutar);
       else byAy[ay].gider+=Math.abs(tutar);
     });
     const aylar=Object.keys(byAy).sort();
@@ -859,14 +859,14 @@ async function loadYenicespor(){
           {label:'Gider',data:aylar.map(a=>byAy[a].gider),backgroundColor:'rgba(255,77,109,.4)',borderColor:'#ff4d6d',borderWidth:1,borderRadius:3},
         ]},
       options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{labels:{color:'#dde1f0',font:{family:'Syne',size:10}}}},
+        plugins:{legend:{labels:{color:'#dde1f0',font:{size:10}}}},
         scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a5f7a',font:{size:9}}},
           y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a5f7a',font:{size:9},callback:v=>'₺'+fmt(v)}}}}
     });
 
     // Kategori
     const byKat={};
-    txns.forEach(t=>{const k=t.category||t.type||'Diğer';byKat[k]=(byKat[k]||0)+Math.abs(+t.amount||0);});
+    txns.forEach(t=>{const k=t.category||t.txn_type||'Diğer';byKat[k]=(byKat[k]||0)+Math.abs(+t.amount||0);});
     const ke=Object.entries(byKat).sort((a,b)=>b[1]-a[1]).slice(0,7);
     if(yKChart)yKChart.destroy();
     yKChart=new Chart(document.getElementById('yKatChart'),{
@@ -880,13 +880,13 @@ async function loadYenicespor(){
     // Son hareketler
     document.getElementById('yHareketBody').innerHTML=txns.slice(0,25).map(t=>{
       const tutar=+t.amount||0;
-      const gelir=t.type==='income'||tutar>0;
+      const gelir=t.txn_type==='income'||tutar>0;
       return`<tr>
-        <td style="font-family:var(--mono);font-size:10px;color:var(--muted)">${t.date?.substring(0,10)||'—'}</td>
-        <td style="font-size:12px">${(t.description||t.notes||t.aciklama||'—').substring(0,45)}</td>
-        <td><span style="font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:4px;background:${gelir?'rgba(0,255,136,.15)':'rgba(255,77,109,.15)'};color:${gelir?'var(--green)':'var(--danger)'}">${t.category||t.type||'—'}</span></td>
+        <td style="font-family:var(--mono);font-size:10px;color:var(--muted)">${t.txn_date?.substring(0,10)||'—'}</td>
+        <td style="font-size:12px">${(t.description||t.notes||t.source||'—').substring(0,45)}</td>
+        <td><span style="font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:4px;background:${gelir?'rgba(0,255,136,.15)':'rgba(255,77,109,.15)'};color:${gelir?'var(--green)':'var(--danger)'}">${t.category||t.txn_type||'—'}</span></td>
         <td style="font-family:var(--mono);font-size:11px;font-weight:700;color:${gelir?'var(--green)':'var(--danger)'}">${gelir?'+':'-'}₺${fmt(Math.abs(tutar))}</td>
-        <td style="font-family:var(--mono);font-size:10px;color:var(--muted2)">${t.cash_register_name||t.kasa||'—'}</td>
+        <td style="font-family:var(--mono);font-size:10px;color:var(--muted2)">${t.cash_register_name||t.customer_name||'—'}</td>
       </tr>`;}).join('');
 
   }catch(e){
