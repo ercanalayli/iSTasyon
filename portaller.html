@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ErpaltH — Portal Giriş Bilgileri</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07080d;--s1:#0e0f18;--s2:#141520;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);--accent:#00e5ff;--green:#00ff88;--orange:#ff6b35;--purple:#a78bfa;--danger:#ff4d6d;--warn:#fbbf24;--text:#dde1f0;--muted:#5a5f7a;--mono:'Space Mono',monospace;--sans:'Syne',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;padding:32px 24px}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 40% at 20% 0%,rgba(0,229,255,.04),transparent);z-index:0}
+
+.wrap{max-width:900px;margin:0 auto;position:relative;z-index:1}
+
+/* Header */
+.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.hd-logo{font-family:var(--mono);font-size:20px;color:var(--accent);letter-spacing:2px;font-weight:700}
+.hd-sub{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:4px}
+.hd-warn{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:6px;border:1px solid rgba(255,77,109,.3);background:rgba(255,77,109,.08);font-family:var(--mono);font-size:10px;color:var(--danger)}
+
+/* Firma kart */
+.firma-section{margin-bottom:28px}
+.firma-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.firma-color-bar{width:4px;height:36px;border-radius:2px;flex-shrink:0}
+.firma-icon{font-size:24px}
+.firma-name{font-size:18px;font-weight:800;letter-spacing:-.5px}
+.firma-desc{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:2px}
+
+.portals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+
+.portal-card{background:var(--s1);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.portal-card-hd{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.portal-card-name{font-size:12px;font-weight:700}
+.portal-url{font-family:var(--mono);font-size:9px;color:var(--muted);text-decoration:none;transition:color .15s}
+.portal-url:hover{color:var(--accent)}
+
+.portal-fields{padding:12px 16px}
+.field-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.field-row:last-child{border:none}
+.field-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.field-val{font-family:var(--mono);font-size:11px;color:var(--text);display:flex;align-items:center;gap:8px}
+.copy-btn{width:20px;height:20px;border-radius:4px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);font-size:10px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+.masked{letter-spacing:2px;color:var(--muted)}
+.show-btn{font-family:var(--mono);font-size:9px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;transition:opacity .15s}
+.show-btn:hover{opacity:.7}
+
+/* Divider */
+.divider{border:none;border-top:1px solid var(--border);margin:24px 0}
+
+/* Footer */
+.footer{text-align:center;font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:40px;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="hd">
+    <div>
+      <div class="hd-logo">AperiON / ErpaltH</div>
+      <div class="hd-sub">PORTAL GİRİŞ BİLGİLERİ — GİZLİ BELGE</div>
+    </div>
+    <div class="hd-warn">🔒 Bu dosyayı kimseyle paylaşmayın</div>
+  </div>
+
+  <!-- ═══ ALAYLI MEDİKAL ═══ -->
+  <div class="firma-section">
+    <div class="firma-header">
+      <div class="firma-color-bar" style="background:#00ff88"></div>
+      <span class="firma-icon">🏥</span>
+      <div>
+        <div class="firma-name">Alayli Medikal</div>
+        <div class="firma-desc">Medikal sarf malzeme — İnegöl</div>
+      </div>
+    </div>
+    <div class="portals-grid">
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">BizimHesap (Muhasebe)</span>
+          <a href="https://bizimhesap.com/bhlogin" target="_blank" class="portal-url">bizimhesap.com ↗</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">E-posta</span>
+            <span class="field-val">alaylimedikal@gmail.com <button class="copy-btn" onclick="copy('alaylimedikal@gmail.com',this)">⎘</button></span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Şifre</span>
+            <span class="field-val" id="bh-alayli-pass">
+              <span class="masked" id="bh-alayli-txt">••••••••••</span>
+              <button class="show-btn" onclick="toggle('bh-alayli-txt','aL290900.')">Göster</button>
+              <button class="copy-btn" onclick="copy('aL290900.',this)">⎘</button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">AperiON Dashboard</span>
+          <a href="https://ercanalayli.github.io/iSTasyon/login.html" target="_blank" class="portal-url">GitHub Pages ↗</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">E-posta</span>
+            <span class="field-val">alayli@aperion.com <button class="copy-btn" onclick="copy('alayli@aperion.com',this)">⎘</button></span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Erişim</span>
+            <span class="field-val" style="color:var(--green)">Sadece Alayli verisi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══ WOODLET ═══ -->
+  <div class="firma-section">
+    <div class="firma-header">
+      <div class="firma-color-bar" style="background:#ff6b35"></div>
+      <span class="firma-icon">🪵</span>
+      <div>
+        <div class="firma-name">Woodlet</div>
+        <div class="firma-desc">Ahşap kaplama ve kenar bantı — İnegöl</div>
+      </div>
+    </div>
+    <div class="portals-grid">
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">AperiON Dashboard</span>
+          <a href="https://ercanalayli.github.io/iSTasyon/login.html" target="_blank" class="portal-url">GitHub Pages ↗</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">E-posta</span>
+            <span class="field-val">woodlet@aperion.com <button class="copy-btn" onclick="copy('woodlet@aperion.com',this)">⎘</button></span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Erişim</span>
+            <span class="field-val" style="color:var(--orange)">Sadece Woodlet verisi</span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Veri kaynağı</span>
+            <span class="field-val" style="color:var(--muted)">Excel (WERP)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">WERP (ERP)</span>
+          <a href="#" class="portal-url">Yerel dosya</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">Dosya</span>
+            <span class="field-val">18WERP_FINAL.xlsx</span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Konum</span>
+            <span class="field-val" style="font-size:9px">Desktop\ErpaltH\</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══ ELİT ET ═══ -->
+  <div class="firma-section">
+    <div class="firma-header">
+      <div class="firma-color-bar" style="background:#a78bfa"></div>
+      <span class="firma-icon">🥩</span>
+      <div>
+        <div class="firma-name">Elit Et Ürünleri</div>
+        <div class="firma-desc">Et ürünleri — İnegöl</div>
+      </div>
+    </div>
+    <div class="portals-grid">
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">BizimHesap (Muhasebe)</span>
+          <a href="https://bizimhesap.com/bhlogin" target="_blank" class="portal-url">bizimhesap.com ↗</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">E-posta</span>
+            <span class="field-val">alaylimedikal@gmail.com <button class="copy-btn" onclick="copy('alaylimedikal@gmail.com',this)">⎘</button></span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Not</span>
+            <span class="field-val" style="color:var(--muted)">Aynı hesap, firma seçimi yapılır</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">AperiON Dashboard</span>
+          <a href="https://ercanalayli.github.io/iSTasyon/login.html" target="_blank" class="portal-url">GitHub Pages ↗</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">E-posta</span>
+            <span class="field-val">elit@aperion.com <button class="copy-btn" onclick="copy('elit@aperion.com',this)">⎘</button></span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Erişim</span>
+            <span class="field-val" style="color:var(--purple)">Sadece Elit Et verisi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══ ODYOFORM ═══ -->
+  <div class="firma-section">
+    <div class="firma-header">
+      <div class="firma-color-bar" style="background:#fbbf24"></div>
+      <span class="firma-icon">👂</span>
+      <div>
+        <div class="firma-name">Odyoform İşitme Cihazları</div>
+        <div class="firma-desc">İşitme cihazı — Bursa</div>
+      </div>
+    </div>
+    <div class="portals-grid">
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">BizimHesap (Muhasebe)</span>
+          <a href="https://bizimhesap.com/bhlogin" target="_blank" class="portal-url">bizimhesap.com ↗</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">E-posta</span>
+            <span class="field-val">alaylimedikal@gmail.com <button class="copy-btn" onclick="copy('alaylimedikal@gmail.com',this)">⎘</button></span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Not</span>
+            <span class="field-val" style="color:var(--muted)">Aynı hesap, firma seçimi yapılır</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">AperiON Dashboard</span>
+          <a href="https://ercanalayli.github.io/iSTasyon/login.html" target="_blank" class="portal-url">GitHub Pages ↗</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">E-posta</span>
+            <span class="field-val">odyoform@aperion.com <button class="copy-btn" onclick="copy('odyoform@aperion.com',this)">⎘</button></span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Erişim</span>
+            <span class="field-val" style="color:var(--warn)">Sadece Odyoform verisi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══ ALKAM ═══ -->
+  <div class="firma-section">
+    <div class="firma-header">
+      <div class="firma-color-bar" style="background:#f472b6"></div>
+      <span class="firma-icon">📊</span>
+      <div>
+        <div class="firma-name">Alkam Mali Müşavirlik</div>
+        <div class="firma-desc">Muhasebe ve danışmanlık — Bursa</div>
+      </div>
+    </div>
+    <div class="portals-grid">
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">LUCA (Muhasebe)</span>
+          <a href="https://luca.com.tr" target="_blank" class="portal-url">luca.com.tr ↗</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">Not</span>
+            <span class="field-val" style="color:var(--muted)">Alkam'ın kendi sistemi</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">AperiON Dashboard</span>
+          <a href="https://ercanalayli.github.io/iSTasyon/login.html" target="_blank" class="portal-url">GitHub Pages ↗</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">E-posta</span>
+            <span class="field-val">alkam@aperion.com <button class="copy-btn" onclick="copy('alkam@aperion.com',this)">⎘</button></span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Erişim</span>
+            <span class="field-val" style="color:var(--pink)">Sadece Alkam verisi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══ YENİCESPOR ═══ -->
+  <div class="firma-section">
+    <div class="firma-header">
+      <div class="firma-color-bar" style="background:#00ff88"></div>
+      <span class="firma-icon">⚽</span>
+      <div>
+        <div class="firma-name">Yenicespor</div>
+        <div class="firma-desc">Spor kulübü finans sistemi — Yeniceköy</div>
+      </div>
+    </div>
+    <div class="portals-grid">
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">Yenicespor Finans v4.2</span>
+          <a href="https://yenicespor-finans.yenicesporkulubu.workers.dev" target="_blank" class="portal-url">workers.dev ↗</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">Giriş</span>
+            <span class="field-val" style="color:var(--muted)">Şifre korumalı</span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Supabase</span>
+            <span class="field-val" style="font-size:9px">vkyqbjddiayxpfeeqkjz</span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">GitHub</span>
+            <span class="field-val" style="font-size:9px">yenicesporkulubu-star</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">AperiON Dashboard</span>
+          <a href="https://ercanalayli.github.io/iSTasyon/login.html" target="_blank" class="portal-url">GitHub Pages ↗</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">E-posta</span>
+            <span class="field-val">yenicespor@aperion.com <button class="copy-btn" onclick="copy('yenicespor@aperion.com',this)">⎘</button></span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Erişim</span>
+            <span class="field-val" style="color:var(--green)">Finans → Yenicespor sekmesi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══ ERPALH ADMİN ═══ -->
+  <div class="firma-section">
+    <div class="firma-header">
+      <div class="firma-color-bar" style="background:#00e5ff"></div>
+      <span class="firma-icon">🌐</span>
+      <div>
+        <div class="firma-name">ErpaltH Admin</div>
+        <div class="firma-desc">Tüm firmalara erişim — Sistem yöneticisi</div>
+      </div>
+    </div>
+    <div class="portals-grid">
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">AperiON Dashboard (Admin)</span>
+          <a href="https://ercanalayli.github.io/iSTasyon/login.html" target="_blank" class="portal-url">GitHub Pages ↗</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">E-posta</span>
+            <span class="field-val">erpalth@aperion.com <button class="copy-btn" onclick="copy('erpalth@aperion.com',this)">⎘</button></span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Erişim</span>
+            <span class="field-val" style="color:var(--accent)">👑 Tüm firmalar</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">Supabase (ErpaltH)</span>
+          <a href="https://supabase.com/dashboard/project/iilfwosoroflzubkaryj" target="_blank" class="portal-url">supabase.com ↗</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">Project ID</span>
+            <span class="field-val" style="font-size:9px">iilfwosoroflzubkaryj <button class="copy-btn" onclick="copy('iilfwosoroflzubkaryj',this)">⎘</button></span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">GitHub</span>
+            <span class="field-val" style="font-size:9px">ercanalayli/iSTasyon</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="portal-card">
+        <div class="portal-card-hd">
+          <span class="portal-card-name">Bot (BizimHesap)</span>
+          <a href="#" class="portal-url">HP Bilgisayar</a>
+        </div>
+        <div class="portal-fields">
+          <div class="field-row">
+            <span class="field-lbl">Konum</span>
+            <span class="field-val" style="font-size:9px">C:\Users\HP\Desktop\ErpaltH</span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Zamanlayıcı</span>
+            <span class="field-val" style="color:var(--green)">09:00-19:00 saatlik</span>
+          </div>
+          <div class="field-row">
+            <span class="field-lbl">Firmalar</span>
+            <span class="field-val" style="font-size:10px">Alayli · Elit · Odyoform</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">ErpaltH iSTasyon · AperiON · Gizli Belge · © 2026</div>
+</div>
+
+<script>
+function copy(text, btn){
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='✓';btn.style.color='var(--green)';
+    setTimeout(()=>{btn.textContent=orig;btn.style.color='';},1500);
+  });
+}
+function toggle(id, val){
+  const el=document.getElementById(id);
+  if(!el)return;
+  if(el.classList.contains('masked')){
+    el.classList.remove('masked');
+    el.textContent=val;
+    el.nextElementSibling.textContent='Gizle';
+  } else {
+    el.classList.add('masked');
+    el.textContent='••••••••••';
+    el.nextElementSibling.textContent='Göster';
+  }
+}
+</script>
+</body>
+</html>
