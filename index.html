@@ -36,8 +36,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   width:var(--sidebar);flex-shrink:0;
   background:var(--s1);border-right:1px solid var(--border);
   display:flex;flex-direction:column;
-  position:relative;z-index:100;height:100vh;
-  transition:width .25s ease;overflow:visible;
+  position:relative;z-index:100;height:100vh;overflow:hidden;
+  transition:width .25s ease;
 }
 .sidebar-inner{flex:1;display:flex;flex-direction:column;overflow:hidden;height:100%}
 .sidebar.collapsed{width:64px}
@@ -139,11 +139,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 /* Toggle button */
 .sidebar-toggle{
-  position:absolute;right:-13px;top:28px;
+  position:fixed;left:calc(var(--sidebar) - 13px);top:28px;
   width:26px;height:26px;border-radius:50%;
   background:var(--s1);border:1px solid var(--border2);
   cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-size:11px;color:var(--muted2);z-index:300;transition:all .15s;
+  font-size:11px;color:var(--muted2);z-index:500;transition:all .25s;
   box-shadow:2px 0 8px rgba(0,0,0,.4);
 }
 .sidebar-toggle:hover{color:var(--accent);border-color:var(--accent)}
@@ -576,7 +576,7 @@ select.sel:focus{border-color:var(--accent)}
   </div>
   </div><!-- /sidebar-inner -->
 </div><!-- /sidebar -->
-══════════════════════════════ -->
+
 <div class="main" id="mainArea">
   <!-- Topbar -->
   <div class="topbar" id="topbar">
@@ -990,7 +990,10 @@ async function logout(){
 function toggleSidebar(){
   const s=document.getElementById('sidebar');
   s.classList.toggle('collapsed');
-  document.querySelector('.sidebar-toggle').textContent=s.classList.contains('collapsed')?'▶':'◀';
+  const collapsed=s.classList.contains('collapsed');
+  const toggle=document.getElementById('sidebarToggle');
+  toggle.textContent=collapsed?'▶':'◀';
+  toggle.style.left=collapsed?'51px':'calc(var(--sidebar) - 13px)';
 }
 
 function buildMobileFirmaBar(){
@@ -1757,30 +1760,66 @@ const FIRMALAR_UP={woodlet:{name:'Woodlet',icon:'🪵',parser:'werp'},alayli:{na
 
 async function loadVeriDurum(){
   const el=document.getElementById('veriDurumGrid');if(!el)return;
-  const firmalar=['alayli','woodlet','elit','odyoform','alkam'];
-  const results=await Promise.all(firmalar.map(async id=>{
-    const[r1,r2,r3]=await Promise.all([
-      db.from('sales_raw').select('tarih').eq('firma_id',id).order('tarih',{ascending:false}).limit(1),
-      db.from('sales_raw').select('tarih').eq('firma_id',id).order('tarih',{ascending:true}).limit(1),
-      db.from('sales_raw').select('*',{count:'exact',head:true}).eq('firma_id',id)
+  const dun=fmtD(new Date(Date.now()-86400000));
+  const firmalar=[
+    {id:'alayli',  name:'Alayli Medikal', icon:'🏥', color:'#00ff88', kaynak:'BizimHesap Bot'},
+    {id:'woodlet', name:'Woodlet',         icon:'🪵', color:'#ff6b35', kaynak:'Excel (WERP)'},
+    {id:'elit',    name:'Elit Et',         icon:'🥩', color:'#a78bfa', kaynak:'BizimHesap Bot'},
+    {id:'odyoform',name:'Odyoform',        icon:'👂', color:'#fbbf24', kaynak:'BizimHesap Bot'},
+    {id:'alkam',   name:'Alkam',           icon:'📊', color:'#f472b6', kaynak:'Excel'},
+  ];
+  const results=await Promise.all(firmalar.map(async f=>{
+    const[r1,r2,r3,r4]=await Promise.all([
+      db.from('sales_raw').select('tarih').eq('firma_id',f.id).order('tarih',{ascending:false}).limit(1),
+      db.from('sales_raw').select('tarih').eq('firma_id',f.id).order('tarih',{ascending:true}).limit(1),
+      db.from('sales_raw').select('*',{count:'exact',head:true}).eq('firma_id',f.id),
+      db.from('sales_raw').select('*',{count:'exact',head:true}).eq('firma_id',f.id).eq('tarih',dun),
     ]);
-    return{id,sonTarih:r1.data?.[0]?.tarih||null,ilkTarih:r2.data?.[0]?.tarih||null,count:r3.count||0};
+    return{...f,
+      sonTarih:r1.data?.[0]?.tarih||null,
+      ilkTarih:r2.data?.[0]?.tarih||null,
+      toplamKayit:r3.count||0,
+      dunKayit:r4.count||0,
+    };
   }));
+
   el.innerHTML=results.map(r=>{
-    const f=FIRMALAR[r.id]||{name:r.id,color:'#888',icon:''};
-    const ok=r.count>0;
-    return`<div style="background:var(--s2);border:1px solid ${ok?f.color+'44':'var(--border)'};border-radius:8px;padding:12px;border-left:3px solid ${ok?f.color:'var(--border)'}">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-        <span style="font-size:14px">${f.icon}</span>
-        <span style="font-size:11px;font-weight:700;color:${f.color}">${f.name}</span>
-        <span style="margin-left:auto;font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:4px;background:${ok?'rgba(0,255,136,.12)':'rgba(255,77,109,.1)'};color:${ok?'var(--green)':'var(--danger)'}">${ok?'AKTİF':'BOŞ'}</span>
+    const aktif=r.toplamKayit>0;
+    const dunAlindi=r.dunKayit>0;
+    const gunFarki=r.sonTarih?Math.floor((new Date()-new Date(r.sonTarih))/86400000):999;
+    const fresh=gunFarki<=1;
+    const durum=!aktif?{txt:'VERİ YOK',bg:'rgba(255,77,109,.1)',c:'var(--danger)',ico:'✗'}
+                :dunAlindi?{txt:'DÜN ALINDI ✓',bg:'rgba(0,255,136,.12)',c:'var(--green)',ico:'✓'}
+                :fresh?{txt:'GÜNCEL',bg:'rgba(0,255,136,.08)',c:'var(--green)',ico:'✓'}
+                :{txt:`${gunFarki}G ÖNCE`,bg:'rgba(255,77,109,.1)',c:'var(--danger)',ico:'⚠'};
+
+    return`<div style="background:var(--s1);border:1px solid ${aktif?r.color+'44':'rgba(255,77,109,.2)'};border-radius:10px;padding:14px;border-left:3px solid ${aktif?r.color:'var(--danger)'}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="font-size:18px">${r.icon}</span>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:800;color:${r.color}">${r.name}</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted)">${r.kaynak}</div>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:10px;background:${durum.bg};color:${durum.c};font-weight:700">${durum.ico} ${durum.txt}</div>
       </div>
-      ${ok?`<div style="font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.8">
-        İlk: <span style="color:var(--muted2)">${r.ilkTarih?.substring(0,10)||'—'}</span><br>
-        Son: <span style="color:var(--green)">${r.sonTarih?.substring(0,10)||'—'}</span><br>
-        Kayıt: <span style="color:${f.color}">${r.count.toLocaleString('tr')}</span>
-      </div>`:`<div style="font-family:var(--mono);font-size:9px;color:var(--muted)">Henüz veri yüklenmedi</div>`}
-    </div>`;}).join('');
+      ${aktif?`
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:4px">
+        <div style="background:var(--s2);border-radius:6px;padding:8px;text-align:center">
+          <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${r.color}">${r.toplamKayit.toLocaleString('tr')}</div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--muted);letter-spacing:1px;margin-top:2px">TOPLAM</div>
+        </div>
+        <div style="background:var(--s2);border-radius:6px;padding:8px;text-align:center">
+          <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${dunAlindi?'var(--green)':'var(--danger)'}">${r.dunKayit}</div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--muted);letter-spacing:1px;margin-top:2px">DÜN</div>
+        </div>
+        <div style="background:var(--s2);border-radius:6px;padding:8px;text-align:center">
+          <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--muted2)">${r.sonTarih?.substring(5,10)||'—'}</div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--muted);letter-spacing:1px;margin-top:2px">SON</div>
+        </div>
+      </div>`
+      :`<div style="font-family:var(--mono);font-size:10px;color:var(--muted);padding:6px 0">Henüz veri yüklenmedi</div>`}
+    </div>`;
+  }).join('');
 }
 
 function buildUploadFirmaGrid(){
