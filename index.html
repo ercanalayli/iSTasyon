@@ -622,7 +622,7 @@ function saveWidgets(){
 function resetWidgets(){localStorage.removeItem(wKey(cF));applyW(cF);document.getElementById('widgetMo').classList.remove('open');}
 // ── WİDGET SONU ────────────────────────────────────────────────────────────
 
-window.addEventListener('load',async()=>{setFC('all');lWP();try{await renderKarts();}catch(e){console.error('renderKarts hatası:',e);}document.getElementById('loading').style.transition='opacity .5s';document.getElementById('loading').style.opacity='0';setTimeout(()=>document.getElementById('loading').style.display='none',500);setInterval(renderKarts,5*60*1000);});
+window.addEventListener('load',async()=>{setFC('all');lWP();const hideLoading=()=>{const l=document.getElementById('loading');l.style.transition='opacity .5s';l.style.opacity='0';setTimeout(()=>l.style.display='none',500);};try{await Promise.race([renderKarts(),new Promise(r=>setTimeout(r,8000))]);}catch(e){console.error('renderKarts hatası:',e);}hideLoading();setInterval(renderKarts,5*60*1000);});
 </script>
 </body>
 </html>
