@@ -55,13 +55,15 @@ const CONFIG = {
   password:  'aL290900.',
   loginUrl:  'https://bizimhesap.com/bhlogin',
   firmUrl:   'https://bizimhesap.com/web/ngn/sec/ngnmultiaccount',
-  reportUrl: 'https://bizimhesap.com/web/ngn/rep/NgnNewSalesReport',
+  reportUrl:  'https://bizimhesap.com/web/ngn/rep/NgnNewSalesReport',
+  masrafUrl:  'https://bizimhesap.com/web/ngn/rep/ngncostreport',
 };
 
 const SUPABASE = {
-  url:   'https://iilfwosoroflzubkaryj.supabase.co',
-  key:   'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
-  table: 'sales_raw',
+  url:        'https://iilfwosoroflzubkaryj.supabase.co',
+  key:        'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
+  table:      'sales_raw',
+  masrafTbl:  'masraf_raw',
 };
 
 // ── WHATSAPP KİŞİLER ───────────────────────────────────────────────────────
@@ -300,7 +302,99 @@ async function gunlukDurumRaporu() {
   return { ozet, eksikVar };
 }
 
-// ── EKSİK GÜN BULUCU ──────────────────────────────────────────────────────
+// ── MASRAF RAPORU ─────────────────────────────────────────────────────────
+async function masrafCek(page, tarihTR) {
+  log(`  [MASRAF] ${tarihTR}`);
+  await page.goto(CONFIG.masrafUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+  await page.waitForSelector('input', { timeout: 10000 });
+  await new Promise(r => setTimeout(r, 800));
+
+  // Tarih alanlarını doldur
+  const inputs = await page.$$('input[type="text"]');
+  for (let i = 0; i < Math.min(inputs.length, 2); i++) {
+    await inputs[i].click({ clickCount: 3 });
+    await inputs[i].type(tarihTR, { delay: 30 });
+  }
+
+  // Kırmızı "Raporu Hazırla" butonu
+  await page.evaluate(() => {
+    const btn = [...document.querySelectorAll('button')].find(b =>
+      b.innerText?.includes('Hazırla') || b.innerText?.includes('hazırla')
+    );
+    if (btn) btn.click();
+  });
+
+  try {
+    await page.waitForSelector('table tbody tr', { timeout: 30000 });
+  } catch {
+    log('  ⚠ Masraf tablosu yok');
+    return [];
+  }
+  await new Promise(r => setTimeout(r, 1500));
+
+  return await page.evaluate(() => {
+    const rows = [];
+    const tbl = document.querySelector('table');
+    if (!tbl) return rows;
+    const hs = [...tbl.querySelectorAll('thead th')].map(h =>
+      h.innerText.trim().toLowerCase()
+        .replace(/\s+/g,'_').replace(/ı/g,'i').replace(/ş/g,'s')
+        .replace(/ç/g,'c').replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ö/g,'o'));
+    for (const tr of tbl.querySelectorAll('tbody tr')) {
+      const cells = [...tr.querySelectorAll('td')].map(td=>td.innerText.trim());
+      if (!cells.length||cells.every(c=>!c)) continue;
+      const o={};hs.forEach((h,i)=>{if(h)o[h]=cells[i]||'';});o._cells=cells;
+      rows.push(o);
+    }
+    return rows;
+  });
+}
+
+async function masrafKaydet(rows, firma, tarihISO) {
+  if (!rows.length) { log('  ⚠ Masraf verisi yok'); return 0; }
+  log(`  [MASRAF DB] ${rows.length} satır yazılıyor...`);
+
+  const records = rows.map(r => ({
+    tarih:      tarihISO,
+    firma_id:   firma.id,
+    firma_adi:  firma.adi,
+    aciklama:   (r.aciklama||r.masraf_adi||r.tanim||(r._cells||[])[1]||'EMPTY').substring(0,500),
+    kategori:   (r.kategori||r.sinif||r.tur||(r._cells||[])[2]||'').substring(0,200),
+    tutar:      parseFloat((r.tutar||r.toplam||r.miktar||'0').toString().replace(/[^0-9.,-]/g,'').replace(',','.'))||0,
+    kdv:        parseFloat((r.kdv||'0').toString().replace(/[^0-9.,-]/g,'').replace(',','.'))||0,
+    tedarikci:  (r.tedarikci||r.cari||r.firma||'').substring(0,200),
+    kaynak:     'bizimhesap',
+    yil:        parseInt(tarihISO.substring(0,4)),
+    ay:         parseInt(tarihISO.substring(5,7)),
+  }));
+
+  const { data, error } = await db.from(SUPABASE.masrafTbl)
+    .upsert(records, { onConflict: 'tarih,aciklama,firma_id', ignoreDuplicates: true })
+    .select();
+
+  if (error) { log('  ✗ Masraf DB hatası: ' + error.message); return 0; }
+  log(`  ✓ ${data.length} masraf kaydı`);
+  return data.length;
+}
+
+async function eksikMasrafGunleriBul(firmaId) {
+  const gunler = [];
+  for (let i=1; i<=7; i++) {
+    const d = new Date(bugunD); d.setDate(d.getDate()-i);
+    gunler.push(fmtISO(d));
+  }
+  const { data } = await db.from(SUPABASE.masrafTbl)
+    .select('tarih').eq('firma_id', firmaId).in('tarih', gunler);
+  const mevcutlar = new Set((data||[]).map(r=>r.tarih));
+  const eksikler = gunler.filter(g => !mevcutlar.has(g));
+  if (eksikler.length === 0) log(`  [${firmaId}] Masraf: Son 7 gün tam ✓`);
+  else log(`  [${firmaId}] Masraf eksik: ${eksikler.join(', ')}`);
+  return eksikler;
+}
+
+// ── MASRAF RAPORU SONU ─────────────────────────────────────────────────────
+
+
 async function eksikGunleriBul(firmaId) {
   // Son 7 günü hesapla (bugün hariç, dün dahil)
   const gunler = [];
@@ -415,6 +509,32 @@ async function main() {
       }
 
       await wpSabahOzeti(tumRows);
+
+      // Masraf çekme - satış ile aynı mantık
+      log('');
+      log('  [MASRAF] Eksik masraf günleri kontrol ediliyor...');
+      for (const firma of FIRMALAR.filter(f=>f.aktif)) {
+        try {
+          const eksikler = await eksikMasrafGunleriBul(firma.id);
+          if (eksikler.length === 0) {
+            log(`  ✓ ${firma.adi}: Masraflar tam, atlandı`);
+            continue;
+          }
+          await firmaSeç(page, firma);
+          for (const tarihISO of eksikler) {
+            const tarihTR = tarihISO.split('-').reverse().join('.');
+            try {
+              const rows = await masrafCek(page, tarihTR);
+              await masrafKaydet(rows, firma, tarihISO);
+            } catch (e) {
+              log(`  ✗ ${firma.adi} masraf ${tarihTR}: ${e.message}`);
+            }
+            await new Promise(r => setTimeout(r, 800));
+          }
+        } catch (e) {
+          log(`  ✗ ${firma.adi} masraf: ${e.message}`);
+        }
+      }
     }
 
     log('✅ TAMAMLANDI');
