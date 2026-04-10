@@ -563,7 +563,7 @@ function toggleDD(){buildDD();document.getElementById('firmaDD').classList.toggl
 document.addEventListener('click',e=>{if(!e.target.closest('.sb-fs'))document.getElementById('firmaDD').classList.remove('open');});
 function selF(id){cF=id;document.getElementById('firmaDD').classList.remove('open');setFC(id);buildDD();if(id==='all'){showKarts();}else{cM='month';showDetay();refresh();}}
 function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';renderKarts();}
-function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(cF);if(!document.getElementById('gB')){const b=document.createElement('button');b.id='gB';b.innerHTML='← Tüm Firmalar';b.style.cssText='margin-bottom:16px;padding:7px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#9899B0;font-size:12px;font-weight:600;cursor:pointer;display:block';b.onclick=()=>{cF='all';setFC('all');showKarts();};document.getElementById('detayDiv').insertBefore(b,document.getElementById('detayDiv').firstChild);}}
+function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(cF);if(!document.getElementById('gB')){const b=document.createElement('button');b.id='gB';b.innerHTML='< Tüm Firmalar';b.style.cssText='margin-bottom:16px;padding:7px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#9899B0;font-size:12px;font-weight:600;cursor:pointer;display:block';b.onclick=()=>{cF='all';setFC('all');showKarts();};document.getElementById('detayDiv').insertBefore(b,document.getElementById('detayDiv').firstChild);}}
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'ERP Radar',s:'Anlık veri istihbaratı'},satis:{t:'Satış Analizi',s:'Ürün ve kategori'},cariler:{t:'Cariler',s:'Müşteri analizi'},finans:{t:'Finans',s:'Satış özeti ve Yenicespor'},stok:{t:'Stok & Ürün Analizi',s:'Ürün bazlı satış ve trend'},hedef:{t:'Hedef / Bütçe',s:'Gerçekleşen vs hedef karşılaştırması'},gorevler:{t:'Görev Teyidi',s:'Kritik görevlerin gerçekleşme durumu'},veri:{t:'Veri Yükleme',s:'Excel ve bot'},bildirim:{t:'Bildirimler',s:'WhatsApp ayarları'}};
 function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();if(id==='dashboard'&&cF==='all')showKarts();}
@@ -572,13 +572,13 @@ async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw')
 async function refresh(){RAW=await loadData();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();pSels();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const n=new Date();const el=document.getElementById('lupd');if(el)el.textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}`;genAI();}
 function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
 function pSels(){const fids=[...new Set(RAW.map(r=>r.firma_id).filter(Boolean))];const kats=[...new Set(RAW.map(r=>r.kategori).filter(Boolean))].sort();['uFi','cFi','rFi'].forEach(id=>{const s=document.getElementById(id);if(!s)return;const v=s.value;s.innerHTML='<option value="">Tüm Firmalar</option>';fids.forEach(f=>{const fi=F[f]||{n:f,i:''};s.innerHTML+=`<option value="${f}">${fi.i} ${fi.n}</option>`;});s.value=v;});const ks=document.getElementById('uKa');if(ks){const v=ks.value;ks.innerHTML='<option value="">Tümü</option>';kats.forEach(k=>ks.innerHTML+=`<option value="${k}">${k}</option>`);ks.value=v;}}
-function genAI(){const d=fil();const tc=d.reduce((s,r)=>s+(+r.ciro||0),0);const td=d.filter(r=>r.tarih?.startsWith(today()));const yd=d.filter(r=>r.tarih?.startsWith(yest()));const fn=F[cF]?.n||'Tüm Firmalar';const n=new Date();const gn=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];let txt,ico;if(!d.length){txt=`<strong>${fn}</strong> için veri yok.`;ico='📭';}else if(td.length){txt=`<strong>${fn}</strong> — Bugün <strong>${td.length} işlem</strong>, ₺${fmt(td.reduce((s,r)=>s+(+r.ciro||0),0))} ciro.`;ico='✅';}else if(yd.length){txt=`<strong>${fn}</strong> — Dün <strong>${yd.length} işlem</strong>, ₺${fmt(yd.reduce((s,r)=>s+(+r.ciro||0),0))} ciro.`;ico='📊';}else{const mx=[...d].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0))[0];txt=`<strong>${fn}</strong> — ₺${fmt(tc)} ciro, ${d.length} işlem.${mx?` En: ${(mx.urun||'').substring(0,25)}`:''}`; ico='📈';}document.getElementById('aiT').innerHTML=`${gn[n.getDay()]}, ${n.getDate()} Mart — ${txt}`;document.getElementById('aiTm').textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}`;document.getElementById('aiI').textContent=ico;}
-function rKPI(){const d=fil();if(!d.length){['kC','kM','kF'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='—';});return;}const tc=d.reduce((s,r)=>s+(+r.ciro||0),0);const mx=d.reduce((m,r)=>(+r.ciro||0)>m.v?{v:+r.ciro,n:r.urun||''}:m,{v:0,n:''});const af=new Set(d.map(r=>r.firma_id).filter(Boolean));const fn=cF==='all'?'tüm firmalar':(F[cF]?.n||cF);document.getElementById('kC').textContent='₺'+fmt(tc);document.getElementById('kCS').textContent=fn+' · '+d.length+' işlem';document.getElementById('kM').textContent='₺'+fmt(mx.v);document.getElementById('kMS').textContent=(mx.n||'').substring(0,28)||'—';document.getElementById('kF').textContent=af.size;}
-function oMo(tip){const d=fil();const m=document.getElementById('modal');const b=document.getElementById('mo-b');const t=document.getElementById('mo-t');if(tip==='ciro'){t.textContent='CİRO DAĞILIMI';const bF={};d.forEach(r=>{const id=r.firma_id||'?';bF[id]=(bF[id]||0)+(+r.ciro||0);});const rows=Object.entries(bF).sort((a,b)=>b[1]-a[1]);const tot=rows.reduce((s,[,v])=>s+v,0);b.innerHTML=rows.map(([id,v])=>{const f=F[id]||{n:id,c:'#888',i:''};const p=(v/tot*100).toFixed(1);return`<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--b1)"><span style="font-size:18px">${f.i}</span><div style="flex:1"><div style="font-size:13px;font-weight:700">${f.n}</div><div style="height:3px;background:var(--b1);border-radius:2px;margin-top:6px;overflow:hidden"><div style="height:100%;width:${p}%;background:${f.c};border-radius:2px"></div></div></div><div style="text-align:right;flex-shrink:0"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${f.c}">₺${fmt(v)}</div><div style="font-family:var(--mono);font-size:10px;color:var(--t3)">${p}%</div></div></div>`;}).join('')+`<div style="display:flex;justify-content:space-between;padding:12px 0;font-weight:800;border-top:1px solid var(--b2)"><span>TOPLAM</span><span style="font-family:var(--mono);color:var(--accent)">₺${fmt(tot)}</span></div>`;}else{t.textContent='EN YÜKSEK 20 İŞLEM';const top=[...d].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0)).slice(0,20);b.innerHTML=`<table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:1px solid var(--b2)">${['#','ÜRÜN','MÜŞTERİ','CİRO','TARİH'].map(h=>`<th style="font-family:var(--mono);font-size:9px;color:var(--t3);padding:8px;text-align:left;letter-spacing:1px">${h}</th>`).join('')}</tr></thead><tbody>${top.map((r,i)=>`<tr style="border-bottom:1px solid rgba(255,255,255,.03)"><td style="padding:9px 8px;font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td><td style="padding:9px 8px;font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(r.urun||'—').substring(0,40)}</td><td style="padding:9px 8px;font-size:11px;color:var(--t2)">${(r.unvan||'—').substring(0,25)}</td><td style="padding:9px 8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--red);text-align:right">₺${fmt(+r.ciro||0)}</td><td style="padding:9px 8px;font-family:var(--mono);font-size:10px;color:var(--t3)">${r.tarih?.substring(0,10)||'—'}</td></tr>`).join('')}</tbody></table>`;}m.classList.add('open');}
+function genAI(){const d=fil();const tc=d.reduce((s,r)=>s+(+r.ciro||0),0);const td=d.filter(r=>r.tarih?.startsWith(today()));const yd=d.filter(r=>r.tarih?.startsWith(yest()));const fn=F[cF]?.n||'Tüm Firmalar';const n=new Date();const gn=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];let txt,ico;if(!d.length){txt=`<strong>${fn}</strong> için veri yok.`;ico='📭';}else if(td.length){txt=`<strong>${fn}</strong> - Bugün <strong>${td.length} işlem</strong>, ₺${fmt(td.reduce((s,r)=>s+(+r.ciro||0),0))} ciro.`;ico='✅';}else if(yd.length){txt=`<strong>${fn}</strong> - Dün <strong>${yd.length} işlem</strong>, ₺${fmt(yd.reduce((s,r)=>s+(+r.ciro||0),0))} ciro.`;ico='📊';}else{const mx=[...d].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0))[0];txt=`<strong>${fn}</strong> - ₺${fmt(tc)} ciro, ${d.length} işlem.${mx?` En: ${(mx.urun||'').substring(0,25)}`:''}`; ico='📈';}document.getElementById('aiT').innerHTML=`${gn[n.getDay()]}, ${n.getDate()} Mart - ${txt}`;document.getElementById('aiTm').textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}`;document.getElementById('aiI').textContent=ico;}
+function rKPI(){const d=fil();if(!d.length){['kC','kM','kF'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='-';});return;}const tc=d.reduce((s,r)=>s+(+r.ciro||0),0);const mx=d.reduce((m,r)=>(+r.ciro||0)>m.v?{v:+r.ciro,n:r.urun||''}:m,{v:0,n:''});const af=new Set(d.map(r=>r.firma_id).filter(Boolean));const fn=cF==='all'?'tüm firmalar':(F[cF]?.n||cF);document.getElementById('kC').textContent='₺'+fmt(tc);document.getElementById('kCS').textContent=fn+' · '+d.length+' işlem';document.getElementById('kM').textContent='₺'+fmt(mx.v);document.getElementById('kMS').textContent=(mx.n||'').substring(0,28)||'-';document.getElementById('kF').textContent=af.size;}
+function oMo(tip){const d=fil();const m=document.getElementById('modal');const b=document.getElementById('mo-b');const t=document.getElementById('mo-t');if(tip==='ciro'){t.textContent='CİRO DAĞILIMI';const bF={};d.forEach(r=>{const id=r.firma_id||'?';bF[id]=(bF[id]||0)+(+r.ciro||0);});const rows=Object.entries(bF).sort((a,b)=>b[1]-a[1]);const tot=rows.reduce((s,[,v])=>s+v,0);b.innerHTML=rows.map(([id,v])=>{const f=F[id]||{n:id,c:'#888',i:''};const p=(v/tot*100).toFixed(1);return`<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--b1)"><span style="font-size:18px">${f.i}</span><div style="flex:1"><div style="font-size:13px;font-weight:700">${f.n}</div><div style="height:3px;background:var(--b1);border-radius:2px;margin-top:6px;overflow:hidden"><div style="height:100%;width:${p}%;background:${f.c};border-radius:2px"></div></div></div><div style="text-align:right;flex-shrink:0"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${f.c}">₺${fmt(v)}</div><div style="font-family:var(--mono);font-size:10px;color:var(--t3)">${p}%</div></div></div>`;}).join('')+`<div style="display:flex;justify-content:space-between;padding:12px 0;font-weight:800;border-top:1px solid var(--b2)"><span>TOPLAM</span><span style="font-family:var(--mono);color:var(--accent)">₺${fmt(tot)}</span></div>`;}else{t.textContent='EN YÜKSEK 20 İŞLEM';const top=[...d].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0)).slice(0,20);b.innerHTML=`<table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:1px solid var(--b2)">${['#','ÜRÜN','MÜŞTERİ','CİRO','TARİH'].map(h=>`<th style="font-family:var(--mono);font-size:9px;color:var(--t3);padding:8px;text-align:left;letter-spacing:1px">${h}</th>`).join('')}</tr></thead><tbody>${top.map((r,i)=>`<tr style="border-bottom:1px solid rgba(255,255,255,.03)"><td style="padding:9px 8px;font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td><td style="padding:9px 8px;font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(r.urun||'-').substring(0,40)}</td><td style="padding:9px 8px;font-size:11px;color:var(--t2)">${(r.unvan||'-').substring(0,25)}</td><td style="padding:9px 8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--red);text-align:right">₺${fmt(+r.ciro||0)}</td><td style="padding:9px 8px;font-family:var(--mono);font-size:10px;color:var(--t3)">${r.tarih?.substring(0,10)||'-'}</td></tr>`).join('')}</tbody></table>`;}m.classList.add('open');}
 function rTr(){const d=fil();if(!d.length){if(tC)tC.destroy();return;}const bD={};d.forEach(r=>{if(!r.tarih)return;const k=r.tarih.substring(0,10);bD[k]=(bD[k]||0)+(+r.ciro||0);});const keys=Object.keys(bD).sort().slice(-30);const fc=F[cF]||F.all;if(tC)tC.destroy();tC=new Chart(document.getElementById('cTr'),{type:'bar',data:{labels:keys.map(k=>k.substring(5).replace('-','.')),datasets:[{data:keys.map(k=>bD[k]),backgroundColor:fc.c+'44',borderColor:fc.c,borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#9CA3AF',font:{size:9}}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#9CA3AF',font:{size:9},callback:v=>'₺'+fmt(v)}}}}});}
 function rPi(){const bF={};RAW.forEach(r=>{const id=r.firma_id||'?';bF[id]=(bF[id]||0)+(+r.ciro||0);});const e=Object.entries(bF).sort((a,b)=>b[1]-a[1]);if(!e.length){if(pC)pC.destroy();return;}if(pC)pC.destroy();pC=new Chart(document.getElementById('cPi'),{type:'doughnut',data:{labels:e.map(([id])=>(F[id]?.i||'')+' '+(F[id]?.n||id)),datasets:[{data:e.map(([,v])=>v),backgroundColor:e.map(([id])=>F[id]?.c||'#888'),borderWidth:0,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#9899B0',font:{size:10},boxWidth:10,padding:8}}}}});}
-function rAl(){const d=fil();const el=document.getElementById('alB');if(!el)return;const items=[];const tc=d.reduce((s,r)=>s+(+r.ciro||0),0);const yd=d.filter(r=>r.tarih?.startsWith(yest()));const td=d.filter(r=>r.tarih?.startsWith(today()));const mx=[...d].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0))[0];if(!d.length){items.push({i:'📭',t:'Bu dönemde veri yok.',b:'ab-d',bl:'Boş'});}else{if(td.length)items.push({i:'🔴',t:`Bugün: <strong>${td.length} işlem</strong> — ₺${fmt(td.reduce((s,r)=>s+(+r.ciro||0),0))}`,b:'ab-ok',bl:'Canlı'});if(yd.length)items.push({i:'✅',t:`Dün: <strong>${yd.length} işlem</strong> — ₺${fmt(yd.reduce((s,r)=>s+(+r.ciro||0),0))}`,b:'ab-ok',bl:'OK'});if(mx)items.push({i:'🔥',t:`En yüksek: <strong>${(mx.urun||'').substring(0,35)}</strong> — ₺${fmt(+mx.ciro||0)}`,b:'ab-ok',bl:mx.tarih?.substring(0,10)||''});items.push({i:'📊',t:`₺${fmt(tc)} · ${d.length} işlem · ${[...new Set(d.map(r=>r.unvan).filter(Boolean))].length} müşteri`,b:'ab-ok',bl:''});}el.innerHTML=items.map(a=>`<div class="ali"><span style="font-size:14px;flex-shrink:0;margin-top:1px">${a.i}</span><span class="ali-t">${a.t}</span>${a.bl?`<span class="ab ${a.b}">${a.bl}</span>`:''}</div>`).join('');}
-function rAct(){const d=fil();const el=document.getElementById('actB');if(!el)return;if(!d.length){el.innerHTML=`<div class="empty"><div class="empty-ico">📭</div><div class="empty-t">Aktivite yok</div><div class="empty-d">Veri yükleyin veya botu başlatın</div><button class="empty-btn" onclick="gP('veri',null)">Veri Yükle →</button></div>`;return;}const son=[...d].sort((a,b)=>(b.tarih||'').localeCompare(a.tarih||'')).slice(0,20);el.innerHTML=son.map(r=>{const fc=F[r.firma_id]||{c:'#888'};return`<div class="act"><span style="width:7px;height:7px;border-radius:50%;background:${fc.c};flex-shrink:0"></span><span style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t2)">${(r.urun||'—').substring(0,50)}</span><span style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-right:4px">${(r.unvan||'').substring(0,18)}</span><span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--green)">+₺${fmt(+r.ciro||0)}</span><span style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-left:6px">${r.tarih?.substring(0,10)||'—'}</span></div>`;}).join('');}
+function rAl(){const d=fil();const el=document.getElementById('alB');if(!el)return;const items=[];const tc=d.reduce((s,r)=>s+(+r.ciro||0),0);const yd=d.filter(r=>r.tarih?.startsWith(yest()));const td=d.filter(r=>r.tarih?.startsWith(today()));const mx=[...d].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0))[0];if(!d.length){items.push({i:'📭',t:'Bu dönemde veri yok.',b:'ab-d',bl:'Boş'});}else{if(td.length)items.push({i:'🔴',t:`Bugün: <strong>${td.length} işlem</strong> - ₺${fmt(td.reduce((s,r)=>s+(+r.ciro||0),0))}`,b:'ab-ok',bl:'Canlı'});if(yd.length)items.push({i:'✅',t:`Dün: <strong>${yd.length} işlem</strong> - ₺${fmt(yd.reduce((s,r)=>s+(+r.ciro||0),0))}`,b:'ab-ok',bl:'OK'});if(mx)items.push({i:'🔥',t:`En yüksek: <strong>${(mx.urun||'').substring(0,35)}</strong> - ₺${fmt(+mx.ciro||0)}`,b:'ab-ok',bl:mx.tarih?.substring(0,10)||''});items.push({i:'📊',t:`₺${fmt(tc)} · ${d.length} işlem · ${[...new Set(d.map(r=>r.unvan).filter(Boolean))].length} müşteri`,b:'ab-ok',bl:''});}el.innerHTML=items.map(a=>`<div class="ali"><span style="font-size:14px;flex-shrink:0;margin-top:1px">${a.i}</span><span class="ali-t">${a.t}</span>a.bl?("<span class=\"ab "+a.b+"\">"+a.bl+"</span>"):""</div>`).join('');}
+function rAct(){const d=fil();const el=document.getElementById('actB');if(!el)return;if(!d.length){el.innerHTML=`<div class="empty"><div class="empty-ico">📭</div><div class="empty-t">Aktivite yok</div><div class="empty-d">Veri yükleyin veya botu başlatın</div><button class="empty-btn" onclick="gP('veri',null)">Veri Yukle</button></div>`;return;}const son=[...d].sort((a,b)=>(b.tarih||'').localeCompare(a.tarih||'')).slice(0,20);el.innerHTML=son.map(r=>{const fc=F[r.firma_id]||{c:'#888'};return`<div class="act"><span style="width:7px;height:7px;border-radius:50%;background:${fc.c};flex-shrink:0"></span><span style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t2)">${(r.urun||'-').substring(0,50)}</span><span style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-right:4px">${(r.unvan||'').substring(0,18)}</span><span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--green)">+₺${fmt(+r.ciro||0)}</span><span style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-left:6px">${r.tarih?.substring(0,10)||'-'}</span></div>`;}).join('');}
 async function renderKarts(){
   const grid=document.getElementById('fGrid');if(!grid)return;
   grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:48px;color:#888;font-size:10px">Yukleniyor...</div>';
@@ -684,7 +684,7 @@ async function renderKarts(){
   }).join('');
 }
 
-async function ulUp(){if(!upParsed.length)return;const mode=document.getElementById('uM').value;const batch=parseInt(document.getElementById('uB').value);document.getElementById('bU').disabled=true;document.getElementById('uPW').style.display='block';if(mode==='replace_all'){await db.from('sales_raw').delete().eq('firma_id',upF);ulg('Silindi','ok');}else if(mode==='replace_period'){const aylar=[...new Set(upParsed.map(r=>`${r.yil}-${p2(r.ay)}`))];for(const ym of aylar){const[y,m]=ym.split('-');await db.from('sales_raw').delete().eq('firma_id',upF).eq('yil',+y).eq('ay',+m);}ulg(`${aylar.length} ay temizlendi`,'ok');}let total=0,errors=0;const batches=[];for(let i=0;i<upParsed.length;i+=batch)batches.push(upParsed.slice(i,i+batch));ulg(`${upParsed.length} satır, ${batches.length} paket`,'info');for(let i=0;i<batches.length;i++){const{data,error}=await db.from('sales_raw').insert(batches[i]).select('id');if(error){ulg(`Paket ${i+1}: ${error.message}`,'err');errors++;}else total+=data.length;const pct=Math.round((i+1)/batches.length*100);document.getElementById('uPB').style.width=pct+'%';document.getElementById('uPT').textContent=`${pct}% — ${total} kayıt`;await new Promise(r=>setTimeout(r,50));}ulg(`✅ ${total} kayıt yüklendi${errors?', '+errors+' hata':''}!`,'ok');document.getElementById('bU').disabled=false;renderKarts();}
+async function ulUp(){if(!upParsed.length)return;const mode=document.getElementById('uM').value;const batch=parseInt(document.getElementById('uB').value);document.getElementById('bU').disabled=true;document.getElementById('uPW').style.display='block';if(mode==='replace_all'){await db.from('sales_raw').delete().eq('firma_id',upF);ulg('Silindi','ok');}else if(mode==='replace_period'){const aylar=[...new Set(upParsed.map(r=>`${r.yil}-${p2(r.ay)}`))];for(const ym of aylar){const[y,m]=ym.split('-');await db.from('sales_raw').delete().eq('firma_id',upF).eq('yil',+y).eq('ay',+m);}ulg(`${aylar.length} ay temizlendi`,'ok');}let total=0,errors=0;const batches=[];for(let i=0;i<upParsed.length;i+=batch)batches.push(upParsed.slice(i,i+batch));ulg(`${upParsed.length} satır, ${batches.length} paket`,'info');for(let i=0;i<batches.length;i++){const{data,error}=await db.from('sales_raw').insert(batches[i]).select('id');if(error){ulg(`Paket ${i+1}: ${error.message}`,'err');errors++;}else total+=data.length;const pct=Math.round((i+1)/batches.length*100);document.getElementById('uPB').style.width=pct+'%';document.getElementById('uPT').textContent=`${pct}% - ${total} kayıt`;await new Promise(r=>setTimeout(r,50));}ulg(`✅ ${total} kayıt yüklendi${errors?', '+errors+' hata':''}!`,'ok');document.getElementById('bU').disabled=false;renderKarts();}
 function clUp(){upFile=null;upParsed=[];document.getElementById('uFN').textContent='';dz.classList.remove('done','drag');document.getElementById('uPW').style.display='none';document.getElementById('bP').disabled=true;document.getElementById('bU').disabled=true;document.getElementById('uLog').innerHTML='<span class="info">Temizlendi.</span>';}
 document.querySelectorAll('.wt').forEach(t=>t.addEventListener('click',()=>t.classList.toggle('on')));
 function sWP(){localStorage.setItem('ap_wp',JSON.stringify({wp1:{name:document.getElementById('w1n').value,phone:document.getElementById('w1p').value,key:document.getElementById('w1k').value},wp2:{name:document.getElementById('w2n').value,phone:document.getElementById('w2p').value,key:document.getElementById('w2k').value}}));alert('✅ Kaydedildi!');}
@@ -694,7 +694,7 @@ async function tWP(n){const ph=document.getElementById(`w${n}p`).value;const key
 setInterval(()=>{const n=new Date();document.getElementById('clk').textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;},1000);
 
 
-// ── SATIŞ ANALİZİ ─────────────────────────────────────────────────────────
+// -- SATIŞ ANALİZİ ---------------------------------------------------------
 let srtK='ciro', srtD=-1;
 function srtU(k,btn){
   if(srtK===k)srtD*=-1;else{srtK=k;srtD=-1;}
@@ -717,8 +717,8 @@ function rU(){
   const cols=['#FFD60A','#aaa','#cd7f32','#635BFF','#00C96B','#FF8C00','#9B8BFF','#FF4757','#06d6a0','#FF6B9D'];
   w.innerHTML=`<table class="pt"><thead><tr>
     <th style="width:36px">#</th><th>ÜRÜN</th>
-    <th onclick="srtU('adet',null)" ${srtK==='adet'?'class="sorted"':''}>ADET ↕</th>
-    <th onclick="srtU('ciro',null)" ${srtK==='ciro'?'class="sorted"':''}>CİRO ↕</th>
+    <th onclick="srtU('adet',null)" ${srtK==='adet'?'class="sorted"':''}>ADET </th>
+    <th onclick="srtU('ciro',null)" ${srtK==='ciro'?'class="sorted"':''}>CİRO </th>
     <th>PAY</th><th>ORT.</th><th>FİRMA</th>
   </tr></thead><tbody>${rows.slice(0,80).map((r,i)=>{
     const c=cols[i]||cols.at(-1);
@@ -735,7 +735,7 @@ function rU(){
   }).join('')}</tbody></table>`;
 }
 
-// ── CARİLER ───────────────────────────────────────────────────────────────
+// -- CARİLER ---------------------------------------------------------------
 let seciliCari = null;
 function rC(){
   const cf=document.getElementById('cFi')?.value||'';
@@ -763,8 +763,8 @@ function rC(){
   el.innerHTML=rows.map((c,i)=>{
     const col=cols[i]||'var(--accent)';
     const md=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-    const sonT=[...c.tarihler].sort().at(-1)||'—';
-    const gf=sonT!=='—'?Math.floor((new Date()-new Date(sonT))/86400000):999;
+    const sonT=[...c.tarihler].sort().at(-1)||'-';
+    const gf=sonT!=='-'?Math.floor((new Date()-new Date(sonT))/86400000):999;
     const fc=F[c.firma_id]||{i:'',c:'#888'};
     const topUrun=Object.entries(c.urunler).sort((a,b)=>b[1]-a[1])[0];
     const pct=(c.ciro/maxCiro*100).toFixed(0);
@@ -777,7 +777,7 @@ function rC(){
         <div style="width:36px;height:36px;border-radius:10px;background:${col}18;border:1px solid ${col}33;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${md||fc.i}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${col}">${c.n}</div>
-          <div style="font-size:10px;color:var(--t3);margin-top:1px">${fc.i} ${F[c.firma_id]?.n||c.firma_id||'—'}</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:1px">${fc.i} ${F[c.firma_id]?.n||c.firma_id||'-'}</div>
         </div>
         <span style="font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:6px;background:${gf<=7?'rgba(0,201,107,.1)':'rgba(255,140,0,.1)'};color:${gf<=7?'var(--green)':'var(--orange)'}">
           ${gf<=1?'Bugün':gf<=7?gf+'g':gf+'g önce'}
@@ -816,8 +816,8 @@ function cariDetay(jsonStr){
   const topUrunler=Object.entries(c.urunler||{}).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const maxU=topUrunler[0]?.[1]||1;
   const tarihler=[...new Set(c.tarihler||[])].sort();
-  const sonT=tarihler.at(-1)||'—';
-  const ilkT=tarihler[0]||'—';
+  const sonT=tarihler.at(-1)||'-';
+  const ilkT=tarihler[0]||'-';
   const fc=F[c.firma_id]||{i:'',n:'',c:'#635BFF'};
 
   document.getElementById('mo-t').textContent='MÜŞTERİ DETAYI';
@@ -873,7 +873,7 @@ function cariDetay(jsonStr){
   document.getElementById('modal').classList.add('open');
 }
 
-// ── AYLIK RAPOR ─────────────────────────────────────────────────────────────
+// -- AYLIK RAPOR -------------------------------------------------------------
 async function rA(){
   const yil=parseInt(document.getElementById('rY')?.value||new Date().getFullYear());
   const cf=document.getElementById('rFi')?.value||'';
@@ -912,7 +912,7 @@ async function rA(){
 }
 
 
-// ── STOK & ÜRÜN ───────────────────────────────────────────────────────────
+// -- STOK & ÜRÜN -----------------------------------------------------------
 function loadStok(){
   const cf=document.getElementById('stokFi')?.value||'';
   const esik=parseInt(document.getElementById('kritikEsik')?.value||5);
@@ -943,7 +943,7 @@ function loadStok(){
 
   const kritikler=rows.filter(r=>r.ayOrta<esik&&r.adet>0);
   if(kritEl)kritEl.textContent=kritikler.length;
-  if(bestEl)bestEl.textContent=rows[0]?.urun.substring(0,18)||'—';
+  if(bestEl)bestEl.textContent=rows[0]?.urun.substring(0,18)||'-';
 
   // Stok listesi
   const listEl=document.getElementById('stokList');
@@ -953,11 +953,11 @@ function loadStok(){
   // Kritik uyarı listesi
   if(kListEl){
     if(!kritikler.length){
-      kListEl.innerHTML='<div style="padding:12px;font-family:var(--mono);font-size:10px;color:var(--green)">✓ Kritik ürün yok</div>';
+      kListEl.innerHTML='<div style="padding:12px;font-family:var(--mono);font-size:10px;color:var(--green)">OK Kritik ürün yok</div>';
     } else {
       kListEl.innerHTML=kritikler.slice(0,10).map(r=>`
         <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--b1)">
-          <span style="font-size:14px">⚠️</span>
+          <span style="font-size:14px">!️</span>
           <div style="flex:1;min-width:0">
             <div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.urun.substring(0,45)}</div>
             <div style="font-size:10px;color:var(--t3);font-family:var(--mono)">Aylık ort: ${r.ayOrta.toFixed(1)} adet · Toplam: ${Math.round(r.adet)}</div>
@@ -980,14 +980,14 @@ function loadStok(){
       const pct=(r.ciro/mc*100).toFixed(0);
       const kritik=r.ayOrta<esik;
       const tukenme=r.ayOrta>0?Math.ceil(r.adet/r.ayOrta):999;
-      const dur=kritik?{t:'⚠ Kritik',c:'var(--orange)'}:{t:'✓ Normal',c:'var(--green)'};
+      const dur=kritik?{t:'! Kritik',c:'var(--orange)'}:{t:'OK Normal',c:'var(--green)'};
       return`<tr><td><span class="rk ${i<3?['r1','r2','r3'][i]:'rn'}">${i+1}</span></td>
         <td style="font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.urun.substring(0,40)}</td>
         <td style="font-family:var(--mono);font-size:11px">${Math.round(r.adet).toLocaleString('tr')}</td>
         <td style="font-family:var(--mono);font-size:11px;color:${kritik?'var(--orange)':'var(--t2)'}">${r.ayOrta.toFixed(1)}</td>
         <td><div class="mb"><div class="mbar"><div class="mf" style="width:${pct}%;background:#635BFF"></div></div>
           <span style="font-family:var(--mono);font-size:10px;color:#635BFF">₺${fmt(r.ciro)}</span></div></td>
-        <td style="font-family:var(--mono);font-size:11px;color:var(--t3)">${tukenme>100?'—':tukenme+' ay'}</td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--t3)">${tukenme>100?'-':tukenme+' ay'}</td>
         <td><span style="font-family:var(--mono);font-size:9px;color:${dur.c}">${dur.t}</span></td>
       </tr>`;
     }).join('')}</tbody></table>`;
@@ -1001,7 +1001,7 @@ function loadStok(){
   }
 }
 
-// ── HEDEF / BÜTÇE ─────────────────────────────────────────────────────────
+// -- HEDEF / BÜTÇE ---------------------------------------------------------
 const HEDEF_KEY='ap_hedefler';
 
 function loadHedef(){
@@ -1022,7 +1022,7 @@ function loadHedef(){
   const oEl=document.getElementById('hOran');
   if(gEl)gEl.textContent='₺'+fmt(gercek);
   if(hEl)hEl.textContent=hedefTop>0?'₺'+fmt(hedefTop):'Girilmedi';
-  if(oEl){oEl.textContent=hedefTop>0?oran+'%':'—';oEl.style.color=oran>=100?'var(--green)':oran>=75?'var(--orange)':'var(--red)';}
+  if(oEl){oEl.textContent=hedefTop>0?oran+'%':'-';oEl.style.color=oran>=100?'var(--green)':oran>=75?'var(--orange)':'var(--red)';}
 
   const el=document.getElementById('hedefListesi');if(!el)return;
   if(!hedefler.length){
@@ -1098,7 +1098,7 @@ function hedefSil(idx){
   localStorage.setItem(HEDEF_KEY,JSON.stringify(hedefler));
   loadHedef();
 }
-// ── STOK & HEDEF SONU ──────────────────────────────────────────────────────
+// -- STOK & HEDEF SONU ------------------------------------------------------
 
 
 function rTop5(){
@@ -1151,7 +1151,7 @@ function rTop5(){
   }
 }
 
-// ── GÖREV TEYİDİ ──────────────────────────────────────────────────────────
+// -- GÖREV TEYİDİ ----------------------------------------------------------
 const MANUEL_GOREVLER_KEY = 'ap_manuel_gorevler';
 
 async function loadGorevler() {
@@ -1198,7 +1198,7 @@ async function loadGorevler() {
           <div style="font-size:12px;font-weight:700;color:${f.c}">${f.n}</div>
           <div style="font-size:9px;color:var(--t3);font-family:var(--mono);margin-top:1px">${tamamSayisi}/7 gün tam</div>
         </div>
-        <span style="font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:8px;background:${hepsiTam?'rgba(0,201,107,.12)':'rgba(255,71,87,.1)'};color:${hepsiTam?'var(--green)':'var(--red)'};font-weight:700">${hepsiTam?'✓ Tam':'✗ Eksik'}</span>
+        <span style="font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:8px;background:${hepsiTam?'rgba(0,201,107,.12)':'rgba(255,71,87,.1)'};color:${hepsiTam?'var(--green)':'var(--red)'};font-weight:700">${hepsiTam?'OK Tam':'X Eksik'}</span>
       </div>
       <div style="display:flex;gap:4px">
         ${gunDurum.map(g=>`<div title="${g.g}" style="flex:1;height:6px;border-radius:2px;background:${g.ok?'var(--green)':'var(--red)'}88"></div>`).join('')}
@@ -1227,9 +1227,9 @@ async function loadGorevler() {
         return`<tr style="border-bottom:1px solid rgba(255,255,255,.03)">
           <td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--t3)">${l.tarih}</td>
           <td style="padding:7px 10px;font-weight:600">${(F[l.firma_id]?.i||'')}&nbsp;${F[l.firma_id]?.n||l.firma_id}</td>
-          <td style="padding:7px 10px"><span style="font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:4px;background:${ok?'rgba(0,201,107,.12)':bos?'rgba(255,140,0,.1)':'rgba(255,71,87,.1)'};color:${dc}">${ok?'✓ Başarılı':bos?'⚪ Boş':'✗ Hata'}</span></td>
+          <td style="padding:7px 10px"><span style="font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:4px;background:${ok?'rgba(0,201,107,.12)':bos?'rgba(255,140,0,.1)':'rgba(255,71,87,.1)'};color:${dc}">${ok?'OK Başarılı':bos?'⚪ Boş':'X Hata'}</span></td>
           <td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:${ok?'var(--text)':'var(--t3)'}">${l.kayit_sayisi||0}</td>
-          <td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:${ok?'var(--green)':'var(--t3)'}">${l.ciro_toplam?'₺'+fmt(+l.ciro_toplam):'—'}</td>
+          <td style="padding:7px 10px;font-family:var(--mono);font-size:10px;color:${ok?'var(--green)':'var(--t3)'}">${l.ciro_toplam?'₺'+fmt(+l.ciro_toplam):'-'}</td>
           <td style="padding:7px 10px;font-family:var(--mono);font-size:9px;color:var(--t3)">${dt.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</td>
         </tr>`;
       }).join('')}
@@ -1262,12 +1262,12 @@ function renderManuelGorevler() {
     const bugun = new Date().toISOString().substring(0,10);
     const tamamlandi = g.son === bugun;
     return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--b1)">
-      <div onclick="gorevTeyitle(${i})" style="width:20px;height:20px;border-radius:5px;border:1px solid ${tamamlandi?'var(--green)':'var(--b2)'};background:${tamamlandi?'var(--green)':'transparent'};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">${tamamlandi?'✓':''}</div>
+      <div onclick="gorevTeyitle(${i})" style="width:20px;height:20px;border-radius:5px;border:1px solid ${tamamlandi?'var(--green)':'var(--b2)'};background:${tamamlandi?'var(--green)':'transparent'};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">${tamamlandi?'OK':''}</div>
       <div style="flex:1">
         <div style="font-size:13px;font-weight:600">${g.baslik}</div>
         <div style="font-size:10px;color:var(--t3);font-family:var(--mono);margin-top:2px">${g.periyot} · Son: ${g.son||'Hiç'}</div>
       </div>
-      <span style="font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:8px;background:${tamamlandi?'rgba(0,201,107,.12)':'rgba(255,71,87,.1)'};color:${tamamlandi?'var(--green)':'var(--red)'}">${tamamlandi?'✓ Bugün Tamam':'✗ Bekliyor'}</span>
+      <span style="font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:8px;background:${tamamlandi?'rgba(0,201,107,.12)':'rgba(255,71,87,.1)'};color:${tamamlandi?'var(--green)':'var(--red)'}">${tamamlandi?'OK Bugün Tamam':'X Bekliyor'}</span>
       <button onclick="gorevSil(${i})" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:14px;padding:0">✕</button>
     </div>`;
   }).join('');
@@ -1300,9 +1300,9 @@ function gorevSil(idx) {
   localStorage.setItem(MANUEL_GOREVLER_KEY, JSON.stringify(gorevler));
   renderManuelGorevler();
 }
-// ── GÖREV TEYİDİ SONU ──────────────────────────────────────────────────────
+// -- GÖREV TEYİDİ SONU ------------------------------------------------------
 
-// ── WİDGET SİSTEMİ ────────────────────────────────────────────────────────
+// -- WİDGET SİSTEMİ --------------------------------------------------------
 const WIDGETS=[
   {id:'w-kpi',     label:'KPI Kartları',    desc:'Toplam Ciro, En Yüksek, Aktif Firma',default:true},
   {id:'w-trend',   label:'Ciro Trendi',     desc:'Günlük bar grafik + firma dağılımı', default:true},
@@ -1342,10 +1342,10 @@ function saveWidgets(){
   document.getElementById('widgetMo').classList.remove('open');
 }
 function resetWidgets(){localStorage.removeItem(wKey(cF));applyW(cF);document.getElementById('widgetMo').classList.remove('open');}
-// ── WİDGET SONU ────────────────────────────────────────────────────────────
+// -- WİDGET SONU ------------------------------------------------------------
 
 
-// ── EKSİK FONKSIYONLAR ────────────────────────────────────────────────────
+// -- EKSİK FONKSIYONLAR ----------------------------------------------------
 function lVD(){ loadVD && loadVD(); }
 function bUFG(){ buildUFG && buildUFG(); }
 function lY(){ loadYenicespor && loadYenicespor(); }
@@ -1381,7 +1381,7 @@ function pUp(){
   };
   r.readAsArrayBuffer(upFile);
 }
-// ── EKSİK FONKSIYONLAR SONU ────────────────────────────────────────────────
+// -- EKSİK FONKSIYONLAR SONU ------------------------------------------------
 
 window.addEventListener('load',async()=>{
   setFC('all');
