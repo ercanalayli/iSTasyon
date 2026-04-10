@@ -1214,7 +1214,7 @@ async function loadGorevler() {
   const {data: logs} = await db.from('bot_logs').select('*').order('created_at',{ascending:false}).limit(20);
   const logGrid = document.getElementById('gorevLogGrid');
   if(!logs?.length) {
-    logGrid.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Log tablosu bulunamadı. Supabase'de bot_log_tablo.sql çalıştırın.</div>';
+    logGrid.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Log tablosu bulunamadi. Supabase SQL Editor - bot_log_tablo.sql calistirin.</div>';
   } else {
     logGrid.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:11px">
       <thead><tr style="border-bottom:1px solid var(--b2)">
