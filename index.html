@@ -566,7 +566,7 @@ function showKarts(){document.getElementById('kartsDiv').style.display='block';d
 function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(cF);if(!document.getElementById('gB')){const b=document.createElement('button');b.id='gB';b.innerHTML='< Tüm Firmalar';b.style.cssText='margin-bottom:16px;padding:7px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#9899B0;font-size:12px;font-weight:600;cursor:pointer;display:block';b.onclick=()=>{cF='all';setFC('all');showKarts();};document.getElementById('detayDiv').insertBefore(b,document.getElementById('detayDiv').firstChild);}}
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'ERP Radar',s:'Anlık veri istihbaratı'},satis:{t:'Satış Analizi',s:'Ürün ve kategori'},cariler:{t:'Cariler',s:'Müşteri analizi'},finans:{t:'Finans',s:'Satış özeti ve Yenicespor'},stok:{t:'Stok & Ürün Analizi',s:'Ürün bazlı satış ve trend'},hedef:{t:'Hedef / Bütçe',s:'Gerçekleşen vs hedef karşılaştırması'},gorevler:{t:'Görev Teyidi',s:'Kritik görevlerin gerçekleşme durumu'},veri:{t:'Veri Yükleme',s:'Excel ve bot'},bildirim:{t:'Bildirimler',s:'WhatsApp ayarları'}};
-function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();if(id==='dashboard'&&cF==='all')showKarts();}
+async function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(['satis','cariler','stok','hedef','dashboard'].includes(id)&&!RAW.length)await refresh();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();if(id==='dashboard'&&cF==='all')showKarts();}
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fy').style.display=t==='yenicespor'?'block':'none';if(t==='yenicespor')lY();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*');if(from)q=q.gte('tarih',from).lte('tarih',to);if(cF!=='all')q=q.eq('firma_id',cF);const{data,error}=await q.limit(10000);if(error)return[];return data||[];}catch(e){return[];}}
 async function refresh(){RAW=await loadData();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();pSels();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const n=new Date();const el=document.getElementById('lupd');if(el)el.textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}`;genAI();}
@@ -712,7 +712,7 @@ function rU(){
     if(!m[u])m[u]={urun:u,adet:0,ciro:0,firma_id:r.firma_id};
     m[u].adet+=(+r.adet||0);m[u].ciro+=(+r.ciro||0);});
   let rows=Object.values(m).sort((a,b)=>srtD*(b[srtK]-a[srtK]));
-  if(!rows.length){w.innerHTML='<div class="empty"><div class="empty-ico">📦</div><div class="empty-t">Ürün verisi yok</div></div>';return;}
+  if(!rows.length){w.innerHTML='<div class="empty"><div class="empty-ico">📦</div><div class="empty-t">Ürün verisi yok</div><div class="empty-d">Seçilen filtrelerde satış kaydı bulunamadı.</div></div>';return;}
   const tc=rows.reduce((s,r)=>s+r.ciro,0),mc=rows[0]?.ciro||1;
   const cols=['#FFD60A','#aaa','#cd7f32','#635BFF','#00C96B','#FF8C00','#9B8BFF','#FF4757','#06d6a0','#FF6B9D'];
   w.innerHTML=`<table class="pt"><thead><tr>
@@ -741,7 +741,7 @@ function rC(){
   const cf=document.getElementById('cFi')?.value||'';
   const d=cf?RAW.filter(r=>r.firma_id===cf):RAW;
   const el=document.getElementById('cG');if(!el)return;
-  if(!d.length){el.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-ico">👥</div><div class="empty-t">Cari verisi yok</div></div>';return;}
+  if(!d.length){el.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-ico">👥</div><div class="empty-t">Cari verisi yok</div><div class="empty-d">Seçilen filtrelerde müşteri hareketi bulunamadı.</div></div>';return;}
 
   // Müşteri bazlı grupla
   const m={};
@@ -1383,15 +1383,27 @@ function pUp(){
 }
 // -- EKSİK FONKSIYONLAR SONU ------------------------------------------------
 
+async function ensureSession(){
+  try{
+    const {data,error}=await db.auth.getSession();
+    if(error) throw error;
+    const session=data?.session;
+    if(!session){ window.location.replace('login.html'); return false; }
+    return true;
+  }catch(e){ window.location.replace('login.html'); return false; }
+}
 window.addEventListener('load',async()=>{
   setFC('all');
   lWP();
-  showKarts();
+  const ok=await ensureSession();
+  if(!ok) return;
+  await refresh();
+  if(cF==='all') showKarts(); else showDetay();
   document.getElementById('loading').style.transition='opacity .5s';
   document.getElementById('loading').style.opacity='0';
   setTimeout(()=>document.getElementById('loading').style.display='none',500);
   setTimeout(()=>loadGorevler(),3000);
-  setInterval(renderKarts,5*60*1000);
+  setInterval(()=>{ if(cF==='all') renderKarts(); else refresh(); },5*60*1000);
 });
 </script>
 </body>
