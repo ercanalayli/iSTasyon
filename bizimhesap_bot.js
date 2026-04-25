@@ -1,80 +1,81 @@
-/**
- * AperiON Veri Motoru v7
- * - Çok firma desteği (ALAYLI, ELİT, ODYOFORM)
- * - Geçmiş veri modu: node bot.js --gecmis 2026-01-01 2026-03-20
- * - Normal mod: her gün dünü + saatlik bugünü çeker
- */
-
 const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
+const crypto = require('crypto');
 
-// ── ARGÜMAN PARSE ──────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
 const GECMIS_MOD = args.includes('--gecmis');
-const GECMIS_BASLANGIC = GECMIS_MOD ? args[args.indexOf('--gecmis')+1] : null;
-const GECMIS_BITIS     = GECMIS_MOD ? args[args.indexOf('--gecmis')+2] : null;
+const GECMIS_BASLANGIC = GECMIS_MOD ? args[args.indexOf('--gecmis') + 1] : null;
+const GECMIS_BITIS = GECMIS_MOD ? args[args.indexOf('--gecmis') + 2] : null;
+const DRY_RUN = args.includes('--dry-run');
 
-// ── TARİH HESAPLA ──────────────────────────────────────────────────────────
-function fmtTR(d) { return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`; }
-function fmtISO(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function fmtTR(d) {
+  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+}
+function fmtISO(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
-const simdi  = new Date();
+const simdi = new Date();
+const saat = simdi.getHours();
 const bugunD = new Date(simdi.getFullYear(), simdi.getMonth(), simdi.getDate());
-const dunD   = new Date(bugunD); dunD.setDate(dunD.getDate()-1);
+const dunD = new Date(bugunD);
+dunD.setDate(dunD.getDate() - 1);
 
-// Her zaman dünü çek (sabah günlük mod)
-const TARIH_TR  = GECMIS_MOD ? null : fmtTR(dunD);
+const TARIH_TR = GECMIS_MOD ? null : fmtTR(dunD);
 const TARIH_ISO = GECMIS_MOD ? null : fmtISO(dunD);
 
-// ── FİRMA TANIMLARI ────────────────────────────────────────────────────────
 const FIRMALAR = [
-  {
-    id:      'alayli',
-    adi:     'ALAYLI MEDİKAL',
-    sektor:  'ALAYLI',
-    aktif:   true,
-  },
-  {
-    id:      'elit',
-    adi:     'ELİT ET ÜRÜNLERİ',
-    sektor:  'ELİT',
-    aktif:   true,
-  },
-  {
-    id:      'odyoform',
-    adi:     'ODYOFORM İŞİTME CİHAZLARI',
-    sektor:  'ODYOFORM',
-    aktif:   true,
-  },
+  { id: 'alayli', adi: 'ALAYLI MEDİKAL', sektor: 'ALAYLI', aktif: true },
+  { id: 'elit', adi: 'ELİT ET ÜRÜNLERİ', sektor: 'ELİT', aktif: true },
+  { id: 'odyoform', adi: 'ODYOFORM İŞİTME CİHAZLARI', sektor: 'ODYOFORM', aktif: true },
 ];
 
-// ── AYARLAR ────────────────────────────────────────────────────────────────
 const CONFIG = {
-  email:     'alaylimedikal@gmail.com',
-  password:  'aL290900.',
-  loginUrl:  'https://bizimhesap.com/bhlogin',
-  firmUrl:   'https://bizimhesap.com/web/ngn/sec/ngnmultiaccount',
-  reportUrl:  'https://bizimhesap.com/web/ngn/rep/NgnNewSalesReport',
-  masrafUrl:  'https://bizimhesap.com/web/ngn/rep/ngncostreport',
+  email: 'alaylimedikal@gmail.com',
+  password: 'aL290900.',
+  loginUrl: 'https://bizimhesap.com/bhlogin',
+  firmUrl: 'https://bizimhesap.com/web/ngn/sec/ngnmultiaccount',
+  reportUrl: 'https://bizimhesap.com/web/ngn/rep/NgnNewSalesReport',
+  masrafUrl: 'https://bizimhesap.com/web/ngn/rep/ngncostreport',
 };
 
 const SUPABASE = {
-  url:        'https://iilfwosoroflzubkaryj.supabase.co',
-  key:        'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
-  table:      'sales_raw',
-  masrafTbl:  'masraf_raw',
+  url: 'https://iilfwosoroflzubkaryj.supabase.co',
+  key: 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
+  table: 'sales_raw',
+  masrafTbl: 'masraf_raw',
 };
 
-// ── WHATSAPP KİŞİLER ───────────────────────────────────────────────────────
 const WP = [
-  { isim:'Patron',    phone:'', apikey:'', alarm:50000, icerik:['ciro','adet','top'] },
-  { isim:'Muhasebe',  phone:'', apikey:'', alarm:0,     icerik:['ciro','adet'] },
+  { isim: 'Patron', phone: '', apikey: '', alarm: 50000, icerik: ['ciro', 'adet', 'top'] },
+  { isim: 'Muhasebe', phone: '', apikey: '', alarm: 0, icerik: ['ciro', 'adet'] },
 ];
 
 const db = createClient(SUPABASE.url, SUPABASE.key);
 
-// ── LOG ────────────────────────────────────────────────────────────────────
+function hashSatir(r) {
+  return crypto.createHash('sha1').update(JSON.stringify(r)).digest('hex');
+}
+
+function parseTRNumber(value) {
+  if (value === null || value === undefined) return 0;
+  const raw = String(value).trim();
+  if (!raw) return 0;
+  let s = raw.replace(/[^0-9.,-]/g, '');
+  const lastComma = s.lastIndexOf(',');
+  const lastDot = s.lastIndexOf('.');
+  if (lastComma > lastDot) {
+    s = s.replace(/\./g, '').replace(',', '.');
+  } else if (lastDot > -1 && lastComma > -1) {
+    s = s.replace(/,/g, '');
+  } else if ((s.match(/\./g) || []).length > 1) {
+    s = s.replace(/\./g, '');
+  }
+  const n = Number(s);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function log(msg) {
   const t = new Date().toLocaleString('tr-TR');
   const line = `[${t}] ${msg}`;
@@ -82,13 +83,43 @@ function log(msg) {
   fs.appendFileSync('bot_log.txt', line + '\n');
 }
 
-const fmt = n => n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':n.toFixed(0);
+const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : n.toFixed(0);
 
-// ── BROWSER BAŞLAT ─────────────────────────────────────────────────────────
+async function wpGonder(kisi, mesaj) {
+  if (!kisi.phone || !kisi.apikey) return false;
+  const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(kisi.phone)}&text=${encodeURIComponent(mesaj)}&apikey=${encodeURIComponent(kisi.apikey)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`CallMeBot HTTP ${res.status}`);
+  return true;
+}
+
+async function wpSabahOzeti(rows) {
+  const toplamCiro = rows.reduce((t, r) => {
+    const raw = r.toplam || r.ciro || r.tutar || r.net || '0';
+    return t + parseTRNumber(raw);
+  }, 0);
+  const mesaj = [
+    'AperiON gunluk bot ozeti',
+    `Tarih: ${TARIH_ISO || GECMIS_BITIS || fmtISO(new Date())}`,
+    `Satir: ${rows.length}`,
+    `Ciro: ${fmt(toplamCiro)} TL`,
+  ].join('\n');
+
+  let gonderilen = 0;
+  for (const kisi of WP) {
+    try {
+      if (await wpGonder(kisi, mesaj)) gonderilen++;
+    } catch (e) {
+      log(`  WhatsApp gonderilemedi (${kisi.isim}): ${e.message}`);
+    }
+  }
+  if (!gonderilen) log(`  [WP] Alici ayarli degil, ozet atlandi: ${mesaj.replace(/\n/g, ' | ')}`);
+}
+
 async function startBrowser() {
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox','--disable-setuid-sandbox','--disable-blink-features=AutomationControlled'],
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-blink-features=AutomationControlled'],
     defaultViewport: { width: 1366, height: 768 },
   });
   const page = await browser.newPage();
@@ -97,7 +128,6 @@ async function startBrowser() {
   return { browser, page };
 }
 
-// ── LOGIN ──────────────────────────────────────────────────────────────────
 async function login(page) {
   log('[LOGIN] ' + CONFIG.loginUrl);
   await page.goto(CONFIG.loginUrl, { waitUntil: 'networkidle2', timeout: 30000 });
@@ -112,35 +142,36 @@ async function login(page) {
   await pwEl.type(CONFIG.password, { delay: 60 });
 
   const ok = await page.evaluate(() => {
-    const b = [...document.querySelectorAll('button,input[type="submit"]')].find(b=>b.innerText?.includes('Giriş')||b.type==='submit');
-    if(b){b.click();return true;}return false;
+    const b = [...document.querySelectorAll('button,input[type="submit"]')].find(b => b.innerText?.includes('Giriş') || b.type === 'submit');
+    if (b) { b.click(); return true; }
+    return false;
   });
+
   if (!ok) await page.keyboard.press('Enter');
-  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 20000 }).catch(()=>{});
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 20000 }).catch(() => {});
   log('  ✓ → ' + page.url());
 }
 
-// ── FİRMA SEÇ ──────────────────────────────────────────────────────────────
-async function firmaSeç(page, firma) {
+async function firmaSec(page, firma) {
   log(`[FİRMA] ${firma.adi}`);
   await page.goto(CONFIG.firmUrl, { waitUntil: 'networkidle2', timeout: 20000 });
   await page.waitForSelector('a,div', { timeout: 10000 });
 
   const ok = await page.evaluate(aranan => {
     for (const el of document.querySelectorAll('a,button,div,h4,h3,span')) {
-      if ((el.innerText||'').toUpperCase().includes(aranan) && (el.innerText||'').length < 100) {
-        (el.closest('a')||el.closest('button')||el).click(); return true;
+      if ((el.innerText || '').toUpperCase().includes(aranan) && (el.innerText || '').length < 100) {
+        (el.closest('a') || el.closest('button') || el).click();
+        return true;
       }
     }
     return false;
   }, firma.sektor);
 
   if (!ok) throw new Error('Firma bulunamadı: ' + firma.adi);
-  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(()=>{});
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
   await new Promise(r => setTimeout(r, 1000));
 }
 
-// ── RAPOR ÇEK ──────────────────────────────────────────────────────────────
 async function raporCek(page, tarihTR) {
   log(`  [RAPOR] ${tarihTR}`);
   await page.goto(CONFIG.reportUrl, { waitUntil: 'networkidle2', timeout: 30000 });
@@ -154,7 +185,7 @@ async function raporCek(page, tarihTR) {
   }
 
   await page.evaluate(() => {
-    const btn = [...document.querySelectorAll('button')].find(b=>b.innerText?.includes('Hazırla'));
+    const btn = [...document.querySelectorAll('button')].find(b => b.innerText?.includes('Hazırla'));
     if (btn) btn.click();
   });
 
@@ -171,156 +202,126 @@ async function raporCek(page, tarihTR) {
     const tbl = document.querySelector('table');
     if (!tbl) return rows;
     const hs = [...tbl.querySelectorAll('thead th')].map(h =>
-      h.innerText.trim().toLowerCase().replace(/\s+/g,'_')
-        .replace(/ı/g,'i').replace(/ş/g,'s').replace(/ç/g,'c')
-        .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ö/g,'o'));
+      h.innerText.trim().toLowerCase().replace(/\s+/g, '_')
+        .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c')
+        .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o'));
     for (const tr of tbl.querySelectorAll('tbody tr')) {
-      const cells = [...tr.querySelectorAll('td')].map(td=>td.innerText.trim());
-      if (!cells.length||cells.every(c=>!c)) continue;
-      const o={};hs.forEach((h,i)=>{if(h)o[h]=cells[i]||'';});o._cells=cells;
+      const cells = [...tr.querySelectorAll('td')].map(td => td.innerText.trim());
+      if (!cells.length || cells.every(c => !c)) continue;
+      const o = {};
+      hs.forEach((h, i) => { if (h) o[h] = cells[i] || ''; });
+      o._cells = cells;
       rows.push(o);
     }
     return rows;
   });
 }
 
-// ── SUPABASE KAYDET ────────────────────────────────────────────────────────
-async function kaydet(rows, firma, tarihISO) {
-  if (!rows.length) { log('  ⚠ Veri yok'); return 0; }
-  log(`  [DB] ${rows.length} satır yazılıyor...`);
-
-  // Saatlik modda bugünü sil ve yeniden yaz
-  if (!GECMIS_MOD && saat !== 9) {
-    await db.from(SUPABASE.table).delete().eq('firma_id', firma.id).eq('tarih', tarihISO);
-  }
-
-  const records = rows.map(r => ({
-    urun:     (r.satir_aciklamasi||r.urun||r.aciklama||(r._cells||[]).slice(-1)[0]||'EMPTY').substring(0,500),
-    adet:     parseFloat((r.adet||r.miktar||'1').toString().replace(',','.'))||0,
-    ciro:     parseFloat((r.tutar||r.ciro||r.toplam||'0').toString().replace(/[^0-9.,-]/g,'').replace(',','.'))||0,
-    kaynak:   'bizimhesap',
-    tarih:    tarihISO,
-    unvan:    (r.musteri||r.cari||firma.adi).substring(0,200),
-    kategori: r.kategori||r.sinif1||null,
-    firma_id: firma.id,
-    firma_adi:firma.adi,
-    yil:      parseInt(tarihISO.substring(0,4)),
-    ay:       parseInt(tarihISO.substring(5,7)),
-  }));
-
-  const { data, error } = await db.from(SUPABASE.table)
-    .upsert(records, { onConflict: 'tarih,urun,unvan,firma_id', ignoreDuplicates: true })
-    .select();
-
-  if (error) { log('  ✗ DB hatası: ' + error.message); return 0; }
-  log(`  ✓ ${data.length} kayıt`);
-  return data.length;
-}
-
-// ── WHATSAPP ───────────────────────────────────────────────────────────────
-async function wpGonder(phone, apikey, msg) {
-  const https = require('https');
-  return new Promise(resolve => {
-    if (!phone||!apikey){resolve(false);return;}
-    const url = `https://api.callmebot.com/whatsapp.php?phone=${phone}&text=${encodeURIComponent(msg)}&apikey=${apikey}`;
-    https.get(url, res => { log(`  📱 WP → ${phone} (${res.statusCode})`); resolve(true); })
-      .on('error', e => { log(`  ✗ WP: ${e.message}`); resolve(false); });
-  });
-}
-
-async function wpSabahOzeti(tumRows) {
-  if (GECMIS_MOD) return;
-  const tc = tumRows.reduce((s,r)=>s+(+r.ciro||0),0);
-  const ta = tumRows.reduce((s,r)=>s+(+r.adet||0),0);
-  const mx = [...tumRows].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0))[0];
-  const tarih = fmtTR(dunD);
-
-  for (const k of WP) {
-    if (!k.phone||!k.apikey) continue;
-    let lines = [`📊 *AperiON Sabah Raporu*\n${tarih}`,''];
-    if(k.icerik.includes('ciro'))  lines.push(`💰 Toplam Ciro: ₺${fmt(tc)}`);
-    if(k.icerik.includes('adet'))  lines.push(`📦 Adet: ${Math.round(ta).toLocaleString('tr')}`);
-    if(k.icerik.includes('top')&&mx) lines.push(`🏆 Top: ${(mx.urun||'').substring(0,30)}`);
-    lines.push('','_AperiON · iSTasyon ErpaltH_');
-    await wpGonder(k.phone, k.apikey, lines.join('\n'));
-    await new Promise(r=>setTimeout(r,2000));
-  }
-}
-
-
-// ── BOT LOG ────────────────────────────────────────────────────────────────
 async function botLogYaz(tarihISO, firmaId, durum, kayitSayisi, ciroToplam, hataMesaji) {
   try {
     await db.from('bot_logs').insert({
-      tarih:        tarihISO,
-      firma_id:     firmaId,
-      durum:        durum,        // 'basarili', 'bos', 'hata'
-      kayit_sayisi: kayitSayisi||0,
-      ciro_toplam:  ciroToplam||0,
-      hata_mesaji:  hataMesaji||null,
-      bot_versiyonu:'v7'
+      tarih: tarihISO,
+      firma_id: firmaId,
+      durum,
+      kayit_sayisi: kayitSayisi || 0,
+      ciro_toplam: ciroToplam || 0,
+      hata_mesaji: hataMesaji || null,
+      bot_versiyonu: 'v7-fixed'
     });
-  } catch(e) {
+  } catch (e) {
     log('  ⚠ Log yazılamadı: ' + e.message);
   }
 }
 
-// ── EKSİK GÜN DURUM RAPORU ─────────────────────────────────────────────────
-async function gunlukDurumRaporu() {
-  // Son 7 günde her firma için log var mı kontrol et
-  const simdi2 = new Date();
-  const bugun2 = new Date(simdi2.getFullYear(), simdi2.getMonth(), simdi2.getDate());
-  const p = n => String(n).padStart(2,'0');
-  const fd = d => `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
-
-  const gunler = [];
-  for (let i=1; i<=7; i++) {
-    const d = new Date(bugun2); d.setDate(d.getDate()-i);
-    gunler.push(fd(d));
+async function kaydet(rows, firma, tarihISO) {
+  if (!rows.length) {
+    log('  ⚠ Veri yok');
+    await botLogYaz(tarihISO, firma.id, 'bos', 0, 0, null);
+    return 0;
   }
 
-  const firmalar = FIRMALAR.filter(f=>f.aktif);
-  const ozet = [];
-  let eksikVar = false;
+  log(`  [DB] ${rows.length} satır yazılıyor...`);
 
-  for (const firma of firmalar) {
-    const { data } = await db.from('sales_raw')
-      .select('tarih')
-      .eq('firma_id', firma.id)
-      .in('tarih', gunler);
-    const mevcutlar = new Set((data||[]).map(r=>r.tarih));
-    const eksikler = gunler.filter(g => !mevcutlar.has(g));
+  let records = rows.map((r, idx) => ({
+    urun: (r.satir_aciklamasi || r.urun || r.aciklama || (r._cells || []).slice(-1)[0] || 'EMPTY').substring(0, 500),
+    adet: parseTRNumber(r.adet || r.miktar || '1'),
+    ciro: parseTRNumber(r.toplam || r.ciro || r.net || r.tutar || '0'),
+    kaynak: 'bizimhesap',
+    tarih: tarihISO,
+    kaynak_rapor_tarihi: tarihISO,
+    kaynak_cekilme_tarihi: new Date().toISOString(),
+    belge_no: (r.belge_no || r.fatura_no || r.no || r.evrak_no || '').toString().substring(0, 120) || null,
+    satir_hash: hashSatir({ firma_id: firma.id, tarihISO, idx, cells: r._cells || [], row: r }),
+    degisim_durumu: 'normal',
+    unvan: (r.musteri || r.cari || firma.adi).substring(0, 200),
+    kategori: r.kategori || r.sinif1 || null,
+    firma_id: firma.id,
+    firma_adi: firma.adi,
+    yil: parseInt(tarihISO.substring(0, 4)),
+    ay: parseInt(tarihISO.substring(5, 7)),
+  }));
 
-    if (eksikler.length === 0) {
-      ozet.push(`✅ ${firma.adi}: Son 7 gün tam`);
-    } else {
-      eksikVar = true;
-      ozet.push(`❌ ${firma.adi}: ${eksikler.length} gün eksik → ${eksikler.join(', ')}`);
+  if (!DRY_RUN) {
+    for (const rec of records) {
+      const onceki = rec.belge_no
+        ? await db.from(SUPABASE.table).select('id,tarih,ciro,belge_no').eq('firma_id', rec.firma_id).eq('belge_no', rec.belge_no).limit(1)
+        : await db.from(SUPABASE.table).select('id,tarih,ciro,belge_no').eq('firma_id', rec.firma_id).eq('tarih', rec.tarih).eq('urun', rec.urun).eq('unvan', rec.unvan).limit(1);
+      const old = onceki.data?.[0];
+      if (!old) continue;
+      const tarihDegisti = old.tarih && old.tarih !== rec.tarih;
+      const tutarDegisti = Math.abs(Number(old.ciro || 0) - Number(rec.ciro || 0)) > 0.01;
+      if (!tarihDegisti && !tutarDegisti) continue;
+      rec.onceki_tarih = old.tarih;
+      rec.onceki_ciro = old.ciro;
+      rec.degisim_durumu = tarihDegisti ? 'tarih_degisti' : 'tutar_degisti';
+      rec.denetim_notu = tarihDegisti
+        ? `Belge/satir once ${old.tarih}, simdi ${rec.tarih}`
+        : `Tutar once ${old.ciro}, simdi ${rec.ciro}`;
+      await db.from('sales_change_log').insert({
+        sales_raw_id: old.id,
+        firma_id: rec.firma_id,
+        belge_no: rec.belge_no,
+        eski_tarih: old.tarih,
+        yeni_tarih: rec.tarih,
+        eski_ciro: old.ciro,
+        yeni_ciro: rec.ciro,
+        degisim_tipi: rec.degisim_durumu,
+        aciklama: rec.denetim_notu,
+      });
     }
   }
 
-  return { ozet, eksikVar };
+  const { data, error } = await db.from(SUPABASE.table)
+    .upsert(records, { onConflict: 'firma_id,kaynak_rapor_tarihi,satir_hash' })
+    .select();
+
+  if (error) {
+    log('  ✗ DB hatası: ' + error.message);
+    await botLogYaz(tarihISO, firma.id, 'hata', 0, 0, error.message);
+    return 0;
+  }
+
+  const kayitSayisi = data?.length || 0;
+  const ciroToplam = records.reduce((t, r) => t + (r.ciro || 0), 0);
+  log(`  ✓ ${kayitSayisi} kayıt`);
+  await botLogYaz(tarihISO, firma.id, 'basarili', kayitSayisi, ciroToplam, null);
+  return kayitSayisi;
 }
 
-// ── MASRAF RAPORU ─────────────────────────────────────────────────────────
 async function masrafCek(page, tarihTR) {
   log(`  [MASRAF] ${tarihTR}`);
   await page.goto(CONFIG.masrafUrl, { waitUntil: 'networkidle2', timeout: 30000 });
   await page.waitForSelector('input', { timeout: 10000 });
   await new Promise(r => setTimeout(r, 800));
 
-  // Tarih alanlarını doldur
   const inputs = await page.$$('input[type="text"]');
   for (let i = 0; i < Math.min(inputs.length, 2); i++) {
     await inputs[i].click({ clickCount: 3 });
     await inputs[i].type(tarihTR, { delay: 30 });
   }
 
-  // Kırmızı "Raporu Hazırla" butonu
   await page.evaluate(() => {
-    const btn = [...document.querySelectorAll('button')].find(b =>
-      b.innerText?.includes('Hazırla') || b.innerText?.includes('hazırla')
-    );
+    const btn = [...document.querySelectorAll('button')].find(b => b.innerText?.includes('Hazırla') || b.innerText?.includes('hazırla'));
     if (btn) btn.click();
   });
 
@@ -330,6 +331,7 @@ async function masrafCek(page, tarihTR) {
     log('  ⚠ Masraf tablosu yok');
     return [];
   }
+
   await new Promise(r => setTimeout(r, 1500));
 
   return await page.evaluate(() => {
@@ -337,13 +339,13 @@ async function masrafCek(page, tarihTR) {
     const tbl = document.querySelector('table');
     if (!tbl) return rows;
     const hs = [...tbl.querySelectorAll('thead th')].map(h =>
-      h.innerText.trim().toLowerCase()
-        .replace(/\s+/g,'_').replace(/ı/g,'i').replace(/ş/g,'s')
-        .replace(/ç/g,'c').replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ö/g,'o'));
+      h.innerText.trim().toLowerCase().replace(/\s+/g, '_').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o'));
     for (const tr of tbl.querySelectorAll('tbody tr')) {
-      const cells = [...tr.querySelectorAll('td')].map(td=>td.innerText.trim());
-      if (!cells.length||cells.every(c=>!c)) continue;
-      const o={};hs.forEach((h,i)=>{if(h)o[h]=cells[i]||'';});o._cells=cells;
+      const cells = [...tr.querySelectorAll('td')].map(td => td.innerText.trim());
+      if (!cells.length || cells.every(c => !c)) continue;
+      const o = {};
+      hs.forEach((h, i) => { if (h) o[h] = cells[i] || ''; });
+      o._cells = cells;
       rows.push(o);
     }
     return rows;
@@ -351,99 +353,89 @@ async function masrafCek(page, tarihTR) {
 }
 
 async function masrafKaydet(rows, firma, tarihISO) {
-  if (!rows.length) { log('  ⚠ Masraf verisi yok'); return 0; }
-  log(`  [MASRAF DB] ${rows.length} satır yazılıyor...`);
+  if (!rows.length) {
+    log('  ⚠ Masraf verisi yok');
+    return 0;
+  }
 
   const records = rows.map(r => ({
-    tarih:      tarihISO,
-    firma_id:   firma.id,
-    firma_adi:  firma.adi,
-    aciklama:   (r.aciklama||r.masraf_adi||r.tanim||(r._cells||[])[1]||'EMPTY').substring(0,500),
-    kategori:   (r.kategori||r.sinif||r.tur||(r._cells||[])[2]||'').substring(0,200),
-    tutar:      parseFloat((r.tutar||r.toplam||r.miktar||'0').toString().replace(/[^0-9.,-]/g,'').replace(',','.'))||0,
-    kdv:        parseFloat((r.kdv||'0').toString().replace(/[^0-9.,-]/g,'').replace(',','.'))||0,
-    tedarikci:  (r.tedarikci||r.cari||r.firma||'').substring(0,200),
-    kaynak:     'bizimhesap',
-    yil:        parseInt(tarihISO.substring(0,4)),
-    ay:         parseInt(tarihISO.substring(5,7)),
+    tarih: tarihISO,
+    firma_id: firma.id,
+    firma_adi: firma.adi,
+    aciklama: (r.aciklama || r.masraf || r.gider || (r._cells || []).join(' | ') || '').substring(0, 500),
+    kategori: r.kategori || r.sinif1 || null,
+    tutar: parseTRNumber(r.toplam || r.tutar || '0'),
+    kdv: parseTRNumber(r.kdv || '0'),
+    tedarikci: (r.tedarikci || r.cari || firma.adi).substring(0, 200),
+    kaynak: 'bizimhesap'
   }));
 
+  if (DRY_RUN) {
+    log(`  [DRY] Masraf ${records.length} kayit hazir`);
+    return records.length;
+  }
+
   const { data, error } = await db.from(SUPABASE.masrafTbl)
-    .upsert(records, { onConflict: 'tarih,aciklama,firma_id', ignoreDuplicates: true })
+    .upsert(records, { onConflict: 'tarih,aciklama,tedarikci,firma_id', ignoreDuplicates: true })
     .select();
 
-  if (error) { log('  ✗ Masraf DB hatası: ' + error.message); return 0; }
-  log(`  ✓ ${data.length} masraf kaydı`);
-  return data.length;
-}
-
-async function eksikMasrafGunleriBul(firmaId) {
-  const gunler = [];
-  for (let i=1; i<=7; i++) {
-    const d = new Date(bugunD); d.setDate(d.getDate()-i);
-    gunler.push(fmtISO(d));
-  }
-  const { data } = await db.from(SUPABASE.masrafTbl)
-    .select('tarih').eq('firma_id', firmaId).in('tarih', gunler);
-  const mevcutlar = new Set((data||[]).map(r=>r.tarih));
-  const eksikler = gunler.filter(g => !mevcutlar.has(g));
-  if (eksikler.length === 0) log(`  [${firmaId}] Masraf: Son 7 gün tam ✓`);
-  else log(`  [${firmaId}] Masraf eksik: ${eksikler.join(', ')}`);
-  return eksikler;
-}
-
-// ── MASRAF RAPORU SONU ─────────────────────────────────────────────────────
-
-
-async function eksikGunleriBul(firmaId) {
-  // Son 7 günü hesapla (bugün hariç, dün dahil)
-  const gunler = [];
-  for (let i = 1; i <= 7; i++) {
-    const d = new Date(bugunD);
-    d.setDate(d.getDate() - i);
-    gunler.push(fmtISO(d));
+  if (error) {
+    if ((error.message || '').includes('ON CONFLICT') || (error.message || '').includes('duplicate key')) {
+      log('  ! Masraf unique constraint yok, guvenli insert yoluna geciliyor...');
+      return await masrafGuvenliEkle(records);
+    }
+    log('  ✗ Masraf DB hatası: ' + error.message);
+    return 0;
   }
 
-  // DB'de hangi günler var?
-  const { data } = await db
-    .from(SUPABASE.table)
-    .select('tarih')
-    .eq('firma_id', firmaId)
-    .in('tarih', gunler);
-
-  const mevcutlar = new Set((data || []).map(r => r.tarih));
-  const eksikler = gunler.filter(g => !mevcutlar.has(g));
-
-  if (eksikler.length === 0) {
-    log(`  [${firmaId}] Son 7 gün tam ✓`);
-  } else {
-    log(`  [${firmaId}] Eksik ${eksikler.length} gün: ${eksikler.join(', ')}`);
-  }
-
-  return eksikler; // ISO format
+  const kayit = data?.length || 0;
+  log(`  ✓ Masraf ${kayit} kayıt`);
+  return kayit;
 }
 
-// ── GEÇMİŞ VERİ MODU ──────────────────────────────────────────────────────
-function tarihlerArasındakiGunler(baslangic, bitis) {
-  const dates = [];
-  const cur = new Date(baslangic);
-  const end = new Date(bitis);
-  while (cur <= end) {
-    dates.push(fmtTR(cur));
-    cur.setDate(cur.getDate() + 1);
+async function masrafGuvenliEkle(records) {
+  let eklenen = 0;
+  for (const rec of records) {
+    const { data: varMi, error: kontrolHata } = await db.from(SUPABASE.masrafTbl)
+      .select('id')
+      .eq('tarih', rec.tarih)
+      .eq('aciklama', rec.aciklama)
+      .eq('tedarikci', rec.tedarikci)
+      .eq('firma_id', rec.firma_id)
+      .limit(1);
+
+    if (kontrolHata) {
+      log('  Masraf kontrol hatasi: ' + kontrolHata.message);
+      continue;
+    }
+    if (varMi && varMi.length) continue;
+
+    const { error: insertHata } = await db.from(SUPABASE.masrafTbl).insert(rec);
+    if (insertHata) {
+      log('  Masraf insert hatasi: ' + insertHata.message);
+      continue;
+    }
+    eklenen++;
   }
-  return dates;
+  log(`  Masraf guvenli ekleme: ${eklenen} yeni kayit`);
+  return eklenen;
 }
 
-// ── MAIN ───────────────────────────────────────────────────────────────────
+function tarihAraligiOlustur(bas, bit) {
+  const liste = [];
+  const d = new Date(bas);
+  const son = new Date(bit);
+  while (d <= son) {
+    liste.push({ tr: fmtTR(d), iso: fmtISO(d) });
+    d.setDate(d.getDate() + 1);
+  }
+  return liste;
+}
+
 async function main() {
   log('══════════════════════════════════════════════════');
-  log('  AperiON Veri Motoru v7 — iSTasyon ErpaltH      ');
-  if (GECMIS_MOD) {
-    log(`  MOD: GEÇMİŞ VERİ — ${GECMIS_BASLANGIC} → ${GECMIS_BITIS}`);
-  } else {
-    log(`  MOD: AKILLI — Son 7 gün eksik kontrol`);
-  }
+  log('  AperiON Veri Motoru v7-fixed — iSTasyon ErpaltH');
+  log(`  MOD: ${GECMIS_MOD ? `GEÇMİŞ VERİ — ${GECMIS_BASLANGIC} → ${GECMIS_BITIS}` : `GÜNLÜK — ${TARIH_TR}`}`);
   log('══════════════════════════════════════════════════');
 
   const { browser, page } = await startBrowser();
@@ -452,121 +444,46 @@ async function main() {
   try {
     await login(page);
 
-    if (GECMIS_MOD) {
-      // Geçmiş mod: her firma için tüm günleri çek
-      const gunler = tarihlerArasındakiGunler(GECMIS_BASLANGIC, GECMIS_BITIS);
-      log(`Toplam ${gunler.length} gün × ${FIRMALAR.filter(f=>f.aktif).length} firma çekilecek`);
+    const tarihListesi = GECMIS_MOD
+      ? tarihAraligiOlustur(GECMIS_BASLANGIC, GECMIS_BITIS)
+      : [{ tr: TARIH_TR, iso: TARIH_ISO }];
 
-      for (const firma of FIRMALAR.filter(f=>f.aktif)) {
-        let firmaTop = 0;
-        await firmaSeç(page, firma);
+    for (const firma of FIRMALAR.filter(f => f.aktif)) {
+      try {
+        await firmaSec(page, firma);
+        let firmaToplam = 0;
 
-        for (const tarihTR of gunler) {
-          const tarihISO = tarihTR.split('.').reverse().join('-');
+        for (const t of tarihListesi) {
           try {
-            const rows = await raporCek(page, tarihTR);
-            firmaTop += await kaydet(rows, firma, tarihISO);
+            const rows = await raporCek(page, t.tr);
+            const kayit = await kaydet(rows, firma, t.iso);
+            firmaToplam += kayit;
+            rows.forEach(r => tumRows.push({ ...r, firma_id: firma.id }));
+
+            try {
+              const masrafRows = await masrafCek(page, t.tr);
+              await masrafKaydet(masrafRows, firma, t.iso);
+            } catch (e) {
+              log(`  ⚠ Masraf çekilemedi: ${e.message}`);
+            }
           } catch (e) {
-            log(`  ✗ ${firma.id} ${tarihTR}: ${e.message}`);
+            log(`  ✗ ${firma.adi} ${t.iso} hata: ${e.message}`);
+            await botLogYaz(t.iso, firma.id, 'hata', 0, 0, e.message);
           }
-          await new Promise(r => setTimeout(r, 500)); // BizimHesap'a yük verme
         }
-        log(`  ✅ ${firma.adi}: ${firmaTop} kayıt`);
-      }
 
-    } else {
-      // Akıllı mod: son 7 günde eksik günleri bul ve çek
-      log('  Eksik günler kontrol ediliyor...');
-
-      for (const firma of FIRMALAR.filter(f=>f.aktif)) {
-        try {
-          const eksikler = await eksikGunleriBul(firma.id);
-
-          if (eksikler.length === 0) {
-            log(`  ✓ ${firma.adi}: Veriler tam, atlandı`);
-            continue;
-          }
-
-          await firmaSeç(page, firma);
-
-          for (const tarihISO of eksikler) {
-            const tarihTR = tarihISO.split('-').reverse().join('.');
-            try {
-              const rows = await raporCek(page, tarihTR);
-              const n = await kaydet(rows, firma, tarihISO);
-              tumRows.push(...rows.map(r=>({...r,ciro:parseFloat((r.tutar||r.ciro||'0').replace(/[^0-9.,-]/g,'').replace(',','.'))||0})));
-              log(`  ✅ ${firma.adi} ${tarihTR}: ${n} kayıt`);
-            } catch (e) {
-              log(`  ✗ ${firma.adi} ${tarihTR}: ${e.message}`);
-            }
-            await new Promise(r => setTimeout(r, 800));
-          }
-
-        } catch (e) {
-          log(`  ✗ ${firma.adi}: ${e.message}`);
-          await page.screenshot({ path: `debug_${firma.id}.png`, fullPage: true }).catch(()=>{});
-        }
-      }
-
-      await wpSabahOzeti(tumRows);
-
-      // Masraf çekme - satış ile aynı mantık
-      log('');
-      log('  [MASRAF] Eksik masraf günleri kontrol ediliyor...');
-      for (const firma of FIRMALAR.filter(f=>f.aktif)) {
-        try {
-          const eksikler = await eksikMasrafGunleriBul(firma.id);
-          if (eksikler.length === 0) {
-            log(`  ✓ ${firma.adi}: Masraflar tam, atlandı`);
-            continue;
-          }
-          await firmaSeç(page, firma);
-          for (const tarihISO of eksikler) {
-            const tarihTR = tarihISO.split('-').reverse().join('.');
-            try {
-              const rows = await masrafCek(page, tarihTR);
-              await masrafKaydet(rows, firma, tarihISO);
-            } catch (e) {
-              log(`  ✗ ${firma.adi} masraf ${tarihTR}: ${e.message}`);
-            }
-            await new Promise(r => setTimeout(r, 800));
-          }
-        } catch (e) {
-          log(`  ✗ ${firma.adi} masraf: ${e.message}`);
-        }
+        log(`  ✅ ${firma.adi}: ${firmaToplam} kayıt`);
+      } catch (e) {
+        log(`✗ Firma genel hata (${firma.adi}): ${e.message}`);
+        const logTarih = GECMIS_MOD ? (GECMIS_BITIS || fmtISO(new Date())) : TARIH_ISO;
+        await botLogYaz(logTarih, firma.id, 'hata', 0, 0, e.message);
       }
     }
 
+    await wpSabahOzeti(tumRows);
     log('✅ TAMAMLANDI');
-
-    // Durum raporu - her çalışmada
-    const { ozet, eksikVar } = await gunlukDurumRaporu();
-    log('');
-    log('── DURUM RAPORU ──────────────────────────────');
-    ozet.forEach(s => log('  ' + s));
-    log('───────────────────────────────────────────────');
-
-    // Eksik varsa WP alarm gönder
-    if (eksikVar) {
-      const msg = '⚠️ *AperiON UYARI*\n\nEksik veri tespit edildi!\n\n' + ozet.join('\n') + '\n\n_AperiON · ErpaltH_';
-      for (const k of WP.filter(k=>k.phone&&k.apikey)) {
-        await wpGonder(k.phone, k.apikey, msg);
-      }
-    }
-
-    // Normal teyit mesajı (sabah)
-    const simdi3 = new Date();
-    if (simdi3.getHours() >= 8 && simdi3.getHours() <= 10) {
-      const msg = '📊 *AperiON Günlük Teyit*\n\n' + ozet.join('\n') + '\n\n_' + simdi3.toLocaleDateString('tr-TR') + ' ' + simdi3.toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'}) + '_';
-      for (const k of WP.filter(k=>k.phone&&k.apikey)) {
-        await wpGonder(k.phone, k.apikey, msg);
-      }
-    }
-
   } catch (e) {
-    log('✗ KRİTİK HATA: ' + e.message);
-    await page.screenshot({ path: 'debug_error.png', fullPage: true }).catch(()=>{});
-    process.exit(1);
+    log('✗ GENEL HATA: ' + e.message);
   } finally {
     await browser.close();
   }
