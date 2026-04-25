@@ -568,7 +568,8 @@ const fD=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const today=()=>fD(new Date());
 const yest=()=>fD(new Date(Date.now()-86400000));
 const trDate=s=>{const d=new Date((s||today())+'T12:00:00');return d.toLocaleDateString('tr-TR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});};
-const periodName=m=>m==='yesterday'?`Dun (${trDate(yest())})`:m==='today'?`Bugun (${trDate(today())})`:m==='week'?'Son 7 gun':m==='month'?'Bu ay':m==='year'?`${new Date().getFullYear()} yili`:'Tum veri';
+const shortTR=s=>{const d=new Date((s||today())+'T12:00:00');return d.toLocaleDateString('tr-TR');};
+const periodName=m=>m==='yesterday'?`Gecmis tarih (${shortTR(yest())})`:m==='today'?`Bugun (${shortTR(today())})`:m==='week'?'Son 7 gun':m==='month'?'Bu ay':m==='year'?`${new Date().getFullYear()} yili`:'Tum veri';
 const saleChanged=r=>{const c=(r.created_at||r.kayit_tarihi||r.bot_tarihi||'').substring(0,10);const u=(r.updated_at||r.guncelleme_tarihi||'').substring(0,10);return (c&&r.tarih&&c!==r.tarih)||(u&&r.tarih&&u!==r.tarih);};
 const fil=()=>cF==='all'?RAW:RAW.filter(r=>r.firma_id===cF);
 function getR(m){const t=new Date(),d=new Date(t.getFullYear(),t.getMonth(),t.getDate());if(m==='yesterday'){const y=new Date(d);y.setDate(y.getDate()-1);return{from:fD(y),to:fD(y)};}if(m==='today')return{from:fD(d),to:fD(d)};if(m==='week'){const w=new Date(d);w.setDate(w.getDate()-6);return{from:fD(w),to:fD(d)};}if(m==='month')return{from:fD(new Date(t.getFullYear(),t.getMonth(),1)),to:fD(d)};if(m==='year')return{from:`${t.getFullYear()}-01-01`,to:fD(d)};return{from:'2020-01-01',to:fD(d)};}
@@ -1265,6 +1266,31 @@ function gorevSil(idx) {
 // ── GÖREV TEYİDİ SONU ──────────────────────────────────────────────────────
 
 // ── WİDGET SİSTEMİ ────────────────────────────────────────────────────────
+function genAI(){
+  const d=fil();
+  const total=d.reduce((s,r)=>s+(+r.ciro||0),0);
+  const fn=F[cF]?.n||'Tum Firmalar';
+  const mx=[...d].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0))[0];
+  const n=new Date();
+  let txt='Veri yok.';
+  if(d.length) txt=`<strong>${fn}</strong> - ${periodName(cM)}: <strong>${d.length} islem</strong>, TL ${fmt(total)} ciro.${mx?` En yuksek: ${(mx.urun||'').substring(0,35)} - TL ${fmt(+mx.ciro||0)}`:''}`;
+  document.getElementById('aiT').innerHTML=txt;
+  document.getElementById('aiTm').textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}`;
+  document.getElementById('aiI').textContent='R';
+}
+function rAl(){
+  const d=fil();
+  const el=document.getElementById('alB');if(!el)return;
+  const total=d.reduce((s,r)=>s+(+r.ciro||0),0);
+  const mx=[...d].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0))[0];
+  const uniq=new Set(d.map(r=>r.unvan).filter(Boolean)).size;
+  const rows=d.length?[
+    ['Donem',periodName(cM),''],
+    ['Toplam',`TL ${fmt(total)} - ${d.length} islem - ${uniq} musteri`,''],
+    ['En yuksek',mx?`${(mx.urun||'-').substring(0,42)} - TL ${fmt(+mx.ciro||0)}`:'-','']
+  ]:[['Durum',`${periodName(cM)} icin veri yok.`,'']];
+  el.innerHTML=rows.map(([h,t,b])=>`<div class="ali"><span style="font-family:var(--mono);font-size:10px;color:var(--accent);width:70px">${h}</span><span class="ali-t">${t}</span>${b?`<span class="ab ab-ok">${b}</span>`:''}</div>`).join('');
+}
 const WIDGETS=[
   {id:'w-kpi',     label:'KPI Kartları',    desc:'Toplam Ciro, En Yüksek, Aktif Firma',default:true},
   {id:'w-trend',   label:'Ciro Trendi',     desc:'Günlük bar grafik + firma dağılımı', default:true},
