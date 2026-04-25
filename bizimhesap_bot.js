@@ -289,6 +289,16 @@ async function kaydet(rows, firma, tarihISO) {
         aciklama: rec.denetim_notu,
       });
     }
+
+    const { error: cleanError } = await db.from(SUPABASE.table)
+      .delete()
+      .eq('firma_id', firma.id)
+      .eq('tarih', tarihISO);
+    if (cleanError) {
+      log('  ✗ Eski satis satirlari temizlenemedi: ' + cleanError.message);
+      await botLogYaz(tarihISO, firma.id, 'hata', 0, 0, cleanError.message);
+      return 0;
+    }
   }
 
   const { data, error } = await db.from(SUPABASE.table)
