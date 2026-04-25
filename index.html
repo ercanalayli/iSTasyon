@@ -347,11 +347,20 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
       <div id="fg">
         <div class="fbar">
           <span class="fbar-l">Yıl</span>
-          <select class="sel" id="rY" onchange="rA()"><option value="2026">2026</option><option value="2025">2025</option></select>
+          <select class="sel" id="rY" onchange="rA()"><option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option></select>
           <div class="fsep"></div><span class="fbar-l">Firma</span>
           <select class="sel" id="rFi" onchange="rA()"><option value="">Tüm</option></select>
         </div>
-        <div class="mg" id="mG"></div>
+        <div class="kpi-row">
+          <div class="kpi g"><div class="kpi-l">Yillik Satis</div><div class="kpi-v" id="rGelir">-</div><div class="kpi-s" id="rGelirS">-</div></div>
+          <div class="kpi r"><div class="kpi-l">Yillik Gider</div><div class="kpi-v" id="rGider">-</div><div class="kpi-s" id="rGiderS">Masraf + banka gideri</div></div>
+          <div class="kpi c"><div class="kpi-l">Net / Kar</div><div class="kpi-v" id="rNet">-</div><div class="kpi-s" id="rNetS">Satis - gider</div></div>
+        </div>
+        <div class="card"><div class="card-hd"><div class="card-l">12 Aylik Satis / Gider / Kar</div></div><div id="mG"></div></div>
+        <div class="two-col">
+          <div class="card"><div class="card-hd"><div class="card-l">Ilk 6 Ay / Son 6 Ay</div></div><div id="halfG"></div></div>
+          <div class="card"><div class="card-hd"><div class="card-l">Gider Kirilimi</div></div><div id="giderG"></div></div>
+        </div>
       </div>
       <div id="fy" style="display:none">
         <div class="fbar">
@@ -878,36 +887,41 @@ async function rA(){
   const cf=document.getElementById('rFi')?.value||'';
   let q=db.from('sales_raw').select('*').gte('tarih',`${yil}-01-01`).lte('tarih',`${yil}-12-31`);
   if(cf)q=q.eq('firma_id',cf);
-  const{data}=await q;
+  let gq=db.from('masraf_raw').select('*').gte('tarih',`${yil}-01-01`).lte('tarih',`${yil}-12-31`);
+  if(cf)gq=gq.eq('firma_id',cf);
+  const [{data},{data:giderData}] = await Promise.all([q,gq]);
   const el=document.getElementById('mG');if(!el)return;
-  if(!data?.length){el.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="empty-ico">📅</div><div class="empty-t">${yil} için veri yok</div></div>`;return;}
+  if(!data?.length && !giderData?.length){el.innerHTML=`<div class="empty"><div class="empty-ico">-</div><div class="empty-t">${yil} icin veri yok</div></div>`;return;}
   const months={};
-  for(let i=1;i<=12;i++)months[i]={n:['','Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'][i],kat:{},ciro:0};
+  for(let i=1;i<=12;i++)months[i]={n:['','Ocak','Subat','Mart','Nisan','Mayis','Haziran','Temmuz','Agustos','Eylul','Ekim','Kasim','Aralik'][i],kat:{},ciro:0,gider:0,islem:0};
   data.forEach(r=>{const ay=parseInt(r.tarih?.substring(5,7));if(!ay)return;
-    const k=r.kategori||'Diğer';
+    const k=r.kategori||'Diger';
     if(!months[ay].kat[k])months[ay].kat[k]={ciro:0,adet:0};
     months[ay].kat[k].ciro+=(+r.ciro||0);months[ay].kat[k].adet+=(+r.adet||0);
-    months[ay].ciro+=(+r.ciro||0);});
-  const kc=['#635BFF','#00C96B','#FF8C00','#9B8BFF','#FFD60A','#FF4757'];
-  el.innerHTML=Object.values(months).filter(m=>m.ciro>0).map(m=>{
-    const kr=Object.entries(m.kat).sort((a,b)=>b[1].ciro-a[1].ciro);
-    return`<div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);overflow:hidden">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--b1)">
-        <span style="font-size:13px;font-weight:800">${m.n} ${yil}</span>
-        <span style="font-family:var(--mono);font-size:12px;color:var(--green);font-weight:700">₺${fmt(m.ciro)}</span>
-      </div>
-      <table style="width:100%;border-collapse:collapse">${kr.map(([k,v],i)=>`
-        <tr style="border-bottom:1px solid rgba(255,255,255,.03)">
-          <td style="padding:7px 12px"><span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:${kc[i%kc.length]};margin-right:7px"></span><span style="font-size:11px;color:var(--t2)">${k}</span></td>
-          <td style="padding:7px 12px;text-align:right;font-family:var(--mono);font-size:11px;color:${kc[i%kc.length]}">₺${fmt(v.ciro)}</td>
-          <td style="padding:7px 12px;text-align:right;font-family:var(--mono);font-size:10px;color:var(--t3)">${Math.round(v.adet)}</td>
-        </tr>`).join('')}
-        <tr style="border-top:1px solid var(--b2)">
-          <td style="padding:8px 12px;font-weight:800;font-size:12px">TOPLAM</td>
-          <td style="padding:8px 12px;text-align:right;font-family:var(--mono);font-size:12px;color:var(--green);font-weight:700">₺${fmt(m.ciro)}</td>
-          <td></td>
-        </tr>
-      </table></div>`;}).join('');
+    months[ay].ciro+=(+r.ciro||0);months[ay].islem++;});
+  (giderData||[]).forEach(r=>{const ay=parseInt(r.tarih?.substring(5,7));if(!ay)return;months[ay].gider+=(+r.tutar||0);});
+  const toplamSatis=Object.values(months).reduce((s,m)=>s+m.ciro,0);
+  const toplamGider=Object.values(months).reduce((s,m)=>s+m.gider,0);
+  const toplamNet=toplamSatis-toplamGider;
+  const doluAy=Object.values(months).filter(m=>m.ciro||m.gider).length||1;
+  const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  setTxt('rGelir','TL '+fmt(toplamSatis));setTxt('rGider','TL '+fmt(toplamGider));setTxt('rNet','TL '+fmt(toplamNet));
+  setTxt('rGelirS',`${doluAy} ay ort. TL ${fmt(toplamSatis/doluAy)}`);
+  setTxt('rGiderS',`${(giderData||[]).length} gider kaydi`);
+  setTxt('rNetS',`aylik ort. TL ${fmt(toplamNet/doluAy)}`);
+  const rows=Object.entries(months).map(([ay,m])=>({ay:+ay,...m,net:m.ciro-m.gider}));
+  el.innerHTML=`<table class="pt"><thead><tr><th>Ay</th><th>Satis</th><th>Gider</th><th>Net/Kar</th><th>Kar Orani</th><th>Islem</th></tr></thead><tbody>${rows.map(m=>{
+    const oran=m.ciro?m.net/m.ciro*100:0;
+    return`<tr><td style="font-weight:800">${m.n}</td><td style="font-family:var(--mono);color:var(--green)">TL ${fmt(m.ciro)}</td><td style="font-family:var(--mono);color:var(--red)">TL ${fmt(m.gider)}</td><td style="font-family:var(--mono);font-weight:800;color:${m.net>=0?'var(--accent)':'var(--red)'}">TL ${fmt(m.net)}</td><td style="font-family:var(--mono);color:var(--t3)">${oran.toFixed(1)}%</td><td style="font-family:var(--mono);color:var(--t3)">${m.islem}</td></tr>`;
+  }).join('')}<tr style="border-top:1px solid var(--b2)"><td style="font-weight:900">TOPLAM</td><td style="font-family:var(--mono);font-weight:900;color:var(--green)">TL ${fmt(toplamSatis)}</td><td style="font-family:var(--mono);font-weight:900;color:var(--red)">TL ${fmt(toplamGider)}</td><td style="font-family:var(--mono);font-weight:900;color:${toplamNet>=0?'var(--accent)':'var(--red)'}">TL ${fmt(toplamNet)}</td><td></td><td></td></tr></tbody></table>`;
+  const half=(a,b)=>rows.filter(m=>m.ay>=a&&m.ay<=b).reduce((o,m)=>({ciro:o.ciro+m.ciro,gider:o.gider+m.gider,net:o.net+m.net,islem:o.islem+m.islem}),{ciro:0,gider:0,net:0,islem:0});
+  const h1=half(1,6),h2=half(7,12);
+  const halfEl=document.getElementById('halfG');
+  if(halfEl)halfEl.innerHTML=[['Ilk 6 Ay',h1],['Son 6 Ay',h2]].map(([n,h])=>`<div class="ali"><span class="ali-t"><strong>${n}</strong><br><span style="font-family:var(--mono);font-size:10px;color:var(--t3)">Satis TL ${fmt(h.ciro)} / Gider TL ${fmt(h.gider)} / ${h.islem} islem</span></span><span style="font-family:var(--mono);font-size:14px;font-weight:900;color:${h.net>=0?'var(--green)':'var(--red)'}">TL ${fmt(h.net)}</span></div>`).join('');
+  const giderMap={};
+  (giderData||[]).forEach(r=>{const k=r.kategori||r.tedarikci||'Diger';giderMap[k]=(giderMap[k]||0)+(+r.tutar||0);});
+  const giderEl=document.getElementById('giderG');
+  if(giderEl){const gr=Object.entries(giderMap).sort((a,b)=>b[1]-a[1]).slice(0,12);giderEl.innerHTML=gr.length?gr.map(([k,v])=>`<div class="ali"><span class="ali-t">${k}</span><span style="font-family:var(--mono);font-weight:800;color:var(--red)">TL ${fmt(v)}</span></div>`).join(''):'<div class="ali"><span class="ali-t">Gider verisi yok.</span></div>';}
 }
 
 
