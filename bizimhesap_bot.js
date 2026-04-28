@@ -7,6 +7,7 @@ const args = process.argv.slice(2);
 const GECMIS_MOD = args.includes('--gecmis');
 const GECMIS_BASLANGIC = GECMIS_MOD ? args[args.indexOf('--gecmis') + 1] : null;
 const GECMIS_BITIS = GECMIS_MOD ? args[args.indexOf('--gecmis') + 2] : null;
+const AYLIK_MOD = args.includes('--aylik');
 const DRY_RUN = args.includes('--dry-run');
 
 function fmtTR(d) {
@@ -14,6 +15,11 @@ function fmtTR(d) {
 }
 function fmtISO(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function parseTRDate(s) {
+  const m = String(s || '').match(/(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
+  if (!m) return null;
+  return `${m[3]}-${String(m[2]).padStart(2, '0')}-${String(m[1]).padStart(2, '0')}`;
 }
 
 const simdi = new Date();
@@ -172,8 +178,8 @@ async function firmaSec(page, firma) {
   await new Promise(r => setTimeout(r, 1000));
 }
 
-async function raporCek(page, tarihTR) {
-  log(`  [RAPOR] ${tarihTR}`);
+async function raporCek(page, tarihTR, bitisTR = tarihTR) {
+  log(`  [RAPOR] ${tarihTR}${bitisTR !== tarihTR ? ' - ' + bitisTR : ''}`);
   await page.goto(CONFIG.reportUrl, { waitUntil: 'networkidle2', timeout: 30000 });
   await page.waitForSelector('input', { timeout: 10000 });
   await new Promise(r => setTimeout(r, 800));
@@ -181,7 +187,7 @@ async function raporCek(page, tarihTR) {
   const inputs = await page.$$('input[type="text"]');
   for (let i = 0; i < Math.min(inputs.length, 2); i++) {
     await inputs[i].click({ clickCount: 3 });
-    await inputs[i].type(tarihTR, { delay: 30 });
+    await inputs[i].type(i === 0 ? tarihTR : bitisTR, { delay: 30 });
   }
 
   await page.evaluate(() => {
@@ -242,12 +248,14 @@ async function kaydet(rows, firma, tarihISO) {
 
   log(`  [DB] ${rows.length} satır yazılıyor...`);
 
-  let records = rows.map((r, idx) => ({
+  let records = rows.map((r, idx) => {
+    const satirTarih = parseTRDate(r.tarih || r.siparis_tarihi || r.vade || '') || tarihISO;
+    return ({
     urun: (r.satir_aciklamasi || r.urun || r.aciklama || (r._cells || []).slice(-1)[0] || 'EMPTY').substring(0, 500),
     adet: parseTRNumber(r.adet || r.miktar || '1'),
     ciro: parseTRNumber(r.toplam || r.ciro || r.net || r.tutar || '0'),
     kaynak: 'bizimhesap',
-    tarih: tarihISO,
+    tarih: satirTarih,
     kaynak_rapor_tarihi: tarihISO,
     kaynak_cekilme_tarihi: new Date().toISOString(),
     belge_no: (r.belge_no || r.fatura_no || r.no || r.evrak_no || '').toString().substring(0, 120) || null,
@@ -257,9 +265,10 @@ async function kaydet(rows, firma, tarihISO) {
     kategori: r.kategori || r.sinif1 || null,
     firma_id: firma.id,
     firma_adi: firma.adi,
-    yil: parseInt(tarihISO.substring(0, 4)),
-    ay: parseInt(tarihISO.substring(5, 7)),
-  }));
+    yil: parseInt(satirTarih.substring(0, 4)),
+    ay: parseInt(satirTarih.substring(5, 7)),
+  });
+  });
 
   if (!DRY_RUN) {
     for (const rec of records) {
@@ -290,14 +299,18 @@ async function kaydet(rows, firma, tarihISO) {
       });
     }
 
-    const { error: cleanError } = await db.from(SUPABASE.table)
-      .delete()
-      .eq('firma_id', firma.id)
-      .eq('tarih', tarihISO);
-    if (cleanError) {
-      log('  ✗ Eski satis satirlari temizlenemedi: ' + cleanError.message);
-      await botLogYaz(tarihISO, firma.id, 'hata', 0, 0, cleanError.message);
-      return 0;
+    const tarihSet = [...new Set(records.map(r => r.tarih).filter(Boolean))];
+    for (let i = 0; i < tarihSet.length; i += 100) {
+      const tarihParca = tarihSet.slice(i, i + 100);
+      const { error: cleanError } = await db.from(SUPABASE.table)
+        .delete()
+        .eq('firma_id', firma.id)
+        .in('tarih', tarihParca);
+      if (cleanError) {
+        log('  ✗ Eski satis satirlari temizlenemedi: ' + cleanError.message);
+        await botLogYaz(tarihISO, firma.id, 'hata', 0, 0, cleanError.message);
+        return 0;
+      }
     }
   }
 
@@ -435,8 +448,17 @@ function tarihAraligiOlustur(bas, bit) {
   const liste = [];
   const d = new Date(bas);
   const son = new Date(bit);
+  if (AYLIK_MOD) {
+    while (d <= son) {
+      const aySon = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+      const parcaSon = aySon < son ? aySon : son;
+      liste.push({ tr: fmtTR(d), bitisTR: fmtTR(parcaSon), iso: fmtISO(d), bitisISO: fmtISO(parcaSon) });
+      d.setMonth(d.getMonth() + 1, 1);
+    }
+    return liste;
+  }
   while (d <= son) {
-    liste.push({ tr: fmtTR(d), iso: fmtISO(d) });
+    liste.push({ tr: fmtTR(d), bitisTR: fmtTR(d), iso: fmtISO(d), bitisISO: fmtISO(d) });
     d.setDate(d.getDate() + 1);
   }
   return liste;
@@ -445,7 +467,7 @@ function tarihAraligiOlustur(bas, bit) {
 async function main() {
   log('══════════════════════════════════════════════════');
   log('  AperiON Veri Motoru v7-fixed — iSTasyon ErpaltH');
-  log(`  MOD: ${GECMIS_MOD ? `GEÇMİŞ VERİ — ${GECMIS_BASLANGIC} → ${GECMIS_BITIS}` : `GÜNLÜK — ${TARIH_TR}`}`);
+    log(`  MOD: ${GECMIS_MOD ? `GEÇMİŞ VERİ — ${GECMIS_BASLANGIC} → ${GECMIS_BITIS}${AYLIK_MOD ? ' / AYLIK' : ''}` : `GÜNLÜK — ${TARIH_TR}`}`);
   log('══════════════════════════════════════════════════');
 
   const { browser, page } = await startBrowser();
@@ -456,7 +478,7 @@ async function main() {
 
     const tarihListesi = GECMIS_MOD
       ? tarihAraligiOlustur(GECMIS_BASLANGIC, GECMIS_BITIS)
-      : [{ tr: TARIH_TR, iso: TARIH_ISO }];
+      : [{ tr: TARIH_TR, bitisTR: TARIH_TR, iso: TARIH_ISO, bitisISO: TARIH_ISO }];
 
     for (const firma of FIRMALAR.filter(f => f.aktif)) {
       try {
@@ -465,7 +487,7 @@ async function main() {
 
         for (const t of tarihListesi) {
           try {
-            const rows = await raporCek(page, t.tr);
+            const rows = await raporCek(page, t.tr, t.bitisTR || t.tr);
             const kayit = await kaydet(rows, firma, t.iso);
             firmaToplam += kayit;
             rows.forEach(r => tumRows.push({ ...r, firma_id: firma.id }));
