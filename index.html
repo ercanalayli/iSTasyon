@@ -535,6 +535,18 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
           <div id="wpPv" style="background:var(--s2);border-radius:var(--rs);padding:12px;font-family:var(--mono);font-size:11px;line-height:1.8;min-height:80px;white-space:pre-line;border:1px solid var(--b1)">—</div>
           <button class="wb pr" onclick="bPv()" style="margin-top:10px">Önizle</button>
         </div>
+        <div class="wpc">
+          <div style="font-size:13px;font-weight:700;margin-bottom:14px">Secilen Urun Bildirimi</div>
+          <div class="wl">Urunler</div>
+          <textarea class="wi" id="prodNotifyList" rows="7" placeholder="Her satira bir urun adi yazin" style="resize:vertical;line-height:1.5"></textarea>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="wb ok" onclick="saveProdNotify()">Kaydet</button>
+            <button class="wb pr" onclick="previewProdNotify()">Onizle</button>
+            <button class="wb pr" onclick="sendProdNotify(1)">Kisi 1</button>
+            <button class="wb pr" onclick="sendProdNotify(2)">Kisi 2</button>
+          </div>
+          <div id="prodNotifyStatus" style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:10px">Bekliyor</div>
+        </div>
       </div>
     </div>
   </div>
@@ -555,7 +567,7 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='173239-290426';
+const BUILD_CODE='181650-290426';
 const F={all:{n:'Tüm Firmalar',c:'#2563EB',i:'ALL',src:''},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},woodlet:{n:'Woodlet',c:'#B45309',i:'WDL',src:'Excel (WERP)'},elit:{n:'Elit Et',c:'#7C3AED',i:'ELT',src:'BizimHesap Bot'},odyoform:{n:'Odyoform',c:'#B7791F',i:'ODY',src:'BizimHesap Bot'},alkam:{n:'Alkam',c:'#DB2777',i:'ALK',src:'Excel'},yenicespor:{n:'Yenicespor',c:'#0284C7',i:'YSP',src:'Yenicespor Finans'}};
 let RAW=[],cM='month',cF='all',sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null;
 const pad=n=>String(n).padStart(2,'0');
@@ -750,6 +762,36 @@ function sWP(){localStorage.setItem('ap_wp',JSON.stringify({wp1:{name:document.g
 function lWP(){const s=localStorage.getItem('ap_wp');if(!s)return;try{const c=JSON.parse(s);['wp1','wp2'].forEach(k=>{if(c[k]){document.getElementById(k==='wp1'?'w1n':'w2n').value=c[k].name||'';document.getElementById(k==='wp1'?'w1p':'w2p').value=c[k].phone||'';document.getElementById(k==='wp1'?'w1k':'w2k').value=c[k].key||'';}});}catch(e){}}
 function bPv(){const d=fil();const tc=d.reduce((s,r)=>s+(+r.ciro||0),0);const mx=[...d].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0))[0];document.getElementById('wpPv').textContent=` *AperiON Günlük Rapor*\n${yest().split('-').reverse().join('.')}\n\n Ciro: ₺${fmt(tc)}\n İşlem: ${d.length}\n Top: ${(mx?.urun||'').substring(0,30)}\n\n_AperiON · ErpaltH_`;}
 async function tWP(n){const ph=document.getElementById(`w${n}p`).value;const key=document.getElementById(`w${n}k`).value;if(!ph||!key){alert('Telefon ve API key gerekli!');return;}bPv();const msg=document.getElementById('wpPv').textContent;await fetch(`https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(ph)}&text=${encodeURIComponent(msg)}&apikey=${key}`,{mode:'no-cors'});alert('✅ Gönderildi!');}
+function prodNotifyItems(){return (document.getElementById('prodNotifyList')?.value||'').split(/\n+/).map(x=>x.trim()).filter(Boolean);}
+function saveProdNotify(){localStorage.setItem('ap_prod_notify',JSON.stringify(prodNotifyItems()));const e=document.getElementById('prodNotifyStatus');if(e)e.textContent='Kaydedildi';}
+function loadProdNotify(){try{const v=JSON.parse(localStorage.getItem('ap_prod_notify')||'[]');const e=document.getElementById('prodNotifyList');if(e)e.value=v.join('\n');}catch(e){}}
+const sumRows=rows=>({adet:rows.reduce((s,r)=>s+(+r.adet||0),0),ciro:rows.reduce((s,r)=>s+(+r.ciro||0),0)});
+async function buildProdNotify(){
+  const names=prodNotifyItems();if(!names.length)return 'Secilen urun yok.';
+  const pr=pRange(), now=new Date(), weekS=fD(new Date(now.getFullYear(),now.getMonth(),now.getDate()-6));
+  const {data,error}=await db.from('sales_raw').select('urun,adet,ciro,tarih,firma_id').gte('tarih',pr.prevYearS).lte('tarih',pr.todayS).limit(20000);
+  if(error)return 'Urun raporu alinamadi: '+error.message;
+  const all=data||[], lines=['AperiON Secilen Urun Raporu',pr.todayS,''];
+  names.forEach(name=>{
+    const needle=name.toLocaleLowerCase('tr-TR');
+    const rows=all.filter(r=>(r.urun||'').toLocaleLowerCase('tr-TR').includes(needle));
+    const yd=sumRows(rows.filter(r=>r.tarih===yest()));
+    const wk=sumRows(rows.filter(r=>r.tarih>=weekS));
+    const mo=sumRows(rows.filter(r=>r.tarih>=pr.monthS));
+    const yr=sumRows(rows.filter(r=>r.tarih>=pr.yearS));
+    const ly=sumRows(rows.filter(r=>r.tarih>=pr.prevYearS&&r.tarih<=pr.prevYearE));
+    lines.push(name);
+    lines.push(`Dun: ${fmt(yd.adet)} adet / TL ${fmt(yd.ciro)}`);
+    lines.push(`Bu hafta: ${fmt(wk.adet)} adet / TL ${fmt(wk.ciro)}`);
+    lines.push(`Bu ay: ${fmt(mo.adet)} adet / TL ${fmt(mo.ciro)}`);
+    lines.push(`Bu yil: ${fmt(yr.adet)} adet / TL ${fmt(yr.ciro)}`);
+    lines.push(`Gecen yil: ${fmt(ly.adet)} adet / TL ${fmt(ly.ciro)}`);
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+async function previewProdNotify(){saveProdNotify();const msg=await buildProdNotify();document.getElementById('wpPv').textContent=msg;const e=document.getElementById('prodNotifyStatus');if(e)e.textContent='Onizleme hazir';}
+async function sendProdNotify(n){saveProdNotify();const ph=document.getElementById(`w${n}p`).value;const key=document.getElementById(`w${n}k`).value;if(!ph||!key){alert('Telefon ve API key gerekli!');return;}const msg=await buildProdNotify();document.getElementById('wpPv').textContent=msg;await fetch(`https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(ph)}&text=${encodeURIComponent(msg)}&apikey=${key}`,{mode:'no-cors'});const e=document.getElementById('prodNotifyStatus');if(e)e.textContent='Gonderildi';}
 setInterval(()=>{const n=new Date();document.getElementById('clk').textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;},1000);
 
 
@@ -1484,6 +1526,7 @@ window.addEventListener('load',async()=>{
   try{
     setFC(cF||'all');
     lWP();
+    loadProdNotify();
     await refresh();
     if(cF==='all') showKarts();
     else showDetay();
