@@ -119,10 +119,16 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;back
 .fsep{width:1px;height:18px;background:var(--b2);flex-shrink:0}
 select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);background:var(--s2);color:var(--text);font-family:var(--mono);font-size:10px;outline:none;cursor:pointer}
 .pt{width:100%;border-collapse:collapse}
-.pt th{font-family:var(--mono);font-size:9px;color:var(--t3);padding:8px 12px;text-align:left;border-bottom:1px solid var(--b1);cursor:pointer;user-select:none;letter-spacing:1px;text-transform:uppercase}
-.pt th:hover{color:var(--t2)}.pt th.sorted{color:var(--yellow)}
-.pt td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px;vertical-align:middle}
-.pt tr:last-child td{border:none}.pt tr:hover td{background:rgba(255,255,255,.02)}
+.pt{font-variant-numeric:tabular-nums}
+.pt th{font-family:var(--sans);font-size:11px;color:#64748B;padding:12px 14px;text-align:left;border-bottom:1px solid var(--b1);cursor:pointer;user-select:none;letter-spacing:.02em;text-transform:none;font-weight:700;background:#F8FAFC}
+.pt th:hover{color:#334155}.pt th.sorted{color:var(--accent)}
+.pt td{padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.07);font-size:13px;vertical-align:middle;color:#1F2937}
+.pt tr:last-child td{border:none}.pt tr:hover td{background:#F8FAFC}
+.metric-cell{font-family:var(--sans);line-height:1.35;min-width:104px}
+.metric-money{display:block;color:#0F766E;font-size:13px;font-weight:800;letter-spacing:0}
+.metric-qty{display:block;color:#64748B;font-size:12px;font-weight:600;margin-top:4px}
+.price-main{display:block;color:#111827;font-size:13px;font-weight:800}
+.price-sub{display:block;color:#64748B;font-size:12px;font-weight:600;margin-top:4px}
 .rk{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:4px;font-family:var(--mono);font-size:9px;font-weight:700}
 .r1{background:rgba(255,214,10,.2);color:var(--yellow)}.r2{background:rgba(200,200,200,.12);color:#aaa}.r3{background:rgba(205,127,50,.15);color:#cd7f32}.rn{background:rgba(255,255,255,.05);color:var(--t3)}
 .mb{display:flex;align-items:center;gap:6px}
@@ -549,7 +555,7 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='162502-290426';
+const BUILD_CODE='173239-290426';
 const F={all:{n:'Tüm Firmalar',c:'#2563EB',i:'ALL',src:''},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},woodlet:{n:'Woodlet',c:'#B45309',i:'WDL',src:'Excel (WERP)'},elit:{n:'Elit Et',c:'#7C3AED',i:'ELT',src:'BizimHesap Bot'},odyoform:{n:'Odyoform',c:'#B7791F',i:'ODY',src:'BizimHesap Bot'},alkam:{n:'Alkam',c:'#DB2777',i:'ALK',src:'Excel'},yenicespor:{n:'Yenicespor',c:'#0284C7',i:'YSP',src:'Yenicespor Finans'}};
 let RAW=[],cM='month',cF='all',sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null;
 const pad=n=>String(n).padStart(2,'0');
@@ -771,8 +777,8 @@ const met=(rows,a,b)=>{
   const last=priced.at(-1), lastPrice=last?((+last.ciro||0)/(+last.adet||1)):0;
   return {rows:d.length,adet,ciro,avg:adet?ciro/adet:0,last:lastPrice};
 };
-const sumCell=m=>`<div style="font-family:var(--mono);line-height:1.55"><b style="color:var(--green)">TL ${fmt(m.ciro)}</b><br><span style="color:var(--t3)">${fmt(m.adet)} adet</span></div>`;
-const priceCell=(cur,prev)=>`<div style="font-family:var(--mono);line-height:1.55"><b>Son TL ${fmt(cur.last)}</b><br><span style="color:var(--t3)">Ort TL ${fmt(cur.avg)} / LY TL ${fmt(prev.avg)}</span></div>`;
+const sumCell=m=>`<div class="metric-cell"><span class="metric-money">TL ${fmt(m.ciro)}</span><span class="metric-qty">${fmt(m.adet)} adet</span></div>`;
+const priceCell=(cur,prev)=>`<div class="metric-cell"><span class="price-main">Son TL ${fmt(cur.last)}</span><span class="price-sub">Ort TL ${fmt(cur.avg)} / LY TL ${fmt(prev.avg)}</span></div>`;
 async function salesWide(cf){
   const pr=pRange(), all=[];
   for(let from=0;;from+=1000){
@@ -822,7 +828,7 @@ async function rU(){
 }
 function reportTable(rows,type){
   if(!rows.length)return'<div class="empty"><div class="empty-t">Veri yok</div></div>';
-  return `<table class="pt"><thead><tr><th>${type==='urun'?'Urun':'Cari'}</th><th>Bugun</th><th>Bu Ay</th><th>Gecen Ay</th><th>Bu Yil</th><th>Gecen Yil</th><th>Fiyat</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-weight:800;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.n}">${r.n}<div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:2px">${r.cat}</div></td><td>${sumCell(r.tm)}</td><td>${sumCell(r.mo)}</td><td>${sumCell(r.pm)}</td><td>${sumCell(r.yr)}</td><td>${sumCell(r.ly)}</td><td>${priceCell(r.yr,r.ly)}</td></tr>`).join('')}</tbody></table>`;
+  return `<table class="pt"><thead><tr><th>${type==='urun'?'Ürün':'Cari'}</th><th>Bugün</th><th>Bu Ay</th><th>Geçen Ay</th><th>Bu Yıl</th><th>Geçen Yıl</th><th>Fiyat</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-weight:800;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.n}">${r.n}<div style="font-size:11px;color:#64748B;margin-top:4px;font-weight:700">${r.cat}</div></td><td>${sumCell(r.tm)}</td><td>${sumCell(r.mo)}</td><td>${sumCell(r.pm)}</td><td>${sumCell(r.yr)}</td><td>${sumCell(r.ly)}</td><td>${priceCell(r.yr,r.ly)}</td></tr>`).join('')}</tbody></table>`;
 }
 
 // -- CARİLER ---------------------------------------------------------------
