@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AperiON Banka Onayi</title>
+  <style>
+    :root{font-family:Arial,Helvetica,sans-serif;color:#172033;background:#f4f7fb}
+    body{margin:0;padding:18px}
+    .wrap{max-width:520px;margin:0 auto}
+    .card{background:#fff;border:1px solid #dce4ef;border-radius:8px;box-shadow:0 10px 24px rgba(20,35,60,.08);overflow:hidden}
+    .head{background:#2178b8;color:#fff;padding:16px 18px;font-weight:700}
+    .body{padding:18px}
+    .row{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid #edf1f6;padding:10px 0;font-size:15px}
+    .row b{color:#5d6878;font-size:13px}
+    .amount{font-size:28px;font-weight:800;color:#111;margin:14px 0}
+    .desc{white-space:pre-wrap;line-height:1.45;background:#f7fafc;border:1px solid #e4ebf3;border-radius:6px;padding:12px;margin-top:12px}
+    .learn{margin-top:14px;background:#fff8e8;border:1px solid #efd38b;border-radius:6px;padding:12px}
+    .learn label{display:block;font-size:13px;font-weight:700;color:#5d6878;margin:10px 0 5px}
+    .learn select,.learn input{width:100%;box-sizing:border-box;border:1px solid #cfd8e3;border-radius:6px;padding:12px;font-size:15px}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+    button{border:0;border-radius:6px;padding:15px 10px;font-weight:800;font-size:16px;color:#fff}
+    .ok{background:#20a35a}.no{background:#d94a43}.muted{color:#677487;margin-top:12px;font-size:13px}.err{color:#c6332b}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <div class="head">AperiON Banka Onayi</div>
+      <div class="body" id="app">Yukleniyor...</div>
+    </section>
+  </main>
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://iilfwosoroflzubkaryj.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const q = new URLSearchParams(location.search);
+    const id = q.get('id');
+    const token = q.get('token');
+    const app = document.getElementById('app');
+
+    const fmt = n => Number(n || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const esc = s => String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+    async function load() {
+      if (!id || !token) {
+        app.innerHTML = '<div class="err">Eksik onay linki.</div>';
+        return;
+      }
+      const { data, error } = await db.from('bank_transactions').select('*').eq('id', id).eq('onay_token', token).single();
+      if (error || !data) {
+        app.innerHTML = '<div class="err">Kayit bulunamadi veya link gecersiz.</div>';
+        return;
+      }
+      app.innerHTML = `
+        <div class="row"><b>Firma</b><span>${esc(data.firma_id)}</span></div>
+        <div class="row"><b>Tarih</b><span>${esc(data.tarih)}</span></div>
+        <div class="row"><b>Tip</b><span>${esc(data.tur || 'bekleyen')}</span></div>
+        <div class="row"><b>Guven</b><span>${Number(data.sinif_guven || 0)}/100</span></div>
+        <div class="row"><b>Hesap</b><span>${esc(data.hesap || data.banka || '-')}</span></div>
+        <div class="row"><b>Cari/Karsi taraf</b><span>${esc(data.cari_unvan || data.karsi_taraf || '-')}</span></div>
+        <div class="amount">${fmt(data.tutar)} TL</div>
+        <div class="desc">${esc(data.aciklama || '')}</div>
+        ${Number(data.sinif_guven || 0) === 100 ? '' : `
+          <div class="learn">
+            <b>Bu hareketi bilmiyorum. Ogretmeden kaydetmem.</b>
+            <label>Islem tipi</label>
+            <select id="learnTur">
+              <option value="">Sec</option>
+              <option value="cari_tahsilat">Cari tahsilat</option>
+              <option value="tahsilat">Banka tahsilat</option>
+              <option value="banka_gider">Banka masraf/gider</option>
+              <option value="transfer">Hesaplar arasi transfer</option>
+              <option value="ozel">Ozel / sonra bak</option>
+            </select>
+            <label>Banka/Hesap</label>
+            <input id="learnHesap" value="${esc(data.hesap || '')}" placeholder="*IS BANKASI">
+            <label>Cari / karsi taraf</label>
+            <input id="learnCari" value="${esc(data.cari_unvan || data.karsi_taraf || '')}" placeholder="Cari adi">
+          </div>
+        `}
+        <div class="actions">
+          <button class="ok" id="approve">Onayla</button>
+          <button class="no" id="reject">Reddet</button>
+        </div>
+        <div class="muted">Onaylarsan bot bu hareketi BizimHesap'a kaydeder.</div>
+      `;
+      document.getElementById('approve').onclick = () => karar('onaylandi', data);
+      document.getElementById('reject').onclick = () => karar('reddedildi');
+    }
+
+    function pattern(row) {
+      return String(row.aciklama || row.karsi_taraf || '').toLocaleUpperCase('tr-TR').replace(/\s+/g, ' ').trim().slice(0, 180);
+    }
+
+    async function karar(durum, row) {
+      app.querySelectorAll('button').forEach(b => b.disabled = true);
+      const learnTur = document.getElementById('learnTur');
+      const learnHesap = document.getElementById('learnHesap');
+      const learnCari = document.getElementById('learnCari');
+      const patch = { onay_durumu: durum, updated_at: new Date().toISOString() };
+      if (durum === 'onaylandi' && learnTur) {
+        if (!learnTur.value) {
+          app.querySelectorAll('button').forEach(b => b.disabled = false);
+          app.innerHTML += '<div class="muted err">Once islem tipini sec.</div>';
+          return;
+        }
+        patch.tur = learnTur.value;
+        patch.hesap = learnHesap.value || row.hesap || null;
+        patch.cari_unvan = learnCari.value || row.cari_unvan || null;
+        patch.sinif_guven = 100;
+        patch.sinif_kaynak = 'manuel_ogrenme';
+        patch.ogrenme_durumu = 'ogrenildi';
+      }
+      const { error } = await db.from('bank_transactions')
+        .update(patch)
+        .eq('id', id)
+        .eq('onay_token', token);
+      if (error) {
+        app.innerHTML += `<div class="muted err">Kaydedilemedi: ${esc(error.message)}</div>`;
+        return;
+      }
+      if (durum === 'onaylandi' && learnTur) {
+        await db.from('bank_transaction_rules').upsert({
+          firma_id: row.firma_id,
+          pattern: pattern(row),
+          tur: patch.tur,
+          hesap: patch.hesap,
+          cari_unvan: patch.cari_unvan,
+          karsi_taraf: row.karsi_taraf || null,
+          guven: 100,
+          kullanim_sayisi: 1,
+          son_kullanim: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'firma_id,pattern' });
+      }
+      app.innerHTML = `<div class="amount">${durum === 'onaylandi' ? 'Onaylandi' : 'Reddedildi'}</div><div class="muted">AperiON kararini aldi.</div>`;
+    }
+
+    load();
+  </script>
+</body>
+</html>

@@ -1,3 +1,51 @@
-# AperiON Yapilacaklar
+# AperiON Is Listesi
 
-- Secilen urunler icin bildirim raporu: dun, bu hafta, bu ay, bu yil ve gecen yil satis adet/ciro bilgileri telefona bildirim olarak gelecek.
+## Istenenler
+
+- BizimHesap verileriyle calisan genis vizyonlu ERP radar sistemi.
+- Satis, cari, stok, finans, banka ve gider verilerinin tek ekranda izlenmesi.
+- Satis raporlarinda bugun, dun, bu hafta, bu ay, gecen ay, bu yil ve gecen yil karsilastirmalari.
+- Urun ve cari bazli dinamik yonetim raporlari.
+- Kategoriye gore ayrilmis, kategoriye tiklaninca detayina girilebilen satis analizi.
+- Urun bazinda adet, ciro, son fiyat ve ortalama fiyat takibi.
+- BizimHesap'ta urun adi/kategorisi degisince AperiON raporlarinin da guncellenmesi.
+- Secilen urunlerin satis ozetinin telefona bildirim olarak gelmesi.
+- 2024, 2025, 2026 ve gecmis yillar icin karsilastirmali raporlar.
+- Gider raporlari.
+- Banka ekstresi hareketlerinin onayli sekilde BizimHesap'a islenmesi.
+- Bilinmeyen banka hareketlerinde risk alinmamasi, kullaniciya sorulmasi ve sistemin ogrenmesi.
+- Birden fazla telefona secilebilir bildirim.
+
+## Yapilanlar
+
+- Satis analizi ekrani yonetim raporu formatina cevrildi.
+- Urun dinamik raporu eklendi.
+- Cari dinamik raporu eklendi.
+- Kategori performans kartlari eklendi.
+- Kategoriye tiklayarak detay raporuna girme eklendi.
+- Bugun, bu ay, gecen ay, bu yil ve gecen yil metrikleri eklendi.
+- Urunlerde son fiyat, ortalama fiyat ve gecen yil ortalamasi eklendi.
+- Renkler ve okunabilirlik duzenlendi.
+- Bozuk karakter/yazi sorunlari duzeltildi.
+- Her guncellemede gorunen GNC kodu eklendi.
+- Secilen urun bildirim raporu eklendi.
+- Satis Analizi > Urun Eslestir eklendi.
+- Eski urun adi -> yeni urun adi + kategori eslestirmesi eklendi.
+- Kategorisiz kayitlar, ayni urunun kategorili hali varsa raporda otomatik toparlanacak hale getirildi.
+- Banka hareketleri icin Supabase tablo SQL'i hazirlandi.
+- Banka onay web ekrani hazirlandi.
+- Banka onay bildirim botu hazirlandi.
+- Onaylanmis banka hareketlerini BizimHesap formuna dolduran banka botu hazirlandi.
+
+## Yapilacaklar - Oncelik Sirasi
+
+1. Banka hareketleri sistemini canli repo ve komutlarla stabil hale getirmek.
+2. Banka onay ekranini telefondan kullanilabilir hale getirmek.
+3. Onaylanan banka hareketini BizimHesap'a once form dolduracak, sonra kontrollu kaydedecek hale getirmek.
+4. Bilinmeyen banka hareketlerini soran ve ogrenme kurali olusturan akisi tamamlamak.
+5. Banka ekstresi yukleme/parcalama ekranini AperiON icine almak.
+6. Urun eslestirmelerini Supabase'e tasimak; tarayiciya bagli kalmasini bitirmek.
+7. BizimHesap urun/kategori guncelleme botunu kurmak.
+8. Gider raporlarini eklemek.
+9. 2024, 2025, 2026 ve gecmis yil karsilastirmali yonetim raporunu genisletmek.
+10. Bildirim ayarlarinda hangi raporun hangi telefona gidecegini secilebilir yapmak.
