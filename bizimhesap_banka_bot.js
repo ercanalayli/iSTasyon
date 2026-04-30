@@ -105,20 +105,26 @@ async function firmaSec(page, firma) {
 }
 
 async function onayliHareketleriAl() {
-  let q = db.from(SUPABASE.table)
+  const buildQuery = (strict = true) => {
+    let q = db.from(SUPABASE.table)
     .select('*')
-    .eq('onay_durumu', 'onaylandi')
-    .eq('sinif_guven', 100)
-    .or('bizimhesap_durumu.is.null,bizimhesap_durumu.neq.kaydedildi')
-    .order('tarih', { ascending: true })
-    .limit(LIMIT);
+      .eq('onay_durumu', 'onaylandi')
+      .or('bizimhesap_durumu.is.null,bizimhesap_durumu.neq.kaydedildi')
+      .order('tarih', { ascending: true })
+      .limit(LIMIT);
+    if (strict) q = q.eq('sinif_guven', 100);
+    if (FIRMA_ARG) q = q.eq('firma_id', FIRMA_ARG);
+    if (ID_ARG) q = q.eq('id', ID_ARG);
+    return q;
+  };
 
-  if (FIRMA_ARG) q = q.eq('firma_id', FIRMA_ARG);
-  if (ID_ARG) q = q.eq('id', ID_ARG);
-
-  const { data, error } = await q;
+  let { data, error } = await buildQuery(true);
+  if (error && (error.message || '').includes('sinif_guven')) {
+    log('  sinif_guven kolonu gorunmedi; sadece manuel onayli kayitlarla devam.');
+    ({ data, error } = await buildQuery(false));
+  }
   if (error) throw new Error(`Supabase ${SUPABASE.table}: ${error.message}`);
-  return data || [];
+  return (data || []).filter(r => r.sinif_guven == null || Number(r.sinif_guven) === 100);
 }
 
 function hareketTipi(h) {
