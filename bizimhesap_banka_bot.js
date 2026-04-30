@@ -155,7 +155,7 @@ async function formuDoldur(page, h) {
   } else if (tip === 'transfer') {
     await hesapFormuAc(page, h, 'transfer');
   } else if (tip === 'banka_gider') {
-    await hesapFormuAc(page, h, 'cikis');
+    await masrafFormuAc(page, h);
   } else {
     await hesapFormuAc(page, h, 'giris');
   }
@@ -399,6 +399,78 @@ async function cariTahsilatFormuAc(page, h) {
       await page.goto(`https://bizimhesap.com${CONFIG.cariTahsilatPath}?rc=${rc}&identity=${guid}`, { waitUntil: 'networkidle2', timeout: 30000 });
     }
   }
+}
+
+async function masrafFormuAc(page, h) {
+  await page.goto(CONFIG.giderUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+  await page.waitForSelector('a,button,input,select,textarea', { timeout: 15000 });
+  await page.evaluate(() => {
+    const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
+    const aranan = ['yeni masraf gir', 'yeni masraf', 'masraf gir', 'masraf ekle'];
+    const el = [...document.querySelectorAll('a,button')]
+      .find(x => aranan.some(k => norm(x.innerText || x.value || '').includes(k)));
+    if (el) el.click();
+  });
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 1200));
+  await page.waitForSelector('input,textarea,select,button', { timeout: 15000 });
+
+  await page.evaluate(hareket => {
+    const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const setSelectByText = texts => {
+      const wants = texts.map(norm);
+      for (const s of [...document.querySelectorAll('select')].filter(visible)) {
+        const opt = [...s.options].find(o => wants.some(w => norm(o.text).includes(w)));
+        if (opt) {
+          s.value = opt.value;
+          s.dispatchEvent(new Event('change', { bubbles: true }));
+          return true;
+        }
+      }
+      return false;
+    };
+    const fieldText = x => {
+      const box = x.getBoundingClientRect();
+      const labels = [...document.querySelectorAll('label,.control-label,td,th,div,span')]
+        .filter(visible)
+        .filter(y => {
+          const b = y.getBoundingClientRect();
+          return (b.right <= box.left + 10 && Math.abs((b.top + b.bottom) / 2 - (box.top + box.bottom) / 2) < 40)
+            || (b.bottom <= box.top + 10 && Math.abs((b.left + b.right) / 2 - (box.left + box.right) / 2) < 180);
+        })
+        .map(y => y.innerText || '')
+        .join(' ');
+      return norm([x.name, x.id, x.placeholder, x.getAttribute('aria-label'), x.closest('label')?.innerText, labels].join(' '));
+    };
+    const setValue = (el, value) => {
+      el.focus();
+      el.value = value == null ? '' : String(value);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      el.blur();
+      return true;
+    };
+    const setByHint = (hints, value) => {
+      const hs = hints.map(norm);
+      const el = [...document.querySelectorAll('input,textarea')].filter(visible)
+        .find(x => hs.some(h => fieldText(x).includes(h)));
+      return el ? setValue(el, value) : false;
+    };
+    const tutar = Math.abs(Number(hareket.tutar || hareket.amount || 0)).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const tarih = hareket.tarih || hareket.date || '';
+    const aciklama = hareket.aperion_aciklama || hareket.aciklama || hareket.description || hareket.banka_aciklama || '';
+    setSelectByText(['mali giderler']);
+    setSelectByText(['banka masrafi', 'banka masrafı']);
+    setSelectByText(['odendi', 'ödendi']);
+    setSelectByText([hareket.hesap || hareket.kasa_hesap || '*is bankasi', '*iş bankası', 'is bankasi', 'iş bankası']);
+    setByHint(['tarih'], tarih);
+    setByHint(['odeme tarihi', 'ödeme tarihi'], tarih);
+    setByHint(['tutar', 'amount', 'meblag'], tutar);
+    setByHint(['aciklama', 'not', 'description'], aciklama);
+  }, { ...h, aperion_aciklama: aperionAciklama(h, 'banka_gider') });
 }
 
 async function hesapSec(page, hesapAdi, openGiris = true) {
