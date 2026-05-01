@@ -15,6 +15,7 @@
 - Banka ekstresi hareketlerinin onayli sekilde BizimHesap'a islenmesi.
 - Bilinmeyen banka hareketlerinde risk alinmamasi, kullaniciya sorulmasi ve sistemin ogrenmesi.
 - Birden fazla telefona secilebilir bildirim.
+- BizimHesap'i otomatik gezip menuleri, formlari, alanlari ve kaydetme akisini ogrenmesi.
 
 ## Yapilanlar
 
@@ -36,16 +37,32 @@
 - Banka onay web ekrani hazirlandi.
 - Banka onay bildirim botu hazirlandi.
 - Onaylanmis banka hareketlerini BizimHesap formuna dolduran banka botu hazirlandi.
+- BizimHesap otomatik ogrenme botu hazirlandi.
 
 ## Yapilacaklar - Oncelik Sirasi
 
 1. Banka hareketleri sistemini canli repo ve komutlarla stabil hale getirmek.
-2. Banka onay ekranini telefondan kullanilabilir hale getirmek.
-3. Onaylanan banka hareketini BizimHesap'a once form dolduracak, sonra kontrollu kaydedecek hale getirmek.
-4. Bilinmeyen banka hareketlerini soran ve ogrenme kurali olusturan akisi tamamlamak.
-5. Banka ekstresi yukleme/parcalama ekranini AperiON icine almak.
-6. Urun eslestirmelerini Supabase'e tasimak; tarayiciya bagli kalmasini bitirmek.
-7. BizimHesap urun/kategori guncelleme botunu kurmak.
-8. Gider raporlarini eklemek.
-9. 2024, 2025, 2026 ve gecmis yil karsilastirmali yonetim raporunu genisletmek.
-10. Bildirim ayarlarinda hangi raporun hangi telefona gidecegini secilebilir yapmak.
+2. BizimHesap otomatik ogrenme haritasini tahsilat, masraf ve transfer icin tamamlamak.
+3. Banka onay ekranini telefondan kullanilabilir hale getirmek.
+4. Onaylanan banka hareketini BizimHesap'a once form dolduracak, sonra kontrollu kaydedecek hale getirmek.
+5. Bilinmeyen banka hareketlerini soran ve ogrenme kurali olusturan akisi tamamlamak.
+6. Banka ekstresi yukleme/parcalama ekranini AperiON icine almak.
+7. Urun eslestirmelerini Supabase'e tasimak; tarayiciya bagli kalmasini bitirmek.
+8. BizimHesap urun/kategori guncelleme botunu kurmak.
+9. Gider raporlarini eklemek.
+10. 2024, 2025, 2026 ve gecmis yil karsilastirmali yonetim raporunu genisletmek.
+11. Bildirim ayarlarinda hangi raporun hangi telefona gidecegini secilebilir yapmak.
+
+## BizimHesap Ogrenilecek Akislar
+
+- Giris ve firma secimi.
+- Nakit Yonetimi > Hesaplar > banka hesabi secimi.
+- Bankaya para girisi formu.
+- Hesaplar arasi transfer formu.
+- Nakit Yonetimi > Masraflar > Yeni Masraf Gir formu.
+- Masraf kalemi: Mali Giderler > Banka Masrafi.
+- Musteriler > cari arama > cari karti.
+- Cari kartindan Tahsilat/Odeme formu.
+- Kasa/Banka hesap secimi.
+- Tutar, tarih, aciklama ve odeme durumu alanlari.
+- Kaydetme sonrasi basari/hata isaretleri.
