@@ -223,7 +223,7 @@ async function wpGonder(phone, apikey, msg) {
 }
 
 async function wpSabahOzeti(tumRows) {
-  if (saat !== 9 || GECMIS_MOD) return;
+  if (simdi.getHours() !== 9 || GECMIS_MOD) return;
   const tc = tumRows.reduce((s,r)=>s+(+r.ciro||0),0);
   const ta = tumRows.reduce((s,r)=>s+(+r.adet||0),0);
   const mx = [...tumRows].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0))[0];

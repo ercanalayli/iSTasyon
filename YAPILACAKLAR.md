@@ -38,20 +38,25 @@
 - Banka onay bildirim botu hazirlandi.
 - Onaylanmis banka hareketlerini BizimHesap formuna dolduran banka botu hazirlandi.
 - BizimHesap otomatik ogrenme botu hazirlandi.
+- Eksik gun veri yazma hatasi giderildi.
+- Son 7 gun eksik veri kontrolu test edildi.
+- 25.04, 29.04 ve 30.04 eksik satis verileri tekrar cekildi.
+- Otomatik veri cekimi icin 09:10, 12:30 ve 18:30 Windows gorevleri kuruldu.
+- Bot calistirici dosyasi eklendi.
 
 ## Yapilacaklar - Oncelik Sirasi
 
 1. Banka hareketleri sistemini canli repo ve komutlarla stabil hale getirmek.
-2. BizimHesap otomatik ogrenme haritasini tahsilat, masraf ve transfer icin tamamlamak.
-3. Banka onay ekranini telefondan kullanilabilir hale getirmek.
-4. Onaylanan banka hareketini BizimHesap'a once form dolduracak, sonra kontrollu kaydedecek hale getirmek.
-5. Bilinmeyen banka hareketlerini soran ve ogrenme kurali olusturan akisi tamamlamak.
-6. Banka ekstresi yukleme/parcalama ekranini AperiON icine almak.
-7. Urun eslestirmelerini Supabase'e tasimak; tarayiciya bagli kalmasini bitirmek.
-8. BizimHesap urun/kategori guncelleme botunu kurmak.
-9. Gider raporlarini eklemek.
-10. 2024, 2025, 2026 ve gecmis yil karsilastirmali yonetim raporunu genisletmek.
-11. Bildirim ayarlarinda hangi raporun hangi telefona gidecegini secilebilir yapmak.
+2. Banka onay ekranini telefondan kullanilabilir hale getirmek.
+3. Onaylanan banka hareketini BizimHesap'a once form dolduracak, sonra kontrollu kaydedecek hale getirmek.
+4. Bilinmeyen banka hareketlerini soran ve ogrenme kurali olusturan akisi tamamlamak.
+5. Banka ekstresi yukleme/parcalama ekranini AperiON icine almak.
+6. Urun eslestirmelerini Supabase'e tasimak; tarayiciya bagli kalmasini bitirmek.
+7. BizimHesap urun/kategori guncelleme botunu kurmak.
+8. Gider raporlarini genisletmek.
+9. 2024, 2025, 2026 ve gecmis yil karsilastirmali yonetim raporunu genisletmek.
+10. Bildirim ayarlarinda hangi raporun hangi telefona gidecegini secilebilir yapmak.
+11. Acilista calisan gorevi yonetici izinli kurulumla eklemek.
 
 ## BizimHesap Ogrenilecek Akislar
 
