@@ -109,9 +109,9 @@ async function onayliHareketleriAl() {
     let q = db.from(SUPABASE.table)
     .select('*')
       .eq('onay_durumu', 'onaylandi')
-      .or('bizimhesap_durumu.is.null,bizimhesap_durumu.neq.kaydedildi')
       .order('tarih', { ascending: true })
       .limit(LIMIT);
+    if (!ID_ARG) q = q.or('bizimhesap_durumu.is.null,bizimhesap_durumu.neq.kaydedildi');
     if (strict) q = q.eq('sinif_guven', 100);
     if (FIRMA_ARG) q = q.eq('firma_id', FIRMA_ARG);
     if (ID_ARG) q = q.eq('id', ID_ARG);
@@ -225,7 +225,7 @@ async function formuDoldur2(page, h) {
   } else if (tip === 'transfer') {
     await hesapFormuAc(page, h, 'transfer');
   } else if (tip === 'banka_gider') {
-    await hesapFormuAc(page, h, 'cikis');
+    await masrafFormuAc(page, h);
   } else {
     await hesapFormuAc(page, h, 'giris');
   }
