@@ -362,6 +362,7 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
     <div id="pg-finans" class="page">
       <div class="ft">
         <div class="ft-tab on" onclick="fT('genel',this)">Satış Özeti</div>
+        <div class="ft-tab" onclick="fT('masraf',this)">Masraf Raporu</div>
         <div class="ft-tab" onclick="fT('yenicespor',this)">⚽ Yenicespor</div>
       </div>
       <div id="fg">
@@ -372,6 +373,27 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
           <select class="sel" id="rFi" onchange="rA()"><option value="">Tüm</option></select>
         </div>
         <div class="mg" id="mG"></div>
+      </div>
+      <div id="fm" style="display:none">
+        <div class="fbar">
+          <span class="fbar-l">Yıl</span>
+          <select class="sel" id="mY" onchange="rMasraf()"><option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option></select>
+          <div class="fsep"></div><span class="fbar-l">Firma</span>
+          <select class="sel" id="mFi" onchange="rMasraf()"><option value="">Tüm</option></select>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi r"><div class="kpi-l">Toplam Masraf</div><div class="kpi-v" id="mTop">—</div></div>
+          <div class="kpi o"><div class="kpi-l">İşlem</div><div class="kpi-v" id="mIslem">—</div></div>
+          <div class="kpi c"><div class="kpi-l">Aylık Ortalama</div><div class="kpi-v" id="mOrt">—</div></div>
+          <div class="kpi g"><div class="kpi-l">En Büyük</div><div class="kpi-v" id="mMax">—</div></div>
+        </div>
+        <div class="two-col">
+          <div class="card"><div class="card-hd"><div class="card-l">Kategori Dağılımı</div></div><div id="mKat"></div></div>
+          <div class="card"><div class="card-hd"><div class="card-l">Aylık Trend</div></div><div id="mAy"></div></div>
+        </div>
+        <div class="card" style="margin-top:14px"><div class="card-hd"><div class="card-l">Son Masraflar</div></div>
+          <table class="pt"><thead><tr><th>Tarih</th><th>Kategori</th><th>Açıklama</th><th>Firma</th><th>Tutar</th></tr></thead><tbody id="mRows"></tbody></table>
+        </div>
       </div>
       <div id="fy" style="display:none">
         <div class="fbar">
@@ -583,7 +605,7 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='125312-010526';
+const BUILD_CODE='140115-010526';
 const F={all:{n:'Tüm Firmalar',c:'#2563EB',i:'ALL',src:''},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},woodlet:{n:'Woodlet',c:'#B45309',i:'WDL',src:'Excel (WERP)'},elit:{n:'Elit Et',c:'#7C3AED',i:'ELT',src:'BizimHesap Bot'},odyoform:{n:'Odyoform',c:'#B7791F',i:'ODY',src:'BizimHesap Bot'},alkam:{n:'Alkam',c:'#DB2777',i:'ALK',src:'Excel'},yenicespor:{n:'Yenicespor',c:'#0284C7',i:'YSP',src:'Yenicespor Finans'}};
 let RAW=[],cM='month',cF='all',sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null,PROD_MAP=[];
 const pad=n=>String(n).padStart(2,'0');
@@ -633,7 +655,7 @@ function showDetay(){document.getElementById('kartsDiv').style.display='none';do
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'ERP Radar',s:'Anlık veri istihbaratı'},satis:{t:'Satış Analizi',s:'Ürün ve kategori'},cariler:{t:'Cariler',s:'Müşteri analizi'},finans:{t:'Finans',s:'Satış özeti ve Yenicespor'},stok:{t:'Stok & Ürün Analizi',s:'Ürün bazlı satış ve trend'},hedef:{t:'Hedef / Bütçe',s:'Gerçekleşen vs hedef karşılaştırması'},gorevler:{t:'Görev Teyidi',s:'Kritik görevlerin gerçekleşme durumu'},veri:{t:'Veri Yükleme',s:'Excel ve bot'},bildirim:{t:'Bildirimler',s:'WhatsApp ayarları'}};
 function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();if(id==='dashboard'&&cF==='all')showKarts();}
-function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fy').style.display=t==='yenicespor'?'block':'none';if(t==='yenicespor')lY();}
+function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';document.getElementById('fy').style.display=t==='yenicespor'?'block':'none';if(t==='masraf')rMasraf();if(t==='yenicespor')lY();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*');if(from)q=q.gte('tarih',from).lte('tarih',to);if(cF!=='all')q=q.eq('firma_id',cF);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]);}catch(e){return[];}}
 async function refresh(){RAW=await loadData();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
 function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
@@ -641,7 +663,7 @@ function pSels(){
   const fids=[...new Set(RAW.map(r=>r.firma_id).filter(Boolean))];
   const kats=[...new Set(RAW.map(r=>r.kategori).filter(Boolean))].sort();
 
-  ['uFi','cFi','rFi','stokFi'].forEach(id=>{
+  ['uFi','cFi','rFi','mFi','stokFi'].forEach(id=>{
     const s=document.getElementById(id);
     if(!s) return;
     const onceki=s.value;
@@ -1109,6 +1131,64 @@ async function rA(){
           <td></td>
         </tr>
       </table></div>`;}).join('');
+}
+
+function mPick(r,keys,def=''){for(const k of keys){if(r&&r[k]!=null&&r[k]!=='')return r[k];}return def;}
+function masrafKategori(r){
+  const raw=String(mPick(r,['kategori','masraf_kalemi','kalem','hesap_kalemi','tur','tip','islem_tipi'],'Diğer'));
+  const s=raw.toLocaleLowerCase('tr-TR');
+  if(s.includes('banka'))return'Banka Masrafı';
+  if(s.includes('kargo')||s.includes('nakliye'))return'Kargo/Nakliye';
+  if(s.includes('kira'))return'Kira';
+  if(s.includes('yakıt')||s.includes('yakit'))return'Yakıt';
+  if(s.includes('elektrik')||s.includes('su')||s.includes('ısın')||s.includes('isin')||s.includes('iletişim')||s.includes('iletisim'))return'Fatura/Gider';
+  if(s.includes('maaş')||s.includes('maas')||s.includes('çalışan')||s.includes('calisan'))return'Personel';
+  if(s.includes('vergi')||s.includes('sgk'))return'Vergi/SGK';
+  return raw.trim()||'Diğer';
+}
+async function masrafData(yil,cf){
+  const from=`${yil}-01-01`,to=`${yil}-12-31`;
+  let rows=[],err=null;
+  try{
+    let q=db.from('masraf_raw').select('*').gte('tarih',from).lte('tarih',to).limit(20000);
+    if(cf)q=q.eq('firma_id',cf);
+    const r=await q;err=r.error;rows=r.data||[];
+  }catch(e){err=e;}
+  if(rows.length)return rows.map(r=>({firma_id:mPick(r,['firma_id','firma'],cf||''),tarih:mPick(r,['tarih','date','islem_tarihi']),kategori:masrafKategori(r),aciklama:mPick(r,['aciklama','description','not','tedarikci','cari_unvan','karsi_taraf']),tutar:Math.abs(Number(mPick(r,['tutar','amount','kdv_dahil','toplam'],0))||0),kaynak:'masraf_raw'})).filter(r=>r.tarih&&r.tutar);
+  try{
+    let q=db.from('bank_transactions').select('*').gte('tarih',from).lte('tarih',to).limit(20000);
+    if(cf)q=q.eq('firma_id',cf);
+    const r=await q;
+    rows=(r.data||[]).filter(x=>Number(x.tutar||x.amount||0)<0||String(x.tur||x.tip||'').toLocaleLowerCase('tr-TR').includes('gider')||String(x.tur||x.tip||'').toLocaleLowerCase('tr-TR').includes('masraf'));
+  }catch(e){rows=[];}
+  return rows.map(r=>({firma_id:mPick(r,['firma_id','firma'],cf||''),tarih:mPick(r,['tarih','date']),kategori:masrafKategori(r),aciklama:mPick(r,['aciklama','description','banka_aciklama','karsi_taraf','cari_unvan']),tutar:Math.abs(Number(mPick(r,['tutar','amount'],0))||0),kaynak:'bank_transactions'})).filter(r=>r.tarih&&r.tutar);
+}
+function miniBars(obj,total,color){
+  const rows=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+  if(!rows.length)return'<div class="empty"><div class="empty-t">Masraf verisi yok</div></div>';
+  return rows.map(([k,v])=>`<div style="padding:10px 0;border-bottom:1px solid var(--b1)">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+      <div style="font-size:12px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${k}</div>
+      <div style="font-family:var(--mono);font-size:12px;font-weight:900;color:${color}">TL ${fmt(v)}</div>
+    </div>
+    <div style="height:5px;background:var(--b1);border-radius:99px;margin-top:7px;overflow:hidden"><div style="height:100%;width:${Math.max(2,Math.round(v/(total||1)*100))}%;background:${color};border-radius:99px"></div></div>
+  </div>`).join('');
+}
+async function rMasraf(){
+  const yil=parseInt(document.getElementById('mY')?.value||new Date().getFullYear());
+  const cf=document.getElementById('mFi')?.value||'';
+  const rows=await masrafData(yil,cf);
+  const total=rows.reduce((s,r)=>s+r.tutar,0), max=[...rows].sort((a,b)=>b.tutar-a.tutar)[0];
+  const cats={}, months={};
+  for(let i=1;i<=12;i++)months[p2(i)]=0;
+  rows.forEach(r=>{cats[r.kategori]=(cats[r.kategori]||0)+r.tutar;const m=(r.tarih||'').substring(5,7);if(m)months[m]=(months[m]||0)+r.tutar;});
+  document.getElementById('mTop').textContent='TL '+fmt(total);
+  document.getElementById('mIslem').textContent=fmt(rows.length);
+  document.getElementById('mOrt').textContent='TL '+fmt(total/12);
+  document.getElementById('mMax').textContent=max?'TL '+fmt(max.tutar):'-';
+  document.getElementById('mKat').innerHTML=miniBars(cats,total,'var(--red)');
+  document.getElementById('mAy').innerHTML=miniBars(Object.fromEntries(Object.entries(months).map(([m,v])=>[`${m}.${yil}`,v]).filter(([,v])=>v>0)),Math.max(...Object.values(months),1),'var(--orange)');
+  document.getElementById('mRows').innerHTML=rows.sort((a,b)=>(b.tarih||'').localeCompare(a.tarih||'')).slice(0,80).map(r=>`<tr><td>${r.tarih||''}</td><td>${r.kategori}</td><td style="max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.aciklama||''}</td><td>${F[r.firma_id]?.n||r.firma_id||''}</td><td style="text-align:right;font-family:var(--mono);font-weight:900;color:var(--red)">TL ${fmt(r.tutar)}</td></tr>`).join('')||'<tr><td colspan="5" style="padding:18px;color:var(--t3)">Masraf verisi yok</td></tr>';
 }
 
 
