@@ -187,10 +187,8 @@ async function kaydet(rows, firma, tarihISO) {
   if (!rows.length) { log('  ⚠ Veri yok'); return 0; }
   log(`  [DB] ${rows.length} satır yazılıyor...`);
 
-  // Saatlik modda bugünü sil ve yeniden yaz
-  if (!GECMIS_MOD && saat !== 9) {
-    await db.from(SUPABASE.table).delete().eq('firma_id', firma.id).eq('tarih', tarihISO);
-  }
+  // Gun/firma bazinda raporu yenile
+  await db.from(SUPABASE.table).delete().eq('firma_id', firma.id).eq('tarih', tarihISO);
 
   const records = rows.map(r => ({
     urun:     (r.satir_aciklamasi||r.urun||r.aciklama||(r._cells||[]).slice(-1)[0]||'EMPTY').substring(0,500),
@@ -206,9 +204,7 @@ async function kaydet(rows, firma, tarihISO) {
     ay:       parseInt(tarihISO.substring(5,7)),
   }));
 
-  const { data, error } = await db.from(SUPABASE.table)
-    .upsert(records, { onConflict: 'tarih,urun,unvan,firma_id', ignoreDuplicates: true })
-    .select();
+  const { data, error } = await db.from(SUPABASE.table).insert(records).select();
 
   if (error) { log('  ✗ DB hatası: ' + error.message); return 0; }
   log(`  ✓ ${data.length} kayıt`);

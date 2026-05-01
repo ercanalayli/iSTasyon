@@ -608,7 +608,7 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='145513-010526';
+const BUILD_CODE='150925-010526';
 const F={all:{n:'Tüm Firmalar',c:'#2563EB',i:'ALL',src:''},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},woodlet:{n:'Woodlet',c:'#B45309',i:'WDL',src:'Excel (WERP)'},elit:{n:'Elit Et',c:'#7C3AED',i:'ELT',src:'BizimHesap Bot'},odyoform:{n:'Odyoform',c:'#B7791F',i:'ODY',src:'BizimHesap Bot'},alkam:{n:'Alkam',c:'#DB2777',i:'ALK',src:'Excel'},yenicespor:{n:'Yenicespor',c:'#0284C7',i:'YSP',src:'Yenicespor Finans'}};
 let RAW=[],cM='month',cF='all',sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null,PROD_MAP=[];
 const pad=n=>String(n).padStart(2,'0');
@@ -704,8 +704,8 @@ async function lastDataStatus(){
   const ids=Object.keys(F).filter(id=>id!=='all');
   return Promise.all(ids.map(async id=>{
     const f=F[id];
-    let q=await db.from('sales_raw').select('tarih,created_at').eq('firma_id',id).order('tarih',{ascending:false}).limit(1);
-    if(q.error) q=await db.from('sales_raw').select('tarih').eq('firma_id',id).order('tarih',{ascending:false}).limit(1);
+    let q=await db.from('sales_raw').select('tarih,created_at').eq('firma_id',id).not('tarih','is',null).order('tarih',{ascending:false}).limit(1);
+    if(q.error) q=await db.from('sales_raw').select('tarih').eq('firma_id',id).not('tarih','is',null).order('tarih',{ascending:false}).limit(1);
     const last=q.data?.[0]||null;
     const {count}=await db.from('sales_raw').select('id',{count:'exact',head:true}).eq('firma_id',id).eq('tarih',yest());
     const d=last?.tarih?new Date(last.tarih+'T00:00:00'):null;
