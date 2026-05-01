@@ -325,9 +325,12 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
     <div id="pg-satis" class="page">
       <div class="fbar">
         <span class="fbar-l">Dönem</span>
+        <button class="fb" onclick="sM('yesterday',this,1)">Dün</button>
+        <button class="fb" onclick="sM('week',this,1)">Bu Hafta</button>
         <button class="fb" onclick="sM('month',this,1)">Bu Ay</button>
+        <button class="fb" onclick="sM('last_month',this,1)" id="lastMonthBtn">Geçen Ay</button>
         <button class="fb on" onclick="sM('year',this,1)">Bu Yıl</button>
-        <button class="fb" onclick="sM('all',this,1)">Tümü</button>
+        <button class="fb" onclick="sM('last_year',this,1)">Geçen Yıl</button>
         <div class="fsep"></div><span class="fbar-l">Firma</span>
         <select class="sel" id="uFi" onchange="rU()"><option value="">Tüm</option></select>
         <div class="fsep"></div><span class="fbar-l">Kat.</span>
@@ -605,7 +608,7 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='140115-010526';
+const BUILD_CODE='145513-010526';
 const F={all:{n:'Tüm Firmalar',c:'#2563EB',i:'ALL',src:''},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},woodlet:{n:'Woodlet',c:'#B45309',i:'WDL',src:'Excel (WERP)'},elit:{n:'Elit Et',c:'#7C3AED',i:'ELT',src:'BizimHesap Bot'},odyoform:{n:'Odyoform',c:'#B7791F',i:'ODY',src:'BizimHesap Bot'},alkam:{n:'Alkam',c:'#DB2777',i:'ALK',src:'Excel'},yenicespor:{n:'Yenicespor',c:'#0284C7',i:'YSP',src:'Yenicespor Finans'}};
 let RAW=[],cM='month',cF='all',sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null,PROD_MAP=[];
 const pad=n=>String(n).padStart(2,'0');
@@ -614,7 +617,7 @@ const fD=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const today=()=>fD(new Date());
 const yest=()=>fD(new Date(Date.now()-86400000));
 const fil=()=>cF==='all'?RAW:RAW.filter(r=>r.firma_id===cF);
-function getR(m){const t=new Date(),d=new Date(t.getFullYear(),t.getMonth(),t.getDate());if(m==='yesterday'){const y=new Date(d);y.setDate(y.getDate()-1);return{from:fD(y),to:fD(y)};}if(m==='today')return{from:fD(d),to:fD(d)};if(m==='week'){const w=new Date(d);w.setDate(w.getDate()-6);return{from:fD(w),to:fD(d)};}if(m==='month')return{from:fD(new Date(t.getFullYear(),t.getMonth(),1)),to:fD(d)};if(m==='year')return{from:`${t.getFullYear()}-01-01`,to:fD(d)};return{from:'2020-01-01',to:fD(d)};}
+function getR(m){const t=new Date(),d=new Date(t.getFullYear(),t.getMonth(),t.getDate());if(m==='yesterday'){const y=new Date(d);y.setDate(y.getDate()-1);return{from:fD(y),to:fD(y)};}if(m==='today')return{from:fD(d),to:fD(d)};if(m==='week'){const w=new Date(d);w.setDate(w.getDate()-6);return{from:fD(w),to:fD(d)};}if(m==='month')return{from:fD(new Date(t.getFullYear(),t.getMonth(),1)),to:fD(d)};if(m==='last_month')return{from:fD(new Date(t.getFullYear(),t.getMonth()-1,1)),to:fD(new Date(t.getFullYear(),t.getMonth(),0))};if(m==='year')return{from:`${t.getFullYear()}-01-01`,to:fD(d)};if(m==='last_year')return{from:`${t.getFullYear()-1}-01-01`,to:`${t.getFullYear()-1}-12-31`};return{from:'2020-01-01',to:fD(d)};}
 async function logout(){await db.auth.signOut();window.location.replace('login.html');}
 function setFC(id){const f=F[id]||F.all;document.documentElement.style.setProperty('--fc',f.c);['sbDot','tbDot'].forEach(i=>{const e=document.getElementById(i);if(e){e.style.background=f.c;e.style.boxShadow=`0 0 6px ${f.c}`;}});const sn=document.getElementById('sbName');if(sn){sn.textContent=f.n;sn.style.color=f.c;}const tn=document.getElementById('tbName');if(tn){tn.textContent=f.i+' '+f.n;tn.style.color=f.c;}const b=document.getElementById('tbBadge');if(b)b.style.borderColor=f.c;const ai=document.getElementById('aiBar');if(ai)ai.style.borderLeftColor=f.c;}
 const prodKey=v=>(v||'').toString().trim().toLocaleLowerCase('tr-TR').replace(/\s+/g,' ');
@@ -892,8 +895,11 @@ const nrmCat=v=>(v||'Kategorisiz').toString().trim()||'Kategorisiz';
 const pRange=()=>{
   const now=new Date(), y=now.getFullYear(), m=now.getMonth();
   const fd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  const todayS=fd(now), monthS=fd(new Date(y,m,1)), prevMonthS=fd(new Date(y,m-1,1)), prevMonthE=fd(new Date(y,m,0));
-  return {todayS,monthS,prevMonthS,prevMonthE,yearS:`${y}-01-01`,prevYearS:`${y-1}-01-01`,prevYearE:`${y-1}-12-31`,year:y,prevYear:y-1};
+  const yestD=new Date(y,m,now.getDate()-1), weekD=new Date(y,m,now.getDate()-6);
+  const pmD=new Date(y,m-1,1);
+  const todayS=fd(now), yestS=fd(yestD), weekS=fd(weekD), monthS=fd(new Date(y,m,1)), prevMonthS=fd(pmD), prevMonthE=fd(new Date(y,m,0));
+  const aylar=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  return {todayS,yestS,weekS,monthS,monthName:aylar[m],prevMonthS,prevMonthE,prevMonthName:aylar[pmD.getMonth()],yearS:`${y}-01-01`,prevYearS:`${y-1}-01-01`,prevYearE:`${y-1}-12-31`,year:y,prevYear:y-1};
 };
 const inR=(r,a,b)=>r.tarih>=a&&r.tarih<=b;
 const met=(rows,a,b)=>{
@@ -930,17 +936,20 @@ async function rU(){
     const u=(r.urun||'Urun Yok').trim(), c=(r.unvan||'Cari Yok').trim();
     (prod[u]||(prod[u]=[])).push(r);(cari[c]||(cari[c]=[])).push(r);
   });
-  const makeRows=obj=>Object.entries(obj).map(([n,rows])=>({n,cat:nrmCat(rows[0]?.kategori),tm:met(rows,pr.todayS,pr.todayS),mo:met(rows,pr.monthS,pr.todayS),pm:met(rows,pr.prevMonthS,pr.prevMonthE),yr:met(rows,pr.yearS,pr.todayS),ly:met(rows,pr.prevYearS,pr.prevYearE)})).sort((a,b)=>srtK==='adet'?b.yr.adet-a.yr.adet:b.yr.ciro-a.yr.ciro);
+  const makeRows=obj=>Object.entries(obj).map(([n,rows])=>({n,cat:nrmCat(rows[0]?.kategori),dy:met(rows,pr.yestS,pr.yestS),wk:met(rows,pr.weekS,pr.todayS),tm:met(rows,pr.todayS,pr.todayS),mo:met(rows,pr.monthS,pr.todayS),pm:met(rows,pr.prevMonthS,pr.prevMonthE),yr:met(rows,pr.yearS,pr.todayS),ly:met(rows,pr.prevYearS,pr.prevYearE)})).sort((a,b)=>srtK==='adet'?b.yr.adet-a.yr.adet:b.yr.ciro-a.yr.ciro);
   const prods=makeRows(prod).slice(0,80), caris=makeRows(cari).slice(0,40);
-  const top=met(base,pr.yearS,pr.todayS), last=met(base,pr.prevYearS,pr.prevYearE), month=met(base,pr.monthS,pr.todayS), todayM=met(base,pr.todayS,pr.todayS);
+  const top=met(base,pr.yearS,pr.todayS), last=met(base,pr.prevYearS,pr.prevYearE), month=met(base,pr.monthS,pr.todayS), prevMonth=met(base,pr.prevMonthS,pr.prevMonthE), week=met(base,pr.weekS,pr.todayS), yday=met(base,pr.yestS,pr.yestS);
   const growth=last.ciro?((top.ciro-last.ciro)/last.ciro*100):0;
+  const lm=document.getElementById('lastMonthBtn');if(lm)lm.textContent=pr.prevMonthName;
   w.innerHTML=`
     <div style="padding:18px;border-bottom:1px solid var(--b1)">
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
-        <div class="kpi g"><div class="kpi-l">Bugun</div><div class="kpi-v">TL ${fmt(todayM.ciro)}</div><div class="kpi-s">${fmt(todayM.adet)} adet</div></div>
-        <div class="kpi c"><div class="kpi-l">Bu Ay</div><div class="kpi-v">TL ${fmt(month.ciro)}</div><div class="kpi-s">${fmt(month.adet)} adet</div></div>
-        <div class="kpi o"><div class="kpi-l">${pr.year} YTD</div><div class="kpi-v">TL ${fmt(top.ciro)}</div><div class="kpi-s">${fmt(top.adet)} adet</div></div>
-        <div class="kpi r"><div class="kpi-l">Gecen Yil</div><div class="kpi-v">TL ${fmt(last.ciro)}</div><div class="kpi-s">${growth>=0?'+':''}${growth.toFixed(1)}%</div></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px">
+        <div class="kpi g"><div class="kpi-l">Dün</div><div class="kpi-v">TL ${fmt(yday.ciro)}</div><div class="kpi-s">${fmt(yday.adet)} adet</div></div>
+        <div class="kpi c"><div class="kpi-l">Bu Hafta</div><div class="kpi-v">TL ${fmt(week.ciro)}</div><div class="kpi-s">${fmt(week.adet)} adet</div></div>
+        <div class="kpi c"><div class="kpi-l">${pr.monthName}</div><div class="kpi-v">TL ${fmt(month.ciro)}</div><div class="kpi-s">${fmt(month.adet)} adet</div></div>
+        <div class="kpi o"><div class="kpi-l">${pr.prevMonthName}</div><div class="kpi-v">TL ${fmt(prevMonth.ciro)}</div><div class="kpi-s">${fmt(prevMonth.adet)} adet</div></div>
+        <div class="kpi o"><div class="kpi-l">${pr.year}</div><div class="kpi-v">TL ${fmt(top.ciro)}</div><div class="kpi-s">${fmt(top.adet)} adet</div></div>
+        <div class="kpi r"><div class="kpi-l">${pr.prevYear}</div><div class="kpi-v">TL ${fmt(last.ciro)}</div><div class="kpi-s">${growth>=0?'+':''}${growth.toFixed(1)}%</div></div>
       </div>
       <div style="font-size:16px;font-weight:900;margin-bottom:10px">Kategori Performansi ${ck?`/ ${ck}`:''}</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">${catRows.slice(0,12).map(c=>`<button onclick="document.getElementById('uKa').value='${c.k.replace(/'/g,"&#39;")}';uCat='${c.k.replace(/'/g,"\\'")}';rU()" style="text-align:left;background:${ck===c.k?'rgba(99,91,255,.12)':'var(--s2)'};border:1px solid ${ck===c.k?'var(--accent)':'var(--b1)'};border-radius:10px;padding:12px;cursor:pointer;color:var(--text)"><div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.k}</div><div style="font-family:var(--mono);font-size:16px;color:var(--green);font-weight:900;margin-top:6px">TL ${fmt(c.ciro)}</div><div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:4px">${fmt(c.adet)} adet / LY TL ${fmt(c.ly.ciro)}</div></button>`).join('')}</div>
@@ -954,7 +963,8 @@ async function rU(){
 }
 function reportTable(rows,type){
   if(!rows.length)return'<div class="empty"><div class="empty-t">Veri yok</div></div>';
-  return `<table class="pt"><thead><tr><th>${type==='urun'?'Ürün':'Cari'}</th><th>Bugün</th><th>Bu Ay</th><th>Geçen Ay</th><th>Bu Yıl</th><th>Geçen Yıl</th><th>Fiyat</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-weight:800;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.n}">${r.n}<div style="font-size:11px;color:#64748B;margin-top:4px;font-weight:700">${r.cat}</div></td><td>${sumCell(r.tm)}</td><td>${sumCell(r.mo)}</td><td>${sumCell(r.pm)}</td><td>${sumCell(r.yr)}</td><td>${sumCell(r.ly)}</td><td>${priceCell(r.yr,r.ly)}</td></tr>`).join('')}</tbody></table>`;
+  const pr=pRange();
+  return `<table class="pt"><thead><tr><th>${type==='urun'?'Ürün':'Cari'}</th><th>Dün</th><th>Bu Hafta</th><th>${pr.monthName}</th><th>${pr.prevMonthName}</th><th>${pr.year}</th><th>${pr.prevYear}</th><th>Fiyat</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-weight:800;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.n}">${r.n}<div style="font-size:11px;color:#64748B;margin-top:4px;font-weight:700">${r.cat}</div></td><td>${sumCell(r.dy)}</td><td>${sumCell(r.wk)}</td><td>${sumCell(r.mo)}</td><td>${sumCell(r.pm)}</td><td>${sumCell(r.yr)}</td><td>${sumCell(r.ly)}</td><td>${priceCell(r.yr,r.ly)}</td></tr>`).join('')}</tbody></table>`;
 }
 
 // -- CARİLER ---------------------------------------------------------------
@@ -1178,6 +1188,17 @@ async function rMasraf(){
   const yil=parseInt(document.getElementById('mY')?.value||new Date().getFullYear());
   const cf=document.getElementById('mFi')?.value||'';
   const rows=await masrafData(yil,cf);
+  if(!rows.length){
+    document.getElementById('mTop').textContent='TL 0';
+    document.getElementById('mIslem').textContent='0';
+    document.getElementById('mOrt').textContent='TL 0';
+    document.getElementById('mMax').textContent='-';
+    const msg='<div class="empty"><div class="empty-t">Masraf verisi yok</div><div class="empty-d">masraf_raw veya banka masraf hareketi yüklendiğinde burada görünecek.</div></div>';
+    document.getElementById('mKat').innerHTML=msg;
+    document.getElementById('mAy').innerHTML=msg;
+    document.getElementById('mRows').innerHTML='<tr><td colspan="5" style="padding:18px;color:var(--t3)">Masraf verisi yok</td></tr>';
+    return;
+  }
   const total=rows.reduce((s,r)=>s+r.tutar,0), max=[...rows].sort((a,b)=>b.tutar-a.tutar)[0];
   const cats={}, months={};
   for(let i=1;i<=12;i++)months[p2(i)]=0;
