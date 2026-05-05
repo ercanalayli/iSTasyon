@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AperiON UI v5 Preview</title>
+  <style>
+    :root{--bg:#F4F6FA;--card:#fff;--line:#E5EAF2;--text:#18202B;--muted:#667085;--accent:#2563EB;--ok:#16A34A;--warn:#D97706;--bad:#DC2626;--soft:#F8FAFC;--shadow:0 10px 30px rgba(15,23,42,.06);--r:16px}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .shell{display:grid;grid-template-columns:260px 1fr;min-height:100vh}.sidebar{background:#fff;border-right:1px solid var(--line);padding:20px 16px}.brand{font-weight:800;font-size:22px;color:var(--accent)}.sub{font-size:12px;color:var(--muted);margin-top:4px}
+    .menu{margin-top:28px;display:grid;gap:8px}.item{padding:12px 14px;border-radius:12px;border:1px solid transparent;background:#fff;color:#344054;font-weight:700;cursor:pointer}.item.active{background:#EEF4FF;border-color:#D6E4FF;color:var(--accent)}
+    .main{padding:24px;padding-bottom:90px}.topbar,.filterbar,.firmbar,.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.title{font-size:28px;font-weight:800}.desc{font-size:13px;color:var(--muted);margin-top:4px}
+    .pill,.chip,.firmbtn,.toolbar-btn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12px;font-weight:700;color:#344054;cursor:pointer}.chip.on,.firmbtn.on,.toolbar-btn.primary{background:#EEF4FF;border-color:#D6E4FF;color:var(--accent)}
+    .firmbar{margin:16px 0 8px}.grid4,.split,.triple{display:grid;gap:16px}.grid4{grid-template-columns:repeat(4,1fr);margin:18px 0}.split{grid-template-columns:1.15fr .85fr;margin-bottom:16px}.triple{grid-template-columns:1fr 1fr 1fr;margin-bottom:16px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}.kpi{padding:18px}.kpi h4{margin:0;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.kpi .v{margin-top:12px;font-size:30px;font-weight:800}.kpi .s{margin-top:8px;font-size:12px;color:var(--muted)}
+    .section{padding:18px 18px 12px}.section h3{margin:0 0 4px;font-size:16px}.section p{margin:0 0 14px;color:var(--muted);font-size:12px}.section-head{margin:26px 0 12px}.section-head h2{margin:0;font-size:18px}.section-head span{font-size:12px;color:var(--muted)}
+    table{width:100%;border-collapse:collapse}.th{background:var(--soft)} th,td{padding:12px 10px;border-bottom:1px solid var(--line);font-size:13px;text-align:left} th{font-size:12px;color:#475467} tr:last-child td{border-bottom:none}
+    .tag{display:inline-block;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:700}.ok{background:#ECFDF3;color:#166534}.warn{background:#FFFAEB;color:#B54708}.bad{background:#FEF3F2;color:#B42318}.neutral{background:#EEF2F6;color:#344054}
+    .mini-list{display:grid;gap:10px}.mini-row,.alert{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}.mini-row strong,.alert strong{display:block;font-size:13px}.mini-row span,.alert span{display:block;font-size:12px;color:var(--muted);margin-top:6px}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 18px}.progress{height:10px;border-radius:999px;background:#EAF0F8;overflow:hidden}.progress>div{height:100%;background:var(--accent);border-radius:999px}
+    .mobile-nav{display:none;position:fixed;left:12px;right:12px;bottom:12px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:10px 8px;justify-content:space-around;z-index:10}.mobile-nav span{font-size:11px;color:#667085;font-weight:700}.mobile-nav .active{color:var(--accent)}
+    @media(max-width:1200px){.shell{grid-template-columns:1fr}.sidebar{display:none}.main{padding:16px;padding-bottom:100px}.grid4,.split,.triple{grid-template-columns:1fr 1fr}.mobile-nav{display:flex}}
+    @media(max-width:700px){.grid4,.split,.triple{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">AperiON</div>
+      <div class="sub">ERPALTH · iSTasyon · UI v5</div>
+      <div class="menu">
+        <div class="item active">ERP Radar</div>
+        <div class="item">Satış</div>
+        <div class="item">Cariler</div>
+        <div class="item">Finans</div>
+        <div class="item">Banka Onay</div>
+        <div class="item">Görev Merkezi</div>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <div class="title" id="pageTitle">Alaylı Medikal · Kontrol Merkezi</div>
+          <div class="desc">Banka onay ve görev takibi eklenmiş yönetici önizlemesi</div>
+        </div>
+        <div class="pill" id="lastData">Son veri: 30 Nisan 2026 · Durum: Güncel</div>
+      </div>
+
+      <div class="firmbar">
+        <button class="firmbtn on" data-firma="alayli">Alaylı Medikal</button>
+        <button class="firmbtn" data-firma="elit">Elit Et</button>
+        <button class="firmbtn" data-firma="odyoform">Odyoform</button>
+      </div>
+
+      <div class="filterbar">
+        <div class="chip on">Dönem: Bu Ay</div>
+        <div class="chip">Karşılaştırma: Geçen Ay</div>
+        <div class="chip">Durum: Yönetici</div>
+        <div class="chip">Veri Tipi: Satış + Finans + Banka</div>
+      </div>
+
+      <div class="toolbar">
+        <button class="toolbar-btn primary">Banka Onay Merkezini Aç</button>
+        <button class="toolbar-btn">Eksik Günleri Göster</button>
+        <button class="toolbar-btn">Günlük Satış Özeti</button>
+        <button class="toolbar-btn">Bildirim Ayarları</button>
+      </div>
+
+      <div class="grid4">
+        <div class="card kpi"><h4>Bu Ay Ciro</h4><div class="v" id="kpiCiro">1.248.420 TL</div><div class="s" id="kpiCiroSub">Geçen aya göre +%12,4</div></div>
+        <div class="card kpi"><h4>Onay Bekleyen Banka</h4><div class="v" id="kpiOnay">6</div><div class="s" id="kpiOnaySub">Bugün işlenmeyi bekleyen hareket</div></div>
+        <div class="card kpi"><h4>Aktif Görev</h4><div class="v" id="kpiGorev">4</div><div class="s">Kontrol gerektiren başlık</div></div>
+        <div class="card kpi"><h4>Veri Güveni</h4><div class="v" id="kpiGuven">92%</div><div class="s" id="kpiGuvenSub">Onaylı ve temiz veri oranı</div></div>
+      </div>
+
+      <div class="split">
+        <section class="card section">
+          <h3>Yönetici Özeti</h3>
+          <p>Firma katkısı, veri durumu ve kısa notlar</p>
+          <table>
+            <thead class="th"><tr><th>Firma</th><th>Bu Ay Ciro</th><th>Durum</th><th>Veri</th><th>Not</th></tr></thead>
+            <tbody id="firmaRows"></tbody>
+          </table>
+        </section>
+        <section class="card section">
+          <h3>Alarm Merkezi</h3>
+          <p>Kritik başlıklar</p>
+          <div class="mini-list" id="alarmList"></div>
+        </section>
+      </div>
+
+      <div class="section-head"><div><h2>Banka Onay Merkezi</h2><span>Önce onay, sonra işleme mantığı</span></div></div>
+      <div class="split">
+        <section class="card section">
+          <h3>İşlenecek Adaylar</h3>
+          <table>
+            <thead class="th"><tr><th>Tarih</th><th>Açıklama</th><th>Tutar</th><th>Öneri</th></tr></thead>
+            <tbody id="onayRows"></tbody>
+          </table>
+        </section>
+        <section class="card section">
+          <h3>Onay Kural Özeti</h3>
+          <div class="mini-list" id="kuralList"></div>
+        </section>
+      </div>
+
+      <div class="section-head"><div><h2>Görev ve Operasyon Merkezi</h2><span>Veri zinciri, bot, eksik gün ve işlem kontrolü</span></div></div>
+      <div class="triple">
+        <section class="card section">
+          <h3>Görev Teyidi</h3>
+          <div class="mini-list" id="gorevList"></div>
+        </section>
+        <section class="card section">
+          <h3>Operasyon Notları</h3>
+          <div class="mini-list" id="operasyonList"></div>
+        </section>
+        <section class="card section">
+          <h3>Yönetici Yorumu</h3>
+          <div class="alert" id="yorumBox"><strong>Öncelik</strong><span>Önce banka onay ve veri güveni sabitlenmeli.</span></div>
+        </section>
+      </div>
+
+      <div class="section-head"><div><h2>Hedef ve İlerleme</h2><span>Özet performans görünümü</span></div></div>
+      <div class="split">
+        <section class="card section">
+          <h3>Aylık Hedef Durumu</h3>
+          <div class="mini-list" id="hedefList"></div>
+        </section>
+        <section class="card section">
+          <h3>Yükleme ve Bildirim</h3>
+          <div class="mini-list" id="bildirimList"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div class="mobile-nav"><span class="active">Radar</span><span>Banka</span><span>Görev</span><span>Finans</span><span>Yükle</span></div>
+  <script>
+    const data={
+      alayli:{title:'Alaylı Medikal · Kontrol Merkezi',last:'Son veri: 30 Nisan 2026 · Durum: Güncel',ciro:'1.248.420 TL',ciroSub:'Geçen aya göre +%12,4',onay:'6',onaySub:'Bugün işlenmeyi bekleyen hareket',gorev:'4',guven:'92%',guvenSub:'Onaylı ve temiz veri oranı',
+      rows:[['Alaylı Medikal','1.248.420 TL','<span class="tag ok">Güçlü</span>','<span class="tag ok">Tam</span>','Ana taşıyıcı'],['Elit Et','684.300 TL','<span class="tag warn">Orta</span>','<span class="tag warn">Kısmi</span>','İzlenmeli'],['Odyoform','212.900 TL','<span class="tag bad">Zayıf</span>','<span class="tag bad">Eksik</span>','Riskli']],
+      alarms:[['Banka onay','6 hareket onay bekliyor.'],['Bot log','Kontrol gerekli.'],['Kritik stok','303 ürün kritik seviyede.']],
+      onay:[['24.04.2026','Murat Tic. Kablo','38.405 TL','<span class="tag ok">Tahsilat</span>'],['20.04.2026','Muhammet Özer','5.000 TL','<span class="tag ok">Tahsilat</span>'],['17.04.2026','INT 650837','321.894 TL','<span class="tag warn">Özel İşlem</span>']],
+      kurallar:[['GELEN EFT / FAST','Tahsilat adayı olarak işaretle.'],['Virman','Satış tahsilatı gibi işleme.'],['Moka / KMH / INT','Özel işlem, onaysız geçme.']],
+      gorevler:[['Bot Log','Eksik'],['Eksik Gün Takibi','Sırada'],['Banka Onay Listesi','Hazır']],
+      operasyon:[['Veri Yükleme','Banka ekstresi merkezi kuruldu.'],['Bildirim','Günlük satış özeti açık.'],['İşlem Tekrarı','Hash kontrolü zorunlu.']],
+      yorum:'Önce banka onay ve veri güveni sabitlenmeli.',
+      hedef:[['Aylık Ciro Hedefi','1.400.000 TL','89%'],['Onay Tamamlama','10 kayıt','60%']],
+      bildirim:[['Günlük Satış Özeti','Patron / 09:10'],['Eksik Veri Uyarısı','Yönetici / Kritik'],['Banka Onay Listesi','Muhasebe / Manuel tetik']]
+      },
+      elit:{title:'Elit Et · Kontrol Merkezi',last:'Son veri: 29 Nisan 2026 · Durum: Kısmi',ciro:'684.300 TL',ciroSub:'Geçen aya göre -%4,8',onay:'3',onaySub:'Kontrol bekleyen hareket',gorev:'5',guven:'84%',guvenSub:'Kısmi veri ve onay baskısı',
+      rows:[['Alaylı Medikal','1.248.420 TL','<span class="tag ok">Referans</span>','<span class="tag ok">Tam</span>','Üst seviye'],['Elit Et','684.300 TL','<span class="tag warn">Yavaşlama</span>','<span class="tag warn">Kısmi</span>','İzle'],['Odyoform','212.900 TL','<span class="tag bad">Düşüş</span>','<span class="tag bad">Eksik</span>','Alt seviye']],
+      alarms:[['Cari yoğunluğu','Büyük müşterilere bağımlılık artıyor.'],['Veri güncelliği','Kısmi kayıtlar tamamlanmalı.'],['Tahsilat ritmi','Haftalık izleme gerekli.']],
+      onay:[['22.04.2026','Dana Sucuk Alıcısı','18.400 TL','<span class="tag ok">Tahsilat</span>'],['20.04.2026','Virman İşlem','40.000 TL','<span class="tag neutral">Virman</span>']],
+      kurallar:[['Büyük alıcılar','Cari yoğunluğu ayrı izlenmeli.'],['Virman','İç transfer gibi ayır.'],['Masraf çıkışları','Gider adayı olarak işaretle.']],
+      gorevler:[['Cari Takibi','Aktif'],['Tahsilat Kontrolü','Aktif'],['Veri Zinciri','Kısmi']],
+      operasyon:[['Bildiriler','Satış özeti açık.'],['Banka Onay','Taslak seviyede.'],['Marj Takibi','Sonraki fazda.']],
+      yorum:'Elit tarafında cari yoğunlaşma ve veri ritmi beraber izlenmeli.',
+      hedef:[['Aylık Ciro Hedefi','800.000 TL','85%'],['Tahsilat Onayı','5 kayıt','55%']],
+      bildirim:[['Satış Özeti','Yönetici / Sabah'],['Cari Uyarısı','Muhasebe / Haftalık']]
+      },
+      odyoform:{title:'Odyoform · Kontrol Merkezi',last:'Son veri: 25 Nisan 2026 · Durum: Eksik',ciro:'212.900 TL',ciroSub:'Geçen aya göre -%18,2',onay:'8',onaySub:'Yüksek kontrol ihtiyacı',gorev:'7',guven:'68%',guvenSub:'Veri ve operasyon riski yüksek',
+      rows:[['Alaylı Medikal','1.248.420 TL','<span class="tag ok">Referans</span>','<span class="tag ok">Tam</span>','Üst seviye'],['Elit Et','684.300 TL','<span class="tag warn">Orta</span>','<span class="tag warn">Kısmi</span>','İzlenmeli'],['Odyoform','212.900 TL','<span class="tag bad">Düşüş</span>','<span class="tag bad">Eksik</span>','Acil takip']],
+      alarms:[['Veri eksikliği','Son veri tarihi geride kaldı.'],['Banka onayı','8 hareket onay bekliyor.'],['Satış düşüşü','Önceki aya göre belirgin düşüş var.']],
+      onay:[['18.04.2026','İşitme Cihazı Ödemesi','7.800 TL','<span class="tag ok">Tahsilat</span>'],['17.04.2026','KMH Anapara','30.499 TL','<span class="tag warn">Özel İşlem</span>'],['16.04.2026','TTNET','995 TL','<span class="tag neutral">Gider</span>']],
+      kurallar:[['Moka / KMH','Onaysız işleme.'],['Eksik veri','Önce veri zinciri düzelsin.'],['Tekil ödemeler','Açıklama netleştir.']],
+      gorevler:[['Bot Kontrolü','Acil'],['Eksik Günler','Acil'],['Banka Onayı','Yüksek']],
+      operasyon:[['Veri Güveni','Düşük.'],['Bildirim','Kritik uyarı açık.'],['Öncelik','Veri zinciri toparlanmalı.']],
+      yorum:'Odyoform tarafında önce veri zinciri ve onay merkezi ayağa kaldırılmalı.',
+      hedef:[['Aylık Ciro Hedefi','300.000 TL','71%'],['Onay Tamamlama','12 kayıt','33%']],
+      bildirim:[['Eksik Veri Uyarısı','Yönetici / Anlık'],['Banka Onay','Muhasebe / Günlük']]
+      }
+    };
+    const byId=id=>document.getElementById(id);
+    function mini(items){return items.map(x=>`<div class="mini-row"><strong>${x[0]}</strong><span>${x[1]}</span></div>`).join('');}
+    function render(key){const d=data[key]; byId('pageTitle').textContent=d.title; byId('lastData').textContent=d.last; byId('kpiCiro').textContent=d.ciro; byId('kpiCiroSub').textContent=d.ciroSub; byId('kpiOnay').textContent=d.onay; byId('kpiOnaySub').textContent=d.onaySub; byId('kpiGorev').textContent=d.gorev; byId('kpiGuven').textContent=d.guven; byId('kpiGuvenSub').textContent=d.guvenSub; byId('firmaRows').innerHTML=d.rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join(''); byId('alarmList').innerHTML=mini(d.alarms); byId('onayRows').innerHTML=d.onay.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join(''); byId('kuralList').innerHTML=mini(d.kurallar); byId('gorevList').innerHTML=mini(d.gorevler); byId('operasyonList').innerHTML=mini(d.operasyon); byId('yorumBox').innerHTML=`<strong>Öncelik</strong><span>${d.yorum}</span>`; byId('hedefList').innerHTML=d.hedef.map(h=>`<div class="mini-row"><strong>${h[0]}</strong><span>${h[1]} · ${h[2]}</span><div class="progress" style="margin-top:8px"><div style="width:${h[2]}"></div></div></div>`).join(''); byId('bildirimList').innerHTML=mini(d.bildirim); document.querySelectorAll('.firmbtn').forEach(b=>b.classList.toggle('on',b.dataset.firma===key));}
+    document.querySelectorAll('.firmbtn').forEach(b=>b.addEventListener('click',()=>render(b.dataset.firma))); render('alayli');
+  </script>
+</body>
+</html>
