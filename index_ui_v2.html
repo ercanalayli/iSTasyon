@@ -16,10 +16,13 @@
     .brand{font-weight:800;font-size:22px;color:var(--accent);letter-spacing:.5px}.sub{color:var(--muted);font-size:12px;margin-top:4px}
     .menu{margin-top:28px;display:grid;gap:8px}.item{padding:12px 14px;border-radius:12px;color:#344054;background:#fff;border:1px solid transparent}
     .item.active{background:#EEF4FF;border-color:#D6E4FF;color:var(--accent);font-weight:700}
-    .main{padding:24px}
+    .main{padding:24px;padding-bottom:90px}
     .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}
     .title{font-size:28px;font-weight:800}.desc{color:var(--muted);font-size:13px;margin-top:4px}
     .pill{padding:10px 14px;background:#fff;border:1px solid var(--line);border-radius:999px;color:#344054;font-size:12px}
+    .filterbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+    .chip{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;font-size:12px;color:#344054;font-weight:700}
+    .chip.on{background:#EEF4FF;border-color:#D6E4FF;color:var(--accent)}
     .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}
     .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
     .kpi{padding:18px}.kpi h4{margin:0;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
@@ -43,7 +46,9 @@
     .upload-box{border:2px dashed #D5DDF0;border-radius:18px;background:#FBFCFE;padding:26px;text-align:center}
     .upload-box strong{display:block;font-size:14px}.upload-box span{display:block;margin-top:8px;color:var(--muted);font-size:12px}
     .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.btn{padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:700;color:#344054}
-    @media (max-width:1200px){.grid4,.layout,.split,.triple{grid-template-columns:1fr 1fr}.shell{grid-template-columns:1fr}.sidebar{display:none}.main{padding:16px}}
+    .mobile-nav{display:none;position:fixed;left:12px;right:12px;bottom:12px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:10px 8px;justify-content:space-around;z-index:10}
+    .mobile-nav span{font-size:11px;color:#667085;font-weight:700}.mobile-nav .active{color:var(--accent)}
+    @media (max-width:1200px){.grid4,.layout,.split,.triple{grid-template-columns:1fr 1fr}.shell{grid-template-columns:1fr}.sidebar{display:none}.main{padding:16px;padding-bottom:100px}.mobile-nav{display:flex}}
     @media (max-width:700px){.grid4,.layout,.split,.triple{grid-template-columns:1fr}.topbar,.section-head{flex-direction:column;align-items:flex-start}}
   </style>
 </head>
@@ -71,6 +76,14 @@
           <div class="desc">Grafiksiz, karar odaklı, profesyonel ERP görünümü önizlemesi</div>
         </div>
         <div class="pill">Son veri: 30 Nisan 2026 · Durum: Güncel</div>
+      </div>
+
+      <div class="filterbar">
+        <div class="chip on">Firma: Alaylı Medikal</div>
+        <div class="chip">Dönem: Bu Ay</div>
+        <div class="chip">Karşılaştırma: Geçen Ay</div>
+        <div class="chip">Veri Tipi: Satış + Finans</div>
+        <div class="chip">Durum: Tüm Modüller</div>
       </div>
 
       <div class="grid4">
@@ -288,6 +301,14 @@
         </section>
       </div>
     </main>
+  </div>
+
+  <div class="mobile-nav">
+    <span class="active">Radar</span>
+    <span>Satış</span>
+    <span>Finans</span>
+    <span>Görev</span>
+    <span>Yükle</span>
   </div>
 </body>
 </html>
