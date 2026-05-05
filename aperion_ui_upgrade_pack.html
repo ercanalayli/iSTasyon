@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AperiON UI Upgrade Pack</title>
+  <style>
+    :root{--bg:#F4F6FA;--card:#fff;--line:#E5EAF2;--text:#18202B;--muted:#667085;--accent:#2563EB;--ok:#16A34A;--warn:#D97706;--bad:#DC2626;--soft:#F8FAFC;--shadow:0 10px 30px rgba(15,23,42,.06);--r:16px}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:Inter,Arial,sans-serif;color:var(--text)}
+    .wrap{max-width:1460px;margin:0 auto;padding:28px}.hero{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px}
+    .hero h1{margin:0;font-size:30px}.hero p{margin:6px 0 0;color:var(--muted);font-size:13px}.pill{padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:12px;font-weight:700}
+    .section{margin-top:28px}.section h2{margin:0 0 6px;font-size:20px}.section p{margin:0 0 14px;color:var(--muted);font-size:13px}
+    .grid4,.grid3,.grid2{display:grid;gap:16px}.grid4{grid-template-columns:repeat(4,1fr)}.grid3{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1.1fr .9fr}
+    .card{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px}.kpi h4{margin:0;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.kpi .v{margin-top:12px;font-size:30px;font-weight:800}.kpi .s{margin-top:8px;font-size:12px;color:var(--muted)}
+    .chipbar,.firmbar,.toolrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.chip,.firmbtn,.toolbtn{padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:12px;font-weight:700;color:#344054}.chip.on,.firmbtn.on,.toolbtn.primary{background:#EEF4FF;border-color:#D6E4FF;color:var(--accent)}
+    table{width:100%;border-collapse:collapse}.th{background:var(--soft)} th,td{padding:12px 10px;border-bottom:1px solid var(--line);font-size:13px;text-align:left} th{font-size:12px;color:#475467} tr:last-child td{border-bottom:none}
+    .tag{display:inline-block;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:700}.ok{background:#ECFDF3;color:#166534}.warn{background:#FFFAEB;color:#B54708}.bad{background:#FEF3F2;color:#B42318}.neutral{background:#EEF2F6;color:#344054}
+    .mini-list{display:grid;gap:10px}.mini-row,.alert{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}.mini-row strong,.alert strong{display:block;font-size:13px}.mini-row span,.alert span{display:block;font-size:12px;color:var(--muted);margin-top:6px}
+    .progress{height:10px;border-radius:999px;background:#EAF0F8;overflow:hidden}.progress>div{height:100%;background:var(--accent);border-radius:999px}
+    .codebox{background:#0F172A;color:#E2E8F0;border-radius:14px;padding:16px;font-family:ui-monospace, SFMono-Regular, Menlo, monospace;font-size:12px;line-height:1.7;overflow:auto}
+    @media(max-width:1200px){.grid4,.grid3,.grid2{grid-template-columns:1fr 1fr}} @media(max-width:760px){.grid4,.grid3,.grid2{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <h1>AperiON UI Upgrade Pack</h1>
+        <p>Ana programa modül modül taşınmak üzere hazırlanmış entegrasyon paketi</p>
+      </div>
+      <div class="pill">Aşama: Gerçek entegrasyon hazırlığı</div>
+    </div>
+
+    <div class="section">
+      <h2>1. Üst Bar + Firma Filtre Bloğu</h2>
+      <p>Ana index içine ilk taşınacak güvenli katman</p>
+      <div class="card">
+        <div class="hero" style="margin-bottom:12px">
+          <div>
+            <h1 style="font-size:26px">Alaylı Medikal · Yönetim Paneli</h1>
+            <p>Grafiksiz, karar odaklı, profesyonel ERP görünümü</p>
+          </div>
+          <div class="pill">Son veri: 30 Nisan 2026 · Durum: Güncel</div>
+        </div>
+        <div class="firmbar">
+          <div class="firmbtn on">Alaylı Medikal</div>
+          <div class="firmbtn">Elit Et</div>
+          <div class="firmbtn">Odyoform</div>
+        </div>
+        <div class="chipbar">
+          <div class="chip on">Dönem: Bu Ay</div>
+          <div class="chip">Karşılaştırma: Geçen Ay</div>
+          <div class="chip">Veri Tipi: Tümü</div>
+          <div class="chip">Görünüm: Yönetici</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>2. KPI Şeridi</h2>
+      <p>Dashboard ve firma detay üstünde kullanılacak ortak katman</p>
+      <div class="grid4">
+        <div class="card kpi"><h4>Bu Ay Ciro</h4><div class="v">1.248.420 TL</div><div class="s">Geçen aya göre +%12,4</div></div>
+        <div class="card kpi"><h4>Banka Onay</h4><div class="v">6</div><div class="s">Kontrol bekleyen hareket</div></div>
+        <div class="card kpi"><h4>Aktif Görev</h4><div class="v">4</div><div class="s">Bugün kapanacak başlık</div></div>
+        <div class="card kpi"><h4>Veri Güveni</h4><div class="v">92%</div><div class="s">Onaylı ve temiz veri oranı</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>3. ERP Radar + Alarm Bloğu</h2>
+      <p>Ana yönetim ekranının çekirdeği</p>
+      <div class="grid2">
+        <div class="card">
+          <table>
+            <thead class="th"><tr><th>Firma</th><th>Bu Ay Ciro</th><th>Durum</th><th>Veri</th><th>Not</th></tr></thead>
+            <tbody>
+              <tr><td>Alaylı Medikal</td><td>1.248.420 TL</td><td><span class="tag ok">Güçlü</span></td><td><span class="tag ok">Tam</span></td><td>Ana taşıyıcı</td></tr>
+              <tr><td>Elit Et</td><td>684.300 TL</td><td><span class="tag warn">Orta</span></td><td><span class="tag warn">Kısmi</span></td><td>İzlenmeli</td></tr>
+              <tr><td>Odyoform</td><td>212.900 TL</td><td><span class="tag bad">Zayıf</span></td><td><span class="tag bad">Eksik</span></td><td>Riskli</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="mini-list">
+            <div class="mini-row"><strong>Banka onayı</strong><span>6 hareket bekliyor.</span></div>
+            <div class="mini-row"><strong>Bot log</strong><span>Kontrol gerekli.</span></div>
+            <div class="mini-row"><strong>Kritik stok</strong><span>303 ürün kritik seviyede.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>4. Banka Onay Merkezi Bloğu</h2>
+      <p>Senin gerçek akışına en yakın alan</p>
+      <div class="grid2">
+        <div class="card">
+          <table>
+            <thead class="th"><tr><th>Tarih</th><th>Açıklama</th><th>Tutar</th><th>Sınıf</th></tr></thead>
+            <tbody>
+              <tr><td>24.04.2026</td><td>Murat Tic. Kablo</td><td>38.405 TL</td><td><span class="tag ok">Tahsilat</span></td></tr>
+              <tr><td>20.04.2026</td><td>Muhammet Özer</td><td>5.000 TL</td><td><span class="tag ok">Tahsilat</span></td></tr>
+              <tr><td>17.04.2026</td><td>INT 650837</td><td>321.894 TL</td><td><span class="tag warn">Özel İşlem</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="mini-list">
+            <div class="mini-row"><strong>GELEN EFT / FAST</strong><span>Tahsilat adayı.</span></div>
+            <div class="mini-row"><strong>Virman</strong><span>Satış tahsilatı gibi işleme.</span></div>
+            <div class="mini-row"><strong>Moka / KMH / INT</strong><span>Onaysız geçme.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>5. Görev / Yükleme / Bildirim Bloğu</h2>
+      <p>Operasyon ekranlarının ortak dili</p>
+      <div class="grid3">
+        <div class="card"><div class="mini-list"><div class="mini-row"><strong>Bot Log</strong><span>Kontrol gerekli</span></div><div class="mini-row"><strong>Eksik Gün Takibi</strong><span>Bağlanacak</span></div><div class="mini-row"><strong>Günlük Özet</strong><span>Açık</span></div></div></div>
+        <div class="card"><div class="mini-list"><div class="mini-row"><strong>Satış Yükle</strong><span>Excel / CSV akışı hazır</span></div><div class="mini-row"><strong>Banka Ekstresi</strong><span>PDF / Excel tasarımı hazır</span></div><div class="mini-row"><strong>Gider Yükle</strong><span>Operasyon paneline uygun</span></div></div></div>
+        <div class="card"><div class="mini-list"><div class="mini-row"><strong>Günlük Satış Özeti</strong><span>Patron / 09:10</span></div><div class="mini-row"><strong>Eksik Veri Uyarısı</strong><span>Yönetici / kritik</span></div><div class="mini-row"><strong>Banka Onay Listesi</strong><span>Muhasebe / manuel tetik</span></div></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>6. Gerçek Entegrasyon Sırası</h2>
+      <p>Buradan sonra ana index içine küçük ve kontrollü geçiş mantığı</p>
+      <div class="codebox">1) Üst bar + firma filtre barı
+2) KPI şeridi
+3) ERP Radar tablo + alarm bloğu
+4) Banka Onay Merkezi kartları
+5) Görev / Veri Yükleme / Bildirim kartları
+6) Eski modüller gerçek veriyle tek tek bu dile taşınır</div>
+    </div>
+  </div>
+</body>
+</html>
