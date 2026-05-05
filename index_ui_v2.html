@@ -39,6 +39,10 @@
     .section-head h2{margin:0;font-size:18px}.section-head span{font-size:12px;color:var(--muted)}
     .mini-list{display:grid;gap:10px}.mini-row{display:flex;justify-content:space-between;gap:10px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
     .mini-row strong{font-size:13px}.mini-row span{font-size:12px;color:var(--muted)}
+    .progress{height:10px;border-radius:999px;background:#EAF0F8;overflow:hidden}.progress > div{height:100%;background:var(--accent);border-radius:999px}
+    .upload-box{border:2px dashed #D5DDF0;border-radius:18px;background:#FBFCFE;padding:26px;text-align:center}
+    .upload-box strong{display:block;font-size:14px}.upload-box span{display:block;margin-top:8px;color:var(--muted);font-size:12px}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.btn{padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:700;color:#344054}
     @media (max-width:1200px){.grid4,.layout,.split,.triple{grid-template-columns:1fr 1fr}.shell{grid-template-columns:1fr}.sidebar{display:none}.main{padding:16px}}
     @media (max-width:700px){.grid4,.layout,.split,.triple{grid-template-columns:1fr}.topbar,.section-head{flex-direction:column;align-items:flex-start}}
   </style>
@@ -56,6 +60,8 @@
         <div class="item">Stok & Ürün</div>
         <div class="item">Hedef / Bütçe</div>
         <div class="item">Görev Teyidi</div>
+        <div class="item">Veri Yükleme</div>
+        <div class="item">Bildirimler</div>
       </div>
     </aside>
     <main class="main">
@@ -223,6 +229,61 @@
             <div class="mini-row"><div><strong>Bot Log</strong><span>Kontrol ve doğrulama gerekli</span></div><div><span class="tag warn">Eksik</span></div></div>
             <div class="mini-row"><div><strong>Son Veri Tarihi</strong><span>Yönetim ekranında görünür olmalı</span></div><div><span class="tag ok">İzleniyor</span></div></div>
             <div class="mini-row"><div><strong>Eksik Gün Takibi</strong><span>Günlük rapora bağlanmalı</span></div><div><span class="tag neutral">Sırada</span></div></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h2>Hedef / Bütçe</h2>
+          <span>Hedef takibi ve yönetici karar desteği</span>
+        </div>
+      </div>
+      <div class="split">
+        <section class="card section">
+          <h3>Aylık Hedef Durumu</h3>
+          <p>Gerçekleşme görünümü</p>
+          <div class="mini-list">
+            <div class="mini-row"><div><strong>Alaylı Medikal</strong><span>Hedef: 1.400.000 TL</span></div><div style="min-width:180px"><div class="progress"><div style="width:89%"></div></div><span>89%</span></div></div>
+            <div class="mini-row"><div><strong>Elit Et</strong><span>Hedef: 800.000 TL</span></div><div style="min-width:180px"><div class="progress"><div style="width:85%"></div></div><span>85%</span></div></div>
+            <div class="mini-row"><div><strong>Odyoform</strong><span>Hedef: 300.000 TL</span></div><div style="min-width:180px"><div class="progress"><div style="width:71%"></div></div><span>71%</span></div></div>
+          </div>
+        </section>
+        <section class="card section">
+          <h3>Yönetici Yorumu</h3>
+          <p>Hedefe göre yorum alanı</p>
+          <div class="alert"><strong>Alaylı Medikal</strong><span>Ay bitmeden hedefe yaklaşmış durumda. Satış hızı korunmalı.</span></div>
+          <div class="alert"><strong>Odyoform</strong><span>Hedef baskısı var. Veri ve ticari ivme birlikte izlenmeli.</span></div>
+        </section>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h2>Veri Yükleme ve Bildirimler</h2>
+          <span>Operasyon akışını daha profesyonel hale getiren alanlar</span>
+        </div>
+      </div>
+      <div class="split">
+        <section class="card section">
+          <h3>Veri Yükleme Merkezi</h3>
+          <p>Excel, PDF ve banka ekstresi giriş noktası</p>
+          <div class="upload-box">
+            <strong>Dosya bırak / seç</strong>
+            <span>Satış, banka ekstresi, gider veya firma bazlı yüklemeler burada toplanır.</span>
+            <div class="btn-row">
+              <button class="btn">Satış Yükle</button>
+              <button class="btn">Banka Ekstresi Yükle</button>
+              <button class="btn">Gider Yükle</button>
+            </div>
+          </div>
+        </section>
+        <section class="card section">
+          <h3>Bildirim Yönetimi</h3>
+          <p>Kime ne gidecek paneli</p>
+          <div class="mini-list">
+            <div class="mini-row"><div><strong>Günlük Satış Özeti</strong><span>Patron / 09:10</span></div><div><span class="tag ok">Açık</span></div></div>
+            <div class="mini-row"><div><strong>Banka Onay Listesi</strong><span>Muhasebe / Manuel tetik</span></div><div><span class="tag warn">Taslak</span></div></div>
+            <div class="mini-row"><div><strong>Eksik Veri Uyarısı</strong><span>Yönetici / Kritik durum</span></div><div><span class="tag ok">Açık</span></div></div>
           </div>
         </section>
       </div>
