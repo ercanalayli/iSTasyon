@@ -29,13 +29,18 @@
     table{width:100%;border-collapse:collapse}.th{background:var(--soft)} th,td{padding:12px 10px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}
     th{color:#475467;font-size:12px} tr:last-child td{border-bottom:none}
     .tag{display:inline-block;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:700}
-    .ok{background:#ECFDF3;color:#166534}.warn{background:#FFFAEB;color:#B54708}.bad{background:#FEF3F2;color:#B42318}
+    .ok{background:#ECFDF3;color:#166534}.warn{background:#FFFAEB;color:#B54708}.bad{background:#FEF3F2;color:#B42318}.neutral{background:#EEF2F6;color:#344054}
     .stack{display:grid;gap:12px}.alert{padding:14px;border:1px solid var(--line);border-radius:14px;background:#fff}
     .alert strong{display:block;font-size:13px}.alert span{display:block;color:var(--muted);font-size:12px;margin-top:6px}
-    .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+    .triple{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
     .muted{color:var(--muted)}
-    @media (max-width:1100px){.grid4,.layout,.split{grid-template-columns:1fr 1fr}.shell{grid-template-columns:1fr}.sidebar{display:none}.main{padding:16px}}
-    @media (max-width:700px){.grid4,.layout,.split{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}}
+    .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:26px 0 12px}
+    .section-head h2{margin:0;font-size:18px}.section-head span{font-size:12px;color:var(--muted)}
+    .mini-list{display:grid;gap:10px}.mini-row{display:flex;justify-content:space-between;gap:10px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+    .mini-row strong{font-size:13px}.mini-row span{font-size:12px;color:var(--muted)}
+    @media (max-width:1200px){.grid4,.layout,.split,.triple{grid-template-columns:1fr 1fr}.shell{grid-template-columns:1fr}.sidebar{display:none}.main{padding:16px}}
+    @media (max-width:700px){.grid4,.layout,.split,.triple{grid-template-columns:1fr}.topbar,.section-head{flex-direction:column;align-items:flex-start}}
   </style>
 </head>
 <body>
@@ -94,6 +99,12 @@
         </section>
       </div>
 
+      <div class="section-head">
+        <div>
+          <h2>Satış Analizi</h2>
+          <span>Ürün ve müşteri liderliğini grafik olmadan net gösteren yapı</span>
+        </div>
+      </div>
       <div class="split">
         <section class="card section">
           <h3>Ürün Liderleri</h3>
@@ -119,6 +130,100 @@
               <tr><td>Yesmed Medikal</td><td>4.450 TL</td><td><span class="tag warn">Gider / takip</span></td></tr>
             </tbody>
           </table>
+        </section>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h2>Cariler</h2>
+          <span>Yönetici için cari yoğunluğu, risk ve fırsat sıralaması</span>
+        </div>
+      </div>
+      <div class="triple">
+        <section class="card section">
+          <h3>En Güçlü Cariler</h3>
+          <p>Ciro ve süreklilik güçlü</p>
+          <div class="mini-list">
+            <div class="mini-row"><div><strong>Murat Tic. Kablo</strong><span>Son işlem: 24.04.2026</span></div><div><span class="tag ok">129.768 TL</span></div></div>
+            <div class="mini-row"><div><strong>KTS Kabelbaum</strong><span>Son işlem: 03.04.2026</span></div><div><span class="tag ok">50.000 TL</span></div></div>
+            <div class="mini-row"><div><strong>Yüksel Demirel</strong><span>Son işlem: 06.04.2026</span></div><div><span class="tag ok">6.534 TL</span></div></div>
+          </div>
+        </section>
+        <section class="card section">
+          <h3>Takip Edilecekler</h3>
+          <p>Tahsilat, yavaşlama veya işlem seyrekliği</p>
+          <div class="mini-list">
+            <div class="mini-row"><div><strong>Yesmed Medikal</strong><span>Gider bağlantılı hareketler</span></div><div><span class="tag warn">İncele</span></div></div>
+            <div class="mini-row"><div><strong>Senanur Üstündağ</strong><span>Tekil ödeme</span></div><div><span class="tag neutral">3.954 TL</span></div></div>
+            <div class="mini-row"><div><strong>Muhammet Özer</strong><span>Açıklama: kulak cihazı ödemesi</span></div><div><span class="tag neutral">5.000 TL</span></div></div>
+          </div>
+        </section>
+        <section class="card section">
+          <h3>Cari Karar Notları</h3>
+          <p>Kısa yorum alanı</p>
+          <div class="alert"><strong>Murat Tic. Kablo</strong><span>Yüksek katkı sağlıyor, devamlılık güçlü.</span></div>
+          <div class="alert"><strong>Tekil ödemeler</strong><span>Açıklama kalitesi artırılırsa otomasyon doğruluğu yükselir.</span></div>
+        </section>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h2>Finans</h2>
+          <span>Gelir, gider, banka ve özel işlem ayrımı</span>
+        </div>
+      </div>
+      <div class="split">
+        <section class="card section">
+          <h3>Aylık Finans Özeti</h3>
+          <p>Grafiksiz, karar verdiren finans tablosu</p>
+          <table>
+            <thead class="th"><tr><th>Kalem</th><th>Tutar</th><th>Durum</th></tr></thead>
+            <tbody>
+              <tr><td>Toplam Tahsilat</td><td>194.268 TL</td><td><span class="tag ok">Pozitif</span></td></tr>
+              <tr><td>Toplam Gider</td><td>378.815 TL</td><td><span class="tag bad">Baskı</span></td></tr>
+              <tr><td>Virman Hareketi</td><td>632.000 TL</td><td><span class="tag neutral">Özel İzleme</span></td></tr>
+              <tr><td>Özel İşlem</td><td>321.894 TL</td><td><span class="tag warn">Onay Bekliyor</span></td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="card section">
+          <h3>Banka ve Masraf Notları</h3>
+          <p>Hareket sınıflandırma özeti</p>
+          <div class="mini-list">
+            <div class="mini-row"><div><strong>SGK</strong><span>07.04.2026 çıkış</span></div><div><span class="tag bad">47.570,89 TL</span></div></div>
+            <div class="mini-row"><div><strong>HGS / TTNET / Telekom</strong><span>Operasyonel gider</span></div><div><span class="tag warn">Takip</span></div></div>
+            <div class="mini-row"><div><strong>Virmanlar</strong><span>Satış tahsilatı gibi işlenmemeli</span></div><div><span class="tag neutral">Kontrollü</span></div></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h2>Stok ve Görev Teyidi</h2>
+          <span>Kritik ürün ve veri zinciri takibi</span>
+        </div>
+      </div>
+      <div class="split">
+        <section class="card section">
+          <h3>Kritik Ürün Listesi</h3>
+          <p>Stok alarm paneli</p>
+          <table>
+            <thead class="th"><tr><th>Ürün</th><th>Durum</th><th>Not</th></tr></thead>
+            <tbody>
+              <tr><td>Hidrofilik Sonda</td><td><span class="tag bad">Kritik</span></td><td>Hızlı tüketim</td></tr>
+              <tr><td>Kolostomi Torbası</td><td><span class="tag warn">İzle</span></td><td>Talep artışı var</td></tr>
+              <tr><td>Sargı Bezi</td><td><span class="tag ok">Kontrol Altında</span></td><td>Satış güçlü</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="card section">
+          <h3>Görev Teyidi Özeti</h3>
+          <p>Bot ve veri zinciri kontrolü</p>
+          <div class="mini-list">
+            <div class="mini-row"><div><strong>Bot Log</strong><span>Kontrol ve doğrulama gerekli</span></div><div><span class="tag warn">Eksik</span></div></div>
+            <div class="mini-row"><div><strong>Son Veri Tarihi</strong><span>Yönetim ekranında görünür olmalı</span></div><div><span class="tag ok">İzleniyor</span></div></div>
+            <div class="mini-row"><div><strong>Eksik Gün Takibi</strong><span>Günlük rapora bağlanmalı</span></div><div><span class="tag neutral">Sırada</span></div></div>
+          </div>
         </section>
       </div>
     </main>
