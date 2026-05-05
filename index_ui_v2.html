@@ -1,1 +1,127 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AperiON UI v2 Preview</title>
+  <style>
+    :root{
+      --bg:#F4F6FA;--card:#FFFFFF;--line:#E5EAF2;--text:#18202B;--muted:#667085;
+      --accent:#2563EB;--green:#16A34A;--red:#DC2626;--amber:#D97706;--soft:#F8FAFC;
+      --shadow:0 10px 30px rgba(15,23,42,.06);--radius:16px;
+    }
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .shell{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+    .sidebar{background:#fff;border-right:1px solid var(--line);padding:20px 16px;position:sticky;top:0;height:100vh}
+    .brand{font-weight:800;font-size:22px;color:var(--accent);letter-spacing:.5px}.sub{color:var(--muted);font-size:12px;margin-top:4px}
+    .menu{margin-top:28px;display:grid;gap:8px}.item{padding:12px 14px;border-radius:12px;color:#344054;background:#fff;border:1px solid transparent}
+    .item.active{background:#EEF4FF;border-color:#D6E4FF;color:var(--accent);font-weight:700}
+    .main{padding:24px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}
+    .title{font-size:28px;font-weight:800}.desc{color:var(--muted);font-size:13px;margin-top:4px}
+    .pill{padding:10px 14px;background:#fff;border:1px solid var(--line);border-radius:999px;color:#344054;font-size:12px}
+    .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .kpi{padding:18px}.kpi h4{margin:0;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .kpi .v{margin-top:14px;font-size:30px;font-weight:800}.kpi .s{margin-top:8px;font-size:12px;color:var(--muted)}
+    .layout{display:grid;grid-template-columns:1.3fr .9fr;gap:16px;margin-bottom:16px}
+    .section{padding:18px 18px 12px}.section h3{margin:0 0 4px;font-size:16px}.section p{margin:0 0 14px;color:var(--muted);font-size:12px}
+    table{width:100%;border-collapse:collapse}.th{background:var(--soft)} th,td{padding:12px 10px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}
+    th{color:#475467;font-size:12px} tr:last-child td{border-bottom:none}
+    .tag{display:inline-block;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:700}
+    .ok{background:#ECFDF3;color:#166534}.warn{background:#FFFAEB;color:#B54708}.bad{background:#FEF3F2;color:#B42318}
+    .stack{display:grid;gap:12px}.alert{padding:14px;border:1px solid var(--line);border-radius:14px;background:#fff}
+    .alert strong{display:block;font-size:13px}.alert span{display:block;color:var(--muted);font-size:12px;margin-top:6px}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .muted{color:var(--muted)}
+    @media (max-width:1100px){.grid4,.layout,.split{grid-template-columns:1fr 1fr}.shell{grid-template-columns:1fr}.sidebar{display:none}.main{padding:16px}}
+    @media (max-width:700px){.grid4,.layout,.split{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">AperiON</div>
+      <div class="sub">ERPALTH · iSTasyon · UI v2 Preview</div>
+      <div class="menu">
+        <div class="item active">ERP Radar</div>
+        <div class="item">Satış Analizi</div>
+        <div class="item">Cariler</div>
+        <div class="item">Finans</div>
+        <div class="item">Stok & Ürün</div>
+        <div class="item">Hedef / Bütçe</div>
+        <div class="item">Görev Teyidi</div>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <div class="title">Alaylı Medikal · Yönetim Paneli</div>
+          <div class="desc">Grafiksiz, karar odaklı, profesyonel ERP görünümü önizlemesi</div>
+        </div>
+        <div class="pill">Son veri: 30 Nisan 2026 · Durum: Güncel</div>
+      </div>
+
+      <div class="grid4">
+        <div class="card kpi"><h4>Bu Ay Ciro</h4><div class="v">1.248.420 TL</div><div class="s">Geçen aya göre +%12,4</div></div>
+        <div class="card kpi"><h4>İşlem</h4><div class="v">1.084</div><div class="s">Son 30 gün toplam hareket</div></div>
+        <div class="card kpi"><h4>Aktif Cari</h4><div class="v">146</div><div class="s">Satış yapan müşteri sayısı</div></div>
+        <div class="card kpi"><h4>Kritik Alarm</h4><div class="v">4</div><div class="s">Takip gerektiren aktif başlık</div></div>
+      </div>
+
+      <div class="layout">
+        <section class="card section">
+          <h3>Firma Katkı ve Performans Özeti</h3>
+          <p>Yönetici için hızlı karar tablosu</p>
+          <table>
+            <thead class="th"><tr><th>Firma</th><th>Bu Ay Ciro</th><th>Geçen Aya Göre</th><th>Veri Durumu</th><th>Not</th></tr></thead>
+            <tbody>
+              <tr><td>Alaylı Medikal</td><td>1.248.420 TL</td><td><span class="tag ok">Artış</span></td><td><span class="tag ok">Tam</span></td><td>Hacim güçlü, takip normal</td></tr>
+              <tr><td>Elit Et</td><td>684.300 TL</td><td><span class="tag warn">Yavaşlama</span></td><td><span class="tag warn">Kısmi</span></td><td>Cari yoğunluğu izlenmeli</td></tr>
+              <tr><td>Odyoform</td><td>212.900 TL</td><td><span class="tag bad">Düşüş</span></td><td><span class="tag bad">Eksik</span></td><td>Veri güncelliği zayıf</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="stack">
+          <div class="card section">
+            <h3>Alarm Merkezi</h3>
+            <p>Kritik başlıklar</p>
+            <div class="alert"><strong>Satış düşüşü</strong><span>Odyoform son dönemde belirgin aşağı yönlü.</span></div>
+            <div class="alert"><strong>Veri zinciri</strong><span>Görev teyidi ve bot log kontrolü gerekiyor.</span></div>
+            <div class="alert"><strong>Kritik stok</strong><span>303 ürün kritik seviyede.</span></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="split">
+        <section class="card section">
+          <h3>Ürün Liderleri</h3>
+          <p>Satış analizinin yönetici özeti</p>
+          <table>
+            <thead class="th"><tr><th>Ürün</th><th>Ciro</th><th>Adet</th><th>Pay</th></tr></thead>
+            <tbody>
+              <tr><td>RULO SARGI BEZİ 10CMX100</td><td>259.209 TL</td><td>1.000</td><td>%20,8</td></tr>
+              <tr><td>HİDROFİLİK SONDA</td><td>188.430 TL</td><td>412</td><td>%15,1</td></tr>
+              <tr><td>KOLOSTOMİ TORBASI</td><td>142.980 TL</td><td>265</td><td>%11,4</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="card section">
+          <h3>Cari Öncelik Listesi</h3>
+          <p>Orta üst düzey yönetici takibi</p>
+          <table>
+            <thead class="th"><tr><th>Cari</th><th>Ciro</th><th>Durum</th></tr></thead>
+            <tbody>
+              <tr><td>Murat Tic. Kablo</td><td>129.768 TL</td><td><span class="tag ok">Güçlü</span></td></tr>
+              <tr><td>KTS Kabelbaum</td><td>50.000 TL</td><td><span class="tag ok">Aktif</span></td></tr>
+              <tr><td>Yesmed Medikal</td><td>4.450 TL</td><td><span class="tag warn">Gider / takip</span></td></tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
