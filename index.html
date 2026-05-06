@@ -308,6 +308,10 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
           <div class="card-hd"><div class="card-l">Son Çekilen Veri</div><button onclick="loadLastDataStatus()" style="background:none;border:1px solid var(--b1);border-radius:4px;padding:3px 8px;color:var(--t3);font-family:var(--mono);font-size:9px;cursor:pointer">↻</button></div>
           <div id="lastDataGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yükleniyor...</div></div>
         </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-hd"><div class="card-l">Ana Ekran Dinamik Giderler</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">Bu yıl / kategori</span></div>
+          <div id="homeExpenseDyn"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yükleniyor...</div></div>
+        </div>
         <div class="fg" id="fGrid"></div>
       </div>
       <div id="detayDiv" style="display:none">
@@ -680,7 +684,7 @@ async function selF(id){
     await refresh();
   }
 }
-function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';renderKarts();loadLastDataStatus();}
+function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';renderKarts();loadLastDataStatus();renderHomeExpenses();}
 function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(cF);if(!document.getElementById('gB')){const b=document.createElement('button');b.id='gB';b.innerHTML='< Tüm Firmalar';b.style.cssText='margin-bottom:16px;padding:7px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#9899B0;font-size:12px;font-weight:600;cursor:pointer;display:block';b.onclick=()=>{cF='all';setFC('all');showKarts();};document.getElementById('detayDiv').insertBefore(b,document.getElementById('detayDiv').firstChild);}}
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'ERP Radar',s:'Anlık veri istihbaratı'},satis:{t:'Satış Analizi',s:'Ürün ve kategori'},cariler:{t:'Cariler',s:'Müşteri analizi'},finans:{t:'Finans',s:'Satış özeti ve Yenicespor'},stok:{t:'Stok & Ürün Analizi',s:'Ürün bazlı satış ve trend'},hedef:{t:'Hedef / Bütçe',s:'Gerçekleşen vs hedef karşılaştırması'},gorevler:{t:'Görev Teyidi',s:'Kritik görevlerin gerçekleşme durumu'},veri:{t:'Veri Yükleme',s:'Excel ve bot'},bildirim:{t:'Bildirimler',s:'WhatsApp ayarları'}};
@@ -1307,6 +1311,13 @@ function buildExpenseDynamic(rows,prevRows,yil,ciroTotal){
   const rowsOut=Object.entries(cats).sort((a,b)=>b[1].year-a[1].year);
   if(!rowsOut.length)return'<div class="empty"><div class="empty-t">Dinamik gider verisi yok</div></div>';
   return `<table class="pt"><thead><tr><th>Kategori</th><th>Bu Ay</th><th>Bu Yıl</th><th>Geçen Yıl</th><th>Aylık Ort.</th><th>Gider Payı</th><th>Ciro Payı</th><th>İşlem</th></tr></thead><tbody>${rowsOut.map(([k,v])=>`<tr><td style="font-weight:900">${k}</td><td>${dynMoney(v.month)}</td><td>${dynMoney(v.year)}</td><td>${v.prev?dynMoney(v.prev):'veri yok'}</td><td>${dynMoney(v.year/12)}</td><td>${total?dynPct(v.year/total*100):'veri yok'}</td><td>${ciroTotal?dynPct(v.year/ciroTotal*100):'ciro yok'}</td><td>${fmt(v.count)}</td></tr>`).join('')}</tbody></table>`;
+}
+async function renderHomeExpenses(){
+  const el=document.getElementById('homeExpenseDyn');if(!el)return;
+  const yil=new Date().getFullYear(), cf=cF==='all'?'':cF;
+  el.innerHTML='<div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Giderler hesaplanıyor...</div>';
+  const rows=await masrafData(yil,cf), prevRows=await masrafData(yil-1,cf), ciroTotal=await masrafCiroToplam(yil,cf);
+  el.innerHTML=rows.length?buildExpenseDynamic(rows,prevRows,yil,ciroTotal):'<div class="empty"><div class="empty-t">Ana ekran gider verisi yok</div><div class="empty-d">Masraf veya banka gider hareketi gelince burada görünecek.</div></div>';
 }
 async function rMasraf(){
   const yil=parseInt(document.getElementById('mY')?.value||new Date().getFullYear());
