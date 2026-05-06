@@ -82,14 +82,14 @@ function kategoriBul(text) {
   if (/yemek|tost/.test(s)) return 'Personel Yemek';
   if (/maas|maa|prim|hakedi/.test(s)) return 'Personel Maas/Prim';
   if (/iade/.test(s)) return 'Iade Gideri';
-  if (/banka|eft|havale|fast|bsmv|komisyon|masraf|ucret/.test(s)) return 'Banka Masrafi';
   if (/kargo|nakliye|tasima/.test(s)) return 'Kargo/Nakliye';
   if (/sgk|bagkur|vergi|stopaj|kdv/.test(s)) return 'Vergi/SGK';
   if (/telekom|ttnet|turkcell|vodafone|internet|telefon/.test(s)) return 'Iletisim';
-  if (/elektrik|su|dogalgaz|fatura/.test(s)) return 'Fatura/Gider';
+  if (/elektrik|su|dogalgaz|fatura|isinma/.test(s)) return 'Fatura/Gider';
   if (/yakit|akaryakit|benzin|mazot/.test(s)) return 'Yakit';
-  if (/maas|personel|calisan/.test(s)) return 'Personel';
   if (/kira/.test(s)) return 'Kira';
+  if (/banka|eft|havale|fast|bsmv|komisyon|masraf|ucret/.test(s)) return 'Banka Masrafi';
+  if (/personel|calisan/.test(s)) return 'Personel';
   return 'Diger';
 }
 
@@ -101,6 +101,10 @@ function hashRow(r) {
 
 function dedupeKey(r) {
   return [r.firma_id, r.tarih, Math.round(Number(r.tutar || 0) * 100), norm(r.aciklama)].join('|');
+}
+
+function tableDedupeKey(r) {
+  return [r.firma_id, r.tarih, norm(r.aciklama)].join('|');
 }
 
 async function startBrowser() {
@@ -310,8 +314,14 @@ async function kaydet(rows) {
     .lte('tarih', to)
     .limit(20000);
   if (existing.error) throw new Error(`Supabase ${SUPABASE.table}: ${existing.error.message}`);
-  const seen = new Set((existing.data || []).map(dedupeKey));
-  const fresh = rows.filter(r => !seen.has(dedupeKey(r)));
+  const seen = new Set((existing.data || []).map(tableDedupeKey));
+  const batchSeen = new Set();
+  const fresh = rows.filter(r => {
+    const k = tableDedupeKey(r);
+    if (seen.has(k) || batchSeen.has(k)) return false;
+    batchSeen.add(k);
+    return true;
+  });
   if (!fresh.length) return 0;
   const records = fresh.map(r => ({
     firma_id: r.firma_id,
@@ -327,7 +337,9 @@ async function kaydet(rows) {
     ay: Number(r.tarih.substring(5, 7)),
     created_at: new Date().toISOString(),
   }));
-  const { data, error } = await db.from(SUPABASE.table).insert(records).select();
+  const { data, error } = await db.from(SUPABASE.table)
+    .upsert(records, { onConflict: 'tarih,aciklama,firma_id', ignoreDuplicates: true })
+    .select();
   if (error) throw new Error(`Supabase ${SUPABASE.table}: ${error.message}`);
   return data?.length || records.length;
 }
@@ -340,6 +352,8 @@ async function kaydet(rows) {
     await firmaSec(page, firma);
     await filtrele(page, FROM, TO);
     let rows = await tabloOku(page, firma);
+    if (FROM) rows = rows.filter(r => r.tarih >= FROM);
+    if (TO) rows = rows.filter(r => r.tarih <= TO);
     if (LIMIT) rows = rows.slice(0, LIMIT);
     const payload = {
       mod: COMMIT ? 'commit' : 'dry-run',
