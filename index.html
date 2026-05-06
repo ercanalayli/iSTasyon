@@ -701,9 +701,10 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='145003-060526';
+const BUILD_CODE='150112-060526';
 const F={all:{n:'Tüm Firmalar',c:'#2563EB',i:'ALL',src:''},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},woodlet:{n:'Woodlet',c:'#B45309',i:'WDL',src:'Excel (WERP)'},elit:{n:'Elit Et',c:'#7C3AED',i:'ELT',src:'BizimHesap Bot'},odyoform:{n:'Odyoform',c:'#B7791F',i:'ODY',src:'BizimHesap Bot'},alkam:{n:'Alkam',c:'#DB2777',i:'ALK',src:'Excel'},yenicespor:{n:'Yenicespor',c:'#0284C7',i:'YSP',src:'Yenicespor Finans'}};
 const PILOT_FIRMA='alayli';
+let SHOW_OTHER_FIRMS=false;
 const DATA_SOURCES={
   alayli:[
     {id:'sales',n:'BizimHesap Satis',t:'sales_raw',kind:'sales',mode:'aktif'},
@@ -863,7 +864,7 @@ async function sourceMetric(fid,src){
 }
 async function renderSourceMatrix(){
   const el=document.getElementById('sourceMatrix');if(!el)return;
-  const ids=cF==='all'?Object.keys(DATA_SOURCES):[cF];
+  const ids=cF==='all'?(SHOW_OTHER_FIRMS?Object.keys(DATA_SOURCES):[PILOT_FIRMA]):[cF];
   el.innerHTML='<div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Kontrol ediliyor...</div>';
   const blocks=await Promise.all(ids.filter(id=>F[id]).map(async fid=>{
     const f=F[fid], sources=DATA_SOURCES[fid]||[];
@@ -888,7 +889,9 @@ async function renderSourceMatrix(){
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">${cards.join('')}</div>
     </div>`;
   }));
-  el.innerHTML=blocks.join('')||'<div class="empty"><div class="empty-t">Veri kaynagi tanimli degil</div></div>';
+  const hiddenCount=Object.keys(DATA_SOURCES).filter(id=>id!==PILOT_FIRMA).length;
+  const toggle=cF==='all'?`<button class="fb" onclick="SHOW_OTHER_FIRMS=!SHOW_OTHER_FIRMS;renderReportHub();renderSourceMatrix()" style="margin-top:6px">${SHOW_OTHER_FIRMS?'Diger Firmalari Gizle':'Diger Firmalari Goster'} (${hiddenCount})</button>`:'';
+  el.innerHTML=(blocks.join('')||'<div class="empty"><div class="empty-t">Veri kaynagi tanimli degil</div></div>')+toggle;
 }
 function rKPI(){const d=fil();if(!d.length){['kC','kM','kF'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='-';});return;}const tc=d.reduce((s,r)=>s+(+r.ciro||0),0);const mx=d.reduce((m,r)=>(+r.ciro||0)>m.v?{v:+r.ciro,n:r.urun||''}:m,{v:0,n:''});const af=new Set(d.map(r=>r.firma_id).filter(Boolean));const fn=cF==='all'?'tüm firmalar':(F[cF]?.n||cF);document.getElementById('kC').textContent='₺'+fmt(tc);document.getElementById('kCS').textContent=fn+' · '+d.length+' işlem';document.getElementById('kM').textContent='₺'+fmt(mx.v);document.getElementById('kMS').textContent=(mx.n||'').substring(0,28)||'-';document.getElementById('kF').textContent=af.size;}
 function oMo(tip){const d=fil();const m=document.getElementById('modal');const b=document.getElementById('mo-b');const t=document.getElementById('mo-t');if(tip==='ciro'){t.textContent='CİRO DAĞILIMI';const bF={};d.forEach(r=>{const id=r.firma_id||'?';bF[id]=(bF[id]||0)+(+r.ciro||0);});const rows=Object.entries(bF).sort((a,b)=>b[1]-a[1]);const tot=rows.reduce((s,[,v])=>s+v,0);b.innerHTML=rows.map(([id,v])=>{const f=F[id]||{n:id,c:'#888',i:''};const p=(v/tot*100).toFixed(1);return`<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--b1)"><span style="font-size:18px">${f.i}</span><div style="flex:1"><div style="font-size:13px;font-weight:700">${f.n}</div><div style="height:3px;background:var(--b1);border-radius:2px;margin-top:6px;overflow:hidden"><div style="height:100%;width:${p}%;background:${f.c};border-radius:2px"></div></div></div><div style="text-align:right;flex-shrink:0"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${f.c}">₺${fmt(v)}</div><div style="font-family:var(--mono);font-size:10px;color:var(--t3)">${p}%</div></div></div>`;}).join('')+`<div style="display:flex;justify-content:space-between;padding:12px 0;font-weight:800;border-top:1px solid var(--b2)"><span>TOPLAM</span><span style="font-family:var(--mono);color:var(--accent)">₺${fmt(tot)}</span></div>`;}else{t.textContent='EN YÜKSEK 20 İŞLEM';const top=[...d].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0)).slice(0,20);b.innerHTML=`<table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:1px solid var(--b2)">${['#','ÜRÜN','MÜŞTERİ','CİRO','TARİH'].map(h=>`<th style="font-family:var(--mono);font-size:9px;color:var(--t3);padding:8px;text-align:left;letter-spacing:1px">${h}</th>`).join('')}</tr></thead><tbody>${top.map((r,i)=>`<tr style="border-bottom:1px solid rgba(255,255,255,.03)"><td style="padding:9px 8px;font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td><td style="padding:9px 8px;font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(r.urun||'-').substring(0,40)}</td><td style="padding:9px 8px;font-size:11px;color:var(--t2)">${(r.unvan||'-').substring(0,25)}</td><td style="padding:9px 8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--red);text-align:right">₺${fmt(+r.ciro||0)}</td><td style="padding:9px 8px;font-family:var(--mono);font-size:10px;color:var(--t3)">${r.tarih?.substring(0,10)||'-'}</td></tr>`).join('')}</tbody></table>`;}m.classList.add('open');}
@@ -925,7 +928,7 @@ async function renderReportHub(){
   const pill=t=>`<span class="report-pill">${t}</span>`;
   const mk=(k,v,dsc,cls,size,go,pills='')=>`<div class="report-tile ${cls} ${size||''}" onclick="${go||''}"><div class="report-k">${k}</div><div class="report-v">${v}</div><div class="report-d">${dsc}</div>${pills?`<div class="report-mini">${pills}</div>`:''}</div>`;
   if(cF==='all'){
-    const ids=Object.keys(F).filter(id=>id!=='all');
+    const ids=SHOW_OTHER_FIRMS?Object.keys(F).filter(id=>id!=='all'):[PILOT_FIRMA];
     const cards=await Promise.all(ids.map(async id=>{
       const f=F[id], sd=d.filter(r=>r.firma_id===id), ciro=sd.reduce((s,r)=>s+(+r.ciro||0),0), adet=sd.reduce((s,r)=>s+(+r.adet||0),0);
       const giderRows=await masrafData(yil,id), gider=giderRows.reduce((s,r)=>s+r.tutar,0), net=ciro-gider;
@@ -936,8 +939,10 @@ async function renderReportHub(){
       const dsc=`Gider ${gider?dynMoney(gider):'veri yok'} · Net ${gider?dynMoney(net):'veri yok'}`;
       return mk(`${f.i} ${f.n}`,v,`${fmt(adet)} adet · ${fmt(sd.length)} satış · ${fmt(giderRows.length)} gider`,cls,'wide',`selF('${id}')`,pill(`Dün ${fmt(dun.length)}`)+pill(`Bugün ${fmt(bugun.length)}`)+(top?pill((top.urun||'').substring(0,22)):''));
     }));
-    grid.innerHTML=cards.join('');
-    if(stamp)stamp.textContent='GNC '+BUILD_CODE+' · firma firma';
+    const hidden=Object.keys(F).filter(id=>id!=='all'&&id!==PILOT_FIRMA).length;
+    const btn=`<div class="report-tile report-cool wide" onclick="SHOW_OTHER_FIRMS=!SHOW_OTHER_FIRMS;renderReportHub();renderSourceMatrix()"><div class="report-k">${SHOW_OTHER_FIRMS?'Diger Firmalari Gizle':'Diger Firmalar'}</div><div class="report-v">${hidden}</div><div class="report-d">${SHOW_OTHER_FIRMS?'Ana ekrani tekrar Alayli pilotuna indir':'simdilik gizli, tek butonla acilir'}</div><div class="report-mini">${pill(SHOW_OTHER_FIRMS?'gizle':'goster')}</div></div>`;
+    grid.innerHTML=cards.join('')+btn;
+    if(stamp)stamp.textContent='GNC '+BUILD_CODE+' · Alayli pilot';
     return;
   }
   const ciro=d.reduce((s,r)=>s+(+r.ciro||0),0), adet=d.reduce((s,r)=>s+(+r.adet||0),0);
