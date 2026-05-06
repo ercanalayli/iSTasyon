@@ -701,8 +701,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='160901-060526';
-const BUILD_STAMP='06.05.2026 16:09:01';
+const BUILD_CODE='162030-060526';
+const BUILD_STAMP='06.05.2026 16:20:30';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} · ${BUILD_CODE}`;
 const F={all:{n:'Tüm Firmalar',c:'#2563EB',i:'ALL',src:''},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},woodlet:{n:'Woodlet',c:'#B45309',i:'WDL',src:'Excel (WERP)'},elit:{n:'Elit Et',c:'#7C3AED',i:'ELT',src:'BizimHesap Bot'},odyoform:{n:'Odyoform',c:'#B7791F',i:'ODY',src:'BizimHesap Bot'},alkam:{n:'Alkam',c:'#DB2777',i:'ALK',src:'Excel'},yenicespor:{n:'Yenicespor',c:'#0284C7',i:'YSP',src:'Yenicespor Finans'}};
 const PILOT_FIRMA='alayli';
@@ -726,7 +726,7 @@ const fmt=n=>Math.round(n).toLocaleString('tr');
 const fD=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const today=()=>fD(new Date());
 const yest=()=>fD(new Date(Date.now()-86400000));
-const fil=()=>cF==='all'?RAW:RAW.filter(r=>r.firma_id===cF);
+const fil=()=>RAW.filter(r=>r.firma_id===PILOT_FIRMA);
 function getR(m){const t=new Date(),d=new Date(t.getFullYear(),t.getMonth(),t.getDate());if(m==='yesterday'){const y=new Date(d);y.setDate(y.getDate()-1);return{from:fD(y),to:fD(y)};}if(m==='today')return{from:fD(d),to:fD(d)};if(m==='week'){const w=new Date(d);w.setDate(w.getDate()-6);return{from:fD(w),to:fD(d)};}if(m==='month')return{from:fD(new Date(t.getFullYear(),t.getMonth(),1)),to:fD(d)};if(m==='last_month')return{from:fD(new Date(t.getFullYear(),t.getMonth()-1,1)),to:fD(new Date(t.getFullYear(),t.getMonth(),0))};if(m==='year')return{from:`${t.getFullYear()}-01-01`,to:fD(d)};if(m==='last_year')return{from:`${t.getFullYear()-1}-01-01`,to:`${t.getFullYear()-1}-12-31`};return{from:'2020-01-01',to:fD(d)};}
 async function logout(){await db.auth.signOut();window.location.replace('login.html');}
 function setFC(id){const f=F[id]||F.all;document.documentElement.style.setProperty('--fc',f.c);['sbDot','tbDot'].forEach(i=>{const e=document.getElementById(i);if(e){e.style.background=f.c;e.style.boxShadow=`0 0 6px ${f.c}`;}});const sn=document.getElementById('sbName');if(sn){sn.textContent=f.n;sn.style.color=f.c;}const tn=document.getElementById('tbName');if(tn){tn.textContent=f.i+' '+f.n;tn.style.color=f.c;}const b=document.getElementById('tbBadge');if(b)b.style.borderColor=f.c;const ai=document.getElementById('aiBar');if(ai)ai.style.borderLeftColor=f.c;}
@@ -769,7 +769,7 @@ function toggleSb(){const s=document.getElementById('sb'),t=document.getElementB
 const PT={dashboard:{t:'ERP Radar',s:'Anlık veri istihbaratı'},satis:{t:'Satış Analizi',s:'Ürün ve kategori'},cariler:{t:'Cariler',s:'Müşteri analizi'},finans:{t:'Finans',s:'Satış özeti ve Yenicespor'},stok:{t:'Stok & Ürün Analizi',s:'Ürün bazlı satış ve trend'},hedef:{t:'Hedef / Bütçe',s:'Gerçekleşen vs hedef karşılaştırması'},gorevler:{t:'Görev Teyidi',s:'Kritik görevlerin gerçekleşme durumu'},veri:{t:'Veri Yükleme',s:'Excel ve bot'},bildirim:{t:'Bildirimler',s:'WhatsApp ayarları'}};
 function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();if(id==='dashboard'&&cF==='all')showKarts();}
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';document.getElementById('fy').style.display=t==='yenicespor'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();if(t==='yenicespor')lY();}
-async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*');if(from)q=q.gte('tarih',from).lte('tarih',to);if(cF!=='all')q=q.eq('firma_id',cF);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]);}catch(e){return[];}}
+async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]);}catch(e){return[];}}
 async function refresh(){RAW=await loadData();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
 function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
 function pSels(){
@@ -789,15 +789,12 @@ function pSels(){
       s.style.opacity='0.7';
       s.style.cursor='not-allowed';
     }else{
-      s.innerHTML='<option value="">Tüm Firmalar</option>';
-      fids.forEach(f=>{
-        const fi=F[f]||{n:f,i:''};
-        s.innerHTML+=`<option value="${f}">${fi.i} ${fi.n}</option>`;
-      });
-      s.value=(onceki && fids.includes(onceki))?onceki:'';
-      s.disabled=false;
-      s.style.opacity='1';
-      s.style.cursor='pointer';
+      const fi=F[PILOT_FIRMA];
+      s.innerHTML=`<option value="${PILOT_FIRMA}">${fi.i} ${fi.n}</option>`;
+      s.value=PILOT_FIRMA;
+      s.disabled=true;
+      s.style.opacity='0.7';
+      s.style.cursor='not-allowed';
     }
   });
 
@@ -1156,7 +1153,7 @@ async function salesWide(cf){
   return applyProductRules(all);
 }
 async function rU(){
-  const cf=document.getElementById('uFi')?.value||'';
+  const cf=PILOT_FIRMA;
   const ck=document.getElementById('uKa')?.value||uCat||'';
   const w=document.getElementById('uW');if(!w)return;
   w.innerHTML='<div class="empty"><div class="empty-t">Yonetim raporu hazirlaniyor...</div></div>';
@@ -1206,7 +1203,7 @@ const rowAmount=r=>+(r?.ciro??r?.tutar??r?.toplam??r?.alis_tutari??r?.satis_tuta
 const rowUnit=r=>+(r?.birim_fiyat??r?.fiyat??r?.alis_fiyati??r?.satis_fiyati??0)||0;
 const dateMax=rows=>rows.map(rowDate).filter(Boolean).sort().at(-1)||'veri yok';
 const safeAvg=(sum,qty)=>qty?sum/qty:NaN;
-const currentFirmForReport=()=>document.getElementById('uFi')?.value||document.getElementById('cFi')?.value||(cF!=='all'?cF:'');
+const currentFirmForReport=()=>PILOT_FIRMA;
 const dynBox=(l,v,s='')=>`<div class="dyn-box"><div class="dyn-l">${escHtml(l)}</div><div class="dyn-v">${escHtml(v)}</div>${s?`<div class="dyn-s">${escHtml(s)}</div>`:''}</div>`;
 function periodSales(rows,a,b){const d=rows.filter(r=>rowDate(r)>=a&&rowDate(r)<=b),adet=d.reduce((s,r)=>s+rowQty(r),0),ciro=d.reduce((s,r)=>s+rowAmount(r),0);return{rows:d,adet,ciro,avg:safeAvg(ciro,adet)};}
 function productCodeOf(rows){return rows.find(r=>r.urun_kod)?.urun_kod||rows.find(r=>r.urun_kodu)?.urun_kodu||rows.find(r=>r.kod)?.kod||rows.find(r=>r.barkod)?.barkod||'veri yok';}
@@ -1261,7 +1258,7 @@ function reportTable(rows,type){
 // -- CARİLER ---------------------------------------------------------------
 let seciliCari = null;
 function rC(){
-  const seciliFirma = cF!=='all' ? cF : (document.getElementById('cFi')?.value||'');
+  const seciliFirma = PILOT_FIRMA;
   const d=seciliFirma?RAW.filter(r=>r.firma_id===seciliFirma):RAW;
   const el=document.getElementById('cG');if(!el)return;
   if(!d.length){el.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-ico"></div><div class="empty-t">Cari verisi yok</div></div>';return;}
@@ -1399,7 +1396,7 @@ function cariDetay(jsonStr){
 // -- AYLIK RAPOR -------------------------------------------------------------
 async function rA(){
   const yil=parseInt(document.getElementById('rY')?.value||new Date().getFullYear());
-  const cf=document.getElementById('rFi')?.value||'';
+  const cf=PILOT_FIRMA;
   let q=db.from('sales_raw').select('*').gte('tarih',`${yil}-01-01`).lte('tarih',`${yil}-12-31`);
   if(cf)q=q.eq('firma_id',cf);
   const{data}=await q;
@@ -1558,7 +1555,7 @@ async function renderHomeExpenses(){
 }
 async function rMasraf(){
   const yil=parseInt(document.getElementById('mY')?.value||new Date().getFullYear());
-  const cf=document.getElementById('mFi')?.value||'';
+  const cf=PILOT_FIRMA;
   const rows=await masrafData(yil,cf);
   const prevRows=await masrafData(yil-1,cf);
   const ciroTotal=await masrafCiroToplam(yil,cf);
@@ -1591,7 +1588,7 @@ async function rMasraf(){
 
 // -- STOK & ÜRÜN -----------------------------------------------------------
 function loadStok(){
-  const seciliFirma = cF!=='all' ? cF : (document.getElementById('stokFi')?.value||'');
+  const seciliFirma = PILOT_FIRMA;
   const esik=parseInt(document.getElementById('kritikEsik')?.value||5);
   const d=seciliFirma?RAW.filter(r=>r.firma_id===seciliFirma):RAW;
 
@@ -1673,8 +1670,10 @@ function loadStok(){
   // Firma filtresi güncelle
   const sf=document.getElementById('stokFi');
   if(sf&&sf.options.length<=1){
-    const fids=[...new Set(RAW.map(r=>r.firma_id).filter(Boolean))];
-    fids.forEach(f=>{const fi=F[f]||{n:f,i:''};sf.innerHTML+=`<option value="${f}">${fi.i} ${fi.n}</option>`;});
+    const fi=F[PILOT_FIRMA];
+    sf.innerHTML=`<option value="${PILOT_FIRMA}">${fi.i} ${fi.n}</option>`;
+    sf.value=PILOT_FIRMA;
+    sf.disabled=true;
   }
 }
 
