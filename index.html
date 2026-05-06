@@ -678,7 +678,7 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='150925-010526';
+const BUILD_CODE='123109-060526';
 const F={all:{n:'Tüm Firmalar',c:'#2563EB',i:'ALL',src:''},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},woodlet:{n:'Woodlet',c:'#B45309',i:'WDL',src:'Excel (WERP)'},elit:{n:'Elit Et',c:'#7C3AED',i:'ELT',src:'BizimHesap Bot'},odyoform:{n:'Odyoform',c:'#B7791F',i:'ODY',src:'BizimHesap Bot'},alkam:{n:'Alkam',c:'#DB2777',i:'ALK',src:'Excel'},yenicespor:{n:'Yenicespor',c:'#0284C7',i:'YSP',src:'Yenicespor Finans'}};
 let RAW=[],cM='month',cF='all',sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null,PROD_MAP=[];
 const pad=n=>String(n).padStart(2,'0');
@@ -841,17 +841,25 @@ async function renderReportHub(){
   const rows=await masrafData(yil,cf);
   const gider=rows.reduce((s,r)=>s+r.tutar,0);
   const giderPay=ciro?gider/ciro*100:null;
+  const net=ciro-gider;
+  const month=pad(new Date().getMonth()+1);
+  const ayGider=rows.filter(r=>(r.tarih||'').substring(5,7)===month).reduce((s,r)=>s+r.tutar,0);
+  const giderCats={};
+  rows.forEach(r=>{const k=r.kategori||'Diğer';giderCats[k]=(giderCats[k]||0)+r.tutar;});
+  const topGider=Object.entries(giderCats).sort((a,b)=>b[1]-a[1])[0];
   const pill=t=>`<span class="report-pill">${t}</span>`;
   const mk=(k,v,dsc,cls,size,go,pills='')=>`<div class="report-tile ${cls} ${size||''}" onclick="${go||''}"><div class="report-k">${k}</div><div class="report-v">${v}</div><div class="report-d">${dsc}</div>${pills?`<div class="report-mini">${pills}</div>`:''}</div>`;
   grid.innerHTML=[
     mk('Satis / Ciro',dynMoney(ciro),`${fmt(adet)} adet · ${fmt(d.length)} islem`,'report-good','big',"gP('satis',null)",pill(`${musteri} musteri`)+pill(F[cF]?.n||'Tum')),
-    mk('Gider Isisi',rows.length?dynMoney(gider):'veri yok',giderPay===null?'ciro yok':`ciroya oran ${dynPct(giderPay)}`,'report-hot','big',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=masraf]')?.click(),60)",pill(`${fmt(rows.length)} gider`)),
+    mk('Gider Isisi',rows.length?dynMoney(gider):'veri yok',giderPay===null?'ciro yok':`ciroya oran ${dynPct(giderPay)}`,'report-hot','big',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=masraf]')?.click(),60)",pill(`${fmt(rows.length)} gider`)+pill(`bu ay ${dynMoney(ayGider)}`)),
+    mk('Net Sonuc',rows.length?dynMoney(net):'gider yok',rows.length?(net>=0?'ciro giderin ustunde':'gider ciroyu asiyor'):'masraf verisi bekleniyor',net>=0?'report-good':'report-hot','big',"gP('finans',null)",pill(`gider ${giderPay===null?'ciro yok':dynPct(giderPay)}`)),
+    mk('En Buyuk Gider',topGider?dynMoney(topGider[1]):'veri yok',topGider?topGider[0]:'kategori yok','report-warm','',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=masraf]')?.click(),60)",topGider?pill(dynPct(gider?topGider[1]/gider*100:0)):''),
     mk('Tahsilat / Cari','Hazirlik','musteri bakiye ve tahsilat merkezi','report-cool','',"gP('cariler',null)",pill('cari')+pill('risk')),
     mk('Banka / Kasa','Bot','gider, tahsilat ve transfer isleme hazirligi','report-sky','',"gP('finans',null)",pill('onayli islem')),
     mk('Bugun',bugun.length?dynMoney(bugun.reduce((s,r)=>s+(+r.ciro||0),0)):'veri yok',`${fmt(bugun.length)} islem`,'report-warm','',"gP('dashboard',null)"),
     mk('Dun',dun.length?dynMoney(dun.reduce((s,r)=>s+(+r.ciro||0),0)):'veri yok',`${fmt(dun.length)} islem`,'report-royal','',"gP('dashboard',null)"),
     mk('En Buyuk Hareket',top?dynMoney(+top.ciro||0):'veri yok',top?`${(top.urun||'-').substring(0,54)}`:'kayit yok','report-warm','wide',"oMo('max')"),
-    mk('Mali Tablo','Yakinda','gelir, gider, kar, banka, cari tek merkez','report-cool','wide',"gP('finans',null)",pill('rapor')+pill('yonetim'))
+    mk('Mali Tablo',rows.length?dynMoney(net):'Yakinda','gelir - gider ana kontrol','report-cool','wide',"gP('finans',null)",pill('rapor')+pill('yonetim'))
   ].join('');
   if(stamp)stamp.textContent='GNC '+BUILD_CODE;
 }
