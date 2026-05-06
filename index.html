@@ -71,7 +71,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;back
 .tb-ld{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);animation:pulse 2s infinite}
 .tb-lt{font-family:var(--mono);font-size:9px;color:var(--green);letter-spacing:1px}
 .tb-clk{font-family:var(--mono);font-size:10px;color:var(--t3)}
-.tb-ver{font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:.7px;border:1px solid rgba(37,99,235,.22);background:rgba(37,99,235,.06);border-radius:14px;padding:4px 8px}
+.tb-ver{font-family:var(--mono);font-size:10px;color:#075985;letter-spacing:.4px;border:1px solid rgba(14,165,233,.32);background:#E0F2FE;border-radius:14px;padding:5px 10px;font-weight:900}
 .tb-btn{padding:6px 14px;border-radius:var(--rs);border:1px solid rgba(37,99,235,.3);background:rgba(37,99,235,.07);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
 .tb-btn:hover{background:rgba(37,99,235,.12)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
@@ -701,7 +701,9 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='152356-060526';
+const BUILD_CODE='160901-060526';
+const BUILD_STAMP='06.05.2026 16:09:01';
+const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} · ${BUILD_CODE}`;
 const F={all:{n:'Tüm Firmalar',c:'#2563EB',i:'ALL',src:''},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},woodlet:{n:'Woodlet',c:'#B45309',i:'WDL',src:'Excel (WERP)'},elit:{n:'Elit Et',c:'#7C3AED',i:'ELT',src:'BizimHesap Bot'},odyoform:{n:'Odyoform',c:'#B7791F',i:'ODY',src:'BizimHesap Bot'},alkam:{n:'Alkam',c:'#DB2777',i:'ALK',src:'Excel'},yenicespor:{n:'Yenicespor',c:'#0284C7',i:'YSP',src:'Yenicespor Finans'}};
 const PILOT_FIRMA='alayli';
 let SHOW_OTHER_FIRMS=false;
@@ -938,7 +940,7 @@ async function renderReportHub(){
       return mk(`${f.i} ${f.n}`,v,`${fmt(adet)} adet · ${fmt(sd.length)} satış · ${fmt(giderRows.length)} gider`,cls,'wide',`selF('${id}')`,pill(`Dün ${fmt(dun.length)}`)+pill(`Bugün ${fmt(bugun.length)}`)+(top?pill((top.urun||'').substring(0,22)):''));
     }));
     grid.innerHTML=cards.join('');
-    if(stamp)stamp.textContent='GNC '+BUILD_CODE+' · Alayli pilot';
+    if(stamp)stamp.textContent=buildLabel()+' · Alayli pilot';
     return;
   }
   const ciro=d.reduce((s,r)=>s+(+r.ciro||0),0), adet=d.reduce((s,r)=>s+(+r.adet||0),0);
@@ -967,7 +969,7 @@ async function renderReportHub(){
     mk('En Buyuk Hareket',top?dynMoney(+top.ciro||0):'veri yok',top?`${(top.urun||'-').substring(0,54)}`:'kayit yok','report-warm','wide',"oMo('max')"),
     mk('Mali Tablo',rows.length?dynMoney(net):'Yakinda','gelir - gider ana kontrol','report-cool','wide',"gP('finans',null)",pill('rapor')+pill('yonetim'))
   ].join('');
-  if(stamp)stamp.textContent='GNC '+BUILD_CODE;
+  if(stamp)stamp.textContent=buildLabel();
 }
 async function renderKarts(){
   const grid=document.getElementById('fGrid');if(!grid)return;
@@ -1529,7 +1531,7 @@ async function rBankaOnay(){
   const groups={};
   rows.forEach(r=>{const k=r.durum||'onay_bekliyor';groups[k]=(groups[k]||0)+1;});
   document.getElementById('bankaOnaySummary').innerHTML=result.error?`<div class="empty"><div class="empty-t">Banka tablosu hazır değil</div><div class="empty-d">${escHtml(result.error)}</div></div>`:Object.entries(groups).length?miniBars(groups,Math.max(...Object.values(groups),1),'var(--accent)'):'<div class="empty"><div class="empty-t">Banka onay verisi yok</div><div class="empty-d">Ekstre parser calisinca banka_raw burada gorunecek.</div></div>';
-  document.getElementById('bankaOnayStamp').textContent='GNC '+BUILD_CODE;
+  document.getElementById('bankaOnayStamp').textContent=buildLabel();
   if(result.error){el.innerHTML=`<tr><td colspan="9" style="padding:18px;color:var(--red);font-weight:800">Supabase banka_raw tablosu kurulmalı.</td></tr>`;return;}
   el.innerHTML=rows.length?rows.slice(0,120).map(r=>{
     const tut=Number(r.tutar||0), onayBtn=r.durum==='onay_bekliyor'||r.durum==='islenecek';
@@ -2059,7 +2061,7 @@ function pUp(){
 // -- EKSİK FONKSIYONLAR SONU ------------------------------------------------
 
 window.addEventListener('load',async()=>{
-  const bc=document.getElementById('buildCode');if(bc)bc.textContent='GNC '+BUILD_CODE;
+  const bc=document.getElementById('buildCode');if(bc)bc.textContent=buildLabel();
   try{
     loadProdMap();
     setFC(cF||'all');
