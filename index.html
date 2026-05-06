@@ -435,6 +435,7 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
       <div class="ft">
         <div class="ft-tab on" onclick="fT('genel',this)">Satış Özeti</div>
         <div class="ft-tab" onclick="fT('masraf',this)">Masraf Raporu</div>
+        <div class="ft-tab" onclick="fT('banka',this)">Banka Onay</div>
         <div class="ft-tab" onclick="fT('yenicespor',this)">⚽ Yenicespor</div>
       </div>
       <div id="fg">
@@ -487,6 +488,24 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
         </div>
         <div class="card"><div class="card-hd"><div class="card-l">Hareketler</div></div>
           <table class="pt"><thead><tr><th>Tarih</th><th>Açıklama</th><th>Tür</th><th>Tutar</th><th>Kasa</th></tr></thead><tbody id="yH"></tbody></table>
+        </div>
+      </div>
+      <div id="fbanka" style="display:none">
+        <div class="fbar">
+          <span class="fbar-l">Firma</span>
+          <select class="sel" id="bankFi" onchange="rBankaOnay()"><option value="alayli">ALY Alayli Medikal</option><option value="">Tüm</option><option value="elit">ELT Elit Et</option><option value="odyoform">ODY Odyoform</option></select>
+          <div class="fsep"></div><span class="fbar-l">Durum</span>
+          <select class="sel" id="bankDurum" onchange="rBankaOnay()"><option value="">Tümü</option><option value="onay_bekliyor">Onay Bekliyor</option><option value="islenecek">İşlenecek</option><option value="islenmeyecek">İşlenmeyecek</option><option value="islendi">İşlendi</option></select>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi c"><div class="kpi-l">Toplam Hareket</div><div class="kpi-v" id="bTop">—</div></div>
+          <div class="kpi g"><div class="kpi-l">Tahsilat Adayı</div><div class="kpi-v" id="bTah">—</div></div>
+          <div class="kpi r"><div class="kpi-l">Gider Adayı</div><div class="kpi-v" id="bGid">—</div></div>
+          <div class="kpi o"><div class="kpi-l">Onay Bekleyen</div><div class="kpi-v" id="bOnay">—</div></div>
+        </div>
+        <div class="card" style="margin-bottom:14px"><div class="card-hd"><div class="card-l">Banka Onay Merkezi</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">Onay yoksa BizimHesap işlemi yok</span></div><div id="bankaOnaySummary"></div></div>
+        <div class="card"><div class="card-hd"><div class="card-l">Banka Hareketleri</div><span id="bankaOnayStamp" style="font-family:var(--mono);font-size:9px;color:var(--t3)">—</span></div>
+          <table class="pt"><thead><tr><th>Tarih</th><th>Yön</th><th>Tutar</th><th>Öneri</th><th>Cari</th><th>Açıklama</th><th>Güven</th><th>Durum</th><th>İşlem</th></tr></thead><tbody id="bankaOnayRows"></tbody></table>
         </div>
       </div>
     </div>
@@ -678,7 +697,7 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='123109-060526';
+const BUILD_CODE='131457-060526';
 const F={all:{n:'Tüm Firmalar',c:'#2563EB',i:'ALL',src:''},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},woodlet:{n:'Woodlet',c:'#B45309',i:'WDL',src:'Excel (WERP)'},elit:{n:'Elit Et',c:'#7C3AED',i:'ELT',src:'BizimHesap Bot'},odyoform:{n:'Odyoform',c:'#B7791F',i:'ODY',src:'BizimHesap Bot'},alkam:{n:'Alkam',c:'#DB2777',i:'ALK',src:'Excel'},yenicespor:{n:'Yenicespor',c:'#0284C7',i:'YSP',src:'Yenicespor Finans'}};
 let RAW=[],cM='month',cF='all',sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null,PROD_MAP=[];
 const pad=n=>String(n).padStart(2,'0');
@@ -728,7 +747,7 @@ function showDetay(){document.getElementById('kartsDiv').style.display='none';do
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'ERP Radar',s:'Anlık veri istihbaratı'},satis:{t:'Satış Analizi',s:'Ürün ve kategori'},cariler:{t:'Cariler',s:'Müşteri analizi'},finans:{t:'Finans',s:'Satış özeti ve Yenicespor'},stok:{t:'Stok & Ürün Analizi',s:'Ürün bazlı satış ve trend'},hedef:{t:'Hedef / Bütçe',s:'Gerçekleşen vs hedef karşılaştırması'},gorevler:{t:'Görev Teyidi',s:'Kritik görevlerin gerçekleşme durumu'},veri:{t:'Veri Yükleme',s:'Excel ve bot'},bildirim:{t:'Bildirimler',s:'WhatsApp ayarları'}};
 function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();if(id==='dashboard'&&cF==='all')showKarts();}
-function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';document.getElementById('fy').style.display=t==='yenicespor'?'block':'none';if(t==='masraf')rMasraf();if(t==='yenicespor')lY();}
+function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';document.getElementById('fy').style.display=t==='yenicespor'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();if(t==='yenicespor')lY();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*');if(from)q=q.gte('tarih',from).lte('tarih',to);if(cF!=='all')q=q.eq('firma_id',cF);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]);}catch(e){return[];}}
 async function refresh(){RAW=await loadData();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
 function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
@@ -1384,6 +1403,51 @@ function buildExpenseDynamic(rows,prevRows,yil,ciroTotal){
   const rowsOut=Object.entries(cats).sort((a,b)=>b[1].year-a[1].year);
   if(!rowsOut.length)return'<div class="empty"><div class="empty-t">Dinamik gider verisi yok</div></div>';
   return `<table class="pt"><thead><tr><th>Kategori</th><th>Bu Ay</th><th>Bu Yıl</th><th>Geçen Yıl</th><th>Aylık Ort.</th><th>Gider Payı</th><th>Ciro Payı</th><th>İşlem</th></tr></thead><tbody>${rowsOut.map(([k,v])=>`<tr><td style="font-weight:900">${k}</td><td>${dynMoney(v.month)}</td><td>${dynMoney(v.year)}</td><td>${v.prev?dynMoney(v.prev):'veri yok'}</td><td>${dynMoney(v.year/12)}</td><td>${total?dynPct(v.year/total*100):'veri yok'}</td><td>${ciroTotal?dynPct(v.year/ciroTotal*100):'ciro yok'}</td><td>${fmt(v.count)}</td></tr>`).join('')}</tbody></table>`;
+}
+async function bankaRawData(){
+  const fi=document.getElementById('bankFi')?.value||'alayli';
+  const durum=document.getElementById('bankDurum')?.value||'';
+  try{
+    let q=db.from('banka_raw').select('*').order('tarih',{ascending:false}).limit(500);
+    if(fi)q=q.eq('firma_id',fi);
+    if(durum)q=q.eq('durum',durum);
+    const {data,error}=await q;
+    if(error)throw error;
+    return {rows:data||[],error:null};
+  }catch(e){return {rows:[],error:e.message||String(e)};}
+}
+function bankaBadge(r){
+  const d=r.durum||'onay_bekliyor';
+  const c=d==='islenecek'?'var(--green)':d==='islenmeyecek'?'var(--t3)':d==='islendi'?'var(--accent)':'var(--orange)';
+  return `<span style="font-family:var(--mono);font-size:9px;font-weight:900;color:${c};border:1px solid ${c}44;background:${c}14;border-radius:999px;padding:4px 7px">${escHtml(d)}</span>`;
+}
+async function bankaKarar(id,durum){
+  const patch={durum,updated_at:new Date().toISOString()};
+  const {error}=await db.from('banka_raw').update(patch).eq('id',id);
+  if(error){alert('Kaydedilemedi: '+error.message);return;}
+  rBankaOnay();
+}
+async function rBankaOnay(){
+  const result=await bankaRawData();
+  const rows=result.rows||[];
+  const el=document.getElementById('bankaOnayRows');
+  if(!el)return;
+  const tah=rows.filter(r=>r.aday_islem_tipi==='cari_tahsilat').length;
+  const gid=rows.filter(r=>r.aday_islem_tipi==='banka_gider').length;
+  const onay=rows.filter(r=>r.durum==='onay_bekliyor').length;
+  document.getElementById('bTop').textContent=fmt(rows.length);
+  document.getElementById('bTah').textContent=fmt(tah);
+  document.getElementById('bGid').textContent=fmt(gid);
+  document.getElementById('bOnay').textContent=fmt(onay);
+  const groups={};
+  rows.forEach(r=>{const k=r.durum||'onay_bekliyor';groups[k]=(groups[k]||0)+1;});
+  document.getElementById('bankaOnaySummary').innerHTML=result.error?`<div class="empty"><div class="empty-t">Banka tablosu hazır değil</div><div class="empty-d">${escHtml(result.error)}</div></div>`:Object.entries(groups).length?miniBars(groups,Math.max(...Object.values(groups),1),'var(--accent)'):'<div class="empty"><div class="empty-t">Banka onay verisi yok</div><div class="empty-d">Ekstre parser calisinca banka_raw burada gorunecek.</div></div>';
+  document.getElementById('bankaOnayStamp').textContent='GNC '+BUILD_CODE;
+  if(result.error){el.innerHTML=`<tr><td colspan="9" style="padding:18px;color:var(--red);font-weight:800">Supabase banka_raw tablosu kurulmalı.</td></tr>`;return;}
+  el.innerHTML=rows.length?rows.slice(0,120).map(r=>{
+    const tut=Number(r.tutar||0), onayBtn=r.durum==='onay_bekliyor'||r.durum==='islenecek';
+    return `<tr><td>${escHtml((r.tarih||'').substring(0,10))}</td><td>${escHtml(r.yon||'')}</td><td style="font-family:var(--mono);font-weight:900;color:${tut>=0?'var(--green)':'var(--red)'}">${dynMoney(Math.abs(tut))}</td><td>${escHtml(r.aday_islem_tipi||r.aday_kategori||'-')}</td><td>${escHtml(r.aday_cari||'-')}</td><td style="max-width:440px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(r.aciklama||'')}">${escHtml(r.aciklama||'')}</td><td>${fmt(r.guven||0)}/100</td><td>${bankaBadge(r)}</td><td>${onayBtn?`<button class="empty-btn" onclick="bankaKarar(${r.id},'islenecek')">Onay</button> <button class="empty-btn" onclick="bankaKarar(${r.id},'islenmeyecek')">Ret</button>`:'-'}</td></tr>`;
+  }).join(''):'<tr><td colspan="9" style="padding:18px;color:var(--t3)">Banka onay verisi yok</td></tr>';
 }
 async function renderHomeExpenses(){
   const el=document.getElementById('homeExpenseDyn');if(!el)return;
