@@ -497,7 +497,7 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
       <div id="fbanka" style="display:none">
         <div class="fbar">
           <span class="fbar-l">Firma</span>
-          <select class="sel" id="bankFi" onchange="rBankaOnay()"><option value="alayli">ALY Alayli Medikal</option><option value="">Tüm</option><option value="elit">ELT Elit Et</option><option value="odyoform">ODY Odyoform</option></select>
+        <select class="sel" id="bankFi" onchange="rBankaOnay()"><option value="alayli">ALY Alayli Medikal</option></select>
           <div class="fsep"></div><span class="fbar-l">Durum</span>
           <select class="sel" id="bankDurum" onchange="rBankaOnay()"><option value="">Tümü</option><option value="onay_bekliyor">Onay Bekliyor</option><option value="islenecek">İşlenecek</option><option value="islenmeyecek">İşlenmeyecek</option><option value="islendi">İşlendi</option></select>
         </div>
@@ -701,11 +701,12 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='162030-060526';
-const BUILD_STAMP='06.05.2026 16:20:30';
+const BUILD_CODE='162204-060526';
+const BUILD_STAMP='06.05.2026 16:22:04';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} · ${BUILD_CODE}`;
 const F={all:{n:'Tüm Firmalar',c:'#2563EB',i:'ALL',src:''},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},woodlet:{n:'Woodlet',c:'#B45309',i:'WDL',src:'Excel (WERP)'},elit:{n:'Elit Et',c:'#7C3AED',i:'ELT',src:'BizimHesap Bot'},odyoform:{n:'Odyoform',c:'#B7791F',i:'ODY',src:'BizimHesap Bot'},alkam:{n:'Alkam',c:'#DB2777',i:'ALK',src:'Excel'},yenicespor:{n:'Yenicespor',c:'#0284C7',i:'YSP',src:'Yenicespor Finans'}};
 const PILOT_FIRMA='alayli';
+const VISIBLE_FIRMS=[PILOT_FIRMA];
 let SHOW_OTHER_FIRMS=false;
 const DATA_SOURCES={
   alayli:[
@@ -720,7 +721,7 @@ const DATA_SOURCES={
   alkam:[{id:'excel',n:'Excel',t:'sales_raw',kind:'sales',mode:'beklemede'}],
   yenicespor:[{id:'finance',n:'Yenicespor Finans',t:'ys_transactions',kind:'finance',mode:'aktif'}]
 };
-let RAW=[],cM='month',cF='all',sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null,PROD_MAP=[];
+let RAW=[],cM='month',cF=PILOT_FIRMA,sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null,PROD_MAP=[];
 const pad=n=>String(n).padStart(2,'0');
 const fmt=n=>Math.round(n).toLocaleString('tr');
 const fD=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -745,32 +746,27 @@ function renderProdMapPanel(){
 }
 function saveProdMap(){const from=(document.getElementById('pmOld')?.value||'').trim(),to=(document.getElementById('pmNew')?.value||'').trim(),cat=(document.getElementById('pmCat')?.value||'').trim();if(!from||(!to&&!cat))return alert('Eski ürün ve yeni ad/kategori gerekli.');const key=prodKey(from);PROD_MAP=PROD_MAP.filter(x=>x.from_key!==key);PROD_MAP.push({from,from_key:key,to,cat,ts:new Date().toISOString()});saveProdMapStore();refresh();renderProdMapPanel();}
 function delProdMap(i){PROD_MAP.splice(i,1);saveProdMapStore();refresh();renderProdMapPanel();}
-function buildDD(){const dd=document.getElementById('firmaDD');dd.innerHTML=Object.entries(F).map(([id,f])=>{const cnt=id==='all'?RAW.length:RAW.filter(r=>r.firma_id===id).length;return`<div class="sb-ddi${id===cF?' on':''}" onclick="selF('${id}')"><span class="sb-ddd" style="background:${f.c}"></span><span style="flex:1">${f.i} ${f.n}</span><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">${cnt}</span></div>`;}).join('');}
+function buildDD(){const dd=document.getElementById('firmaDD');dd.innerHTML=VISIBLE_FIRMS.map(id=>{const f=F[id];const cnt=RAW.filter(r=>r.firma_id===id).length;return`<div class="sb-ddi on" onclick="selF('${id}')"><span class="sb-ddd" style="background:${f.c}"></span><span style="flex:1">${f.i} ${f.n}</span><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">${cnt}</span></div>`;}).join('');}
 function toggleDD(){buildDD();document.getElementById('firmaDD').classList.toggle('open');}
 document.addEventListener('click',e=>{if(!e.target.closest('.sb-fs'))document.getElementById('firmaDD').classList.remove('open');});
 async function selF(id){
-  cF=id;
+  cF=PILOT_FIRMA;
   document.getElementById('firmaDD').classList.remove('open');
-  setFC(id);
+  setFC(PILOT_FIRMA);
   buildDD();
   pSels();
-  if(id==='all'){
-    showKarts();
-    await refresh();
-  }else{
-    cM='month';
-    showDetay();
-    await refresh();
-  }
+  cM='month';
+  showDetay();
+  await refresh();
 }
 function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';renderReportHub();renderKarts();loadLastDataStatus();renderSourceMatrix();renderHomeExpenses();}
-function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(cF);if(!document.getElementById('gB')){const b=document.createElement('button');b.id='gB';b.innerHTML='< Tüm Firmalar';b.style.cssText='margin-bottom:16px;padding:7px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#9899B0;font-size:12px;font-weight:600;cursor:pointer;display:block';b.onclick=()=>{cF='all';setFC('all');showKarts();};document.getElementById('detayDiv').insertBefore(b,document.getElementById('detayDiv').firstChild);}}
+function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(PILOT_FIRMA);document.getElementById('gB')?.remove();}
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'ERP Radar',s:'Anlık veri istihbaratı'},satis:{t:'Satış Analizi',s:'Ürün ve kategori'},cariler:{t:'Cariler',s:'Müşteri analizi'},finans:{t:'Finans',s:'Satış özeti ve Yenicespor'},stok:{t:'Stok & Ürün Analizi',s:'Ürün bazlı satış ve trend'},hedef:{t:'Hedef / Bütçe',s:'Gerçekleşen vs hedef karşılaştırması'},gorevler:{t:'Görev Teyidi',s:'Kritik görevlerin gerçekleşme durumu'},veri:{t:'Veri Yükleme',s:'Excel ve bot'},bildirim:{t:'Bildirimler',s:'WhatsApp ayarları'}};
 function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();if(id==='dashboard'&&cF==='all')showKarts();}
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';document.getElementById('fy').style.display=t==='yenicespor'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();if(t==='yenicespor')lY();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]);}catch(e){return[];}}
-async function refresh(){RAW=await loadData();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
+async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(r=>r.firma_id===PILOT_FIRMA);buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
 function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
 function pSels(){
   const fids=[...new Set(RAW.map(r=>r.firma_id).filter(Boolean))];
@@ -1146,11 +1142,11 @@ async function salesWide(cf){
   const pr=pRange(), all=[];
   for(let from=0;;from+=1000){
     let q=db.from('sales_raw').select('*').gte('tarih',pr.prevYearS).lte('tarih',pr.todayS).order('id').range(from,from+999);
-    if(cf)q=q.eq('firma_id',cf);
+    q=q.eq('firma_id',PILOT_FIRMA);
     const {data,error}=await q;if(error)break;
     all.push(...(data||[]));if(!data||data.length<1000)break;
   }
-  return applyProductRules(all);
+  return applyProductRules(all.filter(r=>r.firma_id===PILOT_FIRMA));
 }
 async function rU(){
   const cf=PILOT_FIRMA;
@@ -1211,19 +1207,19 @@ async function loadProductSales(productName,firmId){
   const pr=pRange(), out=[];
   for(let from=0;;from+=1000){
     let q=db.from('sales_raw').select('*').gte('tarih',pr.prevYearS).lte('tarih',pr.todayS).order('tarih',{ascending:true}).range(from,from+999);
-    if(firmId)q=q.eq('firma_id',firmId);
+    q=q.eq('firma_id',PILOT_FIRMA);
     const {data,error}=await q;if(error)break;
     out.push(...(data||[]));if(!data||data.length<1000)break;
   }
   const key=prodKey(productName);
-  return applyProductRules(out).filter(r=>prodKey(r.urun)===key);
+  return applyProductRules(out.filter(r=>r.firma_id===PILOT_FIRMA)).filter(r=>prodKey(r.urun)===key);
 }
 async function loadPurchaseRows(productName,firmId){
   const tables=['alis_raw','purchases_raw','purchase_raw','maliyetler','fiyat_listesi'],key=prodKey(productName),rows=[];
   for(const table of tables){
     try{
       let q=db.from(table).select('*').limit(5000);
-      if(firmId)q=q.eq('firma_id',firmId);
+      q=q.eq('firma_id',PILOT_FIRMA);
       const {data,error}=await q;if(error)continue;
       (data||[]).forEach(r=>{const name=r.urun||r.urun_adi||r.stok_adi||r.malzeme||r.aciklama||'';if(prodKey(name)===key)rows.push({...r,_kaynak:table});});
     }catch(e){}
@@ -2062,8 +2058,11 @@ function pUp(){
 window.addEventListener('load',async()=>{
   const bc=document.getElementById('buildCode');if(bc)bc.textContent=buildLabel();
   try{
+    cF=PILOT_FIRMA;
+    try{if('serviceWorker' in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister()));}}catch(e){}
+    try{if(window.caches){const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)));}}catch(e){}
     loadProdMap();
-    setFC(cF||'all');
+    setFC(PILOT_FIRMA);
     lWP();
     loadProdNotify();
     await refresh();
