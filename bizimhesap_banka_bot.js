@@ -26,7 +26,7 @@ const CONFIG = {
 const SUPABASE = {
   url: process.env.SUPABASE_URL || 'https://iilfwosoroflzubkaryj.supabase.co',
   key: process.env.SUPABASE_KEY || 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
-  table: process.env.BANK_TABLE || 'bank_transactions',
+  table: process.env.BANK_TABLE || 'banka_raw',
 };
 
 const FIRMALAR = [
@@ -158,6 +158,32 @@ async function onayliHareketleriAl() {
     return rows;
   }
 
+  if (SUPABASE.table === 'banka_raw') {
+    let q = db.from(SUPABASE.table)
+      .select('*')
+      .eq('durum', 'islenecek')
+      .eq('guven', 100)
+      .order('tarih', { ascending: true })
+      .limit(LIMIT);
+    if (FIRMA_ARG) q = q.eq('firma_id', FIRMA_ARG);
+    if (ID_ARG) q = q.eq('id', ID_ARG);
+    const { data, error } = await q;
+    if (error) throw new Error(`Supabase ${SUPABASE.table}: ${error.message}`);
+    const seen = processedHashes();
+    return (data || [])
+      .filter(r => ['cari_tahsilat', 'banka_gider', 'tahsilat'].includes(r.aday_islem_tipi || r.tur || ''))
+      .filter(r => !r.hash || !seen.has(r.hash))
+      .map(r => ({
+        ...r,
+        karsi_taraf: r.aday_cari || r.karsi_taraf || '',
+        cari_unvan: r.aday_cari || r.cari_unvan || '',
+        tur: r.aday_islem_tipi === 'banka_gider' ? 'banka_gider' : 'cari_tahsilat',
+        hesap: r.hesap || r.kaynak_banka || '*IS BANKASI',
+        sinif_guven: r.guven,
+        kaynak: 'banka_raw',
+      }));
+  }
+
   const buildQuery = (strict = true) => {
     let q = db.from(SUPABASE.table)
     .select('*')
@@ -170,7 +196,6 @@ async function onayliHareketleriAl() {
     if (ID_ARG) q = q.eq('id', ID_ARG);
     return q;
   };
-
   let { data, error } = await buildQuery(true);
   if (error && (error.message || '').includes('sinif_guven')) {
     log('  sinif_guven kolonu gorunmedi; sadece manuel onayli kayitlarla devam.');
@@ -712,6 +737,16 @@ async function hareketiIsle(page, h) {
 
 async function isaretle(h, durum, mesaj) {
   if (!h.id || !COMMIT) return;
+  if (SUPABASE.table === 'banka_raw') {
+    const next = durum === 'kaydedildi' ? 'islendi' : durum === 'hata' ? 'onay_bekliyor' : h.durum || 'islenecek';
+    const { error } = await db.from(SUPABASE.table).update({
+      durum: next,
+      updated_at: new Date().toISOString(),
+      raw: { ...(h.raw || {}), bizimhesap_durumu: durum, bizimhesap_mesaj: mesaj || null, bizimhesap_islem_tarihi: new Date().toISOString() },
+    }).eq('id', h.id);
+    if (error) log(`  Isaretleme hatasi: ${error.message}`);
+    return;
+  }
   const update = {
     bizimhesap_durumu: durum,
     bizimhesap_mesaj: mesaj || null,
