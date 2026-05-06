@@ -177,9 +177,23 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
 .empty-t{font-size:16px;font-weight:700;color:var(--t2);margin-bottom:8px}
 .empty-d{font-size:13px;color:var(--t3);line-height:1.6;margin-bottom:20px;max-width:320px;margin-left:auto;margin-right:auto}
 .empty-btn{padding:10px 24px;border-radius:var(--rs);border:1px solid var(--accent);background:rgba(99,91,255,.1);color:var(--accent);font-size:12px;cursor:pointer;font-weight:700}
+.dyn-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:12px 0 18px}
+.dyn-box{background:#F8FAFC;border:1px solid var(--b1);border-radius:8px;padding:12px;min-height:74px}
+.dyn-l{font-size:11px;color:#64748B;font-weight:800;letter-spacing:.02em;margin-bottom:6px}
+.dyn-v{font-size:16px;color:#111827;font-weight:900;line-height:1.25;word-break:break-word}
+.dyn-s{font-size:12px;color:#64748B;font-weight:600;margin-top:4px;line-height:1.35}
+.dyn-sec{font-size:15px;font-weight:900;color:#111827;margin:18px 0 8px;padding-top:14px;border-top:1px solid var(--b1)}
+.dyn-table{width:100%;border-collapse:collapse;margin-top:8px}
+.dyn-table th{background:#F8FAFC;color:#475569;font-size:11px;text-align:left;padding:10px;border-bottom:1px solid var(--b1);font-weight:800}
+.dyn-table td{font-size:12px;color:#1F2937;padding:10px;border-bottom:1px solid rgba(15,23,42,.07);vertical-align:top}
+.dyn-tag{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:900;background:#ECFDF5;color:#047857;border:1px solid #A7F3D0}
+.dyn-tag.warn{background:#FFFBEB;color:#B45309;border-color:#FDE68A}
+.dyn-tag.risk{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}
+.pt tr.dyn-click{cursor:pointer}
+.pt tr.dyn-click:hover td{background:#EFF6FF}
 .mo{position:fixed;inset:0;background:rgba(8,9,15,.85);z-index:9000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
 .mo.open{display:flex}
-.mo-box{background:var(--s1);border:1px solid var(--b2);border-radius:16px;padding:28px;min-width:400px;max-width:640px;width:90%;max-height:80vh;overflow-y:auto}
+.mo-box{background:var(--s1);border:1px solid var(--b2);border-radius:16px;padding:28px;min-width:400px;max-width:1040px;width:92%;max-height:86vh;overflow-y:auto}
 .mo-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid var(--b1);padding-bottom:14px}
 .mo-x{background:none;border:none;color:var(--t3);cursor:pointer;font-size:22px;line-height:1;padding:0}
 .mo-x:hover{color:var(--text)}
@@ -961,10 +975,67 @@ async function rU(){
       ${reportTable(caris,'cari')}
     </div>`;
 }
+const dynNum=n=>Number.isFinite(+n)?Math.round(+n).toLocaleString('tr-TR'):'veri yok';
+const dynMoney=n=>Number.isFinite(+n)?'TL '+Math.round(+n).toLocaleString('tr-TR'):'veri yok';
+const dynPct=n=>Number.isFinite(+n)?(+n).toLocaleString('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%':'eksik veri';
+const escHtml=v=>(v??'').toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const jsArg=v=>JSON.stringify(v??'');
+const rowDate=r=>(r?.tarih||r?.alis_tarihi||r?.satis_tarihi||r?.islem_tarihi||r?.created_at||'').toString().substring(0,10);
+const rowQty=r=>+(r?.adet??r?.miktar??r?.qty??0)||0;
+const rowAmount=r=>+(r?.ciro??r?.tutar??r?.toplam??r?.alis_tutari??r?.satis_tutari??0)||0;
+const rowUnit=r=>+(r?.birim_fiyat??r?.fiyat??r?.alis_fiyati??r?.satis_fiyati??0)||0;
+const dateMax=rows=>rows.map(rowDate).filter(Boolean).sort().at(-1)||'veri yok';
+const safeAvg=(sum,qty)=>qty?sum/qty:NaN;
+const currentFirmForReport=()=>document.getElementById('uFi')?.value||document.getElementById('cFi')?.value||(cF!=='all'?cF:'');
+const dynBox=(l,v,s='')=>`<div class="dyn-box"><div class="dyn-l">${escHtml(l)}</div><div class="dyn-v">${escHtml(v)}</div>${s?`<div class="dyn-s">${escHtml(s)}</div>`:''}</div>`;
+function periodSales(rows,a,b){const d=rows.filter(r=>rowDate(r)>=a&&rowDate(r)<=b),adet=d.reduce((s,r)=>s+rowQty(r),0),ciro=d.reduce((s,r)=>s+rowAmount(r),0);return{rows:d,adet,ciro,avg:safeAvg(ciro,adet)};}
+function productCodeOf(rows){return rows.find(r=>r.urun_kod)?.urun_kod||rows.find(r=>r.urun_kodu)?.urun_kodu||rows.find(r=>r.kod)?.kod||rows.find(r=>r.barkod)?.barkod||'veri yok';}
+async function loadProductSales(productName,firmId){
+  const pr=pRange(), out=[];
+  for(let from=0;;from+=1000){
+    let q=db.from('sales_raw').select('*').gte('tarih',pr.prevYearS).lte('tarih',pr.todayS).order('tarih',{ascending:true}).range(from,from+999);
+    if(firmId)q=q.eq('firma_id',firmId);
+    const {data,error}=await q;if(error)break;
+    out.push(...(data||[]));if(!data||data.length<1000)break;
+  }
+  const key=prodKey(productName);
+  return applyProductRules(out).filter(r=>prodKey(r.urun)===key);
+}
+async function loadPurchaseRows(productName,firmId){
+  const tables=['alis_raw','purchases_raw','purchase_raw','maliyetler','fiyat_listesi'],key=prodKey(productName),rows=[];
+  for(const table of tables){
+    try{
+      let q=db.from(table).select('*').limit(5000);
+      if(firmId)q=q.eq('firma_id',firmId);
+      const {data,error}=await q;if(error)continue;
+      (data||[]).forEach(r=>{const name=r.urun||r.urun_adi||r.stok_adi||r.malzeme||r.aciklama||'';if(prodKey(name)===key)rows.push({...r,_kaynak:table});});
+    }catch(e){}
+  }
+  return rows;
+}
+function purchasePeriod(rows,a,b){const d=rows.filter(r=>{const dt=rowDate(r);return dt&&dt>=a&&dt<=b;});const adet=d.reduce((s,r)=>s+rowQty(r),0),tutar=d.reduce((s,r)=>s+(rowAmount(r)||rowUnit(r)*rowQty(r)),0);return{rows:d,adet,tutar,avg:adet&&tutar?tutar/adet:NaN};}
+function profitBlock(s,p){if(!Number.isFinite(p.avg))return{profit:NaN,unit:NaN,margin:NaN,note:'alış verisi eksik'};const profit=s.ciro-(s.adet*p.avg);return{profit,unit:safeAvg(profit,s.adet),margin:s.ciro?profit/s.ciro*100:NaN,note:''};}
+function cmp(cur,prev){if(!Number.isFinite(cur)||!Number.isFinite(prev)||prev===0)return 'eksik veri';const v=(cur-prev)/Math.abs(prev)*100;return (v>=0?'+':'')+dynPct(v);}
+async function openProductProfitCard(productName){
+  const firmId=currentFirmForReport(), pr=pRange(), sales=await loadProductSales(productName,firmId), buys=await loadPurchaseRows(productName,firmId);
+  const m=document.getElementById('modal'), t=document.getElementById('mo-t'), b=document.getElementById('mo-b');
+  if(!sales.length){t.textContent='Dinamik Ürün Kârlılık Kartı';b.innerHTML='<div class="empty"><div class="empty-t">Bu ürün için seçili firmada veri yok</div></div>';m.classList.add('open');return;}
+  const thisSales=periodSales(sales,pr.yearS,pr.todayS), lastSales=periodSales(sales,pr.prevYearS,pr.prevYearE), thisBuy=purchasePeriod(buys,pr.yearS,pr.todayS), lastBuy=purchasePeriod(buys,pr.prevYearS,pr.prevYearE);
+  const thisProfit=profitBlock(thisSales,thisBuy), lastProfit=profitBlock(lastSales,lastBuy);
+  const lastSale=[...sales].filter(r=>rowQty(r)&&rowAmount(r)).sort((a,b)=>rowDate(a).localeCompare(rowDate(b))).at(-1), lastBuyRow=[...buys].sort((a,b)=>rowDate(a).localeCompare(rowDate(b))).at(-1);
+  t.textContent='Dinamik Ürün Kârlılık Kartı';
+  b.innerHTML=`
+    <div class="dyn-grid">${dynBox('Ürün adı',productName)}${dynBox('Ürün kodu',productCodeOf(sales))}${dynBox('Kategori',nrmCat(sales[0]?.kategori))}${dynBox('Firma',firmId?(F[firmId]?.n||firmId):'Tüm Firmalar')}${dynBox('Son işlem tarihi',dateMax([...sales,...buys]))}${dynBox('Son satış tarihi',dateMax(sales))}${dynBox('Son alış tarihi',dateMax(buys))}</div>
+    <div class="dyn-sec">Son hareket</div><div class="dyn-grid">${dynBox('En son kimden alındı',lastBuyRow?.tedarikci||lastBuyRow?.unvan||lastBuyRow?.cari_unvan||'veri yok')}${dynBox('En son alış tarihi',rowDate(lastBuyRow)||'veri yok')}${dynBox('En son alış fiyatı',rowUnit(lastBuyRow)>0?dynMoney(rowUnit(lastBuyRow)):lastBuyRow&&rowQty(lastBuyRow)?dynMoney(rowAmount(lastBuyRow)/rowQty(lastBuyRow)):'veri yok')}${dynBox('En son kime satıldı',lastSale?.unvan||'veri yok')}${dynBox('En son satış tarihi',rowDate(lastSale)||'veri yok')}${dynBox('En son satış fiyatı',lastSale&&rowQty(lastSale)?dynMoney(rowAmount(lastSale)/rowQty(lastSale)):'veri yok')}</div>
+    <div class="dyn-sec">Bu yıl özeti</div><div class="dyn-grid">${dynBox('Toplam satış adedi',dynNum(thisSales.adet))}${dynBox('Toplam satış cirosu',dynMoney(thisSales.ciro))}${dynBox('Ortalama satış fiyatı',Number.isFinite(thisSales.avg)?dynMoney(thisSales.avg):'veri yok')}${dynBox('Ortalama alış fiyatı',Number.isFinite(thisBuy.avg)?dynMoney(thisBuy.avg):'veri yok')}${dynBox('Tahmini kâr',Number.isFinite(thisProfit.profit)?dynMoney(thisProfit.profit):'eksik veri',thisProfit.note)}${dynBox('Ortalama birim kâr',Number.isFinite(thisProfit.unit)?dynMoney(thisProfit.unit):'eksik veri')}${dynBox('Kâr marjı',dynPct(thisProfit.margin))}</div>
+    <div class="dyn-sec">Geçen yıl özeti</div><div class="dyn-grid">${dynBox('Toplam satış adedi',dynNum(lastSales.adet))}${dynBox('Toplam satış cirosu',dynMoney(lastSales.ciro))}${dynBox('Ortalama satış fiyatı',Number.isFinite(lastSales.avg)?dynMoney(lastSales.avg):'veri yok')}${dynBox('Ortalama alış fiyatı',Number.isFinite(lastBuy.avg)?dynMoney(lastBuy.avg):'veri yok')}${dynBox('Tahmini kâr',Number.isFinite(lastProfit.profit)?dynMoney(lastProfit.profit):'eksik veri',lastProfit.note)}${dynBox('Ortalama birim kâr',Number.isFinite(lastProfit.unit)?dynMoney(lastProfit.unit):'eksik veri')}${dynBox('Kâr marjı',dynPct(lastProfit.margin))}</div>
+    <div class="dyn-sec">Karşılaştırma</div><div class="dyn-grid">${dynBox('Adet değişimi',cmp(thisSales.adet,lastSales.adet))}${dynBox('Ciro değişimi',cmp(thisSales.ciro,lastSales.ciro))}${dynBox('Ortalama satış fiyat değişimi',cmp(thisSales.avg,lastSales.avg))}${dynBox('Ortalama alış fiyat değişimi',cmp(thisBuy.avg,lastBuy.avg))}${dynBox('Kâr değişimi',cmp(thisProfit.profit,lastProfit.profit))}${dynBox('Marj değişimi',Number.isFinite(thisProfit.margin)&&Number.isFinite(lastProfit.margin)?dynPct(thisProfit.margin-lastProfit.margin):'eksik veri')}</div>`;
+  m.classList.add('open');
+}
 function reportTable(rows,type){
   if(!rows.length)return'<div class="empty"><div class="empty-t">Veri yok</div></div>';
   const pr=pRange();
-  return `<table class="pt"><thead><tr><th>${type==='urun'?'Ürün':'Cari'}</th><th>Dün</th><th>Bu Hafta</th><th>${pr.monthName}</th><th>${pr.prevMonthName}</th><th>${pr.year}</th><th>${pr.prevYear}</th><th>Fiyat</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-weight:800;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.n}">${r.n}<div style="font-size:11px;color:#64748B;margin-top:4px;font-weight:700">${r.cat}</div></td><td>${sumCell(r.dy)}</td><td>${sumCell(r.wk)}</td><td>${sumCell(r.mo)}</td><td>${sumCell(r.pm)}</td><td>${sumCell(r.yr)}</td><td>${sumCell(r.ly)}</td><td>${priceCell(r.yr,r.ly)}</td></tr>`).join('')}</tbody></table>`;
+  return `<table class="pt"><thead><tr><th>${type==='urun'?'Ürün':'Cari'}</th><th>Dün</th><th>Bu Hafta</th><th>${pr.monthName}</th><th>${pr.prevMonthName}</th><th>${pr.year}</th><th>${pr.prevYear}</th><th>${type==='urun'?'Kârlılık / Fiyat':'Fiyat'}</th></tr></thead><tbody>${rows.map(r=>`<tr class="${type==='urun'?'dyn-click':''}" ${type==='urun'?`onclick="openProductProfitCard(${jsArg(r.n)})"`:''}><td style="font-weight:800;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(r.n)}">${escHtml(r.n)}<div style="font-size:11px;color:#64748B;margin-top:4px;font-weight:700">${escHtml(r.cat)}</div></td><td>${sumCell(r.dy)}</td><td>${sumCell(r.wk)}</td><td>${sumCell(r.mo)}</td><td>${sumCell(r.pm)}</td><td>${sumCell(r.yr)}</td><td>${sumCell(r.ly)}</td><td>${priceCell(r.yr,r.ly)}</td></tr>`).join('')}</tbody></table>`;
 }
 
 // -- CARİLER ---------------------------------------------------------------
