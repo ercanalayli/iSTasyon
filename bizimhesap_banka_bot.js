@@ -8,6 +8,9 @@ const SAVE = args.includes('--save');
 const LIMIT = Number(args[args.indexOf('--limit') + 1] || process.env.BANK_LIMIT || 10);
 const FIRMA_ARG = args.includes('--firma') ? args[args.indexOf('--firma') + 1] : null;
 const ID_ARG = args.includes('--id') ? Number(args[args.indexOf('--id') + 1]) : null;
+const FROM_JSON = args.includes('--from-json') ? args[args.indexOf('--from-json') + 1] : null;
+const PROCESSED_HASH_FILE = process.env.BANK_PROCESSED_HASH_FILE || 'banka_islenen_hashler.json';
+const DRY_OUT = args.includes('--dry-out') ? args[args.indexOf('--dry-out') + 1] : 'banka_islem_dryrun.json';
 
 const CONFIG = {
   email: process.env.BIZIMHESAP_EMAIL || 'alaylimedikal@gmail.com',
@@ -38,6 +41,28 @@ function log(msg) {
   const line = `[${new Date().toLocaleString('tr-TR')}] ${msg}`;
   console.log(line);
   fs.appendFileSync('banka_bot_log.txt', line + '\n');
+}
+
+function readJsonSafe(file, fallback) {
+  try {
+    if (!file || !fs.existsSync(file)) return fallback;
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return fallback;
+  }
+}
+
+function processedHashes() {
+  return new Set(readJsonSafe(PROCESSED_HASH_FILE, []));
+}
+
+function rememberHash(hash) {
+  if (!hash || !SAVE) return;
+  const list = readJsonSafe(PROCESSED_HASH_FILE, []);
+  if (!list.includes(hash)) {
+    list.push(hash);
+    fs.writeFileSync(PROCESSED_HASH_FILE, JSON.stringify(list, null, 2), 'utf8');
+  }
 }
 
 function para(n) {
@@ -105,6 +130,34 @@ async function firmaSec(page, firma) {
 }
 
 async function onayliHareketleriAl() {
+  if (FROM_JSON) {
+    const payload = readJsonSafe(FROM_JSON, null);
+    if (!payload || !Array.isArray(payload.kayitlar)) throw new Error(`JSON okunamadi: ${FROM_JSON}`);
+    const seen = processedHashes();
+    const rows = payload.kayitlar
+      .filter(r => r.durum === 'islenecek')
+      .filter(r => r.onay_durumu === 'onaylandi' || r.manuel_onay === true)
+      .filter(r => ['cari_tahsilat', 'banka_gider', 'tahsilat'].includes(r.aday_islem_tipi || r.tur || ''))
+      .filter(r => Number(r.guven || r.sinif_guven || 0) === 100)
+      .filter(r => !r.hash || !seen.has(r.hash))
+      .slice(0, LIMIT)
+      .map((r, i) => ({
+        id: r.id || `json-${i + 1}`,
+        firma_id: r.firma_id || payload.firma_id || 'alayli',
+        tarih: r.tarih,
+        aciklama: r.aciklama,
+        karsi_taraf: r.aday_cari || r.karsi_taraf || '',
+        cari_unvan: r.aday_cari || r.cari_unvan || '',
+        tutar: r.tutar,
+        tur: r.aday_islem_tipi === 'banka_gider' ? 'banka_gider' : 'cari_tahsilat',
+        hesap: r.hesap || r.kaynak_banka || '*IS BANKASI',
+        hash: r.hash,
+        sinif_guven: r.guven || 100,
+        kaynak: 'json_onizleme',
+      }));
+    return rows;
+  }
+
   const buildQuery = (strict = true) => {
     let q = db.from(SUPABASE.table)
     .select('*')
@@ -134,6 +187,58 @@ function hareketTipi(h) {
   if (['cari_tahsilat', 'cari tahsilat', 'musteri_tahsilat', 'musteri tahsilat'].includes(tur)) return 'cari_tahsilat';
   if (['banka_gider', 'banka gider', 'gider', 'expense', 'odeme'].includes(tur) || tutar < 0) return 'banka_gider';
   return 'tahsilat';
+}
+
+function dryRunStep(h) {
+  const tip = hareketTipi(h);
+  const amount = Math.abs(Number(h.tutar || h.amount || 0));
+  const common = {
+    id: h.id || null,
+    hash: h.hash || null,
+    firma_id: h.firma_id || null,
+    tarih: h.tarih || null,
+    tutar: amount,
+    tip,
+    hesap: h.hesap || '*IS BANKASI',
+    aciklama: aperionAciklama(h, tip),
+  };
+  if (tip === 'cari_tahsilat') {
+    return {
+      ...common,
+      akis: [
+        'BizimHesap login',
+        'Alayli Medikal firma sec',
+        'Musteriler ekranina git',
+        `Cari ara: ${h.cari_unvan || h.karsi_taraf || '-'}`,
+        'Tahsilat/Odeme formunu ac',
+        `Kasa/Banka sec: ${common.hesap}`,
+        `Tarih gir: ${h.tarih || '-'}`,
+        `Tutar gir: ${para(amount)} TL`,
+        'Kaydetme yok: dry-run',
+      ],
+    };
+  }
+  if (tip === 'banka_gider') {
+    return {
+      ...common,
+      akis: [
+        'BizimHesap login',
+        'Alayli Medikal firma sec',
+        'Nakit Yonetimi > Masraflar',
+        'Yeni Masraf Gir',
+        'Masraf kalemi: Mali Giderler > Banka Masrafi',
+        'Odeme durumu: Odendi',
+        `Kasa/Banka sec: ${common.hesap}`,
+        `Tarih gir: ${h.tarih || '-'}`,
+        `Tutar gir: ${para(amount)} TL`,
+        'Kaydetme yok: dry-run',
+      ],
+    };
+  }
+  return {
+    ...common,
+    akis: ['Islem tipi desteklenmiyor; kayit yok'],
+  };
 }
 
 function aperionAciklama(h, tip) {
@@ -578,7 +683,7 @@ async function hareketiIsle(page, h) {
   const aciklama = aperionAciklama(h, tip);
   log(`[${h.id || '-'}] ${h.firma_id || '?'} ${h.tarih || ''} ${tip} ${para(Math.abs(Number(h.tutar || h.amount || 0)))} ${aciklama}`);
 
-  if (!COMMIT) return { dry: true };
+  if (!COMMIT) return { dry: true, ...dryRunStep(h) };
 
   const result = await formuDoldur2(page, h);
   const zorunlu = ['tarih', 'tutar', 'aciklama'];
@@ -601,6 +706,7 @@ async function hareketiIsle(page, h) {
   await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {});
   await new Promise(r => setTimeout(r, 1500));
   log('  Kaydet butonuna basildi.');
+  rememberHash(h.hash);
   return { form: result, saved: true };
 }
 
@@ -633,7 +739,20 @@ async function main() {
 
   log(`${hareketler.length} onayli hareket bulundu.`);
   if (!COMMIT) {
-    for (const h of hareketler) await hareketiIsle(null, h);
+    const dry = [];
+    for (const h of hareketler) {
+      const result = await hareketiIsle(null, h);
+      dry.push(result);
+    }
+    fs.writeFileSync(DRY_OUT, JSON.stringify({
+      olusturma_tarihi: new Date().toISOString(),
+      kaynak: FROM_JSON || SUPABASE.table,
+      toplam: dry.length,
+      canli_islem: false,
+      kaydetme: false,
+      akislar: dry,
+    }, null, 2), 'utf8');
+    log(`Dry-run raporu yazildi: ${DRY_OUT}`);
     log('Dry-run bitti. Gercek deneme icin: node bizimhesap_banka_bot.js --commit --limit 1');
     return;
   }
