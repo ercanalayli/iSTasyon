@@ -697,7 +697,7 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='131457-060526';
+const BUILD_CODE='141403-060526';
 const F={all:{n:'Tüm Firmalar',c:'#2563EB',i:'ALL',src:''},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},woodlet:{n:'Woodlet',c:'#B45309',i:'WDL',src:'Excel (WERP)'},elit:{n:'Elit Et',c:'#7C3AED',i:'ELT',src:'BizimHesap Bot'},odyoform:{n:'Odyoform',c:'#B7791F',i:'ODY',src:'BizimHesap Bot'},alkam:{n:'Alkam',c:'#DB2777',i:'ALK',src:'Excel'},yenicespor:{n:'Yenicespor',c:'#0284C7',i:'YSP',src:'Yenicespor Finans'}};
 let RAW=[],cM='month',cF='all',sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null,PROD_MAP=[];
 const pad=n=>String(n).padStart(2,'0');
@@ -852,6 +852,24 @@ async function renderReportHub(){
   const grid=document.getElementById('reportHubGrid'), stamp=document.getElementById('reportHubStamp');
   if(!grid)return;
   const d=fil(), yil=new Date().getFullYear(), cf=cF==='all'?'':cF;
+  const pill=t=>`<span class="report-pill">${t}</span>`;
+  const mk=(k,v,dsc,cls,size,go,pills='')=>`<div class="report-tile ${cls} ${size||''}" onclick="${go||''}"><div class="report-k">${k}</div><div class="report-v">${v}</div><div class="report-d">${dsc}</div>${pills?`<div class="report-mini">${pills}</div>`:''}</div>`;
+  if(cF==='all'){
+    const ids=Object.keys(F).filter(id=>id!=='all');
+    const cards=await Promise.all(ids.map(async id=>{
+      const f=F[id], sd=d.filter(r=>r.firma_id===id), ciro=sd.reduce((s,r)=>s+(+r.ciro||0),0), adet=sd.reduce((s,r)=>s+(+r.adet||0),0);
+      const giderRows=await masrafData(yil,id), gider=giderRows.reduce((s,r)=>s+r.tutar,0), net=ciro-gider;
+      const dun=sd.filter(r=>r.tarih?.startsWith(yest())), bugun=sd.filter(r=>r.tarih?.startsWith(today()));
+      const top=[...sd].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0))[0];
+      const cls=net<0&&gider?'report-hot':ciro?'report-good':'report-cool';
+      const v=ciro?dynMoney(ciro):'veri yok';
+      const dsc=`Gider ${gider?dynMoney(gider):'veri yok'} · Net ${gider?dynMoney(net):'veri yok'}`;
+      return mk(`${f.i} ${f.n}`,v,`${fmt(adet)} adet · ${fmt(sd.length)} satış · ${fmt(giderRows.length)} gider`,cls,'wide',`selF('${id}')`,pill(`Dün ${fmt(dun.length)}`)+pill(`Bugün ${fmt(bugun.length)}`)+(top?pill((top.urun||'').substring(0,22)):''));
+    }));
+    grid.innerHTML=cards.join('');
+    if(stamp)stamp.textContent='GNC '+BUILD_CODE+' · firma firma';
+    return;
+  }
   const ciro=d.reduce((s,r)=>s+(+r.ciro||0),0), adet=d.reduce((s,r)=>s+(+r.adet||0),0);
   const musteri=new Set(d.map(r=>r.unvan).filter(Boolean)).size;
   const bugun=d.filter(r=>r.tarih?.startsWith(today()));
@@ -866,8 +884,6 @@ async function renderReportHub(){
   const giderCats={};
   rows.forEach(r=>{const k=r.kategori||'Diğer';giderCats[k]=(giderCats[k]||0)+r.tutar;});
   const topGider=Object.entries(giderCats).sort((a,b)=>b[1]-a[1])[0];
-  const pill=t=>`<span class="report-pill">${t}</span>`;
-  const mk=(k,v,dsc,cls,size,go,pills='')=>`<div class="report-tile ${cls} ${size||''}" onclick="${go||''}"><div class="report-k">${k}</div><div class="report-v">${v}</div><div class="report-d">${dsc}</div>${pills?`<div class="report-mini">${pills}</div>`:''}</div>`;
   grid.innerHTML=[
     mk('Satis / Ciro',dynMoney(ciro),`${fmt(adet)} adet · ${fmt(d.length)} islem`,'report-good','big',"gP('satis',null)",pill(`${musteri} musteri`)+pill(F[cF]?.n||'Tum')),
     mk('Gider Isisi',rows.length?dynMoney(gider):'veri yok',giderPay===null?'ciro yok':`ciroya oran ${dynPct(giderPay)}`,'report-hot','big',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=masraf]')?.click(),60)",pill(`${fmt(rows.length)} gider`)+pill(`bu ay ${dynMoney(ayGider)}`)),
@@ -1453,6 +1469,17 @@ async function renderHomeExpenses(){
   const el=document.getElementById('homeExpenseDyn');if(!el)return;
   const yil=new Date().getFullYear(), cf=cF==='all'?'':cF;
   el.innerHTML='<div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Giderler hesaplanıyor...</div>';
+  if(cF==='all'){
+    const ids=Object.keys(F).filter(id=>id!=='all');
+    const cards=await Promise.all(ids.map(async id=>{
+      const rows=await masrafData(yil,id), month=pad(new Date().getMonth()+1), year=rows.reduce((s,r)=>s+r.tutar,0), mo=rows.filter(r=>(r.tarih||'').substring(5,7)===month).reduce((s,r)=>s+r.tutar,0);
+      const cats={};rows.forEach(r=>{const k=r.kategori||'Diğer';cats[k]=(cats[k]||0)+r.tutar;});
+      const top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0], f=F[id];
+      return `<div class="report-tile ${year?'report-hot':'report-cool'}" onclick="selF('${id}')"><div class="report-k">${escHtml(f.i)} GİDER</div><div class="report-v">${year?dynMoney(year):'veri yok'}</div><div class="report-d">${escHtml(f.n)} · Bu ay ${dynMoney(mo)}</div><div class="report-mini"><span class="report-pill">${fmt(rows.length)} işlem</span><span class="report-pill">${top?escHtml(top[0]):'kategori yok'}</span></div></div>`;
+    }));
+    el.innerHTML=`<div class="report-grid" style="padding:0">${cards.join('')}</div>`;
+    return;
+  }
   const rows=await masrafData(yil,cf), prevRows=await masrafData(yil-1,cf), ciroTotal=await masrafCiroToplam(yil,cf);
   el.innerHTML=rows.length?buildExpenseDynamic(rows,prevRows,yil,ciroTotal):'<div class="empty"><div class="empty-t">Ana ekran gider verisi yok</div><div class="empty-d">Masraf veya banka gider hareketi gelince burada görünecek.</div></div>';
 }
