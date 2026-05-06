@@ -697,7 +697,7 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='141403-060526';
+const BUILD_CODE='142245-060526';
 const F={all:{n:'Tüm Firmalar',c:'#2563EB',i:'ALL',src:''},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},woodlet:{n:'Woodlet',c:'#B45309',i:'WDL',src:'Excel (WERP)'},elit:{n:'Elit Et',c:'#7C3AED',i:'ELT',src:'BizimHesap Bot'},odyoform:{n:'Odyoform',c:'#B7791F',i:'ODY',src:'BizimHesap Bot'},alkam:{n:'Alkam',c:'#DB2777',i:'ALK',src:'Excel'},yenicespor:{n:'Yenicespor',c:'#0284C7',i:'YSP',src:'Yenicespor Finans'}};
 let RAW=[],cM='month',cF='all',sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null,PROD_MAP=[];
 const pad=n=>String(n).padStart(2,'0');
@@ -890,7 +890,7 @@ async function renderReportHub(){
     mk('Net Sonuc',rows.length?dynMoney(net):'gider yok',rows.length?(net>=0?'ciro giderin ustunde':'gider ciroyu asiyor'):'masraf verisi bekleniyor',net>=0?'report-good':'report-hot','big',"gP('finans',null)",pill(`gider ${giderPay===null?'ciro yok':dynPct(giderPay)}`)),
     mk('En Buyuk Gider',topGider?dynMoney(topGider[1]):'veri yok',topGider?topGider[0]:'kategori yok','report-warm','',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=masraf]')?.click(),60)",topGider?pill(dynPct(gider?topGider[1]/gider*100:0)):''),
     mk('Tahsilat / Cari','Hazirlik','musteri bakiye ve tahsilat merkezi','report-cool','',"gP('cariler',null)",pill('cari')+pill('risk')),
-    mk('Banka / Kasa','Bot','gider, tahsilat ve transfer isleme hazirligi','report-sky','',"gP('finans',null)",pill('onayli islem')),
+    mk('Banka / Kasa','Onay','ekstre, onay ve BizimHesap hazirligi','report-sky','',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)",pill('onay merkezi')),
     mk('Bugun',bugun.length?dynMoney(bugun.reduce((s,r)=>s+(+r.ciro||0),0)):'veri yok',`${fmt(bugun.length)} islem`,'report-warm','',"gP('dashboard',null)"),
     mk('Dun',dun.length?dynMoney(dun.reduce((s,r)=>s+(+r.ciro||0),0)):'veri yok',`${fmt(dun.length)} islem`,'report-royal','',"gP('dashboard',null)"),
     mk('En Buyuk Hareket',top?dynMoney(+top.ciro||0):'veri yok',top?`${(top.urun||'-').substring(0,54)}`:'kayit yok','report-warm','wide',"oMo('max')"),
