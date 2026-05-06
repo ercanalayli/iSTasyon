@@ -701,7 +701,7 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='150112-060526';
+const BUILD_CODE='151720-060526';
 const F={all:{n:'Tüm Firmalar',c:'#2563EB',i:'ALL',src:''},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},woodlet:{n:'Woodlet',c:'#B45309',i:'WDL',src:'Excel (WERP)'},elit:{n:'Elit Et',c:'#7C3AED',i:'ELT',src:'BizimHesap Bot'},odyoform:{n:'Odyoform',c:'#B7791F',i:'ODY',src:'BizimHesap Bot'},alkam:{n:'Alkam',c:'#DB2777',i:'ALK',src:'Excel'},yenicespor:{n:'Yenicespor',c:'#0284C7',i:'YSP',src:'Yenicespor Finans'}};
 const PILOT_FIRMA='alayli';
 let SHOW_OTHER_FIRMS=false;
@@ -809,7 +809,7 @@ function pSels(){
 }
 function genAI(){const d=fil();const tc=d.reduce((s,r)=>s+(+r.ciro||0),0);const td=d.filter(r=>r.tarih?.startsWith(today()));const yd=d.filter(r=>r.tarih?.startsWith(yest()));const fn=F[cF]?.n||'Tüm Firmalar';const n=new Date();const gn=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];let txt,ico;if(!d.length){txt=`<strong>${fn}</strong> için veri yok.`;ico='';}else if(td.length){txt=`<strong>${fn}</strong> - Bugün <strong>${td.length} işlem</strong>, ₺${fmt(td.reduce((s,r)=>s+(+r.ciro||0),0))} ciro.`;ico='✅';}else if(yd.length){txt=`<strong>${fn}</strong> - Dün <strong>${yd.length} işlem</strong>, ₺${fmt(yd.reduce((s,r)=>s+(+r.ciro||0),0))} ciro.`;ico='';}else{const mx=[...d].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0))[0];txt=`<strong>${fn}</strong> - ₺${fmt(tc)} ciro, ${d.length} işlem.${mx?` En: ${(mx.urun||'').substring(0,25)}`:''}`; ico='';}document.getElementById('aiT').innerHTML=`${gn[n.getDay()]}, ${n.getDate()} Mart - ${txt}`;document.getElementById('aiTm').textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}`;document.getElementById('aiI').textContent=ico;}
 async function lastDataStatus(){
-  const ids=Object.keys(F).filter(id=>id!=='all');
+  const ids=cF==='all'?[PILOT_FIRMA]:[cF];
   return Promise.all(ids.map(async id=>{
     const f=F[id];
     let q=await db.from('sales_raw').select('tarih,created_at').eq('firma_id',id).not('tarih','is',null).order('tarih',{ascending:false}).limit(1);
@@ -987,7 +987,7 @@ async function renderKarts(){
   const ayAdi=['Oca','Sub','Mar','Nis','May','Haz','Tem','Agu','Eyl','Eki','Kas','Ara'];
   const buAyN=ayAdi[now.getMonth()];
   const gecenAyN=ayAdi[(now.getMonth()+11)%12];
-  const fList=Object.entries(F).filter(function(e){return e[0]!=='all';});
+  const fList=Object.entries(F).filter(function(e){return e[0]===PILOT_FIRMA;});
   const res=await Promise.all(fList.map(async function(entry){
     const id=entry[0],f=entry[1];
     if(id==='yenicespor'){
@@ -1545,7 +1545,7 @@ async function renderHomeExpenses(){
   const yil=new Date().getFullYear(), cf=cF==='all'?'':cF;
   el.innerHTML='<div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Giderler hesaplanıyor...</div>';
   if(cF==='all'){
-    const ids=Object.keys(F).filter(id=>id!=='all');
+    const ids=[PILOT_FIRMA];
     const cards=await Promise.all(ids.map(async id=>{
       const rows=await masrafData(yil,id), month=pad(new Date().getMonth()+1), year=rows.reduce((s,r)=>s+r.tutar,0), mo=rows.filter(r=>(r.tarih||'').substring(5,7)===month).reduce((s,r)=>s+r.tutar,0);
       const cats={};rows.forEach(r=>{const k=r.kategori||'Diğer';cats[k]=(cats[k]||0)+r.tutar;});
