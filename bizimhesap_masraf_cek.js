@@ -78,6 +78,10 @@ function parseMoney(v) {
 
 function kategoriBul(text) {
   const s = norm(text);
+  if (/market|kahve|cay|cayci|yumurta|sigara/.test(s)) return 'Market/Mutfak';
+  if (/yemek|tost/.test(s)) return 'Personel Yemek';
+  if (/maas|maa|prim|hakedi/.test(s)) return 'Personel Maas/Prim';
+  if (/iade/.test(s)) return 'Iade Gideri';
   if (/banka|eft|havale|fast|bsmv|komisyon|masraf|ucret/.test(s)) return 'Banka Masrafi';
   if (/kargo|nakliye|tasima/.test(s)) return 'Kargo/Nakliye';
   if (/sgk|bagkur|vergi|stopaj|kdv/.test(s)) return 'Vergi/SGK';
@@ -93,6 +97,10 @@ function hashRow(r) {
   return crypto.createHash('sha1')
     .update([r.firma_id, r.tarih, r.tutar, norm(r.aciklama)].join('|'))
     .digest('hex');
+}
+
+function dedupeKey(r) {
+  return [r.firma_id, r.tarih, Math.round(Number(r.tutar || 0) * 100), norm(r.aciklama)].join('|');
 }
 
 async function startBrowser() {
@@ -243,14 +251,19 @@ async function tabloOku(page, firma) {
     const dateCell = r.cells.find(c => trToIso(c));
     const moneyCells = r.cells.map(c => ({ c, v: parseMoney(c) })).filter(x => x.v > 0);
     const money = moneyCells.length ? moneyCells[moneyCells.length - 1] : { v: 0 };
-    const descCells = r.cells.filter(c => c !== dateCell && parseMoney(c) !== money.v);
+    const ikinciTarih = trToIso(r.cells[1]);
+    const masraf = ikinciTarih ? (r.cells[2] || '') : (r.cells[3] || '');
+    const tedarikci = !ikinciTarih && r.cells[4] && !parseMoney(r.cells[4]) ? r.cells[4] : '';
+    const not = r.cells[7] || '';
+    const descCells = [not, masraf, tedarikci].filter(Boolean);
     const aciklama = (descCells.sort((a, b) => b.length - a.length)[0] || r.text || '').substring(0, 500);
     const row = {
       firma_id: firma.id,
       firma_adi: firma.adi,
       tarih: trToIso(dateCell),
       aciklama,
-      kategori: kategoriBul(r.text),
+      kategori: kategoriBul([masraf, not, tedarikci, r.text].join(' ')),
+      tedarikci,
       tutar: money.v,
       kaynak: 'bizimhesap_masraf',
       kaynak_satir: i + 1,
@@ -288,22 +301,33 @@ async function debugSayfa(page, rows) {
 
 async function kaydet(rows) {
   if (!rows.length) return 0;
-  const records = rows.map(r => ({
+  const dates = rows.map(r => r.tarih).filter(Boolean).sort();
+  const from = dates[0], to = dates[dates.length - 1];
+  const existing = await db.from(SUPABASE.table)
+    .select('firma_id,tarih,aciklama,tutar')
+    .eq('firma_id', rows[0].firma_id)
+    .gte('tarih', from)
+    .lte('tarih', to)
+    .limit(20000);
+  if (existing.error) throw new Error(`Supabase ${SUPABASE.table}: ${existing.error.message}`);
+  const seen = new Set((existing.data || []).map(dedupeKey));
+  const fresh = rows.filter(r => !seen.has(dedupeKey(r)));
+  if (!fresh.length) return 0;
+  const records = fresh.map(r => ({
     firma_id: r.firma_id,
     firma_adi: r.firma_adi,
     tarih: r.tarih,
     aciklama: r.aciklama,
     kategori: r.kategori,
     tutar: r.tutar,
+    kdv: 0,
+    tedarikci: r.tedarikci || '',
     kaynak: r.kaynak,
-    hash: r.hash,
+    yil: Number(r.tarih.substring(0, 4)),
+    ay: Number(r.tarih.substring(5, 7)),
     created_at: new Date().toISOString(),
   }));
-  let { data, error } = await db.from(SUPABASE.table).upsert(records, { onConflict: 'hash' }).select();
-  if (error) {
-    log('  upsert olmadi, insert deneniyor: ' + error.message);
-    ({ data, error } = await db.from(SUPABASE.table).insert(records).select());
-  }
+  const { data, error } = await db.from(SUPABASE.table).insert(records).select();
   if (error) throw new Error(`Supabase ${SUPABASE.table}: ${error.message}`);
   return data?.length || records.length;
 }
