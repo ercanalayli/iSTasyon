@@ -191,6 +191,52 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
 .dyn-tag.risk{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}
 .pt tr.dyn-click{cursor:pointer}
 .pt tr.dyn-click:hover td{background:#EFF6FF}
+.exec-panel{border:1px solid #E2E8F0;border-radius:14px;background:#fff;box-shadow:0 14px 34px rgba(15,23,42,.055);overflow:hidden}
+.exec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 20px;border-bottom:1px solid #E2E8F0;background:linear-gradient(180deg,#fff,#F8FAFC)}
+.exec-title{font-size:18px;font-weight:950;color:#0F172A;letter-spacing:-.01em}
+.exec-sub{font-size:12px;color:#64748B;font-weight:750;margin-top:4px;line-height:1.35}
+.exec-badge{font-family:var(--mono);font-size:9px;font-weight:950;letter-spacing:1px;text-transform:uppercase;border:1px solid #CBD5E1;background:#F8FAFC;color:#475569;border-radius:999px;padding:6px 9px;white-space:nowrap}
+.exec-body{padding:16px}
+.exec-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.exec-kpi{position:relative;min-height:116px;border:1px solid #E2E8F0;border-top:4px solid var(--x,#2563EB);border-radius:12px;padding:13px;background:#fff;overflow:hidden}
+.exec-kpi::after{content:'';position:absolute;right:12px;bottom:12px;width:36px;height:36px;border-radius:10px;background:var(--x,#2563EB);opacity:.07}
+.exec-kpi.good{--x:#059669}.exec-kpi.blue{--x:#2563EB}.exec-kpi.amber{--x:#D97706}.exec-kpi.red{--x:#DC2626}.exec-kpi.slate{--x:#475569}
+.exec-label{font-family:var(--mono);font-size:9px;font-weight:950;color:#64748B;letter-spacing:1.2px;text-transform:uppercase}
+.exec-value{font-size:24px;font-weight:950;color:var(--x,#0F172A);line-height:1.05;margin-top:10px}
+.exec-note{font-size:12px;font-weight:750;color:#64748B;margin-top:8px;line-height:1.4}
+.exec-split{display:grid;grid-template-columns:320px minmax(0,1fr);gap:14px;margin-top:14px}
+.exec-side{border:1px solid #E2E8F0;border-radius:12px;background:#F8FAFC;padding:12px;align-self:start}
+.exec-side-title{font-size:12px;font-weight:950;color:#0F172A;margin-bottom:10px}
+.cat-chip{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;text-align:left;border:1px solid #E2E8F0;background:#fff;border-radius:10px;padding:10px;margin-bottom:8px;cursor:pointer;color:#0F172A}
+.cat-chip.on{border-color:#2563EB;background:#EFF6FF}
+.cat-name{font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-meta{font-family:var(--mono);font-size:10px;color:#64748B;margin-top:3px;font-weight:800}
+.cat-money{font-family:var(--mono);font-size:12px;font-weight:950;color:#047857;text-align:right}
+.exec-table-wrap{border:1px solid #E2E8F0;border-radius:12px;overflow:auto;background:#fff}
+.exec-table{width:100%;border-collapse:collapse;min-width:980px}
+.exec-table th{position:sticky;top:0;z-index:1;background:#F8FAFC;color:#475569;font-size:11px;font-weight:900;text-align:left;padding:11px 12px;border-bottom:1px solid #E2E8F0}
+.exec-table td{padding:12px;border-bottom:1px solid #EEF2F7;font-size:13px;color:#1F2937;vertical-align:middle}
+.exec-table tr:hover td{background:#F8FAFC}
+.exec-name{font-weight:950;color:#0F172A;max-width:330px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exec-muted{font-size:11px;color:#64748B;font-weight:750;margin-top:4px}
+.exec-money{font-family:var(--mono);font-size:13px;font-weight:950;color:#0F766E}
+.exec-loss{color:#B91C1C}
+.exec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.customer-card{border:1px solid #E2E8F0;border-top:4px solid var(--risk,#2563EB);border-radius:13px;background:#fff;padding:14px;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.customer-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(15,23,42,.08)}
+.customer-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.customer-logo{width:38px;height:38px;border-radius:10px;background:var(--risk-bg,#EFF6FF);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:950;color:var(--risk,#2563EB);flex-shrink:0}
+.customer-name{font-size:13px;font-weight:950;color:#0F172A;line-height:1.25}
+.customer-risk{font-family:var(--mono);font-size:8px;font-weight:950;border-radius:999px;padding:4px 7px;background:var(--risk-bg,#EFF6FF);color:var(--risk,#2563EB);white-space:nowrap}
+.customer-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.customer-metric{border:1px solid #E2E8F0;background:#F8FAFC;border-radius:9px;padding:9px}
+.customer-metric b{display:block;font-family:var(--mono);font-size:12px;color:#0F172A}
+.customer-metric span{display:block;font-family:var(--mono);font-size:8px;color:#64748B;margin-top:4px;letter-spacing:.6px;text-transform:uppercase}
+.expense-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:14px}
+.expense-card{border:1px solid #E2E8F0;border-left:4px solid #D97706;border-radius:12px;background:#fff;padding:12px}
+.expense-title{font-size:12px;font-weight:950;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.expense-value{font-family:var(--mono);font-size:18px;font-weight:950;color:#B45309;margin-top:7px}
+.expense-meta{font-size:11px;font-weight:750;color:#64748B;margin-top:5px}
 .erp-list{display:grid;gap:9px}
 .erp-row{display:grid;grid-template-columns:90px minmax(0,1fr) 130px 80px;gap:12px;align-items:center;padding:11px 12px;border:1px solid var(--b1);border-radius:9px;background:#F8FAFC}
 .erp-date{font-family:var(--mono);font-size:11px;color:#64748B;font-weight:800}
@@ -285,6 +331,9 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
   .report-v,.report-tile.big .report-v{font-size:22px}
   .report-tr{grid-template-columns:1fr;gap:4px}
   .report-th{display:none}
+  .exec-kpis{grid-template-columns:1fr 1fr}
+  .exec-split{grid-template-columns:1fr}
+  .exec-head{display:block}
 }
 @media(min-width:769px){.bn{display:none}}
 </style>
@@ -366,7 +415,7 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
           <div class="card-hd"><div class="card-l">Ana Sayfa Satış Özeti</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">toplam + kategori, ürüne iniş</span></div>
           <div id="homeSalesDyn"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yükleniyor...</div></div>
         </div>
-        <div class="card" style="margin-bottom:16px">
+        <div class="card" style="margin-bottom:16px;display:none">
           <div class="card-hd"><div class="card-l">Son Çekilen Veri</div><button onclick="loadLastDataStatus()" style="background:none;border:1px solid var(--b1);border-radius:4px;padding:3px 8px;color:var(--t3);font-family:var(--mono);font-size:9px;cursor:pointer">↻</button></div>
           <div id="lastDataGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yükleniyor...</div></div>
         </div>
@@ -378,7 +427,7 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
           <div class="card-hd"><div class="card-l">Ana Ekran Dinamik Giderler</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">Bu yıl / kategori</span></div>
           <div id="homeExpenseDyn"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yükleniyor...</div></div>
         </div>
-        <div class="fg" id="fGrid"></div>
+        <div class="fg" id="fGrid" style="display:none"></div>
       </div>
       <div id="detayDiv" style="display:none">
         <div class="ai-bar"><span id="aiI">⚡</span>&nbsp;<span id="aiT" style="flex:1;font-size:13px;line-height:1.5">—</span><span id="aiTm" style="font-family:var(--mono);font-size:9px;color:var(--t3)"></span></div>
@@ -723,8 +772,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='171756-070526';
-const BUILD_STAMP='07.05.2026 17:17:56';
+const BUILD_CODE='174334-070526';
+const BUILD_STAMP='07.05.2026 17:43:34';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -740,6 +789,7 @@ const DATA_SOURCES={
 };
 let RAW=[],cM='month',cF=PILOT_FIRMA,sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null,PROD_MAP=[];
 const pad=n=>String(n).padStart(2,'0');
+const p2=pad;
 const fmt=n=>Math.round(n).toLocaleString('tr');
 const fD=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const today=()=>fD(new Date());
@@ -1235,24 +1285,39 @@ async function rU(){
   top.profit=totalProfit('yr');last.profit=totalProfit('ly');month.profit=totalProfit('mo');prevMonth.profit=totalProfit('pm');week.profit=totalProfit('wk');yday.profit=totalProfit('dy');
   const growth=last.ciro?((top.ciro-last.ciro)/last.ciro*100):0;
   const lm=document.getElementById('lastMonthBtn');if(lm)lm.textContent=pr.prevMonthName;
+  const kpi=(label,m,cls,extra='')=>`<div class="exec-kpi ${cls}"><div class="exec-label">${label}</div><div class="exec-value">TL ${fmt(m.ciro)}</div><div class="exec-note">${fmt(m.adet)} adet · ${profitText(m)}${extra}</div></div>`;
+  const catButtons=catRows.slice(0,14).map(c=>{
+    const safe=escHtml(c.k), arg=jsArg(c.k);
+    return `<button class="cat-chip ${ck===c.k?'on':''}" onclick="document.getElementById('uKa').value=${arg};uCat=${arg};rU()"><div><div class="cat-name">${safe}</div><div class="cat-meta">${fmt(c.adet)} adet · LY ${dynMoney(c.ly.ciro)}</div></div><div class="cat-money">${dynMoney(c.ciro)}</div></button>`;
+  }).join('');
   w.innerHTML=`
-    <div style="padding:18px;border-bottom:1px solid var(--b1)">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px">
-        <div class="kpi g"><div class="kpi-l">Dün</div><div class="kpi-v">TL ${fmt(yday.ciro)}</div><div class="kpi-s">${fmt(yday.adet)} adet · ${profitText(yday)}</div></div>
-        <div class="kpi c"><div class="kpi-l">Bu Hafta</div><div class="kpi-v">TL ${fmt(week.ciro)}</div><div class="kpi-s">${fmt(week.adet)} adet · ${profitText(week)}</div></div>
-        <div class="kpi c"><div class="kpi-l">${pr.monthName}</div><div class="kpi-v">TL ${fmt(month.ciro)}</div><div class="kpi-s">${fmt(month.adet)} adet · ${profitText(month)}</div></div>
-        <div class="kpi o"><div class="kpi-l">${pr.prevMonthName}</div><div class="kpi-v">TL ${fmt(prevMonth.ciro)}</div><div class="kpi-s">${fmt(prevMonth.adet)} adet · ${profitText(prevMonth)}</div></div>
-        <div class="kpi o"><div class="kpi-l">${pr.year}</div><div class="kpi-v">TL ${fmt(top.ciro)}</div><div class="kpi-s">${fmt(top.adet)} adet · ${profitText(top)}</div></div>
-        <div class="kpi r"><div class="kpi-l">${pr.prevYear}</div><div class="kpi-v">TL ${fmt(last.ciro)}</div><div class="kpi-s">${growth>=0?'+':''}${growth.toFixed(1)}% · ${profitText(last)}</div></div>
+    <div class="exec-panel">
+      <div class="exec-head">
+        <div><div class="exec-title">Satış Analizi Yönetim Ekranı</div><div class="exec-sub">${active.label} dönemine göre kategori, ürün, cari ve kâr kontrolü. Sadece Alaylı Medikal verisi.</div></div>
+        <span class="exec-badge">${buildLabel()}</span>
       </div>
-      <div style="font-size:16px;font-weight:900;margin-bottom:10px">Kategori Performansi - ${active.label} ${ck?`/ ${ck}`:''}</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">${catRows.slice(0,12).map(c=>`<button onclick="document.getElementById('uKa').value='${c.k.replace(/'/g,"&#39;")}';uCat='${c.k.replace(/'/g,"\\'")}';rU()" style="text-align:left;background:${ck===c.k?'rgba(99,91,255,.12)':'var(--s2)'};border:1px solid ${ck===c.k?'var(--accent)':'var(--b1)'};border-radius:10px;padding:12px;cursor:pointer;color:var(--text)"><div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.k}</div><div style="font-family:var(--mono);font-size:16px;color:var(--green);font-weight:900;margin-top:6px">TL ${fmt(c.ciro)}</div><div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:4px">${fmt(c.adet)} adet / LY TL ${fmt(c.ly.ciro)}</div></button>`).join('')}</div>
-    </div>
-    <div style="padding:18px">
-      <div style="font-size:16px;font-weight:900;margin-bottom:10px">Urun Dinamik Raporu</div>
-      ${reportTable(prods,'urun')}
-      <div style="font-size:16px;font-weight:900;margin:22px 0 10px">Cari Dinamik Raporu</div>
-      ${reportTable(caris,'cari')}
+      <div class="exec-body">
+        <div class="exec-kpis">
+          ${kpi('Dün',yday,'good')}
+          ${kpi('Bu Hafta',week,'blue')}
+          ${kpi(pr.monthName,month,'blue')}
+          ${kpi(pr.prevMonthName,prevMonth,'amber')}
+          ${kpi(String(pr.year),top,'amber')}
+          ${kpi(String(pr.prevYear),last,'red',` · ${growth>=0?'+':''}${growth.toFixed(1)}%`)}
+        </div>
+        <div class="exec-split">
+          <aside class="exec-side">
+            <div class="exec-side-title">Kategori Performansı · ${active.label}</div>
+            ${catButtons||'<div class="empty"><div class="empty-t">Kategori verisi yok</div></div>'}
+          </aside>
+          <section>
+            <div class="exec-side-title">Ürün Dinamik Raporu</div>
+            ${reportTable(prods,'urun')}
+            <div class="exec-side-title" style="margin-top:18px">Cari Dinamik Raporu</div>
+            ${reportTable(caris,'cari')}
+          </section>
+        </div>
+      </div>
     </div>`;
 }
 const dynNum=n=>Number.isFinite(+n)?Math.round(+n).toLocaleString('tr-TR'):'veri yok';
@@ -1385,8 +1450,8 @@ function reportTable(rows,type){
   if(!rows.length)return'<div class="empty"><div class="empty-t">Veri yok</div></div>';
   const pr=pRange();
   const profitHead=type==='urun'?'<th>Kâr</th>':'';
-  const profitCell=r=>type==='urun'?`<td><b style="color:${profitColor(r.yr)}">${profitText(r.yr).replace('Kâr ','')}</b><div style="font-size:11px;color:var(--t3);margin-top:4px">Bu yıl toplam kâr</div><div style="font-size:11px;color:var(--t3);margin-top:4px">Ort. alış ${Number.isFinite(r.yr?.profitAvg)?dynMoney(r.yr.profitAvg):'veri yok'}</div></td>`:'';
-  return `<table class="pt"><thead><tr><th>${type==='urun'?'Ürün':'Cari'}</th><th>Dün</th><th>Bu Hafta</th><th>${pr.monthName}</th><th>${pr.prevMonthName}</th><th>${pr.year}</th><th>${pr.prevYear}</th>${profitHead}<th>${type==='urun'?'Kârlılık / Fiyat':'Fiyat'}</th></tr></thead><tbody>${rows.map(r=>`<tr class="${type==='urun'?'dyn-click':''}" ${type==='urun'?`onclick="openProductProfitCard(${jsArg(r.n)})"`:''}><td style="font-weight:800;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(r.n)}">${escHtml(r.n)}<div style="font-size:11px;color:#64748B;margin-top:4px;font-weight:700">${escHtml(r.cat)}</div></td><td>${sumCell(r.dy,type==='urun')}</td><td>${sumCell(r.wk,type==='urun')}</td><td>${sumCell(r.mo,type==='urun')}</td><td>${sumCell(r.pm,type==='urun')}</td><td>${sumCell(r.yr,type==='urun')}</td><td>${sumCell(r.ly,type==='urun')}</td>${profitCell(r)}<td>${priceCell(r.yr,r.ly)}</td></tr>`).join('')}</tbody></table>`;
+  const profitCell=r=>type==='urun'?`<td><b class="${Number.isFinite(r.yr?.profit)&&r.yr.profit<0?'exec-loss':'exec-money'}">${profitText(r.yr).replace('Kâr ','')}</b><div class="exec-muted">Bu yıl toplam kâr</div><div class="exec-muted">Ort. alış ${Number.isFinite(r.yr?.profitAvg)?dynMoney(r.yr.profitAvg):'veri yok'}</div></td>`:'';
+  return `<div class="exec-table-wrap"><table class="exec-table"><thead><tr><th>${type==='urun'?'Ürün':'Cari'}</th><th>Dün</th><th>Bu Hafta</th><th>${pr.monthName}</th><th>${pr.prevMonthName}</th><th>${pr.year}</th><th>${pr.prevYear}</th>${profitHead}<th>${type==='urun'?'Kârlılık / Fiyat':'Fiyat'}</th></tr></thead><tbody>${rows.map(r=>`<tr class="${type==='urun'?'dyn-click':''}" ${type==='urun'?`onclick="openProductProfitCard(${jsArg(r.n)})"`:''}><td title="${escHtml(r.n)}"><div class="exec-name">${escHtml(r.n)}</div><div class="exec-muted">${escHtml(r.cat)}</div></td><td>${sumCell(r.dy,type==='urun')}</td><td>${sumCell(r.wk,type==='urun')}</td><td>${sumCell(r.mo,type==='urun')}</td><td>${sumCell(r.pm,type==='urun')}</td><td>${sumCell(r.yr,type==='urun')}</td><td>${sumCell(r.ly,type==='urun')}</td>${profitCell(r)}<td>${priceCell(r.yr,r.ly)}</td></tr>`).join('')}</tbody></table></div>`;
 }
 
 // -- CARİLER ---------------------------------------------------------------
@@ -1448,50 +1513,28 @@ function rC(){
     return c;
   }).sort((a,b)=>b.bakiye-a.bakiye);
   const maxBakiye=rows[0]?.bakiye||1;
-  el.innerHTML=rows.map((c,i)=>{
+  const totalBakiye=rows.reduce((s,c)=>s+c.bakiye,0), totalIslem=rows.reduce((s,c)=>s+c.islem,0);
+  const riskli=rows.filter(c=>c.risk.t!=='düzenli').length;
+  const cards=rows.map((c,i)=>{
     const fc=F[c.firma_id]||{i:'',c:'#888'};
     const topUrun=Object.entries(c.urunler).sort((a,b)=>b[1]-a[1])[0], pct=(c.bakiye/maxBakiye*100).toFixed(0);
-    return`<div class="cc" style="cursor:pointer;transition:transform .15s,box-shadow .15s;border-left:3px solid ${c.risk.c}"
-      onclick="cariDetay(${jsArg(JSON.stringify(c))})"
-      onmouseenter="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 40px rgba(0,0,0,.4)'"
-      onmouseleave="this.style.transform='';this.style.boxShadow=''">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-        <div style="width:36px;height:36px;border-radius:10px;background:${c.risk.bg};border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:${c.risk.c};flex-shrink:0">${fc.i}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t1)">${escHtml(c.n)}</div>
-          <div style="font-size:10px;color:var(--t3);margin-top:1px">${fc.i} ${F[c.firma_id]?.n||c.firma_id||'-'} · Son tahakkuk ${c.sonT||'veri yok'}</div>
-        </div>
-        <span style="font-family:var(--mono);font-size:8px;padding:3px 7px;border-radius:6px;background:${c.risk.bg};color:${c.risk.c};font-weight:900">
-          ${c.risk.t}
-        </span>
+    return`<div class="customer-card" style="--risk:${c.risk.c};--risk-bg:${c.risk.bg}" onclick="cariDetay(${jsArg(JSON.stringify(c))})">
+      <div class="customer-top">
+        <div class="customer-logo">${fc.i}</div>
+        <div style="flex:1;min-width:0"><div class="customer-name">${escHtml(c.n)}</div><div class="exec-muted">${fc.i} ${F[c.firma_id]?.n||c.firma_id||'-'} · Son tahakkuk ${c.sonT||'veri yok'}</div></div>
+        <span class="customer-risk">${c.risk.t}</span>
       </div>
-
-      <div style="height:3px;background:var(--b1);border-radius:2px;margin-bottom:12px;overflow:hidden">
-        <div style="height:100%;width:${pct}%;background:${c.risk.c};border-radius:2px"></div>
+      <div style="height:5px;background:#EEF2F7;border-radius:999px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${c.risk.c}"></div></div>
+      <div class="customer-metrics">
+        <div class="customer-metric"><b>${dynMoney(c.thisTah)}</b><span>bu yıl tahakkuk</span></div>
+        <div class="customer-metric"><b>${c.skor}</b><span>ödeme skoru</span></div>
+        <div class="customer-metric"><b>${c.openMonths}</b><span>açık ay</span></div>
       </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
-        <div style="text-align:center">
-          <div style="font-family:var(--mono);font-size:13px;font-weight:900;color:var(--green)">${dynMoney(c.thisTah)}</div>
-          <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:2px;letter-spacing:.5px">BU YIL TAHAKKUK</div>
-        </div>
-        <div style="text-align:center">
-          <div style="font-family:var(--mono);font-size:13px;font-weight:900;color:var(--t1)">${c.skor}</div>
-          <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:2px;letter-spacing:.5px">SKOR</div>
-        </div>
-        <div style="text-align:center">
-          <div style="font-family:var(--mono);font-size:13px;font-weight:900;color:var(--orange)">${c.openMonths}</div>
-          <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:2px;letter-spacing:.5px">AÇIK AY</div>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-        <div style="background:var(--s2);border-radius:7px;padding:8px"><div style="font-size:9px;color:var(--t3)">Tahsilat</div><div style="font-size:12px;font-weight:900;color:var(--orange)">eksik veri</div></div>
-        <div style="background:var(--s2);border-radius:7px;padding:8px"><div style="font-size:9px;color:var(--t3)">Bakiye A</div><div style="font-size:12px;font-weight:900;color:var(--orange)">eksik veri</div></div>
-      </div>
-      ${topUrun?`<div style="font-size:10px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">En çok: ${escHtml(topUrun[0].substring(0,42))}</div>`:''}
+      <div class="exec-muted">Tahsilat: eksik veri · Bakiye A: eksik veri</div>
+      ${topUrun?`<div class="exec-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:6px">En çok: ${escHtml(topUrun[0].substring(0,52))}</div>`:''}
     </div>`;
   }).join('');
+  el.innerHTML=`<div class="exec-panel" style="grid-column:1/-1"><div class="exec-head"><div><div class="exec-title">Dinamik Cari Yönetim Ekranı</div><div class="exec-sub">Cari risk, açık ay, son hareket ve ticari hacim tek ekranda. Eksik tahsilat/bakiye alanları uydurulmaz.</div></div><span class="exec-badge">${buildLabel()}</span></div><div class="exec-body"><div class="exec-kpis" style="margin-bottom:14px"><div class="exec-kpi good"><div class="exec-label">Cari Sayısı</div><div class="exec-value">${fmt(rows.length)}</div><div class="exec-note">${fmt(totalIslem)} işlem</div></div><div class="exec-kpi blue"><div class="exec-label">Tahakkuk/Bakiye</div><div class="exec-value">${dynMoney(totalBakiye)}</div><div class="exec-note">satış verisinden</div></div><div class="exec-kpi amber"><div class="exec-label">Takip Gereken</div><div class="exec-value">${fmt(riskli)}</div><div class="exec-note">risk etiketi olan cari</div></div><div class="exec-kpi slate"><div class="exec-label">En Büyük Cari</div><div class="exec-value" style="font-size:18px">${escHtml((rows[0]?.n||'-').substring(0,24))}</div><div class="exec-note">${rows[0]?dynMoney(rows[0].bakiye):'veri yok'}</div></div></div><div class="exec-grid">${cards}</div></div></div>`;
 }
 
 // Cari detay modal
@@ -1660,7 +1703,8 @@ function buildExpenseDynamic(rows,prevRows,yil,ciroTotal){
   prevRows.forEach(r=>{const k=r.kategori||'Diğer';if(!cats[k])cats[k]={month:0,year:0,prev:0,count:0};cats[k].prev+=r.tutar;});
   const rowsOut=Object.entries(cats).sort((a,b)=>b[1].year-a[1].year);
   if(!rowsOut.length)return'<div class="empty"><div class="empty-t">Dinamik gider verisi yok</div></div>';
-  return `<table class="pt"><thead><tr><th>Kategori</th><th>Bu Ay</th><th>Bu Yıl</th><th>Geçen Yıl</th><th>Aylık Ort.</th><th>Gider Payı</th><th>Ciro Payı</th><th>İşlem</th></tr></thead><tbody>${rowsOut.map(([k,v])=>`<tr><td style="font-weight:900">${k}</td><td>${dynMoney(v.month)}</td><td>${dynMoney(v.year)}</td><td>${v.prev?dynMoney(v.prev):'veri yok'}</td><td>${dynMoney(v.year/12)}</td><td>${total?dynPct(v.year/total*100):'veri yok'}</td><td>${ciroTotal?dynPct(v.year/ciroTotal*100):'ciro yok'}</td><td>${fmt(v.count)}</td></tr>`).join('')}</tbody></table>`;
+  const topCards=rowsOut.slice(0,6).map(([k,v])=>`<div class="expense-card"><div class="expense-title">${escHtml(k)}</div><div class="expense-value">${dynMoney(v.year)}</div><div class="expense-meta">Bu ay ${dynMoney(v.month)} · ${fmt(v.count)} işlem</div><div class="expense-meta">Gider payı ${total?dynPct(v.year/total*100):'veri yok'} · Ciro payı ${ciroTotal?dynPct(v.year/ciroTotal*100):'ciro yok'}</div></div>`).join('');
+  return `<div class="expense-board">${topCards}</div><div class="exec-table-wrap"><table class="exec-table"><thead><tr><th>Kategori</th><th>Bu Ay</th><th>Bu Yıl</th><th>Geçen Yıl</th><th>Aylık Ort.</th><th>Gider Payı</th><th>Ciro Payı</th><th>İşlem</th></tr></thead><tbody>${rowsOut.map(([k,v])=>`<tr><td><div class="exec-name">${escHtml(k)}</div></td><td><span class="exec-money">${dynMoney(v.month)}</span></td><td><span class="exec-money">${dynMoney(v.year)}</span></td><td>${v.prev?dynMoney(v.prev):'<span class="exec-muted">veri yok</span>'}</td><td>${dynMoney(v.year/12)}</td><td>${total?dynPct(v.year/total*100):'veri yok'}</td><td>${ciroTotal?dynPct(v.year/ciroTotal*100):'ciro yok'}</td><td>${fmt(v.count)}</td></tr>`).join('')}</tbody></table></div>`;
 }
 async function bankaRawData(){
   const fi=document.getElementById('bankFi')?.value||'alayli';
