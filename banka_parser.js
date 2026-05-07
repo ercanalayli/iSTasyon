@@ -16,12 +16,14 @@ const HTML = getArg('--html', '');
 const LOCAL_DB = getArg('--local-db', 'banka_raw_local.json');
 const SAVE_LOCAL = args.includes('--save-local');
 const SAVE_SUPABASE = args.includes('--save-supabase');
+const SAVE_APPROVAL = args.includes('--save-approval');
 const PREVIEW = args.includes('--preview') || !OUT;
 
 const SUPABASE = {
   url: process.env.SUPABASE_URL || 'https://iilfwosoroflzubkaryj.supabase.co',
   key: process.env.SUPABASE_KEY || 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
   table: process.env.BANKA_RAW_TABLE || 'banka_raw',
+  approvalTable: process.env.BANK_APPROVAL_TABLE || 'bank_transactions',
 };
 
 if (!FILE) {
@@ -349,6 +351,62 @@ async function saveSupabase(payload) {
   return data?.length || 0;
 }
 
+function approvalTur(row) {
+  if (row.aday_islem_tipi === 'cari_tahsilat') return 'cari_tahsilat';
+  if (row.aday_islem_tipi === 'banka_gider') return 'banka_gider';
+  if (row.aday_islem_tipi === 'virman') return 'virman';
+  if (row.aday_islem_tipi === 'ozel') return 'ozel';
+  return row.yon === 'giris' ? 'tahsilat' : 'bekleyen';
+}
+
+async function saveApprovalSupabase(payload) {
+  if (!SAVE_APPROVAL || !payload.kayitlar.length) return 0;
+  const { createClient } = require('@supabase/supabase-js');
+  const db = createClient(SUPABASE.url, SUPABASE.key);
+  const rows = payload.kayitlar.map(r => ({
+    firma_id: r.firma_id,
+    banka: r.kaynak_banka,
+    hesap: r.hesap || r.kaynak_banka || '*IS BANKASI',
+    tarih: r.tarih,
+    aciklama: r.aciklama,
+    karsi_taraf: r.aday_cari || '',
+    cari_unvan: r.aday_cari || '',
+    tutar: Math.abs(Number(r.tutar || 0)),
+    tur: approvalTur(r),
+    sinif_guven: Number(r.guven || 0),
+    sinif_kaynak: r.risk || 'banka_parser',
+    ogrenme_durumu: Number(r.guven || 0) === 100 ? 'ogrenildi' : 'bekliyor',
+    onay_durumu: r.durum === 'islenmeyecek' ? 'reddedildi' : 'bekliyor',
+    bizimhesap_durumu: null,
+    aperion_not: [
+      'APERION BANKA',
+      `HASH:${String(r.hash || '').slice(0, 12)}`,
+      `KURAL:${r.risk || '-'}`,
+      `DURUM:${r.durum}`,
+    ].join(' | '),
+    kaynak: 'banka_parser',
+    raw: r,
+    updated_at: new Date().toISOString(),
+  }));
+  let inserted = 0;
+  for (const row of rows) {
+    const exists = await db.from(SUPABASE.approvalTable)
+      .select('id')
+      .eq('firma_id', row.firma_id)
+      .eq('tarih', row.tarih)
+      .eq('tutar', row.tutar)
+      .eq('aciklama', row.aciklama)
+      .eq('karsi_taraf', row.karsi_taraf || '')
+      .limit(1);
+    if (exists.error) throw new Error(`Supabase ${SUPABASE.approvalTable}: ${exists.error.message}`);
+    if (exists.data?.length) continue;
+    const { error } = await db.from(SUPABASE.approvalTable).insert(row);
+    if (error) throw new Error(`Supabase ${SUPABASE.approvalTable}: ${error.message}`);
+    inserted++;
+  }
+  return inserted;
+}
+
 function printPreview(rows) {
   const g = group(rows);
   const tl = n => Number(n || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -477,6 +535,10 @@ async function main() {
   if (SAVE_SUPABASE) {
     const count = await saveSupabase(payload);
     console.log(`Supabase ${SUPABASE.table}: ${count} yeni kayit`);
+  }
+  if (SAVE_APPROVAL) {
+    const count = await saveApprovalSupabase(payload);
+    console.log(`Supabase ${SUPABASE.approvalTable}: ${count} onay kaydi`);
   }
 }
 

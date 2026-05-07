@@ -40,7 +40,11 @@ const db = createClient(SUPABASE.url, SUPABASE.key);
 function log(msg) {
   const line = `[${new Date().toLocaleString('tr-TR')}] ${msg}`;
   console.log(line);
-  fs.appendFileSync('banka_bot_log.txt', line + '\n');
+  try {
+    fs.appendFileSync('banka_bot_log.txt', line + '\n');
+  } catch (e) {
+    console.log(`[LOG YAZILAMADI] ${e.message}`);
+  }
 }
 
 function readJsonSafe(file, fallback) {
