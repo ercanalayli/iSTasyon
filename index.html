@@ -704,8 +704,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='095417-070526';
-const BUILD_STAMP='07.05.2026 09:54:17';
+const BUILD_CODE='165047-070526';
+const BUILD_STAMP='07.05.2026 16:50:47';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -1198,7 +1198,7 @@ async function rU(){
     (prod[u]||(prod[u]=[])).push(r);(cari[c]||(cari[c]=[])).push(r);
   });
   const makeRows=obj=>Object.entries(obj).map(([n,rows])=>({n,cat:nrmCat(rows[0]?.kategori),dy:met(rows,pr.yestS,pr.yestS),wk:met(rows,pr.weekS,pr.todayS),tm:met(rows,pr.todayS,pr.todayS),mo:met(rows,pr.monthS,pr.todayS),pm:met(rows,pr.prevMonthS,pr.prevMonthE),yr:met(rows,pr.yearS,pr.todayS),ly:met(rows,pr.prevYearS,pr.prevYearE)})).sort((a,b)=>srtK==='adet'?b[active.key].adet-a[active.key].adet:b[active.key].ciro-a[active.key].ciro);
-  const prods=makeRows(prod).slice(0,80), caris=makeRows(cari).slice(0,40);
+  const prods=await enrichProductProfit(makeRows(prod).slice(0,80),active,pr), caris=makeRows(cari).slice(0,40);
   const top=met(base,pr.yearS,pr.todayS), last=met(base,pr.prevYearS,pr.prevYearE), month=met(base,pr.monthS,pr.todayS), prevMonth=met(base,pr.prevMonthS,pr.prevMonthE), week=met(base,pr.weekS,pr.todayS), yday=met(base,pr.yestS,pr.yestS);
   const growth=last.ciro?((top.ciro-last.ciro)/last.ciro*100):0;
   const lm=document.getElementById('lastMonthBtn');if(lm)lm.textContent=pr.prevMonthName;
@@ -1263,6 +1263,27 @@ async function loadPurchaseRows(productName,firmId){
 function purchasePeriod(rows,a,b){const d=rows.filter(r=>{const dt=rowDate(r);return dt&&dt>=a&&dt<=b;});const adet=d.reduce((s,r)=>s+rowQty(r),0),tutar=d.reduce((s,r)=>s+(rowAmount(r)||rowUnit(r)*rowQty(r)),0);return{rows:d,adet,tutar,avg:adet&&tutar?tutar/adet:NaN};}
 function profitBlock(s,p){if(!Number.isFinite(p.avg))return{profit:NaN,unit:NaN,margin:NaN,note:'alış verisi eksik'};const profit=s.ciro-(s.adet*p.avg);return{profit,unit:safeAvg(profit,s.adet),margin:s.ciro?profit/s.ciro*100:NaN,note:''};}
 function cmp(cur,prev){if(!Number.isFinite(cur)||!Number.isFinite(prev)||prev===0)return 'eksik veri';const v=(cur-prev)/Math.abs(prev)*100;return (v>=0?'+':'')+dynPct(v);}
+async function loadAllPurchaseRows(){
+  const tables=['alis_raw','purchases_raw','purchase_raw','maliyetler','fiyat_listesi'],rows=[];
+  for(const table of tables){
+    try{
+      let q=db.from(table).select('*').eq('firma_id',PILOT_FIRMA).limit(5000);
+      const {data,error}=await q;if(error)continue;
+      (data||[]).forEach(r=>rows.push({...r,_kaynak:table}));
+    }catch(e){}
+  }
+  return rows;
+}
+async function enrichProductProfit(productRows,active,pr){
+  const buys=await loadAllPurchaseRows(), map={};
+  buys.forEach(r=>{const name=r.urun||r.urun_adi||r.stok_adi||r.malzeme||r.aciklama||'';const k=prodKey(name);if(!k)return;(map[k]||(map[k]=[])).push(r);});
+  return productRows.map(r=>{
+    const p=purchasePeriod(map[prodKey(r.n)]||[],pr.yearS,pr.todayS);
+    const s=r[active.key]||{adet:0,ciro:0};
+    const profit=Number.isFinite(p.avg)?s.ciro-(s.adet*p.avg):NaN;
+    return{...r,profit,profitAvg:p.avg,profitNote:Number.isFinite(p.avg)?'':'alış verisi eksik'};
+  });
+}
 function productTopCustomer(rows){
   const m={};
   rows.forEach(r=>{const c=(r.unvan||r.cari_unvan||r.musteri||'Cari Yok').toString().trim()||'Cari Yok';m[c]=(m[c]||0)+rowAmount(r);});
@@ -1331,7 +1352,9 @@ async function openProductProfitCard(productName){
 function reportTable(rows,type){
   if(!rows.length)return'<div class="empty"><div class="empty-t">Veri yok</div></div>';
   const pr=pRange();
-  return `<table class="pt"><thead><tr><th>${type==='urun'?'Ürün':'Cari'}</th><th>Dün</th><th>Bu Hafta</th><th>${pr.monthName}</th><th>${pr.prevMonthName}</th><th>${pr.year}</th><th>${pr.prevYear}</th><th>${type==='urun'?'Kârlılık / Fiyat':'Fiyat'}</th></tr></thead><tbody>${rows.map(r=>`<tr class="${type==='urun'?'dyn-click':''}" ${type==='urun'?`onclick="openProductProfitCard(${jsArg(r.n)})"`:''}><td style="font-weight:800;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(r.n)}">${escHtml(r.n)}<div style="font-size:11px;color:#64748B;margin-top:4px;font-weight:700">${escHtml(r.cat)}</div></td><td>${sumCell(r.dy)}</td><td>${sumCell(r.wk)}</td><td>${sumCell(r.mo)}</td><td>${sumCell(r.pm)}</td><td>${sumCell(r.yr)}</td><td>${sumCell(r.ly)}</td><td>${priceCell(r.yr,r.ly)}</td></tr>`).join('')}</tbody></table>`;
+  const profitHead=type==='urun'?'<th>Kâr</th>':'';
+  const profitCell=r=>type==='urun'?`<td><b style="color:${Number.isFinite(r.profit)?(r.profit>=0?'var(--green)':'var(--red)'):'var(--orange)'}">${Number.isFinite(r.profit)?dynMoney(r.profit):'eksik veri'}</b><div style="font-size:11px;color:var(--t3);margin-top:4px">Ort. alış ${Number.isFinite(r.profitAvg)?dynMoney(r.profitAvg):'veri yok'}</div></td>`:'';
+  return `<table class="pt"><thead><tr><th>${type==='urun'?'Ürün':'Cari'}</th><th>Dün</th><th>Bu Hafta</th><th>${pr.monthName}</th><th>${pr.prevMonthName}</th><th>${pr.year}</th><th>${pr.prevYear}</th>${profitHead}<th>${type==='urun'?'Kârlılık / Fiyat':'Fiyat'}</th></tr></thead><tbody>${rows.map(r=>`<tr class="${type==='urun'?'dyn-click':''}" ${type==='urun'?`onclick="openProductProfitCard(${jsArg(r.n)})"`:''}><td style="font-weight:800;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(r.n)}">${escHtml(r.n)}<div style="font-size:11px;color:#64748B;margin-top:4px;font-weight:700">${escHtml(r.cat)}</div></td><td>${sumCell(r.dy)}</td><td>${sumCell(r.wk)}</td><td>${sumCell(r.mo)}</td><td>${sumCell(r.pm)}</td><td>${sumCell(r.yr)}</td><td>${sumCell(r.ly)}</td>${profitCell(r)}<td>${priceCell(r.yr,r.ly)}</td></tr>`).join('')}</tbody></table>`;
 }
 
 // -- CARİLER ---------------------------------------------------------------
