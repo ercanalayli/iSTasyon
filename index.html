@@ -704,8 +704,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='092538-070526';
-const BUILD_STAMP='07.05.2026 09:25:38';
+const BUILD_CODE='094832-070526';
+const BUILD_STAMP='07.05.2026 09:48:32';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -1287,74 +1287,105 @@ function reportTable(rows,type){
 
 // -- CARİLER ---------------------------------------------------------------
 let seciliCari = null;
+function cariName(r){return (r.unvan||r.cari_unvan||r.musteri||'Bilinmiyor').toString().trim()||'Bilinmiyor';}
+function cariMonthKey(t){return (t||'').substring(0,7);}
+function cariRiskTag(c){
+  if(!c.sonT)return{t:'eksik veri',c:'var(--orange)',bg:'rgba(255,140,0,.12)'};
+  if(c.gunFarki>120)return{t:'pasif / riskli',c:'var(--red)',bg:'rgba(255,71,87,.12)'};
+  if(c.gunFarki>45)return{t:'takip gerekli',c:'var(--orange)',bg:'rgba(255,140,0,.12)'};
+  if(c.bakiye>100000)return{t:'yüksek hacim',c:'var(--accent)',bg:'rgba(99,91,255,.12)'};
+  return{t:'düzenli',c:'var(--green)',bg:'rgba(0,201,107,.12)'};
+}
+function cariSkor(c){
+  let s=100;
+  if(c.gunFarki>30)s-=18;
+  if(c.gunFarki>90)s-=27;
+  if(c.openMonths>3)s-=12;
+  if(c.bakiye>200000)s-=10;
+  if(!c.tahsilatVar)s-=20;
+  return Math.max(0,Math.min(100,s));
+}
+function cariLast3Html(c){
+  return Object.entries(c.last3||{}).map(([k,v])=>`<div style="background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:10px">
+    <div style="font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.5px">${k}</div>
+    <div style="font-family:var(--mono);font-size:13px;font-weight:900;color:${v?'var(--green)':'var(--t3)'}">${v?dynMoney(v):'veri yok'}</div>
+  </div>`).join('');
+}
 function rC(){
-  const seciliFirma = PILOT_FIRMA;
-  const d=seciliFirma?RAW.filter(r=>r.firma_id===seciliFirma):RAW;
+  const d=fil();
   const el=document.getElementById('cG');if(!el)return;
   if(!d.length){el.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-ico"></div><div class="empty-t">Cari verisi yok</div></div>';return;}
-
-  // Müşteri bazlı grupla
+  const pr=pRange(), today=new Date();
+  const recentMonths=[0,1,2].map(i=>{const x=new Date(today.getFullYear(),today.getMonth()-i,1);return `${x.getFullYear()}-${pad(x.getMonth()+1)}`;}).reverse();
   const m={};
   d.forEach(r=>{
-    const u=r.unvan||'Bilinmiyor';
-    if(!m[u])m[u]={n:u,ciro:0,adet:0,islem:0,firma_id:r.firma_id,tarihler:[],urunler:{}};
-    m[u].ciro+=(+r.ciro||0);
-    m[u].adet+=(+r.adet||0);
-    m[u].islem++;
-    if(r.tarih)m[u].tarihler.push(r.tarih);
+    const u=cariName(r), t=rowDate(r), ciro=rowAmount(r), adet=rowQty(r), mk=cariMonthKey(t);
+    if(!m[u])m[u]={n:u,firma_id:r.firma_id,ciro:0,adet:0,islem:0,thisTah:0,lastTah:0,bakiye:0,tarihler:[],urunler:{},months:{},last3:Object.fromEntries(recentMonths.map(k=>[k,0])),recent:[]};
+    const c=m[u];
+    c.ciro+=ciro;c.adet+=adet;c.islem++;c.bakiye+=ciro;
+    if(t)c.tarihler.push(t);
+    if(t>=pr.yearS&&t<=pr.todayS)c.thisTah+=ciro;
+    if(t>=pr.prevYearS&&t<=pr.prevYearE)c.lastTah+=ciro;
+    if(mk){c.months[mk]=(c.months[mk]||0)+ciro;if(mk in c.last3)c.last3[mk]+=ciro;}
     const ur=(r.urun||'').trim();
-    if(ur&&ur!=='EMPTY')m[u].urunler[ur]=(m[u].urunler[ur]||0)+(+r.ciro||0);
+    if(ur&&ur!=='EMPTY')c.urunler[ur]=(c.urunler[ur]||0)+ciro;
+    c.recent.push({t,urun:ur,ciro,adet});
   });
-
-  const rows=Object.values(m).sort((a,b)=>b.ciro-a.ciro);
-  const maxCiro=rows[0]?.ciro||1;
-  const cols=['#FFD60A','#aaa','#cd7f32','#635BFF','#00C96B','#FF8C00'];
-
+  const rows=Object.values(m).map(c=>{
+    c.tarihler=[...new Set(c.tarihler)].sort();
+    c.sonT=c.tarihler.at(-1)||'';
+    c.ilkT=c.tarihler[0]||'';
+    c.gunFarki=c.sonT?Math.floor((today-new Date(c.sonT))/86400000):9999;
+    c.openMonths=Object.values(c.months).filter(v=>v>0).length;
+    c.tahsilatVar=false;
+    c.skor=cariSkor(c);
+    c.risk=cariRiskTag(c);
+    c.recent=c.recent.filter(x=>x.t).sort((a,b)=>b.t.localeCompare(a.t)).slice(0,8);
+    return c;
+  }).sort((a,b)=>b.bakiye-a.bakiye);
+  const maxBakiye=rows[0]?.bakiye||1;
   el.innerHTML=rows.map((c,i)=>{
-    const col=cols[i]||'var(--accent)';
-    const md=i===0?'':i===1?'':i===2?'':'';
-    const sonT=[...c.tarihler].sort().at(-1)||'-';
-    const gf=sonT!=='-'?Math.floor((new Date()-new Date(sonT))/86400000):999;
     const fc=F[c.firma_id]||{i:'',c:'#888'};
-    const topUrun=Object.entries(c.urunler).sort((a,b)=>b[1]-a[1])[0];
-    const pct=(c.ciro/maxCiro*100).toFixed(0);
-
-    return`<div class="cc" style="cursor:pointer;transition:transform .15s,box-shadow .15s;border-left:3px solid ${col}"
-      onclick="cariDetay(${JSON.stringify(JSON.stringify(c))})"
+    const topUrun=Object.entries(c.urunler).sort((a,b)=>b[1]-a[1])[0], pct=(c.bakiye/maxBakiye*100).toFixed(0);
+    return`<div class="cc" style="cursor:pointer;transition:transform .15s,box-shadow .15s;border-left:3px solid ${c.risk.c}"
+      onclick="cariDetay(${jsArg(JSON.stringify(c))})"
       onmouseenter="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 40px rgba(0,0,0,.4)'"
       onmouseleave="this.style.transform='';this.style.boxShadow=''">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-        <div style="width:36px;height:36px;border-radius:10px;background:${col}18;border:1px solid ${col}33;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${md||fc.i}</div>
+        <div style="width:36px;height:36px;border-radius:10px;background:${c.risk.bg};border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:${c.risk.c};flex-shrink:0">${fc.i}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${col}">${c.n}</div>
-          <div style="font-size:10px;color:var(--t3);margin-top:1px">${fc.i} ${F[c.firma_id]?.n||c.firma_id||'-'}</div>
+          <div style="font-size:13px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t1)">${escHtml(c.n)}</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:1px">${fc.i} ${F[c.firma_id]?.n||c.firma_id||'-'} · Son tahakkuk ${c.sonT||'veri yok'}</div>
         </div>
-        <span style="font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:6px;background:${gf<=7?'rgba(0,201,107,.1)':'rgba(255,140,0,.1)'};color:${gf<=7?'var(--green)':'var(--orange)'}">
-          ${gf<=1?'Bugün':gf<=7?gf+'g':gf+'g önce'}
+        <span style="font-family:var(--mono);font-size:8px;padding:3px 7px;border-radius:6px;background:${c.risk.bg};color:${c.risk.c};font-weight:900">
+          ${c.risk.t}
         </span>
       </div>
 
       <div style="height:3px;background:var(--b1);border-radius:2px;margin-bottom:12px;overflow:hidden">
-        <div style="height:100%;width:${pct}%;background:${col};border-radius:2px"></div>
+        <div style="height:100%;width:${pct}%;background:${c.risk.c};border-radius:2px"></div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
         <div style="text-align:center">
-          <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${col}">₺${fmt(c.ciro)}</div>
-          <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:2px;letter-spacing:.5px">CİRO</div>
+          <div style="font-family:var(--mono);font-size:13px;font-weight:900;color:var(--green)">${dynMoney(c.thisTah)}</div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:2px;letter-spacing:.5px">BU YIL TAHAKKUK</div>
         </div>
         <div style="text-align:center">
-          <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--t2)">${c.islem}</div>
-          <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:2px;letter-spacing:.5px">İŞLEM</div>
+          <div style="font-family:var(--mono);font-size:13px;font-weight:900;color:var(--t1)">${c.skor}</div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:2px;letter-spacing:.5px">SKOR</div>
         </div>
         <div style="text-align:center">
-          <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--t2)">${Math.round(c.adet).toLocaleString('tr')}</div>
-          <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:2px;letter-spacing:.5px">ADET</div>
+          <div style="font-family:var(--mono);font-size:13px;font-weight:900;color:var(--orange)">${c.openMonths}</div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:2px;letter-spacing:.5px">AÇIK AY</div>
         </div>
       </div>
 
-      ${topUrun?`<div style="font-size:10px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"> ${topUrun[0].substring(0,35)}</div>`:''}
-      <div style="font-size:10px;color:var(--t3);margin-top:4px">Son: ${sonT.substring(0,10)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div style="background:var(--s2);border-radius:7px;padding:8px"><div style="font-size:9px;color:var(--t3)">Tahsilat</div><div style="font-size:12px;font-weight:900;color:var(--orange)">eksik veri</div></div>
+        <div style="background:var(--s2);border-radius:7px;padding:8px"><div style="font-size:9px;color:var(--t3)">Bakiye A</div><div style="font-size:12px;font-weight:900;color:var(--orange)">eksik veri</div></div>
+      </div>
+      ${topUrun?`<div style="font-size:10px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">En çok: ${escHtml(topUrun[0].substring(0,42))}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -1362,38 +1393,46 @@ function rC(){
 // Cari detay modal
 function cariDetay(jsonStr){
   const c=JSON.parse(jsonStr);
-  const col=(()=>{const rows=Object.values({});return'#635BFF';})();
   const topUrunler=Object.entries(c.urunler||{}).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const maxU=topUrunler[0]?.[1]||1;
-  const tarihler=[...new Set(c.tarihler||[])].sort();
-  const sonT=tarihler.at(-1)||'-';
-  const ilkT=tarihler[0]||'-';
   const fc=F[c.firma_id]||{i:'',n:'',c:'#635BFF'};
 
-  document.getElementById('mo-t').textContent='MÜŞTERİ DETAYI';
+  document.getElementById('mo-t').textContent='DİNAMİK CARİ KARTI';
   document.getElementById('mo-b').innerHTML=`
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--b1)">
       <div style="width:48px;height:48px;border-radius:12px;background:${fc.c}18;border:1px solid ${fc.c}33;display:flex;align-items:center;justify-content:center;font-size:22px">${fc.i}</div>
       <div>
-        <div style="font-size:17px;font-weight:800">${c.n}</div>
-        <div style="font-size:11px;color:var(--t3);margin-top:2px">${fc.n} · İlk: ${ilkT.substring(0,10)} · Son: ${sonT.substring(0,10)}</div>
+        <div style="font-size:17px;font-weight:900">${escHtml(c.n)}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${fc.n} · İlk tahakkuk: ${c.ilkT||'veri yok'} · Son tahakkuk: ${c.sonT||'veri yok'}</div>
+      </div>
+      <span style="margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:900;padding:6px 10px;border-radius:8px;background:${c.risk.bg};color:${c.risk.c}">${c.risk.t}</span>
+    </div>
+
+    <div class="dyn-grid" style="margin-bottom:20px">
+      ${dynBox('Cari adı',c.n)}${dynBox('Firma',fc.n||c.firma_id)}${dynBox('Son tahsilat tarihi','eksik veri','Tahsilat kaynağı bağlanınca dolar')}${dynBox('Son tahakkuk tarihi',c.sonT||'veri yok')}${dynBox('Güncel bakiye',dynMoney(c.bakiye),'Satış/tahakkuk verisinden hesaplandı')}${dynBox('Bakiye B',dynMoney(c.bakiye))}${dynBox('Bakiye A','eksik veri')}${dynBox('Açık ay sayısı',dynNum(c.openMonths))}${dynBox('Ödeme düzeni skoru',dynNum(c.skor))}${dynBox('Risk etiketi',c.risk.t)}
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+      <div style="background:var(--s2);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:var(--green)">${dynMoney(c.thisTah)}</div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:4px;letter-spacing:1px">BU YIL TAHAKKUK</div>
+      </div>
+      <div style="background:var(--s2);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:var(--orange)">eksik veri</div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:4px;letter-spacing:1px">BU YIL TAHSİLAT</div>
+      </div>
+      <div style="background:var(--s2);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:var(--accent)">${dynMoney(c.lastTah)}</div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:4px;letter-spacing:1px">GEÇEN YIL TAHAKKUK</div>
+      </div>
+      <div style="background:var(--s2);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:var(--orange)">eksik veri</div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:4px;letter-spacing:1px">GEÇEN YIL TAHSİLAT</div>
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
-      <div style="background:var(--s2);border-radius:8px;padding:14px;text-align:center">
-        <div style="font-size:20px;font-weight:800;color:var(--accent)">₺${fmt(c.ciro)}</div>
-        <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:4px;letter-spacing:1px">TOPLAM CİRO</div>
-      </div>
-      <div style="background:var(--s2);border-radius:8px;padding:14px;text-align:center">
-        <div style="font-size:20px;font-weight:800;color:var(--green)">${c.islem}</div>
-        <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:4px;letter-spacing:1px">İŞLEM</div>
-      </div>
-      <div style="background:var(--s2);border-radius:8px;padding:14px;text-align:center">
-        <div style="font-size:20px;font-weight:800;color:var(--orange)">₺${fmt(c.islem>0?c.ciro/c.islem:0)}</div>
-        <div style="font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:4px;letter-spacing:1px">ORT. İŞLEM</div>
-      </div>
-    </div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--t2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Son 3 Ay Hareket Özeti</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">${cariLast3Html(c)}</div>
 
     <div style="font-family:var(--mono);font-size:9px;color:var(--t2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px"> En Çok Alınan Ürünler</div>
     ${topUrunler.map(([u,v],i)=>{
@@ -1412,11 +1451,10 @@ function cariDetay(jsonStr){
     }).join('')}
 
     <div style="margin-top:18px">
-      <div style="font-family:var(--mono);font-size:9px;color:var(--t2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px"> Vade Takibi</div>
-      <div style="background:var(--s2);border-radius:8px;padding:14px;font-size:12px;color:var(--t3);line-height:1.8">
-        Vade takibi için fatura verisi gereklidir.<br>
-        BizimHesap'tan fatura raporu eklendiğinde burada görüntülenecek.<br>
-        <button onclick="alert('Yakında: Vade takibi eklenecek!')" style="margin-top:8px;padding:6px 14px;border-radius:6px;border:1px solid var(--b2);background:rgba(99,91,255,.1);color:var(--accent);font-size:11px;cursor:pointer"> Vade Girişi Yap</button>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--t2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Son Hareketler</div>
+      <table class="pt"><thead><tr><th>Tarih</th><th>Ürün</th><th>Adet</th><th>Tutar</th></tr></thead><tbody>${(c.recent||[]).map(r=>`<tr><td>${r.t}</td><td>${escHtml((r.urun||'-').substring(0,60))}</td><td>${dynNum(r.adet)}</td><td>${dynMoney(r.ciro)}</td></tr>`).join('')}</tbody></table>
+      <div style="background:rgba(255,140,0,.08);border:1px solid rgba(255,140,0,.22);border-radius:8px;padding:12px;margin-top:12px;font-size:12px;color:var(--t2);line-height:1.7">
+        Tahsilat, güncel açık bakiye ve ödeme disiplini için gerçek tahsilat/bakiye kaynağı bağlanmadı. Bu kart satış/tahakkuk verisini güvenilir gösterir; eksik finans alanlarını uydurmaz.
       </div>
     </div>
   `;
