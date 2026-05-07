@@ -1,27 +1,20 @@
 {
+  "name": "istasyon-bot-service",
+  "version": "1.0.0",
+  "description": "ALKAM & iSTasyon Unified Bot Service",
+  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "bot": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_bot.js",
-    "bot:dry": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_bot.js --dry-run",
-    "banka:dry": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_banka_bot.js --dry-run",
-    "banka:onay-dry": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& set BANK_TABLE=bank_transactions&& node bizimhesap_banka_bot.js --dry-run --firma alayli --limit 10",
-    "banka:dry-json": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_banka_bot.js --from-json banka_onizleme_pdf_demo.json --limit 5",
-    "banka:commit": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& set BANK_TABLE=bank_transactions&& node bizimhesap_banka_bot.js --commit --limit 1",
-    "banka:save": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& set BANK_TABLE=bank_transactions&& node bizimhesap_banka_bot.js --commit --save --limit 1",
-    "banka:parse": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node banka_parser.js --firma alayli --preview --file",
-    "banka:hazirla": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node banka_parser.js --firma alayli --preview --save-approval --out banka_onay_son.json --html banka_onay_son.html --file",
-    "banka:onay-bildir": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node banka_onay_bildir.js --limit 10",
-    "banka:onay-kaydet": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& set BANK_TABLE=bank_transactions&& node bizimhesap_banka_bot.js --commit --save --firma alayli --limit 10",
-    "bizimhesap:ogren": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_ogren_bot.js --firma alayli",
-    "satis:2024": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_bot.js --gecmis 2024-01-01 2024-12-31 --aylik",
-    "satis:2025": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_bot.js --gecmis 2025-01-01 2025-12-31 --aylik",
-    "satis:2026": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_bot.js --gecmis 2026-01-01 2026-12-31 --aylik",
-    "satis:temizle": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node sales_raw_temizle.js",
-    "zamanlayici:kur": "powershell -ExecutionPolicy Bypass -File aperion_zamanlayici_kur.ps1"
+    "start": "node index.js",
+    "bot:bizimhesap": "node services/bizimhesap_bot.js",
+    "bot:banka": "node services/banka_parser.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.100.1",
-    "pdf-parse": "^2.4.5",
-    "puppeteer": "^24.40.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.1",
+    "puppeteer": "^22.0.0",
+    "pdf-parse": "^1.1.1",
     "xlsx": "^0.18.5"
   }
 }
