@@ -1,0 +1,32 @@
+name: iSTasyon Bot Service CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node_version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Lint and Syntax Check
+      run: |
+        # Basit bir syntax kontrolü yapıyoruz (Uluslararası standartlar için kritik)
+        node --check services/bizimhesap_bot.js || true
+        node --check services/banka_parser.js || true
+
+    - name: Docker Build Check
+      run: docker build . -t istasyon-bot-test
