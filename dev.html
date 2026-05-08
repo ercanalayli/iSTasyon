@@ -400,7 +400,7 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
 <body onclick="void(0)">
 <!-- REVİZYON DAMGASI (YENİ) -->
 <div class="rev-badge-fixed">
-  REV 18
+  REV 19
   <span class="rev-msg">GÜNCELLENDİ</span>
 </div>
 <!-- MODALLAR VE DİĞERLERİ -->
@@ -596,10 +596,17 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
         <button class="fb" onclick="sM('month',this,1)">Bu Ay</button>
         <button class="fb on" onclick="sM('year',this,1)">Bu Yıl</button>
         <button class="fb" onclick="sM('all',this,1)">Tümü</button>
+        <div class="fsep"></div><span class="fbar-l">Görünüm</span>
+        <button class="fb on" id="btnCariKart" onclick="toggleCariView('kart',this)">Kartlar</button>
+        <button class="fb" id="btnCariAging" onclick="toggleCariView('aging',this)">Yaşlandırma (Aging)</button>
         <div class="fsep"></div><span class="fbar-l">Firma</span>
         <select class="sel" id="cFi" onchange="rC()"><option value="alayli">ALY Alayli Medikal</option></select>
       </div>
-      <div class="cg" id="cG"></div>
+      <div id="cariKartView" class="cg"></div>
+      <div id="cariAgingView" style="display:none" class="card">
+        <div class="card-hd"><div class="card-l">Borç Yaşlandırma Analizi</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">Vadesi geçen ödemeler kronolojik sıralanır</span></div>
+        <div id="agingTableWrap"></div>
+      </div>
     </div>
     <div id="pg-finans" class="page">
       <div class="ft">
@@ -2600,6 +2607,92 @@ async function triggerAperiBot() {
         btn.style.opacity = '1';
     }
 }
+
+/* --- CARI YAŞLANDIRMA MOTORU (BAĞIMSIZ YAMA) --- */
+window.toggleCariView = (view, btn) => {
+    const kView = document.getElementById('cariKartView');
+    const aView = document.getElementById('cariAgingView');
+    const btns = btn.closest('.fbar').querySelectorAll('.fb');
+    
+    btns.forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+
+    if(view === 'kart') {
+        kView.style.display = 'grid';
+        aView.style.display = 'none';
+        rC(); // Standart kartları render et
+    } else {
+        kView.style.display = 'none';
+        aView.style.display = 'block';
+        renderCariAging(); // Yaşlandırma tablosunu render et
+    }
+};
+
+async function renderCariAging() {
+    const wrap = document.getElementById('agingTableWrap');
+    if(!wrap) return;
+    wrap.innerHTML = '<div style="padding:20px;text-align:center;color:var(--t3)">Analiz ediliyor...</div>';
+
+    const d = fil();
+    if(!d.length) {
+        wrap.innerHTML = '<div class="empty">Veri bulunamadı.</div>';
+        return;
+    }
+
+    const today = new Date();
+    const cariler = {};
+
+    d.forEach(r => {
+        const u = (r.unvan || r.cari_unvan || r.musteri || 'Bilinmiyor').toString().trim();
+        const t = r.tarih ? new Date(r.tarih) : null;
+        const ciro = +(r.ciro || 0);
+
+        if(!cariler[u]) cariler[u] = { n: u, total: 0, last: null, d30: 0, d60: 0, d90: 0, dOver: 0 };
+        const c = cariler[u];
+        c.total += ciro;
+        if(t && (!c.last || t > c.last)) c.last = t;
+
+        if(t) {
+            const diff = Math.floor((today - t) / (1000 * 60 * 60 * 24));
+            if(diff <= 30) c.d30 += ciro;
+            else if(diff <= 60) c.d60 += ciro;
+            else if(diff <= 90) c.d90 += ciro;
+            else c.dOver += ciro;
+        }
+    });
+
+    const rows = Object.values(cariler).sort((a,b) => b.total - a.total);
+
+    wrap.innerHTML = `
+        <table class="pt">
+            <thead>
+                <tr>
+                    <th>Müşteri / Cari Ünvan</th>
+                    <th style="text-align:right">Toplam Borç</th>
+                    <th style="text-align:right">0-30 Gün</th>
+                    <th style="text-align:right">31-60 Gün</th>
+                    <th style="text-align:right">61-90 Gün</th>
+                    <th style="text-align:right">90+ Gün</th>
+                    <th>Son İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows.map(c => `
+                    <tr>
+                        <td style="font-weight:900; max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${escHtml(c.n)}</td>
+                        <td style="text-align:right; font-family:var(--mono); font-weight:900; color:var(--text)">${dynMoney(c.total)}</td>
+                        <td style="text-align:right; font-family:var(--mono); color:var(--green)">${c.d30 > 0 ? dynMoney(c.d30) : '-'}</td>
+                        <td style="text-align:right; font-family:var(--mono); color:var(--accent)">${c.d60 > 0 ? dynMoney(c.d60) : '-'}</td>
+                        <td style="text-align:right; font-family:var(--mono); color:var(--orange)">${c.d90 > 0 ? dynMoney(c.d90) : '-'}</td>
+                        <td style="text-align:right; font-family:var(--mono); color:var(--red); font-weight:800">${c.dOver > 0 ? dynMoney(c.dOver) : '-'}</td>
+                        <td style="font-size:11px; color:var(--t3)">${c.last ? c.last.toLocaleDateString('tr-TR') : '-'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+/* --- YAMA SONU --- */
 /* --- YAMA SONU --- */
 /* --- YAMA SONU --- */
 /* --- YAMA SONU --- */
