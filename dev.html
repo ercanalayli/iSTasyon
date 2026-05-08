@@ -373,35 +373,35 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
 /* --- REVİZYON ROZETİ (GÜÇLENDİRİLMİŞ) --- */
 .rev-badge-fixed {
     position: fixed;
-    top: 20px;
+    top: 65px; /* Butonların altına çekildi */
     right: 20px;
     background: #FF0000 !important;
     color: #FFFFFF !important;
-    padding: 12px 24px;
-    border-radius: 12px;
+    padding: 6px 14px;
+    border-radius: 10px;
     font-family: 'Space Mono', monospace;
-    font-size: 20px;
+    font-size: 13px;
     font-weight: 900;
     z-index: 200000;
-    box-shadow: 0 0 30px rgba(255, 0, 0, 0.6);
-    border: 3px solid #fff;
+    box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+    border: 2px solid #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
-    line-height: 1;
+    line-height: 1.1;
     pointer-events: none;
-    animation: revPulseMega 1.5s infinite;
+    animation: revPulseMega 2s infinite;
 }
-@keyframes revPulseMega { 0% { transform: scale(1); box-shadow: 0 0 20px rgba(255,0,0,0.4); } 50% { transform: scale(1.1); box-shadow: 0 0 40px rgba(255,0,0,0.8); } 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255,0,0,0.4); } }
-.rev-msg { font-size: 10px; font-weight: 700; margin-top: 4px; letter-spacing: 2px; }
+@keyframes revPulseMega { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+.rev-msg { font-size: 8px; font-weight: 700; margin-top: 2px; letter-spacing: 1px; }
 /* --- EKLENTİ SONU --- */
 </style>
 </head>
 <body onclick="void(0)">
 <!-- REVİZYON DAMGASI (YENİ) -->
 <div class="rev-badge-fixed">
-  REV 19
-  <span class="rev-msg">GÜNCELLENDİ</span>
+  REV 20
+  <span class="rev-msg">OTOPİLOT KURULUYOR</span>
 </div>
 <!-- MODALLAR VE DİĞERLERİ -->
 <div id="loading"><div class="ld-l">AperiON</div><div class="ld-b"></div><div class="ld-s">ErpaltH iSTasyon</div></div>
