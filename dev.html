@@ -375,24 +375,24 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
     position: fixed;
     top: 15px;
     right: 15px;
-    background: #EF4444;
+    background: #DC2626;
     color: #FFFFFF;
-    padding: 8px 16px;
-    border-radius: 10px;
+    padding: 10px 20px;
+    border-radius: 12px;
     font-family: 'Space Mono', monospace;
-    font-size: 14px;
-    font-weight: 900;
+    font-size: 16px;
+    font-weight: 950;
     z-index: 100000;
-    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
-    border: 2px solid #fff;
+    box-shadow: 0 10px 30px rgba(220, 38, 38, 0.5);
+    border: 3px solid #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    animation: revSlide 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: revPulseBadge 2s infinite;
 }
-.rev-msg { font-size: 9px; opacity: 0.9; letter-spacing: 1px; }
-@keyframes revSlide { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes revPulseBadge { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+.rev-msg { font-size: 10px; opacity: 0.9; letter-spacing: 1.5px; font-weight: 700; }
 /* --- EKLENTİ SONU --- */
 </style>
 </head>
@@ -597,6 +597,7 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
       <div class="ft">
         <div class="ft-tab on" onclick="fT('genel',this)">Satış Özeti</div>
         <div class="ft-tab" onclick="fT('masraf',this)">Masraf Raporu</div>
+        <div class="ft-tab" onclick="fT('malitablo',this)">Mali Tablo (P&L)</div>
         <div class="ft-tab" onclick="fT('banka',this)">Banka Onay</div>
       </div>
       <div id="fg">
@@ -607,6 +608,27 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
           <select class="sel" id="rFi" onchange="rA()"><option value="">Tüm</option></select>
         </div>
         <div class="mg" id="mG"></div>
+      </div>
+      <div id="fpl" style="display:none">
+        <div class="fbar">
+          <span class="fbar-l">Yıl</span>
+          <select class="sel" id="plY" onchange="rMaliTablo()"><option value="2026">2026</option><option value="2025">2025</option></select>
+        </div>
+        <div class="card" style="padding:0; overflow:hidden">
+          <table class="pt" id="plTable">
+            <thead>
+              <tr>
+                <th>AY</th>
+                <th style="text-align:right">CİRO (GELİR)</th>
+                <th style="text-align:right">GİDERLER</th>
+                <th style="text-align:right">NET SONUÇ</th>
+                <th style="text-align:right">MARJ (%)</th>
+                <th>DURUM</th>
+              </tr>
+            </thead>
+            <tbody id="plRows"></tbody>
+          </table>
+        </div>
       </div>
       <div id="fm" style="display:none">
         <div class="fbar">
@@ -922,7 +944,37 @@ function showDetay(){document.getElementById('kartsDiv').style.display='none';do
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'ERP Radar',s:'Anlık veri istihbaratı'},satis:{t:'Satış Analizi',s:'Ürün ve kategori'},cariler:{t:'Cariler',s:'Müşteri analizi'},finans:{t:'Finans',s:'Alayli mali özet'},stok:{t:'Stok & Ürün Analizi',s:'Ürün bazlı satış ve trend'},hedef:{t:'Hedef / Bütçe',s:'Gerçekleşen vs hedef karşılaştırması'},gorevler:{t:'Görev Teyidi',s:'Kritik görevlerin gerçekleşme durumu'},veri:{t:'Veri Yükleme',s:'Excel ve bot'},bildirim:{t:'Bildirimler',s:'WhatsApp ayarları'}};
 function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();}
-function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();}
+function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';document.getElementById('fpl').style.display=t==='malitablo'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();if(t==='malitablo')rMaliTablo();}
+
+async function rMaliTablo(){
+  const yil=parseInt(document.getElementById('plY')?.value||new Date().getFullYear());
+  const cf=PILOT_FIRMA;
+  const el=document.getElementById('plRows');if(!el)return;
+  el.innerHTML='<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--t3)">Hesaplanıyor...</td></tr>';
+  
+  const salesRows=await salesWide(cf);
+  const expenseRows=await masrafData(yil,cf);
+  
+  const months={};
+  const ayIsimleri=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  for(let i=1;i<=12;i++)months[p2(i)]={n:ayIsimleri[i-1],ciro:0,gider:0};
+
+  salesRows.filter(r=>r.tarih?.startsWith(yil.toString())).forEach(r=>{const m=r.tarih.substring(5,7);if(months[m])months[m].ciro+=(+r.ciro||0);});
+  expenseRows.forEach(r=>{const m=(r.tarih||'').substring(5,7);if(months[m])months[m].gider+=r.tutar;});
+
+  el.innerHTML=Object.entries(months).filter(([m,v])=>v.ciro>0||v.gider>0).map(([m,v])=>{
+    const net=v.ciro-v.gider, marj=v.ciro?((net/v.ciro)*100).toFixed(1):0;
+    const ok=net>=0;
+    return `<tr>
+      <td style="font-weight:900">${v.n} ${yil}</td>
+      <td style="text-align:right;font-family:var(--mono);font-weight:700;color:var(--green)">${dynMoney(v.ciro)}</td>
+      <td style="text-align:right;font-family:var(--mono);font-weight:700;color:var(--red)">${dynMoney(v.gider)}</td>
+      <td style="text-align:right;font-family:var(--mono);font-weight:900;color:${ok?'var(--green)':'var(--red)'}">${dynMoney(net)}</td>
+      <td style="text-align:right;font-family:var(--mono);font-weight:800;color:${ok?'var(--accent)':'var(--orange)'}">${marj}%</td>
+      <td><span style="font-family:var(--mono);font-size:9px;padding:3px 7px;border-radius:6px;background:${ok?'rgba(0,201,107,.1)':'rgba(220,38,38,.1)'};color:${ok?'var(--green)':'var(--red)'};font-weight:900">${ok?'KÂR':'ZARAR'}</span></td>
+    </tr>`;
+  }).join('');
+}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]).filter(isAlayliRow);}catch(e){return[];}}
 async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
 function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
