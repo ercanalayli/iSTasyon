@@ -369,6 +369,30 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
 .cmd-item:hover, .cmd-item.active { background: rgba(37, 99, 235, 0.08); color: #2563EB; }
 .cmd-ico { width: 28px; height: 28px; border-radius: 6px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 12px; font-family: 'Space Mono', monospace; }
 .cmd-hint { font-size: 10px; color: #94a3b8; font-weight: 500; margin-left: auto; }
+
+/* --- REVİZYON ROZETİ --- */
+.rev-badge-fixed {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    background: #EF4444;
+    color: #FFFFFF;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 900;
+    z-index: 100000;
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+    border: 2px solid #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    animation: revSlide 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.rev-msg { font-size: 9px; opacity: 0.9; letter-spacing: 1px; }
+@keyframes revSlide { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 /* --- EKLENTİ SONU --- */
 </style>
 </head>
