@@ -400,7 +400,7 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
 <body onclick="void(0)">
 <!-- REVİZYON DAMGASI (YENİ) -->
 <div class="rev-badge-fixed">
-  REV 17
+  REV 18
   <span class="rev-msg">GÜNCELLENDİ</span>
 </div>
 <!-- MODALLAR VE DİĞERLERİ -->
@@ -470,7 +470,8 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
       <div class="tb-live"><div class="tb-ld"></div><span class="tb-lt">CANLI</span></div>
       <span class="tb-ver" id="buildCode">GNC --</span>
       <span class="tb-clk" id="clk">--:--</span>
-      <button class="tb-btn" onclick="gP('veri',null)">⬆ Veri Yükle</button>
+      <button class="tb-btn" onclick="gP('veri',null)" style="background:rgba(37,99,235,.05); border-color:rgba(37,99,235,.2)">⬆ Veri Yükle</button>
+      <button class="tb-btn" id="btnTriggerBot" onclick="triggerAperiBot()" style="background:rgba(5,150,105,.1); border-color:var(--green); color:var(--green); font-weight:900">⚡ BOTU TETİKLE</button>
     </div>
   </div>
   <div class="content">
@@ -2551,6 +2552,55 @@ window.addEventListener('load',async()=>{
         }
     });
 })();
+
+/* --- BOT TETİKLEYİCİ MOTORU --- */
+async function triggerAperiBot() {
+    const btn = document.getElementById('btnTriggerBot');
+    const originalText = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = ' Sinyal Gönderiliyor...';
+    btn.style.opacity = '0.7';
+
+    try {
+        // bot_commands tablosuna komut gönder
+        const { error } = await db
+            .from('bot_commands')
+            .insert([{ 
+                command: 'sync', 
+                params: { source: 'BizimHesap', type: 'manual_trigger' },
+                status: 'pending',
+                created_at: new Date().toISOString()
+            }]);
+
+        if (error) {
+            // Tablo yoksa kullanıcıyı bilgilendir
+            if(error.code === 'PGRST116' || error.message.includes('not found')) {
+                throw new Error('Supabase üzerinde "bot_commands" tablosu kurulu değil.');
+            }
+            throw error;
+        }
+
+        btn.innerHTML = ' Sinyal Başarılı!';
+        btn.style.background = 'rgba(0,201,107,.2)';
+        
+        // 3 saniye sonra butonu eski haline getir
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            btn.style.background = 'rgba(5,150,105,.1)';
+            btn.style.opacity = '1';
+        }, 3000);
+
+    } catch (err) {
+        console.error('Bot tetikleme hatası:', err.message);
+        alert('Hata: ' + err.message + '\n\nLütfen Supabase üzerinde "bot_commands" tablosunun kurulu olduğundan emin olun.');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        btn.style.opacity = '1';
+    }
+}
+/* --- YAMA SONU --- */
 /* --- YAMA SONU --- */
 /* --- YAMA SONU --- */
 </script>
