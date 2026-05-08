@@ -10,6 +10,8 @@ const TABLE = process.env.BANK_TABLE || 'bank_transactions';
 const APPROVAL_BASE = process.env.APERION_APPROVAL_BASE || 'https://ercanalayli.github.io/iSTasyon/banka_onay.html';
 const PHONE = process.env.APERION_WP_PHONE || process.env.CALLMEBOT_PHONE || '';
 const APIKEY = process.env.APERION_WP_KEY || process.env.CALLMEBOT_APIKEY || '';
+const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+const TELEGRAM_CHAT_IDS = (process.env.TELEGRAM_CHAT_IDS || '').split(',').map(x => x.trim()).filter(Boolean);
 
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -48,6 +50,27 @@ async function wpGonder(text) {
   if (!res.ok) throw new Error(`CallMeBot HTTP ${res.status}`);
 }
 
+async function telegramGonder(text) {
+  if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_IDS.length) throw new Error('Telegram token/chat yok. TELEGRAM_BOT_TOKEN ve TELEGRAM_CHAT_IDS gerekli.');
+  for (const chatId of TELEGRAM_CHAT_IDS) {
+    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        disable_web_page_preview: true,
+      }),
+    });
+    if (!res.ok) throw new Error(`Telegram HTTP ${res.status}`);
+  }
+}
+
+async function bildirimGonder(text) {
+  if (TELEGRAM_TOKEN && TELEGRAM_CHAT_IDS.length) return telegramGonder(text);
+  return wpGonder(text);
+}
+
 async function bildirimleriAl() {
   let q = db.from(TABLE)
     .select('*')
@@ -80,7 +103,7 @@ async function main() {
   for (const row of rows) {
     const text = mesaj(row);
     try {
-      await wpGonder(text);
+      await bildirimGonder(text);
       await isaretle(row, 'gonderildi', text);
       console.log(`Gonderildi: ${row.id}`);
     } catch (e) {
