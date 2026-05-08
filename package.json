@@ -18,6 +18,8 @@
     "masraf:2024": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_masraf_cek.js --commit --firma alayli --year 2024 --out masraf_alayli_2024.json",
     "masraf:2025": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_masraf_cek.js --commit --firma alayli --year 2025 --out masraf_alayli_2025.json",
     "masraf:2026": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_masraf_cek.js --commit --firma alayli --year 2026 --out masraf_alayli_2026.json",
+    "urun:dry": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_urun_stok_cek.js --firma alayli --out urun_stok_alayli.json",
+    "urun:commit": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_urun_stok_cek.js --commit --firma alayli --out urun_stok_alayli.json",
     "satis:2024": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_bot.js --gecmis 2024-01-01 2024-12-31 --aylik",
     "satis:2025": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_bot.js --gecmis 2025-01-01 2025-12-31 --aylik",
     "satis:2026": "set NODE_PATH=C:\\Users\\HP\\Desktop\\ErpaltH\\node_modules&& node bizimhesap_bot.js --gecmis 2026-01-01 2026-12-31 --aylik",

@@ -18,4 +18,4 @@ function run(label, file, extra) {
 
 run('BizimHesap satis eksik gun kontrolu', 'bizimhesap_bot.js', []);
 run(`BizimHesap masraf ${year}`, 'bizimhesap_masraf_cek.js', [commit, '--firma', firma, '--year', year, '--out', `masraf_${firma}_${year}.json`]);
-
+run('BizimHesap urun ve stok kartlari', 'bizimhesap_urun_stok_cek.js', [commit, '--firma', firma, '--out', `urun_stok_${firma}.json`]);
