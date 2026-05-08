@@ -6,10 +6,12 @@ const crypto = require('crypto');
 const args = process.argv.slice(2);
 const COMMIT = args.includes('--commit');
 const SHOW = args.includes('--show');
-const LIMIT = Number(args[args.indexOf('--limit') + 1] || process.env.MASRAF_LIMIT || 500);
+const LIMIT = Number(args[args.indexOf('--limit') + 1] || process.env.MASRAF_LIMIT || 0);
 const FIRMA_ARG = args.includes('--firma') ? args[args.indexOf('--firma') + 1] : 'alayli';
-const FROM = args.includes('--from') ? args[args.indexOf('--from') + 1] : null;
-const TO = args.includes('--to') ? args[args.indexOf('--to') + 1] : null;
+const YEAR_ARG = args.includes('--year') ? Number(args[args.indexOf('--year') + 1]) : null;
+const TODAY_ISO = new Date().toISOString().substring(0, 10);
+const FROM = args.includes('--from') ? args[args.indexOf('--from') + 1] : (YEAR_ARG ? `${YEAR_ARG}-01-01` : null);
+const TO = args.includes('--to') ? args[args.indexOf('--to') + 1] : (YEAR_ARG ? (YEAR_ARG === Number(TODAY_ISO.substring(0, 4)) ? TODAY_ISO : `${YEAR_ARG}-12-31`) : null);
 const OUT = args.includes('--out') ? args[args.indexOf('--out') + 1] : 'masraf_onizleme.json';
 const DEBUG = args.includes('--debug');
 
@@ -237,7 +239,30 @@ async function filtrele(page, from, to) {
   await new Promise(r => setTimeout(r, 2000));
 }
 
+async function tumSatirlariYukle(page) {
+  let lastCount = 0;
+  let stable = 0;
+  for (let i = 0; i < 35 && stable < 4; i++) {
+    const count = await page.evaluate(() => {
+      const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+      const candidates = [document.scrollingElement, ...document.querySelectorAll('div,section,main,tbody,table')]
+        .filter(Boolean)
+        .filter(x => x.scrollHeight > x.clientHeight + 20);
+      for (const el of candidates) {
+        try { el.scrollTop = el.scrollHeight; } catch {}
+      }
+      window.scrollTo(0, document.body.scrollHeight);
+      return [...document.querySelectorAll('table tbody tr, table tr')].filter(visible).length;
+    });
+    if (count === lastCount) stable += 1;
+    else stable = 0;
+    lastCount = count;
+    await new Promise(r => setTimeout(r, 450));
+  }
+}
+
 async function tabloOku(page, firma) {
+  await tumSatirlariYukle(page);
   const raw = await page.evaluate(() => {
     const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
     const tables = [...document.querySelectorAll('table')].filter(visible);
@@ -338,7 +363,7 @@ async function kaydet(rows) {
     created_at: new Date().toISOString(),
   }));
   const { data, error } = await db.from(SUPABASE.table)
-    .upsert(records, { onConflict: 'tarih,aciklama,firma_id', ignoreDuplicates: true })
+    .upsert(records, { onConflict: 'tarih,aciklama,firma_id' })
     .select();
   if (error) throw new Error(`Supabase ${SUPABASE.table}: ${error.message}`);
   return data?.length || records.length;

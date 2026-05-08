@@ -6,6 +6,7 @@ $ErrorActionPreference = "Continue"
 $kullanici = $env:USERNAME
 $workDir = "C:\Users\$kullanici\Desktop\ErpaltH"
 $botPath = Join-Path $workDir "bizimhesap_bot.js"
+$syncPath = Join-Path $workDir "aperion_veri_senkron.js"
 $runnerPath = Join-Path $workDir "aperion_bot_run.cmd"
 $nodePath = (Get-Command node -ErrorAction SilentlyContinue).Source
 $taskName = "AperiON_BizimHesap_Bot"
@@ -15,8 +16,8 @@ if (-not $nodePath) {
     exit 1
 }
 
-if (-not (Test-Path $botPath)) {
-    Write-Host "Bot dosyasi bulunamadi: $botPath" -ForegroundColor Red
+if (-not (Test-Path $syncPath)) {
+    Write-Host "Senkron dosyasi bulunamadi: $syncPath" -ForegroundColor Red
     exit 1
 }
 
@@ -24,7 +25,7 @@ if (-not (Test-Path $botPath)) {
 @echo off
 cd /d $workDir
 set NODE_PATH=$workDir\node_modules
-node $botPath
+node $syncPath --firma alayli
 "@ | Set-Content -LiteralPath $runnerPath -Encoding ASCII
 
 Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue
@@ -35,7 +36,7 @@ schtasks /Delete /TN "AperiON_BizimHesap_Bot_Acilis" /F 2>$null | Out-Null
 
 $action = New-ScheduledTaskAction `
     -Execute $nodePath `
-    -Argument "`"$botPath`"" `
+    -Argument "`"$syncPath`" --firma alayli" `
     -WorkingDirectory $workDir
 
 $startup = New-ScheduledTaskTrigger -AtLogOn -User $kullanici
@@ -58,7 +59,7 @@ try {
         -Action $action `
         -Trigger @($startup, $morning, $midday, $evening) `
         -Settings $settings `
-        -Description "AperiON BizimHesap satis verilerini acilista ve gun icinde eksik gun kontroluyle ceker." `
+        -Description "AperiON BizimHesap satis ve masraf verilerini acilista ve gun icinde senkronize eder." `
         -RunLevel Highest `
         -Force `
         -ErrorAction Stop
