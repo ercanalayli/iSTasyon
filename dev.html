@@ -314,11 +314,78 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
 .dev-act-icon { font-size: 14px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
 .dev-act-content { flex: 1; font-size: 12px; color: #1e293b; }
 .dev-act-time { font-family: 'Space Mono', monospace; font-size: 10px; color: #64748b; margin-left: auto; }
+
+/* --- COMMAND PALETTE STİLLERİ --- */
+#devCmdPalette {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 9, 15, 0.7);
+    backdrop-filter: blur(12px);
+    z-index: 10000;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 15vh;
+}
+#devCmdPalette.open { display: flex; }
+.cmd-box {
+    width: 90%;
+    max-width: 600px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.cmd-input-wrap {
+    padding: 18px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.cmd-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    background: transparent;
+}
+.cmd-list { padding: 8px; max-height: 400px; overflow-y: auto; }
+.cmd-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 14px;
+    font-weight: 700;
+    color: #475569;
+}
+.cmd-item:hover, .cmd-item.active { background: rgba(37, 99, 235, 0.08); color: #2563EB; }
+.cmd-ico { width: 28px; height: 28px; border-radius: 6px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 12px; font-family: 'Space Mono', monospace; }
+.cmd-hint { font-size: 10px; color: #94a3b8; font-weight: 500; margin-left: auto; }
 /* --- EKLENTİ SONU --- */
 </style>
 </head>
-<body>
+<!-- MODALLAR VE DİĞERLERİ -->
 <div id="loading"><div class="ld-l">AperiON</div><div class="ld-b"></div><div class="ld-s">ErpaltH iSTasyon</div></div>
+
+<!-- COMMAND PALETTE (YENİ) -->
+<div id="devCmdPalette">
+  <div class="cmd-box">
+    <div class="cmd-input-wrap">
+      <span style="font-size:18px">🔍</span>
+      <input type="text" class="cmd-input" id="cmdSearch" placeholder="Modül veya özellik ara... (Satış, Cari, Kasa, Banka...)" autocomplete="off">
+      <span class="cmd-hint">ESC ile Kapat</span>
+    </div>
+    <div id="cmdList" class="cmd-list"></div>
+  </div>
+</div>
 <div class="mo" id="widgetMo" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="mo-box" style="max-width:480px">
     <div class="mo-hd">
@@ -2314,6 +2381,94 @@ window.addEventListener('load',async()=>{
     setTimeout(updateFeed, 2000);
     setInterval(updateFeed, 20000);
 })();
+
+/* --- COMMAND PALETTE (BAĞIMSIZ YAMA) --- */
+(function AperiCommandPalette() {
+    const modules = [
+        { id: 'dashboard', n: 'ERP Radar', ico: 'ER', desc: 'Genel Durum ve Analiz' },
+        { id: 'satis', n: 'Satış Analizi', ico: 'SA', desc: 'Ürün ve Kategori Raporları' },
+        { id: 'cariler', n: 'Cariler', ico: 'CR', desc: 'Müşteri Borç/Alacak ve Analiz' },
+        { id: 'finans', n: 'Finans / Banka', ico: 'FN', desc: 'Banka Onay ve Masraflar' },
+        { id: 'stok', n: 'Stok & Ürün', ico: 'ST', desc: 'Kritik Stok ve Hareketler' },
+        { id: 'hedef', n: 'Hedef / Bütçe', ico: 'HB', desc: 'Ciro Hedefleri Kontrolü' },
+        { id: 'gorevler', n: 'Görev Teyidi', ico: 'GT', desc: 'Sistem ve Manuel Görevler' },
+        { id: 'veri', n: 'Veri Yükleme', ico: 'VY', desc: 'Excel ve Bot Senkronizasyonu' }
+    ];
+
+    const palette = document.getElementById('devCmdPalette');
+    const input = document.getElementById('cmdSearch');
+    const list = document.getElementById('cmdList');
+    let activeIdx = 0;
+
+    function open() {
+        palette.classList.add('open');
+        input.value = '';
+        input.focus();
+        render();
+    }
+
+    function close() {
+        palette.classList.remove('open');
+    }
+
+    function render(filter = '') {
+        const filtered = modules.filter(m => 
+            m.n.toLocaleLowerCase('tr-TR').includes(filter.toLocaleLowerCase('tr-TR')) ||
+            m.desc.toLocaleLowerCase('tr-TR').includes(filter.toLocaleLowerCase('tr-TR'))
+        );
+
+        list.innerHTML = filtered.map((m, i) => `
+            <div class="cmd-item ${i === activeIdx ? 'active' : ''}" onclick="window.AperiGo('${m.id}')">
+                <div class="cmd-ico">${m.ico}</div>
+                <div>
+                    <div style="font-size:13px">${m.n}</div>
+                    <div style="font-size:10px; color:#94a3b8; font-weight:500; margin-top:2px">${m.desc}</div>
+                </div>
+                <div class="cmd-hint">Git ↵</div>
+            </div>
+        `).join('');
+
+        if(!filtered.length) list.innerHTML = `<div style="padding:20px; text-align:center; font-size:12px; color:#94a3b8">Sonuç bulunamadı...</div>`;
+    }
+
+    window.AperiGo = (id) => {
+        if(typeof gP === 'function') {
+            gP(id, null);
+            close();
+        }
+    };
+
+    // Klavye Dinleyicileri
+    window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            open();
+        }
+        if (e.key === 'Escape') close();
+    });
+
+    input.addEventListener('input', (e) => {
+        activeIdx = 0;
+        render(e.target.value);
+    });
+
+    input.addEventListener('keydown', (e) => {
+        const items = list.querySelectorAll('.cmd-item');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeIdx = (activeIdx + 1) % items.length;
+            render(input.value);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeIdx = (activeIdx - 1 + items.length) % items.length;
+            render(input.value);
+        } else if (e.key === 'Enter') {
+            const active = list.querySelector('.cmd-item.active');
+            if (active) active.click();
+        }
+    });
+})();
+/* --- YAMA SONU --- */
 /* --- YAMA SONU --- */
 </script>
 </body>
