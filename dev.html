@@ -1423,7 +1423,12 @@ const pRange=()=>{
   const aylar=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
   return {todayS,yestS,weekS,monthS,monthName:aylar[m],prevMonthS,prevMonthE,prevMonthName:aylar[pmD.getMonth()],yearS:`${y}-01-01`,prevYearS:`${y-1}-01-01`,prevYearE:`${y-1}-12-31`,year:y,prevYear:y-1};
 };
-const inR=(r,a,b)=>r.tarih>=a&&r.tarih<=b;
+const inR=(r,a,b)=>{
+    if(!r.tarih)return false;
+    const t=r.tarih.substring(0,10);
+    if(a===b)return t===a;
+    return t>=a && t<=b;
+};
 const met=(rows,a,b)=>{
   const d=rows.filter(r=>inR(r,a,b));
   const adet=d.reduce((s,r)=>s+(+r.adet||0),0), ciro=d.reduce((s,r)=>s+(+r.ciro||0),0);
@@ -2470,56 +2475,31 @@ window.addEventListener('load',async()=>{
 
 /* --- GÜVENLİ AKTİVİTE BOTU (BAĞIMSIZ YAMA) --- */
 (function AperiWatchBot() {
-    const log = (m) => console.log(`[AperiWatchBot] ${m}`);
-    
     async function updateFeed() {
-        const wrap = document.getElementById("devActivityList");
+        const wrap = document.getElementById("systemActivityList");
+        const syncEl = document.getElementById("lastSyncTime");
         if(!wrap) return;
-
         try {
-            // Ana db nesnesini kullanır ancak fonksiyonlara dokunmaz
-            const { data, error } = await db
-                .from("audit_logs")
-                .select("*")
-                .order("created_at", { ascending: false })
-                .limit(5);
-
-            if(error) throw error;
-            if(!data || !data.length) {
-                wrap.innerHTML = `<div style="font-family:'Space Mono',monospace; font-size:10px; color:#94A3B8; padding:10px;">Henüz sistem dokunuşu yok.</div>`;
-                return;
+            const { data: syncData } = await db.from('bot_commands').select('completed_at').eq('status','completed').order('completed_at',{ascending:false}).limit(1).maybeSingle();
+            if(syncData?.completed_at && syncEl) {
+                const d = new Date(syncData.completed_at);
+                syncEl.textContent = d.toLocaleString('tr-TR');
             }
-
-            wrap.innerHTML = data.map(item => {
-                const colors = { 'INSERT': '#059669', 'UPDATE': '#2563EB', 'DELETE': '#DC2626' };
-                const icons = { 'INSERT': '➕', 'UPDATE': '📝', 'DELETE': '🗑️' };
-                const color = colors[item.action] || '#64748b';
-                const icon = icons[item.action] || '⚙️';
-                
-                let desc = `<b>${item.table_name}</b> tablosunda işlem.`;
-                if(item.new_data?.cari_unvan) desc = `<b>${item.new_data.cari_unvan}</b> dokunuşu.`;
-                if(item.new_data?.urun) desc = `<b>${item.new_data.urun}</b> güncellendi.`;
-
-                const time = new Date(item.created_at).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-
-                return `
-                    <div class="dev-act-item">
-                        <div class="dev-act-icon" style="color:${color}">${icon}</div>
-                        <div class="dev-act-content">${desc}</div>
-                        <div class="dev-act-time">${time}</div>
-                    </div>
-                `;
-            }).join("");
-
-        } catch (err) {
-            log("Veri çekme hatası: " + err.message);
-            wrap.innerHTML = `<div style="font-family:'Space Mono',monospace; font-size:10px; color:#ef4444; padding:10px;">Bağlantı hatası: ${err.message}</div>`;
-        }
+            const { data, error } = await db.from("audit_logs").select("*").order("created_at",{ascending:false}).limit(5);
+            if(data?.length) {
+                wrap.innerHTML = data.map(log => {
+                    const icon = log.action === 'INSERT' ? '➕' : log.action === 'DELETE' ? '🗑️' : '📝';
+                    const time = new Date(log.created_at).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                    let desc = `<b>${log.table_name}</b> tablosunda işlem.`;
+                    if(log.new_data?.cari_unvan) desc = `<b>${log.new_data.cari_unvan}</b> dokunuşu.`;
+                    if(log.new_data?.tutar) desc = `${log.new_data.cari_unvan || 'Cari'} için <b>${dynMoney(log.new_data.tutar)}</b> kaydedildi.`;
+                    return `<div class="act"><span style="font-size:14px">${icon}</span><span style="flex:1;font-size:11px;color:var(--t2)">${desc}</span><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">${time}</span></div>`;
+                }).join("");
+            }
+        } catch (err) {}
     }
-
-    // İlk yükleme ve periyodik kontrol (AperiON'dan bağımsız)
     setTimeout(updateFeed, 2000);
-    setInterval(updateFeed, 20000);
+    setInterval(updateFeed, 15000);
 })();
 
 /* --- CANLI İŞLEM TAKİP MOTORU (BAĞIMSIZ YAMA) --- */
