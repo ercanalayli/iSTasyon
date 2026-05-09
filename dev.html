@@ -1864,12 +1864,7 @@ async function masrafData(yil,cf){
   })).filter(r=>r.tarih&&r.tutar);
 }
 
-// REVİZYON DAMGASI
-const REV_HTML = `
-<div class="rev-badge-fixed" style="top:20px; right:20px">
-  REV 40
-  <span class="rev-msg">SİSTEM TAMAMLANDI</span>
-</div>`;
+// REV_HTML_CLEANED
 function miniBars(obj,total,color){
   const rows=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
   if(!rows.length)return'<div class="empty"><div class="empty-t">Masraf verisi yok</div></div>';
