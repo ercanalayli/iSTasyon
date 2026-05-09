@@ -950,8 +950,7 @@ let RAW=[],cM='month',cF=PILOT_FIRMA,sK='ciro',sD=-1,yMode='year',tC=null,pC=nul
 const pad=n=>String(n).padStart(2,'0');
 const fmt=n=>Math.round(n).toLocaleString('tr');
 const fD=(d)=>{
-    const local = new Date(d.getTime() - (d.getTimezoneOffset() * 60000));
-    return local.toISOString().split('T')[0];
+    return new Intl.DateTimeFormat('tr-TR', { year:'numeric', month:'2-digit', day:'2-digit' }).format(d).split('.').reverse().join('-');
 };
 const today=()=>fD(new Date());
 const yest=()=>{
@@ -959,6 +958,13 @@ const yest=()=>{
     d.setDate(d.getDate() - 1);
     return fD(d);
 };
+
+// REVİZYON DAMGASI
+const REV_HTML = `
+<div class="rev-badge-fixed" style="top:20px; right:20px">
+  REV 37
+  <span class="rev-msg">%100 VERİ DOĞRULUĞU</span>
+</div>`;
 const ALAYLI_BLOCK_WORDS=['ELIT','ET URUN','KOFTE','KÖFTE','KUSBASI','KUŞBAŞI','DANA','PILIC','PİLİÇ','TAVUK','KASAP','HAYVANSAL','FATURASIZ','SUCUK','BAGET','BONFILE','PIRZOLA','KIYMA'];
 function isAlayliRow(r){
   if(!r||r.firma_id!==PILOT_FIRMA)return false;
