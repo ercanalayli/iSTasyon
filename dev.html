@@ -409,8 +409,8 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
 <body onclick="void(0)">
 <!-- REVİZYON DAMGASI -->
 <div class="rev-badge-fixed" style="top:20px; right:20px">
-  REV 23
-  <span class="rev-msg">VERİ TUTARLILIĞI OK</span>
+  REV 24
+  <span class="rev-msg">ÜRÜN ANALİZ MATRİSİ</span>
 </div>
 
 <!-- SAĞ ALT İŞLEM TAKİP PANELİ (YENİ) -->
@@ -531,6 +531,18 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
           <div class="card-hd"><div class="card-l">Ana Sayfa Satış Özeti</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">toplam + kategori, ürüne iniş</span></div>
           <div id="homeSalesDyn"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yükleniyor...</div></div>
         </div>
+
+        <!-- YENİ: ÜRÜN GRUBU ANALİZ MATRİSİ (GÜVENLİ YAMA) -->
+        <div class="card" style="margin-bottom:16px; border-top: 3px solid var(--accent);">
+          <div class="card-hd">
+            <div class="card-l" style="color:var(--accent); font-weight:900">⚡ ÜRÜN GRUBU KARŞILAŞTIRMALI ANALİZ MATRİSİ</div>
+            <span style="font-family:var(--mono);font-size:9px;color:var(--t3)">Külotlu · Belbantlı · Serme / Adet & Ciro</span>
+          </div>
+          <div id="productMatrixWrap" style="overflow-x:auto">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Matris hesaplanıyor...</div>
+          </div>
+        </div>
+        <!-- YAMA SONU -->
         <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-l">Son Çekilen Veri</div><button onclick="loadLastDataStatus()" style="background:none;border:1px solid var(--b1);border-radius:4px;padding:3px 8px;color:var(--t3);font-family:var(--mono);font-size:9px;cursor:pointer">↻</button></div>
           <div id="lastDataGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yükleniyor...</div></div>
@@ -2636,6 +2648,83 @@ window.addEventListener('load',async()=>{
         }
     });
 })();
+
+/* --- ÜRÜN ANALİZ MATRİSİ MOTORU (BAĞIMSIZ YAMA) --- */
+(function AperiMatrixBot() {
+    async function calculateMatrix() {
+        const wrap = document.getElementById("productMatrixWrap");
+        if(!wrap) return;
+
+        const d = fil();
+        if(!d.length) {
+            wrap.innerHTML = '<div class="empty">Veri bekleniyor...</div>';
+            return;
+        }
+
+        const groups = [
+            { n: 'Külotlu Hasta Bezi', keywords: ['külot', 'kulot'] },
+            { n: 'Belbantlı Hasta Bezi', keywords: ['belbant', 'bel bant'] },
+            { n: 'Serme Yatak Koruyucu', keywords: ['serme', 'yatak koruyucu'] }
+        ];
+
+        const pr = pRange();
+        const periods = [
+            { l: 'Bu Hafta', s: pr.weekS, e: pr.todayS },
+            { l: 'Bu Ay', s: pr.monthS, e: pr.todayS },
+            { l: 'Geçen Ay', s: pr.prevMonthS, e: pr.prevMonthE },
+            { l: 'Bu Yıl', s: pr.yearS, e: pr.todayS },
+            { l: 'Geçen Yıl', s: pr.prevYearS, e: pr.prevYearE }
+        ];
+
+        let html = `<table class="pt" style="min-width:800px">
+            <thead>
+                <tr>
+                    <th rowspan="2" style="background:#F1F5F9">ÜRÜN GRUBU / KANAL</th>
+                    ${periods.map(p => `<th colspan="2" style="text-align:center; border-left:1px solid var(--b2)">${p.l}</th>`).join('')}
+                </tr>
+                <tr>
+                    ${periods.map(() => `<th style="text-align:right; font-size:9px; border-left:1px solid var(--b2)">ADET</th><th style="text-align:right; font-size:9px">CİRO</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>`;
+
+        groups.forEach(g => {
+            ['Perakende', 'Cari'].forEach((kanal, idx) => {
+                const isPerakende = kanal === 'Perakende';
+                const gRows = d.filter(r => {
+                    const name = (r.urun || '').toLocaleLowerCase('tr-TR');
+                    const matchGroup = g.keywords.some(k => name.includes(k));
+                    const matchKanal = isPerakende ? 
+                        ((r.unvan || '').toLocaleLowerCase('tr-TR').includes('perakende') || (r.musteri || '').toLocaleLowerCase('tr-TR').includes('perakende')) :
+                        (!(r.unvan || '').toLocaleLowerCase('tr-TR').includes('perakende') && !(r.musteri || '').toLocaleLowerCase('tr-TR').includes('perakende'));
+                    return matchGroup && matchKanal;
+                });
+
+                html += `<tr style="${idx === 0 ? 'border-top:2px solid var(--b2)' : ''}">
+                    <td style="padding-left:${isPerakende ? '14px' : '24px'}; font-weight:${isPerakende ? '800' : '600'}; background:${isPerakende ? '#fff' : '#F8FAFC'}">
+                        ${isPerakende ? `📦 ${g.n}` : `└ ${kanal}`}
+                    </td>`;
+
+                periods.forEach(p => {
+                    const pRows = gRows.filter(r => r.tarih >= p.s && r.tarih <= p.e);
+                    const adet = pRows.reduce((s, r) => s + (+r.adet || 0), 0);
+                    const ciro = pRows.reduce((s, r) => s + (+r.ciro || 0), 0);
+                    html += `<td style="text-align:right; font-family:var(--mono); border-left:1px solid var(--b1)">${adet > 0 ? fmt(adet) : '-'}</td>
+                             <td style="text-align:right; font-family:var(--mono); font-weight:700; color:${ciro > 0 ? 'var(--green)' : 'var(--t3)'}">${ciro > 0 ? fmt(ciro) : '-'}</td>`;
+                });
+                html += `</tr>`;
+            });
+        });
+
+        html += `</tbody></table>`;
+        wrap.innerHTML = html;
+    }
+
+    // Her 30 saniyede bir veya veri değiştiğinde matrisi güncelle
+    setTimeout(calculateMatrix, 4000);
+    setInterval(calculateMatrix, 30000);
+})();
+/* --- YAMA SONU --- */
 
 /* --- BOT TETİKLEYİCİ MOTORU --- */
 async function triggerAperiBot() {
