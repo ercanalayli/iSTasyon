@@ -409,8 +409,8 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
 <body onclick="void(0)">
 <!-- REVİZYON DAMGASI -->
 <div class="rev-badge-fixed" style="top:20px; right:20px">
-  REV 32
-  <span class="rev-msg">KARAR DESTEK AKTİF</span>
+  REV 35
+  <span class="rev-msg">MOBİL BİLDİRİM HAZIR</span>
 </div>
 
 <!-- SAĞ ALT İŞLEM TAKİP PANELİ (YENİ) -->
@@ -493,24 +493,26 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
       <span class="tb-ver" id="buildCode">GNC --</span>
       <span class="tb-clk" id="clk">--:--</span>
       <button class="tb-btn" onclick="gP('veri',null)" style="background:rgba(37,99,235,.05); border-color:rgba(37,99,235,.2)">⬆ Veri Yükle</button>
-      <button class="tb-btn" id="btnTriggerBot" onclick="triggerAperiBot()" style="background:rgba(5,150,105,.1); border-color:var(--green); color:var(--green); font-weight:900">⚡ BOTU TETİKLE</button>
     </div>
   </div>
   <div class="content">
     <div id="pg-dashboard" class="page on">
       <div id="kartsDiv">
         
-        <!-- YENİ: SİSTEM AKTİVİTE AKIŞI (GÜVENLİ YAMA) -->
-        <div class="dev-act-box">
-          <div class="dev-act-header">
-            <div class="dev-act-status">
-              <div class="dev-pulse"></div>
-              <span>SİSTEM AKTİVİTE AKIŞI (CANLI)</span>
+        <!-- CANLI SİSTEM TAKİBİ (EN ÜSTTE) -->
+        <div id="w-activity-main" class="card" style="margin-bottom:20px; border: 2px solid var(--accent); background: rgba(37, 99, 235, 0.03);">
+          <div class="card-hd" style="margin-bottom:12px">
+            <div style="display:flex; align-items:center; gap:8px">
+              <div style="width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent); animation:pulse 1s infinite"></div>
+              <div class="card-l" style="color:var(--accent); font-weight:950; font-size:11px; letter-spacing:1px">CANLI SİSTEM AKTİVİTE AKIŞI</div>
             </div>
-            <span style="font-family:'Space Mono',monospace; font-size:9px; color:#94A3B8;">Anlık dokunuşlar izlenir</span>
+            <div style="text-align:right">
+              <div style="font-family:var(--mono); font-size:9px; color:var(--t3); letter-spacing:1px">SON VERİ ÇEKME</div>
+              <div id="lastSyncTime" style="font-family:var(--mono); font-size:11px; color:var(--accent); font-weight:900">--:--:--</div>
+            </div>
           </div>
-          <div id="devActivityList" class="dev-act-list">
-            <div style="font-family:'Space Mono',monospace; font-size:10px; color:#94A3B8; padding:10px;">Bağlantı kuruluyor...</div>
+          <div id="systemActivityList" style="min-height: 40px;">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Sistem aktiviteleri taranıyor...</div>
           </div>
         </div>
         <!-- YAMA SONU -->
