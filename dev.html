@@ -1186,7 +1186,7 @@ function rPi(){
   if(top)items.push({c:'var(--red)',t:'En yüksek işlem',d:`${(top.urun||'-').substring(0,55)} · ${dynMoney(+top.ciro||0)} · ${top.tarih?.substring(0,10)||'-'}`});
   el.innerHTML=items.map(a=>`<div class="alarm-item"><span class="alarm-dot" style="background:${a.c}"></span><div><div class="alarm-title">${a.t}</div><div class="alarm-desc">${a.d}</div></div></div>`).join('');
 }
-function rAl(){const d=fil();const el=document.getElementById('alB');if(!el)return;const items=[];const tc=d.reduce((s,r)=>s+(+r.ciro||0),0);const yd=d.filter(r=>r.tarih?.startsWith(yest()));const td=d.filter(r=>r.tarih?.startsWith(today()));const mx=[...d].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0))[0];if(!d.length){items.push({i:'',t:'Bu dönemde veri yok.',b:'ab-d',bl:'Boş'});}else{if(td.length)items.push({i:'',t:`Bugün: <strong>${td.length} işlem</strong> - ₺${fmt(td.reduce((s,r)=>s+(+r.ciro||0),0))}`,b:'ab-ok',bl:'Canlı'});if(yd.length)items.push({i:'✅',t:`Dün: <strong>${yd.length} işlem</strong> - ₺${fmt(yd.reduce((s,r)=>s+(+r.ciro||0),0))}`,b:'ab-ok',bl:'OK'});if(mx)items.push({i:'',t:`En yüksek: <strong>${(mx.urun||'').substring(0,35)}</strong> - ₺${fmt(+mx.ciro||0)}`,b:'ab-ok',bl:mx.tarih?.substring(0,10)||''});items.push({i:'',t:`₺${fmt(tc)} · ${d.length} işlem · ${[...new Set(d.map(r=>r.unvan).filter(Boolean))].length} müşteri`,b:'ab-ok',bl:''});}el.innerHTML=items.map(a=>`<div class="ali"><span style="font-size:14px;flex-shrink:0;margin-top:1px">${a.i}</span><span class="ali-t">${a.t}</span>a.bl?("<span class=\"ab "+a.b+"\">"+a.bl+"</span>"):""</div>`).join('');}
+function rAl(){const d=fil();const el=document.getElementById('alB');if(!el)return;const items=[];const tc=d.reduce((s,r)=>s+(+r.ciro||0),0);const yd=d.filter(r=>r.tarih?.startsWith(yest()));const td=d.filter(r=>r.tarih?.startsWith(today()));const mx=[...d].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0))[0];if(!d.length){items.push({i:'',t:'Bu dönemde veri yok.',b:'ab-d',bl:'Boş'});}else{if(td.length)items.push({i:'',t:`Bugün: <strong>${td.length} işlem</strong> - ₺${fmt(td.reduce((s,r)=>s+(+r.ciro||0),0))}`,b:'ab-ok',bl:'Canlı'});if(yd.length)items.push({i:'✅',t:`Dün: <strong>${yd.length} işlem</strong> - ₺${fmt(yd.reduce((s,r)=>s+(+r.ciro||0),0))}`,b:'ab-ok',bl:'OK'});if(mx)items.push({i:'',t:`En yüksek: <strong>${(mx.urun||'').substring(0,35)}</strong> - ₺${fmt(+mx.ciro||0)}`,b:'ab-ok',bl:mx.tarih?.substring(0,10)||''});items.push({i:'',t:`₺${fmt(tc)} · ${d.length} işlem · ${[...new Set(d.map(r=>r.unvan).filter(Boolean))].length} müşteri`,b:'ab-ok',bl:''});}el.innerHTML=items.map(a=>`<div class="ali"><span style="font-size:14px;flex-shrink:0;margin-top:1px">${a.i}</span><span class="ali-t">${a.t}</span>${a.bl?`<span class="ab ${a.b}">${a.bl}</span>`:""}</div>`).join('');}
 function rAct(){const d=fil();const el=document.getElementById('actB');if(!el)return;if(!d.length){el.innerHTML=`<div class="empty"><div class="empty-ico"></div><div class="empty-t">Aktivite yok</div><div class="empty-d">Veri yükleyin veya botu başlatın</div><button class="empty-btn" onclick="gP('veri',null)">Veri Yukle</button></div>`;return;}const son=[...d].sort((a,b)=>(b.tarih||'').localeCompare(a.tarih||'')).slice(0,20);el.innerHTML=son.map(r=>{const fc=F[r.firma_id]||{c:'#888'};return`<div class="act"><span style="width:7px;height:7px;border-radius:50%;background:${fc.c};flex-shrink:0"></span><span style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t2)">${(r.urun||'-').substring(0,50)}</span><span style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-right:4px">${(r.unvan||'').substring(0,18)}</span><span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--green)">+₺${fmt(+r.ciro||0)}</span><span style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-left:6px">${r.tarih?.substring(0,10)||'-'}</span></div>`;}).join('');}
 async function renderReportHub(){
   const grid=document.getElementById('reportHubGrid'), stamp=document.getElementById('reportHubStamp');
@@ -1264,7 +1264,7 @@ async function renderKarts(){
   grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:48px;color:#888;font-size:10px">Yukleniyor...</div>';
   const now=new Date(),yr=now.getFullYear();
   const p2=n=>String(n).padStart(2,'0');
-  const fd=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+  // TARIH MOTORU STABILIZE EDILDI
   const ayBas=yr+'-'+p2(now.getMonth()+1)+'-01';
   const bugun=fd(now);
   const dunStr=yest();
@@ -1423,12 +1423,7 @@ const pRange=()=>{
   const aylar=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
   return {todayS,yestS,weekS,monthS,monthName:aylar[m],prevMonthS,prevMonthE,prevMonthName:aylar[pmD.getMonth()],yearS:`${y}-01-01`,prevYearS:`${y-1}-01-01`,prevYearE:`${y-1}-12-31`,year:y,prevYear:y-1};
 };
-const inR=(r,a,b)=>{
-    if(!r.tarih)return false;
-    const t=r.tarih.substring(0,10);
-    if(a===b)return t===a;
-    return t>=a && t<=b;
-};
+// inR fonksiyonu global olarak tanımlandı
 const met=(rows,a,b)=>{
   const d=rows.filter(r=>inR(r,a,b));
   const adet=d.reduce((s,r)=>s+(+r.adet||0),0), ciro=d.reduce((s,r)=>s+(+r.ciro||0),0);
