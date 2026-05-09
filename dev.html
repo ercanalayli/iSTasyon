@@ -970,12 +970,7 @@ const inR=(r,a,b)=>{
     return t>=a && t<=b;
 };
 
-// REVİZYON DAMGASI
-const REV_HTML = `
-<div class="rev-badge-fixed" style="top:20px; right:20px">
-  REV 41
-  <span class="rev-msg">UZMAN DENETİMİ TAMAMLANDI</span>
-</div>`;
+// REV_HTML TEMIZLENDI
 const fil=()=>RAW.filter(isAlayliRow);
 function getR(m){const t=new Date(),d=new Date(t.getFullYear(),t.getMonth(),t.getDate());if(m==='yesterday'){const y=new Date(d);y.setDate(y.getDate()-1);return{from:fD(y),to:fD(y)};}if(m==='today')return{from:fD(d),to:fD(d)};if(m==='week'){const w=new Date(d);w.setDate(w.getDate()-6);return{from:fD(w),to:fD(d)};}if(m==='month')return{from:fD(new Date(t.getFullYear(),t.getMonth(),1)),to:fD(d)};if(m==='last_month')return{from:fD(new Date(t.getFullYear(),t.getMonth()-1,1)),to:fD(new Date(t.getFullYear(),t.getMonth(),0))};if(m==='year')return{from:`${t.getFullYear()}-01-01`,to:fD(d)};if(m==='last_year')return{from:`${t.getFullYear()-1}-01-01`,to:`${t.getFullYear()-1}-12-31`};return{from:'2020-01-01',to:fD(d)};}
 async function logout(){await db.auth.signOut();window.location.replace('login.html');}
