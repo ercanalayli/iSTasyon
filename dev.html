@@ -408,9 +408,10 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
 </head>
 <body onclick="void(0)">
 <!-- REVİZYON DAMGASI -->
+<!-- REVİZYON DAMGASI -->
 <div class="rev-badge-fixed" style="top:20px; right:20px">
-  REV 35
-  <span class="rev-msg">MOBİL BİLDİRİM HAZIR</span>
+  REV 39
+  <span class="rev-msg">MOBİL BİLDİRİM AKTİF</span>
 </div>
 
 <!-- SAĞ ALT İŞLEM TAKİP PANELİ (YENİ) -->
@@ -1840,21 +1841,36 @@ function masrafKategori(r){
 }
 async function masrafData(yil,cf){
   const from=`${yil}-01-01`,to=`${yil}-12-31`;
-  let rows=[],err=null;
+  let rows=[];
   try{
     let q=db.from('masraf_raw').select('*').gte('tarih',from).lte('tarih',to).limit(20000);
     if(cf)q=q.eq('firma_id',cf);
-    const r=await q;err=r.error;rows=r.data||[];
-  }catch(e){err=e;}
-  if(rows.length)return rows.map(r=>({firma_id:mPick(r,['firma_id','firma'],cf||''),tarih:mPick(r,['tarih','date','islem_tarihi']),kategori:masrafKategori(r),aciklama:mPick(r,['aciklama','description','not','tedarikci','cari_unvan','karsi_taraf']),tutar:Math.abs(Number(mPick(r,['tutar','amount','kdv_dahil','toplam'],0))||0),kaynak:'masraf_raw'})).filter(r=>r.tarih&&r.tutar);
-  try{
-    let q=db.from('bank_transactions').select('*').gte('tarih',from).lte('tarih',to).limit(20000);
-    if(cf)q=q.eq('firma_id',cf);
     const r=await q;
-    rows=(r.data||[]).filter(x=>Number(x.tutar||x.amount||0)<0||String(x.tur||x.tip||'').toLocaleLowerCase('tr-TR').includes('gider')||String(x.tur||x.tip||'').toLocaleLowerCase('tr-TR').includes('masraf'));
-  }catch(e){rows=[];}
-  return rows.map(r=>({firma_id:mPick(r,['firma_id','firma'],cf||''),tarih:mPick(r,['tarih','date']),kategori:masrafKategori(r),aciklama:mPick(r,['aciklama','description','banka_aciklama','karsi_taraf','cari_unvan']),tutar:Math.abs(Number(mPick(r,['tutar','amount'],0))||0),kaynak:'bank_transactions'})).filter(r=>r.tarih&&r.tutar);
+    rows=r.data||[];
+    if(!rows.length) {
+       // Alternatif tablo kontrolü (bank_transactions)
+       let q2=db.from('bank_transactions').select('*').gte('tarih',from).lte('tarih',to).limit(20000);
+       if(cf)q2=q2.eq('firma_id',cf);
+       const r2=await q2;
+       rows=(r2.data||[]).filter(x=>Number(x.tutar||0)<0);
+    }
+  }catch(e){console.warn('Masraf çekme hatası:', e.message);}
+  
+  return rows.map(r=>({
+    firma_id: mPick(r,['firma_id','firma'],cf||''),
+    tarih: mPick(r,['tarih','date','islem_tarihi']),
+    kategori: masrafKategori(r),
+    aciklama: mPick(r,['aciklama','description','not','tedarikci','cari_unvan']),
+    tutar: Math.abs(Number(mPick(r,['tutar','amount','kdv_dahil','toplam'],0))||0)
+  })).filter(r=>r.tarih&&r.tutar);
 }
+
+// REVİZYON DAMGASI
+const REV_HTML = `
+<div class="rev-badge-fixed" style="top:20px; right:20px">
+  REV 40
+  <span class="rev-msg">SİSTEM TAMAMLANDI</span>
+</div>`;
 function miniBars(obj,total,color){
   const rows=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
   if(!rows.length)return'<div class="empty"><div class="empty-t">Masraf verisi yok</div></div>';
