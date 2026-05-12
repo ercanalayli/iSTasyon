@@ -960,8 +960,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='150409-120526';
-const BUILD_STAMP='12.05.2026 15:04:09';
+const BUILD_CODE='151928-120526';
+const BUILD_STAMP='12.05.2026 15:19:28';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -969,10 +969,14 @@ const VISIBLE_FIRMS=[PILOT_FIRMA];
 let SHOW_OTHER_FIRMS=false;
 const DATA_SOURCES={
   alayli:[
-    {id:'sales',n:'BizimHesap Satis',t:'sales_raw',kind:'sales',mode:'aktif'},
-    {id:'expenses',n:'BizimHesap Gider',t:'masraf_raw',kind:'expense',mode:'aktif'},
-    {id:'bank',n:'Banka Ekstresi',t:'banka_raw',kind:'bank',mode:'kurulum'},
-    {id:'moka',n:'Moka / POS',t:'moka_raw',kind:'external',mode:'beklemede'}
+    {id:'sales',n:'Satış / Fatura Satırları',t:'sales_raw',kind:'table',date:'tarih',mode:'aktif'},
+    {id:'expenses',n:'Masraf / Giderler',t:'masraf_raw',kind:'table',date:'tarih',mode:'aktif'},
+    {id:'events',n:'Son İşlemler İzleme',t:'bizimhesap_events',kind:'table',date:'tarih',mode:'aktif'},
+    {id:'bankApproval',n:'Banka Onay Hareketleri',t:'bank_transactions',kind:'bank_approval',date:'tarih',mode:'aktif'},
+    {id:'bankRaw',n:'Banka Ham Ekstre',t:'banka_raw',kind:'table',date:'tarih',mode:'kurulum'},
+    {id:'customers',n:'Cari Kartlar',t:'customers',kind:'table',date:'updated_at',mode:'eksik'},
+    {id:'transactions',n:'Cari / Kasa Hareketleri',t:'transactions',kind:'table',date:'tarih',mode:'eksik'},
+    {id:'products',n:'Ürün ve Stok Kartları',t:'urun_stok_raw',kind:'table',date:'updated_at',mode:'eksik'}
   ]
 };
 let RAW=[],cM='month',cF=PILOT_FIRMA,sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null,PROD_MAP=[];
@@ -1095,27 +1099,37 @@ async function loadLastDataStatus(){
   }).join('');
 }
 async function sourceMetric(fid,src){
-  if(src.mode==='beklemede')return {ok:false,warn:true,count:0,last:null,note:'planlandi'};
-  if(src.kind==='sales'){
-    const q=await db.from('sales_raw').select('tarih',{count:'exact'}).eq('firma_id',fid).not('tarih','is',null).order('tarih',{ascending:false}).limit(1);
-    if(q.error)return {ok:false,count:0,last:null,note:q.error.message};
-    return {ok:(q.count||0)>0,count:q.count||0,last:q.data?.[0]?.tarih||null,note:'satis'};
+  if(src.mode==='beklemede')return {status:'Beklemede',ok:false,warn:true,count:0,last:null,updated:null,note:'planlandı'};
+  const dateCol=src.date||'tarih';
+  try{
+    let q=db.from(src.t).select(`${dateCol}`,{count:'exact'});
+    if(fid)q=q.eq('firma_id',fid);
+    const r=await q.order(dateCol,{ascending:false}).limit(1000);
+    if(r.error){
+      let q2=db.from(src.t).select('*',{count:'exact'});
+      if(fid)q2=q2.eq('firma_id',fid);
+      const r2=await q2.limit(1000);
+      if(r2.error)return {status:'Tablo Yok',ok:false,warn:true,count:0,last:null,updated:null,note:r2.error.message};
+      const rows=r2.data||[], last=rows.map(x=>String(x[dateCol]||x.tarih||x.date||x.created_at||'').substring(0,10)).filter(Boolean).sort().pop()||null;
+      return {status:rows.length?'Kontrol Bekliyor':'Eksik Veri',ok:false,warn:true,count:r2.count||rows.length,last,updated:last,note:rows.length?'tarih kolonu eksik':'kayıt yok'};
+    }
+    const rows=r.data||[];
+    const last=rows.map(x=>String(x[dateCol]||x.tarih||x.date||x.created_at||'').substring(0,10)).filter(Boolean).sort().pop()||null;
+    let updated=null, bekleyen=0;
+    const cu=await db.from(src.t).select('created_at').eq('firma_id',fid).order('created_at',{ascending:false}).limit(1);
+    if(!cu.error)updated=String(cu.data?.[0]?.created_at||'').substring(0,19)||null;
+    if(src.kind==='bank_approval'){
+      const br=await db.from(src.t).select('onay_durumu,bizimhesap_durumu').eq('firma_id',fid).limit(1000);
+      if(!br.error)bekleyen=(br.data||[]).filter(x=>String(x.onay_durumu||'').toLowerCase()!=='onaylandi'||String(x.bizimhesap_durumu||'').toLowerCase()!=='kaydedildi').length;
+    }
+    const count=r.count||0;
+    const ok=count>0&&last;
+    const stale=last?((new Date(today()+'T00:00:00')-new Date(last+'T00:00:00'))/86400000>3):false;
+    const status=!count?'Eksik Veri':stale?'Kontrol Bekliyor':'Veri Var';
+    return {status,ok:ok&&!stale,warn:!ok||stale,count,last,updated,note:src.kind==='bank_approval'?`${bekleyen} bekleyen`:(ok?'ham veri':'kayıt yok')};
+  }catch(e){
+    return {status:'Erişim Hatası',ok:false,warn:true,count:0,last:null,updated:null,note:e.message};
   }
-  if(src.kind==='expense'){
-    const rows=await masrafData(new Date().getFullYear(),fid);
-    return {ok:rows.length>0,warn:!rows.length,count:rows.length,last:rows.map(r=>r.tarih).filter(Boolean).sort().pop()||null,note:rows.length?'gider':'veri yok'};
-  }
-  if(src.kind==='bank'){
-    const q=await db.from('banka_raw').select('tarih',{count:'exact'}).eq('firma_id',fid).order('tarih',{ascending:false}).limit(1);
-    if(q.error)return {ok:false,warn:true,count:0,last:null,note:'tablo yok'};
-    return {ok:(q.count||0)>0,warn:!(q.count||0),count:q.count||0,last:q.data?.[0]?.tarih||null,note:(q.count||0)?'onay merkezi':'ekstre yok'};
-  }
-  if(src.kind==='finance'){
-    const q=await ydb.from('ys_transactions').select('tarih',{count:'exact'}).order('tarih',{ascending:false}).limit(1);
-    if(q.error)return {ok:false,count:0,last:null,note:q.error.message};
-    return {ok:(q.count||0)>0,count:q.count||0,last:q.data?.[0]?.tarih||null,note:'finans'};
-  }
-  return {ok:false,warn:true,count:0,last:null,note:'hazirlik'};
 }
 async function renderSourceMatrix(){
   const el=document.getElementById('sourceMatrix');if(!el)return;
@@ -1126,22 +1140,25 @@ async function renderSourceMatrix(){
     const cards=await Promise.all(sources.map(async src=>{
       const m=await sourceMetric(fid,src);
       const color=m.ok?'var(--green)':m.warn?'var(--orange)':'var(--red)';
-      const action=src.kind==='bank'&&fid==='alayli'?"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),80)":'';
-      return `<div onclick="${action}" style="cursor:${action?'pointer':'default'};background:var(--s2);border:1px solid var(--b1);border-left:3px solid ${color};border-radius:var(--rs);padding:10px;min-height:86px">
+      const action=src.kind==='bank_approval'&&fid==='alayli'?"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),80)":'';
+      return `<div onclick="${action}" style="cursor:${action?'pointer':'default'};background:var(--s2);border:1px solid var(--b1);border-left:4px solid ${color};border-radius:var(--rs);padding:12px;min-height:118px">
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
           <div style="font-size:12px;font-weight:900;color:var(--text)">${src.n}</div>
-          <span style="font-family:var(--mono);font-size:8px;color:${color};font-weight:900;text-transform:uppercase">${m.ok?'aktif':m.note}</span>
+          <span style="font-family:var(--mono);font-size:8px;color:${color};font-weight:900;text-transform:uppercase">${m.status}</span>
         </div>
         <div style="font-family:var(--mono);font-size:18px;font-weight:900;margin-top:8px;color:${color}">${fmt(m.count||0)}</div>
-        <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:4px">${m.last||'-'} · ${src.t}</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:6px">Tablo: <b style="color:var(--t2)">${src.t}</b></div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:4px">Veri tarihi: <b style="color:var(--t2)">${m.last||'-'}</b></div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:4px">Çekim: <b style="color:var(--t2)">${m.updated||'-'}</b></div>
+        <div style="font-family:var(--mono);font-size:9px;color:${color};margin-top:6px;font-weight:900">${m.note||''}</div>
       </div>`;
     }));
     return `<div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:14px;margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div style="font-size:13px;font-weight:900;color:${f.c}">${f.i} ${f.n}</div>
-        <span style="font-family:var(--mono);font-size:9px;color:${fid===PILOT_FIRMA?'var(--green)':'var(--t3)'}">${fid===PILOT_FIRMA?'PILOT':'sonra'}</span>
+        <div><div style="font-size:14px;font-weight:950;color:${f.c}">BizimHesap Klon Veri Merkezi</div><div style="font-size:11px;color:var(--t3);margin-top:2px">${f.i} ${f.n} · hangi veri hangi tabloda</div></div>
+        <span style="font-family:var(--mono);font-size:9px;color:${fid===PILOT_FIRMA?'var(--green)':'var(--t3)'}">${BUILD_CODE}</span>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">${cards.join('')}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">${cards.join('')}</div>
     </div>`;
   }));
   el.innerHTML=blocks.join('')||'<div class="empty"><div class="empty-t">Veri kaynagi tanimli degil</div></div>';
