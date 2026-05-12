@@ -329,6 +329,12 @@ body::after{background:linear-gradient(180deg,rgba(15,118,110,.045),transparent 
 .verify-badge.miss{background:#F8FAFC;color:#667085;border-color:#D0D5DD}
 .verify-badge.bad{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}
 .report-unverified{font-size:11px;color:#B45309;font-weight:850;margin-top:6px;line-height:1.35}
+.audit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.audit-box{border:1px solid #E4E7EC;background:#F8FAFC;border-radius:12px;padding:12px}
+.audit-k{font-size:10px;color:#667085;font-weight:900;text-transform:uppercase;letter-spacing:.5px}
+.audit-v{font-family:var(--mono);font-size:20px;font-weight:950;color:#101828;margin-top:8px}
+.audit-v.ok{color:#047857}.audit-v.warn{color:#B45309}.audit-v.bad{color:#B91C1C}
+.audit-note{font-size:11px;color:#667085;font-weight:700;margin-top:6px;line-height:1.35}
 .kpi{border-radius:16px;border-color:#E4E7EC;background:#FFFFFF;box-shadow:0 12px 30px rgba(15,23,42,.055)}
 .kpi-l{font-size:12px;color:#475467}
 .kpi-v{font-size:31px;letter-spacing:-.02em}
@@ -422,6 +428,10 @@ select.sel{border-radius:10px;border-color:#D0D5DD;background:#F8FAFC;color:#344
           <div class="report-grid" id="reportHubGrid">
             <div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yukleniyor...</div>
           </div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-hd"><div class="card-l">Veri Denetimi</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">sales_raw kalite kontrol</span></div>
+          <div id="dataAudit"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Kontrol ediliyor...</div></div>
         </div>
         <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-l">Ana Sayfa Satış Özeti</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">toplam + kategori, ürüne iniş</span></div>
@@ -784,8 +794,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='105756-120526';
-const BUILD_STAMP='12.05.2026 10:57:56';
+const BUILD_CODE='111657-120526';
+const BUILD_STAMP='12.05.2026 11:16:57';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -850,7 +860,7 @@ const PT={dashboard:{t:'ERP Radar',s:'Anlık veri istihbaratı'},satis:{t:'Satı
 function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();}
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]).filter(isAlayliRow);}catch(e){return[];}}
-async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
+async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();renderDataAudit();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
 function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
 function pSels(){
   const fids=[...new Set(RAW.map(r=>r.firma_id).filter(Boolean))];
@@ -1021,6 +1031,37 @@ function proofHtml(p){
 }
 function guardedValue(p,value){return p.status==='Doğrulandı'?value:p.status;}
 function guardedDesc(p,value,note){return `${note||''}${p.status!=='Doğrulandı'?`<div class="report-unverified">Ön hesap: ${value}. Kesin rapora alınmadı.</div>`:''}`;}
+function auditSalesRows(rows){
+  const todayStr=fD(new Date()), keys=new Map(), issues={missingDate:0,futureDate:0,badAmount:0,firmLeak:0,duplicate:0};
+  (rows||[]).forEach(r=>{
+    const dt=String(r.tarih||'').substring(0,10), amount=Number(r.ciro??0);
+    if(!dt)issues.missingDate++;
+    if(dt&&dt>todayStr)issues.futureDate++;
+    if(!Number.isFinite(amount)||amount<0)issues.badAmount++;
+    if(r.firma_id&&r.firma_id!==PILOT_FIRMA)issues.firmLeak++;
+    const key=[r.firma_id||'',dt,r.urun||'',r.unvan||'',amount].join('|');
+    keys.set(key,(keys.get(key)||0)+1);
+  });
+  keys.forEach(v=>{if(v>1)issues.duplicate+=v-1;});
+  const issueTotal=Object.values(issues).reduce((s,v)=>s+v,0);
+  const dates=(rows||[]).map(r=>String(r.tarih||'').substring(0,10)).filter(Boolean).sort();
+  return {count:(rows||[]).length,issueTotal,issues,first:dates[0]||'veri yok',last:dates.at(-1)||'veri yok',status:issueTotal?'Uyuşmazlık Var':((rows||[]).length?'Kontrol Bekliyor':'Eksik Veri')};
+}
+function auditBox(k,v,note,cls=''){return `<div class="audit-box"><div class="audit-k">${k}</div><div class="audit-v ${cls}">${v}</div><div class="audit-note">${note}</div></div>`;}
+function renderDataAudit(){
+  const el=document.getElementById('dataAudit');if(!el)return;
+  const a=auditSalesRows(RAW), cls=a.issueTotal?'bad':a.count?'warn':'bad';
+  el.innerHTML=`<div class="audit-grid">
+    ${auditBox('Durum',a.status,a.issueTotal?'Kesin rapora alınmaz':'Doğrulama kaydı bekliyor',cls)}
+    ${auditBox('Kayıt',fmt(a.count),`${a.first} - ${a.last}`)}
+    ${auditBox('Sorun',fmt(a.issueTotal),'toplam kontrol bulgusu',a.issueTotal?'bad':'ok')}
+    ${auditBox('Tarih Yok',fmt(a.issues.missingDate),'boş tarihli kayıt',a.issues.missingDate?'bad':'ok')}
+    ${auditBox('Gelecek Tarih',fmt(a.issues.futureDate),'bugünden ileri kayıt',a.issues.futureDate?'bad':'ok')}
+    ${auditBox('Firma Kaçağı',fmt(a.issues.firmLeak),'Alaylı dışı kayıt',a.issues.firmLeak?'bad':'ok')}
+    ${auditBox('Tekrar',fmt(a.issues.duplicate),'aynı anahtar şüphesi',a.issues.duplicate?'bad':'ok')}
+    ${auditBox('Tutar Sorunu',fmt(a.issues.badAmount),'negatif/geçersiz ciro',a.issues.badAmount?'bad':'ok')}
+  </div>`;
+}
 async function renderReportHub(){
   const grid=document.getElementById('reportHubGrid'), stamp=document.getElementById('reportHubStamp');
   if(!grid)return;
