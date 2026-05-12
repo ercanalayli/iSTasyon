@@ -463,6 +463,18 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .flow-btn{border:1px solid #D0D5DD;background:#F8FAFC;color:#344054;border-radius:9px;padding:7px 10px;font-size:11px;font-weight:900;cursor:pointer}
 .flow-btn:hover{border-color:#1D4ED8;color:#1D4ED8;background:#EFF6FF}
 #pg-satis>.fbar,#pg-cariler>.fbar,#pg-stok>.fbar{position:sticky;top:0;z-index:20}
+.cg{display:block}
+.customer-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:10px}
+.customer-summary .kpi{min-height:82px}
+.customer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:10px}
+.cc{background:#FFFFFF;border-color:#E4E7EC;border-radius:12px;box-shadow:0 8px 20px rgba(15,23,42,.045)}
+.cc:hover{box-shadow:0 14px 30px rgba(15,23,42,.1)}
+.customer-proof{font-family:var(--mono);font-size:9px;color:#667085;margin-bottom:10px}
+.customer-periods{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;margin-bottom:10px}
+.customer-period{background:#F8FAFC;border:1px solid #E4E7EC;border-radius:9px;padding:9px}
+.customer-period b{display:block;font-size:9px;color:#667085;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.customer-period strong{display:block;font-family:var(--mono);font-size:13px;color:#047857}
+.customer-period span{display:block;font-family:var(--mono);font-size:9px;color:#667085;margin-top:4px}
 @media(max-width:768px){
   .tb{height:56px;padding:0 14px}
   .content{padding:10px;padding-bottom:calc(var(--bh) + 14px)}
@@ -474,6 +486,8 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   #kartsDiv{display:block}
   .flow-head{grid-template-columns:1fr}
   .flow-actions{justify-content:flex-start}
+  .customer-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .customer-periods{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 </style>
 </head>
@@ -943,8 +957,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='123412-120526';
-const BUILD_STAMP='12.05.2026 12:34:12';
+const BUILD_CODE='125122-120526';
+const BUILD_STAMP='12.05.2026 12:51:22';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -1700,10 +1714,14 @@ function rC(){
   const m={};
   d.forEach(r=>{
     const u=cariName(r), t=rowDate(r), ciro=rowAmount(r), adet=rowQty(r), mk=cariMonthKey(t);
-    if(!m[u])m[u]={n:u,firma_id:r.firma_id,ciro:0,adet:0,islem:0,thisTah:0,lastTah:0,bakiye:0,tarihler:[],urunler:{},months:{},last3:Object.fromEntries(recentMonths.map(k=>[k,0])),recent:[]};
+    if(!m[u])m[u]={n:u,firma_id:r.firma_id,ciro:0,adet:0,islem:0,todayTah:0,weekTah:0,monthTah:0,prevMonthTah:0,thisTah:0,lastTah:0,bakiye:0,tarihler:[],urunler:{},months:{},last3:Object.fromEntries(recentMonths.map(k=>[k,0])),recent:[]};
     const c=m[u];
     c.ciro+=ciro;c.adet+=adet;c.islem++;c.bakiye+=ciro;
     if(t)c.tarihler.push(t);
+    if(t>=pr.todayS&&t<=pr.todayS)c.todayTah+=ciro;
+    if(t>=pr.weekS&&t<=pr.todayS)c.weekTah+=ciro;
+    if(t>=pr.monthS&&t<=pr.todayS)c.monthTah+=ciro;
+    if(t>=pr.prevMonthS&&t<=pr.prevMonthE)c.prevMonthTah+=ciro;
     if(t>=pr.yearS&&t<=pr.todayS)c.thisTah+=ciro;
     if(t>=pr.prevYearS&&t<=pr.prevYearE)c.lastTah+=ciro;
     if(mk){c.months[mk]=(c.months[mk]||0)+ciro;if(mk in c.last3)c.last3[mk]+=ciro;}
@@ -1724,12 +1742,21 @@ function rC(){
     return c;
   }).sort((a,b)=>b.bakiye-a.bakiye);
   const maxBakiye=rows[0]?.bakiye||1;
-  el.innerHTML=rows.map((c,i)=>{
+  const totalBakiye=rows.reduce((s,c)=>s+c.bakiye,0), riskli=rows.filter(c=>c.risk.t.includes('risk')||c.risk.t.includes('takip')).length, son30=rows.filter(c=>c.gunFarki<=30).length, topCari=rows[0];
+  const periodTotals=[
+    ['Bugün',rows.reduce((s,c)=>s+c.todayTah,0)],
+    ['Bu Hafta',rows.reduce((s,c)=>s+c.weekTah,0)],
+    [pr.monthName,rows.reduce((s,c)=>s+c.monthTah,0)],
+    [pr.prevMonthName,rows.reduce((s,c)=>s+c.prevMonthTah,0)],
+    [String(pr.year),rows.reduce((s,c)=>s+c.thisTah,0)],
+    [String(pr.prevYear),rows.reduce((s,c)=>s+c.lastTah,0)]
+  ];
+  const cards=rows.map((c,i)=>{
     const fc=F[c.firma_id]||{i:'',c:'#888'};
     const topUrun=Object.entries(c.urunler).sort((a,b)=>b[1]-a[1])[0], pct=(c.bakiye/maxBakiye*100).toFixed(0);
     return`<div class="cc" style="cursor:pointer;transition:transform .15s,box-shadow .15s;border-left:3px solid ${c.risk.c}"
       onclick="cariDetay(${jsArg(JSON.stringify(c))})"
-      onmouseenter="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 40px rgba(0,0,0,.4)'"
+      onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 14px 30px rgba(15,23,42,.12)'"
       onmouseleave="this.style.transform='';this.style.boxShadow=''">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
         <div style="width:36px;height:36px;border-radius:10px;background:${c.risk.bg};border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:${c.risk.c};flex-shrink:0">${fc.i}</div>
@@ -1765,9 +1792,24 @@ function rC(){
         <div style="background:var(--s2);border-radius:7px;padding:8px"><div style="font-size:9px;color:var(--t3)">Tahsilat</div><div style="font-size:12px;font-weight:900;color:var(--orange)">eksik veri</div></div>
         <div style="background:var(--s2);border-radius:7px;padding:8px"><div style="font-size:9px;color:var(--t3)">Bakiye A</div><div style="font-size:12px;font-weight:900;color:var(--orange)">eksik veri</div></div>
       </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:9px">
+        <div style="background:#F8FAFC;border:1px solid var(--b1);border-radius:7px;padding:7px"><div style="font-size:8px;color:var(--t3)">Bugün</div><div style="font-family:var(--mono);font-size:11px;font-weight:900;color:var(--green)">${dynMoney(c.todayTah)}</div></div>
+        <div style="background:#F8FAFC;border:1px solid var(--b1);border-radius:7px;padding:7px"><div style="font-size:8px;color:var(--t3)">Bu Hafta</div><div style="font-family:var(--mono);font-size:11px;font-weight:900;color:var(--green)">${dynMoney(c.weekTah)}</div></div>
+        <div style="background:#F8FAFC;border:1px solid var(--b1);border-radius:7px;padding:7px"><div style="font-size:8px;color:var(--t3)">Bu Ay</div><div style="font-family:var(--mono);font-size:11px;font-weight:900;color:var(--green)">${dynMoney(c.monthTah)}</div></div>
+      </div>
       ${topUrun?`<div style="font-size:10px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">En çok: ${escHtml(topUrun[0].substring(0,42))}</div>`:''}
     </div>`;
   }).join('');
+  el.innerHTML=`
+    <div class="customer-periods">${periodTotals.map(([l,v])=>`<div class="customer-period"><b>${escHtml(l)}</b><strong>${dynMoney(v)}</strong><span>tahakkuk</span></div>`).join('')}</div>
+    <div class="customer-summary">
+      <div class="kpi c"><div class="kpi-l">Cari Sayısı</div><div class="kpi-v">${fmt(rows.length)}</div><div class="kpi-s">Alaylı müşteri kartı</div></div>
+      <div class="kpi g"><div class="kpi-l">Bu Yıl Tahakkuk</div><div class="kpi-v">${dynMoney(rows.reduce((s,c)=>s+c.thisTah,0))}</div><div class="kpi-s">${fmt(d.length)} satış hareketi</div></div>
+      <div class="kpi r"><div class="kpi-l">Risk / Takip</div><div class="kpi-v">${fmt(riskli)}</div><div class="kpi-s">kontrol gereken cari</div></div>
+      <div class="kpi o"><div class="kpi-l">En Büyük Cari</div><div class="kpi-v" style="font-size:15px">${escHtml((topCari?.n||'veri yok').substring(0,28))}</div><div class="kpi-s">${topCari?dynMoney(topCari.bakiye):'veri yok'}</div></div>
+    </div>
+    <div class="customer-proof">Kaynak: sales_raw · Tahsilat ve Bakiye A alanları eksik veri olarak işaretlenir · Son 30 gün aktif cari: ${fmt(son30)} · Toplam tahakkuk: ${dynMoney(totalBakiye)}</div>
+    <div class="customer-grid">${cards}</div>`;
 }
 
 // Cari detay modal
