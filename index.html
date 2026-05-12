@@ -335,6 +335,9 @@ body::after{background:linear-gradient(180deg,rgba(15,118,110,.045),transparent 
 .audit-v{font-family:var(--mono);font-size:20px;font-weight:950;color:#101828;margin-top:8px}
 .audit-v.ok{color:#047857}.audit-v.warn{color:#B45309}.audit-v.bad{color:#B91C1C}
 .audit-note{font-size:11px;color:#667085;font-weight:700;margin-top:6px;line-height:1.35}
+.recon-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;align-items:end;margin-top:12px}
+.recon-actions{display:flex;gap:8px;flex-wrap:wrap}
+.recon-status{border:1px solid #E4E7EC;border-radius:12px;background:#F8FAFC;padding:12px;margin-top:10px;font-size:12px;color:#475467;font-weight:750;line-height:1.45}
 .kpi{border-radius:16px;border-color:#E4E7EC;background:#FFFFFF;box-shadow:0 12px 30px rgba(15,23,42,.055)}
 .kpi-l{font-size:12px;color:#475467}
 .kpi-v{font-size:31px;letter-spacing:-.02em}
@@ -432,6 +435,10 @@ select.sel{border-radius:10px;border-color:#D0D5DD;background:#F8FAFC;color:#344
         <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-l">Veri Denetimi</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">sales_raw kalite kontrol</span></div>
           <div id="dataAudit"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Kontrol ediliyor...</div></div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-hd"><div class="card-l">Satış Mutabakatı</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">BizimHesap raporu ile karşılaştır</span></div>
+          <div id="salesRecon"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Hazırlanıyor...</div></div>
         </div>
         <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-l">Ana Sayfa Satış Özeti</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">toplam + kategori, ürüne iniş</span></div>
@@ -794,8 +801,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='111657-120526';
-const BUILD_STAMP='12.05.2026 11:16:57';
+const BUILD_CODE='120318-120526';
+const BUILD_STAMP='12.05.2026 12:03:18';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -860,7 +867,7 @@ const PT={dashboard:{t:'ERP Radar',s:'Anlık veri istihbaratı'},satis:{t:'Satı
 function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();}
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]).filter(isAlayliRow);}catch(e){return[];}}
-async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();renderDataAudit();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
+async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
 function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
 function pSels(){
   const fids=[...new Set(RAW.map(r=>r.firma_id).filter(Boolean))];
@@ -1021,16 +1028,42 @@ function reportProof(rows,source,label){
     if(keys.has(key))duplicate=true; else keys.add(key);
     return !dt||dt>todayStr||!Number.isFinite(amount)||amount<0||(r.firma_id&&r.firma_id!==PILOT_FIRMA);
   });
-  const verified=list.some(r=>String(r.dogrulama_durumu||r.validation_status||'').toLocaleLowerCase('tr-TR').includes('doğrulan')||r.verified_at||r.dogrulandi_at);
+  let verified=list.some(r=>String(r.dogrulama_durumu||r.validation_status||'').toLocaleLowerCase('tr-TR').includes('doğrulan')||r.verified_at||r.dogrulandi_at);
   const status=list.length?((bad||duplicate)?'Uyuşmazlık Var':(verified?'Doğrulandı':'Kontrol Bekliyor')):'Eksik Veri';
-  const cls=status==='Doğrulandı'?'ok':status==='Kontrol Bekliyor'?'wait':status==='Uyuşmazlık Var'?'bad':'miss';
-  return {source,label,status,cls,count:list.length,dataDate:dates.at(-1)||'veri yok',updated:BUILD_STAMP,verified:verified?BUILD_STAMP:'bekliyor'};
+  const rec=source==='sales_raw'?salesReconStatus(list):null;
+  if(rec?.ok){verified=true;}
+  const finalStatus=rec?.ok?'Doğrulandı':status;
+  const cls=finalStatus==='Doğrulandı'?'ok':finalStatus==='Kontrol Bekliyor'?'wait':finalStatus==='Uyuşmazlık Var'?'bad':'miss';
+  return {source,label,status:finalStatus,cls,count:list.length,dataDate:dates.at(-1)||'veri yok',updated:BUILD_STAMP,verified:verified?BUILD_STAMP:'bekliyor'};
 }
 function proofHtml(p){
   return `<div class="report-proof"><span>Kaynak: <b>${escHtml(p.source)}</b></span><span>Veri tarihi: <b>${escHtml(p.dataDate)}</b></span><span>Güncelleme: <b>${BUILD_CODE}</b></span><span>Doğrulama: <b>${escHtml(p.verified)}</b></span><span>Kayıt: <b>${fmt(p.count)}</b></span><span><i class="verify-badge ${p.cls}">${p.status}</i></span></div>`;
 }
 function guardedValue(p,value){return p.status==='Doğrulandı'?value:p.status;}
 function guardedDesc(p,value,note){return `${note||''}${p.status!=='Doğrulandı'?`<div class="report-unverified">Ön hesap: ${value}. Kesin rapora alınmadı.</div>`:''}`;}
+function trNum(v){const s=String(v??'').replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.');const n=Number(s);return Number.isFinite(n)?n:0;}
+function salesTotals(rows=RAW){return {ciro:rows.reduce((s,r)=>s+(+r.ciro||0),0),adet:rows.reduce((s,r)=>s+(+r.adet||0),0),islem:rows.length};}
+function reconKey(){const r=getR(cM);return `ap_sales_recon_${PILOT_FIRMA}_${r.from}_${r.to}`;}
+function loadRecon(){try{return JSON.parse(localStorage.getItem(reconKey())||'null');}catch(e){return null;}}
+function saveSalesRecon(){const rec={ciro:trNum(document.getElementById('reconCiro')?.value),adet:trNum(document.getElementById('reconAdet')?.value),islem:Math.round(trNum(document.getElementById('reconIslem')?.value)),savedAt:new Date().toLocaleString('tr-TR'),build:BUILD_CODE};localStorage.setItem(reconKey(),JSON.stringify(rec));rKPI();renderReportHub();renderDataAudit();renderSalesReconciliation();}
+function clearSalesRecon(){localStorage.removeItem(reconKey());rKPI();renderReportHub();renderDataAudit();renderSalesReconciliation();}
+function salesReconStatus(rows=RAW){
+  const rec=loadRecon(), t=salesTotals(rows);
+  if(!rec)return {status:'Kontrol Bekliyor',ok:false,note:'BizimHesap rapor toplamı girilmedi.',rec:null,t};
+  const ok=Math.abs(t.ciro-rec.ciro)<=1&&Math.abs(t.adet-rec.adet)<=0.01&&t.islem===rec.islem;
+  return {status:ok?'Doğrulandı':'Uyuşmazlık Var',ok,note:ok?'BizimHesap raporu ile eşleşti.':`AperiON: TL ${fmt(t.ciro)} / ${fmt(t.adet)} adet / ${fmt(t.islem)} işlem`,rec,t};
+}
+function renderSalesReconciliation(){
+  const el=document.getElementById('salesRecon');if(!el)return;
+  const r=getR(cM), rec=loadRecon(), st=salesReconStatus(RAW), cls=st.ok?'ok':rec?'bad':'warn';
+  el.innerHTML=`<div class="recon-status"><b>Dönem:</b> ${r.from} - ${r.to} · <b>AperiON ön hesap:</b> TL ${fmt(st.t.ciro)} · ${fmt(st.t.adet)} adet · ${fmt(st.t.islem)} işlem · <span class="verify-badge ${cls}">${st.status}</span><br>${st.note}${rec?` · kayıt: ${escHtml(rec.savedAt||'')}`:''}</div>
+    <div class="recon-form">
+      <div><div class="wl">BizimHesap Ciro</div><input class="wi" id="reconCiro" value="${rec?fmt(rec.ciro):''}" placeholder="örn. 123.456,78"></div>
+      <div><div class="wl">BizimHesap Adet</div><input class="wi" id="reconAdet" value="${rec?fmt(rec.adet):''}" placeholder="adet"></div>
+      <div><div class="wl">BizimHesap İşlem</div><input class="wi" id="reconIslem" value="${rec?fmt(rec.islem):''}" placeholder="işlem"></div>
+      <div class="recon-actions"><button class="btn s" onclick="saveSalesRecon()">Mutabık Kaydet</button><button class="btn d" onclick="clearSalesRecon()">Temizle</button></div>
+    </div>`;
+}
 function auditSalesRows(rows){
   const todayStr=fD(new Date()), keys=new Map(), issues={missingDate:0,futureDate:0,badAmount:0,firmLeak:0,duplicate:0};
   (rows||[]).forEach(r=>{
