@@ -456,6 +456,13 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 #kartsDiv>.card:nth-of-type(5){grid-column:2;order:4}
 #kartsDiv>.card:nth-of-type(6){grid-column:2;order:5}
 #kartsDiv>#fGrid{grid-column:1/-1;order:6}
+.flow-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;margin-bottom:10px;padding:13px 14px;border:1px solid #E4E7EC;border-radius:12px;background:#FFFFFF;box-shadow:0 10px 24px rgba(15,23,42,.045)}
+.flow-title{font-size:18px;font-weight:950;color:#101828;letter-spacing:-.01em}
+.flow-sub{font-size:12px;color:#667085;font-weight:750;margin-top:3px}
+.flow-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.flow-btn{border:1px solid #D0D5DD;background:#F8FAFC;color:#344054;border-radius:9px;padding:7px 10px;font-size:11px;font-weight:900;cursor:pointer}
+.flow-btn:hover{border-color:#1D4ED8;color:#1D4ED8;background:#EFF6FF}
+#pg-satis>.fbar,#pg-cariler>.fbar,#pg-stok>.fbar{position:sticky;top:0;z-index:20}
 @media(max-width:768px){
   .tb{height:56px;padding:0 14px}
   .content{padding:10px;padding-bottom:calc(var(--bh) + 14px)}
@@ -465,6 +472,8 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   .sales-cat-grid{grid-template-columns:1fr}
   .home-main-grid{grid-template-columns:1fr}
   #kartsDiv{display:block}
+  .flow-head{grid-template-columns:1fr}
+  .flow-actions{justify-content:flex-start}
 }
 </style>
 </head>
@@ -608,6 +617,14 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
       </div>
     </div>
     <div id="pg-satis" class="page">
+      <div class="flow-head">
+        <div><div class="flow-title">Satışlar</div><div class="flow-sub">Kategoriye gir, ürüne in, müşteriye geç. Alaylı verisi dışında kayıt gösterilmez.</div></div>
+        <div class="flow-actions">
+          <button class="flow-btn" onclick="gP('stok',null)">Ürünlere Git</button>
+          <button class="flow-btn" onclick="gP('cariler',null)">Müşterilere Git</button>
+          <button class="flow-btn" onclick="gP('finans',null)">Finans Özeti</button>
+        </div>
+      </div>
       <div class="fbar">
         <span class="fbar-l">Dönem</span>
         <button class="fb" onclick="sM('yesterday',this,1)">Dün</button>
@@ -637,6 +654,13 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
       <div class="card" style="padding:0;overflow:hidden" id="uW"></div>
     </div>
     <div id="pg-cariler" class="page">
+      <div class="flow-head">
+        <div><div class="flow-title">Müşteriler</div><div class="flow-sub">Cari performans, risk ve satış ilişkisini tek yerden kontrol et.</div></div>
+        <div class="flow-actions">
+          <button class="flow-btn" onclick="gP('satis',null)">Satışlara Git</button>
+          <button class="flow-btn" onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Banka Onay</button>
+        </div>
+      </div>
       <div class="fbar">
         <span class="fbar-l">Dönem</span>
         <button class="fb" onclick="sM('month',this,1)">Bu Ay</button>
@@ -726,6 +750,13 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
     </div>
     <!-- STOK & ÜRÜN -->
     <div id="pg-stok" class="page">
+      <div class="flow-head">
+        <div><div class="flow-title">Ürünler</div><div class="flow-sub">Ürün satış, kritik hareket ve kârlılık hazırlığı. Ürün seçimi satış raporuna bağlanır.</div></div>
+        <div class="flow-actions">
+          <button class="flow-btn" onclick="gP('satis',null)">Satış Analizine Git</button>
+          <button class="flow-btn" onclick="gP('satis',null);setTimeout(()=>toggleProdMap(),60)">Ürün Eşleştir</button>
+        </div>
+      </div>
       <div class="fbar">
         <span class="fbar-l">Dönem</span>
         <button class="fb" onclick="sM('month',this,1)">Bu Ay</button>
@@ -912,8 +943,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='122534-120526';
-const BUILD_STAMP='12.05.2026 12:25:34';
+const BUILD_CODE='123412-120526';
+const BUILD_STAMP='12.05.2026 12:34:12';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
