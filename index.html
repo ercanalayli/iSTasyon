@@ -475,18 +475,20 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
     <div class="sb-dd" id="firmaDD"></div>
   </div>
   <nav class="sb-nav">
-    <div class="sb-sec">Ana Modüller</div>
-    <div class="sb-item on" onclick="gP('dashboard',this)"><span class="sb-ico">ER</span><span class="sb-lbl">ERP Radar</span></div>
-    <div class="sb-item" onclick="gP('satis',this)"><span class="sb-ico">SA</span><span class="sb-lbl">Satış Analizi</span></div>
-    <div class="sb-item" onclick="gP('cariler',this)"><span class="sb-ico">CR</span><span class="sb-lbl">Cariler</span></div>
-    <div class="sb-item" onclick="gP('finans',this)"><span class="sb-ico">FN</span><span class="sb-lbl">Finans</span></div>
-    <div class="sb-sec">Sistem</div>
-    <div class="sb-sec">Analiz</div>
-    <div class="sb-item" onclick="gP('stok',this)"><span class="sb-ico">ST</span><span class="sb-lbl">Stok & Ürün</span></div>
-    <div class="sb-item" onclick="gP('hedef',this)"><span class="sb-ico">HB</span><span class="sb-lbl">Hedef / Bütçe</span></div>
-    <div class="sb-item" onclick="gP('gorevler',this)"><span class="sb-ico">GT</span><span class="sb-lbl">Görev Teyidi</span><span id="gorevBadge" style="margin-left:auto;display:none;background:#FF4757;color:#fff;font-size:8px;padding:1px 5px;border-radius:8px;font-family:var(--mono);font-weight:700">!</span></div>
-    <div class="sb-item" onclick="gP('veri',this)"><span class="sb-ico">VY</span><span class="sb-lbl">Veri Yükleme</span></div>
-    <div class="sb-item" onclick="gP('bildirim',this)"><span class="sb-ico">BD</span><span class="sb-lbl">Bildirimler</span></div>
+    <div class="sb-sec">Yönetim</div>
+    <div class="sb-item on" onclick="gP('dashboard',this)"><span class="sb-ico">AS</span><span class="sb-lbl">Ana Sayfa</span></div>
+    <div class="sb-item" onclick="gP('satis',this)"><span class="sb-ico">ST</span><span class="sb-lbl">Satışlar</span></div>
+    <div class="sb-item" onclick="gP('stok',this)"><span class="sb-ico">ÜR</span><span class="sb-lbl">Ürünler</span></div>
+    <div class="sb-item" onclick="gP('cariler',this)"><span class="sb-ico">MŞ</span><span class="sb-lbl">Müşteriler</span></div>
+    <div class="sb-sec">Para</div>
+    <div class="sb-item" onclick="gP('finans',this)"><span class="sb-ico">FN</span><span class="sb-lbl">Finans Özeti</span></div>
+    <div class="sb-item" onclick="gP('finans',this);setTimeout(()=>document.querySelector('.ft-tab[onclick*=masraf]')?.click(),60)"><span class="sb-ico">GD</span><span class="sb-lbl">Giderler</span></div>
+    <div class="sb-item" onclick="gP('finans',this);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)"><span class="sb-ico">BK</span><span class="sb-lbl">Banka Onay</span></div>
+    <div class="sb-sec">Kontrol</div>
+    <div class="sb-item" onclick="gP('hedef',this)"><span class="sb-ico">HB</span><span class="sb-lbl">Hedefler</span></div>
+    <div class="sb-item" onclick="gP('gorevler',this)"><span class="sb-ico">OK</span><span class="sb-lbl">Görevler</span><span id="gorevBadge" style="margin-left:auto;display:none;background:#FF4757;color:#fff;font-size:8px;padding:1px 5px;border-radius:8px;font-family:var(--mono);font-weight:700">!</span></div>
+    <div class="sb-item" onclick="gP('veri',this)"><span class="sb-ico">VK</span><span class="sb-lbl">Veri Kontrol</span></div>
+    <div class="sb-item" onclick="gP('bildirim',this)"><span class="sb-ico">BL</span><span class="sb-lbl">Bildirim</span></div>
   </nav>
   <div class="sb-u"><div class="sb-ui"><div class="sb-av">E</div><div style="flex:1;overflow:hidden"><div class="sb-un">Admin</div><div class="sb-ur"> Yönetici</div></div><span class="sb-lo" onclick="logout()">X</span></div></div>
 </div>
@@ -874,11 +876,11 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 </div>
 <div class="bn">
   <div class="bn-i">
-    <div class="bn-btn on" onclick="gP('dashboard',this)"><span class="bn-ic">ER</span><span class="bn-lb">RADAR</span></div>
-    <div class="bn-btn" onclick="gP('satis',this)"><span class="bn-ic">SA</span><span class="bn-lb">SATIS</span></div>
-    <div class="bn-btn" onclick="gP('cariler',this)"><span class="bn-ic">CR</span><span class="bn-lb">CARI</span></div>
-    <div class="bn-btn" onclick="gP('finans',this)"><span class="bn-ic"></span><span class="bn-lb">FİNANS</span></div>
-    <div class="bn-btn" onclick="gP('gorevler',this)"><span class="bn-ic">✅</span><span class="bn-lb">GÖREV</span></div>
+    <div class="bn-btn on" onclick="gP('dashboard',this)"><span class="bn-ic">AS</span><span class="bn-lb">ANA</span></div>
+    <div class="bn-btn" onclick="gP('satis',this)"><span class="bn-ic">ST</span><span class="bn-lb">SATIS</span></div>
+    <div class="bn-btn" onclick="gP('stok',this)"><span class="bn-ic">ÜR</span><span class="bn-lb">URUN</span></div>
+    <div class="bn-btn" onclick="gP('cariler',this)"><span class="bn-ic">MŞ</span><span class="bn-lb">MUSTERI</span></div>
+    <div class="bn-btn" onclick="gP('finans',this)"><span class="bn-ic">FN</span><span class="bn-lb">FINANS</span></div>
     <div class="bn-btn" onclick="gP('veri',this)"><span class="bn-ic"></span><span class="bn-lb">VERİ</span></div>
   </div>
 </div>
@@ -888,8 +890,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='120103-120526';
-const BUILD_STAMP='12.05.2026 12:01:03';
+const BUILD_CODE='121219-120526';
+const BUILD_STAMP='12.05.2026 12:12:19';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -950,8 +952,8 @@ async function selF(id){
 function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';renderReportHub();renderHomeSales();renderKarts();loadLastDataStatus();renderSourceMatrix();renderHomeExpenses();}
 function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(PILOT_FIRMA);document.getElementById('gB')?.remove();}
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
-const PT={dashboard:{t:'ERP Radar',s:'Anlık veri istihbaratı'},satis:{t:'Satış Analizi',s:'Ürün ve kategori'},cariler:{t:'Cariler',s:'Müşteri analizi'},finans:{t:'Finans',s:'Alayli mali özet'},stok:{t:'Stok & Ürün Analizi',s:'Ürün bazlı satış ve trend'},hedef:{t:'Hedef / Bütçe',s:'Gerçekleşen vs hedef karşılaştırması'},gorevler:{t:'Görev Teyidi',s:'Kritik görevlerin gerçekleşme durumu'},veri:{t:'Veri Yükleme',s:'Excel ve bot'},bildirim:{t:'Bildirimler',s:'WhatsApp ayarları'}};
-function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();}
+const PT={dashboard:{t:'Ana Sayfa',s:'Yönetici özeti ve veri güveni'},satis:{t:'Satışlar',s:'Kategori, ürün ve müşteri kırılımı'},cariler:{t:'Müşteriler',s:'Cari performans ve risk'},finans:{t:'Finans Özeti',s:'Gider, banka ve tahsilat kontrolü'},stok:{t:'Ürünler',s:'Ürün bazlı kârlılık ve stok takibi'},hedef:{t:'Hedefler',s:'Gerçekleşen ve bütçe kontrolü'},gorevler:{t:'Görevler',s:'Onay ve takip merkezi'},veri:{t:'Veri Kontrol',s:'Kaynak, çekim ve doğrulama'},bildirim:{t:'Bildirim',s:'Telefon onay ve rapor ayarları'}};
+function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();}
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]).filter(isAlayliRow);}catch(e){return[];}}
 async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
