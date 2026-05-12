@@ -415,11 +415,34 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 @keyframes pageIn{from{opacity:.72;transform:translateY(3px)}to{opacity:1;transform:none}}
 .sb-item,.report-tile,.kpi,.cat-chip,.customer-card,.expense-card,.pt tr,.exec-table tr{transition:background .12s,border-color .12s,box-shadow .12s,transform .12s}
 .report-tile,.kpi.click,.cat-chip,.customer-card,.expense-card,.pt tr.dyn-click{cursor:pointer}
+#pg-satis>.fbar{position:sticky;top:0;z-index:20;margin:-2px 0 12px;padding:8px 10px;display:flex;align-items:center;gap:6px;border-radius:12px;background:rgba(255,255,255,.98);backdrop-filter:blur(10px)}
+#pg-satis .sel{min-width:150px;max-width:230px;height:32px}
+.sales-kpi-grid{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:8px;margin-bottom:10px}
+.sales-shell{padding:12px;border-bottom:1px solid var(--b1)}
+.sales-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 9px}
+.sales-title{font-size:14px;font-weight:950;color:#101828;letter-spacing:-.01em}
+.sales-sub{font-size:10px;color:#667085;font-weight:800;margin-top:3px}
+.sales-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.sales-cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:8px}
+.sales-cat{position:relative;text-align:left;background:#F8FAFC;border:1px solid #E4E7EC;border-radius:10px;padding:10px;cursor:pointer;color:#101828;min-height:78px;overflow:hidden}
+.sales-cat:hover{border-color:#93C5FD;background:#F5F9FF;box-shadow:0 8px 18px rgba(15,23,42,.06)}
+.sales-cat.on{border-color:#1D4ED8;background:#EEF4FF;box-shadow:inset 0 0 0 1px rgba(29,78,216,.18)}
+.sales-cat-n{font-size:11px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sales-cat-v{font-family:var(--mono);font-size:16px;color:#047857;font-weight:950;margin-top:7px}
+.sales-cat-s{font-family:var(--mono);font-size:10px;color:#667085;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sales-table-zone{padding:12px}
+.sales-table-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:8px}
+.sales-table-wrap{overflow:auto;border:1px solid #E4E7EC;border-radius:11px;background:#fff}
+.sales-table-wrap .pt{min-width:1080px;margin:0;border:0}
+.sales-table-wrap .pt th{position:sticky;top:0;z-index:2;background:#F8FAFC}
+.sales-table-wrap .pt tr:hover td{background:#F5F9FF}
 @media(max-width:768px){
   .tb{height:56px;padding:0 14px}
   .content{padding:10px;padding-bottom:calc(var(--bh) + 14px)}
   .report-grid{gap:8px;padding:10px}
   .card{padding:12px;margin-bottom:10px}
+  .sales-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sales-cat-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -865,8 +888,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='114506-120526';
-const BUILD_STAMP='12.05.2026 11:45:06';
+const BUILD_CODE='120103-120526';
+const BUILD_STAMP='12.05.2026 12:01:03';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -1387,6 +1410,12 @@ function srtU(k,btn){
   rU();
 }
 let uCat='';
+function selectSalesCategory(k){
+  uCat=k||'';
+  const s=document.getElementById('uKa');
+  if(s)s.value=uCat;
+  rU();
+}
 const nrmCat=v=>(v||'Kategorisiz').toString().trim()||'Kategorisiz';
 const pRange=()=>{
   const now=new Date(), y=now.getFullYear(), m=now.getMonth();
@@ -1447,8 +1476,8 @@ async function rU(){
   const growth=last.ciro?((top.ciro-last.ciro)/last.ciro*100):0;
   const lm=document.getElementById('lastMonthBtn');if(lm)lm.textContent=pr.prevMonthName;
   w.innerHTML=`
-    <div style="padding:18px;border-bottom:1px solid var(--b1)">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px">
+    <div class="sales-shell">
+      <div class="sales-kpi-grid">
         <div class="kpi g"><div class="kpi-l">Dün</div><div class="kpi-v">TL ${fmt(yday.ciro)}</div><div class="kpi-s">${fmt(yday.adet)} adet</div></div>
         <div class="kpi c"><div class="kpi-l">Bu Hafta</div><div class="kpi-v">TL ${fmt(week.ciro)}</div><div class="kpi-s">${fmt(week.adet)} adet</div></div>
         <div class="kpi c"><div class="kpi-l">${pr.monthName}</div><div class="kpi-v">TL ${fmt(month.ciro)}</div><div class="kpi-s">${fmt(month.adet)} adet</div></div>
@@ -1456,14 +1485,17 @@ async function rU(){
         <div class="kpi o"><div class="kpi-l">${pr.year}</div><div class="kpi-v">TL ${fmt(top.ciro)}</div><div class="kpi-s">${fmt(top.adet)} adet</div></div>
         <div class="kpi r"><div class="kpi-l">${pr.prevYear}</div><div class="kpi-v">TL ${fmt(last.ciro)}</div><div class="kpi-s">${growth>=0?'+':''}${growth.toFixed(1)}%</div></div>
       </div>
-      <div style="font-size:16px;font-weight:900;margin-bottom:10px">Kategori Performansi - ${active.label} ${ck?`/ ${ck}`:''}</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">${catRows.slice(0,12).map(c=>`<button onclick="document.getElementById('uKa').value='${c.k.replace(/'/g,"&#39;")}';uCat='${c.k.replace(/'/g,"\\'")}';rU()" style="text-align:left;background:${ck===c.k?'rgba(99,91,255,.12)':'var(--s2)'};border:1px solid ${ck===c.k?'var(--accent)':'var(--b1)'};border-radius:10px;padding:12px;cursor:pointer;color:var(--text)"><div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.k}</div><div style="font-family:var(--mono);font-size:16px;color:var(--green);font-weight:900;margin-top:6px">TL ${fmt(c.ciro)}</div><div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:4px">${fmt(c.adet)} adet / LY TL ${fmt(c.ly.ciro)}</div></button>`).join('')}</div>
+      <div class="sales-head">
+        <div><div class="sales-title">Kategori Performansi - ${active.label}${ck?` / ${ck}`:''}</div><div class="sales-sub">Kategoriye bas: ürün listesi anında filtrelenir.</div></div>
+        <div class="sales-actions">${ck?`<button class="fb" onclick="selectSalesCategory('')">Tüm Kategoriler</button>`:''}</div>
+      </div>
+      <div class="sales-cat-grid">${catRows.slice(0,12).map(c=>`<button class="sales-cat ${ck===c.k?'on':''}" onclick="selectSalesCategory(${jsArg(c.k)})"><div class="sales-cat-n">${escHtml(c.k)}</div><div class="sales-cat-v">TL ${fmt(c.ciro)}</div><div class="sales-cat-s">${fmt(c.adet)} adet / LY TL ${fmt(c.ly.ciro)}</div></button>`).join('')}</div>
     </div>
-    <div style="padding:18px">
-      <div style="font-size:16px;font-weight:900;margin-bottom:10px">Urun Dinamik Raporu</div>
-      ${reportTable(prods,'urun')}
-      <div style="font-size:16px;font-weight:900;margin:22px 0 10px">Cari Dinamik Raporu</div>
-      ${reportTable(caris,'cari')}
+    <div class="sales-table-zone">
+      <div class="sales-table-head"><div><div class="sales-title">Urun Dinamik Raporu</div><div class="sales-sub">${ck||'Tüm kategoriler'} · ilk 80 ürün</div></div></div>
+      <div class="sales-table-wrap">${reportTable(prods,'urun')}</div>
+      <div class="sales-table-head" style="margin-top:14px"><div><div class="sales-title">Cari Dinamik Raporu</div><div class="sales-sub">${ck||'Tüm kategoriler'} · ilk 40 cari</div></div></div>
+      <div class="sales-table-wrap">${reportTable(caris,'cari')}</div>
     </div>`;
 }
 const dynNum=n=>Number.isFinite(+n)?Math.round(+n).toLocaleString('tr-TR'):'veri yok';
