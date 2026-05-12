@@ -14,6 +14,7 @@ const args = process.argv.slice(2);
 const GECMIS_MOD = args.includes('--gecmis');
 const GECMIS_BASLANGIC = GECMIS_MOD ? args[args.indexOf('--gecmis')+1] : null;
 const GECMIS_BITIS     = GECMIS_MOD ? args[args.indexOf('--gecmis')+2] : null;
+const FIRMA_ARG = args.includes('--firma') ? args[args.indexOf('--firma') + 1] : null;
 
 // ── TARİH HESAPLA ──────────────────────────────────────────────────────────
 function fmtTR(d) { return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`; }
@@ -48,6 +49,9 @@ const FIRMALAR = [
     aktif:   true,
   },
 ];
+const AKTIF_FIRMALAR = FIRMA_ARG
+  ? FIRMALAR.filter(f => f.aktif && f.id === FIRMA_ARG)
+  : FIRMALAR.filter(f => f.aktif);
 
 // ── AYARLAR ────────────────────────────────────────────────────────────────
 const CONFIG = {
@@ -304,7 +308,7 @@ async function main() {
       const gunler = tarihlerArasındakiGunler(GECMIS_BASLANGIC, GECMIS_BITIS);
       log(`Toplam ${gunler.length} gün × ${FIRMALAR.filter(f=>f.aktif).length} firma çekilecek`);
 
-      for (const firma of FIRMALAR.filter(f=>f.aktif)) {
+      for (const firma of AKTIF_FIRMALAR) {
         let firmaTop = 0;
         await firmaSeç(page, firma);
 
@@ -325,7 +329,7 @@ async function main() {
       // Akıllı mod: son 7 günde eksik günleri bul ve çek
       log('  Eksik günler kontrol ediliyor...');
 
-      for (const firma of FIRMALAR.filter(f=>f.aktif)) {
+      for (const firma of AKTIF_FIRMALAR) {
         try {
           const eksikler = await eksikGunleriBul(firma.id);
 
