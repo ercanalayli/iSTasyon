@@ -323,6 +323,9 @@ body::after{background:linear-gradient(180deg,rgba(15,118,110,.045),transparent 
 .report-proof{position:relative;z-index:1;margin-top:10px;border-top:1px solid rgba(15,23,42,.08);padding-top:9px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 9px}
 .report-proof span{font-size:10px;color:#667085;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .report-proof b{color:#344054;font-weight:900}
+.report-tile.unverified{border-style:dashed;background:#fffbeb}
+.report-tile.unverified .report-v{font-size:18px;color:#b45309;letter-spacing:0}
+.report-tile.unverified .report-d{color:#7c2d12}
 .verify-badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:950;border:1px solid #D0D5DD;background:#F8FAFC;color:#475467}
 .verify-badge.ok{background:#ECFDF5;color:#047857;border-color:#A7F3D0}
 .verify-badge.wait{background:#FFFBEB;color:#B45309;border-color:#FDE68A}
@@ -957,8 +960,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='125122-120526';
-const BUILD_STAMP='12.05.2026 12:51:22';
+const BUILD_CODE='150409-120526';
+const BUILD_STAMP='12.05.2026 15:04:09';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -1176,24 +1179,31 @@ function reportProof(rows,source,label){
   const dates=list.map(r=>String(r.tarih||r.date||r.islem_tarihi||'').substring(0,10)).filter(Boolean).sort();
   const todayStr=fD(new Date());
   const keys=new Set();
-  let duplicate=false;
-  const bad=list.some(r=>{
+  const issues={tarih:0,gelecek:0,tutar:0,firma:0,tekrar:0};
+  list.forEach(r=>{
     const dt=String(r.tarih||r.date||r.islem_tarihi||'').substring(0,10);
     const amount=Number(r.ciro??r.tutar??r.amount??0);
     const key=[r.firma_id||'',dt,r.urun||r.aciklama||'',r.unvan||r.cari_unvan||'',amount].join('|');
-    if(keys.has(key))duplicate=true; else keys.add(key);
-    return !dt||dt>todayStr||!Number.isFinite(amount)||amount<0||(r.firma_id&&r.firma_id!==PILOT_FIRMA);
+    if(!dt)issues.tarih++;
+    if(dt&&dt>todayStr)issues.gelecek++;
+    if(!Number.isFinite(amount)||amount<0)issues.tutar++;
+    if(r.firma_id&&r.firma_id!==PILOT_FIRMA)issues.firma++;
+    if(keys.has(key))issues.tekrar++; else keys.add(key);
   });
-  let verified=list.some(r=>String(r.dogrulama_durumu||r.validation_status||'').toLocaleLowerCase('tr-TR').includes('doğrulan')||r.verified_at||r.dogrulandi_at);
-  const status=list.length?((bad||duplicate)?'Uyuşmazlık Var':(verified?'Doğrulandı':'Kontrol Bekliyor')):'Eksik Veri';
+  const issueTotal=Object.values(issues).reduce((s,v)=>s+v,0);
+  const rowVerified=list.some(r=>String(r.dogrulama_durumu||r.validation_status||'').toLocaleLowerCase('tr-TR').includes('doğrulan')||r.verified_at||r.dogrulandi_at);
   const rec=source==='sales_raw'?salesReconStatus(list):null;
-  if(rec?.ok){verified=true;}
-  const finalStatus=rec?.ok?'Doğrulandı':status;
-  const cls=finalStatus==='Doğrulandı'?'ok':finalStatus==='Kontrol Bekliyor'?'wait':finalStatus==='Uyuşmazlık Var'?'bad':'miss';
-  return {source,label,status:finalStatus,cls,count:list.length,dataDate:dates.at(-1)||'veri yok',updated:BUILD_STAMP,verified:verified?BUILD_STAMP:'bekliyor'};
+  let status='Eksik Veri';
+  if(list.length){
+    status=(issueTotal||rec?.status==='Uyuşmazlık Var')?'Uyuşmazlık Var':(rec?.ok||rowVerified?'Doğrulandı':'Kontrol Bekliyor');
+  }
+  const cls=status==='Doğrulandı'?'ok':status==='Kontrol Bekliyor'?'wait':status==='Uyuşmazlık Var'?'bad':'miss';
+  const verified=status==='Doğrulandı'?(rec?.rec?.savedAt||BUILD_STAMP):'bekliyor';
+  const issueNote=issueTotal?`${fmt(issueTotal)} bulgu`:(list.length?'kontrol temiz':'kayıt yok');
+  return {source,label,status,cls,count:list.length,dataDate:dates.at(-1)||'veri yok',firstDate:dates[0]||'veri yok',updated:BUILD_STAMP,verified,issueTotal,issueNote};
 }
 function proofHtml(p){
-  return `<div class="report-proof"><span>Kaynak: <b>${escHtml(p.source)}</b></span><span>Veri tarihi: <b>${escHtml(p.dataDate)}</b></span><span>Güncelleme: <b>${BUILD_CODE}</b></span><span>Doğrulama: <b>${escHtml(p.verified)}</b></span><span>Kayıt: <b>${fmt(p.count)}</b></span><span><i class="verify-badge ${p.cls}">${p.status}</i></span></div>`;
+  return `<div class="report-proof"><span>Kaynak: <b>${escHtml(p.source)}</b></span><span>Veri tarihi: <b>${escHtml(p.dataDate)}</b></span><span>Son güncelleme: <b>${BUILD_STAMP}</b></span><span>Son doğrulama: <b>${escHtml(p.verified)}</b></span><span>Kayıt / kontrol: <b>${fmt(p.count)} / ${escHtml(p.issueNote||'')}</b></span><span><i class="verify-badge ${p.cls}">${p.status}</i></span></div>`;
 }
 function guardedValue(p,value){return p.status==='Doğrulandı'?value:p.status;}
 function guardedDesc(p,value,note){return `${note||''}${p.status!=='Doğrulandı'?`<div class="report-unverified">Ön hesap: ${value}. Kesin rapora alınmadı.</div>`:''}`;}
@@ -1257,7 +1267,11 @@ async function renderReportHub(){
   const d=fil(), yil=new Date().getFullYear(), cf=cF==='all'?'':cF;
   let expenseProof=null, financeProof=null;
   const pill=t=>`<span class="report-pill">${t}</span>`;
-  const mk=(k,v,dsc,cls,size,go,pills='',proof=null)=>{const p=proof||(k.includes('Gider')?expenseProof:(k.includes('Net')||k.includes('Mali')?financeProof:k.includes('Tahsilat')?reportProof([],'customers / tahsilat','Cari'):k.includes('Banka')?reportProof([],'banka_raw','Banka'):null))||reportProof(d,'sales_raw','Satis');return `<div class="report-tile ${cls} ${size||''}" onclick="${go||''}"><div class="report-k">${k}</div><div class="report-v">${p.status==='Doğrulandı'?v:p.status}</div><div class="report-d">${dsc}${p.status==='Doğrulandı'?'':`<div class="report-unverified">Ön hesap: ${v}. Kesin rapora alınmadı.</div>`}</div>${pills?`<div class="report-mini">${pills}</div>`:''}${proofHtml(p)}</div>`};
+  const mk=(k,v,dsc,cls,size,go,pills='',proof=null)=>{
+    const p=proof||(k.includes('Gider')?expenseProof:(k.includes('Net')||k.includes('Mali')?financeProof:(k.includes('Tahsilat')||k.includes('Cari')||k.includes('Müşteri'))?reportProof([],'customers / tahsilat','Cari'):k.includes('Banka')?reportProof([],'banka_raw','Banka'):null))||reportProof(d,'sales_raw','Satis');
+    const locked=p.status!=='Doğrulandı';
+    return `<div class="report-tile ${cls} ${size||''} ${locked?'unverified':''}" onclick="${go||''}"><div class="report-k">${k}</div><div class="report-v">${guardedValue(p,v)}</div><div class="report-d">${guardedDesc(p,v,dsc)}</div>${pills?`<div class="report-mini">${pills}</div>`:''}${proofHtml(p)}</div>`;
+  };
   if(cF==='all'){
     const ids=SHOW_OTHER_FIRMS?Object.keys(F).filter(id=>id!=='all'):[PILOT_FIRMA];
     const cards=await Promise.all(ids.map(async id=>{
@@ -1295,7 +1309,7 @@ async function renderReportHub(){
     mk('Giderler',rows.length?dynMoney(gider):'veri yok',giderPay===null?'ciro yok':`ciroya oran ${dynPct(giderPay)}`,'report-hot','big',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=masraf]')?.click(),60)",pill(`${fmt(rows.length)} gider`)+pill(`bu ay ${dynMoney(ayGider)}`)),
     mk('Net Durum',rows.length?dynMoney(net):'gider yok',rows.length?(net>=0?'ciro giderin üstünde':'gider ciroyu aşıyor'):'masraf verisi bekleniyor',net>=0?'report-good':'report-hot','big',"gP('finans',null)",pill(`gider ${giderPay===null?'ciro yok':dynPct(giderPay)}`)),
     mk('En Büyük Gider',topGider?dynMoney(topGider[1]):'veri yok',topGider?topGider[0]:'kategori yok','report-warm','',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=masraf]')?.click(),60)",topGider?pill(dynPct(gider?topGider[1]/gider*100:0)):''),
-    mk('Müşteriler','Kontrol','cari bakiye ve tahsilat merkezi','report-cool','',"gP('cariler',null)",pill('cari')+pill('risk')),
+    mk('Müşteri Satışları',`${fmt(musteri)} müşteri`,'sales_raw müşteri kırılımı; bakiye/tahsilat ayrı doğrulama ister','report-cool','',"gP('cariler',null)",pill('sales_raw')+pill('cari hazırlığı'),reportProof(d,'sales_raw','Müşteri satışları')),
     mk('Banka Onay','Onay','ekstre ve BizimHesap işleme hazırlığı','report-sky','',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)",pill('onay merkezi')),
     mk('Bugün Satış',bugun.length?dynMoney(bugun.reduce((s,r)=>s+(+r.ciro||0),0)):'veri yok',`${fmt(bugun.length)} işlem`,'report-warm','',"gP('dashboard',null)"),
     mk('Dün Satış',dun.length?dynMoney(dun.reduce((s,r)=>s+(+r.ciro||0),0)):'veri yok',`${fmt(dun.length)} işlem`,'report-royal','',"gP('dashboard',null)"),
