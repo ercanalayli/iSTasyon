@@ -436,6 +436,26 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .sales-table-wrap .pt{min-width:1080px;margin:0;border:0}
 .sales-table-wrap .pt th{position:sticky;top:0;z-index:2;background:#F8FAFC}
 .sales-table-wrap .pt tr:hover td{background:#F5F9FF}
+.home-main-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.55fr);gap:12px;align-items:start}
+.home-stack{display:grid;gap:12px}
+.home-card{margin-bottom:0}
+.home-card .card-hd{margin-bottom:8px}
+.home-card .card-l{font-size:11px;letter-spacing:1.1px}
+.home-side .card{padding:12px}
+.home-side .audit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.home-side .audit-box{padding:9px}
+.home-side .audit-v{font-size:16px}
+.home-side #lastDataGrid{grid-template-columns:1fr !important}
+#kartsDiv{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.55fr);gap:12px;align-items:start}
+#kartsDiv>.card{margin-bottom:0 !important}
+#kartsDiv>.report-hub{grid-column:1/-1;order:1}
+#kartsDiv>.card:nth-of-type(4){grid-column:1;order:2}
+#kartsDiv>.card:nth-of-type(7){grid-column:1;order:3}
+#kartsDiv>.card:nth-of-type(2){grid-column:2;order:2}
+#kartsDiv>.card:nth-of-type(3){grid-column:2;order:3}
+#kartsDiv>.card:nth-of-type(5){grid-column:2;order:4}
+#kartsDiv>.card:nth-of-type(6){grid-column:2;order:5}
+#kartsDiv>#fGrid{grid-column:1/-1;order:6}
 @media(max-width:768px){
   .tb{height:56px;padding:0 14px}
   .content{padding:10px;padding-bottom:calc(var(--bh) + 14px)}
@@ -443,6 +463,8 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   .card{padding:12px;margin-bottom:10px}
   .sales-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .sales-cat-grid{grid-template-columns:1fr}
+  .home-main-grid{grid-template-columns:1fr}
+  #kartsDiv{display:block}
 }
 </style>
 </head>
@@ -512,8 +534,8 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
         <div class="card report-hub">
           <div class="report-head">
             <div>
-              <div class="report-title">Yonetici Rapor Merkezi</div>
-              <div class="report-sub">Kompakt mali tablo, cari, banka, gider ve tahsilat ozeti</div>
+              <div class="report-title">Ana Sayfa Kontrol Paneli</div>
+              <div class="report-sub">Satış, ürün, müşteri, gider, banka ve veri güveni</div>
             </div>
             <div class="report-stamp" id="reportHubStamp">Hazirlaniyor</div>
           </div>
@@ -890,8 +912,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='121219-120526';
-const BUILD_STAMP='12.05.2026 12:12:19';
+const BUILD_CODE='122534-120526';
+const BUILD_STAMP='12.05.2026 12:25:34';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -1224,16 +1246,16 @@ async function renderReportHub(){
   rows.forEach(r=>{const k=r.kategori||'Diğer';giderCats[k]=(giderCats[k]||0)+r.tutar;});
   const topGider=Object.entries(giderCats).sort((a,b)=>b[1]-a[1])[0];
   grid.innerHTML=[
-    mk('Satis / Ciro',dynMoney(ciro),`${fmt(adet)} adet · ${fmt(d.length)} islem`,'report-good','big',"gP('satis',null)",pill(`${musteri} musteri`)+pill(F[cF]?.n||'Tum')),
-    mk('Gider Isisi',rows.length?dynMoney(gider):'veri yok',giderPay===null?'ciro yok':`ciroya oran ${dynPct(giderPay)}`,'report-hot','big',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=masraf]')?.click(),60)",pill(`${fmt(rows.length)} gider`)+pill(`bu ay ${dynMoney(ayGider)}`)),
-    mk('Net Sonuc',rows.length?dynMoney(net):'gider yok',rows.length?(net>=0?'ciro giderin ustunde':'gider ciroyu asiyor'):'masraf verisi bekleniyor',net>=0?'report-good':'report-hot','big',"gP('finans',null)",pill(`gider ${giderPay===null?'ciro yok':dynPct(giderPay)}`)),
-    mk('En Buyuk Gider',topGider?dynMoney(topGider[1]):'veri yok',topGider?topGider[0]:'kategori yok','report-warm','',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=masraf]')?.click(),60)",topGider?pill(dynPct(gider?topGider[1]/gider*100:0)):''),
-    mk('Tahsilat / Cari','Hazirlik','musteri bakiye ve tahsilat merkezi','report-cool','',"gP('cariler',null)",pill('cari')+pill('risk')),
-    mk('Banka / Kasa','Onay','ekstre, onay ve BizimHesap hazirligi','report-sky','',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)",pill('onay merkezi')),
-    mk('Bugun',bugun.length?dynMoney(bugun.reduce((s,r)=>s+(+r.ciro||0),0)):'veri yok',`${fmt(bugun.length)} islem`,'report-warm','',"gP('dashboard',null)"),
-    mk('Dun',dun.length?dynMoney(dun.reduce((s,r)=>s+(+r.ciro||0),0)):'veri yok',`${fmt(dun.length)} islem`,'report-royal','',"gP('dashboard',null)"),
-    mk('En Buyuk Hareket',top?dynMoney(+top.ciro||0):'veri yok',top?`${(top.urun||'-').substring(0,54)}`:'kayit yok','report-warm','wide',"oMo('max')"),
-    mk('Mali Tablo',rows.length?dynMoney(net):'Yakinda','gelir - gider ana kontrol','report-cool','wide',"gP('finans',null)",pill('rapor')+pill('yonetim'))
+    mk('Satışlar',dynMoney(ciro),`${fmt(adet)} adet · ${fmt(d.length)} işlem`,'report-good','big',"gP('satis',null)",pill(`${musteri} müşteri`)+pill(F[cF]?.n||'Tüm')),
+    mk('Giderler',rows.length?dynMoney(gider):'veri yok',giderPay===null?'ciro yok':`ciroya oran ${dynPct(giderPay)}`,'report-hot','big',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=masraf]')?.click(),60)",pill(`${fmt(rows.length)} gider`)+pill(`bu ay ${dynMoney(ayGider)}`)),
+    mk('Net Durum',rows.length?dynMoney(net):'gider yok',rows.length?(net>=0?'ciro giderin üstünde':'gider ciroyu aşıyor'):'masraf verisi bekleniyor',net>=0?'report-good':'report-hot','big',"gP('finans',null)",pill(`gider ${giderPay===null?'ciro yok':dynPct(giderPay)}`)),
+    mk('En Büyük Gider',topGider?dynMoney(topGider[1]):'veri yok',topGider?topGider[0]:'kategori yok','report-warm','',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=masraf]')?.click(),60)",topGider?pill(dynPct(gider?topGider[1]/gider*100:0)):''),
+    mk('Müşteriler','Kontrol','cari bakiye ve tahsilat merkezi','report-cool','',"gP('cariler',null)",pill('cari')+pill('risk')),
+    mk('Banka Onay','Onay','ekstre ve BizimHesap işleme hazırlığı','report-sky','',"gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)",pill('onay merkezi')),
+    mk('Bugün Satış',bugun.length?dynMoney(bugun.reduce((s,r)=>s+(+r.ciro||0),0)):'veri yok',`${fmt(bugun.length)} işlem`,'report-warm','',"gP('dashboard',null)"),
+    mk('Dün Satış',dun.length?dynMoney(dun.reduce((s,r)=>s+(+r.ciro||0),0)):'veri yok',`${fmt(dun.length)} işlem`,'report-royal','',"gP('dashboard',null)"),
+    mk('En Büyük Satış',top?dynMoney(+top.ciro||0):'veri yok',top?`${(top.urun||'-').substring(0,54)}`:'kayıt yok','report-warm','wide',"oMo('max')"),
+    mk('Finans Özeti',rows.length?dynMoney(net):'Yakında','gelir - gider ana kontrol','report-cool','wide',"gP('finans',null)",pill('rapor')+pill('yönetim'))
   ].join('');
   if(stamp)stamp.textContent=buildLabel();
 }
