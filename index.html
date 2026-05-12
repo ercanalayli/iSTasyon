@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#08090f">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>AperiON — ErpaltH</title>
+<title>AperiON - ErpaltH</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -268,6 +268,77 @@ select.sel{padding:6px 10px;border-radius:6px;border:1px solid var(--b2);backgro
   .report-v,.report-tile.big .report-v{font-size:22px}
 }
 @media(min-width:769px){.bn{display:none}}
+
+/* Professional ERP shell refresh - UI only */
+:root{--bg:#F3F6FA;--s1:#FFFFFF;--s2:#F6F8FB;--accent:#1D4ED8;--a2:#0F766E;--text:#101828;--t2:#475467;--t3:#98A2B3;--r:14px;--rs:10px}
+body{background:var(--bg);color:var(--text)}
+body::after{background:linear-gradient(180deg,rgba(15,118,110,.045),transparent 260px)}
+.sb{background:#0F172A;border-right:1px solid rgba(148,163,184,.18);box-shadow:12px 0 30px rgba(15,23,42,.08)}
+.sb-logo{height:64px;padding:16px 18px;background:#0B1220;border-bottom:1px solid rgba(148,163,184,.16)}
+.sb-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#0F766E,#1D4ED8);box-shadow:0 10px 22px rgba(37,99,235,.22)}
+.sb-lm{color:#F8FAFC;font-size:14px;letter-spacing:1.2px}
+.sb-ls{color:#94A3B8;letter-spacing:1.4px}
+.sb-fs{padding:14px;border-bottom:1px solid rgba(148,163,184,.14)}
+.sb-fb{padding:10px 12px;border-radius:10px;background:#111F33;border-color:rgba(148,163,184,.22)}
+.sb-fb:hover{background:#172A44;border-color:rgba(148,163,184,.38)}
+.sb-fn{color:#E2E8F0;font-weight:800}
+.sb-sec{padding:18px 18px 7px;color:#64748B;letter-spacing:1.8px}
+.sb-item{margin:2px 10px;padding:10px 12px;border-left:0;border-radius:10px;gap:11px;color:#CBD5E1;font-size:13px;font-weight:750}
+.sb-item:hover{background:#16243A;color:#F8FAFC}
+.sb-item.on{background:#EAF2FF;color:#0F172A;box-shadow:inset 3px 0 0 var(--fc);border-left:0}
+.sb-ico{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(148,163,184,.13);color:#C7D2FE;font-size:11px;font-weight:900}
+.sb-item.on .sb-ico{background:var(--fc);color:#FFFFFF}
+.sb-lbl{font-size:13px;font-weight:800}
+.sb-u{border-top:1px solid rgba(148,163,184,.16);padding:12px}
+.sb-ui{background:#111F33;border:1px solid rgba(148,163,184,.16);border-radius:12px}
+.sb-un{color:#F8FAFC;font-weight:850}
+.sb-ur{color:#94A3B8}
+.sb-tog{background:#FFFFFF;border-color:#D0D5DD;color:#475467;box-shadow:0 8px 20px rgba(15,23,42,.16)}
+.tb{height:64px;padding:0 28px;background:#FFFFFF;border-top:3px solid var(--fc);border-bottom:1px solid #E4E7EC;box-shadow:0 8px 24px rgba(15,23,42,.055)}
+.tb-l{gap:14px}
+.tb-badge{padding:7px 14px;border-radius:999px;background:#ECFDF5;border-color:#A7F3D0}
+.tb-bn{font-size:11px;color:#047857}
+.tb-t{font-size:18px;font-weight:950;color:#101828}
+.tb-s{font-size:12px;color:#667085;font-weight:700}
+.tb-r{gap:9px}
+.tb-live{padding:6px 11px;background:#ECFDF5;border-color:#A7F3D0}
+.tb-lt{color:#047857;font-weight:900}
+.tb-ver{padding:7px 12px;background:#EFF8FF;border-color:#B2DDFF;color:#175CD3;border-radius:999px}
+.tb-clk{font-size:11px;color:#667085}
+.tb-btn{padding:8px 14px;background:#EEF4FF;border-color:#B2CCFF;color:#1D4ED8;border-radius:10px;font-weight:850}
+.tb-btn:hover{background:#DCEAFE}
+.content{padding:26px;background:#F3F6FA}
+.card{border-radius:16px;border-color:#E4E7EC;box-shadow:0 12px 32px rgba(15,23,42,.055)}
+.report-hub{border-radius:18px;border-color:#E4E7EC;box-shadow:0 18px 42px rgba(15,23,42,.07)}
+.report-head{padding:20px 22px;background:#FFFFFF}
+.report-title{font-size:17px;font-weight:950;color:#101828}
+.report-sub{font-size:12px;color:#667085}
+.report-stamp{background:#F8FAFC;border-color:#D0D5DD;color:#475467}
+.report-grid{gap:12px;padding:16px;background:#F8FAFC}
+.report-tile{border-radius:14px;border-color:#E4E7EC;box-shadow:0 8px 18px rgba(15,23,42,.045)}
+.report-tile:hover{box-shadow:0 16px 34px rgba(15,23,42,.09)}
+.report-k{color:#667085;letter-spacing:1.1px}
+.report-v{font-weight:950;letter-spacing:-.02em}
+.report-d{color:#475467}
+.kpi{border-radius:16px;border-color:#E4E7EC;background:#FFFFFF;box-shadow:0 12px 30px rgba(15,23,42,.055)}
+.kpi-l{font-size:12px;color:#475467}
+.kpi-v{font-size:31px;letter-spacing:-.02em}
+.kpi-s{color:#667085}
+.fbar{border-radius:14px;border-color:#E4E7EC;box-shadow:0 10px 26px rgba(15,23,42,.05)}
+.fb{border-radius:10px;border-color:#D0D5DD;color:#344054}
+.fb.on{background:#1D4ED8;border-color:#1D4ED8;color:#FFFFFF}
+select.sel{border-radius:10px;border-color:#D0D5DD;background:#F8FAFC;color:#344054}
+.pt th{background:#F8FAFC;color:#667085;font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.45px}
+.pt td{font-size:13px;color:#1D2939;border-bottom-color:#EAECF0}
+.pt tr:hover td{background:#F9FAFB}
+.erp-row,.alarm-item{background:#FFFFFF;border-color:#E4E7EC;border-radius:12px}
+.exec-panel{border-radius:16px;box-shadow:0 16px 38px rgba(15,23,42,.065)}
+.exec-kpi,.customer-card,.expense-card{border-radius:14px}
+@media(max-width:768px){
+  .tb{height:56px;padding:0 14px}
+  .content{padding:14px;padding-bottom:calc(var(--bh) + 20px)}
+  .report-grid{gap:10px;padding:12px}
+}
 </style>
 </head>
 <body>
@@ -704,8 +775,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='095417-070526';
-const BUILD_STAMP='07.05.2026 09:54:17';
+const BUILD_CODE='094300-120526';
+const BUILD_STAMP='12.05.2026 09:43:00';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
