@@ -784,8 +784,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='101219-120526';
-const BUILD_STAMP='12.05.2026 10:12:19';
+const BUILD_CODE='105756-120526';
+const BUILD_STAMP='12.05.2026 10:57:56';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -970,7 +970,7 @@ async function renderSourceMatrix(){
   }));
   el.innerHTML=blocks.join('')||'<div class="empty"><div class="empty-t">Veri kaynagi tanimli degil</div></div>';
 }
-function rKPI(){const d=fil();if(!d.length){['kC','kM','kF'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='-';});return;}const tc=d.reduce((s,r)=>s+(+r.ciro||0),0);const mx=d.reduce((m,r)=>(+r.ciro||0)>m.v?{v:+r.ciro,n:r.urun||''}:m,{v:0,n:''});const af=new Set(d.map(r=>r.firma_id).filter(Boolean));const fn=F[PILOT_FIRMA]?.n||'Alayli Medikal';document.getElementById('kC').textContent='₺'+fmt(tc);document.getElementById('kCS').textContent=fn+' · '+d.length+' işlem';document.getElementById('kM').textContent='₺'+fmt(mx.v);document.getElementById('kMS').textContent=(mx.n||'').substring(0,28)||'-';document.getElementById('kF').textContent=af.size;}
+function rKPI(){const d=fil();const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};if(!d.length){set('kC','Eksik Veri');set('kCS','sales_raw kaydi yok');set('kM','Eksik Veri');set('kMS','kayit yok');set('kF','0');return;}const proof=reportProof(d,'sales_raw','KPI');const tc=d.reduce((s,r)=>s+(+r.ciro||0),0);const mx=d.reduce((m,r)=>(+r.ciro||0)>m.v?{v:+r.ciro,n:r.urun||''}:m,{v:0,n:''});const af=new Set(d.map(r=>r.firma_id).filter(Boolean));const fn=F[PILOT_FIRMA]?.n||'Alayli Medikal';set('kC',proof.status==='Doğrulandı'?'₺'+fmt(tc):proof.status);set('kCS',proof.status==='Doğrulandı'?fn+' · '+d.length+' işlem':'Ön hesap ₺'+fmt(tc)+' · '+d.length+' işlem');set('kM',proof.status==='Doğrulandı'?'₺'+fmt(mx.v):proof.status);set('kMS',proof.status==='Doğrulandı'?((mx.n||'').substring(0,28)||'-'):'Ön yüksek ₺'+fmt(mx.v));set('kF',af.size);}
 function oMo(tip){const d=fil();const m=document.getElementById('modal');const b=document.getElementById('mo-b');const t=document.getElementById('mo-t');if(tip==='ciro'){t.textContent='CİRO DAĞILIMI';const bF={};d.forEach(r=>{const id=r.firma_id||'?';bF[id]=(bF[id]||0)+(+r.ciro||0);});const rows=Object.entries(bF).sort((a,b)=>b[1]-a[1]);const tot=rows.reduce((s,[,v])=>s+v,0);b.innerHTML=rows.map(([id,v])=>{const f=F[id]||{n:id,c:'#888',i:''};const p=(v/tot*100).toFixed(1);return`<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--b1)"><span style="font-size:18px">${f.i}</span><div style="flex:1"><div style="font-size:13px;font-weight:700">${f.n}</div><div style="height:3px;background:var(--b1);border-radius:2px;margin-top:6px;overflow:hidden"><div style="height:100%;width:${p}%;background:${f.c};border-radius:2px"></div></div></div><div style="text-align:right;flex-shrink:0"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${f.c}">₺${fmt(v)}</div><div style="font-family:var(--mono);font-size:10px;color:var(--t3)">${p}%</div></div></div>`;}).join('')+`<div style="display:flex;justify-content:space-between;padding:12px 0;font-weight:800;border-top:1px solid var(--b2)"><span>TOPLAM</span><span style="font-family:var(--mono);color:var(--accent)">₺${fmt(tot)}</span></div>`;}else{t.textContent='EN YÜKSEK 20 İŞLEM';const top=[...d].sort((a,b)=>(+b.ciro||0)-(+a.ciro||0)).slice(0,20);b.innerHTML=`<table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:1px solid var(--b2)">${['#','ÜRÜN','MÜŞTERİ','CİRO','TARİH'].map(h=>`<th style="font-family:var(--mono);font-size:9px;color:var(--t3);padding:8px;text-align:left;letter-spacing:1px">${h}</th>`).join('')}</tr></thead><tbody>${top.map((r,i)=>`<tr style="border-bottom:1px solid rgba(255,255,255,.03)"><td style="padding:9px 8px;font-family:var(--mono);font-size:10px;color:var(--t3)">${i+1}</td><td style="padding:9px 8px;font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(r.urun||'-').substring(0,40)}</td><td style="padding:9px 8px;font-size:11px;color:var(--t2)">${(r.unvan||'-').substring(0,25)}</td><td style="padding:9px 8px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--red);text-align:right">₺${fmt(+r.ciro||0)}</td><td style="padding:9px 8px;font-family:var(--mono);font-size:10px;color:var(--t3)">${r.tarih?.substring(0,10)||'-'}</td></tr>`).join('')}</tbody></table>`;}m.classList.add('open');}
 function rTr(){
   const d=fil(), el=document.getElementById('erpRadarTable');
@@ -1001,9 +1001,18 @@ function rAct(){const d=fil();const el=document.getElementById('actB');if(!el)re
 function reportProof(rows,source,label){
   const list=Array.isArray(rows)?rows:[];
   const dates=list.map(r=>String(r.tarih||r.date||r.islem_tarihi||'').substring(0,10)).filter(Boolean).sort();
-  const bad=list.some(r=>!String(r.tarih||r.date||r.islem_tarihi||'').substring(0,10)||!Number.isFinite(Number(r.ciro??r.tutar??r.amount??0)));
+  const todayStr=fD(new Date());
+  const keys=new Set();
+  let duplicate=false;
+  const bad=list.some(r=>{
+    const dt=String(r.tarih||r.date||r.islem_tarihi||'').substring(0,10);
+    const amount=Number(r.ciro??r.tutar??r.amount??0);
+    const key=[r.firma_id||'',dt,r.urun||r.aciklama||'',r.unvan||r.cari_unvan||'',amount].join('|');
+    if(keys.has(key))duplicate=true; else keys.add(key);
+    return !dt||dt>todayStr||!Number.isFinite(amount)||amount<0||(r.firma_id&&r.firma_id!==PILOT_FIRMA);
+  });
   const verified=list.some(r=>String(r.dogrulama_durumu||r.validation_status||'').toLocaleLowerCase('tr-TR').includes('doğrulan')||r.verified_at||r.dogrulandi_at);
-  const status=list.length?(bad?'Uyuşmazlık Var':(verified?'Doğrulandı':'Kontrol Bekliyor')):'Eksik Veri';
+  const status=list.length?((bad||duplicate)?'Uyuşmazlık Var':(verified?'Doğrulandı':'Kontrol Bekliyor')):'Eksik Veri';
   const cls=status==='Doğrulandı'?'ok':status==='Kontrol Bekliyor'?'wait':status==='Uyuşmazlık Var'?'bad':'miss';
   return {source,label,status,cls,count:list.length,dataDate:dates.at(-1)||'veri yok',updated:BUILD_STAMP,verified:verified?BUILD_STAMP:'bekliyor'};
 }
