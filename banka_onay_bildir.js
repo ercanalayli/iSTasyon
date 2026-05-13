@@ -5,11 +5,13 @@ const LIMIT = Number(args[args.indexOf('--limit') + 1] || process.env.BANK_NOTIF
 const ONLY_ID = args.includes('--id') ? Number(args[args.indexOf('--id') + 1]) : null;
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://iilfwosoroflzubkaryj.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
+const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
 const TABLE = process.env.BANK_TABLE || 'bank_transactions';
 const APPROVAL_BASE = process.env.APERION_APPROVAL_BASE || 'https://ercanalayli.github.io/iSTasyon/banka_onay.html';
 const PHONE = process.env.APERION_WP_PHONE || process.env.CALLMEBOT_PHONE || '';
 const APIKEY = process.env.APERION_WP_KEY || process.env.CALLMEBOT_APIKEY || '';
+const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+const TELEGRAM_CHAT_IDS = (process.env.TELEGRAM_CHAT_IDS || '').split(',').map(x => x.trim()).filter(Boolean);
 
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -22,6 +24,10 @@ function linkFor(row) {
   u.searchParams.set('id', row.id);
   u.searchParams.set('token', row.onay_token || '');
   return u.toString();
+}
+
+function makeToken() {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 }
 
 function mesaj(row) {
@@ -48,26 +54,65 @@ async function wpGonder(text) {
   if (!res.ok) throw new Error(`CallMeBot HTTP ${res.status}`);
 }
 
+async function telegramGonder(text) {
+  if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_IDS.length) throw new Error('Telegram token/chat yok. TELEGRAM_BOT_TOKEN ve TELEGRAM_CHAT_IDS gerekli.');
+  for (const chatId of TELEGRAM_CHAT_IDS) {
+    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        disable_web_page_preview: true,
+      }),
+    });
+    if (!res.ok) throw new Error(`Telegram HTTP ${res.status}`);
+  }
+}
+
+async function bildirimGonder(text) {
+  if (TELEGRAM_TOKEN && TELEGRAM_CHAT_IDS.length) return telegramGonder(text);
+  return wpGonder(text);
+}
+
 async function bildirimleriAl() {
-  let q = db.from(TABLE)
-    .select('*')
-    .eq('onay_durumu', 'bekliyor')
-    .or('bildirim_durumu.is.null,bildirim_durumu.neq.gonderildi')
-    .order('tarih', { ascending: true })
-    .limit(LIMIT);
-  if (ONLY_ID) q = q.eq('id', ONLY_ID);
-  const { data, error } = await q;
+  const build = includeStatus => {
+    let q = db.from(TABLE)
+      .select('*')
+      .eq('onay_durumu', 'bekliyor')
+      .order('tarih', { ascending: true })
+      .limit(LIMIT);
+    if (includeStatus) q = q.or('bildirim_durumu.is.null,bildirim_durumu.neq.gonderildi');
+    if (ONLY_ID) q = q.eq('id', ONLY_ID);
+    return q;
+  };
+  let { data, error } = await build(true);
+  if (error && (error.message || '').includes('bildirim_durumu')) {
+    ({ data, error } = await build(false));
+  }
   if (error) throw new Error(error.message);
-  return data || [];
+  const rows = data || [];
+  for (const row of rows) {
+    if (row.onay_token) continue;
+    const token = makeToken();
+    const upd = await db.from(TABLE).update({ onay_token: token, updated_at: new Date().toISOString() }).eq('id', row.id).select('*').single();
+    if (!upd.error && upd.data) Object.assign(row, upd.data);
+  }
+  return rows;
 }
 
 async function isaretle(row, durum, text) {
-  const { error } = await db.from(TABLE).update({
+  let { error } = await db.from(TABLE).update({
     bildirim_durumu: durum,
     bildirim_mesaj: text.slice(0, 1000),
     bildirim_tarihi: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }).eq('id', row.id);
+  if (error && (error.message || '').includes('bildirim_durumu')) {
+    ({ error } = await db.from(TABLE).update({
+      updated_at: new Date().toISOString(),
+    }).eq('id', row.id));
+  }
   if (error) console.log(`Isaretleme hatasi ${row.id}: ${error.message}`);
 }
 
@@ -80,7 +125,7 @@ async function main() {
   for (const row of rows) {
     const text = mesaj(row);
     try {
-      await wpGonder(text);
+      await bildirimGonder(text);
       await isaretle(row, 'gonderildi', text);
       console.log(`Gonderildi: ${row.id}`);
     } catch (e) {
