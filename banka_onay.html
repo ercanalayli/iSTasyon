@@ -107,9 +107,15 @@
           app.innerHTML += '<div class="muted err">Once islem tipini sec.</div>';
           return;
         }
+        if (learnTur.value === 'transfer' && !String(learnCari.value || '').trim()) {
+          app.querySelectorAll('button').forEach(b => b.disabled = false);
+          app.innerHTML += '<div class="muted err">Transfer icin karsi hesabi yaz.</div>';
+          return;
+        }
         patch.tur = learnTur.value;
         patch.hesap = learnHesap.value || row.hesap || null;
         patch.cari_unvan = learnCari.value || row.cari_unvan || null;
+        if (learnTur.value === 'transfer') patch.karsi_taraf = learnCari.value || row.karsi_taraf || null;
         patch.sinif_guven = 100;
         patch.sinif_kaynak = 'manuel_ogrenme';
         patch.ogrenme_durumu = 'ogrenildi';

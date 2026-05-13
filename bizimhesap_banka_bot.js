@@ -25,7 +25,7 @@ const CONFIG = {
 
 const SUPABASE = {
   url: process.env.SUPABASE_URL || 'https://iilfwosoroflzubkaryj.supabase.co',
-  key: process.env.SUPABASE_KEY || 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
+  key: process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
   table: process.env.BANK_TABLE || 'banka_raw',
 };
 
@@ -221,6 +221,7 @@ function hareketTipi(h) {
 function dryRunStep(h) {
   const tip = hareketTipi(h);
   const amount = Math.abs(Number(h.tutar || h.amount || 0));
+  const hedefHesap = h.hedef_hesap || h.karsi_hesap || h.raw?.hedef_hesap || h.raw?.karsi_hesap || h.cari_unvan || h.karsi_taraf || '';
   const common = {
     id: h.id || null,
     hash: h.hash || null,
@@ -264,10 +265,35 @@ function dryRunStep(h) {
       ],
     };
   }
+  if (tip === 'transfer') {
+    return {
+      ...common,
+      hedef_hesap: hedefHesap || null,
+      hazir: Boolean(hedefHesap),
+      akis: [
+        'BizimHesap login',
+        'Alayli Medikal firma sec',
+        `Nakit Yonetimi > Hesaplar > ${common.hesap}`,
+        'Hesaplar arasi transfer formunu ac',
+        hedefHesap ? `Karsi hesap sec: ${hedefHesap}` : 'DUR: karsi hesap eksik, canli kayit yapilmaz',
+        `Tarih gir: ${h.tarih || '-'}`,
+        `Tutar gir: ${para(amount)} TL`,
+        'Kaydetme yok: dry-run',
+      ],
+    };
+  }
   return {
     ...common,
     akis: ['Islem tipi desteklenmiyor; kayit yok'],
   };
+}
+
+function bankaCanliKilit(h) {
+  const tip = hareketTipi(h);
+  if (tip === 'transfer') {
+    const hedef = h.hedef_hesap || h.karsi_hesap || h.raw?.hedef_hesap || h.raw?.karsi_hesap || h.cari_unvan || h.karsi_taraf || '';
+    if (!hedef) throw new Error('Transfer icin karsi hesap eksik. Canli islem kilitlendi.');
+  }
 }
 
 function aperionAciklama(h, tip) {
@@ -713,6 +739,7 @@ async function hareketiIsle(page, h) {
   log(`[${h.id || '-'}] ${h.firma_id || '?'} ${h.tarih || ''} ${tip} ${para(Math.abs(Number(h.tutar || h.amount || 0)))} ${aciklama}`);
 
   if (!COMMIT) return { dry: true, ...dryRunStep(h) };
+  bankaCanliKilit(h);
 
   const result = await formuDoldur2(page, h);
   const zorunlu = ['tarih', 'tutar', 'aciklama'];
