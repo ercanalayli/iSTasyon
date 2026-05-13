@@ -1016,8 +1016,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='151928-120526';
-const BUILD_STAMP='12.05.2026 15:19:28';
+const BUILD_CODE='142453-130526';
+const BUILD_STAMP='13.05.2026 14:24:53';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -1035,6 +1035,20 @@ const DATA_SOURCES={
     {id:'products',n:'Ürün ve Stok Kartları',t:'product_raw',kind:'table',date:'updated_at',mode:'eksik'}
   ]
 };
+DATA_SOURCES.alayli=[
+  {id:'sales',n:'Satis / Fatura Satirlari',t:'sales_raw',kind:'table',date:'tarih',mode:'aktif'},
+  {id:'expenses',n:'Masraf / Giderler',t:'masraf_raw',kind:'table',date:'tarih',mode:'aktif'},
+  {id:'events',n:'Son Islemler Izleme',t:'bizimhesap_events',kind:'table',date:'tarih',mode:'aktif'},
+  {id:'bankApproval',n:'Banka Onay Hareketleri',t:'bank_transactions',kind:'bank_approval',date:'tarih',mode:'aktif'},
+  {id:'bankRaw',n:'Banka Ham Ekstre',t:'banka_raw',kind:'table',date:'tarih',mode:'kurulum'},
+  {id:'customers',n:'Cari Kartlar',t:'customers',kind:'table',date:'updated_at',mode:'eksik'},
+  {id:'transactions',n:'Cari / Kasa Hareketleri',t:'transactions',kind:'table',date:'tarih',mode:'eksik'},
+  {id:'collections',n:'Tahsilat / Odeme Hareketleri',t:'collections_raw',kind:'table',date:'tarih',mode:'eksik'},
+  {id:'products',n:'Urun Kartlari',t:'product_raw',kind:'table',date:'updated_at',mode:'eksik'},
+  {id:'stock',n:'Stok Hareketleri',t:'stock_raw',kind:'table',date:'tarih',mode:'eksik'},
+  {id:'purchases',n:'Alis / Tedarikci Faturalari',t:'purchase_raw',kind:'table',date:'tarih',mode:'eksik'},
+  {id:'accounts',n:'Kasa / Banka Hesaplari',t:'accounts_raw',kind:'table',date:'updated_at',mode:'eksik'}
+];
 let RAW=[],cM='month',cF=PILOT_FIRMA,sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null,PROD_MAP=[];
 const pad=n=>String(n).padStart(2,'0');
 const fmt=n=>Math.round(n).toLocaleString('tr');
@@ -1162,6 +1176,14 @@ async function sourceMetric(fid,src){
     if(fid)q=q.eq('firma_id',fid);
     const r=await q.order(dateCol,{ascending:false}).limit(1000);
     if(r.error){
+      if(String(r.error.message||'').includes('firma_id')){
+        const r3=await db.from(src.t).select(`${dateCol}`,{count:'exact'}).order(dateCol,{ascending:false}).limit(1000);
+        if(!r3.error){
+          const rows=r3.data||[];
+          const last=rows.map(x=>String(x[dateCol]||x.tarih||x.date||x.created_at||'').substring(0,10)).filter(Boolean).sort().pop()||null;
+          return {status:rows.length?'Kontrol Bekliyor':'Eksik Veri',ok:false,warn:true,count:r3.count||rows.length,last,updated:last,note:'firma_id yok; genel tablo'};
+        }
+      }
       let q2=db.from(src.t).select('*',{count:'exact'});
       if(fid)q2=q2.eq('firma_id',fid);
       const r2=await q2.limit(1000);
