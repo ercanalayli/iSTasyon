@@ -456,6 +456,15 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .home-side .audit-box{padding:9px}
 .home-side .audit-v{font-size:16px}
 .home-side #lastDataGrid{grid-template-columns:1fr !important}
+.roadmap-grid{display:grid;gap:7px}
+.roadmap-item{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 9px;border:1px solid #E4E7EC;border-radius:9px;background:#F8FAFC}
+.roadmap-no{width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:#EAF1FF;color:#1D4ED8;font-family:var(--mono);font-size:10px;font-weight:950}
+.roadmap-t{font-size:12px;font-weight:950;color:#101828;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.roadmap-d{font-size:10px;font-weight:750;color:#667085;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.roadmap-st{font-size:9px;font-weight:950;color:#475467;border:1px solid #D0D5DD;background:#fff;border-radius:999px;padding:3px 7px;white-space:nowrap}
+.roadmap-st.hot{color:#B42318;background:#FEF3F2;border-color:#FECDCA}
+.roadmap-st.next{color:#0369A1;background:#EFF8FF;border-color:#B9E6FE}
+.roadmap-st.wait{color:#854A0E;background:#FFFAEB;border-color:#FEDF89}
 #kartsDiv{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.55fr);gap:12px;align-items:start}
 #kartsDiv>.card{margin-bottom:0 !important}
 #kartsDiv>.report-hub{grid-column:1/-1;order:1}
@@ -466,6 +475,14 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 #kartsDiv>.card:nth-of-type(5){grid-column:2;order:4}
 #kartsDiv>.card:nth-of-type(6){grid-column:2;order:5}
 #kartsDiv>#fGrid{grid-column:1/-1;order:6}
+#kartsDiv>.card:nth-of-type(2){grid-column:2;order:2}
+#kartsDiv>.card:nth-of-type(3){grid-column:2;order:3}
+#kartsDiv>.card:nth-of-type(4){grid-column:2;order:4}
+#kartsDiv>.card:nth-of-type(5){grid-column:1;order:2}
+#kartsDiv>.card:nth-of-type(6){grid-column:2;order:5}
+#kartsDiv>.card:nth-of-type(7){grid-column:2;order:6}
+#kartsDiv>.card:nth-of-type(8){grid-column:1;order:3}
+#kartsDiv>#fGrid{grid-column:1/-1;order:7}
 .flow-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;margin-bottom:10px;padding:13px 14px;border:1px solid #E4E7EC;border-radius:12px;background:#FFFFFF;box-shadow:0 10px 24px rgba(15,23,42,.045)}
 .flow-title{font-size:18px;font-weight:950;color:#101828;letter-spacing:-.01em}
 .flow-sub{font-size:12px;color:#667085;font-weight:750;margin-top:3px}
@@ -601,6 +618,16 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
         <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-l">Veri Denetimi</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">sales_raw kalite kontrol</span></div>
           <div id="dataAudit"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Kontrol ediliyor...</div></div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-hd"><div class="card-l">Ana Is Programi</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">bitmeyen ana kapsam</span></div>
+          <div class="roadmap-grid">
+            <div class="roadmap-item"><div class="roadmap-no">01</div><div><div class="roadmap-t">BizimHesap klon veri yapisi</div><div class="roadmap-d">satis, gider, cari, stok, banka ham veri ayrimi</div></div><span class="roadmap-st hot">aktif</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">02</div><div><div class="roadmap-t">Veri guveni ve mutabakat</div><div class="roadmap-d">kaynak, cekim, dogrulama, uyusmazlik kontrolu</div></div><span class="roadmap-st hot">aktif</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">03</div><div><div class="roadmap-t">Banka ekstresi onay sistemi</div><div class="roadmap-d">parser, ogrenme, telegram onay, BizimHesap dry-run</div></div><span class="roadmap-st next">siradaki</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">04</div><div><div class="roadmap-t">Dinamik urun karlilik karti</div><div class="roadmap-d">son alis, son satis, kar, marj, donem karsilastirma</div></div><span class="roadmap-st wait">bekliyor</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">05</div><div><div class="roadmap-t">Dinamik cari karti</div><div class="roadmap-d">tahakkuk, tahsilat, bakiye, risk, odeme skoru</div></div><span class="roadmap-st wait">bekliyor</span></div>
+          </div>
         </div>
         <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-l">Satış Mutabakatı</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">BizimHesap raporu ile karşılaştır</span></div>
