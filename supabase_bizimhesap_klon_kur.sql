@@ -138,3 +138,162 @@ begin
     create policy "banka_raw anon all" on public.banka_raw for all to anon using (true) with check (true);
   end if;
 end $$;
+
+-- BizimHesap klonunun eksik ana veri havuzlari.
+create table if not exists public.masraf_raw (
+  id bigserial primary key,
+  firma_id text not null,
+  tarih date,
+  saat text,
+  kategori text,
+  masraf_kalemi text,
+  tedarikci text,
+  aciklama text,
+  tutar numeric default 0,
+  kdv numeric default 0,
+  toplam numeric default 0,
+  odeme_durumu text,
+  hesap text,
+  kaynak text default 'bizimhesap_masraf',
+  hash text,
+  raw jsonb default '{}'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.customers (
+  id bigserial primary key,
+  firma_id text not null,
+  cari_kod text,
+  cari_unvan text not null,
+  tip text,
+  telefon text,
+  email text,
+  adres text,
+  bakiye numeric default 0,
+  bakiye_tipi text,
+  risk_etiketi text,
+  kaynak text default 'bizimhesap_cari',
+  hash text,
+  raw jsonb default '{}'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.transactions (
+  id bigserial primary key,
+  firma_id text not null,
+  tarih date,
+  saat text,
+  cari_unvan text,
+  islem_tipi text,
+  aciklama text,
+  hesap text,
+  borc numeric default 0,
+  alacak numeric default 0,
+  tutar numeric default 0,
+  kaynak text default 'bizimhesap_hareket',
+  hash text,
+  raw jsonb default '{}'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.collections_raw (
+  id bigserial primary key,
+  firma_id text not null,
+  tarih date,
+  saat text,
+  cari_unvan text,
+  islem_tipi text,
+  hesap text,
+  aciklama text,
+  tutar numeric default 0,
+  kaynak text default 'bizimhesap_tahsilat_odeme',
+  hash text,
+  raw jsonb default '{}'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.stock_raw (
+  id bigserial primary key,
+  firma_id text not null,
+  tarih date,
+  urun_kod text,
+  barkod text,
+  urun text not null,
+  kategori text,
+  depo text,
+  hareket_tipi text,
+  miktar numeric default 0,
+  birim text,
+  kaynak text default 'bizimhesap_stok_hareket',
+  hash text,
+  raw jsonb default '{}'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.purchase_raw (
+  id bigserial primary key,
+  firma_id text not null,
+  tarih date,
+  belge_no text,
+  tedarikci text,
+  urun_kod text,
+  barkod text,
+  urun text,
+  kategori text,
+  miktar numeric default 0,
+  birim text,
+  alis_fiyat numeric default 0,
+  tutar numeric default 0,
+  kaynak text default 'bizimhesap_alis',
+  hash text,
+  raw jsonb default '{}'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.accounts_raw (
+  id bigserial primary key,
+  firma_id text not null,
+  hesap_tipi text,
+  hesap_adi text not null,
+  para_birimi text default 'TL',
+  bakiye numeric default 0,
+  aktif boolean default true,
+  kaynak text default 'bizimhesap_hesaplar',
+  hash text,
+  raw jsonb default '{}'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create unique index if not exists masraf_raw_firma_hash_uq on public.masraf_raw (firma_id, hash) where hash is not null;
+create unique index if not exists customers_firma_hash_uq on public.customers (firma_id, hash) where hash is not null;
+create unique index if not exists transactions_firma_hash_uq on public.transactions (firma_id, hash) where hash is not null;
+create unique index if not exists collections_raw_firma_hash_uq on public.collections_raw (firma_id, hash) where hash is not null;
+create unique index if not exists stock_raw_firma_hash_uq on public.stock_raw (firma_id, hash) where hash is not null;
+create unique index if not exists purchase_raw_firma_hash_uq on public.purchase_raw (firma_id, hash) where hash is not null;
+create unique index if not exists accounts_raw_firma_hash_uq on public.accounts_raw (firma_id, hash) where hash is not null;
+
+do $$
+declare
+  t text;
+begin
+  foreach t in array array['masraf_raw','customers','transactions','collections_raw','stock_raw','purchase_raw','accounts_raw']
+  loop
+    execute format('alter table public.%I enable row level security', t);
+    execute format('grant select, insert, update, delete on public.%I to anon, authenticated', t);
+    if not exists (
+      select 1 from pg_policies
+      where schemaname='public' and tablename=t and policyname=t || ' anon all'
+    ) then
+      execute format('create policy %I on public.%I for all to anon using (true) with check (true)', t || ' anon all', t);
+    end if;
+  end loop;
+end $$;
+
+grant usage, select on all sequences in schema public to anon, authenticated;
