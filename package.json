@@ -14,6 +14,7 @@
     "finance-verify-manifest": "node scripts/verify_finance_manifest.cjs",
     "finance-test-supabase": "node finance_supabase_connection_test.cjs",
     "finance-inject-index": "node scripts/inject_finance_into_index.cjs",
+    "command-center-inject-index": "node scripts/inject_command_center_into_index.cjs",
     "finance-verify-index": "node scripts/verify_finance_index_link.cjs",
     "test": "node finance_smoke_test.cjs && node scripts/verify_finance_manifest.cjs"
   },
