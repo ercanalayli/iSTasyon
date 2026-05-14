@@ -50,14 +50,19 @@ function testSalesDashboardAdapterSource() {
 
 function testCommandCenterFiles() {
   assert(fs.existsSync('finance-command-center.html'), 'Finans Komuta Merkezi HTML yok');
+  assert(fs.existsSync('finance-command-center-live.html'), 'Live-ready Finans Komuta Merkezi HTML yok');
   assert(fs.existsSync('supabase_finance_command_center_schema.sql'), 'Komuta Merkezi şema SQL yok');
   assert(fs.existsSync('supabase_finance_command_center_seed.sql'), 'Komuta Merkezi seed SQL yok');
   const html = fs.readFileSync('finance-command-center.html', 'utf8');
+  const live = fs.readFileSync('finance-command-center-live.html', 'utf8');
   assert(html.includes('Bugün Ödenecekler'), 'Bugün Ödenecekler alanı yok');
   assert(html.includes('Bugün Tahsil Edilecekler'), 'Bugün Tahsil Edilecekler alanı yok');
   assert(html.includes('Yapılacaklar'), 'Yapılacaklar alanı yok');
   assert(html.includes('Telegram Alarm Merkezi'), 'Telegram Alarm Merkezi yok');
+  assert(live.includes('finance_command_center_records'), 'Live ekran Supabase komuta merkezi tablosunu okumuyor');
+  assert(live.includes('DEMO MOD'), 'Live ekran demo fallback içermiyor');
   assert(!html.includes('<canvas'), 'Finans Komuta Merkezi grafik/canvas içermemeli');
+  assert(!live.includes('<canvas'), 'Live Finans Komuta Merkezi grafik/canvas içermemeli');
   const schema = fs.readFileSync('supabase_finance_command_center_schema.sql', 'utf8');
   assert(schema.includes('finance_command_center_records'), 'Komuta merkezi ana tablo yok');
   assert(schema.includes('finance_telegram_alarm_queue'), 'Telegram alarm kuyruğu yok');
