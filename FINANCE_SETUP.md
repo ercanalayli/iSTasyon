@@ -52,6 +52,7 @@ Yerel alternatif:
 
 ```bash
 npm run command-center-inject-index
+npm run command-center-verify-index
 ```
 
 Bu işlem:
@@ -60,16 +61,18 @@ Bu işlem:
 - Sidebar varsa linki sidebar içine ekler.
 - Sidebar bulunamazsa güvenli floating link ekler.
 - Eski Finans Takvimi linkini/dosyasını silmez.
+- Link eklendikten sonra `command-center-verify-index` ile doğrular.
 
 ## 4. Komuta Merkezi Supabase kurulumu
 
-Supabase Dashboard > SQL Editor içinde çalıştırılacak ana dosya:
+Supabase Dashboard > SQL Editor içinde sırasıyla çalıştırılacak dosyalar:
 
 ```text
-SUPABASE_COMMAND_CENTER_INSTALL.sql
+1. SUPABASE_COMMAND_CENTER_INSTALL.sql
+2. supabase_command_center_health_check.sql
 ```
 
-Bu dosya şu yapıları kurar:
+`SUPABASE_COMMAND_CENTER_INSTALL.sql` şu yapıları kurar:
 
 - `finance_command_center_records`
 - `finance_command_center_action_log`
@@ -77,6 +80,14 @@ Bu dosya şu yapıları kurar:
 - `finance_command_center_today`
 - `finance_command_center_late`
 - `finance_command_center_alarm_candidates`
+
+`supabase_command_center_health_check.sql` şu kontrolleri yapar:
+
+- Ana tablo / aksiyon logu / Telegram alarm kuyruğu var mı?
+- Bugünkü kayıtlar okunuyor mu?
+- Geciken kayıtlar okunuyor mu?
+- Alarm adayları özetleniyor mu?
+- Doğrulanmamış / onay bekleyen kayıtlar ayrışıyor mu?
 
 ## 5. Live-ready ekran bağlantısı
 
@@ -121,6 +132,7 @@ Bu testler şunları kontrol eder:
 - Demo fallback var mı?
 - Grafik/canvas yok mu?
 - Komuta Merkezi SQL installer ana tabloları içeriyor mu?
+- Komuta Merkezi health check SQL var mı?
 - BizimHesap demo pipeline çalışıyor mu?
 - Moka demo pipeline çalışıyor mu?
 - Manifest doğrulaması geçiyor mu?
