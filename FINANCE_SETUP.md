@@ -2,32 +2,39 @@
 
 Bu rehber AperiON / ErpaltH iSTasyon projesindeki Finans Takvimi ve Nakit Akışı Merkezi için hazırlanmıştır.
 
-## 1. Dosyalar
+## 1. Ana dosyalar
 
-- `aperion-finans-takvimi-live.html`: Canlıya hazır finans ekranı.
 - `finans-takvimi.html`: Güvenli başlatıcı sayfa.
-- `supabase_finans_takvimi_schema.sql`: Supabase tablo ve view şeması.
-- `supabase_finans_demo_seed.sql`: Test/demo verileri.
-- `finance_supabase_adapter.js`: Supabase veri erişim katmanı.
-- `finance_approval_actions.js`: Onay / red aksiyon katmanı.
-- `finance_import_bridge.js`: BizimHesap/banka/Moka ham veri normalizasyonu.
-- `moka_united_reconciliation.js`: Moka United mutabakat öneri motoru.
-- `turkiye_business_calendar.js`: Türkiye iş günü ve resmi tatil kontrolü.
+- `aperion-finans-takvimi-live.html`: Canlıya hazır finans ekranı.
+- `aperion-finans-takvimi.html`: Eski/demo finans ekranı.
 - `finance_dashboard_embed.html`: Ana dashboard içine gömülebilir iframe section.
+- `scripts/inject_finance_into_index.cjs`: index.html içine güvenli Finans Takvimi linki ekler.
+- `scripts/verify_finance_index_link.cjs`: index.html içinde finans linki var mı kontrol eder.
 
-## 2. Supabase tablo kurulumu
+## 2. Supabase dosyaları
 
-En güvenli yol:
+- `SUPABASE_FINANCE_INSTALL_ALL.sql`: Tek dosyalık hızlı kurulum.
+- `supabase_finans_takvimi_schema.sql`: Şema dosyası.
+- `supabase_finans_demo_seed.sql`: Demo/test verileri.
+- `supabase_finans_validation_safe.sql`: Güvenli constraint / validation kurulumu.
+- `supabase_finans_rls_policies.sql`: RLS / policy taslağı.
+- `supabase_finans_health_check.sql`: Kurulum sonrası kontrol sorguları.
+
+## 3. En güvenli Supabase kurulum sırası
 
 1. Supabase Dashboard aç.
 2. SQL Editor bölümüne gir.
-3. `supabase_finans_takvimi_schema.sql` içeriğini çalıştır.
-4. Hata yoksa `supabase_finans_demo_seed.sql` içeriğini test için çalıştır.
+3. Önce `SUPABASE_FINANCE_INSTALL_ALL.sql` dosyasını çalıştır.
+4. Sonra `supabase_finans_validation_safe.sql` dosyasını çalıştır.
+5. Sonra `supabase_finans_health_check.sql` dosyasını çalıştır ve sonuçları kontrol et.
+6. Auth yapısı netleşince `supabase_finans_rls_policies.sql` dosyasını kontrollü uygula.
 
-Alternatif runner:
+Not: `supabase_finans_validation.sql` yerine mümkünse `supabase_finans_validation_safe.sql` kullan. Safe sürüm constraint var mı kontrol ederek ekler.
+
+## 4. Alternatif runner
 
 ```bash
-npm install @supabase/supabase-js
+npm install
 cp .env.example .env
 node supabase_finance_migration_runner.js
 node supabase_finance_migration_runner.js --seed
@@ -35,7 +42,7 @@ node supabase_finance_migration_runner.js --seed
 
 Not: Runner, Supabase tarafında `exec_sql(sql_text text)` RPC fonksiyonu yoksa çalışmaz. Bu durumda SQL Editor kullan.
 
-## 3. Live-ready ekran bağlantısı
+## 5. Live-ready ekran bağlantısı
 
 `finans-takvimi.html` başlatıcıdır. Buradan `aperion-finans-takvimi-live.html` açılır.
 
@@ -48,23 +55,23 @@ Live-ready ekranda:
 
 Bağlantı başarılıysa `finance_calendar_records` tablosundan canlı veri okunur. Bağlantı yoksa demo mod çalışır.
 
-## 4. Ana index.html içine güvenli gömme
+## 6. Ana index.html içine güvenli gömme
 
-`finance_dashboard_embed.html` içeriği ana dashboard içine section olarak eklenebilir. Kör güncelleme yapılmamalı; mevcut `index.html` büyük tek dosya olduğu için önce manuel/diff kontrolü yapılmalı.
+Önerilen yol GitHub Actions:
 
-Menü snippet'i:
+1. GitHub > Actions aç.
+2. `Inject AperiON Finance Link` workflow'unu seç.
+3. `Run workflow` butonuna bas.
+4. Workflow hem linki ekler hem `npm run finance-verify-index` ile doğrular.
 
-```html
-<div class="sb-item" onclick="window.location.href='finans-takvimi.html'">
-  <div class="sb-ico">💰</div>
-  <div>
-    <div class="sb-lbl">Finans Takvimi</div>
-    <span class="sb-sub">Nakit Akışı Merkezi</span>
-  </div>
-</div>
+Yerel alternatif:
+
+```bash
+npm run finance-inject-index
+npm run finance-verify-index
 ```
 
-## 5. Onay Merkezi akışı
+## 7. Onay Merkezi akışı
 
 Kaynak veri doğrudan kesin kayıt olmaz:
 
@@ -80,18 +87,27 @@ Reddedilince:
 - `approval_status = reddedildi`
 - `status = iptal`
 
-## 6. Moka United akışı
+## 8. Moka United akışı
 
 POS tahsilatı önce Moka United hesabında bekler. Bankaya geçiş tarihi takip edilir. Banka hareketi geldiğinde `moka_united_reconciliation.js` güven puanlı eşleşme önerisi üretir. Onaydan sonra tahsilat kesinleşir.
 
-## 7. Çek / senet / ödeme tarihi
+## 9. Çek / senet / ödeme tarihi
 
 Asıl vade tarihi korunur. Fiili ödeme tarihi hafta sonu veya Türkiye resmi tatiline denk gelirse ilk iş gününe taşınır.
 
-## 8. Korunan kurallar
+## 10. Test komutları
+
+```bash
+npm run finance-smoke
+npm run finance-pipeline-demo
+npm run finance-verify-index
+```
+
+## 11. Korunan kurallar
 
 - ALKAM Mali adı kullanılmaz.
 - AperiON / ErpaltH iSTasyon projesidir.
 - Şirketler korunur: `alayli`, `woodlet`, `elit`, `odyoform`, `alkam`, `yenicespor`.
 - Mevcut index.html özellikleri silinmez.
 - Supabase / Chart.js / tek dosya frontend mantığı korunur.
+- Kullanıcı onayı olmadan kesin finans kaydı yapılmaz.
