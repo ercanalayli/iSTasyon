@@ -1,0 +1,65 @@
+{
+  "project": "AperiON / ErpaltH iSTasyon",
+  "module": "Finans Takvimi ve Nakit Akışı Merkezi",
+  "source_files": [
+    "SATIŞ RAPORU (13).xlsx",
+    "SATIŞ RAPORU (14).xlsx",
+    "SATIŞ RAPORU (15).xlsx"
+  ],
+  "report_summary": [
+    {
+      "Dosya": "SATIŞ RAPORU (13).xlsx",
+      "Dönem": "01.01.2025 - 30.06.2025",
+      "Satır": 11230,
+      "Miktar": 100077.0,
+      "Net": 15318697.3,
+      "KDV": 842413.23,
+      "Toplam": 16161110.68
+    },
+    {
+      "Dosya": "SATIŞ RAPORU (14).xlsx",
+      "Dönem": "01.07.2025 - 31.12.2025",
+      "Satır": 11742,
+      "Miktar": 106626.8,
+      "Net": 17699532.76,
+      "KDV": 944085.98,
+      "Toplam": 18643618.86
+    },
+    {
+      "Dosya": "SATIŞ RAPORU (15).xlsx",
+      "Dönem": "01.01.2026 - 14.05.2026",
+      "Satır": 8530,
+      "Miktar": 72554.0,
+      "Net": 10537804.43,
+      "KDV": 685689.77,
+      "Toplam": 11223494.18
+    }
+  ],
+  "year_summary": [
+    {
+      "Yıl": "2025",
+      "Satır": 22972,
+      "Miktar": 206703.8,
+      "Net": 33018230.06,
+      "KDV": 1786499.21,
+      "Toplam": 34804729.54
+    },
+    {
+      "Yıl": "2026",
+      "Satır": 8530,
+      "Miktar": 72554.0,
+      "Net": 10537804.43,
+      "KDV": 685689.77,
+      "Toplam": 11223494.18
+    }
+  ],
+  "grand_total": {
+    "Satır": 31502,
+    "Miktar": 279257.8,
+    "Net": 43556034.49,
+    "KDV": 2472188.98,
+    "Toplam": 46028223.72
+  },
+  "top_categories_note": "Top kategori, müşteri ve ürün listeleri satış raporu işleme dosyasında üretilecek; bu dosya finans modülü için hızlı özet kaynaktır.",
+  "finance_queue_note": "Bu özet satış tutarlarını tahsilat planı/onay kuyruğu için kaynak kabul eder; kesin kayıt değildir."
+}
