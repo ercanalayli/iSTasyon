@@ -1,14 +1,16 @@
 {
   "name": "istasyon-bot-service",
   "version": "1.0.0",
-  "description": "ALKAM & iSTasyon Unified Bot Service",
+  "description": "AperiON iSTasyon Unified Bot Service",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "start": "node index.js",
     "bot:bizimhesap": "node services/bizimhesap_bot.js",
     "bot:banka": "node services/banka_parser.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "finance-pipeline-demo": "node bizimhesap_finance_pipeline.cjs test_data/bizimhesap_finance_sample.csv alayli",
+    "finance-smoke": "node finance_smoke_test.cjs",
+    "test": "node finance_smoke_test.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
