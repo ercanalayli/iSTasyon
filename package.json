@@ -9,6 +9,7 @@
     "bot:bizimhesap": "node services/bizimhesap_bot.js",
     "bot:banka": "node services/banka_parser.js",
     "finance-pipeline-demo": "node bizimhesap_finance_pipeline.cjs test_data/bizimhesap_finance_sample.csv alayli",
+    "moka-pipeline-demo": "node moka_bank_pipeline.cjs test_data/moka_bank_sample.csv alayli",
     "finance-smoke": "node finance_smoke_test.cjs",
     "finance-inject-index": "node scripts/inject_finance_into_index.cjs",
     "finance-verify-index": "node scripts/verify_finance_index_link.cjs",
