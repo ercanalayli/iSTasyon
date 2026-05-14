@@ -9,3 +9,16 @@ bizimhesap_ogrenme_haritasi.json
 bizimhesap_ogrenme_ozeti.md
 bizimhesap_ogren_log.txt
 aperion_zamanlayici_kur (*).ps1
+
+# AperiON Finans Takvimi - gizli bilgiler ve yerel exportlar
+.env
+.env.local
+.env.*.local
+bizimhesap_exports/
+finance_imports/
+bank_exports/
+moka_exports/
+luca_exports/
+logs/
+.DS_Store
+Thumbs.db
