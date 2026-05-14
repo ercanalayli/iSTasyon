@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'scripts/inject_finance_into_index.cjs'
+      - 'scripts/verify_finance_index_link.cjs'
       - 'package.json'
       - '.github/workflows/finance-inject-index.yml'
 
@@ -25,6 +26,8 @@ jobs:
           node-version: '20'
       - name: Inject finance link into index
         run: npm run finance-inject-index
+      - name: Verify finance link in index
+        run: npm run finance-verify-index
       - name: Show diff
         run: git diff -- index.html
       - name: Commit index update
