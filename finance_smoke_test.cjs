@@ -18,6 +18,16 @@ function testPipeline() {
   console.log('OK pipeline');
 }
 
+function testMokaPipeline() {
+  execSync('node moka_bank_pipeline.cjs test_data/moka_bank_sample.csv alayli', { stdio: 'pipe' });
+  const out = readJson('./finance_imports/moka_approval_queue_alayli_demo.json');
+  assert(out.queue.length === 2, 'Moka pipeline 2 kayıt üretmeli');
+  assert(out.summary.total === 305000, 'Moka pipeline toplamı 305000 olmalı');
+  assert(out.queue.every(r => r.record_type === 'tahsilat'), 'Moka kayıtları tahsilat olmalı');
+  assert(out.queue.every(r => r.approval_status === 'onay_bekliyor'), 'Moka kayıtları onay beklemeli');
+  console.log('OK Moka pipeline');
+}
+
 function testSalesSummaryFile() {
   const p = 'data/sales_report_summary_2025_2026.json';
   assert(fs.existsSync(p), 'Satış özet JSON dosyası yok');
@@ -67,6 +77,7 @@ function main() {
   testSalesDashboardAdapterSource();
   testBusinessCalendarSource();
   testPipeline();
+  testMokaPipeline();
   console.log('AperiON Finans smoke test başarılı.');
 }
 
