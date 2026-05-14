@@ -10,6 +10,7 @@
     "bot:banka": "node services/banka_parser.js",
     "finance-pipeline-demo": "node bizimhesap_finance_pipeline.cjs test_data/bizimhesap_finance_sample.csv alayli",
     "finance-smoke": "node finance_smoke_test.cjs",
+    "finance-inject-index": "node scripts/inject_finance_into_index.cjs",
     "test": "node finance_smoke_test.cjs"
   },
   "dependencies": {
