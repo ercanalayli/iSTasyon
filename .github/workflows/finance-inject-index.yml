@@ -2,6 +2,11 @@ name: Inject AperiON Finance Link
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/inject_finance_into_index.cjs'
+      - 'package.json'
+      - '.github/workflows/finance-inject-index.yml'
 
 permissions:
   contents: write
