@@ -20,6 +20,8 @@ jobs:
           node-version: '20'
       - name: Inject command center link into index
         run: npm run command-center-inject-index
+      - name: Verify command center link in index
+        run: npm run command-center-verify-index
       - name: Show diff
         run: git diff -- index.html
       - name: Commit index update
