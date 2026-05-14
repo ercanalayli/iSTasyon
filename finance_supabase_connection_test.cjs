@@ -17,9 +17,7 @@ function loadEnv() {
 
 async function checkTable(sb, tableName) {
   const { data, error } = await sb.from(tableName).select('*').limit(1);
-  if (error) {
-    return { table: tableName, ok: false, error: error.message };
-  }
+  if (error) return { table: tableName, ok: false, error: error.message };
   return { table: tableName, ok: true, sample_count: Array.isArray(data) ? data.length : 0 };
 }
 
@@ -40,13 +38,17 @@ async function main() {
     'variable_payment_items',
     'moka_united_movements',
     'turkiye_public_holidays',
-    'finance_cashflow_summary'
+    'finance_cashflow_summary',
+    'finance_command_center_records',
+    'finance_command_center_action_log',
+    'finance_telegram_alarm_queue',
+    'finance_command_center_today',
+    'finance_command_center_late',
+    'finance_command_center_alarm_candidates'
   ];
 
   const results = [];
-  for (const table of tables) {
-    results.push(await checkTable(sb, table));
-  }
+  for (const table of tables) results.push(await checkTable(sb, table));
 
   console.table(results);
   const failed = results.filter(r => !r.ok);
@@ -55,7 +57,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log('Supabase finans bağlantı testi başarılı.');
+  console.log('Supabase finans ve komuta merkezi bağlantı testi başarılı.');
 }
 
 main().catch(err => {
