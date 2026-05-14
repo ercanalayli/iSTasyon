@@ -29,15 +29,30 @@ function testSalesSummaryFile() {
 function testSchemaFiles() {
   assert(fs.existsSync('supabase_finans_takvimi_schema.sql'), 'Şema SQL yok');
   assert(fs.existsSync('supabase_finans_demo_seed.sql'), 'Seed SQL yok');
+  assert(fs.existsSync('supabase_finans_validation_safe.sql'), 'Safe validation SQL yok');
+  assert(fs.existsSync('supabase_finans_health_check.sql'), 'Health check SQL yok');
   const schema = fs.readFileSync('supabase_finans_takvimi_schema.sql', 'utf8');
   assert(schema.includes('finance_calendar_records'), 'finance_calendar_records şemada yok');
   assert(schema.includes('moka_united_movements'), 'moka_united_movements şemada yok');
   console.log('OK schema files');
 }
 
+function testBusinessCalendarSource() {
+  const p = 'turkiye_business_calendar.js';
+  assert(fs.existsSync(p), 'Türkiye iş günü takvimi dosyası yok');
+  const src = fs.readFileSync(p, 'utf8');
+  assert(src.includes("['2026-05-30', 'Kurban Bayramı 4. Gün']"), '2026 Kurban Bayramı 4. gün yok');
+  assert(src.includes("['2027-03-09', 'Ramazan Bayramı 1. Gün']"), '2027 Ramazan Bayramı 1. gün yok');
+  assert(src.includes("['2027-05-16', 'Kurban Bayramı 1. Gün']"), '2027 Kurban Bayramı 1. gün yok');
+  assert(src.includes('actualPaymentDate'), 'actualPaymentDate fonksiyonu yok');
+  assert(src.includes('isBusinessDay'), 'isBusinessDay fonksiyonu yok');
+  console.log('OK business calendar source');
+}
+
 function main() {
   testSchemaFiles();
   testSalesSummaryFile();
+  testBusinessCalendarSource();
   testPipeline();
   console.log('AperiON Finans smoke test başarılı.');
 }
