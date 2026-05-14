@@ -48,6 +48,23 @@ function testSalesDashboardAdapterSource() {
   console.log('OK sales dashboard adapter source');
 }
 
+function testCommandCenterFiles() {
+  assert(fs.existsSync('finance-command-center.html'), 'Finans Komuta Merkezi HTML yok');
+  assert(fs.existsSync('supabase_finance_command_center_schema.sql'), 'Komuta Merkezi şema SQL yok');
+  assert(fs.existsSync('supabase_finance_command_center_seed.sql'), 'Komuta Merkezi seed SQL yok');
+  const html = fs.readFileSync('finance-command-center.html', 'utf8');
+  assert(html.includes('Bugün Ödenecekler'), 'Bugün Ödenecekler alanı yok');
+  assert(html.includes('Bugün Tahsil Edilecekler'), 'Bugün Tahsil Edilecekler alanı yok');
+  assert(html.includes('Yapılacaklar'), 'Yapılacaklar alanı yok');
+  assert(html.includes('Telegram Alarm Merkezi'), 'Telegram Alarm Merkezi yok');
+  assert(!html.includes('<canvas'), 'Finans Komuta Merkezi grafik/canvas içermemeli');
+  const schema = fs.readFileSync('supabase_finance_command_center_schema.sql', 'utf8');
+  assert(schema.includes('finance_command_center_records'), 'Komuta merkezi ana tablo yok');
+  assert(schema.includes('finance_telegram_alarm_queue'), 'Telegram alarm kuyruğu yok');
+  assert(schema.includes('finance_command_center_action_log'), 'Aksiyon log tablosu yok');
+  console.log('OK finance command center files');
+}
+
 function testSchemaFiles() {
   assert(fs.existsSync('supabase_finans_takvimi_schema.sql'), 'Şema SQL yok');
   assert(fs.existsSync('supabase_finans_demo_seed.sql'), 'Seed SQL yok');
@@ -73,6 +90,7 @@ function testBusinessCalendarSource() {
 
 function main() {
   testSchemaFiles();
+  testCommandCenterFiles();
   testSalesSummaryFile();
   testSalesDashboardAdapterSource();
   testBusinessCalendarSource();
