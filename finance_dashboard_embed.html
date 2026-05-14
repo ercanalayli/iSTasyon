@@ -1,0 +1,32 @@
+<!--
+AperiON Finans Takvimi - Ana Dashboard Embed Parçası
+Bu parça mevcut index.html içine güvenli şekilde section olarak eklenebilir.
+Mevcut özellikleri silmez. iframe ile live-ready modülü açar.
+-->
+<section id="aperion-finance-calendar-embed" class="page">
+  <div class="card report-hub">
+    <div class="report-head">
+      <div>
+        <div class="report-title">AperiON Finans Takvimi ve Nakit Akışı Merkezi</div>
+        <div class="report-sub">Tahsilat · Ödeme · Moka United · Çek/Senet · Onay Merkezi</div>
+      </div>
+      <button class="tb-btn" onclick="window.open('aperion-finans-takvimi-live.html','_blank')">Yeni Sekmede Aç</button>
+    </div>
+    <iframe
+      src="aperion-finans-takvimi-live.html"
+      title="AperiON Finans Takvimi"
+      style="width:100%;height:calc(100vh - 150px);border:0;background:#F4F6FA;border-radius:0 0 12px 12px;display:block"
+      loading="lazy">
+    </iframe>
+  </div>
+</section>
+
+<!-- Sidebar menü örneği:
+<div class="sb-item" onclick="showPage && showPage('aperion-finance-calendar-embed')">
+  <div class="sb-ico">💰</div>
+  <div>
+    <div class="sb-lbl">Finans Takvimi</div>
+    <span class="sb-sub">Nakit Akışı Merkezi</span>
+  </div>
+</div>
+-->
