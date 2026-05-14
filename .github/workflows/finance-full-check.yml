@@ -1,0 +1,56 @@
+name: AperiON Finance Full Check
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'aperion-finans-takvimi-live.html'
+      - 'finans-takvimi.html'
+      - 'finance_*.js'
+      - 'finance_*.cjs'
+      - 'bizimhesap_finance_pipeline.cjs'
+      - 'moka_*.js'
+      - 'moka_*.cjs'
+      - 'sales_dashboard_adapter.js'
+      - 'turkiye_business_calendar.js'
+      - 'scripts/**'
+      - 'supabase_finans_*.sql'
+      - 'SUPABASE_FINANCE_INSTALL_ALL.sql'
+      - 'data/sales_report_summary_2025_2026.json'
+      - 'test_data/**'
+      - 'package.json'
+      - '.github/workflows/finance-full-check.yml'
+
+jobs:
+  full-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Run finance smoke test
+        run: npm run finance-smoke
+      - name: Run BizimHesap demo pipeline
+        run: npm run finance-pipeline-demo
+      - name: Run Moka demo pipeline
+        run: npm run moka-pipeline-demo
+      - name: Verify index link if present
+        run: |
+          if grep -q "finans-takvimi.html" index.html; then
+            npm run finance-verify-index
+          else
+            echo "Finans linki index.html içinde henüz yok. Inject workflow çalıştırılmalı."
+          fi
+      - name: Print generated finance import summary
+        run: |
+          echo "--- finance_imports ---"
+          ls -la finance_imports || true
+          echo "--- BizimHesap queue ---"
+          cat finance_imports/approval_queue_alayli_demo.json || true
+          echo "--- Moka queue ---"
+          cat finance_imports/moka_approval_queue_alayli_demo.json || true
