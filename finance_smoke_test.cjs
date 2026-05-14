@@ -53,6 +53,7 @@ function testCommandCenterFiles() {
   assert(fs.existsSync('finance-command-center-live.html'), 'Live-ready Finans Komuta Merkezi HTML yok');
   assert(fs.existsSync('supabase_finance_command_center_schema.sql'), 'Komuta Merkezi şema SQL yok');
   assert(fs.existsSync('supabase_finance_command_center_seed.sql'), 'Komuta Merkezi seed SQL yok');
+  assert(fs.existsSync('SUPABASE_COMMAND_CENTER_INSTALL.sql'), 'Komuta Merkezi tek dosya SQL yok');
   const html = fs.readFileSync('finance-command-center.html', 'utf8');
   const live = fs.readFileSync('finance-command-center-live.html', 'utf8');
   assert(html.includes('Bugün Ödenecekler'), 'Bugün Ödenecekler alanı yok');
@@ -64,9 +65,13 @@ function testCommandCenterFiles() {
   assert(!html.includes('<canvas'), 'Finans Komuta Merkezi grafik/canvas içermemeli');
   assert(!live.includes('<canvas'), 'Live Finans Komuta Merkezi grafik/canvas içermemeli');
   const schema = fs.readFileSync('supabase_finance_command_center_schema.sql', 'utf8');
+  const installer = fs.readFileSync('SUPABASE_COMMAND_CENTER_INSTALL.sql', 'utf8');
   assert(schema.includes('finance_command_center_records'), 'Komuta merkezi ana tablo yok');
   assert(schema.includes('finance_telegram_alarm_queue'), 'Telegram alarm kuyruğu yok');
   assert(schema.includes('finance_command_center_action_log'), 'Aksiyon log tablosu yok');
+  assert(installer.includes('finance_command_center_records'), 'Tek dosya kurulumda ana tablo yok');
+  assert(installer.includes('finance_telegram_alarm_queue'), 'Tek dosya kurulumda Telegram kuyruğu yok');
+  assert(installer.includes('finance_command_center_action_log'), 'Tek dosya kurulumda aksiyon logu yok');
   console.log('OK finance command center files');
 }
 
