@@ -1,113 +1,164 @@
-# AperiON Finans Takvimi Kurulum Rehberi
+# AperiON Finans Komuta Merkezi Kurulum Rehberi
 
-Bu rehber AperiON / ErpaltH iSTasyon projesindeki Finans Takvimi ve Nakit Akışı Merkezi için hazırlanmıştır.
+Bu rehber AperiON / ErpaltH iSTasyon projesinde yeni ana finans modülü olan **Finans Komuta Merkezi** için hazırlanmıştır.
 
-## 1. Ana dosyalar
+Ana çekirdekler:
 
-- `finans-takvimi.html`: Güvenli başlatıcı sayfa.
-- `aperion-finans-takvimi-live.html`: Canlıya hazır finans ekranı.
-- `aperion-finans-takvimi.html`: Eski/demo finans ekranı.
-- `finance_dashboard_embed.html`: Ana dashboard içine gömülebilir iframe section.
-- `scripts/inject_finance_into_index.cjs`: index.html içine güvenli Finans Takvimi linki ekler.
-- `scripts/verify_finance_index_link.cjs`: index.html içinde finans linki var mı kontrol eder.
-
-## 2. Supabase dosyaları
-
-- `SUPABASE_FINANCE_INSTALL_ALL.sql`: Tek dosyalık hızlı kurulum.
-- `supabase_finans_takvimi_schema.sql`: Şema dosyası.
-- `supabase_finans_demo_seed.sql`: Demo/test verileri.
-- `supabase_finans_validation_safe.sql`: Güvenli constraint / validation kurulumu.
-- `supabase_finans_rls_policies.sql`: RLS / policy taslağı.
-- `supabase_finans_health_check.sql`: Kurulum sonrası kontrol sorguları.
-
-## 3. En güvenli Supabase kurulum sırası
-
-1. Supabase Dashboard aç.
-2. SQL Editor bölümüne gir.
-3. Önce `SUPABASE_FINANCE_INSTALL_ALL.sql` dosyasını çalıştır.
-4. Sonra `supabase_finans_validation_safe.sql` dosyasını çalıştır.
-5. Sonra `supabase_finans_health_check.sql` dosyasını çalıştır ve sonuçları kontrol et.
-6. Auth yapısı netleşince `supabase_finans_rls_policies.sql` dosyasını kontrollü uygula.
-
-Not: `supabase_finans_validation.sql` yerine mümkünse `supabase_finans_validation_safe.sql` kullan. Safe sürüm constraint var mı kontrol ederek ekler.
-
-## 4. Alternatif runner
-
-```bash
-npm install
-cp .env.example .env
-node supabase_finance_migration_runner.js
-node supabase_finance_migration_runner.js --seed
+```text
+1. Yapılacaklar
+2. Ödenecekler
+3. Tahsil Edilecekler
 ```
 
-Not: Runner, Supabase tarafında `exec_sql(sql_text text)` RPC fonksiyonu yoksa çalışmaz. Bu durumda SQL Editor kullan.
+Ek yapı:
 
-## 5. Live-ready ekran bağlantısı
+```text
+Telegram alarm altyapısı
+```
 
-`finans-takvimi.html` başlatıcıdır. Buradan `aperion-finans-takvimi-live.html` açılır.
+## 1. Ana linkler
 
-Live-ready ekranda:
+```text
+Başlatıcı:
+https://ercanalayli.github.io/iSTasyon/finans-komuta-merkezi.html
 
-1. Canlı Bağlantı sekmesine gir.
-2. Supabase URL gir.
-3. Supabase anon key gir.
-4. Kaydet ve Bağlan butonuna bas.
+Canlıya hazır Komuta Merkezi:
+https://ercanalayli.github.io/iSTasyon/finance-command-center-live.html
 
-Bağlantı başarılıysa `finance_calendar_records` tablosundan canlı veri okunur. Bağlantı yoksa demo mod çalışır.
+Demo Komuta Merkezi:
+https://ercanalayli.github.io/iSTasyon/finance-command-center.html
+```
 
-## 6. Ana index.html içine güvenli gömme
+## 2. Ana Komuta Merkezi dosyaları
 
-Önerilen yol GitHub Actions:
+- `finans-komuta-merkezi.html`: Komuta Merkezi başlatıcı sayfası.
+- `finance-command-center-live.html`: Supabase varsa canlı, yoksa demo çalışan ekran.
+- `finance-command-center.html`: Demo Komuta Merkezi ekranı.
+- `finance_command_center_adapter.js`: Supabase okuma / gruplama / özetleme adapter'ı.
+- `scripts/inject_command_center_into_index.cjs`: `index.html` içine Komuta Merkezi linkini güvenli ekler.
+- `.github/workflows/command-center-inject-index.yml`: Telefonda GitHub Actions üzerinden link ekleme workflow'u.
 
-1. GitHub > Actions aç.
-2. `Inject AperiON Finance Link` workflow'unu seç.
-3. `Run workflow` butonuna bas.
-4. Workflow hem linki ekler hem `npm run finance-verify-index` ile doğrular.
+## 3. AperiON ana dashboard içine bağlama
+
+Modül dosyaları eklendi. Ana `index.html` içine görünür link eklemek için önerilen yol GitHub Actions'tır:
+
+1. GitHub > `ercanalayli/iSTasyon` reposunu aç.
+2. `Actions` sekmesine gir.
+3. `Inject AperiON Finance Command Center Link` workflow'unu seç.
+4. `Run workflow` butonuna bas.
+5. Workflow tamamlanınca `index.html` içinde `finans-komuta-merkezi.html` linki oluşur.
 
 Yerel alternatif:
 
 ```bash
-npm run finance-inject-index
-npm run finance-verify-index
+npm run command-center-inject-index
 ```
 
-## 7. Onay Merkezi akışı
+Bu işlem:
 
-Kaynak veri doğrudan kesin kayıt olmaz:
+- `index.html` dosyasını önce yedekler.
+- Sidebar varsa linki sidebar içine ekler.
+- Sidebar bulunamazsa güvenli floating link ekler.
+- Eski Finans Takvimi linkini/dosyasını silmez.
 
-Kaynak veri → normalize → güven puanı → Onay Merkezi → kullanıcı onayı → kesin finans kaydı
+## 4. Komuta Merkezi Supabase kurulumu
 
-Onaylanınca:
+Supabase Dashboard > SQL Editor içinde çalıştırılacak ana dosya:
 
-- `approval_status = onaylandi`
-- `status = bekliyor`
+```text
+SUPABASE_COMMAND_CENTER_INSTALL.sql
+```
 
-Reddedilince:
+Bu dosya şu yapıları kurar:
 
-- `approval_status = reddedildi`
-- `status = iptal`
+- `finance_command_center_records`
+- `finance_command_center_action_log`
+- `finance_telegram_alarm_queue`
+- `finance_command_center_today`
+- `finance_command_center_late`
+- `finance_command_center_alarm_candidates`
 
-## 8. Moka United akışı
+## 5. Live-ready ekran bağlantısı
 
-POS tahsilatı önce Moka United hesabında bekler. Bankaya geçiş tarihi takip edilir. Banka hareketi geldiğinde `moka_united_reconciliation.js` güven puanlı eşleşme önerisi üretir. Onaydan sonra tahsilat kesinleşir.
+1. `finans-komuta-merkezi.html` sayfasını aç.
+2. `Canlıya Hazır Komuta Merkezini Aç` butonuna bas.
+3. `Canlı Bağlantı` bölümünü aç.
+4. Supabase URL gir.
+5. Supabase anon key gir.
+6. `Kaydet ve Bağlan` butonuna bas.
 
-## 9. Çek / senet / ödeme tarihi
+Başarılıysa ekran `CANLI MOD` gösterir. Hata olursa ekran bozulmaz, demo moda döner.
 
-Asıl vade tarihi korunur. Fiili ödeme tarihi hafta sonu veya Türkiye resmi tatiline denk gelirse ilk iş gününe taşınır.
+## 6. Supabase bağlantı testi
 
-## 10. Test komutları
+Yerelde `.env` içine şunları gir:
+
+```env
+SUPABASE_URL=https://PROJE.supabase.co
+SUPABASE_ANON_KEY=ANON_KEY
+```
+
+Sonra çalıştır:
 
 ```bash
-npm run finance-smoke
-npm run finance-pipeline-demo
-npm run finance-verify-index
+npm run finance-test-supabase
 ```
 
-## 11. Korunan kurallar
+Bu test hem eski Finans Takvimi hem yeni Finans Komuta Merkezi tablolarını kontrol eder.
 
-- ALKAM Mali adı kullanılmaz.
-- AperiON / ErpaltH iSTasyon projesidir.
-- Şirketler korunur: `alayli`, `woodlet`, `elit`, `odyoform`, `alkam`, `yenicespor`.
-- Mevcut index.html özellikleri silinmez.
-- Supabase / Chart.js / tek dosya frontend mantığı korunur.
-- Kullanıcı onayı olmadan kesin finans kaydı yapılmaz.
+## 7. Full Check
+
+GitHub Actions içinde `AperiON Finance Full Check` workflow'unu çalıştır veya yerelde:
+
+```bash
+npm test
+```
+
+Bu testler şunları kontrol eder:
+
+- Finans Komuta Merkezi dosyaları var mı?
+- Live-ready ekran Supabase tablosunu okuyor mu?
+- Demo fallback var mı?
+- Grafik/canvas yok mu?
+- Komuta Merkezi SQL installer ana tabloları içeriyor mu?
+- BizimHesap demo pipeline çalışıyor mu?
+- Moka demo pipeline çalışıyor mu?
+- Manifest doğrulaması geçiyor mu?
+
+## 8. Eski Finans Takvimi durumu
+
+Eski Finans Takvimi dosyaları silinmedi. Korunan yardımcı modül olarak kalır:
+
+- `finans-takvimi.html`
+- `aperion-finans-takvimi.html`
+- `aperion-finans-takvimi-live.html`
+- `SUPABASE_FINANCE_INSTALL_ALL.sql`
+
+Ana öncelik artık Finans Komuta Merkezi'dir.
+
+## 9. Telegram alarm altyapısı
+
+Bu aşamada tam bot entegrasyonu yapılmadı. Hazır olan altyapı:
+
+- `finance_telegram_alarm_queue`
+- `finance_command_center_action_log`
+- Telegram alarm adayı kartları
+- Live ekranda Telegram Alarm Merkezi alanı
+
+Sonraki aşamada kurulacak akış:
+
+1. Alarm kuyruğu okunur.
+2. Kritik alarm Telegram'a gönderilir.
+3. Telegram'dan gelen tamamlandı / ertelendi / not işlemi önce loglanır.
+4. İşlem kesin kayıt olmaz; onay katmanına düşer.
+
+## 10. Korunan kurallar
+
+- Mevcut sistem silinmez.
+- Büyük refactor yapılmaz.
+- Grafik kullanılmaz.
+- Ürün kartı / cari kartı işine bu turda girilmez.
+- Firma bazlı izolasyon korunur: `alayli`, `woodlet`, `elit`, `odyoform`, `alkam`, `yenicespor`.
+- Doğrulanmamış veri kesin sonuç gibi gösterilmez.
+- Her kayıtta tarih, kaynak, durum ve doğrulama bilgisi bulunur.
+- Telegram işlemleri doğrudan kesin kayıt oluşturmaz; önce log + onay katmanına düşer.
