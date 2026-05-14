@@ -11,6 +11,7 @@ const requiredFiles = [
   'aperion-finans-takvimi-live.html',
   'finance_dashboard_embed.html',
   'SUPABASE_FINANCE_INSTALL_ALL.sql',
+  'SUPABASE_COMMAND_CENTER_INSTALL.sql',
   'supabase_finans_takvimi_schema.sql',
   'supabase_finance_command_center_schema.sql',
   'supabase_finance_command_center_seed.sql',
@@ -39,6 +40,9 @@ const requiredFiles = [
 const requiredContent = [
   { file: 'SUPABASE_FINANCE_INSTALL_ALL.sql', text: 'finance_calendar_records', label: 'ana finans tablosu' },
   { file: 'SUPABASE_FINANCE_INSTALL_ALL.sql', text: 'moka_united_movements', label: 'Moka tablosu' },
+  { file: 'SUPABASE_COMMAND_CENTER_INSTALL.sql', text: 'finance_command_center_records', label: 'Komuta Merkezi tek dosya ana tablo' },
+  { file: 'SUPABASE_COMMAND_CENTER_INSTALL.sql', text: 'finance_telegram_alarm_queue', label: 'Komuta Merkezi tek dosya Telegram kuyruğu' },
+  { file: 'SUPABASE_COMMAND_CENTER_INSTALL.sql', text: 'finance_command_center_action_log', label: 'Komuta Merkezi tek dosya aksiyon logu' },
   { file: 'finance-command-center.html', text: 'Bugün Ödenecekler', label: 'Komuta Merkezi ödenecekler' },
   { file: 'finance-command-center.html', text: 'Bugün Tahsil Edilecekler', label: 'Komuta Merkezi tahsil edilecekler' },
   { file: 'finance-command-center.html', text: 'Yapılacaklar', label: 'Komuta Merkezi yapılacaklar' },
