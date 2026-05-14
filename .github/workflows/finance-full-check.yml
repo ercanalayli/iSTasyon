@@ -6,8 +6,12 @@ on:
     paths:
       - 'aperion-finans-takvimi-live.html'
       - 'finans-takvimi.html'
+      - 'finans-komuta-merkezi.html'
+      - 'finance-command-center.html'
+      - 'finance-command-center-live.html'
       - 'finance_*.js'
       - 'finance_*.cjs'
+      - 'finance_command_center_adapter.js'
       - 'bizimhesap_finance_pipeline.cjs'
       - 'moka_*.js'
       - 'moka_*.cjs'
@@ -15,12 +19,15 @@ on:
       - 'turkiye_business_calendar.js'
       - 'scripts/**'
       - 'supabase_finans_*.sql'
+      - 'supabase_finance_command_center_*.sql'
       - 'SUPABASE_FINANCE_INSTALL_ALL.sql'
+      - 'SUPABASE_COMMAND_CENTER_INSTALL.sql'
       - 'data/sales_report_summary_2025_2026.json'
       - 'test_data/**'
       - 'package.json'
       - 'APERION_FINANCE_CHANGELOG.md'
       - '.github/workflows/finance-full-check.yml'
+      - '.github/workflows/command-center-inject-index.yml'
 
 jobs:
   full-check:
@@ -42,12 +49,19 @@ jobs:
         run: npm run finance-pipeline-demo
       - name: Run Moka demo pipeline
         run: npm run moka-pipeline-demo
-      - name: Verify index link if present
+      - name: Verify index finance link if present
         run: |
           if grep -q "finans-takvimi.html" index.html; then
             npm run finance-verify-index
           else
-            echo "Finans linki index.html içinde henüz yok. Inject workflow çalıştırılmalı."
+            echo "Finans Takvimi linki index.html içinde henüz yok. Inject workflow çalıştırılmalı."
+          fi
+      - name: Verify command center link if present
+        run: |
+          if grep -q "finans-komuta-merkezi.html" index.html; then
+            echo "Finans Komuta Merkezi linki index.html içinde var."
+          else
+            echo "Finans Komuta Merkezi linki index.html içinde henüz yok. Command Center inject workflow çalıştırılmalı."
           fi
       - name: Print generated finance import summary
         run: |
