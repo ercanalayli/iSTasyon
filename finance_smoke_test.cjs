@@ -26,6 +26,18 @@ function testSalesSummaryFile() {
   console.log('OK sales summary');
 }
 
+function testSalesDashboardAdapterSource() {
+  const p = 'sales_dashboard_adapter.js';
+  assert(fs.existsSync(p), 'Satış dashboard adapter dosyası yok');
+  const src = fs.readFileSync(p, 'utf8');
+  assert(src.includes('buildSalesDashboard'), 'buildSalesDashboard fonksiyonu yok');
+  assert(src.includes('top_customers'), 'top_customers üretimi yok');
+  assert(src.includes('top_products'), 'top_products üretimi yok');
+  assert(src.includes('top_categories'), 'top_categories üretimi yok');
+  assert(src.includes('buildFinanceQueueFromSalesDashboard'), 'Satıştan finans kuyruğu üretimi yok');
+  console.log('OK sales dashboard adapter source');
+}
+
 function testSchemaFiles() {
   assert(fs.existsSync('supabase_finans_takvimi_schema.sql'), 'Şema SQL yok');
   assert(fs.existsSync('supabase_finans_demo_seed.sql'), 'Seed SQL yok');
@@ -52,6 +64,7 @@ function testBusinessCalendarSource() {
 function main() {
   testSchemaFiles();
   testSalesSummaryFile();
+  testSalesDashboardAdapterSource();
   testBusinessCalendarSource();
   testPipeline();
   console.log('AperiON Finans smoke test başarılı.');
