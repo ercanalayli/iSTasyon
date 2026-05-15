@@ -1016,8 +1016,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='105156-150526';
-const BUILD_STAMP='15.05.2026 10:51:56';
+const BUILD_CODE='113056-150526';
+const BUILD_STAMP='15.05.2026 11:30:56';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -2056,6 +2056,14 @@ async function masrafData(yil,cf){
     const r=await q;err=r.error;rows=r.data||[];
   }catch(e){err=e;}
   if(rows.length)return rows.map(r=>({firma_id:mPick(r,['firma_id','firma'],cf||''),tarih:mPick(r,['tarih','date','islem_tarihi']),kategori:masrafKategori(r),aciklama:mPick(r,['aciklama','description','not','tedarikci','cari_unvan','karsi_taraf']),tutar:Math.abs(Number(mPick(r,['tutar','amount','kdv_dahil','toplam'],0))||0),kaynak:'masraf_raw'})).filter(r=>r.tarih&&r.tutar);
+  try{
+    const res=await fetch(`masraf_${cf||PILOT_FIRMA}_${yil}.json?v=${BUILD_CODE}`,{cache:'no-store'});
+    if(res.ok){
+      const payload=await res.json();
+      rows=(payload.kayitlar||[]).filter(r=>(!cf||r.firma_id===cf)&&String(r.tarih||'').slice(0,4)===String(yil));
+      if(rows.length)return rows.map(r=>({firma_id:r.firma_id||cf||'',tarih:r.tarih,kategori:masrafKategori(r),aciklama:r.aciklama||r.tedarikci||'',tutar:Math.abs(Number(r.tutar)||0),kaynak:'masraf_json'})).filter(r=>r.tarih&&r.tutar);
+    }
+  }catch(e){}
   try{
     let q=db.from('bank_transactions').select('*').gte('tarih',from).lte('tarih',to).limit(20000);
     if(cf)q=q.eq('firma_id',cf);
