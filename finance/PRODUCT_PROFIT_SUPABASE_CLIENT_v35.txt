@@ -1,0 +1,30 @@
+AperiON Product Profit Supabase Client v35 plan
+
+Amac
+v35 panelini Supabase tablolarina baglamak.
+
+Okunacak tablolar
+1 product_sales_profit_view
+2 missing_product_cost_queue_view
+3 product_costs
+
+Yazilacak tablolar
+1 product_sales_profit
+2 missing_product_cost_queue
+
+Cagrilacak fonksiyon
+approve_and_recalculate_missing_product_cost
+
+Akis
+1 Panel product_sales_profit_view verisini okur
+2 Eksik maliyet kayitlari missing_product_cost_queue_view icinden gelir
+3 Kullanici onayli birim maliyeti girer
+4 approve_and_recalculate_missing_product_cost fonksiyonu cagrilir
+5 product_costs guncellenir
+6 product_sales_profit yeniden hesaplanir
+7 Panel tekrar veri ceker
+
+Guvenlik
+- Onayli maliyet 0 olamaz
+- Eksik maliyet varsa gun sonu kar kesinlesmez
+- Ana index dosyasi degismeyecek
