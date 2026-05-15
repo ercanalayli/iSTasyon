@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync, appendFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync, appendFileSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -29,7 +29,7 @@ const jobs = [
   {
     label: 'BizimHesap son islemler denetimi',
     file: 'bizimhesap_son_islemler_izle.js',
-    args: ['--firma', firma],
+    args: ['--firma', firma, '--run-sync', '--resync-days', '45'],
     required: false,
   },
   {
@@ -66,6 +66,17 @@ function saveStatus() {
   writeFileSync(statusPath, JSON.stringify(status, null, 2), 'utf8');
 }
 
+function runtimeFile(file) {
+  if (!file.endsWith('.js')) return path.join(__dirname, file);
+  const sourcePath = path.join(__dirname, file);
+  const source = readFileSync(sourcePath, 'utf8');
+  const isCommonJs = source.includes('require(') || source.includes('module.exports') || source.includes('__dirname');
+  if (!isCommonJs) return sourcePath;
+  const runtimePath = path.join(__dirname, `.__runtime_${path.basename(file, '.js')}.cjs`);
+  writeFileSync(runtimePath, source, 'utf8');
+  return runtimePath;
+}
+
 function run(job) {
   const fullPath = path.join(__dirname, job.file);
   const cleanArgs = job.args.filter(Boolean);
@@ -88,7 +99,8 @@ function run(job) {
 
   line(`BASLADI: ${job.label}`);
   const started = Date.now();
-  const r = spawnSync(process.execPath, [fullPath, ...cleanArgs], {
+  const runPath = runtimeFile(job.file);
+  const r = spawnSync(process.execPath, [runPath, ...cleanArgs], {
     cwd: __dirname,
     stdio: 'inherit',
     env: { ...process.env, NODE_PATH: path.join(__dirname, 'node_modules') },
