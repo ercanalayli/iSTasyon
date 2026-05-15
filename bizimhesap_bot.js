@@ -144,10 +144,12 @@ async function login(page) {
   await pwEl.type(CONFIG.password, { delay: 60 });
 
   const ok = await page.evaluate(() => {
-    const b = [...document.querySelectorAll('button,input[type="submit"]')].find(b=>b.innerText?.includes('Giriş')||b.type==='submit');
+    const norm = s => String(s || '').toLocaleLowerCase('tr-TR');
+    const b = document.querySelector('#btnLogin')
+      || [...document.querySelectorAll('button')].find(b => norm(b.innerText || b.value).includes('giriş yap'));
     if(b){b.click();return true;}return false;
   });
-  if (!ok) await page.keyboard.press('Enter');
+  if (!ok) throw new Error('BizimHesap giris butonu bulunamadi');
   await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 20000 }).catch(()=>{});
   log('  ✓ → ' + page.url());
 }

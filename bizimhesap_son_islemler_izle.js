@@ -160,7 +160,14 @@ async function login(page) {
   pwEl = await page.$('input[type="password"]');
   await pwEl.click({ clickCount: 3 });
   await pwEl.type(CONFIG.password, { delay: 15 });
-  await page.keyboard.press('Enter');
+  const clicked = await page.evaluate(() => {
+    const norm = s => String(s || '').toLocaleLowerCase('tr-TR');
+    const b = document.querySelector('#btnLogin')
+      || [...document.querySelectorAll('button')].find(x => norm(x.innerText || x.value).includes('giriş yap') || norm(x.innerText || x.value).includes('giriÅŸ yap'));
+    if (b) { b.click(); return true; }
+    return false;
+  });
+  if (!clicked) throw new Error('BizimHesap giris butonu bulunamadi');
   await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 20000 }).catch(() => {});
   await new Promise(r => setTimeout(r, 1200));
   log('Login URL: ' + page.url());

@@ -1016,8 +1016,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='165737-150526';
-const BUILD_STAMP='15.05.2026 16:57:37';
+const BUILD_CODE='182617-150526';
+const BUILD_STAMP='15.05.2026 18:26:17';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -1681,6 +1681,18 @@ async function rU(){
 const dynNum=n=>Number.isFinite(+n)?Math.round(+n).toLocaleString('tr-TR'):'veri yok';
 const dynMoney=n=>Number.isFinite(+n)?'TL '+Math.round(+n).toLocaleString('tr-TR'):'veri yok';
 const dynPct=n=>Number.isFinite(+n)?(+n).toLocaleString('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%':'eksik veri';
+function parseDynMoney(v){
+  if(typeof v==='number')return Number.isFinite(v)?v:0;
+  const raw=String(v||'').replace(/TL|TRY|₺/gi,'').replace(/\s/g,'').replace(/[^0-9,.-]/g,'');
+  if(!raw)return 0;
+  const comma=raw.lastIndexOf(','), dot=raw.lastIndexOf('.');
+  let s=raw;
+  if(comma>-1&&dot>-1)s=comma>dot?raw.replace(/\./g,'').replace(',','.'):raw.replace(/,/g,'');
+  else if(comma>-1)s=raw.replace(/\./g,'').replace(',','.');
+  else s=raw.replace(/,/g,'');
+  const n=Number(s);
+  return Number.isFinite(n)?n:0;
+}
 const escHtml=v=>(v??'').toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const jsArg=v=>JSON.stringify(v??'');
 const rowDate=r=>(r?.tarih||r?.alis_tarihi||r?.satis_tarihi||r?.islem_tarihi||r?.created_at||'').toString().substring(0,10);
@@ -2055,13 +2067,16 @@ async function masrafData(yil,cf){
     if(cf)q=q.eq('firma_id',cf);
     const r=await q;err=r.error;rows=r.data||[];
   }catch(e){err=e;}
-  if(rows.length)return rows.map(r=>({firma_id:mPick(r,['firma_id','firma'],cf||''),tarih:mPick(r,['tarih','date','islem_tarihi']),kategori:masrafKategori(r),aciklama:mPick(r,['aciklama','description','not','tedarikci','cari_unvan','karsi_taraf']),tutar:Math.abs(Number(mPick(r,['tutar','amount','kdv_dahil','toplam'],0))||0),kaynak:'masraf_raw'})).filter(r=>r.tarih&&r.tutar);
+  if(rows.length){
+    const mapped=rows.map(r=>({firma_id:mPick(r,['firma_id','firma'],cf||''),tarih:mPick(r,['tarih','date','islem_tarihi']),kategori:masrafKategori(r),aciklama:mPick(r,['aciklama','description','not','tedarikci','cari_unvan','karsi_taraf']),tutar:Math.abs(parseDynMoney(mPick(r,['tutar','amount','kdv_dahil','toplam'],0))),kaynak:'masraf_raw'})).filter(r=>r.tarih&&r.tutar);
+    if(mapped.length)return mapped;
+  }
   try{
     const res=await fetch(`masraf_${cf||PILOT_FIRMA}_${yil}.json?v=${BUILD_CODE}`,{cache:'no-store'});
     if(res.ok){
       const payload=await res.json();
       rows=(payload.kayitlar||[]).filter(r=>(!cf||r.firma_id===cf)&&String(r.tarih||'').slice(0,4)===String(yil));
-      if(rows.length)return rows.map(r=>({firma_id:r.firma_id||cf||'',tarih:r.tarih,kategori:masrafKategori(r),aciklama:r.aciklama||r.tedarikci||'',tutar:Math.abs(Number(r.tutar)||0),kaynak:'masraf_json'})).filter(r=>r.tarih&&r.tutar);
+      if(rows.length)return rows.map(r=>({firma_id:r.firma_id||cf||'',tarih:r.tarih,kategori:masrafKategori(r),aciklama:r.aciklama||r.tedarikci||'',tutar:Math.abs(parseDynMoney(r.tutar)),kaynak:'masraf_json'})).filter(r=>r.tarih&&r.tutar);
     }
   }catch(e){}
   try{
@@ -2070,7 +2085,7 @@ async function masrafData(yil,cf){
     const r=await q;
     rows=(r.data||[]).filter(x=>Number(x.tutar||x.amount||0)<0||String(x.tur||x.tip||'').toLocaleLowerCase('tr-TR').includes('gider')||String(x.tur||x.tip||'').toLocaleLowerCase('tr-TR').includes('masraf'));
   }catch(e){rows=[];}
-  return rows.map(r=>({firma_id:mPick(r,['firma_id','firma'],cf||''),tarih:mPick(r,['tarih','date']),kategori:masrafKategori(r),aciklama:mPick(r,['aciklama','description','banka_aciklama','karsi_taraf','cari_unvan']),tutar:Math.abs(Number(mPick(r,['tutar','amount'],0))||0),kaynak:'bank_transactions'})).filter(r=>r.tarih&&r.tutar);
+  return rows.map(r=>({firma_id:mPick(r,['firma_id','firma'],cf||''),tarih:mPick(r,['tarih','date']),kategori:masrafKategori(r),aciklama:mPick(r,['aciklama','description','banka_aciklama','karsi_taraf','cari_unvan']),tutar:Math.abs(parseDynMoney(mPick(r,['tutar','amount'],0))),kaynak:'bank_transactions'})).filter(r=>r.tarih&&r.tutar);
 }
 function miniBars(obj,total,color){
   const rows=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
@@ -2182,7 +2197,7 @@ async function rMasraf(){
   }
   const total=rows.reduce((s,r)=>s+r.tutar,0), max=[...rows].sort((a,b)=>b.tutar-a.tutar)[0];
   const cats={}, months={};
-  for(let i=1;i<=12;i++)months[p2(i)]=0;
+  for(let i=1;i<=12;i++)months[pad(i)]=0;
   rows.forEach(r=>{cats[r.kategori]=(cats[r.kategori]||0)+r.tutar;const m=(r.tarih||'').substring(5,7);if(m)months[m]=(months[m]||0)+r.tutar;});
   document.getElementById('mTop').textContent='TL '+fmt(total);
   document.getElementById('mIslem').textContent=fmt(rows.length);
