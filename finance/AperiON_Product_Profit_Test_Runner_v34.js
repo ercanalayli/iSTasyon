@@ -1,11 +1,12 @@
-/* AperiON Product Profit Test Runner v34.1
-   Purpose: verify product sale, cost of goods sold, gross profit and net profit logic.
+/* AperiON Product Profit Test Runner v34.2
+   Purpose: verify product sale, cost of goods sold, gross profit, net profit and missing cost queue logic.
    Missing cost rows are warning/control items, not CI failure.
 */
 
 const fs = require('fs');
 const path = require('path');
 const { convertBizimHesapRowsToProductProfit } = require('./AperiON_BizimHesap_Product_Profit_Import_v34.js');
+const { extractMissingCostRows, summarizeMissingCostQueue } = require('./AperiON_Missing_Cost_Queue_Helper_v34.js');
 
 function money(n){
   return Number(n || 0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 2 });
@@ -24,8 +25,10 @@ function run(){
   const file = path.join(__dirname, 'AperiON_Product_Profit_Test_Data_v34.json');
   const data = JSON.parse(fs.readFileSync(file, 'utf8'));
   const converted = convertBizimHesapRowsToProductProfit(data.bizimhesap_sales_rows, data.product_costs).map(calculate);
+  const missingQueue = extractMissingCostRows(converted);
+  const queueSummary = summarizeMissingCostQueue(missingQueue);
 
-  console.log('AperiON Product Profit Test v34.1');
+  console.log('AperiON Product Profit Test v34.2');
   console.log('--------------------------------');
 
   let totalSales = 0;
@@ -59,6 +62,19 @@ function run(){
   console.log(`Total Net Profit: ${money(totalNet)}`);
   console.log(`Missing Cost Rows: ${missingCost}`);
   console.log(`Invalid Rows: ${invalidRows}`);
+  console.log('--------------------------------');
+  console.log('Missing Cost Queue Summary');
+  console.log(`Queue Rows: ${queueSummary.missing_count}`);
+  console.log(`Product Count: ${queueSummary.product_count}`);
+  console.log(`Total Sales Waiting Cost: ${money(queueSummary.total_sales)}`);
+  console.log(`Queue Status: ${queueSummary.status}`);
+
+  if (missingQueue.length > 0) {
+    console.log('Missing Cost Queue Rows');
+    missingQueue.forEach((q, i) => {
+      console.log(`${i + 1}. ${q.product_name} | invoice=${q.invoice_no || '-'} | sales=${money(q.sales_amount)} | status=${q.approval_status}`);
+    });
+  }
 
   if (invalidRows > 0) {
     console.log('RESULT: FAILED - invalid sales rows exist.');
@@ -67,7 +83,7 @@ function run(){
   }
 
   if (missingCost > 0) {
-    console.log('RESULT: OK WITH CONTROL - cost missing rows correctly flagged.');
+    console.log('RESULT: OK WITH CONTROL - cost missing rows correctly queued.');
     process.exitCode = 0;
     return;
   }
