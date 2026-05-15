@@ -6,6 +6,7 @@ Yapilanlar
 3 finance AperiON Finans Panel v33 eklendi
 4 kok finans.html eklendi
 5 ana index dosyasi korunuyor
+6 finans paneli bagimsiz acilis icin hazir
 
 Kalanlar
 1 Canli link kontrol edilecek
@@ -14,5 +15,11 @@ Kalanlar
 4 BizimHesap satis maliyet verisi baglanacak
 5 Gun sonu kar raporu gercek veriye baglanacak
 
+Menu baglanti plani
+Sol menude Para bolumune Kar Zekasi adli yeni baglanti eklenecek.
+Bu baglanti finans.html sayfasini acacak.
+Ana sistem fonksiyonlari degistirilmeyecek.
+
 Kontrol
 Mevcut AperiON ozellikleri silinmedi.
+Ana index henuz degismedi.
