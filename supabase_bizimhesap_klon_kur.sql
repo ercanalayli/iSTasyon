@@ -295,6 +295,34 @@ create table if not exists public.bot_state (
   updated_at timestamptz default now()
 );
 
+create table if not exists public.financial_inbox (
+  id bigserial primary key,
+  firma_id text not null default 'alayli',
+  kanal text not null default 'telegram',
+  chat_id text,
+  message_id bigint,
+  kategori text not null default 'not' check (kategori in ('tahakkuk','dekont','ekstre','tahsilat','odeme_sozu','vade','odeme','not')),
+  baslik text,
+  aciklama text,
+  cari_unvan text,
+  tutar numeric,
+  para_birimi text default 'TL',
+  tarih timestamptz,
+  vade_tarihi timestamptz,
+  dosya_tipi text,
+  file_id text,
+  file_unique_id text,
+  file_name text,
+  mime_type text,
+  onay_durumu text not null default 'bekliyor' check (onay_durumu in ('bekliyor','onaylandi','reddedildi','ogrenilecek')),
+  bizimhesap_durumu text not null default 'beklemede' check (bizimhesap_durumu in ('beklemede','islenmeyecek','islenebilir','islendi','hata')),
+  hash text,
+  raw_text text,
+  raw jsonb default '{}'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
 create unique index if not exists masraf_raw_firma_hash_uq on public.masraf_raw (firma_id, hash) where hash is not null;
 create unique index if not exists customers_firma_hash_uq on public.customers (firma_id, hash) where hash is not null;
 create unique index if not exists transactions_firma_hash_uq on public.transactions (firma_id, hash) where hash is not null;
@@ -303,6 +331,8 @@ create unique index if not exists stock_raw_firma_hash_uq on public.stock_raw (f
 create unique index if not exists purchase_raw_firma_hash_uq on public.purchase_raw (firma_id, hash) where hash is not null;
 create unique index if not exists accounts_raw_firma_hash_uq on public.accounts_raw (firma_id, hash) where hash is not null;
 create index if not exists telegram_reminders_due_idx on public.telegram_reminders (durum, hatirlatma_zamani);
+create unique index if not exists financial_inbox_hash_uq on public.financial_inbox (hash) where hash is not null;
+create index if not exists financial_inbox_status_idx on public.financial_inbox (firma_id, onay_durumu, bizimhesap_durumu, created_at);
 alter table public.bot_state enable row level security;
 grant select, insert, update on public.bot_state to anon, authenticated;
 
@@ -310,7 +340,7 @@ do $$
 declare
   t text;
 begin
-  foreach t in array array['masraf_raw','customers','transactions','collections_raw','stock_raw','purchase_raw','accounts_raw','telegram_reminders','bot_state']
+  foreach t in array array['masraf_raw','customers','transactions','collections_raw','stock_raw','purchase_raw','accounts_raw','telegram_reminders','bot_state','financial_inbox']
   loop
     execute format('alter table public.%I enable row level security', t);
     execute format('grant select, insert, update, delete on public.%I to anon, authenticated', t);

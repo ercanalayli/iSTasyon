@@ -93,6 +93,76 @@ function parseReminder(text) {
   };
 }
 
+function moneyOf(text) {
+  const m = String(text || '').match(/(\d{1,3}(?:[.\s]\d{3})*(?:,\d{1,2})?|\d+(?:,\d{1,2})?)\s*(?:tl|try|₺)?/i);
+  if (!m) return null;
+  return Number(m[1].replace(/\s/g, '').replace(/\./g, '').replace(',', '.')) || null;
+}
+
+function inboxCategory(text, msg) {
+  const t = tr(text);
+  if (msg.document || msg.photo) {
+    if (/ekstre|hesap hareket|banka/.test(t)) return 'ekstre';
+    if (/tahakkuk|borc bildirimi/.test(t)) return 'tahakkuk';
+    return 'dekont';
+  }
+  if (/tahakkuk|borc bildirimi/.test(t)) return 'tahakkuk';
+  if (/dekont|odeme yaptim|odedim|makbuz/.test(t)) return 'dekont';
+  if (/ekstre|hesap hareket|banka ekstresi/.test(t)) return 'ekstre';
+  if (/tahsil|tahsilat|para geldi|odeme alindi/.test(t)) return 'tahsilat';
+  if (/soz verdi|odeme sozu|odeyecek|tahsil edilecek/.test(t)) return 'odeme_sozu';
+  if (/vade|vadeli|son odeme/.test(t)) return 'vade';
+  if (/ode|odenecek|fatura|sgk|vergi|kira|maas|kredi/.test(t)) return 'odeme';
+  return 'not';
+}
+
+function fileInfo(msg) {
+  if (msg.document) {
+    return {
+      dosya_tipi: 'document',
+      file_id: msg.document.file_id,
+      file_unique_id: msg.document.file_unique_id,
+      file_name: msg.document.file_name,
+      mime_type: msg.document.mime_type,
+    };
+  }
+  if (msg.photo?.length) {
+    const p = msg.photo[msg.photo.length - 1];
+    return { dosya_tipi: 'photo', file_id: p.file_id, file_unique_id: p.file_unique_id };
+  }
+  if (msg.voice) return { dosya_tipi: 'voice', file_id: msg.voice.file_id, file_unique_id: msg.voice.file_unique_id, mime_type: msg.voice.mime_type };
+  return {};
+}
+
+async function saveFinancialInbox(msg) {
+  const text = msg.text || msg.caption || '';
+  const category = inboxCategory(text, msg);
+  const when = parseDate(text);
+  const amount = moneyOf(text);
+  const title = cleanTitle(text) || (msg.document?.file_name || 'Telegram finans kaydi');
+  const row = {
+    firma_id: FIRMA_ID,
+    kanal: 'telegram',
+    chat_id: String(msg.chat.id),
+    message_id: msg.message_id,
+    kategori: category,
+    baslik: title.slice(0, 240),
+    aciklama: text || title,
+    tutar: amount,
+    tarih: category === 'dekont' || category === 'ekstre' || category === 'tahsilat' ? when?.toISOString() || null : null,
+    vade_tarihi: category === 'vade' || category === 'odeme' || category === 'odeme_sozu' || category === 'tahakkuk' ? when?.toISOString() || null : null,
+    onay_durumu: 'bekliyor',
+    bizimhesap_durumu: 'beklemede',
+    hash: `telegram:${msg.chat.id}:${msg.message_id}`,
+    raw_text: text,
+    raw: msg,
+    ...fileInfo(msg),
+  };
+  const { data, error } = await db.from('financial_inbox').upsert(row, { onConflict: 'hash' }).select('*').single();
+  if (error) throw new Error(`financial_inbox: ${error.message}`);
+  return data;
+}
+
 async function tg(method, body) {
   const res = await fetch(`https://api.telegram.org/bot${TOKEN}/${method}`, {
     method: 'POST',
@@ -114,9 +184,15 @@ async function saveReminder(msg) {
     await send(msg.chat.id, 'AperiON hazir. Ornek: "yarin 14:30 SGK odenecek" veya "25.05.2026 10:00 Murat Ticaret tahsil edilecek".');
     return;
   }
+  const inbox = await saveFinancialInbox(msg);
   const parsed = parseReminder(text);
   if (!parsed) {
-    await send(msg.chat.id, 'Tarih/saat anlayamadim. Ornek: "yarin 09:00 yapilacak", "20.05.2026 15:30 odenecek".');
+    await send(msg.chat.id, [
+      'AperiON finans gelen kutusuna aldi',
+      `ID: ${inbox.id}`,
+      `Tur: ${inbox.kategori}`,
+      'Tarih/saat yoksa sadece bekleyen kayit olur; istersen vade saatiyle tekrar yaz.',
+    ].join('\n'));
     return;
   }
   const row = {
@@ -129,6 +205,7 @@ async function saveReminder(msg) {
   if (error) throw new Error(error.message);
   await send(msg.chat.id, [
     'AperiON not aldi',
+    `Finans ID: ${inbox.id}`,
     `ID: ${data.id}`,
     `Grup: ${data.kategori}`,
     `Zaman: ${new Date(data.hatirlatma_zamani).toLocaleString('tr-TR')}`,
