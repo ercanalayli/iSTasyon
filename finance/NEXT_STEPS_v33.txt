@@ -1,0 +1,18 @@
+AperiON Finans v33 sonraki adimlar
+
+Yapilanlar
+1 finance klasoru olustu
+2 finance README eklendi
+3 finance AperiON Finans Panel v33 eklendi
+4 kok finans.html eklendi
+5 ana index dosyasi korunuyor
+
+Kalanlar
+1 Canli link kontrol edilecek
+2 Ana menuden finans sayfasina baglanti eklenecek
+3 Supabase tablo dosyalari eklenecek
+4 BizimHesap satis maliyet verisi baglanacak
+5 Gun sonu kar raporu gercek veriye baglanacak
+
+Kontrol
+Mevcut AperiON ozellikleri silinmedi.
