@@ -1,0 +1,35 @@
+AperiON eksik urun maliyeti is akisi v34
+
+Amaç
+Urun satisinda maliyet bulunamazsa kar raporu kesinlesmesin ama sistem de durmasin.
+
+Akis
+1 BizimHesap satis satiri gelir
+2 Urun kodu veya urun adi product_costs tablosunda aranir
+3 Maliyet bulunursa SMM hesaplanir
+4 Maliyet bulunamazsa profit_status cost_missing olur
+5 Kayit Onay/Kontrol Merkezi'ne duser
+6 Kullanici birim maliyet girer
+7 product_costs tablosuna maliyet kaydi eklenir
+8 ilgili satis satiri yeniden hesaplanir
+9 kar guven skoru yukselir
+10 gun sonu kar raporu kesinlesebilir
+
+Kurallar
+- Urun satisinda SMM zorunlu
+- Hizmet satisinda SMM yok
+- Maliyeti eksik urun sistem hatasi degil kontrol isidir
+- Eksik maliyet varken kesin kar raporu uretilmez
+- Tahmini rapor uretilebilir ama kontrol etiketi tasir
+
+Ekran ihtiyaci
+- Eksik maliyetli urun listesi
+- Urun kodu
+- Urun adi
+- Satis tarihi
+- Satis tutari
+- Adet
+- Onerilen maliyet
+- Manuel maliyet girisi
+- Onay butonu
+- Yeniden hesapla butonu
