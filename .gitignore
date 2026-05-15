@@ -21,5 +21,6 @@ bank_exports/
 moka_exports/
 luca_exports/
 logs/
+data/aperion_last_sync.json
 .DS_Store
 Thumbs.db

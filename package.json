@@ -20,6 +20,9 @@
     "telegram:hatirlat": "node telegram_hatirlatma_bot.js --once",
     "telegram:hatirlat:watch": "node telegram_hatirlatma_bot.js --watch",
     "telegram:hatirlat:due": "node telegram_hatirlatma_bot.js --remind-only",
+    "sync:bizimhesap": "node aperion_veri_senkron.js --firma alayli",
+    "sync:bizimhesap:plan": "node aperion_veri_senkron.js --firma alayli --plan",
+    "sync:bizimhesap:dry": "node aperion_veri_senkron.js --firma alayli --dry-run",
     "test": "node finance_smoke_test.cjs && node scripts/verify_finance_manifest.cjs"
   },
   "dependencies": {
