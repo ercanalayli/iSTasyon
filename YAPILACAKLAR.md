@@ -45,6 +45,8 @@
 - 25.04, 29.04 ve 30.04 eksik satis verileri tekrar cekildi.
 - Otomatik veri cekimi icin 09:10, 12:30 ve 18:30 Windows gorevleri kuruldu.
 - Bot calistirici dosyasi eklendi.
+- Telegram not/hatirlatma botu eklendi.
+- Telegram hatirlatma botu icin Windows acilis zamanlayici kurulumu hazirlandi.
 
 ## Yapilacaklar - Oncelik Sirasi
 
@@ -59,7 +61,7 @@
 9. 2024, 2025, 2026 ve gecmis yil karsilastirmali yonetim raporunu genisletmek.
 10. Bildirim ayarlarinda hangi raporun hangi telefona gidecegini secilebilir yapmak.
 11. Acilista calisan gorevi yonetici izinli kurulumla eklemek.
-12. Telegram not/hatirlatma botunu zamanlayiciya baglamak.
+12. Telegram not/hatirlatma SQL'ini Supabase'de calistirip zamanlayiciyi aktif etmek.
 13. Urun siparis yonetimini tasarlamak: talep, stok kontrol, tedarikci, durum, teslim.
 
 ## BizimHesap Ogrenilecek Akislar
