@@ -307,18 +307,10 @@ async function kaydet(rows) {
   if (!rows.length) return 0;
   const dates = rows.map(r => r.tarih).filter(Boolean).sort();
   const from = dates[0], to = dates[dates.length - 1];
-  const existing = await db.from(SUPABASE.table)
-    .select('firma_id,tarih,aciklama,tutar')
-    .eq('firma_id', rows[0].firma_id)
-    .gte('tarih', from)
-    .lte('tarih', to)
-    .limit(20000);
-  if (existing.error) throw new Error(`Supabase ${SUPABASE.table}: ${existing.error.message}`);
-  const seen = new Set((existing.data || []).map(tableDedupeKey));
   const batchSeen = new Set();
   const fresh = rows.filter(r => {
     const k = tableDedupeKey(r);
-    if (seen.has(k) || batchSeen.has(k)) return false;
+    if (batchSeen.has(k)) return false;
     batchSeen.add(k);
     return true;
   });
@@ -337,9 +329,13 @@ async function kaydet(rows) {
     ay: Number(r.tarih.substring(5, 7)),
     created_at: new Date().toISOString(),
   }));
-  const { data, error } = await db.from(SUPABASE.table)
-    .upsert(records, { onConflict: 'tarih,aciklama,firma_id', ignoreDuplicates: true })
-    .select();
+  const del = await db.from(SUPABASE.table)
+    .delete()
+    .eq('firma_id', rows[0].firma_id)
+    .gte('tarih', from)
+    .lte('tarih', to);
+  if (del.error) throw new Error(`Supabase ${SUPABASE.table} temizleme: ${del.error.message}`);
+  const { data, error } = await db.from(SUPABASE.table).insert(records).select();
   if (error) throw new Error(`Supabase ${SUPABASE.table}: ${error.message}`);
   return data?.length || records.length;
 }

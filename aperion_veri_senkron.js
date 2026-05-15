@@ -10,6 +10,8 @@ const val = (flag, fallback) => (has(flag) ? args[args.indexOf(flag) + 1] : fall
 
 const firma = val('--firma', 'alayli');
 const year = val('--year', String(new Date().getFullYear()));
+const today = new Date();
+const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 const dryRun = has('--dry-run');
 const planOnly = has('--plan');
 const commit = dryRun ? '' : '--commit';
@@ -35,7 +37,7 @@ const jobs = [
   {
     label: `BizimHesap masraf ${year}`,
     file: 'bizimhesap_masraf_cek.js',
-    args: [commit, '--firma', firma, '--year', year, '--out', `masraf_${firma}_${year}.json`],
+    args: [commit, '--firma', firma, '--from', `${year}-01-01`, '--to', todayIso, '--limit', '5000', '--out', `masraf_${firma}_${year}.json`],
     required: true,
   },
   {
