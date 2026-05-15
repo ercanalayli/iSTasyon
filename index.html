@@ -1048,6 +1048,7 @@ DATA_SOURCES.alayli=[
   {id:'stock',n:'Stok Hareketleri',t:'stock_raw',kind:'table',date:'tarih',mode:'eksik'},
   {id:'purchases',n:'Alis / Tedarikci Faturalari',t:'purchase_raw',kind:'table',date:'tarih',mode:'eksik'},
   {id:'accounts',n:'Kasa / Banka Hesaplari',t:'accounts_raw',kind:'table',date:'updated_at',mode:'eksik'}
+  ,{id:'telegramReminders',n:'Telegram Not / Hatirlatma',t:'telegram_reminders',kind:'table',date:'hatirlatma_zamani',mode:'aktif'}
 ];
 let RAW=[],cM='month',cF=PILOT_FIRMA,sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null,PROD_MAP=[];
 const pad=n=>String(n).padStart(2,'0');

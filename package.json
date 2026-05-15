@@ -17,6 +17,9 @@
     "command-center-inject-index": "node scripts/inject_command_center_into_index.cjs",
     "command-center-verify-index": "node scripts/verify_command_center_index_link.cjs",
     "finance-verify-index": "node scripts/verify_finance_index_link.cjs",
+    "telegram:hatirlat": "node telegram_hatirlatma_bot.js --once",
+    "telegram:hatirlat:watch": "node telegram_hatirlatma_bot.js --watch",
+    "telegram:hatirlat:due": "node telegram_hatirlatma_bot.js --remind-only",
     "test": "node finance_smoke_test.cjs && node scripts/verify_finance_manifest.cjs"
   },
   "dependencies": {

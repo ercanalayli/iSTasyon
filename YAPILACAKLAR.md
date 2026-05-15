@@ -16,6 +16,8 @@
 - Bilinmeyen banka hareketlerinde risk alinmamasi, kullaniciya sorulmasi ve sistemin ogrenmesi.
 - Birden fazla telefona secilebilir bildirim.
 - BizimHesap'i otomatik gezip menuleri, formlari, alanlari ve kaydetme akisini ogrenmesi.
+- Telegram'dan yazilan notlari tarih/saat ile alip yapilacak, odenecek, tahsil edilecek olarak ayirmak ve zamaninda hatirlatmak.
+- AperiON icinde urun siparis yonetimi kurmak.
 
 ## Yapilanlar
 
@@ -57,6 +59,8 @@
 9. 2024, 2025, 2026 ve gecmis yil karsilastirmali yonetim raporunu genisletmek.
 10. Bildirim ayarlarinda hangi raporun hangi telefona gidecegini secilebilir yapmak.
 11. Acilista calisan gorevi yonetici izinli kurulumla eklemek.
+12. Telegram not/hatirlatma botunu zamanlayiciya baglamak.
+13. Urun siparis yonetimini tasarlamak: talep, stok kontrol, tedarikci, durum, teslim.
 
 ## BizimHesap Ogrenilecek Akislar
 

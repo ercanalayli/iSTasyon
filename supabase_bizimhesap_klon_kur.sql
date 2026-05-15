@@ -271,6 +271,30 @@ create table if not exists public.accounts_raw (
   updated_at timestamptz default now()
 );
 
+create table if not exists public.telegram_reminders (
+  id bigserial primary key,
+  firma_id text not null default 'alayli',
+  chat_id text not null,
+  message_id bigint,
+  kategori text not null check (kategori in ('yapilacak','odenecek','tahsil_edilecek')),
+  baslik text not null,
+  aciklama text,
+  hatirlatma_zamani timestamptz not null,
+  durum text not null default 'bekliyor' check (durum in ('bekliyor','hatirlatildi','tamamlandi','iptal')),
+  kaynak text default 'telegram',
+  raw_text text,
+  raw jsonb default '{}'::jsonb,
+  bildirim_tarihi timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.bot_state (
+  key text primary key,
+  value text,
+  updated_at timestamptz default now()
+);
+
 create unique index if not exists masraf_raw_firma_hash_uq on public.masraf_raw (firma_id, hash) where hash is not null;
 create unique index if not exists customers_firma_hash_uq on public.customers (firma_id, hash) where hash is not null;
 create unique index if not exists transactions_firma_hash_uq on public.transactions (firma_id, hash) where hash is not null;
@@ -278,12 +302,15 @@ create unique index if not exists collections_raw_firma_hash_uq on public.collec
 create unique index if not exists stock_raw_firma_hash_uq on public.stock_raw (firma_id, hash) where hash is not null;
 create unique index if not exists purchase_raw_firma_hash_uq on public.purchase_raw (firma_id, hash) where hash is not null;
 create unique index if not exists accounts_raw_firma_hash_uq on public.accounts_raw (firma_id, hash) where hash is not null;
+create index if not exists telegram_reminders_due_idx on public.telegram_reminders (durum, hatirlatma_zamani);
+alter table public.bot_state enable row level security;
+grant select, insert, update on public.bot_state to anon, authenticated;
 
 do $$
 declare
   t text;
 begin
-  foreach t in array array['masraf_raw','customers','transactions','collections_raw','stock_raw','purchase_raw','accounts_raw']
+  foreach t in array array['masraf_raw','customers','transactions','collections_raw','stock_raw','purchase_raw','accounts_raw','telegram_reminders','bot_state']
   loop
     execute format('alter table public.%I enable row level security', t);
     execute format('grant select, insert, update, delete on public.%I to anon, authenticated', t);
