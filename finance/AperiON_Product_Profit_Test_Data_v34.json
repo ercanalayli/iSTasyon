@@ -1,0 +1,69 @@
+{
+  "product_costs": [
+    {
+      "company": "ALAYLI",
+      "product_code": "BEZ-001",
+      "product_name": "Hasta bezi",
+      "category": "Medikal",
+      "cost_date": "2026-05-15",
+      "unit_cost": 350,
+      "source_type": "manual"
+    },
+    {
+      "company": "ALAYLI",
+      "product_code": "SONDA-001",
+      "product_name": "Hidrofilik sonda",
+      "category": "Medikal",
+      "cost_date": "2026-05-15",
+      "unit_cost": 42,
+      "source_type": "manual"
+    },
+    {
+      "company": "ALAYLI",
+      "product_code": "ISITME-001",
+      "product_name": "Kulak isitme cihazi",
+      "category": "Isitme",
+      "cost_date": "2026-05-15",
+      "unit_cost": 10000,
+      "source_type": "manual"
+    }
+  ],
+  "bizimhesap_sales_rows": [
+    {
+      "company": "ALAYLI",
+      "sale_date": "2026-05-15",
+      "invoice_no": "BH-0001",
+      "cari_name": "Demo Musteri 1",
+      "product_code": "BEZ-001",
+      "product_name": "Hasta bezi",
+      "quantity": 10,
+      "unit_sale_price": 500,
+      "dynamic_expense_share": 250,
+      "variable_expense": 0
+    },
+    {
+      "company": "ALAYLI",
+      "sale_date": "2026-05-15",
+      "invoice_no": "BH-0002",
+      "cari_name": "Demo Musteri 2",
+      "product_code": "SONDA-001",
+      "product_name": "Hidrofilik sonda",
+      "quantity": 100,
+      "unit_sale_price": 75,
+      "dynamic_expense_share": 375,
+      "variable_expense": 120
+    },
+    {
+      "company": "ALAYLI",
+      "sale_date": "2026-05-15",
+      "invoice_no": "BH-0003",
+      "cari_name": "Demo Musteri 3",
+      "product_code": "UNKNOWN-001",
+      "product_name": "Maliyeti eksik urun",
+      "quantity": 3,
+      "unit_sale_price": 1000,
+      "dynamic_expense_share": 150,
+      "variable_expense": 0
+    }
+  ]
+}
