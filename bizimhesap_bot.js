@@ -86,6 +86,25 @@ function log(msg) {
 
 const fmt = n => n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':n.toFixed(0);
 
+function trNumber(value) {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  const raw = String(value || '').replace(/TL|TRY|₺/gi, '').replace(/\s/g, '').replace(/[^0-9,.-]/g, '');
+  if (!raw) return 0;
+  const lastComma = raw.lastIndexOf(',');
+  const lastDot = raw.lastIndexOf('.');
+  let normalized = raw;
+  if (lastComma >= 0 && lastDot >= 0) {
+    normalized = lastComma > lastDot ? raw.replace(/\./g, '').replace(',', '.') : raw.replace(/,/g, '');
+  } else if (lastComma >= 0) {
+    normalized = raw.replace(/\./g, '').replace(',', '.');
+  } else if (lastDot >= 0) {
+    const parts = raw.split('.');
+    normalized = parts.length > 2 || parts.at(-1).length === 3 ? raw.replace(/\./g, '') : raw;
+  }
+  const n = Number(normalized);
+  return Number.isFinite(n) ? n : 0;
+}
+
 // ── BROWSER BAŞLAT ─────────────────────────────────────────────────────────
 async function startBrowser() {
   const browser = await puppeteer.launch({
@@ -196,8 +215,8 @@ async function kaydet(rows, firma, tarihISO) {
 
   const records = rows.map(r => ({
     urun:     (r.satir_aciklamasi||r.urun||r.aciklama||(r._cells||[]).slice(-1)[0]||'EMPTY').substring(0,500),
-    adet:     parseFloat((r.adet||r.miktar||'1').toString().replace(',','.'))||0,
-    ciro:     parseFloat((r.tutar||r.ciro||r.toplam||'0').toString().replace(/[^0-9.,-]/g,'').replace(',','.'))||0,
+    adet:     trNumber(r.adet||r.miktar||'1'),
+    ciro:     trNumber(r.toplam||r.tutar||r.net||r.ciro||'0'),
     kaynak:   'bizimhesap',
     tarih:    tarihISO,
     unvan:    (r.musteri||r.cari||firma.adi).substring(0,200),
@@ -345,7 +364,7 @@ async function main() {
             try {
               const rows = await raporCek(page, tarihTR);
               const n = await kaydet(rows, firma, tarihISO);
-              tumRows.push(...rows.map(r=>({...r,ciro:parseFloat((r.tutar||r.ciro||'0').replace(/[^0-9.,-]/g,'').replace(',','.'))||0})));
+              tumRows.push(...rows.map(r=>({...r,ciro:trNumber(r.toplam||r.tutar||r.net||r.ciro||'0')})));
               log(`  ✅ ${firma.adi} ${tarihTR}: ${n} kayıt`);
             } catch (e) {
               log(`  ✗ ${firma.adi} ${tarihTR}: ${e.message}`);
