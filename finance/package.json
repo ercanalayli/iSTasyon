@@ -1,0 +1,9 @@
+{
+  "name": "aperion-finance-profit-engine",
+  "version": "34.0.0",
+  "private": true,
+  "description": "AperiON finance product sales COGS gross profit and dynamic net profit test tools",
+  "scripts": {
+    "test:product-profit": "node AperiON_Product_Profit_Test_Runner_v34.js"
+  }
+}
