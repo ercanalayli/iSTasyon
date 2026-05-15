@@ -1,0 +1,44 @@
+AperiON urun satis SMM kar veri modeli v34
+
+Tablo 1 product_costs
+- company
+- product_code
+- product_name
+- category
+- cost_date
+- unit_cost
+- source_type
+- active
+
+Tablo 2 product_sales_profit
+- company
+- sale_date
+- invoice_no
+- cari_name
+- product_code
+- product_name
+- quantity
+- unit_sale_price
+- unit_cost
+- sales_amount
+- cogs_amount
+- gross_profit
+- dynamic_expense_share
+- variable_expense
+- net_profit
+- net_margin
+- profit_status
+
+Formul
+sales_amount = quantity x unit_sale_price
+cogs_amount = quantity x unit_cost
+gross_profit = sales_amount - cogs_amount
+net_profit = gross_profit - dynamic_expense_share - variable_expense
+net_margin = net_profit / sales_amount x 100
+
+Kontrol kurallari
+1 Urun satisinda unit_cost bos veya 0 ise kar guven skoru duser.
+2 Hizmet satisi ayri kurala tabidir; hizmette SMM yoktur.
+3 Urun satisinda SMM zorunludur.
+4 Degisken gider varsa net kar anlik yeniden hesaplanir.
+5 Sabit gider payi satis tutari, brut kar, adet veya kategoriye gore dagitilir.
