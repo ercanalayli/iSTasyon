@@ -142,7 +142,7 @@ async function login(page) {
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
       const el = [...document.querySelectorAll('a,button')]
-        .find(x => norm(x.innerText || x.value || x.title).includes('giris yap'));
+        .find(x => norm(x.innerText || x.value || x.title).includes('giris yap') || String(x.innerText || x.value || x.title || '').toLocaleLowerCase('tr-TR').includes('giriş yap'));
       if (!el) return false;
       el.click();
       return true;

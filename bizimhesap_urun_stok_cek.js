@@ -95,11 +95,22 @@ async function gotoSaglam(page, url, label, timeout = 60000) {
 async function login(page) {
   log('[LOGIN] BizimHesap');
   await page.goto(CONFIG.loginUrl, { waitUntil: 'networkidle2', timeout: 30000 });
-  await page.waitForSelector('input[type="email"], input[type="text"]', { timeout: 12000 });
+  await page.waitForSelector('body', { timeout: 12000 });
+  let pwEl = await page.$('input[type="password"]');
+  if (!pwEl) {
+    await page.evaluate(() => {
+      const norm = s => String(s || '').toLocaleLowerCase('tr-TR');
+      const el = [...document.querySelectorAll('a,button')]
+        .find(x => norm(x.innerText || x.value || x.title).includes('giriş yap') || norm(x.innerText || x.value || x.title).includes('giris yap'));
+      if (el) el.click();
+    });
+    await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+  }
+  await page.waitForSelector('input[type="password"]', { timeout: 12000 });
   const emailEl = await page.$('input[type="email"]') || await page.$('input[type="text"]');
   await emailEl.click({ clickCount: 3 });
   await emailEl.type(CONFIG.email, { delay: 20 });
-  const pwEl = await page.$('input[type="password"]');
+  pwEl = await page.$('input[type="password"]');
   await pwEl.click({ clickCount: 3 });
   await pwEl.type(CONFIG.password, { delay: 20 });
   const clicked = await page.evaluate(() => {
