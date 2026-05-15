@@ -12,6 +12,9 @@ const firma = val('--firma', 'alayli');
 const year = val('--year', String(new Date().getFullYear()));
 const today = new Date();
 const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+const salesFrom = new Date(today);
+salesFrom.setDate(salesFrom.getDate() - Number(val('--sales-days', '14')));
+const salesFromIso = `${salesFrom.getFullYear()}-${String(salesFrom.getMonth() + 1).padStart(2, '0')}-${String(salesFrom.getDate()).padStart(2, '0')}`;
 const dryRun = has('--dry-run');
 const planOnly = has('--plan');
 const commit = dryRun ? '' : '--commit';
@@ -23,9 +26,9 @@ mkdirSync(dataDir, { recursive: true });
 
 const jobs = [
   {
-    label: 'BizimHesap satis eksik gun kontrolu',
+    label: `BizimHesap satis kaynak yenileme ${salesFromIso} - ${todayIso}`,
     file: 'bizimhesap_bot.js',
-    args: ['--firma', firma],
+    args: ['--firma', firma, '--gecmis', salesFromIso, todayIso],
     required: true,
   },
   {
