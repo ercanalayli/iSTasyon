@@ -1,0 +1,34 @@
+name: Apply Kar Zekasi Menu Patch v39
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-menu-patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Apply menu patch
+        run: node tools/apply_kar_zekasi_menu_patch_v39.js
+
+      - name: Commit patched index
+        run: |
+          git config user.name "aperion-bot"
+          git config user.email "actions@github.com"
+          if git diff --quiet; then
+            echo "No changes to commit"
+          else
+            git add index.html index.backup-before-kar-zekasi-v39.html
+            git commit -m "Add Kar Zekasi menu link v39"
+            git push
+          fi
