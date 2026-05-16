@@ -1,0 +1,46 @@
+{
+  "stock_rows": [
+    {
+      "company": "ALAYLI",
+      "product_code": "BEZ-001",
+      "product_name": "Hasta bezi",
+      "category": "Medikal",
+      "stock_qty": 4500
+    },
+    {
+      "company": "ALAYLI",
+      "product_code": "SERME-001",
+      "product_name": "Serme",
+      "category": "Medikal",
+      "stock_qty": 5500
+    },
+    {
+      "company": "ALAYLI",
+      "product_code": "ISITME-001",
+      "product_name": "Kulak isitme cihazi",
+      "category": "Isitme",
+      "stock_qty": 608
+    },
+    {
+      "company": "ALAYLI",
+      "product_code": "SLOW-001",
+      "product_name": "Yavas donen stok",
+      "category": "Medikal",
+      "stock_qty": 1200
+    },
+    {
+      "company": "ALAYLI",
+      "product_code": "ZERO-001",
+      "product_name": "Stok bitmis urun",
+      "category": "Medikal",
+      "stock_qty": 0
+    }
+  ],
+  "sales_rows_12m": [
+    { "company": "ALAYLI", "product_code": "BEZ-001", "product_name": "Hasta bezi", "quantity": 12000 },
+    { "company": "ALAYLI", "product_code": "SERME-001", "product_name": "Serme", "quantity": 6600 },
+    { "company": "ALAYLI", "product_code": "ISITME-001", "product_name": "Kulak isitme cihazi", "quantity": 720 },
+    { "company": "ALAYLI", "product_code": "SLOW-001", "product_name": "Yavas donen stok", "quantity": 600 },
+    { "company": "ALAYLI", "product_code": "ZERO-001", "product_name": "Stok bitmis urun", "quantity": 1200 }
+  ]
+}
