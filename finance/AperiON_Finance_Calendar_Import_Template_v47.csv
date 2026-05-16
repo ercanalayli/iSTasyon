@@ -1,0 +1,9 @@
+company,item_date,original_due_date,item_type,direction,title,description,cari_name,account_name,category,expected_amount,status,priority,fixed_or_variable,source_type,note
+ALAYLI,2026-05-16,2026-05-16,payable,out,Tedarikçi ödemesi örnek,Tedarikçiye yapılacak ödeme,Demo Tedarikçi,Banka,Tedarikçi Ödemesi,125000,open,high,variable,excel,Örnek satır
+ALAYLI,2026-05-16,2026-05-16,receivable,in,Cari tahsilat örnek,Müşteriden beklenen tahsilat,Demo Cari,Banka,Cari Tahsilat,155000,open,high,variable,excel,Örnek satır
+ALAYLI,2026-05-17,2026-05-17,credit,out,Kredi taksiti örnek,Banka kredi taksiti,Banka,Kredi,Kredi Taksiti,22650,open,normal,fixed,excel,Örnek satır
+ALAYLI,2026-05-18,2026-05-18,credit_card,out,Kredi kartı ödemesi örnek,Kart ekstresi ödeme günü,Banka/Kart,Kredi Kartı,Kredi Kartı,48500,open,critical,variable,excel,Örnek satır
+ALAYLI,2026-05-19,2026-05-19,moka,in,Moka bekleyen tahsilat örnek,Moka aktarımı bekleniyor,Moka United,Banka,Moka Tahsilat,35000,open,normal,variable,excel,Örnek satır
+ALAYLI,2026-05-20,2026-05-20,check,out,Çek ödemesi örnek,Çek vadesi,Demo Tedarikçi,Çek,Çek/Senet,80000,open,high,variable,excel,Örnek satır
+ALAYLI,2026-05-16,2026-05-16,task,neutral,Banka ekstresi kontrolü,Banka hareketleri kontrol edilecek,,,Görev,0,open,high,variable,excel,Örnek görev
+ALAYLI,2026-05-16,2026-05-16,approval,neutral,Fiyat listesi onayı,Telegram fiyat listesi ürün eşleşmesi onayı,Demo Tedarikçi,,Onay,0,waiting_approval,normal,variable,excel,Örnek onay
