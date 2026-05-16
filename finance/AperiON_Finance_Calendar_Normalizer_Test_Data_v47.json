@@ -1,0 +1,89 @@
+{
+  "defaults": {
+    "company": "ALAYLI",
+    "source_type": "test"
+  },
+  "rows": [
+    {
+      "Firma": "ALAYLI",
+      "Tarih": "16.05.2026",
+      "Tür": "ödenecek",
+      "Açıklama": "Tedarikçi ödemesi",
+      "Cari": "Demo Tedarikçi",
+      "Hesap": "Banka",
+      "Kategori": "Tedarikçi Ödemesi",
+      "Tutar": "125.000,00",
+      "Durum": "açık",
+      "Öncelik": "yüksek",
+      "Sabit/Değişken": "değişken"
+    },
+    {
+      "Firma": "ALAYLI",
+      "Tarih": "2026-05-16",
+      "Tür": "tahsilat",
+      "Açıklama": "Cari tahsilat bekleniyor",
+      "Cari": "Demo Cari",
+      "Hesap": "Banka",
+      "Kategori": "Cari Tahsilat",
+      "Tutar": "155000",
+      "Durum": "bekliyor",
+      "Öncelik": "kritik"
+    },
+    {
+      "Firma": "ALAYLI",
+      "Tarih": "17/05/2026",
+      "Tür": "kredi kartı",
+      "Açıklama": "Akbank kart ödemesi",
+      "Cari": "Akbank",
+      "Hesap": "Kredi Kartı",
+      "Kategori": "Kredi Kartı",
+      "Tutar": "48.500,75",
+      "Durum": "open",
+      "Öncelik": "critical"
+    },
+    {
+      "Firma": "ALAYLI",
+      "Tarih": "18-05-2026",
+      "Tür": "moka united",
+      "Açıklama": "Moka aktarımı bekleniyor",
+      "Cari": "Moka United",
+      "Hesap": "Banka",
+      "Kategori": "Moka Tahsilat",
+      "Tutar": "35000",
+      "Durum": "açık"
+    },
+    {
+      "Firma": "ALAYLI",
+      "Tarih": "16.05.2026",
+      "Tür": "görev",
+      "Açıklama": "Banka ekstresi kontrol edilecek",
+      "Kategori": "Görev",
+      "Tutar": "0",
+      "Durum": "açık"
+    },
+    {
+      "Firma": "ALAYLI",
+      "Tarih": "16.05.2026",
+      "Tür": "onay",
+      "Açıklama": "Fiyat listesi eşleşmesi onayı",
+      "Cari": "Demo Tedarikçi",
+      "Kategori": "Onay",
+      "Tutar": "0",
+      "Durum": "onay bekliyor"
+    },
+    {
+      "Firma": "ALAYLI",
+      "Tarih": "",
+      "Tür": "çek",
+      "Açıklama": "Tarihi eksik çek kaydı",
+      "Tutar": "80000"
+    },
+    {
+      "Firma": "ALAYLI",
+      "Tarih": "20.05.2026",
+      "Tür": "ödenecek",
+      "Açıklama": "Tutarı eksik ödeme",
+      "Tutar": "0"
+    }
+  ]
+}
