@@ -1,0 +1,42 @@
+{
+  "firma": "alayli",
+  "mode": "commit",
+  "startedAt": "2026-05-15T15:49:03.504Z",
+  "finishedAt": "2026-05-15T15:49:51.387Z",
+  "ok": false,
+  "jobs": [
+    {
+      "label": "BizimHesap satis kaynak yenileme 2026-05-15 - 2026-05-15",
+      "file": "bizimhesap_bot.js",
+      "status": "failed",
+      "code": 1,
+      "durationMs": 12836,
+      "issue": "BizimHesap giris dogrulamasi kontrol bekliyor"
+    },
+    {
+      "label": "BizimHesap son islemler denetimi",
+      "file": "bizimhesap_son_islemler_izle.js",
+      "status": "failed",
+      "code": 1,
+      "durationMs": 11686,
+      "issue": "BizimHesap giris dogrulamasi kontrol bekliyor"
+    },
+    {
+      "label": "BizimHesap masraf 2026",
+      "file": "bizimhesap_masraf_cek.js",
+      "status": "failed",
+      "code": 1,
+      "durationMs": 11811,
+      "issue": "BizimHesap giris dogrulamasi kontrol bekliyor"
+    },
+    {
+      "label": "BizimHesap urun ve stok kartlari",
+      "file": "bizimhesap_urun_stok_cek.js",
+      "status": "failed",
+      "code": 1,
+      "durationMs": 11541,
+      "issue": "BizimHesap firma secim ekrani acilamadi"
+    }
+  ],
+  "issue": "BizimHesap giris dogrulamasi kontrol bekliyor"
+}

@@ -516,6 +516,42 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   .customer-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .customer-periods{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* Dashboard cleanup: dense, readable executive surface */
+#kartsDiv{display:block !important}
+#kartsDiv>.card{margin-bottom:12px !important}
+#kartsDiv>.report-hub{margin-bottom:14px !important}
+.report-grid{grid-template-columns:repeat(12,minmax(0,1fr)) !important;gap:10px !important;background:#F3F6FA}
+.report-tile{min-height:92px !important;padding:12px !important}
+.report-tile.big{grid-column:span 4 !important;min-height:150px !important}
+.report-tile.wide{grid-column:span 4 !important;min-height:112px !important}
+.report-tile:not(.big):not(.wide){grid-column:span 2 !important}
+.report-tile:not(.big):not(.wide) .report-proof{display:none}
+.report-tile:not(.big):not(.wide) .report-v{font-size:20px !important;line-height:1.08}
+.report-tile:not(.big):not(.wide) .report-d{font-size:11px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.report-tile.unverified{background:#FFFCF2;border-style:solid;border-color:#FDE68A}
+.report-tile.unverified::before{background:#D97706}
+.report-tile.unverified .report-v{color:#92400E}
+.report-proof{grid-template-columns:repeat(3,minmax(0,1fr));background:rgba(255,255,255,.65);border:1px solid rgba(15,23,42,.06);border-radius:10px;padding:8px !important}
+.report-proof span{font-size:9px !important}
+.report-head{padding:15px 18px !important}
+.report-title{font-size:18px !important}
+.report-sub{font-size:12px !important}
+.report-stamp{font-size:10px}
+.roadmap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px}
+
+@media(max-width:1200px){
+  .report-tile.big,.report-tile.wide{grid-column:span 6 !important}
+  .report-tile:not(.big):not(.wide){grid-column:span 3 !important}
+}
+@media(max-width:900px){
+  .report-tile,.report-tile.big,.report-tile.wide,.report-tile:not(.big):not(.wide){grid-column:1/-1 !important}
+}
+@media(max-width:760px){
+  .report-grid{grid-template-columns:1fr !important}
+  .report-tile,.report-tile.big,.report-tile.wide,.report-tile:not(.big):not(.wide){grid-column:1 !important}
+  .report-proof{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -596,6 +632,7 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
     <div class="tb-r">
       <div class="tb-live"><div class="tb-ld"></div><span class="tb-lt">CANLI</span></div>
       <span class="tb-ver" id="buildCode">GNC --</span>
+      <span class="tb-ver" id="syncHealth">SENKRON --</span>
       <span class="tb-clk" id="clk">--:--</span>
       <button class="tb-btn" onclick="gP('veri',null)">⬆ Veri Yükle</button>
     </div>
@@ -926,6 +963,10 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 
     <div id="pg-veri" class="page">
       <div class="card" style="margin-bottom:16px">
+        <div class="card-hd"><div class="card-l"> BizimHesap Klon Senkronu</div><button onclick="loadSyncHealth()" style="background:none;border:1px solid var(--b1);border-radius:4px;padding:3px 8px;color:var(--t3);font-family:var(--mono);font-size:9px;cursor:pointer">↻</button></div>
+        <div id="syncHealthPanel"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Senkron durumu okunuyor...</div></div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
         <div class="card-hd"><div class="card-l"> Firma Veri Durumu</div><button onclick="lVD()" style="background:none;border:1px solid var(--b1);border-radius:4px;padding:3px 8px;color:var(--t3);font-family:var(--mono);font-size:9px;cursor:pointer">↻</button></div>
         <div id="vdG" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yükleniyor...</div></div>
       </div>
@@ -1016,8 +1057,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='182617-150526';
-const BUILD_STAMP='15.05.2026 18:26:17';
+const BUILD_CODE='103739-160526';
+const BUILD_STAMP='16.05.2026 10:37:39';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -1035,6 +1076,34 @@ const DATA_SOURCES={
     {id:'products',n:'Ürün ve Stok Kartları',t:'product_raw',kind:'table',date:'updated_at',mode:'eksik'}
   ]
 };
+let LAST_SYNC_STATUS=null;
+async function fetchSyncHealth(){
+  try{
+    const res=await fetch(`data/aperion_last_sync.json?v=${Date.now()}`,{cache:'no-store'});
+    if(!res.ok)throw new Error('status yok');
+    return await res.json();
+  }catch(e){return null;}
+}
+function syncHealthHtml(st){
+  if(!st)return '<div class="empty"><div class="empty-t">Senkron durumu yok</div><div class="empty-d">Saatlik görev çalışınca data/aperion_last_sync.json üretilecek.</div></div>';
+  const ok=!!st.ok, cls=ok?'ok':'bad', title=ok?'BizimHesap senkronu başarılı':'BizimHesap senkronu kontrol bekliyor';
+  const jobs=(st.jobs||[]).map(j=>`<tr><td>${escHtml(j.label||j.file||'-')}</td><td><span class="verify-badge ${j.status==='ok'?'ok':'bad'}">${escHtml(j.status||'-')}</span></td><td>${j.durationMs?Math.round(j.durationMs/1000)+' sn':'-'}</td><td>${escHtml(j.issue||'')}</td></tr>`).join('');
+  return `<div class="report-proof" style="margin-bottom:10px"><span>Firma: <b>${escHtml(st.firma||'-')}</b></span><span>Başladı: <b>${escHtml(st.startedAt||'-')}</b></span><span>Bitti: <b>${escHtml(st.finishedAt||'-')}</b></span><span><i class="verify-badge ${cls}">${title}</i></span>${st.issue?`<span><b>${escHtml(st.issue)}</b></span>`:''}</div>
+  <table class="pt"><thead><tr><th>İş</th><th>Durum</th><th>Süre</th><th>Kontrol</th></tr></thead><tbody>${jobs||'<tr><td colspan="4">İş kaydı yok</td></tr>'}</tbody></table>`;
+}
+async function loadSyncHealth(){
+  LAST_SYNC_STATUS=await fetchSyncHealth();
+  const top=document.getElementById('syncHealth');
+  if(top){
+    if(!LAST_SYNC_STATUS)top.textContent='SENKRON YOK';
+    else top.textContent=LAST_SYNC_STATUS.ok?'SENKRON OK':'SENKRON KONTROL';
+    top.style.borderColor=LAST_SYNC_STATUS?.ok?'#A7F3D0':'#FECACA';
+    top.style.color=LAST_SYNC_STATUS?.ok?'#047857':'#B91C1C';
+    top.style.background=LAST_SYNC_STATUS?.ok?'#ECFDF5':'#FEF2F2';
+  }
+  const panel=document.getElementById('syncHealthPanel');
+  if(panel)panel.innerHTML=syncHealthHtml(LAST_SYNC_STATUS);
+}
 DATA_SOURCES.alayli=[
   {id:'sales',n:'Satis / Fatura Satirlari',t:'sales_raw',kind:'table',date:'tarih',mode:'aktif'},
   {id:'expenses',n:'Masraf / Giderler',t:'masraf_raw',kind:'table',date:'tarih',mode:'aktif'},
@@ -1099,10 +1168,10 @@ function showKarts(){document.getElementById('kartsDiv').style.display='block';d
 function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(PILOT_FIRMA);document.getElementById('gB')?.remove();}
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'Ana Sayfa',s:'Yönetici özeti ve veri güveni'},satis:{t:'Satışlar',s:'Kategori, ürün ve müşteri kırılımı'},cariler:{t:'Müşteriler',s:'Cari performans ve risk'},finans:{t:'Finans Özeti',s:'Gider, banka ve tahsilat kontrolü'},stok:{t:'Ürünler',s:'Ürün bazlı kârlılık ve stok takibi'},hedef:{t:'Hedefler',s:'Gerçekleşen ve bütçe kontrolü'},gorevler:{t:'Görevler',s:'Onay ve takip merkezi'},veri:{t:'Veri Kontrol',s:'Kaynak, çekim ve doğrulama'},bildirim:{t:'Bildirim',s:'Telefon onay ve rapor ayarları'}};
-function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();}
+function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();loadSyncHealth();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();}
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]).filter(isAlayliRow);}catch(e){return[];}}
-async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
+async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();loadSyncHealth();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
 function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
 function pSels(){
   const fids=[...new Set(RAW.map(r=>r.firma_id).filter(Boolean))];
@@ -2643,7 +2712,7 @@ function resetWidgets(){localStorage.removeItem(wKey(cF));applyW(cF);document.ge
 
 // -- EKSİK FONKSIYONLAR ----------------------------------------------------
 function lVD(){ loadVD && loadVD(); }
-function bUFG(){ buildUFG && buildUFG(); }
+function bUFG(){ if(typeof buildUFG==='function')buildUFG(); }
 function lY(){ loadYenicespor && loadYenicespor(); }
 
 function sUF(id,el){
@@ -2702,6 +2771,7 @@ window.addEventListener('load',async()=>{
     }
   }
   setTimeout(()=>loadGorevler(),3000);
+  setInterval(loadSyncHealth,5*60*1000);
   setInterval(renderKarts,5*60*1000);
 });
 </script>

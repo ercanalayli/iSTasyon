@@ -71,6 +71,20 @@ function saveStatus() {
   writeFileSync(statusPath, JSON.stringify(status, null, 2), 'utf8');
 }
 
+function diagnoseSyncFailure(output) {
+  const text = String(output || '').toLocaleLowerCase('tr-TR');
+  if (text.includes('ngnpasswordchangerequest') || text.includes('sifrenizi mi unuttunuz') || text.includes('şifrenizi mi unuttunuz')) {
+    return 'BizimHesap giris dogrulamasi kontrol bekliyor';
+  }
+  if (text.includes('firma bulunamad') || text.includes('firma secilemedi') || text.includes('firma seçilemedi')) {
+    return 'BizimHesap firma secim ekrani acilamadi';
+  }
+  if (text.includes('giris butonu') || text.includes('giriş butonu')) {
+    return 'BizimHesap giris ekrani degismis olabilir';
+  }
+  return 'Senkron isi hata verdi, log kontrol edilmeli';
+}
+
 function runtimeFile(file) {
   if (!file.endsWith('.js')) return path.join(__dirname, file);
   const sourcePath = path.join(__dirname, file);
@@ -107,11 +121,21 @@ function run(job) {
   const runPath = runtimeFile(job.file);
   const r = spawnSync(process.execPath, [runPath, ...cleanArgs], {
     cwd: __dirname,
-    stdio: 'inherit',
+    stdio: 'pipe',
+    encoding: 'utf8',
     env: { ...process.env, NODE_PATH: path.join(__dirname, 'node_modules') },
     shell: false,
   });
+  if (r.stdout) {
+    process.stdout.write(r.stdout);
+    appendFileSync(logPath, r.stdout, 'utf8');
+  }
+  if (r.stderr) {
+    process.stderr.write(r.stderr);
+    appendFileSync(logPath, r.stderr, 'utf8');
+  }
   const code = r.status ?? 1;
+  const output = `${r.stdout || ''}\n${r.stderr || ''}`;
   const item = {
     label: job.label,
     file: job.file,
@@ -119,8 +143,12 @@ function run(job) {
     code,
     durationMs: Date.now() - started,
   };
+  if (code !== 0) item.issue = diagnoseSyncFailure(output);
   status.jobs.push(item);
-  if (code !== 0) status.ok = false;
+  if (code !== 0) {
+    status.ok = false;
+    status.issue = status.issue || item.issue;
+  }
   line(`${code === 0 ? 'BITTI' : 'HATA'}: ${job.label} (${code})`);
   saveStatus();
 }
