@@ -1,0 +1,43 @@
+{
+  "product_master": [
+    { "product_code": "CD-K-M", "product_name": "Coverdry Külot M" },
+    { "product_code": "CD-K-L", "product_name": "Coverdry Külot L" },
+    { "product_code": "CD-K-XL", "product_name": "Coverdry Külot XL" },
+    { "product_code": "LR-K-XL", "product_name": "Lorina Külot XL" },
+    { "product_code": "JDR-K-XXL", "product_name": "Jender Külot XXL" },
+    { "product_code": "JDR-K-L", "product_name": "Jender Külot L" },
+    { "product_code": "SRM-60X90", "product_name": "Hasta Altı Serme 60x90" }
+  ],
+  "supplier_rows": [
+    {
+      "supplier_product_code": "CD-K-M-30",
+      "supplier_product_name": "Coverdry Külot M 30'lu",
+      "supplier_price": 385,
+      "net_supplier_price": 365.75
+    },
+    {
+      "supplier_product_code": "CD-K-L-30",
+      "supplier_product_name": "Coverdry Külot Large 30'lu",
+      "supplier_price": 395,
+      "net_supplier_price": 375.25
+    },
+    {
+      "supplier_product_code": "LR-K-XL-30",
+      "supplier_product_name": "Lorina Külot XL 30'lu",
+      "supplier_price": 410,
+      "net_supplier_price": 410
+    },
+    {
+      "supplier_product_code": "JDR-K-XXL-30",
+      "supplier_product_name": "Jender Külot XXL 30'lu",
+      "supplier_price": 430,
+      "net_supplier_price": 430
+    },
+    {
+      "supplier_product_code": "UNKNOWN-001",
+      "supplier_product_name": "Yeni Marka Hasta Bezi Medium 30lu",
+      "supplier_price": 350,
+      "net_supplier_price": 350
+    }
+  ]
+}
