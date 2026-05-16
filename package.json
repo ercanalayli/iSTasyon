@@ -19,6 +19,7 @@
     "finance-verify-index": "node scripts/verify_finance_index_link.cjs",
     "patch:sales-today-finance-calendar": "node tools/apply_sales_today_finance_calendar_patch_v46.js",
     "verify:sales-today-finance-calendar": "node tools/verify_sales_today_finance_calendar_v46.js",
+    "apply:sales-today-finance-calendar": "npm run patch:sales-today-finance-calendar && npm run verify:sales-today-finance-calendar",
     "telegram:hatirlat": "node telegram_hatirlatma_bot.js --once",
     "telegram:hatirlat:watch": "node telegram_hatirlatma_bot.js --watch",
     "telegram:hatirlat:due": "node telegram_hatirlatma_bot.js --remind-only",
