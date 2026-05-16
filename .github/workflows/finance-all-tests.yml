@@ -1,0 +1,24 @@
+name: AperiON Finance All Tests
+
+on:
+  push:
+    paths:
+      - 'finance/**'
+      - '.github/workflows/finance-all-tests.yml'
+  workflow_dispatch:
+
+jobs:
+  finance-all-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run all finance tests
+        working-directory: finance
+        run: npm test
