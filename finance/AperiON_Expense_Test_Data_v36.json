@@ -1,0 +1,60 @@
+{
+  "expense_rows": [
+    {
+      "company": "ALAYLI",
+      "expense_date": "2026-05-15",
+      "source_type": "bank",
+      "source_name": "banka_ekstresi",
+      "description": "Medikal kira odemesi",
+      "amount": "44000"
+    },
+    {
+      "company": "ALAYLI",
+      "expense_date": "2026-05-15",
+      "source_type": "bank",
+      "source_name": "banka_ekstresi",
+      "description": "SGK prim odemesi",
+      "amount": "40000"
+    },
+    {
+      "company": "ALAYLI",
+      "expense_date": "2026-05-15",
+      "source_type": "card",
+      "source_name": "kredi_karti",
+      "description": "Kredi karti gelecek donem taksit",
+      "amount": "341263.92"
+    },
+    {
+      "company": "ALAYLI",
+      "expense_date": "2026-05-15",
+      "source_type": "moka",
+      "source_name": "moka",
+      "description": "Moka POS komisyon kesintisi",
+      "amount": "1850"
+    },
+    {
+      "company": "ALAYLI",
+      "expense_date": "2026-05-15",
+      "source_type": "manual",
+      "source_name": "sevkiyat",
+      "description": "Navlun sevkiyat gideri",
+      "amount": "12000"
+    },
+    {
+      "company": "ALAYLI",
+      "expense_date": "2026-05-15",
+      "source_type": "manual",
+      "source_name": "servis",
+      "description": "Arac bakim ve tamir gideri",
+      "amount": "8500"
+    },
+    {
+      "company": "ALAYLI",
+      "expense_date": "2026-05-15",
+      "source_type": "manual",
+      "source_name": "belirsiz",
+      "description": "Aciklamasi belirsiz gider",
+      "amount": "2500"
+    }
+  ]
+}
