@@ -1,0 +1,79 @@
+{
+  "sales_rows": [
+    {
+      "Firma": "ALAYLI",
+      "Fatura Tarihi": "2026-05-15",
+      "Fatura No": "BH-S-001",
+      "Müşteri": "Demo Cari",
+      "Stok Kodu": "BEZ-001",
+      "Ürün Adı": "Hasta bezi",
+      "Adet": "10",
+      "Birim Fiyat": "500",
+      "Birim Maliyet": "350"
+    },
+    {
+      "Firma": "ALAYLI",
+      "Fatura Tarihi": "2026-05-15",
+      "Fatura No": "BH-S-002",
+      "Müşteri": "Demo Cari 2",
+      "Stok Kodu": "NO-COST-001",
+      "Ürün Adı": "Maliyeti eksik ürün",
+      "Adet": "3",
+      "Birim Fiyat": "1000"
+    }
+  ],
+  "stock_rows": [
+    {
+      "Firma": "ALAYLI",
+      "Tarih": "2026-05-15",
+      "Stok Kodu": "BEZ-001",
+      "Ürün Adı": "Hasta bezi",
+      "Kategori": "Medikal",
+      "Mevcut Stok": "4500"
+    },
+    {
+      "Firma": "ALAYLI",
+      "Tarih": "2026-05-15",
+      "Stok Kodu": "ISITME-001",
+      "Ürün Adı": "Kulak işitme cihazı",
+      "Kategori": "İşitme",
+      "Mevcut Stok": "608"
+    }
+  ],
+  "sales_qty_rows": [
+    {
+      "Firma": "ALAYLI",
+      "Fatura Tarihi": "2026-05-15",
+      "Stok Kodu": "BEZ-001",
+      "Ürün Adı": "Hasta bezi",
+      "Kategori": "Medikal",
+      "Adet": "12000"
+    },
+    {
+      "Firma": "ALAYLI",
+      "Fatura Tarihi": "2026-05-15",
+      "Stok Kodu": "ISITME-001",
+      "Ürün Adı": "Kulak işitme cihazı",
+      "Kategori": "İşitme",
+      "Adet": "720"
+    }
+  ],
+  "expense_rows": [
+    {
+      "Firma": "ALAYLI",
+      "İşlem Tarihi": "2026-05-15",
+      "Kaynak": "moka",
+      "Dosya": "moka_export",
+      "Açıklama": "Moka POS komisyon kesintisi",
+      "Tutar": "1850"
+    },
+    {
+      "Firma": "ALAYLI",
+      "İşlem Tarihi": "2026-05-15",
+      "Kaynak": "bank",
+      "Dosya": "banka_ekstresi",
+      "Açıklama": "Açıklaması belirsiz gider",
+      "Tutar": "2500"
+    }
+  ]
+}
