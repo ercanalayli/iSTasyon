@@ -1,1 +1,1 @@
-{"name":"aperion-finance-profit-engine","version":"37.0.0","private":true,"scripts":{"test:product-profit":"node AperiON_Product_Profit_Test_Runner_v34.js","test:stock-coverage":"node stock_coverage_test_runner_v37.js"}}
+{"name":"aperion-finance-profit-engine","version":"38.0.0","private":true,"scripts":{"test:product-profit":"node AperiON_Product_Profit_Test_Runner_v34.js","test:stock-coverage":"node stock_coverage_test_runner_v37.js","test:expense-classification":"node expense_classification_test_runner_v36.js"}}
