@@ -1,0 +1,24 @@
+name: AperiON Finance Expense Classification Test
+
+on:
+  push:
+    paths:
+      - 'finance/**'
+      - '.github/workflows/finance-expense-classification-test.yml'
+  workflow_dispatch:
+
+jobs:
+  expense-classification-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run expense classification test
+        working-directory: finance
+        run: npm run test:expense-classification
