@@ -1,0 +1,60 @@
+{
+  "policy": {
+    "target_margin_rate": 0.25,
+    "min_margin_rate": 0.15,
+    "moka_pos_rate": 0.035,
+    "overhead_rate": 0.08,
+    "logistics_unit_share": 10,
+    "rounding_rule": "nearest_10"
+  },
+  "products": [
+    {
+      "company": "ALAYLI",
+      "product_code": "CD-K-L",
+      "product_name": "Coverdry Külot L",
+      "last_purchase_price": 350,
+      "last_supplier_price": 375.25,
+      "avg_purchase_12m": 340,
+      "current_sale_price": 500,
+      "market_avg_price": 520,
+      "market_median_price": 510,
+      "supplier_price_change_percent": 7.2
+    },
+    {
+      "company": "ALAYLI",
+      "product_code": "LR-K-XL",
+      "product_name": "Lorina Külot XL",
+      "last_purchase_price": 360,
+      "last_supplier_price": 410,
+      "avg_purchase_12m": 355,
+      "current_sale_price": 430,
+      "market_avg_price": 540,
+      "market_median_price": 530,
+      "supplier_price_change_percent": 14.1
+    },
+    {
+      "company": "ALAYLI",
+      "product_code": "JDR-K-XXL",
+      "product_name": "Jender Külot XXL",
+      "last_purchase_price": 0,
+      "last_supplier_price": 430,
+      "avg_purchase_12m": 0,
+      "current_sale_price": 0,
+      "market_avg_price": 580,
+      "market_median_price": 570,
+      "supplier_price_change_percent": 0
+    },
+    {
+      "company": "ALAYLI",
+      "product_code": "NEW-001",
+      "product_name": "Maliyeti Eksik Yeni Ürün",
+      "last_purchase_price": 0,
+      "last_supplier_price": 0,
+      "avg_purchase_12m": 0,
+      "current_sale_price": 450,
+      "market_avg_price": 500,
+      "market_median_price": 500,
+      "supplier_price_change_percent": 0
+    }
+  ]
+}
