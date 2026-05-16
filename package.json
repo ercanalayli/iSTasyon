@@ -17,6 +17,7 @@
     "command-center-inject-index": "node scripts/inject_command_center_into_index.cjs",
     "command-center-verify-index": "node scripts/verify_command_center_index_link.cjs",
     "finance-verify-index": "node scripts/verify_finance_index_link.cjs",
+    "patch:sales-today-finance-calendar": "node tools/apply_sales_today_finance_calendar_patch_v46.js",
     "telegram:hatirlat": "node telegram_hatirlatma_bot.js --once",
     "telegram:hatirlat:watch": "node telegram_hatirlatma_bot.js --watch",
     "telegram:hatirlat:due": "node telegram_hatirlatma_bot.js --remind-only",
