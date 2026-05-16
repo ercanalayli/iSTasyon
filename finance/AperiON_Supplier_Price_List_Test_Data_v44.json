@@ -1,0 +1,45 @@
+{
+  "supplier_name": "Demo Tedarikçi Medikal",
+  "price_date": "2026-05-16",
+  "currency": "TRY",
+  "rows": [
+    {
+      "Tedarikçi": "Demo Tedarikçi Medikal",
+      "Stok Kodu": "CD-K-M-30",
+      "Ürün Adı": "Coverdry Külot M 30'lu",
+      "Liste Fiyatı": "385,00",
+      "İskonto": "5",
+      "Birim": "paket"
+    },
+    {
+      "Tedarikçi": "Demo Tedarikçi Medikal",
+      "Stok Kodu": "CD-K-L-30",
+      "Ürün Adı": "Coverdry Külot L 30'lu",
+      "Liste Fiyatı": "395,00",
+      "İskonto": "5",
+      "Birim": "paket",
+      "Sistem Ürünü": "Coverdry Külot L"
+    },
+    {
+      "Tedarikçi": "Demo Tedarikçi Medikal",
+      "Stok Kodu": "LR-K-XL-30",
+      "Ürün Adı": "Lorina Külot XL 30'lu",
+      "Liste Fiyatı": "410,00",
+      "İskonto": "0",
+      "Birim": "paket"
+    },
+    {
+      "Tedarikçi": "Demo Tedarikçi Medikal",
+      "Stok Kodu": "JDR-K-XXL-30",
+      "Ürün Adı": "Jender Külot XXL 30'lu",
+      "Net Fiyat": "430,00",
+      "Birim": "paket"
+    },
+    {
+      "Tedarikçi": "Demo Tedarikçi Medikal",
+      "Stok Kodu": "BAD-001",
+      "Ürün Adı": "Fiyatı Eksik Ürün",
+      "Liste Fiyatı": ""
+    }
+  ]
+}
