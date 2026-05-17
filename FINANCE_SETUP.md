@@ -100,6 +100,7 @@ Satış Akışı, Finans Takvimi, aksiyon RPC'leri, Risk Merkezi ve v52 tekrar a
 4. finance/AperiON_Finance_Calendar_Actions_SQL_v48.sql
 5. finance/AperiON_Finance_Risk_Engine_SQL_v49.sql
 6. finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql
+7. finance/AperiON_Risk_Alert_Dedup_Health_Check_v52.sql
 ```
 
 v52'nin kurduğu ana yapılar:
@@ -111,9 +112,20 @@ risk_alert_mark_sent_v52
 aperion_risk_alert_dedup_status_v52_view
 ```
 
+v52 health check dosyası şunları kontrol eder:
+
+```text
+risk_alert_sent_log table
+aperion_risk_alert_dedup_status_v52_view view
+risk_alert_can_send_v52 RPC
+risk_alert_mark_sent_v52 RPC
+can_send_readonly_check
+```
+
 v52 güvenlik notu:
 
 - v52 sadece risk alarm gönderim logu yazar.
+- Health check varsayılan olarak read-only çalışır.
 - Ana finans kayıtlarını, cari kayıtlarını, satış kayıtlarını, ödeme/tahsilat kayıtlarını değiştirmez.
 - Mevcut v51 dosyası korunur.
 - Canlı scheduler otomatik değiştirilmez; önce test ve onay gerekir.
@@ -184,6 +196,7 @@ Bu testler şunları kontrol eder:
 - v52 risk key üretimi çalışıyor mu?
 - v52 cooldown skip mantığı çalışıyor mu?
 - v52 gönderildi loglama RPC çağrısı kodda var mı?
+- v52 health check SQL dosyası var mı?
 
 ## 10. Eski Finans Takvimi durumu
 
@@ -205,6 +218,7 @@ telegram/aperion_critical_risk_alert_v52.js
 telegram/aperion_critical_risk_alert_v52_test_runner.js
 telegram/AperiON_Risk_Alert_Dedup_Scheduler_v52.md
 finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql
+finance/AperiON_Risk_Alert_Dedup_Health_Check_v52.sql
 ```
 
 Canlı tek sefer çalıştırma:
