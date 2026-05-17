@@ -25,11 +25,12 @@ ercanalayli/iSTasyon
 | `telegram/aperion_critical_risk_alert_v52.js` | v49 risk feed'i okuyup aynı riski cooldown içinde tekrar göndermeyen Telegram alarm modülü | Eklendi |
 | `telegram/aperion_critical_risk_alert_v52_test_runner.js` | v52 risk key, cooldown skip ve loglama testleri | Eklendi |
 | `telegram/AperiON_Risk_Alert_Dedup_Scheduler_v52.md` | Windows Task Scheduler / manuel kullanım ve v51'den v52'ye geçiş rehberi | Eklendi |
+| `telegram/AperiON_Risk_Alert_Dedup_Rollback_v52.md` | v52 sorununda dosya silmeden sadece scheduler komutunu v51'e alma rehberi | Eklendi |
 | `tools/verify_risk_alert_dedup_v52.js` | v52 dosya, SQL, RPC, komut ve bot kontrol script'i | Eklendi |
-| `scripts/verify_finance_manifest.cjs` | v52 dosyaları, workflow tetikleyicileri, env örnekleri, health check SQL'i, kurulum dokümanı ve komutları manifest doğrulamasına eklendi | Güncellendi |
+| `scripts/verify_finance_manifest.cjs` | v52 dosyaları, workflow tetikleyicileri, env örnekleri, health check SQL'i, rollback rehberi, kurulum dokümanı ve komutları manifest doğrulamasına eklendi | Güncellendi |
 | `.github/workflows/finance-full-check.yml` | v52 test + verify adımları ve `finance/**`, `telegram/**`, `tools/**` tetikleyicileri eklendi | Güncellendi |
 | `.env.example` | Telegram bot, chat id, company, risk seviyesi ve v52 cooldown örnekleri eklendi | Güncellendi |
-| `FINANCE_SETUP.md` | v52 SQL sırası, health check, ENV, test, CI ve scheduler geçişi kurulum rehberine eklendi | Güncellendi |
+| `FINANCE_SETUP.md` | v52 SQL sırası, health check, ENV, test, CI, scheduler geçişi ve rollback rehberi kurulum rehberine eklendi | Güncellendi |
 | `NEXT_ACTIONS_FINANCE.md` | v52 SQL sırası, health check, ENV, test ve canlı scheduler geçişi yazıldı | Güncellendi |
 | `package.json` | `telegram:critical-risk-v52`, `telegram:critical-risk-v52:test`, `verify:risk-alert-dedup-v52` komutları eklendi | Güncellendi |
 
@@ -40,6 +41,8 @@ v52 güvenlik notu:
 - Dashboard/UI dosyalarına dokunulmaz.
 - v52 sadece risk alarm logu yazar.
 - v52 health check varsayılan olarak read-only çalışır.
+- Rollback dosya silme değildir; sadece scheduler komutunu geçici olarak v51'e almaktır.
+- Rollback sırasında risk_alert_sent_log silinmez.
 - Finans ana kayıtları, cari kayıtları, satış kayıtları, ödeme/tahsilat kayıtları değiştirilmez.
 - Canlı scheduler otomatik değiştirilmez; önce test ve onay gerekir.
 ```
@@ -160,3 +163,4 @@ Bundan sonra durum raporlarında kanıt şu sırayla verilecek:
 - `.env` dosyasını `.env.example` dosyasındaki Telegram + v52 alanlarına göre güncelle.
 - Live-ready Komuta Merkezi ekranında gerçek Supabase URL / anon key ile bağlantı testi yap.
 - Testler temizse canlı scheduler tarafında `telegram:critical-risk-v51` komutunu `telegram:critical-risk-v52` komutuna çevir.
+- Sorun çıkarsa `telegram/AperiON_Risk_Alert_Dedup_Rollback_v52.md` rehberine göre sadece scheduler komutunu geçici olarak v51'e al.
