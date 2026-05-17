@@ -55,9 +55,16 @@ Güvenlik:
 Çalıştır:
 
 ```bash
-npm run telegram:critical-risk-v52:test
-npm run verify:risk-alert-dedup-v52
+npm run verify:finance-v52
 npm test
+```
+
+`verify:finance-v52` tek komutu şunları çalıştırır:
+
+```text
+telegram:critical-risk-v52:test
+verify:risk-alert-dedup-v52
+finance-verify-manifest
 ```
 
 Beklenen:
@@ -65,6 +72,7 @@ Beklenen:
 ```text
 RESULT: OK - Critical risk alert dedup v52 is ready.
 RESULT: OK - Risk alert dedup v52 verification passed.
+AperiON Finans manifest doğrulaması başarılı.
 ```
 
 ## 5. GitHub Actions kontrolü
@@ -79,8 +87,9 @@ Beklenen:
 
 - [ ] Finance smoke test geçti.
 - [ ] Finance manifest geçti.
-- [ ] v52 Telegram test geçti.
-- [ ] v52 verify geçti.
+- [ ] `verify:finance-v52` geçti.
+- [ ] BizimHesap demo pipeline geçti.
+- [ ] Moka demo pipeline geçti.
 
 ## 6. Canlı tek sefer deneme
 
