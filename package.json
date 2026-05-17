@@ -24,13 +24,15 @@
     "patch:finance-calendar-live-v47": "node tools/apply_finance_calendar_live_v47_patch.js",
     "verify:finance-calendar-live-v47": "node tools/verify_finance_calendar_live_v47.js",
     "apply:finance-calendar-live-v47": "npm run apply:sales-today-finance-calendar && npm run patch:finance-calendar-live-v47 && npm run verify:finance-calendar-live-v47",
+    "telegram:finance-v47:test": "node telegram/aperion_telegram_bot_v47_test_runner.js",
+    "telegram:finance-v47": "node telegram/aperion_telegram_bot_v47.js",
     "telegram:hatirlat": "node telegram_hatirlatma_bot.js --once",
     "telegram:hatirlat:watch": "node telegram_hatirlatma_bot.js --watch",
     "telegram:hatirlat:due": "node telegram_hatirlatma_bot.js --remind-only",
     "sync:bizimhesap": "node aperion_veri_senkron.js --firma alayli",
     "sync:bizimhesap:plan": "node aperion_veri_senkron.js --firma alayli --plan",
     "sync:bizimhesap:dry": "node aperion_veri_senkron.js --firma alayli --dry-run",
-    "test": "node finance_smoke_test.cjs && node scripts/verify_finance_manifest.cjs"
+    "test": "node finance_smoke_test.cjs && node scripts/verify_finance_manifest.cjs && npm run telegram:finance-v47:test"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
