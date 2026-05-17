@@ -22,6 +22,7 @@ ercanalayli/iSTasyon
 |---|---|---|
 | `finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql` | Telegram kritik risk alarmı için gönderildi logu, cooldown kontrolü, RPC katmanı, `company` / `risk_key` trim + zorunlu alan validasyonu | Eklendi / Güçlendirildi |
 | `finance/AperiON_Risk_Alert_Dedup_Health_Check_v52.sql` | v52 kurulum sonrası tablo/RPC/view/read-only kontrol SQL'i | Eklendi |
+| `finance/AperiON_Risk_Alert_Dedup_Supabase_Runbook_v52.md` | Supabase SQL Editor üzerinde v52 kurulum, health check, hızlı sorgu ve sorun giderme rehberi | Eklendi |
 | `telegram/aperion_critical_risk_alert_v52.js` | v49 risk feed'i okuyup aynı riski cooldown içinde tekrar göndermeyen Telegram alarm modülü | Eklendi |
 | `telegram/aperion_critical_risk_alert_v52_test_runner.js` | v52 risk key, cooldown skip ve loglama testleri | Eklendi |
 | `telegram/AperiON_Risk_Alert_Dedup_Scheduler_v52.md` | Windows Task Scheduler / manuel kullanım ve v51'den v52'ye geçiş rehberi | Eklendi |
