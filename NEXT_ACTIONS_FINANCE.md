@@ -64,6 +64,7 @@ risk_alert_sent_log
 risk_alert_can_send_v52
 risk_alert_mark_sent_v52
 buildRiskKey
+v52 health check SQL
 ```
 
 ## 3. Supabase Komuta Merkezi tablolarını kur
@@ -94,11 +95,13 @@ Finans Takvimi / Satış Akışı / Risk Merkezi için SQL sırası:
 4. finance/AperiON_Finance_Calendar_Actions_SQL_v48.sql
 5. finance/AperiON_Finance_Risk_Engine_SQL_v49.sql
 6. finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql
+7. finance/AperiON_Risk_Alert_Dedup_Health_Check_v52.sql
 ```
 
 v52 notu:
 
 - v52 sadece alarm tekrarını engelleyen log katmanıdır.
+- Health check varsayılan olarak read-only kontrol yapar.
 - Var olan risk feed yapısını bozmaz.
 - `aperion_risk_feed_v49_view` okumaya devam eder.
 - Aynı risk için cooldown dolmadan tekrar Telegram mesajı göndermez.
@@ -186,6 +189,7 @@ v52 sonrası güvenli akış:
 5. Sadece yeni risk Telegram'a gönderilir.
 6. Başarılı gönderimden sonra `risk_alert_mark_sent_v52` RPC ile log yazılır.
 7. Gönderilen/engellenen alarmlar `aperion_risk_alert_dedup_status_v52_view` üzerinden izlenir.
+8. Kurulumdan sonra `finance/AperiON_Risk_Alert_Dedup_Health_Check_v52.sql` ile tablo/RPC/view kontrol edilir.
 
 ## 9. Korunan kurallar
 
