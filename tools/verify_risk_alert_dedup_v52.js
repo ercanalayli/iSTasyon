@@ -17,11 +17,13 @@ function check(name, ok){
 }
 
 const sqlPath = 'finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql';
+const healthPath = 'finance/AperiON_Risk_Alert_Dedup_Health_Check_v52.sql';
 const botPath = 'telegram/aperion_critical_risk_alert_v52.js';
 const testPath = 'telegram/aperion_critical_risk_alert_v52_test_runner.js';
 const pkgPath = 'package.json';
 
 const sql = read(sqlPath);
+const health = read(healthPath);
 const bot = read(botPath);
 const test = read(testPath);
 const pkg = read(pkgPath);
@@ -30,6 +32,7 @@ console.log('AperiON Risk Alert Dedup v52 Verify');
 console.log('-----------------------------------');
 
 check('SQL file exists', Boolean(sql));
+check('Health check SQL file exists', Boolean(health));
 check('Telegram v52 file exists', Boolean(bot));
 check('Telegram v52 test runner exists', Boolean(test));
 check('package.json exists', Boolean(pkg));
@@ -40,6 +43,13 @@ check('SQL has cooldown_until column', sql.includes('cooldown_until'));
 check('SQL has can send RPC', sql.includes('risk_alert_can_send_v52'));
 check('SQL has mark sent RPC', sql.includes('risk_alert_mark_sent_v52'));
 check('SQL has status view', sql.includes('aperion_risk_alert_dedup_status_v52_view'));
+
+check('Health check validates risk_alert_sent_log', health.includes('risk_alert_sent_log table'));
+check('Health check validates status view', health.includes('aperion_risk_alert_dedup_status_v52_view view'));
+check('Health check validates can send RPC', health.includes('risk_alert_can_send_v52'));
+check('Health check validates mark sent RPC', health.includes('risk_alert_mark_sent_v52'));
+check('Health check has readonly function check', health.includes('can_send_readonly_check'));
+check('Health check optional write test is commented', health.includes('-- select risk_alert_mark_sent_v52'));
 
 check('Bot has RISK_ALERT_COOLDOWN_MINUTES env', bot.includes('RISK_ALERT_COOLDOWN_MINUTES'));
 check('Bot builds deterministic risk key', bot.includes('function buildRiskKey'));
