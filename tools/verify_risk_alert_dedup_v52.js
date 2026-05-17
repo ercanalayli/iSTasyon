@@ -43,6 +43,12 @@ check('SQL has cooldown_until column', sql.includes('cooldown_until'));
 check('SQL has can send RPC', sql.includes('risk_alert_can_send_v52'));
 check('SQL has mark sent RPC', sql.includes('risk_alert_mark_sent_v52'));
 check('SQL has status view', sql.includes('aperion_risk_alert_dedup_status_v52_view'));
+check('SQL trims company before writing', sql.includes('v_company := btrim(coalesce(p_company'));
+check('SQL trims risk_key before writing', sql.includes('v_risk_key := btrim(coalesce(p_risk_key'));
+check('SQL raises company required error', sql.includes('company is required'));
+check('SQL raises risk_key required error', sql.includes('risk_key is required'));
+check('SQL can_send compares trimmed company', sql.includes('l.company = btrim(p_company)'));
+check('SQL can_send compares trimmed risk_key', sql.includes('l.risk_key = btrim(p_risk_key)'));
 
 check('Health check validates risk_alert_sent_log', health.includes('risk_alert_sent_log table'));
 check('Health check validates status view', health.includes('aperion_risk_alert_dedup_status_v52_view view'));
@@ -67,6 +73,7 @@ check('Test covers mark sent', test.includes('mark sent returns id list'));
 check('package has telegram:critical-risk-v52', pkg.includes('telegram:critical-risk-v52'));
 check('package has telegram:critical-risk-v52:test', pkg.includes('telegram:critical-risk-v52:test'));
 check('package has verify:risk-alert-dedup-v52', pkg.includes('verify:risk-alert-dedup-v52'));
+check('package has verify:finance-v52', pkg.includes('verify:finance-v52'));
 
 console.log('-----------------------------------');
 if(failed){
