@@ -51,8 +51,8 @@ begin
   return not exists (
     select 1
     from risk_alert_sent_log l
-    where l.company = p_company
-      and l.risk_key = p_risk_key
+    where l.company = btrim(p_company)
+      and l.risk_key = btrim(p_risk_key)
       and l.cooldown_until > now()
   );
 end;
@@ -78,8 +78,21 @@ volatile
 as $$
 declare
   v_id bigint;
+  v_company text;
+  v_risk_key text;
   v_cooldown integer;
 begin
+  v_company := btrim(coalesce(p_company, ''));
+  v_risk_key := btrim(coalesce(p_risk_key, ''));
+
+  if v_company = '' then
+    raise exception 'risk_alert_mark_sent_v52: company is required';
+  end if;
+
+  if v_risk_key = '' then
+    raise exception 'risk_alert_mark_sent_v52: risk_key is required';
+  end if;
+
   v_cooldown := greatest(coalesce(p_cooldown_minutes, 360), 1);
 
   insert into risk_alert_sent_log (
@@ -87,7 +100,7 @@ begin
     amount, risk_date, sent_at, cooldown_minutes, cooldown_until,
     telegram_message_id, payload
   ) values (
-    p_company, p_risk_key, p_risk_type, p_risk_level, p_title, p_ref_code, p_ref_name,
+    v_company, v_risk_key, p_risk_type, p_risk_level, p_title, p_ref_code, p_ref_name,
     p_amount, p_risk_date, now(), v_cooldown, now() + make_interval(mins => v_cooldown),
     p_telegram_message_id, coalesce(p_payload, '{}'::jsonb)
   )
