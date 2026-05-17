@@ -177,9 +177,16 @@ Bu test hem eski Finans Takvimi hem yeni Finans Komuta Merkezi tablolarını kon
 GitHub Actions içinde `AperiON Finance Full Check` workflow'unu çalıştır veya yerelde:
 
 ```bash
-npm run telegram:critical-risk-v52:test
-npm run verify:risk-alert-dedup-v52
+npm run verify:finance-v52
 npm test
+```
+
+`verify:finance-v52` tek komutu şunları çalıştırır:
+
+```text
+telegram:critical-risk-v52:test
+verify:risk-alert-dedup-v52
+finance-verify-manifest
 ```
 
 Bu testler şunları kontrol eder:
@@ -218,6 +225,7 @@ telegram/aperion_critical_risk_alert_v52.js
 telegram/aperion_critical_risk_alert_v52_test_runner.js
 telegram/AperiON_Risk_Alert_Dedup_Scheduler_v52.md
 telegram/AperiON_Risk_Alert_Dedup_Rollback_v52.md
+telegram/AperiON_Risk_Alert_Dedup_GoLive_Checklist_v52.md
 finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql
 finance/AperiON_Risk_Alert_Dedup_Health_Check_v52.sql
 ```
@@ -244,6 +252,12 @@ Sorun çıkarsa rollback rehberine göre sadece scheduler komutu geçici olarak 
 
 ```text
 telegram/AperiON_Risk_Alert_Dedup_Rollback_v52.md
+```
+
+Canlıya alma öncesi tek sayfa kontrol listesi:
+
+```text
+telegram/AperiON_Risk_Alert_Dedup_GoLive_Checklist_v52.md
 ```
 
 Rollback sırasında v52 dosyaları ve `risk_alert_sent_log` tablosu silinmez.
