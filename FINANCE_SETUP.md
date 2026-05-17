@@ -217,6 +217,7 @@ Hazır olan v52 dosyaları:
 telegram/aperion_critical_risk_alert_v52.js
 telegram/aperion_critical_risk_alert_v52_test_runner.js
 telegram/AperiON_Risk_Alert_Dedup_Scheduler_v52.md
+telegram/AperiON_Risk_Alert_Dedup_Rollback_v52.md
 finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql
 finance/AperiON_Risk_Alert_Dedup_Health_Check_v52.sql
 ```
@@ -238,6 +239,14 @@ testler temizlendikten sonra şu komuta çevrilecek:
 ```bash
 npm run telegram:critical-risk-v52
 ```
+
+Sorun çıkarsa rollback rehberine göre sadece scheduler komutu geçici olarak v51'e alınır:
+
+```text
+telegram/AperiON_Risk_Alert_Dedup_Rollback_v52.md
+```
+
+Rollback sırasında v52 dosyaları ve `risk_alert_sent_log` tablosu silinmez.
 
 Önerilen ayar:
 
