@@ -38,6 +38,7 @@ GitHub Actions içinde `AperiON Finance Full Check` workflow'unu çalıştır ve
 
 ```bash
 npm install
+npm run verify:finance-v52
 npm test
 ```
 
@@ -58,6 +59,7 @@ AperiON Finans manifest doğrulaması başarılı.
 v52 ile eklenen yeni kontroller:
 
 ```text
+verify:finance-v52
 telegram:critical-risk-v52:test
 verify:risk-alert-dedup-v52
 risk_alert_sent_log
@@ -136,8 +138,7 @@ Sonra çalıştır:
 
 ```bash
 npm run finance-test-supabase
-npm run telegram:critical-risk-v52:test
-npm run verify:risk-alert-dedup-v52
+npm run verify:finance-v52
 npm test
 ```
 
@@ -190,6 +191,7 @@ v52 sonrası güvenli akış:
 6. Başarılı gönderimden sonra `risk_alert_mark_sent_v52` RPC ile log yazılır.
 7. Gönderilen/engellenen alarmlar `aperion_risk_alert_dedup_status_v52_view` üzerinden izlenir.
 8. Kurulumdan sonra `finance/AperiON_Risk_Alert_Dedup_Health_Check_v52.sql` ile tablo/RPC/view kontrol edilir.
+9. Canlıya geçmeden önce `telegram/AperiON_Risk_Alert_Dedup_GoLive_Checklist_v52.md` tamamlanır.
 
 ## 9. Korunan kurallar
 
