@@ -25,9 +25,10 @@ ercanalayli/iSTasyon
 | `telegram/aperion_critical_risk_alert_v52_test_runner.js` | v52 risk key, cooldown skip ve loglama testleri | Eklendi |
 | `telegram/AperiON_Risk_Alert_Dedup_Scheduler_v52.md` | Windows Task Scheduler / manuel kullanım ve v51'den v52'ye geçiş rehberi | Eklendi |
 | `tools/verify_risk_alert_dedup_v52.js` | v52 dosya, SQL, RPC, komut ve bot kontrol script'i | Eklendi |
-| `scripts/verify_finance_manifest.cjs` | v52 dosyaları, workflow tetikleyicileri, env örnekleri ve komutları manifest doğrulamasına eklendi | Güncellendi |
+| `scripts/verify_finance_manifest.cjs` | v52 dosyaları, workflow tetikleyicileri, env örnekleri, kurulum dokümanı ve komutları manifest doğrulamasına eklendi | Güncellendi |
 | `.github/workflows/finance-full-check.yml` | v52 test + verify adımları ve `finance/**`, `telegram/**`, `tools/**` tetikleyicileri eklendi | Güncellendi |
 | `.env.example` | Telegram bot, chat id, company, risk seviyesi ve v52 cooldown örnekleri eklendi | Güncellendi |
+| `FINANCE_SETUP.md` | v52 SQL sırası, ENV, test, CI ve scheduler geçişi kurulum rehberine eklendi | Güncellendi |
 | `NEXT_ACTIONS_FINANCE.md` | v52 SQL sırası, ENV, test ve canlı scheduler geçişi yazıldı | Güncellendi |
 | `package.json` | `telegram:critical-risk-v52`, `telegram:critical-risk-v52:test`, `verify:risk-alert-dedup-v52` komutları eklendi | Güncellendi |
 
@@ -62,7 +63,7 @@ v52 güvenlik notu:
 | `finance_dashboard_embed.html` | Ana dashboard içine gömülebilir iframe section | Korundu |
 | `APERION_FINANS_INTEGRATION_NOTES.md` | index.html entegrasyon notları | Korundu |
 | `NEXT_ACTIONS_FINANCE.md` | Telefon/GitHub üzerinden kalan aksiyon rehberi | Güncellendi / v52 eklendi |
-| `FINANCE_SETUP.md` | Kurulum rehberi | Güncellenecek |
+| `FINANCE_SETUP.md` | Kurulum rehberi | Güncellendi / v52 eklendi |
 
 ## Komuta Merkezi Supabase dosyaları
 
