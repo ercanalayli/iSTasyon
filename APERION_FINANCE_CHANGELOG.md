@@ -26,8 +26,9 @@ ercanalayli/iSTasyon
 | `telegram/aperion_critical_risk_alert_v52_test_runner.js` | v52 risk key, cooldown skip ve loglama testleri | Eklendi |
 | `telegram/AperiON_Risk_Alert_Dedup_Scheduler_v52.md` | Windows Task Scheduler / manuel kullanım ve v51'den v52'ye geçiş rehberi | Eklendi |
 | `telegram/AperiON_Risk_Alert_Dedup_Rollback_v52.md` | v52 sorununda dosya silmeden sadece scheduler komutunu v51'e alma rehberi | Eklendi |
+| `telegram/AperiON_Risk_Alert_Dedup_GoLive_Checklist_v52.md` | SQL, ENV, test, CI, canlı deneme, scheduler ve rollback için tek sayfalık canlıya alma checklist'i | Eklendi |
 | `tools/verify_risk_alert_dedup_v52.js` | v52 dosya, SQL, RPC, komut ve bot kontrol script'i | Eklendi |
-| `scripts/verify_finance_manifest.cjs` | v52 dosyaları, workflow tetikleyicileri, env örnekleri, health check SQL'i, rollback rehberi, kurulum dokümanı ve komutları manifest doğrulamasına eklendi | Güncellendi |
+| `scripts/verify_finance_manifest.cjs` | v52 dosyaları, workflow tetikleyicileri, env örnekleri, health check SQL'i, rollback/go-live rehberleri, kurulum dokümanı ve komutları manifest doğrulamasına eklendi | Güncellendi |
 | `.github/workflows/finance-full-check.yml` | v52 test + verify adımları ve `finance/**`, `telegram/**`, `tools/**` tetikleyicileri eklendi | Güncellendi |
 | `.env.example` | Telegram bot, chat id, company, risk seviyesi ve v52 cooldown örnekleri eklendi | Güncellendi |
 | `FINANCE_SETUP.md` | v52 SQL sırası, health check, ENV, test, CI, scheduler geçişi ve rollback rehberi kurulum rehberine eklendi | Güncellendi |
@@ -162,5 +163,6 @@ Bundan sonra durum raporlarında kanıt şu sırayla verilecek:
   3. `npm test`
 - `.env` dosyasını `.env.example` dosyasındaki Telegram + v52 alanlarına göre güncelle.
 - Live-ready Komuta Merkezi ekranında gerçek Supabase URL / anon key ile bağlantı testi yap.
+- `telegram/AperiON_Risk_Alert_Dedup_GoLive_Checklist_v52.md` checklist'i tamamla.
 - Testler temizse canlı scheduler tarafında `telegram:critical-risk-v51` komutunu `telegram:critical-risk-v52` komutuna çevir.
 - Sorun çıkarsa `telegram/AperiON_Risk_Alert_Dedup_Rollback_v52.md` rehberine göre sadece scheduler komutunu geçici olarak v51'e al.
