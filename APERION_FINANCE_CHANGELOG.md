@@ -7,13 +7,37 @@ Yeni öncelik:
 ```text
 Ana modül: Finans Komuta Merkezi
 Çekirdekler: Yapılacaklar · Ödenecekler · Tahsil Edilecekler
-Ek yapı: Telegram alarm altyapısı
+Ek yapı: Telegram alarm altyapısı + v52 tekrar alarm engeli
 ```
 
 Repo:
 
 ```text
 ercanalayli/iSTasyon
+```
+
+## v52 - Risk Alarm Tekrar Engeli
+
+| Dosya | Amaç | Durum |
+|---|---|---|
+| `finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql` | Telegram kritik risk alarmı için gönderildi logu, cooldown kontrolü ve RPC katmanı | Eklendi |
+| `telegram/aperion_critical_risk_alert_v52.js` | v49 risk feed'i okuyup aynı riski cooldown içinde tekrar göndermeyen Telegram alarm modülü | Eklendi |
+| `telegram/aperion_critical_risk_alert_v52_test_runner.js` | v52 risk key, cooldown skip ve loglama testleri | Eklendi |
+| `telegram/AperiON_Risk_Alert_Dedup_Scheduler_v52.md` | Windows Task Scheduler / manuel kullanım ve v51'den v52'ye geçiş rehberi | Eklendi |
+| `tools/verify_risk_alert_dedup_v52.js` | v52 dosya, SQL, RPC, komut ve bot kontrol script'i | Eklendi |
+| `scripts/verify_finance_manifest.cjs` | v52 dosyaları, workflow tetikleyicileri ve komutları manifest doğrulamasına eklendi | Güncellendi |
+| `.github/workflows/finance-full-check.yml` | v52 test + verify adımları ve `finance/**`, `telegram/**`, `tools/**` tetikleyicileri eklendi | Güncellendi |
+| `NEXT_ACTIONS_FINANCE.md` | v52 SQL sırası, ENV, test ve canlı scheduler geçişi yazıldı | Güncellendi |
+| `package.json` | `telegram:critical-risk-v52`, `telegram:critical-risk-v52:test`, `verify:risk-alert-dedup-v52` komutları eklendi | Güncellendi |
+
+v52 güvenlik notu:
+
+```text
+- Mevcut v51 dosyaları korunur.
+- Dashboard/UI dosyalarına dokunulmaz.
+- v52 sadece risk alarm logu yazar.
+- Finans ana kayıtları, cari kayıtları, satış kayıtları, ödeme/tahsilat kayıtları değiştirilmez.
+- Canlı scheduler otomatik değiştirilmez; önce test ve onay gerekir.
 ```
 
 ## Ana Komuta Merkezi dosyaları
@@ -36,7 +60,7 @@ ercanalayli/iSTasyon
 | `aperion-finans-takvimi-live.html` | Finans Takvimi live-ready ekranı | Korundu |
 | `finance_dashboard_embed.html` | Ana dashboard içine gömülebilir iframe section | Korundu |
 | `APERION_FINANS_INTEGRATION_NOTES.md` | index.html entegrasyon notları | Korundu |
-| `NEXT_ACTIONS_FINANCE.md` | Telefon/GitHub üzerinden kalan aksiyon rehberi | Güncellenecek |
+| `NEXT_ACTIONS_FINANCE.md` | Telefon/GitHub üzerinden kalan aksiyon rehberi | Güncellendi / v52 eklendi |
 | `FINANCE_SETUP.md` | Kurulum rehberi | Güncellenecek |
 
 ## Komuta Merkezi Supabase dosyaları
@@ -79,13 +103,13 @@ ercanalayli/iSTasyon
 | Dosya | Amaç | Durum |
 |---|---|---|
 | `finance_smoke_test.cjs` | Finans ve Komuta Merkezi smoke test | Güncellendi |
-| `scripts/verify_finance_manifest.cjs` | Manifest doğrulama script'i | Güncellendi |
+| `scripts/verify_finance_manifest.cjs` | Manifest doğrulama script'i | Güncellendi / v52 eklendi |
 | `test_data/bizimhesap_finance_sample.csv` | BizimHesap örnek export | Korundu |
 | `test_data/moka_bank_sample.csv` | Moka banka örnek export | Korundu |
 | `data/sales_report_summary_2025_2026.json` | Yüklenen satış raporları finans özeti | Korundu |
 | `.github/workflows/finance-smoke.yml` | Finance smoke test workflow | Korundu |
 | `.github/workflows/finance-inject-index.yml` | Finans Takvimi link workflow'u | Korundu |
-| `.github/workflows/finance-full-check.yml` | Tek noktadan full finans kontrol workflow'u | Güncellendi |
+| `.github/workflows/finance-full-check.yml` | Tek noktadan full finans kontrol workflow'u | Güncellendi / v52 eklendi |
 
 ## Güvenlik / config dosyaları
 
@@ -100,6 +124,8 @@ ercanalayli/iSTasyon
 | Dosya | Durum |
 |---|---|
 | `index.html` | Körlemesine değiştirilmedi. Komuta Merkezi için güvenli patch script + workflow hazırlandı. |
+| `telegram/aperion_critical_risk_alert_v51.js` | Korundu. v52 ayrı modül olarak eklendi. |
+| Dashboard/UI dosyaları | v52 kapsamında değiştirilmedi. |
 
 ## Doğrulama yaklaşımı
 
@@ -113,9 +139,18 @@ Bundan sonra durum raporlarında kanıt şu sırayla verilecek:
 
 ## Kalan kritik canlı adımlar
 
-- GitHub Actions > `Inject AperiON Finance Command Center Link` workflow'unu çalıştır.
 - GitHub Actions > `AperiON Finance Full Check` workflow'unu çalıştır.
 - Supabase SQL Editor'da çalıştır:
   1. `SUPABASE_COMMAND_CENTER_INSTALL.sql`
+  2. `finance/AperiON_Sales_Flow_Today_SQL_v46.sql`
+  3. `finance/AperiON_Finance_Calendar_Live_SQL_v47.sql`
+  4. `finance/AperiON_Finance_Calendar_Seed_v47.sql`
+  5. `finance/AperiON_Finance_Calendar_Actions_SQL_v48.sql`
+  6. `finance/AperiON_Finance_Risk_Engine_SQL_v49.sql`
+  7. `finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql`
+- Yerelde çalıştır:
+  1. `npm run telegram:critical-risk-v52:test`
+  2. `npm run verify:risk-alert-dedup-v52`
+  3. `npm test`
 - Live-ready Komuta Merkezi ekranında gerçek Supabase URL / anon key ile bağlantı testi yap.
-- Telegram bot backend / webhook / chat id yapısını sonraki aşamada bağla.
+- Testler temizse canlı scheduler tarafında `telegram:critical-risk-v51` komutunu `telegram:critical-risk-v52` komutuna çevir.
