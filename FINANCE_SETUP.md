@@ -13,7 +13,7 @@ Ana çekirdekler:
 Ek yapı:
 
 ```text
-Telegram alarm altyapısı
+Telegram alarm altyapısı + v52 tekrar alarm engeli
 ```
 
 ## 1. Ana linkler
@@ -89,7 +89,36 @@ Supabase Dashboard > SQL Editor içinde sırasıyla çalıştırılacak dosyalar
 - Alarm adayları özetleniyor mu?
 - Doğrulanmamış / onay bekleyen kayıtlar ayrışıyor mu?
 
-## 5. Live-ready ekran bağlantısı
+## 5. Finans Takvimi / Risk Merkezi canlı SQL sırası
+
+Satış Akışı, Finans Takvimi, aksiyon RPC'leri, Risk Merkezi ve v52 tekrar alarm engeli için sıra:
+
+```text
+1. finance/AperiON_Sales_Flow_Today_SQL_v46.sql
+2. finance/AperiON_Finance_Calendar_Live_SQL_v47.sql
+3. finance/AperiON_Finance_Calendar_Seed_v47.sql
+4. finance/AperiON_Finance_Calendar_Actions_SQL_v48.sql
+5. finance/AperiON_Finance_Risk_Engine_SQL_v49.sql
+6. finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql
+```
+
+v52'nin kurduğu ana yapılar:
+
+```text
+risk_alert_sent_log
+risk_alert_can_send_v52
+risk_alert_mark_sent_v52
+aperion_risk_alert_dedup_status_v52_view
+```
+
+v52 güvenlik notu:
+
+- v52 sadece risk alarm gönderim logu yazar.
+- Ana finans kayıtlarını, cari kayıtlarını, satış kayıtlarını, ödeme/tahsilat kayıtlarını değiştirmez.
+- Mevcut v51 dosyası korunur.
+- Canlı scheduler otomatik değiştirilmez; önce test ve onay gerekir.
+
+## 6. Live-ready ekran bağlantısı
 
 1. `finans-komuta-merkezi.html` sayfasını aç.
 2. `Canlıya Hazır Komuta Merkezini Aç` butonuna bas.
@@ -100,14 +129,28 @@ Supabase Dashboard > SQL Editor içinde sırasıyla çalıştırılacak dosyalar
 
 Başarılıysa ekran `CANLI MOD` gösterir. Hata olursa ekran bozulmaz, demo moda döner.
 
-## 6. Supabase bağlantı testi
+## 7. Supabase / Telegram ENV ayarları
 
-Yerelde `.env` içine şunları gir:
+Yerelde `.env` içine `.env.example` dosyasına göre şunları gir:
 
 ```env
 SUPABASE_URL=https://PROJE.supabase.co
 SUPABASE_ANON_KEY=ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY=SERVICE_ROLE_KEY
+TELEGRAM_BOT_TOKEN=BOT_TOKEN
+TELEGRAM_CHAT_ID=CHAT_ID
+COMPANY=ALAYLI
+RISK_ALERT_LEVEL=high
+RISK_ALERT_COOLDOWN_MINUTES=360
 ```
+
+Not:
+
+- `SUPABASE_ANON_KEY` web canlı ekran için kullanılır.
+- `SUPABASE_SERVICE_ROLE_KEY` yerel bot / Telegram risk alarmı için gerekir.
+- Gerçek key'ler GitHub'a yazılmaz.
+
+## 8. Supabase bağlantı testi
 
 Sonra çalıştır:
 
@@ -117,11 +160,13 @@ npm run finance-test-supabase
 
 Bu test hem eski Finans Takvimi hem yeni Finans Komuta Merkezi tablolarını kontrol eder.
 
-## 7. Full Check
+## 9. Full Check ve v52 testleri
 
 GitHub Actions içinde `AperiON Finance Full Check` workflow'unu çalıştır veya yerelde:
 
 ```bash
+npm run telegram:critical-risk-v52:test
+npm run verify:risk-alert-dedup-v52
 npm test
 ```
 
@@ -136,8 +181,11 @@ Bu testler şunları kontrol eder:
 - BizimHesap demo pipeline çalışıyor mu?
 - Moka demo pipeline çalışıyor mu?
 - Manifest doğrulaması geçiyor mu?
+- v52 risk key üretimi çalışıyor mu?
+- v52 cooldown skip mantığı çalışıyor mu?
+- v52 gönderildi loglama RPC çağrısı kodda var mı?
 
-## 8. Eski Finans Takvimi durumu
+## 10. Eski Finans Takvimi durumu
 
 Eski Finans Takvimi dosyaları silinmedi. Korunan yardımcı modül olarak kalır:
 
@@ -148,23 +196,45 @@ Eski Finans Takvimi dosyaları silinmedi. Korunan yardımcı modül olarak kalı
 
 Ana öncelik artık Finans Komuta Merkezi'dir.
 
-## 9. Telegram alarm altyapısı
+## 11. Telegram kritik risk alarmı v52
 
-Bu aşamada tam bot entegrasyonu yapılmadı. Hazır olan altyapı:
+Hazır olan v52 dosyaları:
 
-- `finance_telegram_alarm_queue`
-- `finance_command_center_action_log`
-- Telegram alarm adayı kartları
-- Live ekranda Telegram Alarm Merkezi alanı
+```text
+telegram/aperion_critical_risk_alert_v52.js
+telegram/aperion_critical_risk_alert_v52_test_runner.js
+telegram/AperiON_Risk_Alert_Dedup_Scheduler_v52.md
+finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql
+```
 
-Sonraki aşamada kurulacak akış:
+Canlı tek sefer çalıştırma:
 
-1. Alarm kuyruğu okunur.
-2. Kritik alarm Telegram'a gönderilir.
-3. Telegram'dan gelen tamamlandı / ertelendi / not işlemi önce loglanır.
-4. İşlem kesin kayıt olmaz; onay katmanına düşer.
+```bash
+npm run telegram:critical-risk-v52
+```
 
-## 10. Korunan kurallar
+Eski canlı scheduler komutu:
+
+```bash
+npm run telegram:critical-risk-v51
+```
+
+testler temizlendikten sonra şu komuta çevrilecek:
+
+```bash
+npm run telegram:critical-risk-v52
+```
+
+Önerilen ayar:
+
+```text
+Çalışma sıklığı: Saatte 1
+Cooldown: 360 dakika
+```
+
+Bu ayarla aynı risk 6 saat içinde tekrar Telegram'a gönderilmez.
+
+## 12. Korunan kurallar
 
 - Mevcut sistem silinmez.
 - Büyük refactor yapılmaz.
@@ -174,3 +244,4 @@ Sonraki aşamada kurulacak akış:
 - Doğrulanmamış veri kesin sonuç gibi gösterilmez.
 - Her kayıtta tarih, kaynak, durum ve doğrulama bilgisi bulunur.
 - Telegram işlemleri doğrudan kesin kayıt oluşturmaz; önce log + onay katmanına düşer.
+- v52 sadece risk alarm logu yazar; finans ana kayıtlarını değiştirmez.
