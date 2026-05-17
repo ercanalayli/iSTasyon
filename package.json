@@ -28,13 +28,17 @@
     "telegram:finance-v47": "node telegram/aperion_telegram_bot_v47.js",
     "telegram:finance-v47:webhook": "node telegram/aperion_telegram_webhook_v47.js",
     "telegram:finance-v47:set-webhook": "node telegram/set_telegram_webhook_v47.js",
+    "telegram:finance-v48:test": "npm run telegram:finance-v47:test",
+    "telegram:finance-v48": "npm run telegram:finance-v47",
+    "telegram:finance-v48:webhook": "npm run telegram:finance-v47:webhook",
+    "telegram:finance-v48:set-webhook": "npm run telegram:finance-v47:set-webhook",
     "telegram:hatirlat": "node telegram_hatirlatma_bot.js --once",
     "telegram:hatirlat:watch": "node telegram_hatirlatma_bot.js --watch",
     "telegram:hatirlat:due": "node telegram_hatirlatma_bot.js --remind-only",
     "sync:bizimhesap": "node aperion_veri_senkron.js --firma alayli",
     "sync:bizimhesap:plan": "node aperion_veri_senkron.js --firma alayli --plan",
     "sync:bizimhesap:dry": "node aperion_veri_senkron.js --firma alayli --dry-run",
-    "test": "node finance_smoke_test.cjs && node scripts/verify_finance_manifest.cjs && npm run telegram:finance-v47:test"
+    "test": "node finance_smoke_test.cjs && node scripts/verify_finance_manifest.cjs && npm run telegram:finance-v48:test"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
