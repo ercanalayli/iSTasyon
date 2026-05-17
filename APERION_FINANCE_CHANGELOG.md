@@ -25,8 +25,9 @@ ercanalayli/iSTasyon
 | `telegram/aperion_critical_risk_alert_v52_test_runner.js` | v52 risk key, cooldown skip ve loglama testleri | Eklendi |
 | `telegram/AperiON_Risk_Alert_Dedup_Scheduler_v52.md` | Windows Task Scheduler / manuel kullanım ve v51'den v52'ye geçiş rehberi | Eklendi |
 | `tools/verify_risk_alert_dedup_v52.js` | v52 dosya, SQL, RPC, komut ve bot kontrol script'i | Eklendi |
-| `scripts/verify_finance_manifest.cjs` | v52 dosyaları, workflow tetikleyicileri ve komutları manifest doğrulamasına eklendi | Güncellendi |
+| `scripts/verify_finance_manifest.cjs` | v52 dosyaları, workflow tetikleyicileri, env örnekleri ve komutları manifest doğrulamasına eklendi | Güncellendi |
 | `.github/workflows/finance-full-check.yml` | v52 test + verify adımları ve `finance/**`, `telegram/**`, `tools/**` tetikleyicileri eklendi | Güncellendi |
+| `.env.example` | Telegram bot, chat id, company, risk seviyesi ve v52 cooldown örnekleri eklendi | Güncellendi |
 | `NEXT_ACTIONS_FINANCE.md` | v52 SQL sırası, ENV, test ve canlı scheduler geçişi yazıldı | Güncellendi |
 | `package.json` | `telegram:critical-risk-v52`, `telegram:critical-risk-v52:test`, `verify:risk-alert-dedup-v52` komutları eklendi | Güncellendi |
 
@@ -115,7 +116,7 @@ v52 güvenlik notu:
 
 | Dosya | Amaç | Durum |
 |---|---|---|
-| `.env.example` | Ortam değişkeni örneği | Korundu |
+| `.env.example` | Ortam değişkeni örneği | Güncellendi / Telegram + v52 cooldown eklendi |
 | `.gitignore` | Gerçek env/config/export dosyalarını korur | Korundu |
 | `aperion-finans-config.example.js` | Supabase anon config örneği | Korundu |
 
@@ -152,5 +153,6 @@ Bundan sonra durum raporlarında kanıt şu sırayla verilecek:
   1. `npm run telegram:critical-risk-v52:test`
   2. `npm run verify:risk-alert-dedup-v52`
   3. `npm test`
+- `.env` dosyasını `.env.example` dosyasındaki Telegram + v52 alanlarına göre güncelle.
 - Live-ready Komuta Merkezi ekranında gerçek Supabase URL / anon key ile bağlantı testi yap.
 - Testler temizse canlı scheduler tarafında `telegram:critical-risk-v51` komutunu `telegram:critical-risk-v52` komutuna çevir.
