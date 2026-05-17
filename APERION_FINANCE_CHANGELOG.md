@@ -21,15 +21,16 @@ ercanalayli/iSTasyon
 | Dosya | Amaç | Durum |
 |---|---|---|
 | `finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql` | Telegram kritik risk alarmı için gönderildi logu, cooldown kontrolü ve RPC katmanı | Eklendi |
+| `finance/AperiON_Risk_Alert_Dedup_Health_Check_v52.sql` | v52 kurulum sonrası tablo/RPC/view/read-only kontrol SQL'i | Eklendi |
 | `telegram/aperion_critical_risk_alert_v52.js` | v49 risk feed'i okuyup aynı riski cooldown içinde tekrar göndermeyen Telegram alarm modülü | Eklendi |
 | `telegram/aperion_critical_risk_alert_v52_test_runner.js` | v52 risk key, cooldown skip ve loglama testleri | Eklendi |
 | `telegram/AperiON_Risk_Alert_Dedup_Scheduler_v52.md` | Windows Task Scheduler / manuel kullanım ve v51'den v52'ye geçiş rehberi | Eklendi |
 | `tools/verify_risk_alert_dedup_v52.js` | v52 dosya, SQL, RPC, komut ve bot kontrol script'i | Eklendi |
-| `scripts/verify_finance_manifest.cjs` | v52 dosyaları, workflow tetikleyicileri, env örnekleri, kurulum dokümanı ve komutları manifest doğrulamasına eklendi | Güncellendi |
+| `scripts/verify_finance_manifest.cjs` | v52 dosyaları, workflow tetikleyicileri, env örnekleri, health check SQL'i, kurulum dokümanı ve komutları manifest doğrulamasına eklendi | Güncellendi |
 | `.github/workflows/finance-full-check.yml` | v52 test + verify adımları ve `finance/**`, `telegram/**`, `tools/**` tetikleyicileri eklendi | Güncellendi |
 | `.env.example` | Telegram bot, chat id, company, risk seviyesi ve v52 cooldown örnekleri eklendi | Güncellendi |
-| `FINANCE_SETUP.md` | v52 SQL sırası, ENV, test, CI ve scheduler geçişi kurulum rehberine eklendi | Güncellendi |
-| `NEXT_ACTIONS_FINANCE.md` | v52 SQL sırası, ENV, test ve canlı scheduler geçişi yazıldı | Güncellendi |
+| `FINANCE_SETUP.md` | v52 SQL sırası, health check, ENV, test, CI ve scheduler geçişi kurulum rehberine eklendi | Güncellendi |
+| `NEXT_ACTIONS_FINANCE.md` | v52 SQL sırası, health check, ENV, test ve canlı scheduler geçişi yazıldı | Güncellendi |
 | `package.json` | `telegram:critical-risk-v52`, `telegram:critical-risk-v52:test`, `verify:risk-alert-dedup-v52` komutları eklendi | Güncellendi |
 
 v52 güvenlik notu:
@@ -38,6 +39,7 @@ v52 güvenlik notu:
 - Mevcut v51 dosyaları korunur.
 - Dashboard/UI dosyalarına dokunulmaz.
 - v52 sadece risk alarm logu yazar.
+- v52 health check varsayılan olarak read-only çalışır.
 - Finans ana kayıtları, cari kayıtları, satış kayıtları, ödeme/tahsilat kayıtları değiştirilmez.
 - Canlı scheduler otomatik değiştirilmez; önce test ve onay gerekir.
 ```
@@ -150,6 +152,7 @@ Bundan sonra durum raporlarında kanıt şu sırayla verilecek:
   5. `finance/AperiON_Finance_Calendar_Actions_SQL_v48.sql`
   6. `finance/AperiON_Finance_Risk_Engine_SQL_v49.sql`
   7. `finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql`
+  8. `finance/AperiON_Risk_Alert_Dedup_Health_Check_v52.sql`
 - Yerelde çalıştır:
   1. `npm run telegram:critical-risk-v52:test`
   2. `npm run verify:risk-alert-dedup-v52`
