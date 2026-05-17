@@ -27,6 +27,7 @@
     "telegram:finance-v47:test": "node telegram/aperion_telegram_bot_v47_test_runner.js",
     "telegram:finance-v47": "node telegram/aperion_telegram_bot_v47.js",
     "telegram:finance-v47:webhook": "node telegram/aperion_telegram_webhook_v47.js",
+    "telegram:finance-v47:set-webhook": "node telegram/set_telegram_webhook_v47.js",
     "telegram:hatirlat": "node telegram_hatirlatma_bot.js --once",
     "telegram:hatirlat:watch": "node telegram_hatirlatma_bot.js --watch",
     "telegram:hatirlat:due": "node telegram_hatirlatma_bot.js --remind-only",
