@@ -91,8 +91,7 @@ const requiredContent = [
   { file: 'telegram/AperiON_Risk_Alert_Dedup_GoLive_Checklist_v52.md', text: 'Rollback planı', label: 'v52 go-live rollback kontrolü' },
   { file: '.github/workflows/finance-full-check.yml', text: 'telegram/**', label: 'v52 Telegram workflow trigger' },
   { file: '.github/workflows/finance-full-check.yml', text: 'finance/**', label: 'v52 finance SQL workflow trigger' },
-  { file: '.github/workflows/finance-full-check.yml', text: 'telegram:critical-risk-v52:test', label: 'v52 workflow test adımı' },
-  { file: '.github/workflows/finance-full-check.yml', text: 'verify:risk-alert-dedup-v52', label: 'v52 workflow verify adımı' },
+  { file: '.github/workflows/finance-full-check.yml', text: 'verify:finance-v52', label: 'v52 workflow toplu doğrulama adımı' },
   { file: '.env.example', text: 'TELEGRAM_BOT_TOKEN', label: 'Telegram bot token env örneği' },
   { file: '.env.example', text: 'TELEGRAM_CHAT_ID', label: 'Telegram chat id env örneği' },
   { file: '.env.example', text: 'RISK_ALERT_COOLDOWN_MINUTES', label: 'v52 cooldown env örneği' },
@@ -104,6 +103,7 @@ const requiredContent = [
   { file: 'package.json', text: 'command-center-inject-index', label: 'Komuta Merkezi index inject script' },
   { file: 'package.json', text: 'telegram:critical-risk-v52', label: 'v52 kritik risk alarm script' },
   { file: 'package.json', text: 'verify:risk-alert-dedup-v52', label: 'v52 tekrar alarm verify script' },
+  { file: 'package.json', text: 'verify:finance-v52', label: 'v52 toplu doğrulama script' },
   { file: '.gitignore', text: 'aperion-finans-config.js', label: 'config ignore kuralı' }
 ];
 
