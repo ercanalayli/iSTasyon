@@ -49,10 +49,8 @@ jobs:
         run: npm run finance-smoke
       - name: Verify finance manifest
         run: npm run finance-verify-manifest
-      - name: Run v52 critical risk dedup unit test
-        run: npm run telegram:critical-risk-v52:test
-      - name: Verify v52 critical risk dedup files
-        run: npm run verify:risk-alert-dedup-v52
+      - name: Run consolidated v52 finance verification
+        run: npm run verify:finance-v52
       - name: Run BizimHesap demo pipeline
         run: npm run finance-pipeline-demo
       - name: Run Moka demo pipeline
