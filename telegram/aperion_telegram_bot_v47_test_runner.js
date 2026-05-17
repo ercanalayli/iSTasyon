@@ -44,12 +44,24 @@ const sampleRows = [
     remaining_amount: 0,
     period_status: 'today',
     status: 'open'
+  },
+  {
+    id: 5,
+    company: 'ALAYLI',
+    calendar_date: '2026-05-16',
+    item_type: 'approval',
+    direction: 'neutral',
+    title: 'Fiyat listesi onayı',
+    remaining_amount: 0,
+    period_status: 'today',
+    status: 'waiting_approval'
   }
 ];
 
 const requiredExports = [
   'handleCommand',
   'handleUpdate',
+  'handleCallback',
   'commandBugun',
   'commandNakit',
   'commandOdenecekler',
@@ -58,11 +70,15 @@ const requiredExports = [
   'commandYapilacak',
   'commandOnay',
   'commandRapor',
-  'formatCalendarRows'
+  'formatCalendarRows',
+  'formatOneRow',
+  'actionButtons',
+  'supabaseRpc',
+  'telegramAnswerCallback'
 ];
 
-console.log('AperiON Telegram Bot v47 Test');
-console.log('-----------------------------');
+console.log('AperiON Telegram Bot v48 Action Test');
+console.log('------------------------------------');
 
 let failed = 0;
 for (const key of requiredExports) {
@@ -82,19 +98,37 @@ const checks = [
   { name: 'includes period status', ok: formatted.includes('Bugün') && formatted.includes('Geciken') }
 ];
 
-console.log('-----------------------------');
+const payableButtons = bot.actionButtons(sampleRows[0]);
+const receivableButtons = bot.actionButtons(sampleRows[1]);
+const taskButtons = bot.actionButtons(sampleRows[3]);
+const approvalButtons = bot.actionButtons(sampleRows[4]);
+
+checks.push(
+  { name: 'payable has paid button', ok: JSON.stringify(payableButtons).includes('fc:paid:1') },
+  { name: 'payable has postpone button', ok: JSON.stringify(payableButtons).includes('fc:postpone:1') },
+  { name: 'receivable has collected button', ok: JSON.stringify(receivableButtons).includes('fc:collected:2') },
+  { name: 'task has done button', ok: JSON.stringify(taskButtons).includes('fc:done:4') },
+  { name: 'approval has approve button', ok: JSON.stringify(approvalButtons).includes('fc:approve:5') },
+  { name: 'approval has reject button', ok: JSON.stringify(approvalButtons).includes('fc:reject:5') },
+  { name: 'detail button exists', ok: JSON.stringify(payableButtons).includes('fc:detail:1') }
+);
+
+console.log('------------------------------------');
 for (const c of checks) {
   console.log(`${c.ok ? 'OK ' : 'ERR'} ${c.name}`);
   if (!c.ok) failed++;
 }
 
-console.log('-----------------------------');
+console.log('------------------------------------');
 console.log(formatted);
-console.log('-----------------------------');
+console.log('------------------------------------');
+console.log('Sample payable buttons');
+console.log(JSON.stringify(payableButtons, null, 2));
+console.log('------------------------------------');
 
 if (failed) {
   console.log(`RESULT: FAILED - ${failed} kontrol eksik.`);
   process.exitCode = 1;
 } else {
-  console.log('RESULT: OK - Telegram v47 finance calendar formatter and exports are ready.');
+  console.log('RESULT: OK - Telegram v48 formatter, exports and action buttons are ready.');
 }
