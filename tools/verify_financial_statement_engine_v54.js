@@ -15,6 +15,7 @@ const planPath = 'finance/AperiON_Financial_Statement_Engine_v54.md';
 const sqlPath = 'finance/AperiON_Financial_Statement_Engine_SQL_v54.sql';
 const seedPath = 'finance/AperiON_Financial_Statement_Engine_Seed_v54.sql';
 const healthPath = 'finance/AperiON_Financial_Statement_Engine_Healthcheck_v54.sql';
+const runbookPath = 'finance/AperiON_Financial_Statement_Engine_Runbook_v54.md';
 const previewPath = 'preview/aperion_v53_financial_center_preview.html';
 const cloudflarePath = 'deploy/AperiON_Cloudflare_Pages_Setup.md';
 
@@ -22,6 +23,7 @@ const plan = read(planPath);
 const sql = read(sqlPath);
 const seed = read(seedPath);
 const health = read(healthPath);
+const runbook = read(runbookPath);
 const preview = read(previewPath);
 const cloudflare = read(cloudflarePath);
 
@@ -32,6 +34,7 @@ check('v54 plan exists', Boolean(plan));
 check('v54 SQL exists', Boolean(sql));
 check('v54 seed exists', Boolean(seed));
 check('v54 healthcheck exists', Boolean(health));
+check('v54 Supabase runbook exists', Boolean(runbook));
 check('v53 preview exists', Boolean(preview));
 check('Cloudflare Pages setup exists', Boolean(cloudflare));
 
@@ -62,6 +65,13 @@ check('Healthcheck queries income statement', health.includes('financial_income_
 check('Healthcheck queries balance sheet', health.includes('financial_balance_sheet_v54_view'));
 check('Healthcheck queries KPI', health.includes('financial_kpi_summary_v54_view'));
 check('Healthcheck queries alerts', health.includes('financial_reconciliation_alerts_v54_view'));
+
+check('Runbook has Supabase SQL order', runbook.includes('SQL Editor'));
+check('Runbook lists main SQL', runbook.includes('AperiON_Financial_Statement_Engine_SQL_v54.sql'));
+check('Runbook lists seed SQL', runbook.includes('AperiON_Financial_Statement_Engine_Seed_v54.sql'));
+check('Runbook lists healthcheck SQL', runbook.includes('AperiON_Financial_Statement_Engine_Healthcheck_v54.sql'));
+check('Runbook protects existing raw tables', runbook.includes('Mevcut sales_raw'));
+check('Runbook uses safe demo company', runbook.includes('ALAYLI_DEMO_V54'));
 
 check('Preview has dynamic income statement', preview.includes('Dinamik Gelir Tablosu'));
 check('Preview has dynamic balance sheet', preview.includes('Dinamik Bilanço'));
