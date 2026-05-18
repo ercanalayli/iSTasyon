@@ -49,14 +49,15 @@
     "telegram:critical-risk-v52": "node telegram/aperion_critical_risk_alert_v52.js",
     "telegram:critical-risk-v52:test": "node telegram/aperion_critical_risk_alert_v52_test_runner.js",
     "verify:risk-alert-dedup-v52": "node tools/verify_risk_alert_dedup_v52.js",
-    "verify:finance-v52": "npm run telegram:critical-risk-v52:test && npm run verify:risk-alert-dedup-v52 && npm run finance-verify-manifest",
+    "verify:financial-statement-engine-v54": "node tools/verify_financial_statement_engine_v54.js",
+    "verify:finance-v52": "npm run telegram:critical-risk-v52:test && npm run verify:risk-alert-dedup-v52 && npm run verify:financial-statement-engine-v54 && npm run finance-verify-manifest",
     "telegram:hatirlat": "node telegram_hatirlatma_bot.js --once",
     "telegram:hatirlat:watch": "node telegram_hatirlatma_bot.js --watch",
     "telegram:hatirlat:due": "node telegram_hatirlatma_bot.js --remind-only",
     "sync:bizimhesap": "node aperion_veri_senkron.js --firma alayli",
     "sync:bizimhesap:plan": "node aperion_veri_senkron.js --firma alayli --plan",
     "sync:bizimhesap:dry": "node aperion_veri_senkron.js --firma alayli --dry-run",
-    "test": "node finance_smoke_test.cjs && node scripts/verify_finance_manifest.cjs && npm run telegram:finance-v48:test && npm run telegram:risk-v49:test && npm run telegram:morning-digest-v50:test && npm run telegram:critical-risk-v51:test && npm run telegram:critical-risk-v52:test && npm run verify:risk-alert-dedup-v52"
+    "test": "node finance_smoke_test.cjs && node scripts/verify_finance_manifest.cjs && npm run verify:financial-statement-engine-v54 && npm run telegram:finance-v48:test && npm run telegram:risk-v49:test && npm run telegram:morning-digest-v50:test && npm run telegram:critical-risk-v51:test && npm run telegram:critical-risk-v52:test && npm run verify:risk-alert-dedup-v52"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
