@@ -170,6 +170,40 @@ begin
 end;
 $$;
 
+create or replace function finance_events_v54_after_write_trigger()
+returns trigger
+language plpgsql
+volatile
+as $$
+begin
+  new.updated_at := now();
+  perform finance_event_to_ledger_v54(new.event_id);
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_finance_events_v54_after_insert_update on finance_events_v54;
+
+create trigger trg_finance_events_v54_after_insert_update
+after insert or update of
+  company,
+  event_type,
+  source_table,
+  source_id,
+  accounting_date,
+  amount,
+  customer_name,
+  vendor_name,
+  product_name,
+  account_name,
+  status,
+  confidence_score,
+  note,
+  payload
+on finance_events_v54
+for each row
+execute function finance_events_v54_after_write_trigger();
+
 create or replace view financial_income_statement_v54_view as
 with base as (
   select company, line_code, line_name, sum(net_amount) amount
@@ -215,7 +249,7 @@ select
   coalesce(max(i.amount) filter (where i.line_code='net_sales'), 0) as net_sales,
   coalesce(max(i.amount) filter (where i.line_code='gross_profit'), 0) as gross_profit,
   coalesce(max(i.amount) filter (where i.line_code='net_profit'), 0) as net_profit,
-  coalesce(max(b.amount) filter (where b.line_code in ('bank_cash','bank')), 0) as cash_and_bank,
+  coalesce(sum(b.amount) filter (where b.line_code in ('bank_cash','bank')), 0) as cash_and_bank,
   coalesce(max(b.amount) filter (where b.line_code='moka_united'), 0) as moka_waiting,
   coalesce(max(b.amount) filter (where b.line_code='customer_receivables'), 0) as customer_receivables,
   abs(coalesce(max(b.amount) filter (where b.line_code='vendor_payables'), 0)) as vendor_payables,
