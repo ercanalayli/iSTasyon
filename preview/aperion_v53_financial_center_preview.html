@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AperiON v53 Canlı Finans Merkezi Preview</title>
+  <style>
+    :root{
+      --bg:#F4F6FA;
+      --card:#FFFFFF;
+      --text:#172033;
+      --muted:#667085;
+      --line:#E4E7EC;
+      --good:#12805C;
+      --warn:#B7791F;
+      --bad:#B42318;
+      --soft-good:#E8F7F0;
+      --soft-warn:#FFF4DF;
+      --soft-bad:#FDECEC;
+      --brand:#1F4B99;
+      --shadow:0 12px 30px rgba(16,24,40,.08);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .app{max-width:1480px;margin:0 auto;padding:22px}
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;
+    }
+    .brand h1{font-size:24px;margin:0 0 4px;font-weight:850;letter-spacing:-.02em}
+    .brand p{margin:0;color:var(--muted);font-size:13px}
+    .status-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:9px 12px;font-size:13px;color:var(--muted);box-shadow:0 4px 12px rgba(16,24,40,.04)}
+    .pill strong{color:var(--text)}
+    .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px}
+    .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px;box-shadow:var(--shadow);min-height:102px}
+    .kpi .label{font-size:12px;color:var(--muted);margin-bottom:8px}
+    .kpi .value{font-size:24px;font-weight:850;letter-spacing:-.03em;white-space:nowrap}
+    .kpi .hint{font-size:12px;color:var(--muted);margin-top:8px}
+    .kpi.good{background:linear-gradient(180deg,#fff,var(--soft-good))}
+    .kpi.warn{background:linear-gradient(180deg,#fff,var(--soft-warn))}
+    .kpi.bad{background:linear-gradient(180deg,#fff,var(--soft-bad))}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow)}
+    .btn{border:0;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:800;cursor:pointer;background:var(--brand);color:white;min-width:122px;text-align:center}
+    .btn.secondary{background:#EEF2FF;color:#1F4B99;border:1px solid #D7E0FF}
+    .btn.good{background:var(--good)}
+    .btn.warn{background:var(--warn)}
+    .btn.bad{background:var(--bad)}
+    .layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .panel-header{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line);background:#FBFCFE}
+    .panel-header h2{margin:0;font-size:18px;letter-spacing:-.02em}
+    .selects{display:flex;gap:8px;align-items:center}
+    select{border:1px solid var(--line);border-radius:12px;padding:9px 10px;background:white;color:var(--text);font-weight:700}
+    .table{width:100%;border-collapse:collapse}
+    .table tr{border-bottom:1px solid var(--line)}
+    .table tr:last-child{border-bottom:0}
+    .table td{padding:12px 18px;font-size:14px;vertical-align:middle}
+    .table td.amount{text-align:right;font-weight:850;white-space:nowrap}
+    .table tr.total td{font-size:15px;font-weight:900;background:#F8FAFC}
+    .table tr.negative td.amount{color:var(--bad)}
+    .table tr.positive td.amount{color:var(--good)}
+    .table tr.clickable{cursor:pointer}
+    .table tr.clickable:hover{background:#F7F9FC}
+    .subhead{background:#F2F4F7;color:var(--muted);font-weight:900;text-transform:uppercase;font-size:12px;letter-spacing:.04em}
+    .bottom{display:grid;grid-template-columns:1.15fr .85fr 1fr;gap:16px;margin-top:16px}
+    .mini{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+    .mini h3{margin:0 0 12px;font-size:16px}
+    .alert{display:flex;justify-content:space-between;gap:12px;border-radius:14px;padding:12px;margin-bottom:10px;font-size:13px;border:1px solid var(--line)}
+    .alert.good{background:var(--soft-good);border-color:#BFEAD3;color:#0B5F43}
+    .alert.warn{background:var(--soft-warn);border-color:#FFDCA0;color:#7A4B00}
+    .alert.bad{background:var(--soft-bad);border-color:#F9B8B8;color:#8A1F14}
+    .drawer{position:fixed;top:0;right:0;width:420px;max-width:92vw;height:100vh;background:white;box-shadow:-20px 0 40px rgba(16,24,40,.18);transform:translateX(105%);transition:.22s ease;z-index:20;padding:22px;border-left:1px solid var(--line)}
+    .drawer.open{transform:translateX(0)}
+    .drawer h3{margin:0 0 8px;font-size:20px}
+    .drawer p{color:var(--muted);font-size:14px;line-height:1.5}
+    .drawer .choice{display:block;width:100%;text-align:left;background:#F8FAFC;border:1px solid var(--line);border-radius:14px;padding:13px;margin:9px 0;font-weight:800;color:var(--text)}
+    .close{float:right;border:0;background:#EEF2F6;border-radius:999px;width:34px;height:34px;font-weight:900;cursor:pointer}
+    .source-note{font-size:12px;color:var(--muted);padding:12px 18px;border-top:1px solid var(--line);background:#FBFCFE}
+    @media(max-width:1180px){.kpis{grid-template-columns:repeat(3,1fr)}.layout{grid-template-columns:1fr}.bottom{grid-template-columns:1fr}}
+    @media(max-width:680px){.app{padding:14px}.topbar{display:block}.status-row{justify-content:flex-start;margin-top:12px}.kpis{grid-template-columns:1fr 1fr}.kpi .value{font-size:19px}.actions{position:sticky;bottom:10px;z-index:10}.btn{min-width:calc(50% - 6px);flex:1}.panel-header{display:block}.selects{margin-top:10px}.table td{padding:11px 12px;font-size:13px}.bottom{gap:12px}.drawer{width:100vw;max-width:100vw}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1>AperiON Canlı Finans Merkezi v53</h1>
+        <p>Gelir Tablosu + Bilanço + Zero Keyboard hızlı işlem ekranı</p>
+      </div>
+      <div class="status-row">
+        <div class="pill">Firma: <strong>ALAYLI</strong></div>
+        <div class="pill">Dönem: <strong>Bu Ay</strong></div>
+        <div class="pill">Son Güncelleme: <strong>18.05.2026 10:25</strong></div>
+        <div class="pill">Veri Güven Skoru: <strong>%92</strong></div>
+      </div>
+    </header>
+
+    <section class="kpis">
+      <div class="kpi good"><div class="label">Net Satış</div><div class="value">₺ 4.875.250</div><div class="hint">Bu ay canlı satış toplamı</div></div>
+      <div class="kpi good"><div class="label">Brüt Kar</div><div class="value">₺ 1.462.575</div><div class="hint">Brüt kar marjı %30</div></div>
+      <div class="kpi good"><div class="label">Net Kar</div><div class="value">₺ 892.140</div><div class="hint">Vergi öncesi tahmini</div></div>
+      <div class="kpi"><div class="label">Kasa + Banka</div><div class="value">₺ 2.184.920</div><div class="hint">Anlık likidite</div></div>
+      <div class="kpi warn"><div class="label">Moka Bekleyen</div><div class="value">₺ 418.600</div><div class="hint">Vade bekleyen POS</div></div>
+      <div class="kpi bad"><div class="label">Risk Skoru</div><div class="value">3 Kritik</div><div class="hint">Mutabakat uyarısı var</div></div>
+    </section>
+
+    <section class="actions">
+      <button class="btn good" onclick="openDrawer('Satış')">+ Satış</button>
+      <button class="btn good" onclick="openDrawer('Tahsilat')">+ Tahsilat</button>
+      <button class="btn warn" onclick="openDrawer('Gider')">+ Gider</button>
+      <button class="btn warn" onclick="openDrawer('Ödeme')">+ Ödeme</button>
+      <button class="btn secondary" onclick="openDrawer('Belge Yükle')">Belge Yükle</button>
+      <button class="btn secondary" onclick="openDrawer('Sesli İşlem')">🎙 Sesli İşlem</button>
+      <button class="btn bad" onclick="openDrawer('Onay Merkezi')">Onay Merkezi</button>
+    </section>
+
+    <main class="layout">
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Dinamik Gelir Tablosu</h2>
+          <div class="selects"><select><option>Bu Ay</option><option>Bugün</option><option>Bu Yıl</option></select></div>
+        </div>
+        <table class="table">
+          <tr class="clickable positive"><td>Brüt Satışlar</td><td class="amount">₺ 5.020.000</td></tr>
+          <tr class="clickable negative"><td>Satış İadeleri</td><td class="amount">- ₺ 94.750</td></tr>
+          <tr class="clickable negative"><td>Satış İskontoları</td><td class="amount">- ₺ 50.000</td></tr>
+          <tr class="total positive"><td>Net Satışlar</td><td class="amount">₺ 4.875.250</td></tr>
+          <tr class="clickable negative"><td>Satışların Maliyeti</td><td class="amount">- ₺ 3.412.675</td></tr>
+          <tr class="total positive"><td>Brüt Kar</td><td class="amount">₺ 1.462.575</td></tr>
+          <tr class="clickable negative"><td>Operasyonel Giderler</td><td class="amount">- ₺ 384.100</td></tr>
+          <tr class="clickable negative"><td>Finansman Giderleri</td><td class="amount">- ₺ 86.335</td></tr>
+          <tr class="total positive"><td>Vergi Öncesi Kar</td><td class="amount">₺ 992.140</td></tr>
+          <tr class="clickable negative"><td>Vergi Karşılığı</td><td class="amount">- ₺ 100.000</td></tr>
+          <tr class="total positive"><td>Net Kar</td><td class="amount">₺ 892.140</td></tr>
+        </table>
+        <div class="source-note">Kaynak: sales_raw, masraf_raw, finance_event, onaylanmış hareketler. Doğrulanmamış kayıtlar ayrı gösterilir.</div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Dinamik Bilanço</h2>
+          <div class="selects"><select><option>Anlık Durum</option><option>Ay Sonu Tahmini</option></select></div>
+        </div>
+        <table class="table">
+          <tr class="subhead"><td colspan="2">Varlıklar</td></tr>
+          <tr class="clickable"><td>Kasa</td><td class="amount">₺ 215.000</td></tr>
+          <tr class="clickable"><td>Banka</td><td class="amount">₺ 1.969.920</td></tr>
+          <tr class="clickable"><td>Moka United Bekleyen</td><td class="amount">₺ 418.600</td></tr>
+          <tr class="clickable"><td>Müşteri Alacakları</td><td class="amount">₺ 2.340.500</td></tr>
+          <tr class="clickable"><td>Stoklar</td><td class="amount">₺ 9.715.000</td></tr>
+          <tr class="total"><td>Toplam Varlıklar</td><td class="amount">₺ 14.659.020</td></tr>
+          <tr class="subhead"><td colspan="2">Borçlar</td></tr>
+          <tr class="clickable"><td>Tedarikçi Borçları</td><td class="amount">₺ 3.001.806</td></tr>
+          <tr class="clickable"><td>Kredi Kartları</td><td class="amount">₺ 1.491.264</td></tr>
+          <tr class="clickable"><td>Banka Kredileri</td><td class="amount">₺ 2.007.480</td></tr>
+          <tr class="clickable"><td>Vergi / SGK</td><td class="amount">₺ 0</td></tr>
+          <tr class="total"><td>Toplam Borçlar</td><td class="amount">₺ 6.500.550</td></tr>
+          <tr class="subhead"><td colspan="2">Öz Kaynak / Net Varlık</td></tr>
+          <tr class="total positive"><td>Net Varlık</td><td class="amount">₺ 8.158.470</td></tr>
+        </table>
+        <div class="source-note">Kaynak: banka/kasa, cari, stok, kredi/kart, Moka ve manuel açılış değerleri. Denklik kontrolü zorunludur.</div>
+      </section>
+    </main>
+
+    <section class="bottom">
+      <div class="mini"><h3>Mutabakat Uyarıları</h3><div class="alert bad"><span>Bilanço denklik kontrolü</span><strong>İncelenecek</strong></div><div class="alert warn"><span>Moka banka geçişleri</span><strong>2 eşleşme bekliyor</strong></div><div class="alert good"><span>Vergi / SGK</span><strong>0 TL bildirildi</strong></div></div>
+      <div class="mini"><h3>Onay Merkezi</h3><div class="alert warn"><span>5 işlem onay bekliyor</span><strong>Aç</strong></div><div class="alert bad"><span>2 düşük güvenli eşleşme</span><strong>Kontrol</strong></div></div>
+      <div class="mini"><h3>Son İşlemler</h3><div class="alert good"><span>Satış kaydı işlendi</span><strong>₺ 42.500</strong></div><div class="alert warn"><span>Gider tahakkuku</span><strong>₺ 8.750</strong></div><div class="alert good"><span>Tahsilat</span><strong>₺ 19.000</strong></div></div>
+    </section>
+  </div>
+
+  <aside class="drawer" id="drawer">
+    <button class="close" onclick="closeDrawer()">×</button>
+    <h3 id="drawerTitle">Hızlı İşlem</h3>
+    <p>Zero Keyboard akışı: yazı yazdırmadan öner, seçtir, onaylat. Bu preview demo veridir.</p>
+    <button class="choice">Son kullanılan cari seç</button>
+    <button class="choice">Belge / fotoğraf yükle</button>
+    <button class="choice">Sesli komut başlat</button>
+    <button class="choice">Onay bekleyenleri aç</button>
+    <button class="choice">Detay drawer örneği</button>
+  </aside>
+
+  <script>
+    function openDrawer(title){
+      document.getElementById('drawerTitle').textContent = title + ' İşlemi';
+      document.getElementById('drawer').classList.add('open');
+    }
+    function closeDrawer(){
+      document.getElementById('drawer').classList.remove('open');
+    }
+    document.querySelectorAll('.clickable').forEach(function(row){
+      row.addEventListener('click', function(){ openDrawer(row.children[0].textContent); });
+    });
+  </script>
+</body>
+</html>
