@@ -37,6 +37,8 @@ finance_events_v54
 finance_ledger_v54
 finance_event_to_ledger_v54
 finance_rebuild_ledger_v54
+finance_events_v54_after_write_trigger
+trg_finance_events_v54_after_insert_update
 financial_income_statement_v54_view
 financial_balance_sheet_v54_view
 financial_kpi_summary_v54_view
@@ -47,10 +49,39 @@ Beklenen sonuç:
 
 ```text
 SQL hata vermeden tamamlanmalı.
-Tablolar ve view'lar oluşmalı.
+Tablolar, fonksiyonlar, trigger ve view'lar oluşmalı.
 ```
 
-## 2. Demo seed dosyası
+## 2. Otomatik Event → Ledger davranışı
+
+v54 artık sadece manuel rebuild ile çalışmaz. Onaylı bir event yazıldığında ledger etkisi otomatik üretilir.
+
+```text
+finance_events_v54 insert/update
+→ trg_finance_events_v54_after_insert_update
+→ finance_events_v54_after_write_trigger
+→ finance_event_to_ledger_v54(event_id)
+→ finance_ledger_v54
+→ gelir tablosu / bilanço / KPI / alert view'ları
+```
+
+Otomatik ledger üretme şartı:
+
+```text
+status = approved
+confidence_score >= 70
+```
+
+Şu kayıtlar ledger'a otomatik yazılmaz:
+
+```text
+status <> approved
+confidence_score < 70
+```
+
+Bu davranış bilinçli güvenlik katmanıdır. Düşük güvenli veya onaysız kayıtlar kesin finansal tabloya girmeden onay merkezine düşmelidir.
+
+## 3. Demo seed dosyası
 
 Çalıştırılacak dosya:
 
@@ -81,9 +112,10 @@ Beklenen sonuç:
 
 ```text
 generated_ledger_rows değeri 0'dan büyük olmalı.
+Trigger aktifse event insert sonrası ledger satırları otomatik oluşmalı.
 ```
 
-## 3. Healthcheck dosyası
+## 4. Healthcheck dosyası
 
 Çalıştırılacak dosya:
 
@@ -100,6 +132,17 @@ gelir tablosu satırları
 bilanço satırları
 KPI satırları
 mutabakat alarm satırları
+trg_finance_events_v54_after_insert_update trigger var mı
+finance_events_v54_after_write_trigger fonksiyonu var mı
+approved_events_without_ledger sayısı kaç
+```
+
+Beklenen kritik sonuç:
+
+```text
+trg_finance_events_v54_after_insert_update = 1
+finance_events_v54_after_write_trigger = 1
+approved_events_without_ledger = 0
 ```
 
 ## Hızlı manuel kontrol sorguları
@@ -134,6 +177,29 @@ Alarm:
 select *
 from financial_reconciliation_alerts_v54_view
 where company = 'ALAYLI_DEMO_V54';
+```
+
+Trigger kontrolü:
+
+```sql
+select count(*)
+from information_schema.triggers
+where event_object_table = 'finance_events_v54'
+  and trigger_name = 'trg_finance_events_v54_after_insert_update';
+```
+
+Ledger'a düşmemiş onaylı event kontrolü:
+
+```sql
+select count(*)
+from finance_events_v54 e
+where e.status = 'approved'
+  and e.confidence_score >= 70
+  and not exists (
+    select 1
+    from finance_ledger_v54 l
+    where l.event_id = e.event_id
+  );
 ```
 
 ## Beklenen demo tablo etkisi
@@ -172,6 +238,32 @@ select finance_rebuild_ledger_v54('ALAYLI_DEMO_V54');
 
 Sonra healthcheck tekrar çalıştırılır.
 
+### Trigger yoksa
+
+Ana SQL dosyasını tekrar çalıştır:
+
+```text
+finance/AperiON_Financial_Statement_Engine_SQL_v54.sql
+```
+
+Sonra healthcheck içinde trigger satırlarının 1 döndüğünü kontrol et.
+
+### approved_events_without_ledger 0 değilse
+
+Önce rebuild çalıştır:
+
+```sql
+select finance_rebuild_ledger_v54('ALAYLI_DEMO_V54');
+```
+
+Gerçek şirket için:
+
+```sql
+select finance_rebuild_ledger_v54('ALAYLI');
+```
+
+Sonra healthcheck tekrar çalıştırılır.
+
 ### Düşük güvenli event neden tabloya girmedi?
 
 Bu beklenen davranıştır.
@@ -192,5 +284,6 @@ Canlı dashboard'a bağlamadan önce v53 preview ile test yapılacak.
 ## Sonraki adım
 
 ```text
-v53 preview ekranı financial_income_statement_v54_view ve financial_balance_sheet_v54_view kaynaklarına bağlanacak.
+v53 preview ekranındaki hızlı işlem butonları kontrollü şekilde finance_events_v54 insert akışına bağlanacak.
+Main branch'e dokunulmayacak ve deploy yapılmayacak.
 ```
