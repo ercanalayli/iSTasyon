@@ -42,6 +42,33 @@ select
 from financial_reconciliation_alerts_v54_view
 ;
 
+-- Trigger verification: approved event inserts/updates must automatically rebuild ledger rows.
+
+select
+  'trg_finance_events_v54_after_insert_update' as object_name,
+  count(*)::numeric as total_rows
+from information_schema.triggers
+where event_object_table = 'finance_events_v54'
+  and trigger_name = 'trg_finance_events_v54_after_insert_update';
+
+select
+  'finance_events_v54_after_write_trigger' as object_name,
+  count(*)::numeric as total_rows
+from pg_proc
+where proname = 'finance_events_v54_after_write_trigger';
+
+select
+  'approved_events_without_ledger' as object_name,
+  count(*)::numeric as total_rows
+from finance_events_v54 e
+where e.status = 'approved'
+  and e.confidence_score >= 70
+  and not exists (
+    select 1
+    from finance_ledger_v54 l
+    where l.event_id = e.event_id
+  );
+
 -- Demo verification
 
 select *
