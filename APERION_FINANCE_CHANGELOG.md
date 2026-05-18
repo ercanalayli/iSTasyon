@@ -7,7 +7,9 @@ Yeni öncelik:
 ```text
 Ana modül: Finans Komuta Merkezi
 Çekirdekler: Yapılacaklar · Ödenecekler · Tahsil Edilecekler
-Ek yapı: Telegram alarm altyapısı
+Ek yapı: Telegram alarm altyapısı + v52 tekrar alarm engeli
+Yeni yön: v53 Dinamik Gelir Tablosu + Dinamik Bilanço merkezi
+Kullanım ilkesi: v53 Zero Keyboard / minimum klavye etkileşimi
 ```
 
 Repo:
@@ -16,106 +18,59 @@ Repo:
 ercanalayli/iSTasyon
 ```
 
-## Ana Komuta Merkezi dosyaları
+## v53 - Dinamik Finansal Tablolar Merkezi
 
 | Dosya | Amaç | Durum |
 |---|---|---|
-| `finans-komuta-merkezi.html` | Komuta Merkezi başlatıcı sayfası | Eklendi / live-ready ekrana yönlendirildi |
-| `finance-command-center.html` | İlk demo Komuta Merkezi ekranı | Eklendi |
-| `finance-command-center-live.html` | Supabase varsa canlı, yoksa demo çalışan Komuta Merkezi | Eklendi |
-| `finance_command_center_adapter.js` | Komuta Merkezi okuma / gruplama / özetleme adapter'ı | Eklendi |
-| `scripts/inject_command_center_into_index.cjs` | index.html içine Komuta Merkezi linki güvenli ekler | Eklendi |
-| `.github/workflows/command-center-inject-index.yml` | Komuta Merkezi linkini index'e ekleyen workflow | Eklendi |
+| `finance/AperiON_Main_Financial_Statements_v53.md` | Ana ekranda canlı Dinamik Gelir Tablosu + Dinamik Bilanço mimarisi, işlem etkisi modeli, KPI kartları, mutabakat uyarıları ve v53 geliştirme yönü | Eklendi |
+| `finance/AperiON_Zero_Keyboard_Interaction_v53.md` | Klavye kullanımını minimuma indiren konuşarak, seçerek, butonla ve belge/görsel yükleyerek işlem yapma ilkesi | Eklendi |
 
-## Eski / yardımcı finans takvimi dosyaları
+v53 ana prensipleri:
 
-| Dosya | Amaç | Durum |
-|---|---|---|
-| `finans-takvimi.html` | Finans Takvimi başlatıcı sayfası | Korundu |
-| `aperion-finans-takvimi.html` | İlk demo finans ekranı | Korundu |
-| `aperion-finans-takvimi-live.html` | Finans Takvimi live-ready ekranı | Korundu |
-| `finance_dashboard_embed.html` | Ana dashboard içine gömülebilir iframe section | Korundu |
-| `APERION_FINANS_INTEGRATION_NOTES.md` | index.html entegrasyon notları | Korundu |
-| `NEXT_ACTIONS_FINANCE.md` | Telefon/GitHub üzerinden kalan aksiyon rehberi | Güncellenecek |
-| `FINANCE_SETUP.md` | Kurulum rehberi | Güncellenecek |
+```text
+- Gelir Tablosu ve Bilanço ana ekranda yan yana çalışacak.
+- Her satış/gider/tahsilat/ödeme hareketi tabloları otomatik güncelleyecek.
+- Klavye ile iletişim en aza indirilecek.
+- Kullanıcı mümkün olduğunca konuşarak, seçerek, butona basarak ve belge/fotoğraf yükleyerek işlem yapacak.
+- Uzun form yerine akıllı kısa akış ve hazır seçenekler kullanılacak.
+- Sayılar tam gösterilecek, K/M kısaltması kullanılmayacak.
+- Mobilde alt alta responsive yapı kullanılacak.
+- Her finansal kalem drilldown/drawer açabilecek.
+- Veri güven skoru ve son güncelleme zamanı gösterilecek.
+- Mutabakat ve denklik kontrolleri zorunlu olacak.
+- Eski modüller silinmeyecek.
+```
 
-## Komuta Merkezi Supabase dosyaları
-
-| Dosya | Amaç | Durum |
-|---|---|---|
-| `SUPABASE_COMMAND_CENTER_INSTALL.sql` | Komuta Merkezi tek dosyalık Supabase kurulumu | Eklendi |
-| `supabase_finance_command_center_schema.sql` | Komuta Merkezi tablo / view şeması | Eklendi |
-| `supabase_finance_command_center_seed.sql` | Komuta Merkezi demo/test verileri | Eklendi |
-
-## Genel Supabase / veritabanı dosyaları
+## v52 - Risk Alarm Tekrar Engeli
 
 | Dosya | Amaç | Durum |
 |---|---|---|
-| `SUPABASE_FINANCE_INSTALL_ALL.sql` | Finans Takvimi tek dosyalık Supabase kurulum SQL'i | Korundu |
-| `supabase_finans_takvimi_schema.sql` | Finans Takvimi tabloları ve view şeması | Korundu |
-| `supabase_finans_demo_seed.sql` | Finans Takvimi demo/test verileri | Korundu |
-| `supabase_finans_validation_safe.sql` | Güvenli validation kurulumu | Korundu |
-| `supabase_finans_rls_policies.sql` | RLS / policy taslağı | Korundu |
-| `supabase_finans_health_check.sql` | Kurulum sonrası kontrol sorguları | Korundu |
-| `supabase_finance_migration_runner.js` | Supabase migration runner taslağı | Korundu |
+| `finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql` | Telegram kritik risk alarmı için gönderildi logu, cooldown kontrolü, RPC katmanı, `company` / `risk_key` trim + zorunlu alan validasyonu | Eklendi / Güçlendirildi |
+| `finance/AperiON_Risk_Alert_Dedup_Health_Check_v52.sql` | v52 kurulum sonrası tablo/RPC/view/read-only kontrol SQL'i | Eklendi |
+| `finance/AperiON_Risk_Alert_Dedup_Supabase_Runbook_v52.md` | Supabase SQL Editor üzerinde v52 kurulum, health check, hızlı sorgu ve sorun giderme rehberi | Eklendi |
+| `finance/AperiON_v52_RELEASE_NOTES.md` | v52 amaç, dosya listesi, komutlar, çalışma sırası, güvenlik notları ve beklenen sonuç özeti | Eklendi |
+| `telegram/aperion_critical_risk_alert_v52.js` | v49 risk feed'i okuyup aynı riski cooldown içinde tekrar göndermeyen Telegram alarm modülü | Eklendi |
+| `telegram/aperion_critical_risk_alert_v52_test_runner.js` | v52 risk key, cooldown skip ve loglama testleri | Eklendi |
+| `telegram/AperiON_Risk_Alert_Dedup_Scheduler_v52.md` | Windows Task Scheduler / manuel kullanım ve v51'den v52'ye geçiş rehberi | Eklendi |
+| `telegram/AperiON_Risk_Alert_Dedup_Rollback_v52.md` | v52 sorununda dosya silmeden sadece scheduler komutunu v51'e alma rehberi | Eklendi |
+| `telegram/AperiON_Risk_Alert_Dedup_GoLive_Checklist_v52.md` | SQL, ENV, test, CI, canlı deneme, scheduler ve rollback için tek sayfalık canlıya alma checklist'i | Eklendi |
+| `tools/verify_risk_alert_dedup_v52.js` | v52 dosya, SQL, SQL validasyon sertleştirme, RPC, komut ve bot kontrol script'i | Eklendi / Güçlendirildi |
+| `scripts/verify_finance_manifest.cjs` | v52/v53 dosyaları, workflow tetikleyicileri, env örnekleri, health check SQL'i, rollback/go-live rehberleri, release notes, zero-keyboard ve finansal tablo yönü manifest doğrulamasına eklendi | Güncellendi |
+| `.github/workflows/finance-full-check.yml` | v52 test + verify adımları ve `finance/**`, `telegram/**`, `tools/**` tetikleyicileri eklendi | Güncellendi |
+| `.env.example` | Telegram bot, chat id, company, risk seviyesi ve v52 cooldown örnekleri eklendi | Güncellendi |
+| `FINANCE_SETUP.md` | v52 SQL sırası, health check, ENV, test, CI, scheduler geçişi ve rollback rehberi kurulum rehberine eklendi | Güncellendi |
+| `NEXT_ACTIONS_FINANCE.md` | v52 SQL sırası, health check, ENV, test ve canlı scheduler geçişi yazıldı | Güncellendi |
+| `package.json` | `telegram:critical-risk-v52`, `telegram:critical-risk-v52:test`, `verify:risk-alert-dedup-v52`, `verify:finance-v52` komutları eklendi | Güncellendi |
 
-## Entegrasyon / pipeline dosyaları
+## Korunan kurallar
 
-| Dosya | Amaç | Durum |
-|---|---|---|
-| `finance_import_bridge.js` | BizimHesap/banka/Moka ham hareketlerini finans kaydına normalize eder | Korundu |
-| `finance_approval_center.js` | Onay Merkezi veri modeli | Korundu |
-| `finance_approval_actions.js` | Onay / red aksiyonları | Korundu |
-| `finance_supabase_adapter.js` | Supabase veri erişim katmanı | Korundu |
-| `bizimhesap_finance_pipeline.cjs` | CommonJS uyumlu BizimHesap pipeline | Korundu |
-| `moka_united_reconciliation.js` | Moka United mutabakat öneri motoru | Korundu |
-| `moka_bank_pipeline.cjs` | Banka CSV'den Moka hareketlerini onay kuyruğuna çevirir | Korundu |
-| `sales_report_import_bridge.js` | Satış raporlarını finans kuyruğuna hazırlayan köprü | Korundu |
-| `sales_dashboard_adapter.js` | Satış KPI / müşteri / ürün / kategori adapter'ı | Korundu |
-| `turkiye_business_calendar.js` | Türkiye iş günü / resmi tatil takvimi | Korundu / 2027 güncellendi |
-
-## Test / örnek veri / workflow dosyaları
-
-| Dosya | Amaç | Durum |
-|---|---|---|
-| `finance_smoke_test.cjs` | Finans ve Komuta Merkezi smoke test | Güncellendi |
-| `scripts/verify_finance_manifest.cjs` | Manifest doğrulama script'i | Güncellendi |
-| `test_data/bizimhesap_finance_sample.csv` | BizimHesap örnek export | Korundu |
-| `test_data/moka_bank_sample.csv` | Moka banka örnek export | Korundu |
-| `data/sales_report_summary_2025_2026.json` | Yüklenen satış raporları finans özeti | Korundu |
-| `.github/workflows/finance-smoke.yml` | Finance smoke test workflow | Korundu |
-| `.github/workflows/finance-inject-index.yml` | Finans Takvimi link workflow'u | Korundu |
-| `.github/workflows/finance-full-check.yml` | Tek noktadan full finans kontrol workflow'u | Güncellendi |
-
-## Güvenlik / config dosyaları
-
-| Dosya | Amaç | Durum |
-|---|---|---|
-| `.env.example` | Ortam değişkeni örneği | Korundu |
-| `.gitignore` | Gerçek env/config/export dosyalarını korur | Korundu |
-| `aperion-finans-config.example.js` | Supabase anon config örneği | Korundu |
-
-## Özellikle korunmuş dosyalar
-
-| Dosya | Durum |
-|---|---|
-| `index.html` | Körlemesine değiştirilmedi. Komuta Merkezi için güvenli patch script + workflow hazırlandı. |
-
-## Doğrulama yaklaşımı
-
-Bundan sonra durum raporlarında kanıt şu sırayla verilecek:
-
-1. Repo adı
-2. Dosya adı
-3. Commit SHA
-4. Ne değişti
-5. Hangi test/workflow bunu kontrol ediyor
-
-## Kalan kritik canlı adımlar
-
-- GitHub Actions > `Inject AperiON Finance Command Center Link` workflow'unu çalıştır.
-- GitHub Actions > `AperiON Finance Full Check` workflow'unu çalıştır.
-- Supabase SQL Editor'da çalıştır:
-  1. `SUPABASE_COMMAND_CENTER_INSTALL.sql`
-- Live-ready Komuta Merkezi ekranında gerçek Supabase URL / anon key ile bağlantı testi yap.
-- Telegram bot backend / webhook / chat id yapısını sonraki aşamada bağla.
+```text
+- Mevcut v51 dosyaları korunur.
+- Dashboard/UI dosyalarına izinsiz dokunulmaz.
+- Main branch doğrudan değiştirilmez.
+- Deploy onaysız yapılmaz.
+- Önceki özellikler silinmez.
+- v52 sadece risk alarm logu yazar; finans ana kayıtlarını değiştirmez.
+- v53 mevcut sistemi silmeden ana ekranı canlı Gelir Tablosu + Bilanço merkezine dönüştürür.
+- Klavye kullanımı azaltılır; kullanıcıya gereksiz yazı yazdırılmaz.
+```

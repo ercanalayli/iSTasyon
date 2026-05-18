@@ -13,7 +13,7 @@ Ana çekirdekler:
 Ek yapı:
 
 ```text
-Telegram alarm altyapısı
+Telegram alarm altyapısı + v52 tekrar alarm engeli
 ```
 
 ## 1. Ana linkler
@@ -27,6 +27,9 @@ https://ercanalayli.github.io/iSTasyon/finance-command-center-live.html
 
 Demo Komuta Merkezi:
 https://ercanalayli.github.io/iSTasyon/finance-command-center.html
+
+v53 Finans Merkezi Preview:
+preview/aperion_v53_financial_center_preview.html
 ```
 
 ## 2. Ana Komuta Merkezi dosyaları
@@ -35,6 +38,7 @@ https://ercanalayli.github.io/iSTasyon/finance-command-center.html
 - `finance-command-center-live.html`: Supabase varsa canlı, yoksa demo çalışan ekran.
 - `finance-command-center.html`: Demo Komuta Merkezi ekranı.
 - `finance_command_center_adapter.js`: Supabase okuma / gruplama / özetleme adapter'ı.
+- `preview/aperion_v53_financial_center_preview.html`: v54 SQL view bağlantılı canlı finansal tablo preview ekranı.
 - `scripts/inject_command_center_into_index.cjs`: `index.html` içine Komuta Merkezi linkini güvenli ekler.
 - `.github/workflows/command-center-inject-index.yml`: Telefonda GitHub Actions üzerinden link ekleme workflow'u.
 
@@ -89,7 +93,48 @@ Supabase Dashboard > SQL Editor içinde sırasıyla çalıştırılacak dosyalar
 - Alarm adayları özetleniyor mu?
 - Doğrulanmamış / onay bekleyen kayıtlar ayrışıyor mu?
 
-## 5. Live-ready ekran bağlantısı
+## 5. Finans Takvimi / Risk Merkezi canlı SQL sırası
+
+Satış Akışı, Finans Takvimi, aksiyon RPC'leri, Risk Merkezi ve v52 tekrar alarm engeli için sıra:
+
+```text
+1. finance/AperiON_Sales_Flow_Today_SQL_v46.sql
+2. finance/AperiON_Finance_Calendar_Live_SQL_v47.sql
+3. finance/AperiON_Finance_Calendar_Seed_v47.sql
+4. finance/AperiON_Finance_Calendar_Actions_SQL_v48.sql
+5. finance/AperiON_Finance_Risk_Engine_SQL_v49.sql
+6. finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql
+7. finance/AperiON_Risk_Alert_Dedup_Health_Check_v52.sql
+```
+
+v52'nin kurduğu ana yapılar:
+
+```text
+risk_alert_sent_log
+risk_alert_can_send_v52
+risk_alert_mark_sent_v52
+aperion_risk_alert_dedup_status_v52_view
+```
+
+v52 health check dosyası şunları kontrol eder:
+
+```text
+risk_alert_sent_log table
+aperion_risk_alert_dedup_status_v52_view view
+risk_alert_can_send_v52 RPC
+risk_alert_mark_sent_v52 RPC
+can_send_readonly_check
+```
+
+v52 güvenlik notu:
+
+- v52 sadece risk alarm gönderim logu yazar.
+- Health check varsayılan olarak read-only çalışır.
+- Ana finans kayıtlarını, cari kayıtlarını, satış kayıtlarını, ödeme/tahsilat kayıtlarını değiştirmez.
+- Mevcut v51 dosyası korunur.
+- Canlı scheduler otomatik değiştirilmez; önce test ve onay gerekir.
+
+## 6. Live-ready ekran bağlantısı
 
 1. `finans-komuta-merkezi.html` sayfasını aç.
 2. `Canlıya Hazır Komuta Merkezini Aç` butonuna bas.
@@ -100,14 +145,111 @@ Supabase Dashboard > SQL Editor içinde sırasıyla çalıştırılacak dosyalar
 
 Başarılıysa ekran `CANLI MOD` gösterir. Hata olursa ekran bozulmaz, demo moda döner.
 
-## 6. Supabase bağlantı testi
+## 7. v54 Financial Statement Engine kurulumu
 
-Yerelde `.env` içine şunları gir:
+v54 finansal tablo motoru, kayıtların finansal etki üretmesini sağlar:
+
+```text
+Event → Ledger → Dinamik Gelir Tablosu / Dinamik Bilanço / KPI / Alert
+```
+
+Supabase Dashboard > SQL Editor içinde sırasıyla çalıştırılacak dosyalar:
+
+```text
+1. finance/AperiON_Financial_Statement_Engine_SQL_v54.sql
+2. finance/AperiON_Financial_Statement_Engine_Seed_v54.sql
+3. finance/AperiON_Financial_Statement_Engine_Healthcheck_v54.sql
+```
+
+v54 ana tablo ve view'ları:
+
+```text
+finance_events_v54
+finance_ledger_v54
+financial_income_statement_v54_view
+financial_balance_sheet_v54_view
+financial_kpi_summary_v54_view
+financial_reconciliation_alerts_v54_view
+```
+
+v54 canlı işleyiş:
+
+- `sale` event'i gelir tablosunda Brüt Satışlar, bilançoda Müşteri Alacakları etkisi üretir.
+- `expense` / `accrued_expense` event'i gelir tablosunda Operasyonel Gider, bilançoda Tedarikçi Borçları etkisi üretir.
+- `collection` event'i bilançoda Müşteri Alacağı azaltır, Kasa/Banka artırır.
+- `payment` event'i bilançoda Tedarikçi Borcu azaltır, Kasa/Banka azaltır.
+- `moka_collection` event'i Müşteri Alacağı azaltır, Moka United Bekleyen artırır.
+- `moka_bank_transfer` event'i Moka United Bekleyen azaltır, Banka artırır.
+
+## 8. v53 financial preview ekranını v54 view'larına bağlama
+
+`preview/aperion_v53_financial_center_preview.html` artık şu view'ları canlı okur:
+
+```text
+financial_income_statement_v54_view
+financial_balance_sheet_v54_view
+financial_kpi_summary_v54_view
+financial_reconciliation_alerts_v54_view
+```
+
+Bağlantı güvenliği:
+
+- Gerçek Supabase key GitHub'a yazılmaz.
+- Ekran yalnızca `SUPABASE_ANON_KEY` ile okunur.
+- `SUPABASE_SERVICE_ROLE_KEY` tarayıcı tarafında kullanılmaz.
+- Canlı bağlantı yoksa ekran kırılmaz, `Demo Fallback` moduna döner.
+- Açık tema korunur.
+- K/M kısaltması kullanılmaz; tutarlar tam gösterilir.
+- Zero Keyboard hızlı işlem butonları korunur.
+
+Canlı preview için bağlantı seçenekleri:
+
+```js
+window.APERION_CONFIG = {
+  SUPABASE_URL: 'https://PROJE.supabase.co',
+  SUPABASE_ANON_KEY: 'ANON_KEY',
+  COMPANY: 'ALAYLI'
+};
+```
+
+veya tarayıcı `localStorage` içine şu anahtarlar yazılır:
+
+```text
+APERION_SUPABASE_URL
+APERION_SUPABASE_ANON_KEY
+APERION_COMPANY
+```
+
+Yerel config dosyası adı:
+
+```text
+aperion-finans-config.js
+```
+
+Bu dosya `.gitignore` içindedir ve GitHub'a gönderilmez.
+
+## 9. Supabase / Telegram ENV ayarları
+
+Yerelde `.env` içine `.env.example` dosyasına göre şunları gir:
 
 ```env
 SUPABASE_URL=https://PROJE.supabase.co
 SUPABASE_ANON_KEY=ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY=SERVICE_ROLE_KEY
+TELEGRAM_BOT_TOKEN=BOT_TOKEN
+TELEGRAM_CHAT_ID=CHAT_ID
+COMPANY=ALAYLI
+RISK_ALERT_LEVEL=high
+RISK_ALERT_COOLDOWN_MINUTES=360
 ```
+
+Not:
+
+- `SUPABASE_ANON_KEY` web canlı ekran için kullanılır.
+- `SUPABASE_SERVICE_ROLE_KEY` yerel bot / Telegram risk alarmı için gerekir.
+- Gerçek key'ler GitHub'a yazılmaz.
+
+## 10. Supabase bağlantı testi
 
 Sonra çalıştır:
 
@@ -117,12 +259,21 @@ npm run finance-test-supabase
 
 Bu test hem eski Finans Takvimi hem yeni Finans Komuta Merkezi tablolarını kontrol eder.
 
-## 7. Full Check
+## 11. Full Check ve v52/v54 testleri
 
 GitHub Actions içinde `AperiON Finance Full Check` workflow'unu çalıştır veya yerelde:
 
 ```bash
+npm run verify:finance-v52
 npm test
+```
+
+`verify:finance-v52` tek komutu şunları çalıştırır:
+
+```text
+telegram:critical-risk-v52:test
+verify:risk-alert-dedup-v52
+finance-verify-manifest
 ```
 
 Bu testler şunları kontrol eder:
@@ -136,8 +287,14 @@ Bu testler şunları kontrol eder:
 - BizimHesap demo pipeline çalışıyor mu?
 - Moka demo pipeline çalışıyor mu?
 - Manifest doğrulaması geçiyor mu?
+- v52 risk key üretimi çalışıyor mu?
+- v52 cooldown skip mantığı çalışıyor mu?
+- v52 gönderildi loglama RPC çağrısı kodda var mı?
+- v52 health check SQL dosyası var mı?
+- v54 financial statement view dosyaları var mı?
+- v53 preview ekranı v54 SQL view adlarını içeriyor mu?
 
-## 8. Eski Finans Takvimi durumu
+## 12. Eski Finans Takvimi durumu
 
 Eski Finans Takvimi dosyaları silinmedi. Korunan yardımcı modül olarak kalır:
 
@@ -146,25 +303,64 @@ Eski Finans Takvimi dosyaları silinmedi. Korunan yardımcı modül olarak kalı
 - `aperion-finans-takvimi-live.html`
 - `SUPABASE_FINANCE_INSTALL_ALL.sql`
 
-Ana öncelik artık Finans Komuta Merkezi'dir.
+Ana öncelik artık Finans Komuta Merkezi ve v54 Financial Statement Engine'dir.
 
-## 9. Telegram alarm altyapısı
+## 13. Telegram kritik risk alarmı v52
 
-Bu aşamada tam bot entegrasyonu yapılmadı. Hazır olan altyapı:
+Hazır olan v52 dosyaları:
 
-- `finance_telegram_alarm_queue`
-- `finance_command_center_action_log`
-- Telegram alarm adayı kartları
-- Live ekranda Telegram Alarm Merkezi alanı
+```text
+telegram/aperion_critical_risk_alert_v52.js
+telegram/aperion_critical_risk_alert_v52_test_runner.js
+telegram/AperiON_Risk_Alert_Dedup_Scheduler_v52.md
+telegram/AperiON_Risk_Alert_Dedup_Rollback_v52.md
+telegram/AperiON_Risk_Alert_Dedup_GoLive_Checklist_v52.md
+finance/AperiON_Risk_Alert_Dedup_SQL_v52.sql
+finance/AperiON_Risk_Alert_Dedup_Health_Check_v52.sql
+```
 
-Sonraki aşamada kurulacak akış:
+Canlı tek sefer çalıştırma:
 
-1. Alarm kuyruğu okunur.
-2. Kritik alarm Telegram'a gönderilir.
-3. Telegram'dan gelen tamamlandı / ertelendi / not işlemi önce loglanır.
-4. İşlem kesin kayıt olmaz; onay katmanına düşer.
+```bash
+npm run telegram:critical-risk-v52
+```
 
-## 10. Korunan kurallar
+Eski canlı scheduler komutu:
+
+```bash
+npm run telegram:critical-risk-v51
+```
+
+testler temizlendikten sonra şu komuta çevrilecek:
+
+```bash
+npm run telegram:critical-risk-v52
+```
+
+Sorun çıkarsa rollback rehberine göre sadece scheduler komutu geçici olarak v51'e alınır:
+
+```text
+telegram/AperiON_Risk_Alert_Dedup_Rollback_v52.md
+```
+
+Canlıya alma öncesi tek sayfa kontrol listesi:
+
+```text
+telegram/AperiON_Risk_Alert_Dedup_GoLive_Checklist_v52.md
+```
+
+Rollback sırasında v52 dosyaları ve `risk_alert_sent_log` tablosu silinmez.
+
+Önerilen ayar:
+
+```text
+Çalışma sıklığı: Saatte 1
+Cooldown: 360 dakika
+```
+
+Bu ayarla aynı risk 6 saat içinde tekrar Telegram'a gönderilmez.
+
+## 14. Korunan kurallar
 
 - Mevcut sistem silinmez.
 - Büyük refactor yapılmaz.
@@ -174,3 +370,5 @@ Sonraki aşamada kurulacak akış:
 - Doğrulanmamış veri kesin sonuç gibi gösterilmez.
 - Her kayıtta tarih, kaynak, durum ve doğrulama bilgisi bulunur.
 - Telegram işlemleri doğrudan kesin kayıt oluşturmaz; önce log + onay katmanına düşer.
+- v52 sadece risk alarm logu yazar; finans ana kayıtlarını değiştirmez.
+- v53 preview ekranı v54 view'larını canlı okur; bağlantı yoksa güvenli demo fallback kullanır.
