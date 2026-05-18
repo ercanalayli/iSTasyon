@@ -43,6 +43,10 @@ check('Plan defines financial_statement_engine', plan.includes('financial_statem
 check('SQL creates finance_events_v54', sql.includes('create table if not exists finance_events_v54'));
 check('SQL creates finance_ledger_v54', sql.includes('create table if not exists finance_ledger_v54'));
 check('SQL has event to ledger function', sql.includes('finance_event_to_ledger_v54'));
+check('SQL has automatic event trigger function', sql.includes('finance_events_v54_after_write_trigger'));
+check('SQL creates automatic ledger trigger', sql.includes('create trigger trg_finance_events_v54_after_insert_update'));
+check('SQL trigger runs after insert or update', sql.includes('after insert or update'));
+check('SQL trigger calls ledger function', sql.includes('perform finance_event_to_ledger_v54(new.event_id)'));
 check('SQL has income statement view', sql.includes('financial_income_statement_v54_view'));
 check('SQL has balance sheet view', sql.includes('financial_balance_sheet_v54_view'));
 check('SQL has KPI summary view', sql.includes('financial_kpi_summary_v54_view'));
@@ -52,6 +56,7 @@ check('SQL maps collection event', sql.includes("e.event_type = 'collection'"));
 check('SQL maps payment event', sql.includes("e.event_type = 'payment'"));
 check('SQL maps Moka collection', sql.includes("e.event_type = 'moka_collection'"));
 check('SQL maps Moka bank transfer', sql.includes("e.event_type = 'moka_bank_transfer'"));
+check('SQL keeps low-confidence events out of ledger', sql.includes("e.status <> 'approved' or e.confidence_score < 70"));
 
 check('Seed uses safe demo company', seed.includes('ALAYLI_DEMO_V54'));
 check('Seed includes sale demo', seed.includes("'sale'"));
@@ -76,6 +81,10 @@ check('Runbook uses safe demo company', runbook.includes('ALAYLI_DEMO_V54'));
 check('Preview has dynamic income statement', preview.includes('Dinamik Gelir Tablosu'));
 check('Preview has dynamic balance sheet', preview.includes('Dinamik Bilanço'));
 check('Preview has zero keyboard actions', preview.includes('Zero Keyboard'));
+check('Preview reads income statement view', preview.includes('financial_income_statement_v54_view'));
+check('Preview reads balance sheet view', preview.includes('financial_balance_sheet_v54_view'));
+check('Preview reads KPI view', preview.includes('financial_kpi_summary_v54_view'));
+check('Preview reads alert view', preview.includes('financial_reconciliation_alerts_v54_view'));
 check('Cloudflare setup has project name', cloudflare.includes('aperion-istasyon'));
 
 console.log('------------------------------------------------');
