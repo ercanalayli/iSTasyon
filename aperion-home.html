@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AperiON iSTasyon Ana Ekran</title>
+<style>
+:root{--bg:#F4F6FA;--nav:#0F172A;--card:#FFFFFF;--line:#E4E7EC;--text:#101828;--muted:#667085;--blue:#1D4ED8;--green:#059669;--shadow:0 14px 34px rgba(15,23,42,.08)}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}.app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}.side{background:var(--nav);color:#E2E8F0;padding:14px}.logo{display:flex;gap:10px;align-items:center;padding:10px 8px 16px;border-bottom:1px solid rgba(148,163,184,.18);margin-bottom:12px}.mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#0F766E,#1D4ED8);display:flex;align-items:center;justify-content:center;color:white;font-weight:950}.title{font-size:16px;font-weight:950}.sub{font-size:10px;color:#94A3B8;font-weight:800}.sec{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#64748B;font-weight:950;margin:16px 8px 7px}.nav{display:flex;gap:9px;align-items:center;border-radius:12px;padding:10px 9px;margin:3px 0;color:#CBD5E1;text-decoration:none;cursor:pointer}.nav.on,.nav:hover{background:#EAF2FF;color:#0F172A}.ico{width:28px;height:28px;border-radius:8px;background:#1D4ED8;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:950}.nav:not(.on):not(:hover) .ico{background:rgba(148,163,184,.16);color:#CBD5E1}.n1{font-size:13px;font-weight:950}.n2{font-size:10px;color:#94A3B8;font-weight:750}.nav.on .n2,.nav:hover .n2{color:#64748B}.main{min-width:0;padding:16px}.top{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;gap:12px;align-items:center}.top h1{margin:0;font-size:22px;font-weight:950}.top p{margin:4px 0 0;color:var(--muted);font-size:13px;font-weight:750}.badge{display:inline-flex;border:1px solid #A7F3D0;background:#ECFDF5;color:#047857;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:950}.frame{width:100%;height:calc(100vh - 112px);border:0;border-radius:18px;background:white;box-shadow:var(--shadow)}.mod{display:none}.mod.on{display:block}.card{background:white;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px}.card h2{margin:0 0 8px}.card p{color:var(--muted);font-weight:750;line-height:1.55}@media(max-width:900px){.app{grid-template-columns:1fr}.side{position:relative}.main{padding:10px}.frame{height:76vh}.top{display:block}.badge{margin-top:10px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="logo"><div class="mark">AP</div><div><div class="title">AperiON</div><div class="sub">ErpaltH · iSTasyon</div></div></div>
+    <div class="sec">Ana Kullanım</div>
+    <div class="nav on" onclick="showMod('home',this)"><span class="ico">AS</span><span><div class="n1">Ana Ekran</div><div class="n2">bugünkü finans</div></span></div>
+    <div class="nav" onclick="showMod('sales',this)"><span class="ico">ST</span><span><div class="n1">Satış Akışı</div><div class="n2">kategori, ürün, müşteri</div></span></div>
+    <div class="nav" onclick="showMod('customer',this)"><span class="ico">CR</span><span><div class="n1">Cari Kartlar</div><div class="n2">tahsilat, risk</div></span></div>
+    <div class="nav" onclick="showMod('bank',this)"><span class="ico">BK</span><span><div class="n1">Banka / Moka</div><div class="n2">onay, eşleştirme</div></span></div>
+    <div class="sec">Geri Dönüş</div>
+    <a class="nav" href="/index.html"><span class="ico">EP</span><span><div class="n1">Eski Panel</div><div class="n2">korunan panel</div></span></a>
+  </aside>
+  <main class="main">
+    <div class="top"><div><h1>AperiON Ana Ekran</h1><p>Tek giriş ekranı. Finans kokpiti artık AperiON ana ekranının içinde çalışır.</p></div><span class="badge">Canlı · Bugün</span></div>
+    <section id="mod-home" class="mod on"><iframe class="frame" src="/finans-v54.html"></iframe></section>
+    <section id="mod-sales" class="mod"><div class="card"><h2>Satış Akışı</h2><p>Bu modül aynı ana kabuğa taşınacak. Şimdilik eski panel korunuyor; ana finans ekranı satış özetini canlı veriden okuyor.</p></div></section>
+    <section id="mod-customer" class="mod"><div class="card"><h2>Cari Kartlar</h2><p>Cari, tahsilat ve risk kartları bu ana kabuk altında açılacak.</p></div></section>
+    <section id="mod-bank" class="mod"><div class="card"><h2>Banka / Moka</h2><p>Banka ekstre, Moka United ve onay merkezi burada birleşecek.</p></div></section>
+  </main>
+</div>
+<script>
+function showMod(id,el){document.querySelectorAll('.mod').forEach(x=>x.classList.remove('on'));document.getElementById('mod-'+id).classList.add('on');document.querySelectorAll('.nav').forEach(x=>x.classList.remove('on'));if(el)el.classList.add('on')}
+</script>
+</body>
+</html>
