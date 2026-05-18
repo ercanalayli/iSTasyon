@@ -27,6 +27,9 @@ https://ercanalayli.github.io/iSTasyon/finance-command-center-live.html
 
 Demo Komuta Merkezi:
 https://ercanalayli.github.io/iSTasyon/finance-command-center.html
+
+v53 Finans Merkezi Preview:
+preview/aperion_v53_financial_center_preview.html
 ```
 
 ## 2. Ana Komuta Merkezi dosyaları
@@ -35,6 +38,7 @@ https://ercanalayli.github.io/iSTasyon/finance-command-center.html
 - `finance-command-center-live.html`: Supabase varsa canlı, yoksa demo çalışan ekran.
 - `finance-command-center.html`: Demo Komuta Merkezi ekranı.
 - `finance_command_center_adapter.js`: Supabase okuma / gruplama / özetleme adapter'ı.
+- `preview/aperion_v53_financial_center_preview.html`: v54 SQL view bağlantılı canlı finansal tablo preview ekranı.
 - `scripts/inject_command_center_into_index.cjs`: `index.html` içine Komuta Merkezi linkini güvenli ekler.
 - `.github/workflows/command-center-inject-index.yml`: Telefonda GitHub Actions üzerinden link ekleme workflow'u.
 
@@ -141,7 +145,90 @@ v52 güvenlik notu:
 
 Başarılıysa ekran `CANLI MOD` gösterir. Hata olursa ekran bozulmaz, demo moda döner.
 
-## 7. Supabase / Telegram ENV ayarları
+## 7. v54 Financial Statement Engine kurulumu
+
+v54 finansal tablo motoru, kayıtların finansal etki üretmesini sağlar:
+
+```text
+Event → Ledger → Dinamik Gelir Tablosu / Dinamik Bilanço / KPI / Alert
+```
+
+Supabase Dashboard > SQL Editor içinde sırasıyla çalıştırılacak dosyalar:
+
+```text
+1. finance/AperiON_Financial_Statement_Engine_SQL_v54.sql
+2. finance/AperiON_Financial_Statement_Engine_Seed_v54.sql
+3. finance/AperiON_Financial_Statement_Engine_Healthcheck_v54.sql
+```
+
+v54 ana tablo ve view'ları:
+
+```text
+finance_events_v54
+finance_ledger_v54
+financial_income_statement_v54_view
+financial_balance_sheet_v54_view
+financial_kpi_summary_v54_view
+financial_reconciliation_alerts_v54_view
+```
+
+v54 canlı işleyiş:
+
+- `sale` event'i gelir tablosunda Brüt Satışlar, bilançoda Müşteri Alacakları etkisi üretir.
+- `expense` / `accrued_expense` event'i gelir tablosunda Operasyonel Gider, bilançoda Tedarikçi Borçları etkisi üretir.
+- `collection` event'i bilançoda Müşteri Alacağı azaltır, Kasa/Banka artırır.
+- `payment` event'i bilançoda Tedarikçi Borcu azaltır, Kasa/Banka azaltır.
+- `moka_collection` event'i Müşteri Alacağı azaltır, Moka United Bekleyen artırır.
+- `moka_bank_transfer` event'i Moka United Bekleyen azaltır, Banka artırır.
+
+## 8. v53 financial preview ekranını v54 view'larına bağlama
+
+`preview/aperion_v53_financial_center_preview.html` artık şu view'ları canlı okur:
+
+```text
+financial_income_statement_v54_view
+financial_balance_sheet_v54_view
+financial_kpi_summary_v54_view
+financial_reconciliation_alerts_v54_view
+```
+
+Bağlantı güvenliği:
+
+- Gerçek Supabase key GitHub'a yazılmaz.
+- Ekran yalnızca `SUPABASE_ANON_KEY` ile okunur.
+- `SUPABASE_SERVICE_ROLE_KEY` tarayıcı tarafında kullanılmaz.
+- Canlı bağlantı yoksa ekran kırılmaz, `Demo Fallback` moduna döner.
+- Açık tema korunur.
+- K/M kısaltması kullanılmaz; tutarlar tam gösterilir.
+- Zero Keyboard hızlı işlem butonları korunur.
+
+Canlı preview için bağlantı seçenekleri:
+
+```js
+window.APERION_CONFIG = {
+  SUPABASE_URL: 'https://PROJE.supabase.co',
+  SUPABASE_ANON_KEY: 'ANON_KEY',
+  COMPANY: 'ALAYLI'
+};
+```
+
+veya tarayıcı `localStorage` içine şu anahtarlar yazılır:
+
+```text
+APERION_SUPABASE_URL
+APERION_SUPABASE_ANON_KEY
+APERION_COMPANY
+```
+
+Yerel config dosyası adı:
+
+```text
+aperion-finans-config.js
+```
+
+Bu dosya `.gitignore` içindedir ve GitHub'a gönderilmez.
+
+## 9. Supabase / Telegram ENV ayarları
 
 Yerelde `.env` içine `.env.example` dosyasına göre şunları gir:
 
@@ -162,7 +249,7 @@ Not:
 - `SUPABASE_SERVICE_ROLE_KEY` yerel bot / Telegram risk alarmı için gerekir.
 - Gerçek key'ler GitHub'a yazılmaz.
 
-## 8. Supabase bağlantı testi
+## 10. Supabase bağlantı testi
 
 Sonra çalıştır:
 
@@ -172,7 +259,7 @@ npm run finance-test-supabase
 
 Bu test hem eski Finans Takvimi hem yeni Finans Komuta Merkezi tablolarını kontrol eder.
 
-## 9. Full Check ve v52 testleri
+## 11. Full Check ve v52/v54 testleri
 
 GitHub Actions içinde `AperiON Finance Full Check` workflow'unu çalıştır veya yerelde:
 
@@ -204,8 +291,10 @@ Bu testler şunları kontrol eder:
 - v52 cooldown skip mantığı çalışıyor mu?
 - v52 gönderildi loglama RPC çağrısı kodda var mı?
 - v52 health check SQL dosyası var mı?
+- v54 financial statement view dosyaları var mı?
+- v53 preview ekranı v54 SQL view adlarını içeriyor mu?
 
-## 10. Eski Finans Takvimi durumu
+## 12. Eski Finans Takvimi durumu
 
 Eski Finans Takvimi dosyaları silinmedi. Korunan yardımcı modül olarak kalır:
 
@@ -214,9 +303,9 @@ Eski Finans Takvimi dosyaları silinmedi. Korunan yardımcı modül olarak kalı
 - `aperion-finans-takvimi-live.html`
 - `SUPABASE_FINANCE_INSTALL_ALL.sql`
 
-Ana öncelik artık Finans Komuta Merkezi'dir.
+Ana öncelik artık Finans Komuta Merkezi ve v54 Financial Statement Engine'dir.
 
-## 11. Telegram kritik risk alarmı v52
+## 13. Telegram kritik risk alarmı v52
 
 Hazır olan v52 dosyaları:
 
@@ -271,7 +360,7 @@ Cooldown: 360 dakika
 
 Bu ayarla aynı risk 6 saat içinde tekrar Telegram'a gönderilmez.
 
-## 12. Korunan kurallar
+## 14. Korunan kurallar
 
 - Mevcut sistem silinmez.
 - Büyük refactor yapılmaz.
@@ -282,3 +371,4 @@ Bu ayarla aynı risk 6 saat içinde tekrar Telegram'a gönderilmez.
 - Her kayıtta tarih, kaynak, durum ve doğrulama bilgisi bulunur.
 - Telegram işlemleri doğrudan kesin kayıt oluşturmaz; önce log + onay katmanına düşer.
 - v52 sadece risk alarm logu yazar; finans ana kayıtlarını değiştirmez.
+- v53 preview ekranı v54 view'larını canlı okur; bağlantı yoksa güvenli demo fallback kullanır.
