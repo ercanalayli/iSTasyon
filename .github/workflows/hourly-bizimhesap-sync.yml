@@ -1,0 +1,26 @@
+name: Hourly BizimHesap Sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7 * * * *'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - name: Pull latest BizimHesap data
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          BIZIMHESAP_USER: ${{ secrets.BIZIMHESAP_USER }}
+          BIZIMHESAP_PASS: ${{ secrets.BIZIMHESAP_PASS }}
+        run: npm run sync:bizimhesap -- --firma alayli
+      - name: Verify sales today screen source
+        run: node tools/stress_check_index_sales_today.cjs
