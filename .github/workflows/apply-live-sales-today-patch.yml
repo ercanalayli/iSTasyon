@@ -1,0 +1,46 @@
+name: Apply Live Sales Today Patch
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/patch_live_sales_today.cjs'
+      - '.github/workflows/apply-live-sales-today-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Apply patch
+        run: node tools/patch_live_sales_today.cjs
+
+      - name: Show diff
+        run: git diff -- index.html
+
+      - name: Commit patch if changed
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "No index.html changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add today filter to live sales screen"
+          git push
