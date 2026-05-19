@@ -1,0 +1,32 @@
+name: AperiON Live Home Check
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'aperion-home.html'
+      - 'finans-v54.html'
+      - '_redirects'
+      - '_headers'
+      - 'tools/verify_aperion_live_home_fetch.cjs'
+      - '.github/workflows/aperion-live-home-check.yml'
+
+jobs:
+  live-home-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Wait for Cloudflare Pages propagation
+        run: sleep 60
+
+      - name: Verify live AperiON home
+        run: node tools/verify_aperion_live_home_fetch.cjs
