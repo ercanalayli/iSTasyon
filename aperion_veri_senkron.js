@@ -153,9 +153,37 @@ function run(job) {
   saveStatus();
 }
 
+function pushSyncStatus() {
+  if (planOnly || dryRun) {
+    line('STATUS PUSH ATLANDI: plan/dry-run modu');
+    return;
+  }
+  const candidates = [
+    path.join(__dirname, 'local_bot', 'push_last_sync_status.js'),
+    path.join(__dirname, 'push_last_sync_status.js'),
+  ];
+  const scriptPath = candidates.find(p => existsSync(p));
+  if (!scriptPath) {
+    line('STATUS PUSH ATLANDI: push_last_sync_status.js bulunamadi');
+    return;
+  }
+  line(`STATUS PUSH BASLADI: ${scriptPath}`);
+  const r = spawnSync(process.execPath, [scriptPath], {
+    cwd: __dirname,
+    stdio: 'pipe',
+    encoding: 'utf8',
+    env: { ...process.env, APERION_PROJECT_DIR: __dirname, NODE_PATH: path.join(__dirname, 'node_modules') },
+    shell: false,
+  });
+  if (r.stdout) appendFileSync(logPath, r.stdout, 'utf8');
+  if (r.stderr) appendFileSync(logPath, r.stderr, 'utf8');
+  line(`${r.status === 0 ? 'STATUS PUSH BITTI' : 'STATUS PUSH HATA'}: ${r.status ?? 1}`);
+}
+
 line(`AperiON BizimHesap klon senkronu: firma=${firma}, mod=${status.mode}${planOnly ? ', plan' : ''}`);
 for (const job of jobs) run(job);
 status.finishedAt = nowIso();
 saveStatus();
 line(`SENKRON ${status.ok ? 'TAMAM' : 'KONTROL GEREKIYOR'}: ${statusPath}`);
+pushSyncStatus();
 if (!status.ok) process.exitCode = 1;
