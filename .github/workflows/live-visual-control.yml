@@ -1,0 +1,35 @@
+name: Live Visual Control
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  visual-control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Wait for Cloudflare deploy
+        run: sleep 90
+
+      - name: Run visual control bot
+        run: node tools/live_visual_control_bot.cjs
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-visual-control
+          path: artifacts/live-visual-control
