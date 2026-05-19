@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AperiON iSTasyon</title>
+<style>
+:root{--bg:#F4F6FA;--nav:#0F172A;--card:#fff;--line:#E4E7EC;--text:#101828;--muted:#667085;--blue:#1D4ED8;--green:#059669;--shadow:0 12px 30px rgba(15,23,42,.08)}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}.side{background:var(--nav);color:#E2E8F0;padding:14px}.logo{padding:10px 8px 16px;border-bottom:1px solid rgba(148,163,184,.2);margin-bottom:12px}.logo b{font-size:18px}.logo div{font-size:11px;color:#94A3B8;margin-top:3px;font-weight:800}.sec{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#64748B;font-weight:950;margin:16px 8px 7px}.nav{display:block;border-radius:12px;padding:11px 10px;margin:4px 0;color:#CBD5E1;text-decoration:none;cursor:pointer;font-weight:900;font-size:13px}.nav small{display:block;font-size:10px;color:#94A3B8;margin-top:2px}.nav.on,.nav:hover{background:#EAF2FF;color:#0F172A}.nav.on small,.nav:hover small{color:#64748B}.main{padding:16px}.top{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;gap:12px;align-items:center}.top h1{margin:0;font-size:22px}.top p{margin:4px 0 0;color:var(--muted);font-size:13px;font-weight:750}.badge{background:#ECFDF5;color:#047857;border:1px solid #A7F3D0;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:950}.frame{width:100%;height:calc(100vh - 112px);border:0;border-radius:18px;background:#fff;box-shadow:var(--shadow)}.panel{display:none}.panel.on{display:block}.note{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;color:#344054;font-weight:800;font-size:13px}.btn{display:inline-block;background:#EEF4FF;border:1px solid #B2CCFF;color:#1D4ED8;border-radius:12px;padding:10px 12px;text-decoration:none;font-weight:950;font-size:12px}@media(max-width:900px){.app{grid-template-columns:1fr}.main{padding:10px}.frame{height:75vh}.top{display:block}.badge{display:inline-block;margin-top:10px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="logo"><b>AperiON</b><div>ErpaltH · iSTasyon</div></div>
+    <div class="sec">Ana Kullanım</div>
+    <a class="nav on" onclick="openPanel('home',this)">Ana Ekran<small>bugünkü finans</small></a>
+    <a class="nav" onclick="openPanel('sales',this)">Satış Akışı<small>kategori, ürün, müşteri</small></a>
+    <a class="nav" onclick="openPanel('customer',this)">Cari Kartlar<small>tahsilat, risk</small></a>
+    <a class="nav" onclick="openPanel('bank',this)">Banka / Moka<small>onay, eşleştirme</small></a>
+    <div class="sec">Geri Dönüş</div>
+    <a class="nav" href="/aperion-home.html">v1 Ana Ekran<small>önceki sürüm</small></a>
+    <a class="nav" href="/index.html">Eski Panel<small>korunan sistem</small></a>
+  </aside>
+  <main class="main">
+    <div class="top"><div><h1>AperiON Ana Ekran</h1><p>Tek ana ekran. Finans, satış, cari ve banka modülleri aynı kabukta canlı denenir.</p></div><span class="badge">Canlı Deneme v2</span></div>
+    <section id="p-home" class="panel on"><iframe class="frame" src="/finans-v54.html"></iframe></section>
+    <section id="p-sales" class="panel"><div class="note">Satış Akışı şu an eski panelden canlı açılır. Beğenirsek bir sonraki adımda direkt bu kabuğa sade satış kartlarını taşırız.</div><iframe class="frame" src="/index.html"></iframe></section>
+    <section id="p-customer" class="panel"><div class="note">Cari Kartlar modülü sıradaki küçük canlı deneme alanı olacak.</div><a class="btn" href="/index.html">Eski panelde carileri aç</a></section>
+    <section id="p-bank" class="panel"><div class="note">Banka / Moka modülü sıradaki küçük canlı deneme alanı olacak.</div><a class="btn" href="/index.html">Eski panelde banka ekranını aç</a></section>
+  </main>
+</div>
+<script>
+function openPanel(id,el){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));document.getElementById('p-'+id).classList.add('on');document.querySelectorAll('.nav').forEach(x=>x.classList.remove('on'));el.classList.add('on')}
+</script>
+</body>
+</html>
