@@ -737,6 +737,7 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
       </div>
       <div class="fbar">
         <span class="fbar-l">Dönem</span>
+        <button class="fb" onclick="sM('today',this,1)">Bugün</button>
         <button class="fb" onclick="sM('yesterday',this,1)">Dün</button>
         <button class="fb" onclick="sM('week',this,1)">Bu Hafta</button>
         <button class="fb" onclick="sM('month',this,1)">Bu Ay</button>
@@ -1685,6 +1686,7 @@ const met=(rows,a,b)=>{
 };
 function periodFor(mode,pr){
   const ly=(from,to)=>({lyFrom:`${pr.prevYear}${from.substring(4)}`,lyTo:`${pr.prevYear}${to.substring(4)}`});
+  if(mode==='today')return{label:'Bugün',key:'tm',from:pr.todayS,to:pr.todayS,lyFrom:`${pr.prevYear}${pr.todayS.substring(4)}`,lyTo:`${pr.prevYear}${pr.todayS.substring(4)}`};
   if(mode==='yesterday')return{label:'Dün',key:'dy',from:pr.yestS,to:pr.yestS,...ly(pr.yestS,pr.yestS)};
   if(mode==='week')return{label:'Bu Hafta',key:'wk',from:pr.weekS,to:pr.todayS,...ly(pr.weekS,pr.todayS)};
   if(mode==='month')return{label:pr.monthName,key:'mo',from:pr.monthS,to:pr.todayS,...ly(pr.monthS,pr.todayS)};
@@ -1721,13 +1723,14 @@ async function rU(){
   });
   const makeRows=obj=>Object.entries(obj).map(([n,rows])=>({n,cat:nrmCat(rows[0]?.kategori),dy:met(rows,pr.yestS,pr.yestS),wk:met(rows,pr.weekS,pr.todayS),tm:met(rows,pr.todayS,pr.todayS),mo:met(rows,pr.monthS,pr.todayS),pm:met(rows,pr.prevMonthS,pr.prevMonthE),yr:met(rows,pr.yearS,pr.todayS),ly:met(rows,pr.prevYearS,pr.prevYearE)})).sort((a,b)=>srtK==='adet'?b[active.key].adet-a[active.key].adet:b[active.key].ciro-a[active.key].ciro);
   const prods=makeRows(prod).slice(0,80), caris=makeRows(cari).slice(0,40);
-  const top=met(base,pr.yearS,pr.todayS), last=met(base,pr.prevYearS,pr.prevYearE), month=met(base,pr.monthS,pr.todayS), prevMonth=met(base,pr.prevMonthS,pr.prevMonthE), week=met(base,pr.weekS,pr.todayS), yday=met(base,pr.yestS,pr.yestS);
+  const top=met(base,pr.yearS,pr.todayS), last=met(base,pr.prevYearS,pr.prevYearE), month=met(base,pr.monthS,pr.todayS), prevMonth=met(base,pr.prevMonthS,pr.prevMonthE), week=met(base,pr.weekS,pr.todayS), todayM=met(base,pr.todayS,pr.todayS), yday=met(base,pr.yestS,pr.yestS);
   const growth=last.ciro?((top.ciro-last.ciro)/last.ciro*100):0;
   const lm=document.getElementById('lastMonthBtn');if(lm)lm.textContent=pr.prevMonthName;
   w.innerHTML=`
     <div class="sales-shell">
       <div class="sales-kpi-grid">
-        <div class="kpi g"><div class="kpi-l">Dün</div><div class="kpi-v">TL ${fmt(yday.ciro)}</div><div class="kpi-s">${fmt(yday.adet)} adet</div></div>
+        <div class="kpi g"><div class="kpi-l">Bugün</div><div class="kpi-v">TL ${fmt(todayM.ciro)}</div><div class="kpi-s">${fmt(todayM.adet)} adet · ${fmt(todayM.rows)} işlem</div></div>
+        <div class="kpi g"><div class="kpi-l">Dün</div><div class="kpi-v">TL ${fmt(yday.ciro)}</div><div class="kpi-s">${fmt(yday.adet)} adet · ${fmt(yday.rows)} işlem</div></div>
         <div class="kpi c"><div class="kpi-l">Bu Hafta</div><div class="kpi-v">TL ${fmt(week.ciro)}</div><div class="kpi-s">${fmt(week.adet)} adet</div></div>
         <div class="kpi c"><div class="kpi-l">${pr.monthName}</div><div class="kpi-v">TL ${fmt(month.ciro)}</div><div class="kpi-s">${fmt(month.adet)} adet</div></div>
         <div class="kpi o"><div class="kpi-l">${pr.prevMonthName}</div><div class="kpi-v">TL ${fmt(prevMonth.ciro)}</div><div class="kpi-s">${fmt(prevMonth.adet)} adet</div></div>
