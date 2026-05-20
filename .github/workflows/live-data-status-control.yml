@@ -1,0 +1,40 @@
+name: Live Data Status Control
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'veri-durumu.html'
+      - 'veri-durumu-v2.html'
+      - 'tools/live_data_status_control_bot.cjs'
+      - '.github/workflows/live-data-status-control.yml'
+
+jobs:
+  data-status-control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Wait for Cloudflare deploy
+        run: sleep 90
+
+      - name: Run live data status control bot
+        run: node tools/live_data_status_control_bot.cjs
+
+      - name: Upload data status artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-data-status-control
+          path: artifacts/live-data-status-control
