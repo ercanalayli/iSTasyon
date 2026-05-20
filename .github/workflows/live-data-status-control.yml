@@ -9,6 +9,7 @@ on:
       - 'veri-durumu.html'
       - 'veri-durumu-v2.html'
       - 'tools/live_data_status_control_bot.cjs'
+      - 'tools/send_telegram_alert.cjs'
       - '.github/workflows/live-data-status-control.yml'
 
 jobs:
@@ -34,7 +35,24 @@ jobs:
         run: node tools/live_data_status_control_bot.cjs
 
       - name: Upload data status artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: live-data-status-control
           path: artifacts/live-data-status-control
+
+      - name: Send Telegram alert if failed
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_MESSAGE: "AperiON ALARM: Canlı Veri Durumu kontrolü başarısız. GitHub Actions artifact ve report.txt kontrol edilmeli."
+        run: node tools/send_telegram_alert.cjs
+
+      - name: Upload Telegram alert result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: telegram-alert-result
+          path: artifacts/telegram-alert-result.txt
+          if-no-files-found: ignore
