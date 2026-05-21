@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const crypto = require('crypto');
+const { getBizimHesapConfig, launchOptions, loginBizimHesap, selectFirma } = require('./bizimhesap_common.cjs');
 
 const args = process.argv.slice(2);
 const COMMIT = args.includes('--commit');
@@ -14,10 +15,7 @@ const OUT = args.includes('--out') ? args[args.indexOf('--out') + 1] : 'masraf_o
 const DEBUG = args.includes('--debug');
 
 const CONFIG = {
-  email: process.env.BIZIMHESAP_EMAIL || 'alaylimedikal@gmail.com',
-  password: process.env.BIZIMHESAP_PASSWORD || 'aL290900.',
-  loginUrl: 'https://bizimhesap.com/bhlogin',
-  firmUrl: 'https://bizimhesap.com/web/ngn/sec/ngnmultiaccount',
+  ...getBizimHesapConfig(),
   masrafUrl: process.env.BIZIMHESAP_MASRAF_URL || 'https://bizimhesap.com/web/ngn/acc/ngncostss',
 };
 
@@ -108,11 +106,7 @@ function tableDedupeKey(r) {
 }
 
 async function startBrowser() {
-  const browser = await puppeteer.launch({
-    headless: !SHOW,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-blink-features=AutomationControlled'],
-    defaultViewport: { width: 1366, height: 768 },
-  });
+  const browser = await puppeteer.launch(launchOptions({ headless: !SHOW, width: 1366, height: 768 }));
   const page = await browser.newPage();
   await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122 Safari/537.36');
   await page.setExtraHTTPHeaders({ 'Accept-Language': 'tr-TR,tr;q=0.9' });
@@ -120,6 +114,7 @@ async function startBrowser() {
 }
 
 async function login(page) {
+  return loginBizimHesap(page, log);
   log('[LOGIN] BizimHesap');
   await page.goto(CONFIG.loginUrl, { waitUntil: 'networkidle2', timeout: 30000 });
   await page.waitForSelector('body', { timeout: 12000 });
@@ -153,6 +148,7 @@ async function login(page) {
 }
 
 async function firmaSec(page, firma) {
+  return selectFirma(page, firma, log);
   log(`[FIRMA] ${firma.adi}`);
   await page.goto(CONFIG.firmUrl, { waitUntil: 'networkidle2', timeout: 25000 });
   await page.waitForSelector('a,button,div,span', { timeout: 12000 });

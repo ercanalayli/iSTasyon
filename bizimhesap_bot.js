@@ -8,6 +8,7 @@
 const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
+const { getBizimHesapConfig, launchOptions, loginBizimHesap, selectFirma } = require('./bizimhesap_common.cjs');
 
 // ── ARGÜMAN PARSE ──────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -55,10 +56,7 @@ const AKTIF_FIRMALAR = FIRMA_ARG
 
 // ── AYARLAR ────────────────────────────────────────────────────────────────
 const CONFIG = {
-  email:     'alaylimedikal@gmail.com',
-  password:  'aL290900.',
-  loginUrl:  'https://bizimhesap.com/bhlogin',
-  firmUrl:   'https://bizimhesap.com/web/ngn/sec/ngnmultiaccount',
+  ...getBizimHesapConfig(),
   reportUrl: 'https://bizimhesap.com/web/ngn/rep/NgnNewSalesReport',
 };
 
@@ -107,11 +105,7 @@ function trNumber(value) {
 
 // ── BROWSER BAŞLAT ─────────────────────────────────────────────────────────
 async function startBrowser() {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox','--disable-setuid-sandbox','--disable-blink-features=AutomationControlled'],
-    defaultViewport: { width: 1366, height: 768 },
-  });
+  const browser = await puppeteer.launch(launchOptions({ headless: true, width: 1366, height: 768 }));
   const page = await browser.newPage();
   await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
   await page.setExtraHTTPHeaders({ 'Accept-Language': 'tr-TR,tr;q=0.9' });
@@ -120,6 +114,7 @@ async function startBrowser() {
 
 // ── LOGIN ──────────────────────────────────────────────────────────────────
 async function login(page) {
+  return loginBizimHesap(page, log);
   log('[LOGIN] ' + CONFIG.loginUrl);
   await page.goto(CONFIG.loginUrl, { waitUntil: 'networkidle2', timeout: 30000 });
   await page.waitForSelector('body', { timeout: 10000 });
@@ -156,6 +151,7 @@ async function login(page) {
 
 // ── FİRMA SEÇ ──────────────────────────────────────────────────────────────
 async function firmaSeç(page, firma) {
+  return selectFirma(page, firma, log);
   log(`[FİRMA] ${firma.adi}`);
   await page.goto(CONFIG.firmUrl, { waitUntil: 'networkidle2', timeout: 20000 });
   await page.waitForSelector('a,div', { timeout: 10000 });

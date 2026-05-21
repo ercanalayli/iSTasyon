@@ -96,6 +96,16 @@ function runtimeFile(file) {
   return runtimePath;
 }
 
+function runtimeScript(sourcePath) {
+  if (!sourcePath.endsWith('.js')) return sourcePath;
+  const source = readFileSync(sourcePath, 'utf8');
+  const isCommonJs = source.includes('require(') || source.includes('module.exports') || source.includes('__dirname');
+  if (!isCommonJs) return sourcePath;
+  const runtimePath = path.join(__dirname, `.__runtime_${path.basename(sourcePath, '.js')}.cjs`);
+  writeFileSync(runtimePath, source, 'utf8');
+  return runtimePath;
+}
+
 function run(job) {
   const fullPath = path.join(__dirname, job.file);
   const cleanArgs = job.args.filter(Boolean);
@@ -168,7 +178,7 @@ function pushSyncStatus() {
     return;
   }
   line(`STATUS PUSH BASLADI: ${scriptPath}`);
-  const r = spawnSync(process.execPath, [scriptPath], {
+  const r = spawnSync(process.execPath, [runtimeScript(scriptPath)], {
     cwd: __dirname,
     stdio: 'pipe',
     encoding: 'utf8',

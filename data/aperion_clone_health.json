@@ -1,0 +1,93 @@
+{
+  "generated_at": "2026-05-21T08:12:56.893Z",
+  "firma_id": "alayli",
+  "status": "saglikli",
+  "checks": [
+    {
+      "name": "last_sync_ok",
+      "ok": true,
+      "detail": "2026-05-21T08:12:56.656Z"
+    },
+    {
+      "name": "sales_last_15_days",
+      "ok": true,
+      "detail": "935 kayit"
+    },
+    {
+      "name": "sales_today_exists",
+      "ok": true,
+      "detail": "2026-05-21: 13 kayit"
+    },
+    {
+      "name": "sales_yesterday_exists",
+      "ok": true,
+      "detail": "2026-05-20: 118 kayit"
+    },
+    {
+      "name": "sales_dates_complete",
+      "ok": true,
+      "detail": "15 gun tamam"
+    },
+    {
+      "name": "masraf_2026_exists",
+      "ok": true,
+      "detail": "280 kayit"
+    },
+    {
+      "name": "product_raw_exists",
+      "ok": true,
+      "detail": "3743 kayit"
+    },
+    {
+      "name": "son_islemler_seen",
+      "ok": true,
+      "detail": "3 son islem"
+    }
+  ],
+  "counts": {
+    "sales_last_15_days": 935,
+    "sales_today": 13,
+    "sales_yesterday": 118,
+    "masraf_2026": 280,
+    "product_raw": 3743,
+    "bizimhesap_events": 27
+  },
+  "errors": [],
+  "last_sync": {
+    "firma": "alayli",
+    "mode": "commit",
+    "startedAt": "2026-05-21T08:10:06.659Z",
+    "finishedAt": "2026-05-21T08:12:56.656Z",
+    "ok": true,
+    "jobs": [
+      {
+        "label": "BizimHesap satis kaynak yenileme 2026-05-07 - 2026-05-21",
+        "file": "bizimhesap_bot.js",
+        "status": "ok",
+        "code": 0,
+        "durationMs": 100453
+      },
+      {
+        "label": "BizimHesap son islemler denetimi",
+        "file": "bizimhesap_son_islemler_izle.js",
+        "status": "ok",
+        "code": 0,
+        "durationMs": 16403
+      },
+      {
+        "label": "BizimHesap masraf 2026",
+        "file": "bizimhesap_masraf_cek.js",
+        "status": "ok",
+        "code": 0,
+        "durationMs": 27011
+      },
+      {
+        "label": "BizimHesap urun ve stok kartlari",
+        "file": "bizimhesap_urun_stok_cek.js",
+        "status": "ok",
+        "code": 0,
+        "durationMs": 26123
+      }
+    ]
+  }
+}

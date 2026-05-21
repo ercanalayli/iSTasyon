@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
+const { getBizimHesapConfig, launchOptions, loginBizimHesap, selectFirma } = require('./bizimhesap_common.cjs');
 
 const args = process.argv.slice(2);
 const FIRMA_ARG = args.includes('--firma') ? args[args.indexOf('--firma') + 1] : 'alayli';
@@ -7,10 +8,7 @@ const TARGET_CARI = args.includes('--cari') ? args[args.indexOf('--cari') + 1] :
 const OUT = 'bizimhesap_ogrenme_haritasi.json';
 
 const CONFIG = {
-  email: process.env.BIZIMHESAP_EMAIL || 'alaylimedikal@gmail.com',
-  password: process.env.BIZIMHESAP_PASSWORD || 'aL290900.',
-  loginUrl: 'https://bizimhesap.com/bhlogin',
-  firmUrl: 'https://bizimhesap.com/web/ngn/sec/ngnmultiaccount',
+  ...getBizimHesapConfig(),
   accountsUrl: 'https://bizimhesap.com/web/ngn/acc/ngnaccounts',
   expensesUrl: 'https://bizimhesap.com/web/ngn/acc/ngncostss',
   customersUrl: 'https://bizimhesap.com/web/ngn/pos/ngncustomers',
@@ -42,11 +40,7 @@ function log(msg) {
 }
 
 async function startBrowser() {
-  const browser = await puppeteer.launch({
-    headless: false,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-blink-features=AutomationControlled'],
-    defaultViewport: { width: 1366, height: 768 },
-  });
+  const browser = await puppeteer.launch(launchOptions({ headless: false, width: 1366, height: 768 }));
   const page = await browser.newPage();
   await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122 Safari/537.36');
   await page.setExtraHTTPHeaders({ 'Accept-Language': 'tr-TR,tr;q=0.9' });
@@ -159,6 +153,9 @@ async function selectByText(page, words) {
 }
 
 async function login(page) {
+  await loginBizimHesap(page, log);
+  await capture(page, '02_login_sonrasi');
+  return;
   await page.goto(CONFIG.loginUrl, { waitUntil: 'networkidle2', timeout: 30000 });
   await capture(page, '01_login');
   const emailEl = await page.$('input[type="email"]') || await page.$('input[type="text"]');
@@ -179,6 +176,9 @@ async function login(page) {
 
 async function firmaSec(page) {
   const firma = FIRMALAR[FIRMA_ARG] || FIRMALAR.alayli;
+  await selectFirma(page, { id: FIRMA_ARG, ...firma }, log);
+  await capture(page, '04_ana_sayfa');
+  return;
   await page.goto(CONFIG.firmUrl, { waitUntil: 'networkidle2', timeout: 20000 });
   await capture(page, '03_firma_sec');
   const ok = await clickText(page, [firma.sektor, firma.adi]);
