@@ -1,37 +1,37 @@
 {
   "firma": "alayli",
   "mode": "commit",
-  "startedAt": "2026-05-21T08:10:06.659Z",
-  "finishedAt": "2026-05-21T08:12:56.656Z",
+  "startedAt": "2026-05-25T11:17:47.704Z",
+  "finishedAt": "2026-05-25T11:25:55.259Z",
   "ok": true,
   "jobs": [
     {
-      "label": "BizimHesap satis kaynak yenileme 2026-05-07 - 2026-05-21",
+      "label": "BizimHesap satis kaynak yenileme 2026-05-11 - 2026-05-25",
       "file": "bizimhesap_bot.js",
       "status": "ok",
       "code": 0,
-      "durationMs": 100453
+      "durationMs": 105725
     },
     {
       "label": "BizimHesap son islemler denetimi",
       "file": "bizimhesap_son_islemler_izle.js",
       "status": "ok",
       "code": 0,
-      "durationMs": 16403
+      "durationMs": 321846
     },
     {
       "label": "BizimHesap masraf 2026",
       "file": "bizimhesap_masraf_cek.js",
       "status": "ok",
       "code": 0,
-      "durationMs": 27011
+      "durationMs": 29174
     },
     {
       "label": "BizimHesap urun ve stok kartlari",
       "file": "bizimhesap_urun_stok_cek.js",
       "status": "ok",
       "code": 0,
-      "durationMs": 26123
+      "durationMs": 30799
     }
   ]
 }

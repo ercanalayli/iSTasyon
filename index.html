@@ -418,6 +418,26 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .exec-kpi{min-height:92px;padding:11px}.exec-value{font-size:21px}
 .exec-split{gap:10px;margin-top:10px}
 .cat-chip{padding:8px;border-radius:8px;margin-bottom:6px}
+.finance-home-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mini-action{border:1px solid #CBD5E1;background:#F8FAFC;color:#334155;border-radius:9px;padding:7px 10px;font-size:11px;font-weight:900;text-decoration:none;cursor:pointer}
+.mini-action.primary{background:#2563EB;border-color:#2563EB;color:#FFFFFF}
+.finance-home-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px}
+.finance-home-kpi{grid-column:span 3;border:1px solid #E2E8F0;background:#F8FAFC;border-radius:12px;padding:12px;min-height:82px}
+.finance-home-k{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#64748B;font-weight:950}
+.finance-home-v{font-family:var(--mono);font-size:20px;font-weight:950;color:#0F172A;margin-top:7px}
+.finance-home-n{font-size:10px;color:#64748B;font-weight:750;margin-top:5px}
+.finance-home-list{grid-column:span 8;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;background:#FFFFFF}
+.finance-home-inbox{grid-column:span 4;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;background:#FFFFFF}
+.finance-home-head{padding:10px 12px;background:#F8FAFC;border-bottom:1px solid #E2E8F0;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#64748B;font-weight:950}
+.finance-home-item{display:grid;grid-template-columns:96px 1fr auto;gap:10px;padding:10px 12px;border-bottom:1px solid #EEF2F7;align-items:center}
+.finance-home-item:last-child{border-bottom:0}
+.finance-home-date{font-family:var(--mono);font-size:11px;color:#475569;font-weight:900}
+.finance-home-title{font-size:12px;color:#0F172A;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finance-home-sub{font-size:10px;color:#64748B;font-weight:700;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finance-home-amt{font-family:var(--mono);font-size:12px;font-weight:950;color:#0F766E;text-align:right}
+.finance-home-amt.pay{color:#B45309}
+.finance-empty{font-family:var(--mono);font-size:11px;color:#64748B;padding:14px;background:#F8FAFC;border:1px dashed #CBD5E1;border-radius:12px}
+@media(max-width:980px){.finance-home-kpi,.finance-home-list,.finance-home-inbox{grid-column:1/-1}.finance-home-item{grid-template-columns:1fr}.finance-home-amt{text-align:left}}
 .exec-table td{padding:9px 10px}.exec-table th{padding:9px 10px}
 .dyn-grid{gap:8px;margin:9px 0 13px}.dyn-box{padding:10px;min-height:64px}
 .empty{padding:30px 18px}
@@ -651,6 +671,19 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
           <div class="report-grid" id="reportHubGrid">
             <div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yukleniyor...</div>
           </div>
+        </div>
+        <div class="card finance-home-card" style="margin-bottom:16px">
+          <div class="card-hd">
+            <div>
+              <div class="card-l">Finans Takvimi</div>
+              <div style="font-size:11px;color:var(--t3);font-weight:700;margin-top:3px">ödeme, tahsilat, yapılacak iş ve Telegram evrak akışı</div>
+            </div>
+            <div class="finance-home-actions">
+              <button onclick="gP('finans',null)" class="mini-action">Finans Merkezine Git</button>
+              <a href="finans-takvimi.html" class="mini-action primary">Takvimi Aç</a>
+            </div>
+          </div>
+          <div id="homeFinanceCalendar"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Finans takvimi yükleniyor...</div></div>
         </div>
         <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-l">Veri Denetimi</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">sales_raw kalite kontrol</span></div>
@@ -1058,8 +1091,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='102539-210526';
-const BUILD_STAMP='21.05.2026 10:25:39';
+const BUILD_CODE='143526-250526';
+const BUILD_STAMP='25.05.2026 14:35:26';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -1194,14 +1227,14 @@ async function selF(id){
   showDetay();
   await refresh();
 }
-function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';renderReportHub();renderHomeSales();renderKarts();loadLastDataStatus();renderSourceMatrix();renderHomeExpenses();}
+function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';renderReportHub();loadFinanceHome();renderHomeSales();renderKarts();loadLastDataStatus();renderSourceMatrix();renderHomeExpenses();}
 function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(PILOT_FIRMA);document.getElementById('gB')?.remove();}
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'Ana Sayfa',s:'Yönetici özeti ve veri güveni'},satis:{t:'Satışlar',s:'Kategori, ürün ve müşteri kırılımı'},cariler:{t:'Müşteriler',s:'Cari performans ve risk'},finans:{t:'Finans Özeti',s:'Gider, banka ve tahsilat kontrolü'},stok:{t:'Ürünler',s:'Ürün bazlı kârlılık ve stok takibi'},hedef:{t:'Hedefler',s:'Gerçekleşen ve bütçe kontrolü'},gorevler:{t:'Görevler',s:'Onay ve takip merkezi'},veri:{t:'Veri Kontrol',s:'Kaynak, çekim ve doğrulama'},bildirim:{t:'Bildirim',s:'Telefon onay ve rapor ayarları'}};
 function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();loadSyncHealth();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();}
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]).filter(isAlayliRow);}catch(e){return[];}}
-async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);await loadSyncHealth();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
+async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);await loadSyncHealth();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();loadFinanceHome();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
 function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
 function pSels(){
   const fids=[...new Set(RAW.map(r=>r.firma_id).filter(Boolean))];
@@ -1461,6 +1494,61 @@ function renderDataAudit(){
     ${auditBox('Firma Kaçağı',fmt(a.issues.firmLeak),'Alaylı dışı kayıt',a.issues.firmLeak?'bad':'ok')}
     ${auditBox('Tekrar Bilgisi',fmt(a.duplicate),'satışta doğal tekrar olabilir',a.duplicate?'':'ok')}
     ${auditBox('Tutar Sorunu',fmt(a.issues.badAmount),'negatif/geçersiz ciro',a.issues.badAmount?'bad':'ok')}
+  </div>`;
+}
+const financeNum=v=>Number.isFinite(+v)?+v:0;
+const financeTL=v=>`TL ${Math.round(financeNum(v)).toLocaleString('tr-TR')}`;
+function financeTitle(row){
+  return row.baslik||row.title||row.aciklama||row.description||row.not||row.note||row.file_name||row.dosya_adi||'Finans kaydı';
+}
+function financeDate(row){
+  return (row.calendar_date||row.hatirlatma_zamani||row.vade_tarihi||row.tarih||row.created_at||'').toString().substring(0,10)||'-';
+}
+function financeAmount(row){
+  return financeNum(row.amount||row.tutar||row.borc||row.alacak||row.value||0);
+}
+function financeKind(row){
+  const t=(row.type||row.tip||row.kind||row.yon||row.kategori||'').toString().toLowerCase();
+  if(t.includes('tahsil')||t.includes('alacak')||t.includes('gelir'))return 'tahsilat';
+  if(t.includes('ödeme')||t.includes('odeme')||t.includes('gider')||t.includes('borc')||t.includes('borç'))return 'odeme';
+  if(t.includes('gorev')||t.includes('görev')||t.includes('yap'))return 'gorev';
+  return t||'işlem';
+}
+function financeRowsHtml(rows){
+  if(!rows?.length)return '<div class="finance-empty">Takvim kaydı yok veya finans tabloları henüz kurulmadı.</div>';
+  return rows.map(r=>{
+    const kind=financeKind(r), pay=kind==='odeme'||kind==='gider';
+    return `<div class="finance-home-item"><div class="finance-home-date">${escHtml(financeDate(r))}</div><div><div class="finance-home-title">${escHtml(financeTitle(r))}</div><div class="finance-home-sub">${escHtml(kind)} · ${escHtml(r.status||r.durum||r.onay_durumu||'bekliyor')}</div></div><div class="finance-home-amt ${pay?'pay':''}">${financeAmount(r)?financeTL(financeAmount(r)):'-'}</div></div>`;
+  }).join('');
+}
+async function loadFinanceHome(){
+  const el=document.getElementById('homeFinanceCalendar');if(!el)return;
+  el.innerHTML='<div class="finance-empty">Finans takvimi kontrol ediliyor...</div>';
+  let summary=null, calendarRows=[], inboxRows=[], setupIssues=[];
+  try{
+    const {data,error}=await db.from('finance_calendar_summary_view').select('*').eq('company','ALAYLI').limit(1);
+    if(error)setupIssues.push('takvim özet görünümü yok'); else summary=data?.[0]||null;
+  }catch(e){setupIssues.push('takvim özet görünümü yok');}
+  try{
+    const {data,error}=await db.from('finance_calendar_drawer_view').select('*').eq('company','ALAYLI').order('calendar_date',{ascending:true}).limit(8);
+    if(error)setupIssues.push('takvim liste görünümü yok'); else calendarRows=data||[];
+  }catch(e){setupIssues.push('takvim liste görünümü yok');}
+  try{
+    const {data,error}=await db.from('financial_inbox').select('*').eq('firma_id',PILOT_FIRMA).order('created_at',{ascending:false}).limit(5);
+    if(error)setupIssues.push('Telegram evrak tablosu yok'); else inboxRows=data||[];
+  }catch(e){setupIssues.push('Telegram evrak tablosu yok');}
+  const todayIn=financeNum(summary?.today_receivable||summary?.bugun_tahsilat||summary?.tahsilat_bugun);
+  const todayOut=financeNum(summary?.today_payable||summary?.bugun_odeme||summary?.odeme_bugun);
+  const overdue=financeNum(summary?.overdue_count||summary?.geciken_sayi||0);
+  const approvals=financeNum(summary?.waiting_approvals||summary?.onay_bekleyen||0);
+  el.innerHTML=`<div class="finance-home-grid">
+    <div class="finance-home-kpi"><div class="finance-home-k">Bugün Tahsilat</div><div class="finance-home-v">${summary?financeTL(todayIn):'kurulum bekliyor'}</div><div class="finance-home-n">telefon + takvim onayı</div></div>
+    <div class="finance-home-kpi"><div class="finance-home-k">Bugün Ödeme</div><div class="finance-home-v">${summary?financeTL(todayOut):'kurulum bekliyor'}</div><div class="finance-home-n">ödenecekler ve vadeler</div></div>
+    <div class="finance-home-kpi"><div class="finance-home-k">Geciken</div><div class="finance-home-v">${summary?fmt(overdue):'kurulum bekliyor'}</div><div class="finance-home-n">kontrol gereken kayıt</div></div>
+    <div class="finance-home-kpi"><div class="finance-home-k">Onay Bekleyen</div><div class="finance-home-v">${summary?fmt(approvals):'kurulum bekliyor'}</div><div class="finance-home-n">Telegram / AperiON kuyruğu</div></div>
+    <div class="finance-home-list"><div class="finance-home-head">Yakın Finans Takvimi</div>${financeRowsHtml(calendarRows)}</div>
+    <div class="finance-home-inbox"><div class="finance-home-head">Telegram Evrak</div>${inboxRows.length?inboxRows.map(r=>`<div class="finance-home-item" style="grid-template-columns:1fr auto"><div><div class="finance-home-title">${escHtml(financeTitle(r))}</div><div class="finance-home-sub">${escHtml((r.created_at||'').toString().substring(0,16))} · ${escHtml(r.category||r.kategori||r.durum||'evrak')}</div></div><div class="finance-home-amt">${escHtml(r.status||r.durum||'alındı')}</div></div>`).join(''):'<div class="finance-empty">Telegram evrak tablosu henüz kurulmadı veya kayıt yok.</div>'}</div>
+    ${setupIssues.length?`<div class="finance-empty" style="grid-column:1/-1">Eksik kurulum: ${escHtml([...new Set(setupIssues)].join(', '))}. Telegram bot kodu hazır; Supabase finans tabloları/görünümleri kurulunca ana sayfa canlı dolacak.</div>`:''}
   </div>`;
 }
 async function renderReportHub(){

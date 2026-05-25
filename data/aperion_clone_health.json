@@ -1,27 +1,27 @@
 {
-  "generated_at": "2026-05-21T08:12:56.893Z",
+  "generated_at": "2026-05-25T11:25:55.433Z",
   "firma_id": "alayli",
   "status": "saglikli",
   "checks": [
     {
       "name": "last_sync_ok",
       "ok": true,
-      "detail": "2026-05-21T08:12:56.656Z"
+      "detail": "2026-05-25T11:25:55.259Z"
     },
     {
       "name": "sales_last_15_days",
       "ok": true,
-      "detail": "935 kayit"
+      "detail": "1031 kayit"
     },
     {
       "name": "sales_today_exists",
       "ok": true,
-      "detail": "2026-05-21: 13 kayit"
+      "detail": "2026-05-25: 63 kayit"
     },
     {
       "name": "sales_yesterday_exists",
       "ok": true,
-      "detail": "2026-05-20: 118 kayit"
+      "detail": "2026-05-24: 1 kayit"
     },
     {
       "name": "sales_dates_complete",
@@ -31,7 +31,7 @@
     {
       "name": "masraf_2026_exists",
       "ok": true,
-      "detail": "280 kayit"
+      "detail": "285 kayit"
     },
     {
       "name": "product_raw_exists",
@@ -45,48 +45,48 @@
     }
   ],
   "counts": {
-    "sales_last_15_days": 935,
-    "sales_today": 13,
-    "sales_yesterday": 118,
-    "masraf_2026": 280,
+    "sales_last_15_days": 1031,
+    "sales_today": 63,
+    "sales_yesterday": 1,
+    "masraf_2026": 285,
     "product_raw": 3743,
-    "bizimhesap_events": 27
+    "bizimhesap_events": 30
   },
   "errors": [],
   "last_sync": {
     "firma": "alayli",
     "mode": "commit",
-    "startedAt": "2026-05-21T08:10:06.659Z",
-    "finishedAt": "2026-05-21T08:12:56.656Z",
+    "startedAt": "2026-05-25T11:17:47.704Z",
+    "finishedAt": "2026-05-25T11:25:55.259Z",
     "ok": true,
     "jobs": [
       {
-        "label": "BizimHesap satis kaynak yenileme 2026-05-07 - 2026-05-21",
+        "label": "BizimHesap satis kaynak yenileme 2026-05-11 - 2026-05-25",
         "file": "bizimhesap_bot.js",
         "status": "ok",
         "code": 0,
-        "durationMs": 100453
+        "durationMs": 105725
       },
       {
         "label": "BizimHesap son islemler denetimi",
         "file": "bizimhesap_son_islemler_izle.js",
         "status": "ok",
         "code": 0,
-        "durationMs": 16403
+        "durationMs": 321846
       },
       {
         "label": "BizimHesap masraf 2026",
         "file": "bizimhesap_masraf_cek.js",
         "status": "ok",
         "code": 0,
-        "durationMs": 27011
+        "durationMs": 29174
       },
       {
         "label": "BizimHesap urun ve stok kartlari",
         "file": "bizimhesap_urun_stok_cek.js",
         "status": "ok",
         "code": 0,
-        "durationMs": 26123
+        "durationMs": 30799
       }
     ]
   }
