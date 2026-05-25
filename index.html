@@ -466,6 +466,14 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .sales-table-wrap .pt{min-width:1080px;margin:0;border:0}
 .sales-table-wrap .pt th{position:sticky;top:0;z-index:2;background:#F8FAFC}
 .sales-table-wrap .pt tr:hover td{background:#F5F9FF}
+.category-table-wrap{overflow:auto;border:1px solid #E4E7EC;border-radius:11px;background:#fff}
+.category-table-wrap .pt{min-width:1080px;margin:0;border:0}
+.category-table-wrap .pt tr{cursor:pointer}
+.category-table-wrap .pt tr.on td{background:#EEF4FF}
+.category-table-wrap .pt tr:hover td{background:#F5F9FF}
+.cat-rank{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:#EEF4FF;color:#1D4ED8;font-family:var(--mono);font-size:10px;font-weight:950;margin-right:8px}
+.cat-name-main{font-weight:950;color:#101828;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-name-sub{font-family:var(--mono);font-size:10px;color:#667085;margin-top:4px;font-weight:750}
 .home-main-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.55fr);gap:12px;align-items:start}
 .home-stack{display:grid;gap:12px}
 .home-card{margin-bottom:0}
@@ -1091,8 +1099,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='143526-250526';
-const BUILD_STAMP='25.05.2026 14:35:26';
+const BUILD_CODE='145547-250526';
+const BUILD_STAMP='25.05.2026 14:55:47';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -1614,9 +1622,8 @@ async function renderHomeSales(){
   const pr=pRange(), rows=await salesWide(PILOT_FIRMA);
   const dun=met(rows,pr.yestS,pr.yestS), ay=met(rows,pr.monthS,pr.todayS), yil=met(rows,pr.yearS,pr.todayS), ly=met(rows,pr.prevYearS,pr.prevYearE);
   const cats={};
-  rows.filter(r=>inR(r,pr.monthS,pr.todayS)).forEach(r=>{const k=nrmCat(r.kategori);(cats[k]||(cats[k]=[])).push(r);});
-  const catRows=Object.entries(cats).map(([k,v])=>({k,...met(v,pr.monthS,pr.todayS)})).sort((a,b)=>b.ciro-a.ciro).slice(0,10);
-  const goCat=k=>`gP('satis',null);setTimeout(()=>{const s=document.getElementById('uKa');if(s){s.value=${jsArg(k)};uCat=${jsArg(k)};}cM='month';rU();},80)`;
+  rows.forEach(r=>{const k=nrmCat(r.kategori);(cats[k]||(cats[k]=[])).push(r);});
+  const catRows=categoryRowsWide(cats,pr);
   el.innerHTML=`
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:14px">
       <div class="kpi g"><div class="kpi-l">Dün Satış</div><div class="kpi-v">TL ${fmt(dun.ciro)}</div><div class="kpi-s">${fmt(dun.adet)} adet · ${fmt(dun.rows)} işlem</div></div>
@@ -1624,10 +1631,8 @@ async function renderHomeSales(){
       <div class="kpi o"><div class="kpi-l">${pr.year} Satış</div><div class="kpi-v">TL ${fmt(yil.ciro)}</div><div class="kpi-s">${fmt(yil.adet)} adet</div></div>
       <div class="kpi r"><div class="kpi-l">${pr.prevYear}</div><div class="kpi-v">TL ${fmt(ly.ciro)}</div><div class="kpi-s">${ly.ciro?((yil.ciro-ly.ciro)/ly.ciro*100).toFixed(1)+'%':'veri yok'}</div></div>
     </div>
-    <div style="font-size:13px;font-weight:900;margin-bottom:9px">Bu Ay Kategori Satışları</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">
-      ${catRows.length?catRows.map(c=>`<button onclick="${goCat(c.k)}" style="text-align:left;border:1px solid var(--b1);background:var(--s2);border-radius:10px;padding:12px;cursor:pointer;color:var(--text)"><div style="font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(c.k)}</div><div style="font-family:var(--mono);font-size:16px;color:var(--green);font-weight:900;margin-top:6px">TL ${fmt(c.ciro)}</div><div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:4px">${fmt(c.adet)} adet · ürünlere gir</div></button>`).join(''):'<div style="font-family:var(--mono);font-size:10px;color:var(--t3)">Bu ay kategori verisi yok.</div>'}
-    </div>`;
+    <div style="display:flex;align-items:end;justify-content:space-between;gap:10px;margin-bottom:9px"><div><div style="font-size:13px;font-weight:950">Ana Ekran Kategori Performansı</div><div style="font-size:11px;color:var(--t3);font-weight:750;margin-top:3px">Dönem bazlı ciro, adet, pay ve ortalama satış fiyatı</div></div><button class="fb" onclick="gP('satis',null)">Satışlara Git</button></div>
+    ${categoryPerformanceTable(catRows,'mo','',12)}`;
 }
 async function renderKarts(){
   const grid=document.getElementById('fGrid');if(!grid)return;
@@ -1819,6 +1824,27 @@ function periodFor(mode,pr){
 }
 const sumCell=m=>`<div class="metric-cell"><span class="metric-money">TL ${fmt(m.ciro)}</span><span class="metric-qty">${fmt(m.adet)} adet</span></div>`;
 const priceCell=(cur,prev)=>`<div class="metric-cell"><span class="price-main">Son TL ${fmt(cur.last)}</span><span class="price-sub">Ort TL ${fmt(cur.avg)} / LY TL ${fmt(prev.avg)}</span></div>`;
+function categoryRowsWide(cats,pr){
+  return Object.entries(cats).map(([k,rows])=>({
+    k,
+    dy:met(rows,pr.yestS,pr.yestS),
+    wk:met(rows,pr.weekS,pr.todayS),
+    tm:met(rows,pr.todayS,pr.todayS),
+    mo:met(rows,pr.monthS,pr.todayS),
+    pm:met(rows,pr.prevMonthS,pr.prevMonthE),
+    yr:met(rows,pr.yearS,pr.todayS),
+    ly:met(rows,pr.prevYearS,pr.prevYearE)
+  }));
+}
+function categoryPerformanceTable(rows,activeKey,selectedCat='',limit=18){
+  const pr=pRange(), total=rows.reduce((s,r)=>s+(r[activeKey]?.ciro||0),0);
+  const ordered=[...rows].sort((a,b)=>(b[activeKey]?.ciro||0)-(a[activeKey]?.ciro||0)).slice(0,limit);
+  if(!ordered.length)return'<div class="empty"><div class="empty-t">Kategori verisi yok</div></div>';
+  return `<div class="category-table-wrap"><table class="pt"><thead><tr><th>Kategori</th><th>Dün</th><th>Bu Hafta</th><th>${pr.monthName}</th><th>${pr.prevMonthName}</th><th>${pr.year}</th><th>${pr.prevYear}</th><th>Pay / Ortalama</th></tr></thead><tbody>${ordered.map((r,i)=>{
+    const active=r[activeKey]||{ciro:0,adet:0,avg:0}, pay=total?active.ciro/total*100:0;
+    return `<tr class="${selectedCat===r.k?'on':''}" onclick="selectSalesCategory(${jsArg(r.k)})"><td style="max-width:310px"><span class="cat-rank">${i+1}</span><span class="cat-name-main">${escHtml(r.k)}</span><div class="cat-name-sub">${fmt(active.rows)} işlem · ürünlere gir</div></td><td>${sumCell(r.dy)}</td><td>${sumCell(r.wk)}</td><td>${sumCell(r.mo)}</td><td>${sumCell(r.pm)}</td><td>${sumCell(r.yr)}</td><td>${sumCell(r.ly)}</td><td><div class="metric-cell"><span class="price-main">${dynPct(pay)}</span><span class="price-sub">Ort TL ${fmt(active.avg)} / LY TL ${fmt(r.ly.avg)}</span></div></td></tr>`;
+  }).join('')}</tbody></table></div>`;
+}
 async function salesWide(cf){
   const pr=pRange(), all=[];
   for(let from=0;;from+=1000){
@@ -1838,7 +1864,7 @@ async function rU(){
   const base=ck?d.filter(r=>nrmCat(r.kategori)===ck):d;
   const cats={};
   d.forEach(r=>{const k=nrmCat(r.kategori);(cats[k]||(cats[k]=[])).push(r);});
-  const catRows=Object.entries(cats).map(([k,rows])=>({k,...met(rows,active.from,active.to),ly:met(rows,active.lyFrom,active.lyTo)})).sort((a,b)=>b.ciro-a.ciro);
+  const catRows=categoryRowsWide(cats,pr);
   const prod={}, cari={};
   base.forEach(r=>{
     const u=(r.urun||'Urun Yok').trim(), c=(r.unvan||'Cari Yok').trim();
@@ -1864,7 +1890,7 @@ async function rU(){
         <div><div class="sales-title">Kategori Performansi - ${active.label}${ck?` / ${ck}`:''}</div><div class="sales-sub">Kategoriye bas: ürün listesi anında filtrelenir.</div></div>
         <div class="sales-actions">${ck?`<button class="fb" onclick="selectSalesCategory('')">Tüm Kategoriler</button>`:''}</div>
       </div>
-      <div class="sales-cat-grid">${catRows.slice(0,12).map(c=>`<button class="sales-cat ${ck===c.k?'on':''}" onclick="selectSalesCategory(${jsArg(c.k)})"><div class="sales-cat-n">${escHtml(c.k)}</div><div class="sales-cat-v">TL ${fmt(c.ciro)}</div><div class="sales-cat-s">${fmt(c.adet)} adet / LY TL ${fmt(c.ly.ciro)}</div></button>`).join('')}</div>
+      ${categoryPerformanceTable(catRows,active.key,ck,18)}
     </div>
     <div class="sales-table-zone">
       <div class="sales-table-head"><div><div class="sales-title">Urun Dinamik Raporu</div><div class="sales-sub">${ck||'Tüm kategoriler'} · ilk 80 ürün</div></div></div>
