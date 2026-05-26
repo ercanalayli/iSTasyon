@@ -55,6 +55,7 @@
     "verify:personal-finance-actions-v54": "node tools/verify_personal_finance_actions_v54.cjs",
     "telegram:personal-finance-v54:test": "node telegram/aperion_personal_finance_assistant_v54_test_runner.cjs",
     "apply:personal-finance-actions-v54": "npm run verify:personal-finance-actions-v54 && npm run telegram:personal-finance-v54:test",
+    "verify:main-finance-flow-v55": "node tools/verify_main_finance_flow_v55.cjs",
     "telegram:hatirlat": "node telegram_hatirlatma_bot.js --once",
     "telegram:hatirlat:watch": "node telegram_hatirlatma_bot.js --watch",
     "telegram:hatirlat:due": "node telegram_hatirlatma_bot.js --remind-only",
