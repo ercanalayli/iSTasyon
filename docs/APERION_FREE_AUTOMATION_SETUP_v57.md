@@ -16,6 +16,16 @@ Gmail
 → gerekirse açık kalan ofis PC
 ```
 
+## Kullanılacak Gmail hesabı
+
+Banka ekstreleri ve hesap hareketi mailleri şu hesaba gelecektir:
+
+```text
+alaylimedikal@gmail.com
+```
+
+Google Apps Script ilk aşamada bu hesapta kurulacaktır.
+
 ## Neden bu yol?
 
 - Make / n8n Cloud aboneliği gerektirmez.
@@ -28,7 +38,7 @@ Gmail
 
 ### 1. Gmail
 
-Banka ekstreleri ve hesap hareketi mailleri Gmail’e gelir.
+Banka ekstreleri ve hesap hareketi mailleri `alaylimedikal@gmail.com` hesabına gelir.
 
 Önerilen etiketler:
 
@@ -51,9 +61,15 @@ Görevleri:
 
 ### 3. Google Drive
 
-Varsayılan klasör:
+Varsayılan klasör yapısı:
 
-- `AperiON Banka Ekstreleri`
+- `AperiON/01 Banka Ekstreleri/{YIL}/{AY}`
+
+Örnek:
+
+```text
+AperiON/01 Banka Ekstreleri/2026/05 Mayıs
+```
 
 Buraya gelen dosyalar AperiON’un ham veri giriş kapısı olur.
 
@@ -89,7 +105,7 @@ Bildirim ve günlük rapor alanıdır.
 
 ### Adım 1 — Google Apps Script oluştur
 
-1. Google Drive’a gir.
+1. `alaylimedikal@gmail.com` hesabıyla Google Drive’a gir.
 2. Yeni > Diğer > Google Apps Script aç.
 3. Proje adını koy:
 
@@ -100,7 +116,21 @@ AperiON Banka Ekstre Aktarımı
 4. `automation/google_apps_script_gmail_to_drive_v57.js` içeriğini Apps Script editörüne yapıştır.
 5. Kaydet.
 
-### Adım 2 — İlk manuel test
+### Adım 2 — İlk klasör testi
+
+Apps Script içinde şu fonksiyonu çalıştır:
+
+```text
+aperionEnsureStandardFolders
+```
+
+Google Drive’da şu ana klasör oluşmalı:
+
+```text
+AperiON
+```
+
+### Adım 3 — İlk manuel ekstre testi
 
 Apps Script içinde şu fonksiyonu çalıştır:
 
@@ -110,17 +140,17 @@ aperionRunBankStatementIntake
 
 İlk çalıştırmada Google izin ekranı gelir. Gmail ve Drive erişim izni verilir.
 
-### Adım 3 — Drive klasörünü kontrol et
+### Adım 4 — Drive klasörünü kontrol et
 
-Google Drive’da şu klasör oluşmalı:
+Google Drive’da şu yapı oluşmalı:
 
 ```text
-AperiON Banka Ekstreleri
+AperiON/01 Banka Ekstreleri/{YIL}/{AY}
 ```
 
-Banka ekstresi ekleri buraya kaydedilmeli.
+Banka ekstresi ekleri ilgili yıl/ay klasörüne kaydedilmeli.
 
-### Adım 4 — Saatlik tetikleyici kur
+### Adım 5 — Saatlik tetikleyici kur
 
 Apps Script içinde şu fonksiyonu bir kez çalıştır:
 
@@ -130,7 +160,7 @@ aperionInstallHourlyTrigger
 
 Bundan sonra script her saat Gmail’i kontrol eder.
 
-### Adım 5 — Gerekirse tetikleyicileri kaldır
+### Adım 6 — Gerekirse tetikleyicileri kaldır
 
 ```text
 aperionRemoveTriggers
@@ -166,6 +196,7 @@ aperionRemoveTriggers
 - Ücretsiz mimari seçildi.
 - Apps Script taslağı eklendi.
 - n8n / Make bağımlılığı kaldırıldı.
+- Gmail hesabı `alaylimedikal@gmail.com` olarak netleştirildi.
 
 ## Kalanlar
 
