@@ -1,0 +1,36 @@
+name: Apply Preview Links v57
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-preview-links-v57:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/v57-cash-command-center
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Apply preview links patch
+        run: npm run apply:preview-links-v57
+
+      - name: Commit changes if needed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No changes to commit."
+          else
+            git add index.html
+            git commit -m "feat: expose v57 preview links on dashboard"
+            git push origin feature/v57-cash-command-center
+          fi
