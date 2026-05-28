@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AperiON Nakit Komuta Merkezi v57</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#F3F6FA;--card:#FFFFFF;--line:#E4E7EC;--text:#101828;--muted:#667085;--blue:#1D4ED8;--green:#047857;--red:#B91C1C;--warn:#B45309;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;--sans:Inter,Arial,sans-serif}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}.wrap{max-width:1320px;margin:0 auto;padding:18px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.title{font-size:26px;font-weight:950;letter-spacing:-.03em}.sub{font-size:13px;color:var(--muted);font-weight:700;line-height:1.45;margin-top:5px;max-width:860px}.badge{display:inline-flex;border:1px solid #A7F3D0;background:#ECFDF5;color:#047857;border-radius:999px;padding:7px 11px;font:950 11px var(--mono)}.btn{border:1px solid #D0D5DD;background:#fff;border-radius:10px;padding:9px 12px;font-weight:900;color:#344054;cursor:pointer}.btn:hover{border-color:var(--blue);color:var(--blue)}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.tab{border:1px solid #D0D5DD;background:#fff;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:900;cursor:pointer}.tab.on{background:var(--blue);border-color:var(--blue);color:#fff}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 28px rgba(15,23,42,.055)}.k{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:950}.v{font:950 24px var(--mono);line-height:1.05;margin-top:10px}.v.green{color:var(--green)}.v.red{color:var(--red)}.v.warn{color:var(--warn)}.v.blue{color:var(--blue)}.n{font-size:12px;color:var(--muted);font-weight:700;line-height:1.35;margin-top:8px}.two{display:grid;grid-template-columns:1.3fr .7fr;gap:12px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 28px rgba(15,23,42,.055)}.panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.panel-title{font:950 12px var(--mono);color:#344054;text-transform:uppercase;letter-spacing:.5px}.status{display:inline-flex;border-radius:999px;padding:5px 9px;font:950 10px var(--mono);border:1px solid #D0D5DD;background:#F8FAFC;color:#475467}.status.ok{background:#ECFDF5;color:#047857;border-color:#A7F3D0}.status.wait{background:#FFFBEB;color:#B45309;border-color:#FDE68A}.status.bad{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}.empty{border:1px dashed #D0D5DD;background:#F8FAFC;color:#667085;border-radius:12px;padding:13px;font-size:12px;font-weight:750;line-height:1.5}.table-wrap{border:1px solid var(--line);border-radius:14px;overflow:auto;background:#fff}.tbl{width:100%;border-collapse:collapse;min-width:820px}.tbl th{background:#F8FAFC;color:#667085;font:950 10px var(--mono);text-align:left;text-transform:uppercase;letter-spacing:.4px;padding:10px;border-bottom:1px solid #EAECF0}.tbl td{padding:10px;border-bottom:1px solid #EAECF0;font-size:12px;color:#344054;font-weight:750;vertical-align:top}.tbl tr:last-child td{border-bottom:0}.foot{margin-top:12px;font-size:12px;color:#667085;font-weight:750;line-height:1.45}.danger{color:var(--red)}.oktxt{color:var(--green)}@media(max-width:1100px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.two{grid-template-columns:1fr}}@media(max-width:700px){.wrap{padding:12px}.grid{grid-template-columns:1fr}.title{font-size:21px}.tbl{min-width:680px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">AperiON Nakit Komuta Merkezi</div>
+      <div class="sub">ALAYLI Medikal için banka, kasa, Moka/POS bekleyenleri, dönemsel tahsilat/ödeme planı, onay bekleyen hareketler ve nakit açığı. Veri yoksa hesap uydurmaz; ekranda açıkça “eksik veri” gösterir.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="badge">v57 · onaysız kesin kayıt yok</span><button class="btn" onclick="loadCash()">↻ Yenile</button><a class="btn" style="text-decoration:none" href="index.html">Ana Sayfa</a></div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="grid" id="kpis"><div class="empty">Yükleniyor...</div></div>
+  <div class="two">
+    <div class="panel"><div class="panel-h"><div class="panel-title">Dönemsel Nakit Planı</div><span class="status wait" id="dataStatus">kontrol</span></div><div id="forecast"><div class="empty">Veri bekleniyor...</div></div></div>
+    <div class="panel"><div class="panel-h"><div class="panel-title">Onay / Moka-POS Kontrol</div></div><div id="side"><div class="empty">Kontrol verisi bekleniyor...</div></div></div>
+  </div>
+  <div class="foot">Kaynak view’lar: <b>finance_cash_position_v57_view</b>, <b>cash_forecast_v57_view</b>, <b>cash_approval_waiting_v57_view</b>, <b>moka_pos_expected_v57_view</b>. Bu sayfa preview/dry-run ekranıdır; BizimHesap’a kayıt göndermez.</div>
+</div>
+<script>
+const SU='https://iilfwosoroflzubkaryj.supabase.co', SK='sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
+const db=supabase.createClient(SU,SK);
+const PERIODS=[{k:'today',l:'Bugün'},{k:'tomorrow',l:'Yarın'},{k:'this_week',l:'Bu Hafta'},{k:'this_month',l:'Bu Ay'},{k:'month_end',l:'Ay Sonuna Kadar'}];
+let period='today';
+const esc=s=>String(s??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
+const num=v=>Number.isFinite(+v)?+v:0;
+const money=v=>Number.isFinite(+v)?('TL '+Math.round(+v).toLocaleString('tr-TR')):'eksik veri';
+function stat(t,c='wait'){return `<span class="status ${c}">${esc(t||'-')}</span>`}
+function card(k,v,n,c='blue'){return `<div class="card"><div class="k">${esc(k)}</div><div class="v ${c}">${esc(v)}</div><div class="n">${esc(n||'')}</div></div>`}
+function tabs(){document.getElementById('tabs').innerHTML=PERIODS.map(p=>`<button class="tab ${p.k===period?'on':''}" onclick="period='${p.k}';loadCash()">${p.l}</button>`).join('')}
+async function fetchRows(table,fn){try{const q=fn?fn(db.from(table)):db.from(table).select('*');const {data,error}=await q;if(error)return {rows:[],error:error.message};return {rows:data||[],error:null}}catch(e){return {rows:[],error:e.message||'eksik veri'}}}
+async function loadCash(){tabs();const kpis=document.getElementById('kpis'),forecast=document.getElementById('forecast'),side=document.getElementById('side'),dataStatus=document.getElementById('dataStatus');kpis.innerHTML='<div class="empty">Nakit verisi okunuyor...</div>';forecast.innerHTML='<div class="empty">Dönemsel plan okunuyor...</div>';side.innerHTML='<div class="empty">Onay ve Moka/POS kontrolleri okunuyor...</div>';
+ const cash=await fetchRows('finance_cash_position_v57_view',q=>q.select('*').eq('company','alayli').limit(1));
+ const fc=await fetchRows('cash_forecast_v57_view',q=>q.select('*').eq('company','alayli'));
+ const ap=await fetchRows('cash_approval_waiting_v57_view',q=>q.select('*').eq('company','alayli').limit(8));
+ const moka=await fetchRows('moka_pos_expected_v57_view',q=>q.select('*').eq('company','alayli').order('due_date',{ascending:true}).limit(8));
+ const issues=[cash.error,fc.error,ap.error,moka.error].filter(Boolean);const cr=cash.rows[0]||{}, sr=(fc.rows||[]).find(r=>r.period_key===period)||{};
+ const available=num(cr.available_cash), pending=num(cr.moka_pos_pending_balance), incoming=num(sr.incoming_amount), outgoing=num(sr.outgoing_amount), net=num(sr.net_cash_amount), after=num(sr.forecast_cash_after_period);
+ kpis.innerHTML=[card('Eldeki Nakit',cash.rows.length?money(available):'eksik veri','Banka + kasa; Moka/POS dahil değil','green'),card('Moka/POS Bekleyen',cash.rows.length?money(pending):'eksik veri','Bankaya geçmemiş gelecek para','blue'),card((sr.period_label||'Seçili Dönem')+' Gelecek',fc.rows.length?money(incoming):'eksik veri','Tahsilat + Moka/POS beklenen','green'),card((sr.period_label||'Seçili Dönem')+' Ödenecek',fc.rows.length?money(outgoing):'eksik veri','Planlı çıkışlar ve ödemeler','red'),card('Net Nakit',fc.rows.length?money(net):'eksik veri','Gelecek - ödenecek',net>=0?'green':'red'),card('Dönem Sonu Tahmini',fc.rows.length?money(after):'eksik veri','Eldeki nakit + dönem neti',after>=0?'green':'red'),card('Onay Bekleyen',ap.error?'eksik veri':String(ap.rows.length),'Ham veri / öneri / kontrol kuyruğu','warn'),card('Veri Durumu',issues.length?'eksik veri':'ok',issues.length?issues.slice(0,2).join(' · '):'v57 view kaynakları okunuyor',issues.length?'warn':'green')].join('');
+ dataStatus.textContent=issues.length?'eksik veri':'ok';dataStatus.className='status '+(issues.length?'wait':'ok');
+ forecast.innerHTML=fc.rows.length?`<div class="table-wrap"><table class="tbl"><thead><tr><th>Dönem</th><th>Gelecek</th><th>Ödenecek</th><th>Net</th><th>Eldeki</th><th>Dönem Sonu</th></tr></thead><tbody>${fc.rows.map(r=>`<tr><td><b>${esc(r.period_label||r.period_key||'-')}</b></td><td>${money(r.incoming_amount)}</td><td>${money(r.outgoing_amount)}</td><td>${money(r.net_cash_amount)}</td><td>${money(r.available_cash)}</td><td>${money(r.forecast_cash_after_period)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">eksik veri: cash_forecast_v57_view kurulmamış veya kayıt yok.</div>';
+ const apHtml=ap.rows.length?`<div class="table-wrap"><table class="tbl" style="min-width:520px"><thead><tr><th>Başlık</th><th>Tutar</th><th>Durum</th></tr></thead><tbody>${ap.rows.map(r=>`<tr><td>${esc(r.approval_title||r.source_type||'-')}</td><td>${money(r.suggested_amount)}</td><td>${stat(r.status||'bekliyor','wait')}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Onay bekleyen kayıt yok veya approval view kurulmadı.</div>';
+ const mokaHtml=moka.rows.length?`<div style="margin-top:10px" class="table-wrap"><table class="tbl" style="min-width:420px"><thead><tr><th>Moka/POS Vade</th><th>Beklenen</th><th>Taksit</th></tr></thead><tbody>${moka.rows.map(r=>`<tr><td>${esc((r.due_date||'-').toString().substring(0,10))}</td><td>${money(r.expected_remaining_amount)}</td><td>${esc(r.installment_count||0)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty" style="margin-top:10px">Moka/POS beklenen taksit yok veya view kurulmadı.</div>';
+ side.innerHTML=apHtml+mokaHtml+(issues.length?`<div class="empty" style="margin-top:10px">Eksik kurulum: ${esc([...new Set(issues)].join(', '))}</div>`:'');}
+loadCash();
+</script>
+</body>
+</html>
