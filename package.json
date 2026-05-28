@@ -62,7 +62,9 @@
     "sync:bizimhesap": "node aperion_veri_senkron.js --firma alayli",
     "sync:bizimhesap:plan": "node aperion_veri_senkron.js --firma alayli --plan",
     "sync:bizimhesap:dry": "node aperion_veri_senkron.js --firma alayli --dry-run",
-    "test": "node finance_smoke_test.cjs && node scripts/verify_finance_manifest.cjs && npm run telegram:finance-v48:test && npm run telegram:risk-v49:test && npm run telegram:morning-digest-v50:test && npm run telegram:critical-risk-v51:test"
+    "test": "node finance_smoke_test.cjs && node scripts/verify_finance_manifest.cjs && npm run telegram:finance-v48:test && npm run telegram:risk-v49:test && npm run telegram:morning-digest-v50:test && npm run telegram:critical-risk-v51:test",
+    "verify:cash-command-center-v57": "node tools/verify_cash_command_center_v57.cjs",
+    "apply:cash-command-center-v57": "npm run verify:cash-command-center-v57"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
