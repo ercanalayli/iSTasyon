@@ -1,0 +1,52 @@
+name: Apply Cash Command UI v57
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply_ui:
+        description: "Apply Nakit Komuta Merkezi UI patch to index.html"
+        required: true
+        default: "yes"
+        type: choice
+        options:
+          - "yes"
+          - "no"
+
+permissions:
+  contents: write
+
+jobs:
+  apply-cash-command-ui-v57:
+    if: ${{ github.event.inputs.apply_ui == 'yes' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/v57-cash-command-center
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Apply Nakit Komuta UI patch
+        run: npm run apply:cash-command-ui-v57
+
+      - name: Show git diff summary
+        run: |
+          git status --short
+          git diff --stat
+
+      - name: Commit index.html patch if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add index.html
+            git commit -m "feat: wire cash command center UI v57"
+            git push origin feature/v57-cash-command-center
+          else
+            echo "No changes to commit."
+          fi
