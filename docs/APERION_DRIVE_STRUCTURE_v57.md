@@ -2,13 +2,19 @@
 
 Bu standart, ek otomasyon aboneliği kullanmadan ilerlemek için hazırlanmıştır.
 
-## Kullanılacak Google hesabı
+## Kullanılacak Gmail hesabı
+
+Banka ekstreleri ve hesap hareketi mailleri şu hesaba gelecektir:
 
 ```text
-ercanalayli@gmail.com
+alaylimedikal@gmail.com
 ```
 
-Bu hesapta 2 TB Google Drive alanı bulunduğu için AperiON’un ilk dosya giriş ve arşiv katmanı bu Drive üzerinde kurulacaktır.
+Google Apps Script ilk aşamada bu Gmail hesabında kurulacaktır.
+
+## Drive alanı notu
+
+AperiON dosya arşivi için mevcut Google Drive altyapısı kullanılacaktır. Ek n8n / Make aboneliği alınmayacaktır.
 
 ## Ana klasör
 
