@@ -74,7 +74,9 @@
     "verify:cash-command-ui-v57": "node tools/verify_cash_command_ui_v57.cjs",
     "apply:cash-command-ui-v57": "npm run patch:cash-command-ui-v57 && npm run verify:cash-command-ui-v57",
     "verify:free-gmail-drive-intake-v57": "node tools/verify_free_gmail_drive_intake_v57.cjs",
-    "apply:free-gmail-drive-intake-v57": "npm run verify:free-gmail-drive-intake-v57"
+    "apply:free-gmail-drive-intake-v57": "npm run verify:free-gmail-drive-intake-v57",
+    "verify:incoming-bank-statements-ui-v57": "node tools/verify_incoming_bank_statements_ui_v57.cjs",
+    "apply:incoming-bank-statements-ui-v57": "npm run verify:incoming-bank-statements-ui-v57"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
