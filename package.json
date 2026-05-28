@@ -69,7 +69,10 @@
     "bank-statement:parse-v57": "node services/bank_statement_parser_v57.cjs",
     "bank-transaction:match-v57": "node services/bank_transaction_matcher_v57.cjs",
     "verify:cash-command-services-v57": "node tools/verify_cash_command_services_v57.cjs",
-    "bot:remote-command-v57": "node local_bot/aperion_remote_command_bot_v57.cjs"
+    "bot:remote-command-v57": "node local_bot/aperion_remote_command_bot_v57.cjs",
+    "patch:cash-command-ui-v57": "node tools/apply_cash_command_ui_v57_patch.cjs",
+    "verify:cash-command-ui-v57": "node tools/verify_cash_command_ui_v57.cjs",
+    "apply:cash-command-ui-v57": "npm run patch:cash-command-ui-v57 && npm run verify:cash-command-ui-v57"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
