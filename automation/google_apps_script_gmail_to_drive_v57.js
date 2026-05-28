@@ -1,8 +1,8 @@
 /**
  * AperiON v57 — Ücretsiz Gmail → Drive Banka Ekstre Aktarım Scripti
  *
- * Kullanılacak Google hesabı:
- * - ercanalayli@gmail.com
+ * Banka ekstrelerinin geleceği Google hesabı:
+ * - alaylimedikal@gmail.com
  *
  * Amaç:
  * - Gmail'de banka ekstresi / hesap hareketi maillerini bulur.
@@ -13,7 +13,7 @@
  *
  * Ücret:
  * - n8n / Make yok.
- * - Google Apps Script + Gmail + mevcut 2 TB Drive kullanılır.
+ * - Google Apps Script + Gmail + mevcut Drive kullanılır.
  * - GPT dışında ek otomasyon aboneliği gerektirmez.
  *
  * Güvenlik:
@@ -23,7 +23,7 @@
  */
 
 const APERION_CONFIG = {
-  ownerEmail: 'ercanalayli@gmail.com',
+  ownerEmail: 'alaylimedikal@gmail.com',
   rootFolderName: 'AperiON',
   bankFolderName: '01 Banka Ekstreleri',
   processedLabelName: 'APERION-ISLENDI',
