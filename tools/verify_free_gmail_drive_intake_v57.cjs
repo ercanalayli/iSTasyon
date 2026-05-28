@@ -49,7 +49,7 @@ for (const token of sqlTokens) {
 }
 
 const scriptTokens = [
-  'ercanalayli@gmail.com',
+  'alaylimedikal@gmail.com',
   'AperiON',
   '01 Banka Ekstreleri',
   '02 Moka POS',
@@ -74,7 +74,7 @@ for (const token of scriptTokens) {
 const docTokens = [
   'Tamamen Ücretsiz Otomasyon Kurulumu',
   'Google Drive Klasör Standardı',
-  'ercanalayli@gmail.com',
+  'alaylimedikal@gmail.com',
   'AperiON/01 Banka Ekstreleri/{YIL}/{AY}',
   'BizimHesap’a kayıt göndermez',
   'Onay Merkezi'
