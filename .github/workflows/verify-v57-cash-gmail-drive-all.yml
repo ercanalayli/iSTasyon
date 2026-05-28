@@ -1,0 +1,53 @@
+name: Verify v57 Cash Gmail Drive All
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'finance/AperiON_Cash_Command_Center_SQL_v57.sql'
+      - 'finance/AperiON_Free_Gmail_Drive_Intake_SQL_v57.sql'
+      - 'automation/google_apps_script_gmail_to_drive_v57.js'
+      - 'gelen-ekstreler-v57.html'
+      - 'nakit-komuta-v57.html'
+      - 'tools/verify_cash_command_center_v57.cjs'
+      - 'tools/verify_cash_command_services_v57.cjs'
+      - 'tools/verify_free_gmail_drive_intake_v57.cjs'
+      - 'tools/verify_incoming_bank_statements_ui_v57.cjs'
+      - 'tools/verify_preview_links_v57.cjs'
+      - 'tools/apply_preview_links_v57_patch.cjs'
+      - 'docs/APERION_FREE_AUTOMATION_SETUP_v57.md'
+      - 'docs/APERION_DRIVE_STRUCTURE_v57.md'
+      - 'docs/APERION_V57_SUPABASE_SQL_KURULUM_SIRASI.md'
+      - 'package.json'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-v57-cash-gmail-drive-all:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify cash command center SQL
+        run: npm run verify:cash-command-center-v57
+
+      - name: Verify cash command services
+        run: npm run verify:cash-command-services-v57
+
+      - name: Verify free Gmail Drive intake
+        run: npm run verify:free-gmail-drive-intake-v57
+
+      - name: Verify incoming bank statements UI
+        run: npm run verify:incoming-bank-statements-ui-v57
+
+      - name: Verify preview links patch
+        run: npm run verify:preview-links-v57
