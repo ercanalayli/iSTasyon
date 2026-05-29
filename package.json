@@ -79,7 +79,9 @@
     "apply:incoming-bank-statements-ui-v57": "npm run verify:incoming-bank-statements-ui-v57",
     "patch:preview-links-v57": "node tools/apply_preview_links_v57_patch.cjs",
     "verify:preview-links-v57": "node tools/verify_preview_links_v57.cjs",
-    "apply:preview-links-v57": "npm run patch:preview-links-v57 && npm run verify:preview-links-v57"
+    "apply:preview-links-v57": "npm run patch:preview-links-v57 && npm run verify:preview-links-v57",
+    "verify:category-margin-v57": "node tools/verify_category_margin_v57.cjs",
+    "apply:category-margin-v57": "npm run verify:category-margin-v57"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
