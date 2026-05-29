@@ -13,13 +13,43 @@ Bu iki hesap birbirine karıştırılmayacak.
 
 ---
 
+## Kategori kaynağı için kritik kural
+
+Kategoriler asla asistan tarafından tahmin edilmeyecek ve elle uydurulmayacak.
+
+Kategori listesi yalnızca AperiON ürün/kategori ana kaynağından alınacak:
+
+```text
+Ürün kartları
+Kategori ana listesi
+BizimHesap/Stok export dosyaları
+Kullanıcının onayladığı güncel kategori tablosu
+```
+
+Sistemde mevcut olmayan kategori isimleri kullanılmayacak.
+
+Yanlış örnek:
+
+```text
+Asistanın kafadan kategori listesi çıkarması
+```
+
+Doğru yöntem:
+
+```text
+Önce gerçek kategori listesi çıkarılır
+Sonra kullanıcıdan bu gerçek kategorilere ortalama kâr marjı istenir
+```
+
+---
+
 ## 1. Ortalama kâr marjına göre tahmini kârlılık
 
 Bu yöntem, ürün bazında gerçek alış maliyeti eksik olduğunda veya hızlı yönetici ekranı gerektiğinde kullanılacaktır.
 
 ### Mantık
 
-Satış tutarı üzerinden kategori, marka veya firma bazında tanımlanmış ortalama kâr marjı uygulanır.
+Satış tutarı üzerinden gerçek kategori listesinde tanımlı kategori, marka veya firma bazında onaylanmış ortalama kâr marjı uygulanır.
 
 Örnek:
 
@@ -115,6 +145,28 @@ Veri güven seviyesi
 
 ---
 
+## Ortalama marj isteme sırası
+
+Kullanıcıdan kâr marjı istenirken asla varsayımsal kategori listesi sunulmayacak.
+
+Doğru sıra:
+
+1. AperiON’dan güncel kategori listesi alınır.
+2. Her gerçek kategori için ortalama kâr marjı boş bırakılır.
+3. Kullanıcı bu listeye yüzde girer.
+4. Girilmeyen kategoriler için sistem kesin/tahmini kâr uydurmaz.
+5. Gerekirse genel firma marjı ayrıca sorulur.
+
+Örnek istenecek format:
+
+```text
+Kategori adı | Ortalama kâr marjı | Not
+AperiON gerçek kategori 1 | %... | ...
+AperiON gerçek kategori 2 | %... | ...
+```
+
+---
+
 ## Veri güven seviyesi
 
 Kârlılık hesaplarında mutlaka veri güveni gösterilecek.
@@ -123,9 +175,9 @@ Kârlılık hesaplarında mutlaka veri güveni gösterilecek.
 
 ```text
 Yüksek: Ürün gerçek maliyeti var
-Orta: Kategori/marka ortalama marjı var
-Düşük: Varsayılan genel marj kullanıldı
-Eksik: Satış veya maliyet verisi yetersiz
+Orta: Gerçek kategori/marka ortalama marjı var
+Düşük: Kullanıcının onayladığı genel firma marjı kullanıldı
+Eksik: Satış, kategori veya maliyet verisi yetersiz
 ```
 
 ---
@@ -141,6 +193,7 @@ Kârlılık ekranlarında şu ayrım net olacak:
 | Kâr Farkı | Tahmini ve gerçek kâr arasındaki fark |
 | Veri Güveni | Yüksek / Orta / Düşük / Eksik |
 | Eksik Maliyetli Ürünler | Gerçek kâr hesaplanamayan ürünler |
+| Marjı Eksik Kategoriler | Tahmini kâr hesaplanamayan gerçek kategoriler |
 
 ---
 
@@ -148,11 +201,13 @@ Kârlılık ekranlarında şu ayrım net olacak:
 
 Ürün alış fiyatı veya maliyet kaydı yoksa sistem kesin kâr yazmayacak.
 
+Kategori marjı da yoksa sistem tahmini kâr da yazmayacak.
+
 Bunun yerine:
 
 ```text
 Gerçek kâr hesaplanamadı
-Tahmini kâr ortalama marja göre hesaplandı
+Kategori ortalama marjı eksik olduğu için tahmini kâr hesaplanamadı
 ```
 
 şeklinde gösterecek.
@@ -178,10 +233,14 @@ Bu kural şu modüllere uygulanacak:
 - Kârlılık iki yöntem olarak sabitlendi.
 - Tahmini ve gerçek kâr ayrımı netleştirildi.
 - Veri güven seviyesi zorunlu hale getirildi.
+- Kategori isimlerinin asla tahmin edilmeyeceği eklendi.
 
 ## Kalanlar
 
+- Gerçek kategori listesi AperiON ürün/stok ana kaynağından çıkarılacak.
+- Kullanıcıdan gerçek kategori listesine göre ortalama marjlar alınacak.
 - SQL/view tarafında tahmini ve gerçek kârlılık alanları ayrılacak.
 - UI tarafında iki kârlılık ayrı kartlarda gösterilecek.
 - Ürün maliyeti eksik olanlar ayrı kontrol listesine düşecek.
+- Marjı eksik kategoriler ayrı kontrol listesine düşecek.
 - Telegram raporunda tahmini/gerçek ayrımı yapılacak.
