@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AperiON Kâr Merkezi v57</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#F3F6FA;--card:#fff;--line:#E4E7EC;--text:#101828;--muted:#667085;--blue:#1D4ED8;--green:#047857;--red:#B91C1C;--warn:#B45309;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;--sans:Inter,Arial,sans-serif}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}.wrap{max-width:1320px;margin:0 auto;padding:18px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.title{font-size:25px;font-weight:950;letter-spacing:-.03em}.sub{font-size:13px;color:var(--muted);font-weight:750;line-height:1.45;margin-top:5px;max-width:900px}.badge{display:inline-flex;border:1px solid #A7F3D0;background:#ECFDF5;color:#047857;border-radius:999px;padding:7px 11px;font:950 11px var(--mono)}.btn{border:1px solid #D0D5DD;background:#fff;border-radius:10px;padding:9px 12px;font-weight:900;color:#344054;cursor:pointer;text-decoration:none}.btn:hover{border-color:var(--blue);color:var(--blue)}.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:12px 0}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 28px rgba(15,23,42,.055)}.k{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:950}.v{font:950 22px var(--mono);line-height:1.05;margin-top:10px}.green{color:var(--green)}.red{color:var(--red)}.warn{color:var(--warn)}.blue{color:var(--blue)}.n{font-size:12px;color:var(--muted);font-weight:700;line-height:1.35;margin-top:8px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 28px rgba(15,23,42,.055);margin-top:12px}.panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}.panel-title{font:950 12px var(--mono);color:#344054;text-transform:uppercase;letter-spacing:.5px}.status{display:inline-flex;border-radius:999px;padding:5px 9px;font:950 10px var(--mono);border:1px solid #D0D5DD;background:#F8FAFC;color:#475467}.status.ok{background:#ECFDF5;color:#047857;border-color:#A7F3D0}.status.wait{background:#FFFBEB;color:#B45309;border-color:#FDE68A}.status.bad{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}.empty{border:1px dashed #D0D5DD;background:#F8FAFC;color:#667085;border-radius:12px;padding:13px;font-size:12px;font-weight:750;line-height:1.5}.note{background:#EFF6FF;border:1px solid #BFDBFE;color:#1E3A8A;border-radius:12px;padding:12px;font-size:12px;font-weight:800;line-height:1.45;margin-bottom:12px}.table-wrap{border:1px solid var(--line);border-radius:14px;overflow:auto;background:#fff}.tbl{width:100%;border-collapse:collapse;min-width:940px}.tbl th{background:#F8FAFC;color:#667085;font:950 10px var(--mono);text-align:left;text-transform:uppercase;letter-spacing:.4px;padding:10px;border-bottom:1px solid #EAECF0}.tbl td{padding:10px;border-bottom:1px solid #EAECF0;font-size:12px;color:#344054;font-weight:750;vertical-align:top}.tbl tr:last-child td{border-bottom:0}.strong{font-weight:950;color:#101828}.hint{font-size:11px;color:#667085;font-weight:700;margin-top:4px}.foot{margin-top:12px;font-size:12px;color:#667085;font-weight:750;line-height:1.45}@media(max-width:1100px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.wrap{padding:12px}.grid{grid-template-columns:1fr}.title{font-size:21px}.tbl{min-width:760px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">Kâr Merkezi</div>
+      <div class="sub">AperiON’da kârlılığı iki ayrı yöntemle izler: ortalama marja göre tahmini kâr ve ürün gerçek maliyetine göre gerçek kâr. Bu iki rakam birbirine karıştırılmaz.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="badge">v57 · çift kârlılık</span><button class="btn" onclick="loadProfit()">↻ Yenile</button><a class="btn" href="kategori-marj-v57.html">Kategori Marj</a><a class="btn" href="nakit-komuta-v57.html">Nakit Komuta</a><a class="btn" href="index.html">Ana Sayfa</a></div>
+  </div>
+  <div class="note">Bu ekran güvenli preview’dur. Gerçek kâr için ürün maliyeti gerekir. Maliyet yoksa ve kategori marjı onaylı değilse sistem kâr uydurmaz, “eksik veri” gösterir.</div>
+  <div class="grid" id="kpis"><div class="empty">Yükleniyor...</div></div>
+  <div class="panel">
+    <div class="panel-h"><div class="panel-title">Kârlılık Veri Sağlığı</div><span class="status wait" id="dataStatus">kontrol</span></div>
+    <div id="health"><div class="empty">Veri bekleniyor...</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><div class="panel-title">Kâr Hesap Mantığı</div><span class="status ok">kural sabit</span></div>
+    <div class="table-wrap"><table class="tbl"><thead><tr><th>Durum</th><th>Kullanılacak Hesap</th><th>Ekran Etiketi</th><th>Güven</th></tr></thead><tbody><tr><td class="strong">Ürün gerçek maliyeti var</td><td>Net satış - gerçek ürün maliyeti</td><td>Gerçek Kârlılık</td><td>${'Yüksek'}</td></tr><tr><td class="strong">Maliyet yok, kategori marjı onaylı</td><td>Net satış × kategori ortalama marjı</td><td>Tahmini Kârlılık</td><td>Orta</td></tr><tr><td class="strong">Maliyet yok, kategori marjı da yok</td><td>Kâr hesaplanmaz</td><td>Eksik Veri</td><td>Eksik</td></tr></tbody></table></div>
+  </div>
+  <div class="foot">Beklenen gelecek view’lar: <b>aperion_profit_center_v57_view</b>, <b>aperion_missing_cost_products_v57_view</b>, <b>aperion_missing_category_margins_v57_view</b>. Şu an kategori marj sağlığı <b>aperion_category_margin_status_v57_view</b> üzerinden okunur.</div>
+</div>
+<script>
+const SU='https://iilfwosoroflzubkaryj.supabase.co', SK='sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
+const db=supabase.createClient(SU,SK);
+const esc=s=>String(s??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
+const tl=v=>Number.isFinite(+v)?new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(+v):'eksik veri';
+function card(k,v,n,c='blue'){return `<div class="card"><div class="k">${esc(k)}</div><div class="v ${c}">${esc(v)}</div><div class="n">${esc(n||'')}</div></div>`}
+async function fetchRows(table,fn){try{const q=fn?fn(db.from(table)):db.from(table).select('*');const {data,error}=await q;if(error)return {rows:[],error:error.message};return {rows:data||[],error:null}}catch(e){return {rows:[],error:e.message||'eksik veri'}}}
+async function loadProfit(){const kpis=document.getElementById('kpis'), health=document.getElementById('health'), ds=document.getElementById('dataStatus');kpis.innerHTML='<div class="empty">Kâr sağlığı okunuyor...</div>';health.innerHTML='<div class="empty">Kârlılık kaynakları kontrol ediliyor...</div>';
+ const margins=await fetchRows('aperion_category_margin_status_v57_view',q=>q.select('*').eq('company','alayli').limit(500));
+ const profit=await fetchRows('aperion_profit_center_v57_view',q=>q.select('*').eq('company','alayli').limit(1));
+ const rows=margins.rows||[];const total=rows.length;const ready=rows.filter(r=>r.margin_status==='ready').length;const missing=rows.filter(r=>['margin_missing','approval_needed'].includes(r.margin_status)).length;
+ const p=profit.rows[0]||{};const hasProfit=!profit.error&&profit.rows.length>0;
+ kpis.innerHTML=[card('Tahmini Kâr',hasProfit?tl(p.estimated_profit):'bekliyor','Ortalama marjla hesaplanır','warn'),card('Gerçek Kâr',hasProfit?tl(p.real_profit):'bekliyor','Ürün maliyetine göre hesaplanır','green'),card('Kâr Farkı',hasProfit?tl(p.profit_gap):'bekliyor','Tahmini - gerçek farkı','blue'),card('Hazır Marj',margins.error?'eksik veri':String(ready),'Onaylı kategori marjı','green'),card('Eksik Marj',margins.error?'eksik veri':String(missing),'Tahmini kârı engeller',missing>0?'red':'green')].join('');
+ const errors=[margins.error,profit.error].filter(Boolean);ds.textContent=errors.length?'eksik veri':'ok';ds.className='status '+(errors.length?'wait':'ok');
+ health.innerHTML=`<div class="table-wrap"><table class="tbl"><thead><tr><th>Kontrol</th><th>Durum</th><th>Açıklama</th></tr></thead><tbody><tr><td class="strong">Kategori Marj View</td><td>${margins.error?'<span class="status bad">eksik</span>':'<span class="status ok">ok</span>'}</td><td>${esc(margins.error||total+' gerçek kategori okundu')}</td></tr><tr><td class="strong">Kâr Merkezi View</td><td>${profit.error?'<span class="status wait">bekliyor</span>':'<span class="status ok">ok</span>'}</td><td>${esc(profit.error||'aperion_profit_center_v57_view hazır')}</td></tr><tr><td class="strong">Eksik Marj</td><td>${missing>0?'<span class="status bad">kontrol</span>':'<span class="status ok">ok</span>'}</td><td>${esc(missing+' kategori marj bekliyor')}</td></tr></tbody></table></div>`;
+}
+loadProfit();
+</script>
+</body>
+</html>
