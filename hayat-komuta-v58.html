@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AperiON Hayat Komuta Merkezi v58</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#F3F6FA;--card:#fff;--line:#E4E7EC;--text:#101828;--muted:#667085;--blue:#1D4ED8;--green:#047857;--red:#B91C1C;--warn:#B45309;--purple:#6D28D9;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;--sans:Inter,Arial,sans-serif}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}.wrap{max-width:1400px;margin:0 auto;padding:18px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.title{font-size:26px;font-weight:950;letter-spacing:-.03em}.sub{font-size:13px;color:var(--muted);font-weight:750;line-height:1.45;margin-top:5px;max-width:920px}.badge{display:inline-flex;border:1px solid #DDD6FE;background:#F5F3FF;color:#6D28D9;border-radius:999px;padding:7px 11px;font:950 11px var(--mono)}.btn{border:1px solid #D0D5DD;background:#fff;border-radius:10px;padding:9px 12px;font-weight:900;color:#344054;cursor:pointer;text-decoration:none}.btn:hover{border-color:var(--blue);color:var(--blue)}.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:12px 0}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 28px rgba(15,23,42,.055)}.k{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:950}.v{font:950 22px var(--mono);line-height:1.05;margin-top:10px}.green{color:var(--green)}.red{color:var(--red)}.warn{color:var(--warn)}.blue{color:var(--blue)}.purple{color:var(--purple)}.n{font-size:12px;color:var(--muted);font-weight:700;line-height:1.35;margin-top:8px}.layout{display:grid;grid-template-columns:1.15fr .85fr;gap:12px;margin-top:12px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 28px rgba(15,23,42,.055)}.panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}.panel-title{font:950 12px var(--mono);color:#344054;text-transform:uppercase;letter-spacing:.5px}.status{display:inline-flex;border-radius:999px;padding:5px 9px;font:950 10px var(--mono);border:1px solid #D0D5DD;background:#F8FAFC;color:#475467}.status.ok{background:#ECFDF5;color:#047857;border-color:#A7F3D0}.status.wait{background:#FFFBEB;color:#B45309;border-color:#FDE68A}.status.bad{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}.empty{border:1px dashed #D0D5DD;background:#F8FAFC;color:#667085;border-radius:12px;padding:13px;font-size:12px;font-weight:750;line-height:1.5}.note{background:#F5F3FF;border:1px solid #DDD6FE;color:#4C1D95;border-radius:12px;padding:12px;font-size:12px;font-weight:800;line-height:1.45;margin-bottom:12px}.table-wrap{border:1px solid var(--line);border-radius:14px;overflow:auto;background:#fff}.tbl{width:100%;border-collapse:collapse;min-width:760px}.tbl th{background:#F8FAFC;color:#667085;font:950 10px var(--mono);text-align:left;text-transform:uppercase;letter-spacing:.4px;padding:10px;border-bottom:1px solid #EAECF0}.tbl td{padding:10px;border-bottom:1px solid #EAECF0;font-size:12px;color:#344054;font-weight:750;vertical-align:top}.tbl tr:last-child td{border-bottom:0}.strong{font-weight:950;color:#101828}.hint{font-size:11px;color:#667085;font-weight:700;margin-top:4px}.quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.quick .btn{text-align:left}.foot{margin-top:12px;font-size:12px;color:#667085;font-weight:750;line-height:1.45}@media(max-width:1100px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}}@media(max-width:700px){.wrap{padding:12px}.grid{grid-template-columns:1fr}.quick{grid-template-columns:1fr}.title{font-size:21px}.tbl{min-width:700px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">Hayat Komuta Merkezi</div>
+      <div class="sub">Ödeme, görev, yenileme, belge, sağlık, aile, resmi iş, proje, karar, fikir ve rutinleri tek komuta ekranında toplar. Telegram ana kumanda; bu ekran operasyon görünümüdür.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="badge">v58 · ikinci beyin</span><button class="btn" onclick="loadLife()">↻ Yenile</button><a class="btn" href="kar-merkezi-v57.html">Kâr Merkezi</a><a class="btn" href="index.html">Ana Sayfa</a></div>
+  </div>
+  <div class="note">Bu ekran güvenli preview’dur. Kayıt ekleme/ödendi işaretleme şimdilik pasif tutuldu. Önce v58 SQL Supabase’de çalıştırılacak, sonra Telegram komutları bağlanacak.</div>
+  <div class="grid" id="kpis"><div class="empty">Yükleniyor...</div></div>
+  <div class="layout">
+    <div class="panel">
+      <div class="panel-h"><div class="panel-title">Bugün ve Bu Hafta</div><span class="status wait" id="dataStatus">kontrol</span></div>
+      <div id="todayWeek"><div class="empty">Veri bekleniyor...</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><div class="panel-title">Telegram Hızlı Komutlar</div><span class="status ok">taslak</span></div>
+      <div class="quick">
+        <button class="btn" disabled>/bugun</button>
+        <button class="btn" disabled>/hafta</button>
+        <button class="btn" disabled>/gecikenler</button>
+        <button class="btn" disabled>/odemeler</button>
+        <button class="btn" disabled>/arac</button>
+        <button class="btn" disabled>/ev</button>
+        <button class="btn" disabled>/belgeler</button>
+        <button class="btn" disabled>/ekle</button>
+      </div>
+      <div class="foot">Doğal dil hedefi: “Peugeot sigortası 15 Haziran”, “Su faturası ödendi”, “Bu hafta ne var?”</div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><div class="panel-title">Gecikenler / Kritikler</div><span class="status wait" id="lateStatus">kontrol</span></div>
+    <div id="lateList"><div class="empty">Geciken kayıt bekleniyor...</div></div>
+  </div>
+  <div class="foot">Kaynak view’lar: aperion_life_today_v58_view, aperion_life_week_v58_view, aperion_life_late_v58_view, aperion_life_month_summary_v58_view.</div>
+</div>
+<script>
+const SU='https://iilfwosoroflzubkaryj.supabase.co', SK='sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
+const db=supabase.createClient(SU,SK);
+const esc=s=>String(s??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
+const tl=v=>Number.isFinite(+v)?new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(+v):'0 TL';
+function card(k,v,n,c='blue'){return `<div class="card"><div class="k">${esc(k)}</div><div class="v ${c}">${esc(v)}</div><div class="n">${esc(n||'')}</div></div>`}
+async function fetchRows(table,fn){try{const q=fn?fn(db.from(table)):db.from(table).select('*');const {data,error}=await q;if(error)return {rows:[],error:error.message};return {rows:data||[],error:null}}catch(e){return {rows:[],error:e.message||'eksik veri'}}}
+function row(r){return `<tr><td><div class="strong">${esc(r.title)}</div><div class="hint">${esc(r.record_type)} · ${esc(r.category)}</div></td><td>${esc(r.asset_name||'-')}</td><td>${esc(r.due_date||'-')}</td><td>${esc(r.priority||'normal')}</td><td>${tl(r.amount)}</td><td><span class="status ${r.status==='late'?'bad':'wait'}">${esc(r.status)}</span></td></tr>`}
+function table(rows,empty){if(!rows.length)return `<div class="empty">${esc(empty)}</div>`;return `<div class="table-wrap"><table class="tbl"><thead><tr><th>Kayıt</th><th>Bağlı Varlık</th><th>Tarih</th><th>Öncelik</th><th>Tutar</th><th>Durum</th></tr></thead><tbody>${rows.map(row).join('')}</tbody></table></div>`}
+async function loadLife(){const kpis=document.getElementById('kpis'), tw=document.getElementById('todayWeek'), late=document.getElementById('lateList'), ds=document.getElementById('dataStatus'), ls=document.getElementById('lateStatus');kpis.innerHTML='<div class="empty">İkinci beyin verileri okunuyor...</div>';
+ const summary=await fetchRows('aperion_life_month_summary_v58_view',q=>q.select('*').eq('owner','ercan').limit(1));
+ const today=await fetchRows('aperion_life_today_v58_view',q=>q.select('*').eq('owner','ercan').limit(50));
+ const week=await fetchRows('aperion_life_week_v58_view',q=>q.select('*').eq('owner','ercan').limit(80));
+ const lateRes=await fetchRows('aperion_life_late_v58_view',q=>q.select('*').eq('owner','ercan').limit(80));
+ const s=summary.rows[0]||{};const err=[summary.error,today.error,week.error,lateRes.error].filter(Boolean);
+ kpis.innerHTML=[card('Bugün',summary.error?'bekliyor':String(s.today_count||0),'Bugünkü açık kayıt','purple'),card('7 Gün',week.error?'bekliyor':String(week.rows.length),'Yaklaşan işler','blue'),card('Geciken',lateRes.error?'bekliyor':String(lateRes.rows.length),'Öncelikli kontrol','red'),card('30 Gün Tutar',summary.error?'bekliyor':tl(s.next_30_days_payment_total),'Ödeme türündeki açık kayıtlar','warn'),card('Kritik',summary.error?'bekliyor':String(s.critical_open_count||0),'Kritik açık kayıt','red')].join('');
+ ds.textContent=err.length?'eksik veri':'ok';ds.className='status '+(err.length?'wait':'ok');ls.textContent=lateRes.error?'eksik veri':'ok';ls.className='status '+(lateRes.error?'wait':'ok');
+ if(err.length){tw.innerHTML=`<div class="empty">SQL/view henüz kurulmamış olabilir: ${esc(err[0])}<br>Önce finance/AperiON_Life_Command_Center_SQL_v58.sql Supabase üzerinde çalıştırılmalı.</div>`;late.innerHTML='<div class="empty">Veri bekleniyor.</div>';return;}
+ tw.innerHTML='<div class="panel-title" style="margin-bottom:8px">Bugün</div>'+table(today.rows,'Bugün açık kayıt yok.')+'<div class="panel-title" style="margin:14px 0 8px">Bu Hafta</div>'+table(week.rows,'Bu hafta açık kayıt yok.');
+ late.innerHTML=table(lateRes.rows,'Geciken açık kayıt yok.');
+}
+loadLife();
+</script>
+</body>
+</html>
