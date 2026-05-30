@@ -81,7 +81,9 @@
     "verify:preview-links-v57": "node tools/verify_preview_links_v57.cjs",
     "apply:preview-links-v57": "npm run patch:preview-links-v57 && npm run verify:preview-links-v57",
     "verify:category-margin-v57": "node tools/verify_category_margin_v57.cjs",
-    "apply:category-margin-v57": "npm run verify:category-margin-v57"
+    "apply:category-margin-v57": "npm run verify:category-margin-v57",
+    "telegram:command-v58": "node telegram/aperion_telegram_command_bot_v58.cjs",
+    "telegram:command-v58:once": "node telegram/aperion_telegram_command_bot_v58.cjs --once"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
