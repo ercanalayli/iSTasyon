@@ -37,6 +37,19 @@ function getMessageText(message) {
   return '[unknown]';
 }
 
+function normalizeText(text) {
+  return String(text || '').toLocaleLowerCase('tr-TR').trim();
+}
+
+function detectOverrideIntent(text) {
+  const t = normalizeText(text);
+  if (t === '/onaylar' || t.includes('onaylar') || t.includes('bekleyen onay')) return 'finance_approvals';
+  if (t === '/ekstreler' || t.includes('ekstreler') || t.includes('banka ekstresi')) return 'finance_statements';
+  if (t === '/moka' || t.includes('moka')) return 'finance_moka';
+  if (t === '/belgeler' || t.includes('belgeler') || t.includes('belge merkezi')) return 'document_inbox';
+  return null;
+}
+
 async function saveCommand(message) {
   const text = getMessageText(message);
   const from = message.from || {};
@@ -82,6 +95,55 @@ async function answerFromLife(intent) {
   return null;
 }
 
+function financeLine(r, i) {
+  const title = r.title || r.file_name || 'Belge';
+  const type = r.queue_type || 'document';
+  const priority = r.priority || 'normal';
+  const action = r.suggested_action || 'review';
+  return `${i + 1}. ${title}\n   Tür: ${type} · Öncelik: ${priority} · Öneri: ${action}`;
+}
+
+async function answerFromFinance(intent) {
+  if (intent === 'finance_approvals') {
+    const { data, error } = await db.from('aperion_finance_approval_queue_v58_view').select('*').limit(10);
+    if (error) throw error;
+    if (!data.length) return 'Bekleyen finans onayı görünmüyor.';
+    const high = data.filter(r => ['high', 'critical'].includes(r.priority)).length;
+    return `Bekleyen finans onayları: ${data.length}\nYüksek öncelik: ${high}\n\n` + data.map(financeLine).join('\n');
+  }
+
+  if (intent === 'finance_statements') {
+    const { data, error } = await db
+      .from('aperion_finance_approval_queue_v58_view')
+      .select('*')
+      .in('queue_type', ['bank_statement', 'card_statement'])
+      .limit(10);
+    if (error) throw error;
+    if (!data.length) return 'Bekleyen banka/kart ekstresi görünmüyor.';
+    return `Bekleyen ekstreler: ${data.length}\n\n` + data.map(financeLine).join('\n');
+  }
+
+  if (intent === 'finance_moka') {
+    const { data, error } = await db
+      .from('aperion_finance_approval_queue_v58_view')
+      .select('*')
+      .eq('queue_type', 'moka')
+      .limit(10);
+    if (error) throw error;
+    if (!data.length) return 'Bekleyen Moka belgesi görünmüyor.';
+    return `Bekleyen Moka belgeleri: ${data.length}\n\n` + data.map(financeLine).join('\n');
+  }
+
+  if (intent === 'document_inbox') {
+    const { data, error } = await db.from('aperion_document_inbox_v58_view').select('*').limit(10);
+    if (error) throw error;
+    if (!data.length) return 'Belge Merkezi gelen kutusunda açık belge görünmüyor.';
+    return `Belge Merkezi gelen kutusu: ${data.length}\n\n` + data.map((r, i) => `${i + 1}. ${r.file_name}\n   Modül: ${r.module} · Durum: ${r.status}`).join('\n');
+  }
+
+  return null;
+}
+
 async function getCommand(commandId) {
   const { data, error } = await db
     .from('aperion_telegram_command_inbox_v58')
@@ -97,7 +159,9 @@ async function processMessage(message) {
   try {
     const saved = await saveCommand(message);
     const cmd = await getCommand(saved.id);
-    let reply = await answerFromLife(cmd.intent);
+    const overrideIntent = detectOverrideIntent(saved.text);
+    let reply = await answerFromFinance(overrideIntent);
+    if (!reply) reply = await answerFromLife(cmd.intent);
 
     if (!reply) {
       if (cmd.intent === 'create_record') {
@@ -105,7 +169,7 @@ async function processMessage(message) {
       } else if (cmd.intent === 'query_vehicle') {
         reply = 'Araç sorgusunu aldım. Peugeot/araç kayıt görünümü bir sonraki adımda bağlanacak.';
       } else if (cmd.intent === 'query_document') {
-        reply = 'Belge sorgusunu aldım. Belge Merkezi bağlantısı bir sonraki adımda bağlanacak.';
+        reply = await answerFromFinance('document_inbox');
       } else {
         reply = 'Mesajı Komuta Kutusu’na aldım. Henüz bu komut için otomatik cevap hazır değil.';
       }
