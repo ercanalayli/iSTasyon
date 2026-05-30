@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AperiON Belge Merkezi v58</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#F3F6FA;--card:#fff;--line:#E4E7EC;--text:#101828;--muted:#667085;--blue:#1D4ED8;--green:#047857;--red:#B91C1C;--warn:#B45309;--purple:#6D28D9;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;--sans:Inter,Arial,sans-serif}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}.wrap{max-width:1400px;margin:0 auto;padding:18px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.title{font-size:26px;font-weight:950;letter-spacing:-.03em}.sub{font-size:13px;color:var(--muted);font-weight:750;line-height:1.45;margin-top:5px;max-width:940px}.badge{display:inline-flex;border:1px solid #BFDBFE;background:#EFF6FF;color:#1D4ED8;border-radius:999px;padding:7px 11px;font:950 11px var(--mono)}.btn{border:1px solid #D0D5DD;background:#fff;border-radius:10px;padding:9px 12px;font-weight:900;color:#344054;cursor:pointer;text-decoration:none}.btn:hover{border-color:var(--blue);color:var(--blue)}.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:12px 0}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 28px rgba(15,23,42,.055)}.k{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:950}.v{font:950 22px var(--mono);line-height:1.05;margin-top:10px}.green{color:var(--green)}.red{color:var(--red)}.warn{color:var(--warn)}.blue{color:var(--blue)}.purple{color:var(--purple)}.n{font-size:12px;color:var(--muted);font-weight:700;line-height:1.35;margin-top:8px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 28px rgba(15,23,42,.055);margin-top:12px}.panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}.panel-title{font:950 12px var(--mono);color:#344054;text-transform:uppercase;letter-spacing:.5px}.status{display:inline-flex;border-radius:999px;padding:5px 9px;font:950 10px var(--mono);border:1px solid #D0D5DD;background:#F8FAFC;color:#475467}.status.ok{background:#ECFDF5;color:#047857;border-color:#A7F3D0}.status.wait{background:#FFFBEB;color:#B45309;border-color:#FDE68A}.status.bad{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}.empty{border:1px dashed #D0D5DD;background:#F8FAFC;color:#667085;border-radius:12px;padding:13px;font-size:12px;font-weight:750;line-height:1.5}.note{background:#EFF6FF;border:1px solid #BFDBFE;color:#1E3A8A;border-radius:12px;padding:12px;font-size:12px;font-weight:800;line-height:1.45;margin-bottom:12px}.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.input,.select{border:1px solid #D0D5DD;border-radius:10px;padding:9px 10px;font-weight:800;background:#fff}.input{min-width:240px;flex:1}.table-wrap{border:1px solid var(--line);border-radius:14px;overflow:auto;background:#fff}.tbl{width:100%;border-collapse:collapse;min-width:980px}.tbl th{background:#F8FAFC;color:#667085;font:950 10px var(--mono);text-align:left;text-transform:uppercase;letter-spacing:.4px;padding:10px;border-bottom:1px solid #EAECF0}.tbl td{padding:10px;border-bottom:1px solid #EAECF0;font-size:12px;color:#344054;font-weight:750;vertical-align:top}.tbl tr:last-child td{border-bottom:0}.strong{font-weight:950;color:#101828}.hint{font-size:11px;color:#667085;font-weight:700;margin-top:4px}.link{color:#1D4ED8;font-weight:950;text-decoration:none}.foot{margin-top:12px;font-size:12px;color:#667085;font-weight:750;line-height:1.45}@media(max-width:1100px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.wrap{padding:12px}.grid{grid-template-columns:1fr}.title{font-size:21px}.tbl{min-width:820px}.input{min-width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">Belge Merkezi</div>
+      <div class="sub">Gmail’den gelen ekler Drive’a kaydedilir; AperiON burada dosya bağlantısını, kaynağı, modülü, durumunu ve ilişkilendirme bilgisini takip eder.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="badge">v58 · Gmail → Drive → Metadata</span><button class="btn" onclick="loadDocs()">↻ Yenile</button><a class="btn" href="telegram-komuta-v58.html">Telegram</a><a class="btn" href="index.html">Ana Sayfa</a></div>
+  </div>
+  <div class="note">Bu ekran güvenli preview’dur. Belge geldi diye finans kaydı kesinleşmez. Önce metadata görünür, sonra ilişkilendirme ve Finans Onay Merkezi devreye girer.</div>
+  <div class="grid" id="kpis"><div class="empty">Yükleniyor...</div></div>
+  <div class="panel">
+    <div class="panel-h"><div class="panel-title">Belge Gelen Kutusu</div><span class="status wait" id="dataStatus">kontrol</span></div>
+    <div class="filters"><input class="input" id="q" placeholder="Dosya adı / not ara" oninput="renderDocs()"><select class="select" id="moduleFilter" onchange="renderDocs()"><option value="all">Tüm modüller</option><option value="finance">Finans</option><option value="life">Hayat</option><option value="company">Şirket</option><option value="decision">Karar</option><option value="general">Genel</option></select><select class="select" id="statusFilter" onchange="renderDocs()"><option value="all">Tüm durumlar</option><option value="new">Yeni</option><option value="draft">Taslak</option><option value="review">İnceleme</option><option value="linked">Bağlı</option><option value="processed">İşlendi</option><option value="error">Hata</option></select></div>
+    <div id="docTable"><div class="empty">Belge verisi bekleniyor...</div></div>
+  </div>
+  <div class="foot">Kaynak view: aperion_document_inbox_v58_view. Tüm kayıtlar: aperion_document_metadata_v58.</div>
+</div>
+<script>
+const SU='https://iilfwosoroflzubkaryj.supabase.co', SK='sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
+const db=supabase.createClient(SU,SK);
+let DOCS=[];
+const esc=s=>String(s??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
+function card(k,v,n,c='blue'){return `<div class="card"><div class="k">${esc(k)}</div><div class="v ${c}">${esc(v)}</div><div class="n">${esc(n||'')}</div></div>`}
+function badge(s){const v=String(s||'new');let c='wait';if(['linked','processed'].includes(v))c='ok';if(['error'].includes(v))c='bad';return `<span class="status ${c}">${esc(v)}</span>`}
+async function fetchRows(table,fn){try{const q=fn?fn(db.from(table)):db.from(table).select('*');const {data,error}=await q;if(error)return {rows:[],error:error.message};return {rows:data||[],error:null}}catch(e){return {rows:[],error:e.message||'eksik veri'}}}
+function row(r){const note=String(r.note||'');return `<tr><td><div class="strong">${esc(r.file_name)}</div><div class="hint">${esc(r.file_type||'-')} · ${esc(r.file_size_bytes||0)} byte</div></td><td>${esc(r.module)}</td><td>${esc(r.source)}</td><td>${badge(r.status)}</td><td>${esc(r.related_table||'-')}<div class="hint">${esc(r.record_title||r.related_record_id||'bağ yok')}</div></td><td>${esc((r.created_at||'').slice(0,19).replace('T',' '))}</td><td>${r.drive_url?`<a class="link" href="${esc(r.drive_url)}" target="_blank">Drive’da aç</a>`:'-'}</td><td>${esc(note.slice(0,160))}</td></tr>`}
+function renderDocs(){const q=document.getElementById('q').value.toLowerCase().trim();const mf=document.getElementById('moduleFilter').value;const sf=document.getElementById('statusFilter').value;let rows=DOCS.slice();if(q)rows=rows.filter(r=>String(r.file_name+' '+(r.note||'')).toLowerCase().includes(q));if(mf!=='all')rows=rows.filter(r=>r.module===mf);if(sf!=='all')rows=rows.filter(r=>r.status===sf);const body=document.getElementById('docTable');if(!rows.length){body.innerHTML='<div class="empty">Filtreye uygun belge yok.</div>';return;}body.innerHTML=`<div class="table-wrap"><table class="tbl"><thead><tr><th>Dosya</th><th>Modül</th><th>Kaynak</th><th>Durum</th><th>Bağlantı</th><th>Tarih</th><th>Drive</th><th>Not</th></tr></thead><tbody>${rows.map(row).join('')}</tbody></table></div>`}
+async function loadDocs(){const kpis=document.getElementById('kpis'), ds=document.getElementById('dataStatus'), body=document.getElementById('docTable');kpis.innerHTML='<div class="empty">Belgeler okunuyor...</div>';body.innerHTML='<div class="empty">Belge merkezi okunuyor...</div>';
+ const inbox=await fetchRows('aperion_document_inbox_v58_view',q=>q.select('*').limit(250));
+ const all=await fetchRows('aperion_document_metadata_v58',q=>q.select('*').limit(500));
+ const err=inbox.error||all.error;DOCS=inbox.rows||[];const rows=all.rows||[];
+ const newCount=rows.filter(r=>r.status==='new').length, review=rows.filter(r=>r.status==='review').length, linked=rows.filter(r=>r.status==='linked').length, processed=rows.filter(r=>r.status==='processed').length, error=rows.filter(r=>r.status==='error').length;
+ kpis.innerHTML=[card('Toplam Belge',err?'bekliyor':String(rows.length),'Metadata kayıtları','blue'),card('Yeni',err?'bekliyor':String(newCount),'Gelen kutusu','warn'),card('İnceleme',err?'bekliyor':String(review),'Onay bekleyen','purple'),card('Bağlı/İşlendi',err?'bekliyor':String(linked+processed),'Kapanan kayıtlar','green'),card('Hata',err?'bekliyor':String(error),'Kontrol edilecek','red')].join('');
+ ds.textContent=err?'eksik veri':'ok';ds.className='status '+(err?'wait':'ok');
+ if(err){body.innerHTML=`<div class="empty">SQL/view henüz kurulmamış olabilir: ${esc(err)}<br>Önce finance/AperiON_Document_Metadata_SQL_v58.sql Supabase üzerinde çalıştırılmalı.</div>`;return;}
+ renderDocs();
+}
+loadDocs();
+</script>
+</body>
+</html>
