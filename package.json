@@ -83,7 +83,9 @@
     "verify:category-margin-v57": "node tools/verify_category_margin_v57.cjs",
     "apply:category-margin-v57": "npm run verify:category-margin-v57",
     "telegram:command-v58": "node telegram/aperion_telegram_command_bot_v58.cjs",
-    "telegram:command-v58:once": "node telegram/aperion_telegram_command_bot_v58.cjs --once"
+    "telegram:command-v58:once": "node telegram/aperion_telegram_command_bot_v58.cjs --once",
+    "verify:gmail-drive-metadata-v58": "node tools/verify_gmail_drive_metadata_v58.cjs",
+    "apply:gmail-drive-metadata-v58": "npm run verify:gmail-drive-metadata-v58"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
