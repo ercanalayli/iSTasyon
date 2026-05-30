@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AperiON Kategori Marj Yönetimi v57</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#F3F6FA;--card:#fff;--line:#E4E7EC;--text:#101828;--muted:#667085;--blue:#1D4ED8;--green:#047857;--red:#B91C1C;--warn:#B45309;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;--sans:Inter,Arial,sans-serif}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}.wrap{max-width:1320px;margin:0 auto;padding:18px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.title{font-size:25px;font-weight:950;letter-spacing:-.03em}.sub{font-size:13px;color:var(--muted);font-weight:750;line-height:1.45;margin-top:5px;max-width:880px}.badge{display:inline-flex;border:1px solid #BFDBFE;background:#EFF6FF;color:#1D4ED8;border-radius:999px;padding:7px 11px;font:950 11px var(--mono)}.btn{border:1px solid #D0D5DD;background:#fff;border-radius:10px;padding:9px 12px;font-weight:900;color:#344054;cursor:pointer;text-decoration:none}.btn:hover{border-color:var(--blue);color:var(--blue)}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 28px rgba(15,23,42,.055)}.k{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:950}.v{font:950 24px var(--mono);line-height:1.05;margin-top:10px}.green{color:var(--green)}.red{color:var(--red)}.warn{color:var(--warn)}.blue{color:var(--blue)}.n{font-size:12px;color:var(--muted);font-weight:700;line-height:1.35;margin-top:8px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 28px rgba(15,23,42,.055);margin-top:12px}.panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}.panel-title{font:950 12px var(--mono);color:#344054;text-transform:uppercase;letter-spacing:.5px}.status{display:inline-flex;border-radius:999px;padding:5px 9px;font:950 10px var(--mono);border:1px solid #D0D5DD;background:#F8FAFC;color:#475467}.status.ok{background:#ECFDF5;color:#047857;border-color:#A7F3D0}.status.wait{background:#FFFBEB;color:#B45309;border-color:#FDE68A}.status.bad{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}.empty{border:1px dashed #D0D5DD;background:#F8FAFC;color:#667085;border-radius:12px;padding:13px;font-size:12px;font-weight:750;line-height:1.5}.table-wrap{border:1px solid var(--line);border-radius:14px;overflow:auto;background:#fff}.tbl{width:100%;border-collapse:collapse;min-width:860px}.tbl th{background:#F8FAFC;color:#667085;font:950 10px var(--mono);text-align:left;text-transform:uppercase;letter-spacing:.4px;padding:10px;border-bottom:1px solid #EAECF0}.tbl td{padding:10px;border-bottom:1px solid #EAECF0;font-size:12px;color:#344054;font-weight:750;vertical-align:top}.tbl tr:last-child td{border-bottom:0}.cat{font-weight:950;color:#101828}.input{width:110px;border:1px solid #D0D5DD;border-radius:9px;padding:8px 9px;font:850 12px var(--mono)}.hint{font-size:11px;color:#667085;font-weight:700;margin-top:4px}.note{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;border-radius:12px;padding:12px;font-size:12px;font-weight:800;line-height:1.45;margin-bottom:12px}.foot{margin-top:12px;font-size:12px;color:#667085;font-weight:750;line-height:1.45}@media(max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.wrap{padding:12px}.grid{grid-template-columns:1fr}.title{font-size:21px}.tbl{min-width:760px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">Kategori Marj Yönetimi</div>
+      <div class="sub">AperiON’daki gerçek ürün/satış kategorilerini listeler. Kategori adı elle uydurulmaz. Gerçek maliyet yoksa sadece onaylı kategori marjı ile tahmini kârlılık hesaplanır.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="badge">v57 · gerçek kategori</span><button class="btn" onclick="loadMargins()">↻ Yenile</button><a class="btn" href="nakit-komuta-v57.html">Nakit Komuta</a><a class="btn" href="gelen-ekstreler-v57.html">Gelen Ekstreler</a><a class="btn" href="index.html">Ana Sayfa</a></div>
+  </div>
+  <div class="note">Bu ekran şimdilik güvenli preview’dur. Marj kaydetme butonu bilinçli olarak pasif tutuldu. Önce gerçek kategori kolon adı ve Supabase SQL kurulumu doğrulanacak.</div>
+  <div class="grid" id="kpis"><div class="empty">Yükleniyor...</div></div>
+  <div class="panel">
+    <div class="panel-h"><div class="panel-title">Gerçek Kategoriler ve Ortalama Marj Durumu</div><span class="status wait" id="dataStatus">kontrol</span></div>
+    <div id="marginTable"><div class="empty">Kategori verisi bekleniyor...</div></div>
+  </div>
+  <div class="foot">Kaynak view: <b>aperion_category_margin_status_v57_view</b>. Eksik marj listesi: <b>aperion_missing_category_margins_v57_view</b>. Kategori adları AperiON verisinden gelir; bu ekranda kategori icat edilmez.</div>
+</div>
+<script>
+const SU='https://iilfwosoroflzubkaryj.supabase.co', SK='sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
+const db=supabase.createClient(SU,SK);
+const esc=s=>String(s??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
+const num=v=>Number.isFinite(+v)?+v:0;
+function card(k,v,n,c='blue'){return `<div class="card"><div class="k">${esc(k)}</div><div class="v ${c}">${esc(v)}</div><div class="n">${esc(n||'')}</div></div>`}
+function statusBadge(s){const v=String(s||'margin_missing');let c='wait', t=v;if(v==='ready'){c='ok';t='hazır'}else if(v==='disabled'){c='bad';t='pasif'}else if(v==='approval_needed'){c='wait';t='onay gerekli'}else{c='bad';t='marj eksik'}return `<span class="status ${c}">${esc(t)}</span>`}
+async function fetchRows(table,fn){try{const q=fn?fn(db.from(table)):db.from(table).select('*');const {data,error}=await q;if(error)return {rows:[],error:error.message};return {rows:data||[],error:null}}catch(e){return {rows:[],error:e.message||'eksik veri'}}}
+async function loadMargins(){const kpis=document.getElementById('kpis'), body=document.getElementById('marginTable'), ds=document.getElementById('dataStatus');kpis.innerHTML='<div class="empty">Kategoriler okunuyor...</div>';body.innerHTML='<div class="empty">AperiON gerçek kategorileri okunuyor...</div>';
+ const res=await fetchRows('aperion_category_margin_status_v57_view',q=>q.select('*').eq('company','alayli').order('category_name',{ascending:true}).limit(300));
+ const rows=res.rows||[];const total=rows.length;const ready=rows.filter(r=>r.margin_status==='ready').length;const missing=rows.filter(r=>['margin_missing','approval_needed'].includes(r.margin_status)).length;const disabled=rows.filter(r=>r.margin_status==='disabled').length;
+ kpis.innerHTML=[card('Gerçek Kategori',res.error?'eksik veri':String(total),'AperiON’dan gelen kategori sayısı','blue'),card('Hazır Marj',res.error?'eksik veri':String(ready),'Onaylı ortalama marjı olanlar','green'),card('Eksik Marj',res.error?'eksik veri':String(missing),'Tahmini kâr hesaplanamaz','warn'),card('Pasif',res.error?'eksik veri':String(disabled),'Kullanım dışı bırakılanlar',disabled>0?'red':'green')].join('');
+ ds.textContent=res.error?'eksik veri':'ok';ds.className='status '+(res.error?'wait':'ok');
+ if(res.error){body.innerHTML=`<div class="empty">Eksik kurulum veya view hatası: ${esc(res.error)}<br>Önce finance/AperiON_Category_Margin_SQL_v57.sql Supabase üzerinde çalıştırılmalı ve gerçek kategori kolonu kontrol edilmeli.</div>`;return;}
+ if(!rows.length){body.innerHTML='<div class="empty">Henüz kategori görünmüyor. sales_raw veya ürün ana kaynağında kategori kolonu boş olabilir ya da SQL view gerçek kolon adına göre güncellenmelidir.</div>';return;}
+ body.innerHTML=`<div class="table-wrap"><table class="tbl"><thead><tr><th>Kategori</th><th>Marj Durumu</th><th>Ortalama Marj %</th><th>Kaynak</th><th>Not</th><th>İşlem</th></tr></thead><tbody>${rows.map(r=>`<tr><td><div class="cat">${esc(r.category_name)}</div><div class="hint">Gerçek AperiON kategorisi</div></td><td>${statusBadge(r.margin_status)}<div class="hint">${esc(r.margin_status_label||'')}</div></td><td><input class="input" type="number" step="0.01" min="0" max="100" value="${esc(r.average_margin_percent??'')}" placeholder="%" disabled></td><td>${esc(r.margin_source||'-')}</td><td>${esc(r.note||'-')}</td><td><button class="btn" disabled>Kaydet pasif</button><div class="hint">Önce SQL test</div></td></tr>`).join('')}</tbody></table></div>`;
+}
+loadMargins();
+</script>
+</body>
+</html>
