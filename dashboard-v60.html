@@ -19,9 +19,9 @@
       <button class="aperion-icon-button" aria-label="Profile">•</button>
     </header>
 
-    <section class="ceo-status-card">
-      <div class="ceo-status-icon">◆</div>
-      <div id="ceoStatusText">Sistem verileri analiz ediliyor...</div>
+    <section class="ceo-status-card" id="ceoStatusCard">
+      <div class="ceo-status-icon">◉</div>
+      <div class="ceo-status-text" id="ceoStatusText">Sistem verileri taranıyor...</div>
     </section>
 
     <section class="aperion-period-area-v60">
@@ -34,6 +34,9 @@
     </section>
 
     <main>
+      <section class="risk-wrapper" id="riskRadarWrapper"></section>
+
+      <div class="section-title">Operasyon</div>
       <section class="aperion-kpi-grid-v60">
         <article class="aperion-kpi-card-v60" onclick="goDetail('sales')">
           <div class="aperion-kpi-title">Satış Gücü</div>
@@ -57,14 +60,11 @@
         </article>
       </section>
 
-      <div class="section-title">Finans Nabzı</div>
+      <div class="section-title">Nakit Akışı</div>
       <section class="pulse-grid" id="financePulseGrid"></section>
 
-      <div class="section-title">Patron Öncelikleri</div>
+      <div class="section-title">Aksiyon Planı</div>
       <section class="priority-list" id="ceoPrioritiesList"></section>
-
-      <div class="section-title">Risk Radar & Sistem Durumu</div>
-      <section class="risk-wrapper" id="riskRadarWrapper"></section>
 
       <section class="aperion-section-card-v60">
         <strong>Veri Güveni</strong>
@@ -103,10 +103,13 @@ function generateCeoSentence(data){
   const expenses = Number(data.expenses || 0);
   const profit = Number(data.profit || 0);
   const cashPosition = Number(data.cash || profit || 0);
-  if(sales > expenses * 1.5 && cashPosition >= 0) return 'Satış güçlü, gider kontrollü, nakit pozisyonu pozitif. Operasyon sağlıklı ilerliyor.';
-  if(sales > 0 && expenses > sales) return 'Gider baskısı gelirin üzerine çıkmış durumda. Nakit çıkışları yakından izlenmeli.';
-  if(profit < 0) return 'Kâr sağlığı negatif sinyal veriyor. Maliyet ve tahsilat tarafı bugün kontrol edilmeli.';
-  return 'Operasyon stabil. Bekleyen onaylar, eksik maliyetler ve tahsilatlar kontrol edilebilir seviyede.';
+  const collectionsRisk = Number(data.overdueCollections || 3) > 0;
+  if(cashPosition < 0 && collectionsRisk) return 'Nakit döngüsünde daralma var. Tahsilat gecikmeleri çözülmeden <strong>yeni harcama onaylamayın.</strong>';
+  if(sales > expenses * 1.5 && cashPosition > 0) return 'Büyüme agresif, nakit pozisyonu güçlü. <strong>Yatırım fırsatları veya kâr realizasyonu</strong> değerlendirilebilir.';
+  if(expenses > sales && sales > 0) return 'Gider baskısı ciro artışını yutuyor. Operasyonel maliyetler <strong>acilen denetim altına alınmalı.</strong>';
+  if(collectionsRisk) return 'Satışlar gerçekleşiyor ancak <strong>tahsilat hızı yavaş.</strong> Nakit akışı için tahsilata odaklanın.';
+  if(profit < 0) return 'Kâr sağlığı negatif sinyal veriyor. Maliyet ve tahsilat tarafı <strong>bugün kontrol edilmeli.</strong>';
+  return 'Sistem stabil. Rutin onayları temizleyin, <strong>eksik maliyetleri tamamlatın.</strong>';
 }
 
 function renderFinancePulse(data){
@@ -116,8 +119,8 @@ function renderFinancePulse(data){
   const net = cash + expected - upcoming;
   document.getElementById('financePulseGrid').innerHTML = `
     <div class="pulse-card"><span class="pulse-label">Nakit</span><span class="pulse-val">${money(cash)}</span></div>
-    <div class="pulse-card"><span class="pulse-label">Beklenen Tahsilat</span><span class="pulse-val">${money(expected)}</span></div>
-    <div class="pulse-card"><span class="pulse-label">Yaklaşan Ödeme</span><span class="pulse-val negative">-${money(upcoming)}</span></div>
+    <div class="pulse-card"><span class="pulse-label">Beklenen</span><span class="pulse-val">${money(expected)}</span></div>
+    <div class="pulse-card"><span class="pulse-label">Ödenecek</span><span class="pulse-val negative">-${money(upcoming)}</span></div>
     <div class="pulse-card"><span class="pulse-label">Net Kısa Vade</span><span class="pulse-val ${net >= 0 ? 'positive' : 'negative'}">${money(net)}</span></div>
   `;
 }
@@ -127,14 +130,18 @@ function renderCeoPriorities(data){
   const pending = Number(data.pendingApprovals || 4);
   const overdue = Number(data.overdueCollections || 3);
   const list = [
-    { type:'danger', icon:'!', text:`${overdue} tahsilat öncelikli takip edilmeli` },
-    { type:'warn', icon:'₺', text:'Kritik ödemeler bugün kontrol edilmeli' },
-    { type:'warn', icon:'↻', text:'Moka / POS geçişleri eşleşme bekliyor' },
-    { type:'', icon:'✓', text:`${pending} kayıt Onay Merkezi’nde bekliyor` },
-    { type:'danger', icon:'%', text:`${missingCost} üründe eksik maliyet kontrolü var` }
+    { type:'danger', icon:'!', text:`${overdue} tahsilat gecikti. Önce tahsilatı kapat.`, actionUrl:'#' },
+    { type:'warn', icon:'₺', text:'Bugünkü kritik ödemeleri kontrol et.', actionUrl:'finans-onay-merkezi-v58.html' },
+    { type:'warn', icon:'↻', text:'Moka / POS geçişlerini eşleştir.', actionUrl:'finans-onay-merkezi-v58.html' },
+    { type:'', icon:'✓', text:`${pending} kaydı Onay Merkezi’nde temizle.`, actionUrl:'finans-onay-merkezi-v58.html' },
+    { type:'danger', icon:'%', text:`${missingCost} eksik maliyeti tamamlat.`, actionUrl:AperionDashboardState.buildDetailUrl('profit') }
   ];
   document.getElementById('ceoPrioritiesList').innerHTML = list.slice(0,5).map(p => `
-    <div class="priority-item"><div class="priority-icon ${p.type}">${p.icon}</div><div class="priority-text">${p.text}</div><div style="color:#cbd5e1">›</div></div>
+    <div class="priority-item" onclick="location.href='${p.actionUrl}'">
+      <div class="priority-icon ${p.type}">${p.icon}</div>
+      <div class="priority-text">${p.text}</div>
+      <div style="color:#94a3b8;font-size:18px;">→</div>
+    </div>
   `).join('');
 }
 
@@ -143,10 +150,10 @@ function renderRiskRadar(data){
   const pending = Number(data.pendingApprovals || 4);
   const syncOk = data.dataSync !== false;
   document.getElementById('riskRadarWrapper').innerHTML = `
-    <div class="risk-badge risk-warn" onclick="location.href='finans-onay-merkezi-v58.html'">⏳ ${pending} Onay Bekliyor</div>
-    <div class="risk-badge risk-high" onclick="goDetail('profit')">⚠️ ${missingCost} Eksik Maliyet</div>
-    <div class="risk-badge risk-warn">⚡ Tahsilat Takibi</div>
-    <div class="risk-badge ${syncOk ? 'risk-low' : 'risk-warn'}">${syncOk ? '● Veri Güncel' : '● Eşitleme Bekliyor'}</div>
+    <div class="risk-badge risk-warn" onclick="location.href='finans-onay-merkezi-v58.html'">${pending} Onay</div>
+    <div class="risk-badge risk-high" onclick="goDetail('profit')">${missingCost} Eksik Maliyet</div>
+    <div class="risk-badge risk-warn">Tahsilat Takibi</div>
+    <div class="risk-badge ${syncOk ? 'risk-low' : 'risk-warn'}">${syncOk ? 'Veri Güncel' : 'Eşitleme Bekliyor'}</div>
   `;
 }
 
@@ -158,10 +165,10 @@ async function renderValues(){
   document.getElementById('purchasesValue').textContent = money(data.purchases);
   document.getElementById('profitValue').textContent = money(data.profit);
   document.getElementById('profitEstimate').textContent = 'Tahmini: ' + money(data.profitEstimated);
-  document.getElementById('ceoStatusText').textContent = generateCeoSentence(data);
+  document.getElementById('ceoStatusText').innerHTML = generateCeoSentence(data);
+  renderRiskRadar(data);
   renderFinancePulse(data);
   renderCeoPriorities(data);
-  renderRiskRadar(data);
   document.getElementById('dataTrustText').textContent = 'Merkezi veri katmanı aktif · Dönem: ' + p.label + ' · Ana ekran sadece gösterim modunda.';
 }
 
@@ -173,9 +180,7 @@ function applyCustomPeriod(){
   document.getElementById('customDatePanel').classList.remove('open');
 }
 
-function goDetail(moduleName){
-  window.location.href = AperionDashboardState.buildDetailUrl(moduleName);
-}
+function goDetail(moduleName){ window.location.href = AperionDashboardState.buildDetailUrl(moduleName); }
 
 window.addEventListener('aperion:period-change', () => { renderPeriodChips(); renderValues(); });
 renderPeriodChips();
