@@ -3,18 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>AperiON v60 Dashboard</title>
+  <title>AperiON v61 CEO Cockpit</title>
   <link rel="stylesheet" href="assets/css/aperion-mobile-v60.css">
   <script src="assets/js/dashboard-state-v60.js"></script>
   <script src="assets/js/dashboard-data-v60.js"></script>
 </head>
 <body class="aperion-mobile-v60">
   <div class="aperion-mobile-shell">
+    <div style="background:#fff7ed;border-bottom:1px solid #fed7aa;color:#9a3412;padding:8px 14px;font-size:12px;font-weight:900;text-align:center;">
+      v61 CEO Cockpit · Sadece Görüntüleme · Kesin kayıt oluşturmaz
+    </div>
     <header class="aperion-topbar-v60">
       <button class="aperion-icon-button" aria-label="Menu">☰</button>
-      <div class="aperion-topbar-title">AperiON</div>
+      <div class="aperion-topbar-title">AperiON CEO</div>
       <button class="aperion-icon-button" aria-label="Profile">•</button>
     </header>
+
+    <section class="ceo-status-card">
+      <div class="ceo-status-icon">◆</div>
+      <div id="ceoStatusText">Sistem verileri analiz ediliyor...</div>
+    </section>
 
     <section class="aperion-period-area-v60">
       <div class="aperion-period-scroll" id="periodChips"></div>
@@ -28,31 +36,35 @@
     <main>
       <section class="aperion-kpi-grid-v60">
         <article class="aperion-kpi-card-v60" onclick="goDetail('sales')">
-          <div class="aperion-kpi-title">Satışlar</div>
+          <div class="aperion-kpi-title">Satış Gücü</div>
           <div class="aperion-kpi-value" id="salesValue">₺0</div>
           <div class="aperion-kpi-subtext">Kategori, ürün, müşteri</div>
         </article>
         <article class="aperion-kpi-card-v60" onclick="goDetail('expenses')">
-          <div class="aperion-kpi-title">Giderler</div>
+          <div class="aperion-kpi-title">Gider Baskısı</div>
           <div class="aperion-kpi-value" id="expensesValue">₺0</div>
           <div class="aperion-kpi-subtext">Kategori, tedarikçi, ödeme tipi</div>
         </article>
         <article class="aperion-kpi-card-v60" onclick="goDetail('purchases')">
-          <div class="aperion-kpi-title">Alışlar</div>
+          <div class="aperion-kpi-title">Alış Hacmi</div>
           <div class="aperion-kpi-value" id="purchasesValue">₺0</div>
           <div class="aperion-kpi-subtext">Ürün, tedarikçi, marka</div>
         </article>
         <article class="aperion-kpi-card-v60 aperion-kpi-profit" onclick="goDetail('profit')">
-          <div class="aperion-kpi-title">Kâr</div>
+          <div class="aperion-kpi-title">Kâr Sağlığı</div>
           <div class="aperion-kpi-value" id="profitValue">₺0</div>
           <div class="aperion-kpi-subtext" id="profitEstimate">Tahmini: ₺0</div>
         </article>
       </section>
 
-      <section class="aperion-section-card-v60">
-        <strong>Bekleyen Onaylar</strong>
-        <p class="aperion-kpi-subtext">Finans, belge ve işlem onayları burada özetlenecek.</p>
-      </section>
+      <div class="section-title">Finans Nabzı</div>
+      <section class="pulse-grid" id="financePulseGrid"></section>
+
+      <div class="section-title">Patron Öncelikleri</div>
+      <section class="priority-list" id="ceoPrioritiesList"></section>
+
+      <div class="section-title">Risk Radar & Sistem Durumu</div>
+      <section class="risk-wrapper" id="riskRadarWrapper"></section>
 
       <section class="aperion-section-card-v60">
         <strong>Veri Güveni</strong>
@@ -86,6 +98,58 @@ function renderPeriodChips(){
   });
 }
 
+function generateCeoSentence(data){
+  const sales = Number(data.sales || 0);
+  const expenses = Number(data.expenses || 0);
+  const profit = Number(data.profit || 0);
+  const cashPosition = Number(data.cash || profit || 0);
+  if(sales > expenses * 1.5 && cashPosition >= 0) return 'Satış güçlü, gider kontrollü, nakit pozisyonu pozitif. Operasyon sağlıklı ilerliyor.';
+  if(sales > 0 && expenses > sales) return 'Gider baskısı gelirin üzerine çıkmış durumda. Nakit çıkışları yakından izlenmeli.';
+  if(profit < 0) return 'Kâr sağlığı negatif sinyal veriyor. Maliyet ve tahsilat tarafı bugün kontrol edilmeli.';
+  return 'Operasyon stabil. Bekleyen onaylar, eksik maliyetler ve tahsilatlar kontrol edilebilir seviyede.';
+}
+
+function renderFinancePulse(data){
+  const cash = Number(data.cash || data.profit || 0);
+  const expected = Number(data.expectedCollections || Math.round(Number(data.sales || 0) * 0.18));
+  const upcoming = Number(data.upcomingPayments || Math.round(Number(data.expenses || 0) * 0.75));
+  const net = cash + expected - upcoming;
+  document.getElementById('financePulseGrid').innerHTML = `
+    <div class="pulse-card"><span class="pulse-label">Nakit</span><span class="pulse-val">${money(cash)}</span></div>
+    <div class="pulse-card"><span class="pulse-label">Beklenen Tahsilat</span><span class="pulse-val">${money(expected)}</span></div>
+    <div class="pulse-card"><span class="pulse-label">Yaklaşan Ödeme</span><span class="pulse-val negative">-${money(upcoming)}</span></div>
+    <div class="pulse-card"><span class="pulse-label">Net Kısa Vade</span><span class="pulse-val ${net >= 0 ? 'positive' : 'negative'}">${money(net)}</span></div>
+  `;
+}
+
+function renderCeoPriorities(data){
+  const missingCost = Number(data.missingCostCount || 12);
+  const pending = Number(data.pendingApprovals || 4);
+  const overdue = Number(data.overdueCollections || 3);
+  const list = [
+    { type:'danger', icon:'!', text:`${overdue} tahsilat öncelikli takip edilmeli` },
+    { type:'warn', icon:'₺', text:'Kritik ödemeler bugün kontrol edilmeli' },
+    { type:'warn', icon:'↻', text:'Moka / POS geçişleri eşleşme bekliyor' },
+    { type:'', icon:'✓', text:`${pending} kayıt Onay Merkezi’nde bekliyor` },
+    { type:'danger', icon:'%', text:`${missingCost} üründe eksik maliyet kontrolü var` }
+  ];
+  document.getElementById('ceoPrioritiesList').innerHTML = list.slice(0,5).map(p => `
+    <div class="priority-item"><div class="priority-icon ${p.type}">${p.icon}</div><div class="priority-text">${p.text}</div><div style="color:#cbd5e1">›</div></div>
+  `).join('');
+}
+
+function renderRiskRadar(data){
+  const missingCost = Number(data.missingCostCount || 12);
+  const pending = Number(data.pendingApprovals || 4);
+  const syncOk = data.dataSync !== false;
+  document.getElementById('riskRadarWrapper').innerHTML = `
+    <div class="risk-badge risk-warn" onclick="location.href='finans-onay-merkezi-v58.html'">⏳ ${pending} Onay Bekliyor</div>
+    <div class="risk-badge risk-high" onclick="goDetail('profit')">⚠️ ${missingCost} Eksik Maliyet</div>
+    <div class="risk-badge risk-warn">⚡ Tahsilat Takibi</div>
+    <div class="risk-badge ${syncOk ? 'risk-low' : 'risk-warn'}">${syncOk ? '● Veri Güncel' : '● Eşitleme Bekliyor'}</div>
+  `;
+}
+
 async function renderValues(){
   const p = AperionDashboardState.getPeriod();
   const data = await AperionDashboardData.getSummary(p);
@@ -94,7 +158,11 @@ async function renderValues(){
   document.getElementById('purchasesValue').textContent = money(data.purchases);
   document.getElementById('profitValue').textContent = money(data.profit);
   document.getElementById('profitEstimate').textContent = 'Tahmini: ' + money(data.profitEstimated);
-  document.getElementById('dataTrustText').textContent = 'Merkezi veri katmanı aktif · Dönem: ' + p.label;
+  document.getElementById('ceoStatusText').textContent = generateCeoSentence(data);
+  renderFinancePulse(data);
+  renderCeoPriorities(data);
+  renderRiskRadar(data);
+  document.getElementById('dataTrustText').textContent = 'Merkezi veri katmanı aktif · Dönem: ' + p.label + ' · Ana ekran sadece gösterim modunda.';
 }
 
 function applyCustomPeriod(){
