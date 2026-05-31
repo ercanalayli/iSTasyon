@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Onay Merkezi Preview</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; padding: 15px; background: #f8f9fa; margin: 0; color:#0f172a; padding-bottom: 80px; }
+    .banner { background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%); color: #fff; text-align: center; padding: 10px; font-size: 13px; font-weight: bold; margin-bottom: 14px; border-radius: 8px; position: sticky; top: 0; z-index: 9; }
+    .updated { background:#ecfdf3; border:1px solid #bbf7d0; color:#047857; text-align:center; padding:9px 10px; font-size:12px; font-weight:900; margin-bottom:14px; border-radius:8px; }
+    .notice { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; padding:10px; border-radius:10px; font-size:12px; font-weight:800; margin-bottom:15px; line-height:1.35; }
+    .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(15,23,42,0.05); margin-bottom: 15px; border:1px solid #e2e8f0; }
+    .form-group { margin-bottom: 10px; display: flex; gap: 10px; }
+    input, button { padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; flex: 1; font-size: 15px; }
+    button { background: #0f172a; color: white; border: none; font-weight: bold; cursor: pointer; flex: none; width: 100%; margin-top: 5px; }
+    .quick-row { display:flex; gap:8px; overflow-x:auto; margin: 10px 0; padding-bottom:4px; }
+    .quick { white-space:nowrap; width:auto; margin:0; background:#fff; color:#0f172a; border:1px solid #cbd5e1; padding:8px 10px; border-radius:999px; font-size:12px; }
+    .pending-list { display: flex; flex-direction: column; gap: 10px; }
+    .pending-item { border: 1px solid #e2e8f0; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 8px; background: #fff; }
+    .item-header { display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 5px; }
+    .item-desc { font-weight: bold; font-size: 14px; color: #1e293b; margin-bottom: 8px; }
+    .item-amount { font-size: 16px; font-weight: 900; color: #0f172a; }
+    .item-id { font-size: 10px; color:#94a3b8; font-family: monospace; margin-top: 5px; word-break: break-all; }
+    .action-btns { display: flex; gap: 8px; margin-top: 10px; }
+    .btn-approve { background: #10b981; padding: 8px; font-size: 12px; flex: 1; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    .btn-reject { background: #ef4444; padding: 8px; font-size: 12px; flex: 1; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    .ledger-log { background: #1e293b; color: #10b981; padding: 10px; border-radius: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; white-space: pre-wrap; min-height: 80px; line-height:1.45; }
+    .empty { font-size: 12px; color: #94a3b8; }
+    .sim-log { font-size: 12px; color: #ef4444; margin-top: 8px; font-weight: bold; }
+    .ok-log { color:#047857; }
+  </style>
+</head>
+<body>
+
+  <div class="banner">YENİ ÖZELLİK: Banka Hareketi & Onay Merkezi Preview</div>
+  <div class="updated">Güncellendi: 31.05.2026 17:45 · Sadece test/simülasyon</div>
+  <div class="notice">Bu ekran canlı finans kaydı oluşturmaz. Banka ekstresi satırının parser havuzuna düşmesi, mükerrer kontrolü ve onaydan sonra ledger simülasyonuna geçmesi test edilir.</div>
+
+  <div class="card">
+    <div style="font-size: 12px; font-weight: bold; margin-bottom: 10px; color: #64748b;">Banka Ekstresi Satırı Simüle Et:</div>
+    <div class="quick-row">
+      <button class="quick" onclick="fillExample('2026-05-31','1250','EFT: Müşteri A')">EFT Müşteri</button>
+      <button class="quick" onclick="fillExample('2026-05-31','4500','Moka United aktarım')">Moka</button>
+      <button class="quick" onclick="fillExample('2026-05-31','22500','KOSGEB kredi taksidi')">Kredi</button>
+      <button class="quick" onclick="fillExample('2026-05-31','1250','EFT: Müşteri A')">Mükerrer Test</button>
+    </div>
+    <div class="form-group">
+      <input type="date" id="tDate" value="2026-05-31">
+      <input type="number" id="tAmount" placeholder="Tutar" value="1250">
+    </div>
+    <input type="text" id="tDesc" placeholder="Açıklama (Örn: Eft Gelen)" value="EFT: Müşteri A">
+    <button onclick="addBankTransaction()">Havuza Gönder (Parser)</button>
+    <div id="simLog" class="sim-log"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Onay Bekleyenler (Pending)</div>
+    <div class="pending-list" id="pendingList">
+      <div class="empty">Havuz boş. Yeni hareket ekleyin.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Kesin Finans Defteri (Ledger Simülasyonu)</div>
+    <div class="ledger-log" id="ledgerLog">Bekliyor...</div>
+  </div>
+
+  <script>
+    const pendingDB = [];
+    let hashRegistry = [];
+
+    function fillExample(date, amount, desc) {
+      document.getElementById('tDate').value = date;
+      document.getElementById('tAmount').value = amount;
+      document.getElementById('tDesc').value = desc;
+    }
+
+    function generateHash(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) hash = Math.imul(31, hash) + str.charCodeAt(i) | 0;
+      return "txn_" + Math.abs(hash).toString(16);
+    }
+
+    function addBankTransaction() {
+      const date = document.getElementById('tDate').value;
+      const amount = document.getElementById('tAmount').value;
+      const desc = document.getElementById('tDesc').value;
+      const log = document.getElementById('simLog');
+
+      if (!date || !amount || !desc.trim()) {
+        log.className = 'sim-log';
+        log.textContent = 'HATA: Tarih, tutar ve açıklama zorunlu.';
+        return;
+      }
+      
+      const rawString = `${date}_${amount}_${desc.replace(/\s+/g, '').toLowerCase()}_ALAYLI_MEDIKAL`;
+      const txnHash = generateHash(rawString);
+
+      if (hashRegistry.includes(txnHash)) {
+        log.className = 'sim-log';
+        log.textContent = 'HATA: Bu hareket mükerrer! Daha önce havuza alınmış.';
+        return;
+      }
+
+      hashRegistry.push(txnHash);
+      const newRecord = { id: txnHash, date, amount, desc, status: 'pending', company: 'ALAYLI Medikal' };
+      pendingDB.push(newRecord);
+      log.className = 'sim-log ok-log';
+      log.textContent = `Havuza alındı: ${txnHash}`;
+      renderPendingList();
+    }
+
+    function renderPendingList() {
+      const list = document.getElementById('pendingList');
+      if (pendingDB.length === 0) {
+        list.innerHTML = `<div class="empty">Havuz boş.</div>`;
+        return;
+      }
+
+      list.innerHTML = pendingDB.map(txn => `
+        <div class="pending-item" id="card_${txn.id}">
+          <div class="item-header"><span>${txn.company}</span><span>${txn.date}</span></div>
+          <div class="item-desc">${txn.desc}</div>
+          <div class="item-amount">₺${Number(txn.amount).toLocaleString('tr-TR')}</div>
+          <div class="item-id">${txn.id}</div>
+          <div class="action-btns">
+            <button class="btn-approve" onclick="approveTxn('${txn.id}')">ONAYLA</button>
+            <button class="btn-reject" onclick="rejectTxn('${txn.id}')">SİL</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function approveTxn(id) {
+      const txnIndex = pendingDB.findIndex(t => t.id === id);
+      if (txnIndex < 0) return;
+      const txn = pendingDB[txnIndex];
+      pendingDB.splice(txnIndex, 1);
+      renderPendingList();
+      const ledger = document.getElementById('ledgerLog');
+      if (ledger.textContent.trim() === 'Bekliyor...') ledger.textContent = '';
+      ledger.innerHTML += `\n[ONAYLANDI] ${txn.date} | ₺${Number(txn.amount).toLocaleString('tr-TR')} | ${txn.desc} | ${txn.id} -> Kesin kayda işlendi.`;
+    }
+
+    function rejectTxn(id) {
+      const txnIndex = pendingDB.findIndex(t => t.id === id);
+      if (txnIndex < 0) return;
+      pendingDB.splice(txnIndex, 1);
+      renderPendingList();
+    }
+  </script>
+</body>
+</html>
