@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AperiON Telegram Ürün Kontrol</title>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--text:#101828;--muted:#667085;--line:#e4e7ec;--dark:#0f172a;--green:#047857;--amber:#9a3412;--red:#b42318}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.shell{max-width:520px;margin:0 auto;min-height:100vh;background:var(--bg)}.update{background:#ecfdf3;border-bottom:1px solid #bbf7d0;color:#047857;padding:9px 12px;text-align:center;font-size:12px;font-weight:900}.top{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;z-index:2}.icon{width:36px;height:36px;border:1px solid var(--line);border-radius:12px;background:#fff;font-weight:900}.title{font-weight:950;letter-spacing:-.03em}.wrap{padding:16px}.warn{background:#fff7ed;color:var(--amber);border:1px solid #fed7aa;padding:11px;border-radius:14px;font-size:12px;font-weight:850;margin-bottom:12px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 8px 20px rgba(16,24,40,.04)}.badge{display:inline-block;border-radius:999px;padding:5px 9px;background:#ecfdf3;color:var(--green);font-size:11px;font-weight:900;margin-bottom:9px}.sub{color:var(--muted);font-size:12px;font-weight:750;line-height:1.35}.input{width:100%;border:1px solid #d0d5dd;border-radius:12px;padding:13px;font-size:16px;margin-top:8px}.btn{width:100%;border:0;border-radius:12px;background:var(--dark);color:#fff;padding:13px;font-weight:950;margin-top:10px;font-size:15px}.result{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.48;background:#f8fafc;border-radius:12px;padding:12px;margin-top:8px}.quick{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px}.chip{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-size:12px;font-weight:850}.missing{color:var(--red);font-weight:900}.ok{color:var(--green);font-weight:900}</style>
+</head>
+<body>
+<div class="shell">
+  <div class="update">YENİ ÖZELLİK · Güncellendi: 31.05.2026 17:25 · Telegram Ürün Kontrol Preview</div>
+  <header class="top"><button class="icon" onclick="history.back()">‹</button><div class="title">Telegram Ürün Kontrol</div><button class="icon" onclick="location.href='/'">⌂</button></header>
+  <main class="wrap">
+    <div class="warn">Bu ekran deneme ekranıdır. Canlı stok, fiyat veya finans kaydı değiştirmez. Sadece Telegram ürün sorgusunun nasıl çalışacağını gösterir.</div>
+    <section class="card">
+      <span class="badge">ALAYLI MEDİKAL · SALT OKUNUR</span>
+      <strong>Telegram komutu simülasyonu</strong>
+      <p class="sub">Aşağıdaki komutlardan birine dokun veya kendi ürün adını yaz.</p>
+      <div class="quick">
+        <button class="chip" onclick="setQ('/stok jender belbantlı')">jender belbantlı</button>
+        <button class="chip" onclick="setQ('/stok havalı yatak')">havalı yatak</button>
+        <button class="chip" onclick="setQ('/stok enjektör')">enjektör</button>
+        <button class="chip" onclick="setQ('/stok woodlet masa')">pasif şirket testi</button>
+      </div>
+      <input class="input" id="query" value="/stok jender belbantlı" placeholder="/stok ürün adı">
+      <button class="btn" onclick="runSearch()">Ürünü Kontrol Et</button>
+    </section>
+    <section class="card"><strong>Bot Cevabı</strong><div class="result" id="result">Sonuç burada görünecek.</div></section>
+    <section class="card"><strong>Ne kontrol edilecek?</strong><p class="sub">Ürün bulundu mu, kategori doğru mu, alış fiyatı eksik mi, stok okunuyor mu, cevap Telegram bot cevabı gibi net mi?</p></section>
+  </main>
+</div>
+<script>
+const MOCK_PRODUCTS=[
+ {product_name:'Jender Belbantlı Hasta Bezi M',product_code:'JEN-BB-M',barcode:'869000001',category:'Hasta Bezi',brand:'Jender',current_stock:1250,last_purchase_price:350,avg_sale_price:420,company:'ALAYLI_MEDIKAL'},
+ {product_name:'Jender Belbantlı Hasta Bezi L',product_code:'JEN-BB-L',barcode:'869000002',category:'Hasta Bezi',brand:'Jender',current_stock:870,last_purchase_price:350,avg_sale_price:430,company:'ALAYLI_MEDIKAL'},
+ {product_name:'Respirox RHB-10 Boru Tipi Havalı Yatak',product_code:'RHB-10',barcode:'869000003',category:'Havalı Yatak',brand:'Respirox',current_stock:12,last_purchase_price:null,avg_sale_price:4750,company:'ALAYLI_MEDIKAL'},
+ {product_name:'10ml Enjektör Yeşil Uçlu',product_code:'ENJ-10',barcode:'869000004',category:'Medikal Sarf',brand:'Genel',current_stock:1250,last_purchase_price:1.45,avg_sale_price:2.10,company:'ALAYLI_MEDIKAL'},
+ {product_name:'Woodlet Masa Demo',category:'Mobilya',current_stock:5,last_purchase_price:1000,avg_sale_price:1500,company:'WOODLET'}
+];
+function norm(v){return String(v||'').toLocaleLowerCase('tr-TR').replace(/ı/g,'i').replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s').replace(/ö/g,'o').replace(/ç/g,'c').replace(/[^a-z0-9\s-]/g,' ').replace(/\s+/g,' ').trim()}
+function setQ(v){document.getElementById('query').value=v;runSearch()}
+function runSearch(){
+ const raw=document.getElementById('query').value.replace(/^\/stok\s*/i,''); const q=norm(raw); const tokens=q.split(' ').filter(Boolean);
+ if(!q||q.length<3){document.getElementById('result').textContent='Arama için en az 3 karakter girin.';return}
+ const found=MOCK_PRODUCTS.filter(p=>p.company==='ALAYLI_MEDIKAL').map(p=>{const h=norm([p.product_name,p.product_code,p.barcode,p.category,p.brand].join(' '));let score=0;tokens.forEach(t=>{if(h.includes(t))score+=20});if(h.includes(tokens.join(' ')))score+=40;return{p,score}}).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,5).map(x=>x.p);
+ if(!found.length){document.getElementById('result').textContent='ALAYLI Medikal içinde ürün bulunamadı. Pasif şirket ürünleri gösterilmez.';return}
+ document.getElementById('result').innerHTML=found.map((p,i)=>{const missing=[];if(p.last_purchase_price==null)missing.push('alış fiyatı');if(p.avg_sale_price==null)missing.push('satış fiyatı');if(p.current_stock==null)missing.push('stok');if(!p.category)missing.push('kategori');return `${i+1}. ${p.product_name}\nKategori: ${p.category||'eksik'}\nStok: ${p.current_stock??'eksik'}\nSon alış: ${p.last_purchase_price??'eksik'}\nOrtalama satış: ${p.avg_sale_price??'eksik'}\nEksik bilgi: ${missing.length?'<span class="missing">'+missing.join(', ')+'</span>':'<span class="ok">yok</span>'}\nDurum: ${missing.length?'<span class="missing">Onay Merkezi kontrolü gerekli</span>':'<span class="ok">Bilgi tam görünüyor</span>'}`}).join('\n\n')
+}
+runSearch();
+</script>
+</body>
+</html>
