@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>AperiON v60 Dashboard</title>
+  <link rel="stylesheet" href="assets/css/aperion-mobile-v60.css">
+  <script src="assets/js/dashboard-state-v60.js"></script>
+</head>
+<body class="aperion-mobile-v60">
+  <div class="aperion-mobile-shell">
+    <header class="aperion-topbar-v60">
+      <button class="aperion-icon-button" aria-label="Menu">☰</button>
+      <div class="aperion-topbar-title">AperiON</div>
+      <button class="aperion-icon-button" aria-label="Profile">•</button>
+    </header>
+
+    <section class="aperion-period-area-v60">
+      <div class="aperion-period-scroll" id="periodChips"></div>
+      <div class="aperion-custom-date-panel" id="customDatePanel">
+        <input type="date" id="customStart" aria-label="Başlangıç tarihi">
+        <input type="date" id="customEnd" aria-label="Bitiş tarihi">
+        <button type="button" onclick="applyCustomPeriod()">Uygula</button>
+      </div>
+    </section>
+
+    <main>
+      <section class="aperion-kpi-grid-v60">
+        <article class="aperion-kpi-card-v60" onclick="goDetail('sales')">
+          <div class="aperion-kpi-title">Satışlar</div>
+          <div class="aperion-kpi-value" id="salesValue">₺0</div>
+          <div class="aperion-kpi-subtext">Kategori, ürün, müşteri</div>
+        </article>
+        <article class="aperion-kpi-card-v60" onclick="goDetail('expenses')">
+          <div class="aperion-kpi-title">Giderler</div>
+          <div class="aperion-kpi-value" id="expensesValue">₺0</div>
+          <div class="aperion-kpi-subtext">Kategori, tedarikçi, ödeme tipi</div>
+        </article>
+        <article class="aperion-kpi-card-v60" onclick="goDetail('purchases')">
+          <div class="aperion-kpi-title">Alışlar</div>
+          <div class="aperion-kpi-value" id="purchasesValue">₺0</div>
+          <div class="aperion-kpi-subtext">Ürün, tedarikçi, marka</div>
+        </article>
+        <article class="aperion-kpi-card-v60 aperion-kpi-profit" onclick="goDetail('profit')">
+          <div class="aperion-kpi-title">Kâr</div>
+          <div class="aperion-kpi-value" id="profitValue">₺0</div>
+          <div class="aperion-kpi-subtext" id="profitEstimate">Tahmini: ₺0</div>
+        </article>
+      </section>
+
+      <section class="aperion-section-card-v60">
+        <strong>Bekleyen Onaylar</strong>
+        <p class="aperion-kpi-subtext">Finans, belge ve işlem onayları burada özetlenecek.</p>
+      </section>
+
+      <section class="aperion-section-card-v60">
+        <strong>Veri Güveni</strong>
+        <p class="aperion-kpi-subtext">Kaynak, son güncelleme ve kayıt sayısı küçük rozetlerle gösterilecek.</p>
+      </section>
+    </main>
+
+    <nav class="aperion-bottom-nav-v60">
+      <a class="aperion-nav-item-v60 active" href="dashboard-v60.html">📊<span>Özet</span></a>
+      <a class="aperion-nav-item-v60" href="belge-merkezi-v58.html">📄<span>Belgeler</span></a>
+      <a class="aperion-nav-item-v60" href="finans-onay-merkezi-v58.html">💼<span>Finans</span></a>
+      <a class="aperion-nav-item-v60" href="index.html">⌂<span>Ana</span></a>
+    </nav>
+  </div>
+
+<script>
+const demoData = {
+  today: { sales: 245350, expenses: 32900, purchases: 78600, profit: 58100, profitEstimated: 64200 },
+  yesterday: { sales: 198200, expenses: 27500, purchases: 62400, profit: 48600, profitEstimated: 51100 },
+  this_week: { sales: 1248750, expenses: 218400, purchases: 402700, profit: 286500, profitEstimated: 312900 },
+  this_month: { sales: 4824500, expenses: 914000, purchases: 1568000, profit: 1104500, profitEstimated: 1220000 },
+  last_month: { sales: 4390000, expenses: 1005000, purchases: 1480000, profit: 982000, profitEstimated: 1050000 },
+  this_year: { sales: 28450000, expenses: 6175000, purchases: 9520000, profit: 6520000, profitEstimated: 7180000 },
+  last_year: { sales: 22100000, expenses: 5840000, purchases: 8100000, profit: 4680000, profitEstimated: 5020000 },
+  custom: { sales: 0, expenses: 0, purchases: 0, profit: 0, profitEstimated: 0 }
+};
+
+function money(n){ return new Intl.NumberFormat('tr-TR',{maximumFractionDigits:0}).format(Number(n||0)) + ' TL'; }
+
+function renderPeriodChips(){
+  const current = AperionDashboardState.getPeriod();
+  document.getElementById('periodChips').innerHTML = AperionDashboardState.periods.map(p =>
+    `<button type="button" class="aperion-period-chip ${p.id===current.id?'active':''}" data-period="${p.id}">${p.label}</button>`
+  ).join('');
+  document.querySelectorAll('.aperion-period-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const id = chip.dataset.period;
+      document.getElementById('customDatePanel').classList.toggle('open', id === 'custom');
+      if(id !== 'custom') AperionDashboardState.setPeriod(id);
+      else AperionDashboardState.setPeriod({ id: 'custom' });
+    });
+  });
+}
+
+function renderValues(){
+  const p = AperionDashboardState.getPeriod();
+  const data = demoData[p.id] || demoData.today;
+  document.getElementById('salesValue').textContent = money(data.sales);
+  document.getElementById('expensesValue').textContent = money(data.expenses);
+  document.getElementById('purchasesValue').textContent = money(data.purchases);
+  document.getElementById('profitValue').textContent = money(data.profit);
+  document.getElementById('profitEstimate').textContent = 'Tahmini: ' + money(data.profitEstimated);
+}
+
+function applyCustomPeriod(){
+  const start = document.getElementById('customStart').value;
+  const end = document.getElementById('customEnd').value;
+  if(!start || !end){ alert('Başlangıç ve bitiş tarihi seç.'); return; }
+  AperionDashboardState.setPeriod({ id:'custom', start, end });
+}
+
+function goDetail(moduleName){
+  window.location.href = AperionDashboardState.buildDetailUrl(moduleName);
+}
+
+window.addEventListener('aperion:period-change', () => { renderPeriodChips(); renderValues(); });
+renderPeriodChips();
+renderValues();
+</script>
+</body>
+</html>
