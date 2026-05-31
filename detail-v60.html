@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>AperiON v60 Detay</title>
+  <link rel="stylesheet" href="assets/css/aperion-mobile-v60.css">
+  <script src="assets/js/dashboard-state-v60.js"></script>
+</head>
+<body class="aperion-mobile-v60">
+  <div class="aperion-mobile-shell">
+    <header class="aperion-topbar-v60">
+      <button class="aperion-icon-button" onclick="history.back()" aria-label="Geri">‹</button>
+      <div class="aperion-topbar-title" id="detailTitle">Detay</div>
+      <button class="aperion-icon-button" onclick="location.href='dashboard-v60.html'" aria-label="Özet">⌂</button>
+    </header>
+
+    <section class="aperion-period-area-v60">
+      <div class="aperion-period-scroll" id="periodChips"></div>
+      <div class="aperion-custom-date-panel" id="customDatePanel">
+        <input type="date" id="customStart" aria-label="Başlangıç tarihi">
+        <input type="date" id="customEnd" aria-label="Bitiş tarihi">
+        <button type="button" onclick="applyCustomPeriod()">Uygula</button>
+      </div>
+    </section>
+
+    <main>
+      <section class="aperion-section-card-v60">
+        <strong id="periodSummary">Dönem</strong>
+        <p class="aperion-kpi-subtext" id="detailSubtitle">Seçili döneme göre kırılım gösteriliyor.</p>
+      </section>
+
+      <section class="aperion-section-card-v60">
+        <div class="aperion-drilldown-tabs" id="detailTabs"></div>
+      </section>
+
+      <section style="padding:0 16px 18px" id="detailRows"></section>
+    </main>
+
+    <nav class="aperion-bottom-nav-v60">
+      <a class="aperion-nav-item-v60" href="dashboard-v60.html">📊<span>Özet</span></a>
+      <a class="aperion-nav-item-v60" href="belge-merkezi-v58.html">📄<span>Belgeler</span></a>
+      <a class="aperion-nav-item-v60 active" href="finans-onay-merkezi-v58.html">💼<span>Finans</span></a>
+      <a class="aperion-nav-item-v60" href="index.html">⌂<span>Ana</span></a>
+    </nav>
+  </div>
+
+<script>
+const MODULES = {
+  sales: { title:'Satışlar', tabs:['Kategori','Ürün','Müşteri','Marka','Fatura / İşlem'], seed:['Hasta Bezi','Kulak İşitme','Tekerlekli Sandalye','Sarf Malzeme'] },
+  expenses: { title:'Giderler', tabs:['Kategori','Tedarikçi','Ödeme Tipi','Sabit / Değişken','Belge'], seed:['Kargo','Personel','Kira','Banka Masrafı'] },
+  purchases: { title:'Alışlar', tabs:['Kategori','Ürün','Tedarikçi','Marka','Belge / Fatura'], seed:['Jender','Siemens','Medikal Sarf','Ortopedi'] },
+  profit: { title:'Kâr', tabs:['Gerçek Kâr','Tahmini Kâr','Kategori','Ürün','Müşteri','Eksik Maliyet'], seed:['Hasta Bezi','Kulak İşitme','Havalı Yatak','Eksik Maliyetli Ürün'] }
+};
+
+function moduleFromUrl(){
+  const p = new URLSearchParams(location.search);
+  return p.get('module') || p.get('type') || 'sales';
+}
+
+function money(n){ return new Intl.NumberFormat('tr-TR',{maximumFractionDigits:0}).format(Number(n||0)) + ' TL'; }
+function currentModule(){ return MODULES[moduleFromUrl()] || MODULES.sales; }
+
+function renderPeriods(){
+  const current = AperionDashboardState.getPeriod();
+  const bar = document.getElementById('periodChips');
+  bar.innerHTML = AperionDashboardState.periods.map(p => `<button type="button" class="aperion-period-chip ${p.id===current.id?'active':''}" data-period="${p.id}">${p.label}</button>`).join('');
+  document.querySelectorAll('.aperion-period-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const id = chip.dataset.period;
+      document.getElementById('customDatePanel').classList.toggle('open', id === 'custom');
+      if(id !== 'custom') AperionDashboardState.setPeriod(id);
+      else AperionDashboardState.setPeriod({ id:'custom' });
+    });
+  });
+}
+
+function renderTabs(){
+  const m = currentModule();
+  document.getElementById('detailTitle').textContent = m.title;
+  document.getElementById('detailTabs').innerHTML = m.tabs.map((t,i)=>`<button type="button" class="aperion-period-chip ${i===0?'active':''}" onclick="selectTab(this,'${t}')">${t}</button>`).join('');
+  renderRows(m.tabs[0]);
+}
+
+function renderRows(tab){
+  const m = currentModule();
+  const period = AperionDashboardState.getPeriod();
+  document.getElementById('periodSummary').textContent = period.label;
+  document.getElementById('detailSubtitle').textContent = `${m.title} / ${tab} kırılımı`;
+  document.getElementById('detailRows').innerHTML = m.seed.map((name,i)=>`
+    <div class="aperion-list-card">
+      <div><strong>${name}</strong><div class="aperion-kpi-subtext">${tab} · ${period.label}</div></div>
+      <strong>${money((i+1)*34500)}</strong>
+    </div>
+  `).join('');
+}
+
+function selectTab(el, tab){
+  document.querySelectorAll('#detailTabs .aperion-period-chip').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  renderRows(tab);
+}
+
+function applyCustomPeriod(){
+  const start = document.getElementById('customStart').value;
+  const end = document.getElementById('customEnd').value;
+  if(!start || !end){ alert('Başlangıç ve bitiş tarihi seç.'); return; }
+  AperionDashboardState.setCustomPeriod(start,end);
+}
+
+window.addEventListener('aperion:period-change',()=>{renderPeriods();renderTabs();});
+renderPeriods();
+renderTabs();
+</script>
+</body>
+</html>

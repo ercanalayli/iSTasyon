@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AperiON Telegram Komuta Merkezi v58</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#F3F6FA;--card:#fff;--line:#E4E7EC;--text:#101828;--muted:#667085;--blue:#1D4ED8;--green:#047857;--red:#B91C1C;--warn:#B45309;--purple:#6D28D9;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;--sans:Inter,Arial,sans-serif}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}.wrap{max-width:1400px;margin:0 auto;padding:18px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.title{font-size:26px;font-weight:950;letter-spacing:-.03em}.sub{font-size:13px;color:var(--muted);font-weight:750;line-height:1.45;margin-top:5px;max-width:920px}.badge{display:inline-flex;border:1px solid #BBF7D0;background:#F0FDF4;color:#047857;border-radius:999px;padding:7px 11px;font:950 11px var(--mono)}.btn{border:1px solid #D0D5DD;background:#fff;border-radius:10px;padding:9px 12px;font-weight:900;color:#344054;cursor:pointer;text-decoration:none}.btn:hover{border-color:var(--blue);color:var(--blue)}.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:12px 0}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 28px rgba(15,23,42,.055)}.k{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:950}.v{font:950 22px var(--mono);line-height:1.05;margin-top:10px}.green{color:var(--green)}.red{color:var(--red)}.warn{color:var(--warn)}.blue{color:var(--blue)}.purple{color:var(--purple)}.n{font-size:12px;color:var(--muted);font-weight:700;line-height:1.35;margin-top:8px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 28px rgba(15,23,42,.055);margin-top:12px}.panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}.panel-title{font:950 12px var(--mono);color:#344054;text-transform:uppercase;letter-spacing:.5px}.status{display:inline-flex;border-radius:999px;padding:5px 9px;font:950 10px var(--mono);border:1px solid #D0D5DD;background:#F8FAFC;color:#475467}.status.ok{background:#ECFDF5;color:#047857;border-color:#A7F3D0}.status.wait{background:#FFFBEB;color:#B45309;border-color:#FDE68A}.status.bad{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}.empty{border:1px dashed #D0D5DD;background:#F8FAFC;color:#667085;border-radius:12px;padding:13px;font-size:12px;font-weight:750;line-height:1.5}.note{background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46;border-radius:12px;padding:12px;font-size:12px;font-weight:800;line-height:1.45;margin-bottom:12px}.table-wrap{border:1px solid var(--line);border-radius:14px;overflow:auto;background:#fff}.tbl{width:100%;border-collapse:collapse;min-width:920px}.tbl th{background:#F8FAFC;color:#667085;font:950 10px var(--mono);text-align:left;text-transform:uppercase;letter-spacing:.4px;padding:10px;border-bottom:1px solid #EAECF0}.tbl td{padding:10px;border-bottom:1px solid #EAECF0;font-size:12px;color:#344054;font-weight:750;vertical-align:top}.tbl tr:last-child td{border-bottom:0}.strong{font-weight:950;color:#101828}.hint{font-size:11px;color:#667085;font-weight:700;margin-top:4px}.cmd{font:850 12px var(--mono);background:#F8FAFC;border:1px solid #EAECF0;border-radius:10px;padding:8px;white-space:pre-wrap}.foot{margin-top:12px;font-size:12px;color:#667085;font-weight:750;line-height:1.45}@media(max-width:1100px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.wrap{padding:12px}.grid{grid-template-columns:1fr}.title{font-size:21px}.tbl{min-width:780px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">Telegram Komuta Merkezi</div>
+      <div class="sub">Telegram’dan gelen her mesaj önce Komuta Kutusu’na düşer. Sistem mesajı niyet, hedef modül, güven seviyesi ve onay durumuna göre sınıflandırır.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="badge">v58.1 · komuta kutusu</span><button class="btn" onclick="loadCommands()">↻ Yenile</button><a class="btn" href="hayat-komuta-v58.html">Hayat Komuta</a><a class="btn" href="index.html">Ana Sayfa</a></div>
+  </div>
+  <div class="note">Bu ekran güvenli preview’dur. Telegram mesajını işleme/yanıt gönderme şimdilik pasif. Önce SQL kurulacak, sonra bot dosyası bu tabloya yazacak.</div>
+  <div class="grid" id="kpis"><div class="empty">Yükleniyor...</div></div>
+  <div class="panel">
+    <div class="panel-h"><div class="panel-title">Komuta Kutusu</div><span class="status wait" id="dataStatus">kontrol</span></div>
+    <div id="commandTable"><div class="empty">Komut verisi bekleniyor...</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><div class="panel-title">MVP Komut Hedefleri</div><span class="status ok">v58.1</span></div>
+    <div class="table-wrap"><table class="tbl"><thead><tr><th>Komut / Doğal Dil</th><th>Niyet</th><th>Modül</th><th>Beklenen Cevap</th></tr></thead><tbody><tr><td class="strong">/bugun · Bugün ne var?</td><td>query_today</td><td>life</td><td>Bugünkü açık kayıtlar</td></tr><tr><td class="strong">/hafta · Bu hafta ne var?</td><td>query_week</td><td>life</td><td>7 günlük özet</td></tr><tr><td class="strong">/gecikenler</td><td>query_late</td><td>life</td><td>Gecikenler</td></tr><tr><td class="strong">/odemeler</td><td>query_payments</td><td>life</td><td>Açık ödeme listesi</td></tr><tr><td class="strong">Peugeot ...</td><td>query_vehicle / create_record</td><td>life</td><td>Araç kayıtları veya taslak kayıt</td></tr><tr><td class="strong">Belge ...</td><td>query_document</td><td>document</td><td>Belge merkezi araması</td></tr></tbody></table></div>
+  </div>
+  <div class="foot">Kaynak: aperion_telegram_command_inbox_v58 ve aperion_telegram_new_commands_v58_view.</div>
+</div>
+<script>
+const SU='https://iilfwosoroflzubkaryj.supabase.co', SK='sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
+const db=supabase.createClient(SU,SK);
+const esc=s=>String(s??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
+function card(k,v,n,c='blue'){return `<div class="card"><div class="k">${esc(k)}</div><div class="v ${c}">${esc(v)}</div><div class="n">${esc(n||'')}</div></div>`}
+async function fetchRows(table,fn){try{const q=fn?fn(db.from(table)):db.from(table).select('*');const {data,error}=await q;if(error)return {rows:[],error:error.message};return {rows:data||[],error:null}}catch(e){return {rows:[],error:e.message||'eksik veri'}}}
+function badge(s){const v=String(s||'new');let c='wait';if(['processed','confirmed'].includes(v))c='ok';if(['error','ignored'].includes(v))c='bad';return `<span class="status ${c}">${esc(v)}</span>`}
+function row(r){return `<tr><td><div class="cmd">${esc(r.raw_text||r.command_text||'-')}</div><div class="hint">@${esc(r.username||'-')} · ${esc(r.message_type||'text')}</div></td><td><div class="strong">${esc(r.intent)}</div><div class="hint">güven: ${esc(r.confidence||0)}</div></td><td>${esc(r.target_module)}</td><td>${badge(r.status)}</td><td>${esc((r.created_at||'').slice(0,19).replace('T',' '))}</td><td>${esc(r.response_preview||r.error_message||'-')}</td></tr>`}
+function table(rows){if(!rows.length)return '<div class="empty">Henüz komut yok. Telegram bot bağlanınca mesajlar burada listelenecek.</div>';return `<div class="table-wrap"><table class="tbl"><thead><tr><th>Mesaj</th><th>Niyet</th><th>Modül</th><th>Durum</th><th>Tarih</th><th>Cevap/Hata</th></tr></thead><tbody>${rows.map(row).join('')}</tbody></table></div>`}
+async function loadCommands(){const kpis=document.getElementById('kpis'), body=document.getElementById('commandTable'), ds=document.getElementById('dataStatus');kpis.innerHTML='<div class="empty">Komuta kutusu okunuyor...</div>';
+ const res=await fetchRows('aperion_telegram_new_commands_v58_view',q=>q.select('*').limit(100));
+ const all=await fetchRows('aperion_telegram_command_inbox_v58',q=>q.select('*').limit(500));
+ const rows=all.rows||[];const active=res.rows||[];
+ const newCount=rows.filter(r=>r.status==='new').length;const draft=rows.filter(r=>r.status==='draft').length;const confirm=rows.filter(r=>r.status==='needs_confirmation').length;const processed=rows.filter(r=>r.status==='processed').length;const error=rows.filter(r=>r.status==='error').length;
+ const err=res.error||all.error;
+ kpis.innerHTML=[card('Toplam Komut',err?'bekliyor':String(rows.length),'Telegram girişleri','green'),card('Yeni',err?'bekliyor':String(newCount),'İşlenecek mesaj','blue'),card('Taslak',err?'bekliyor':String(draft),'Kayıt taslağı','warn'),card('Onay',err?'bekliyor':String(confirm),'Kullanıcı onayı bekleyen','purple'),card('Hata',err?'bekliyor':String(error),'Kontrol edilecek','red')].join('');
+ ds.textContent=err?'eksik veri':'ok';ds.className='status '+(err?'wait':'ok');
+ if(err){body.innerHTML=`<div class="empty">SQL/view henüz kurulmamış olabilir: ${esc(err)}<br>Önce finance/AperiON_Telegram_Command_Center_SQL_v58.sql Supabase üzerinde çalıştırılmalı.</div>`;return;}
+ body.innerHTML=table(active);
+}
+loadCommands();
+</script>
+</body>
+</html>

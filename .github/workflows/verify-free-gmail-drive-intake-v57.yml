@@ -1,0 +1,32 @@
+name: Verify Free Gmail Drive Intake v57
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'automation/google_apps_script_gmail_to_drive_v57.js'
+      - 'finance/AperiON_Free_Gmail_Drive_Intake_SQL_v57.sql'
+      - 'docs/APERION_FREE_AUTOMATION_SETUP_v57.md'
+      - 'docs/APERION_DRIVE_STRUCTURE_v57.md'
+      - 'tools/verify_free_gmail_drive_intake_v57.cjs'
+      - 'package.json'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-free-gmail-drive-intake-v57:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify free Gmail Drive intake
+        run: npm run verify:free-gmail-drive-intake-v57

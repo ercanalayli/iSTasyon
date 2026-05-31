@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AperiON Gelen Ekstreler v57</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#F3F6FA;--card:#fff;--line:#E4E7EC;--text:#101828;--muted:#667085;--blue:#1D4ED8;--green:#047857;--red:#B91C1C;--warn:#B45309;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;--sans:Inter,Arial,sans-serif}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}.wrap{max-width:1320px;margin:0 auto;padding:18px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.title{font-size:25px;font-weight:950;letter-spacing:-.03em}.sub{font-size:13px;color:var(--muted);font-weight:700;line-height:1.45;margin-top:5px;max-width:860px}.badge{display:inline-flex;border:1px solid #A7F3D0;background:#ECFDF5;color:#047857;border-radius:999px;padding:7px 11px;font:950 11px var(--mono)}.btn{border:1px solid #D0D5DD;background:#fff;border-radius:10px;padding:9px 12px;font-weight:900;color:#344054;cursor:pointer;text-decoration:none}.btn:hover{border-color:var(--blue);color:var(--blue)}.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:12px 0}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 28px rgba(15,23,42,.055)}.k{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:950}.v{font:950 24px var(--mono);line-height:1.05;margin-top:10px}.green{color:var(--green)}.red{color:var(--red)}.warn{color:var(--warn)}.blue{color:var(--blue)}.n{font-size:12px;color:var(--muted);font-weight:700;line-height:1.35;margin-top:8px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 28px rgba(15,23,42,.055)}.panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}.panel-title{font:950 12px var(--mono);color:#344054;text-transform:uppercase;letter-spacing:.5px}.status{display:inline-flex;border-radius:999px;padding:5px 9px;font:950 10px var(--mono);border:1px solid #D0D5DD;background:#F8FAFC;color:#475467}.status.ok{background:#ECFDF5;color:#047857;border-color:#A7F3D0}.status.wait{background:#FFFBEB;color:#B45309;border-color:#FDE68A}.status.bad{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}.empty{border:1px dashed #D0D5DD;background:#F8FAFC;color:#667085;border-radius:12px;padding:13px;font-size:12px;font-weight:750;line-height:1.5}.table-wrap{border:1px solid var(--line);border-radius:14px;overflow:auto;background:#fff}.tbl{width:100%;border-collapse:collapse;min-width:980px}.tbl th{background:#F8FAFC;color:#667085;font:950 10px var(--mono);text-align:left;text-transform:uppercase;letter-spacing:.4px;padding:10px;border-bottom:1px solid #EAECF0}.tbl td{padding:10px;border-bottom:1px solid #EAECF0;font-size:12px;color:#344054;font-weight:750;vertical-align:top}.tbl tr:last-child td{border-bottom:0}.file{font-weight:900;color:#101828}.small{font-size:11px;color:#667085;font-weight:700;margin-top:4px}.foot{margin-top:12px;font-size:12px;color:#667085;font-weight:750;line-height:1.45}@media(max-width:1100px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.wrap{padding:12px}.grid{grid-template-columns:1fr}.title{font-size:21px}.tbl{min-width:760px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">Gelen Ekstreler Merkezi</div>
+      <div class="sub">Ücretsiz Gmail → Google Drive akışından gelen banka ekstresi dosyalarını takip eder. Bu ekran sadece dosya giriş / kontrol ekranıdır; BizimHesap’a kayıt göndermez, kesin finans kaydı oluşturmaz.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="badge">v57 · Gmail/Drive intake</span><button class="btn" onclick="loadInbox()">↻ Yenile</button><a class="btn" href="nakit-komuta-v57.html">Nakit Komuta</a><a class="btn" href="index.html">Ana Sayfa</a></div>
+  </div>
+  <div class="grid" id="kpis"><div class="empty">Yükleniyor...</div></div>
+  <div class="panel">
+    <div class="panel-h"><div class="panel-title">Drive’dan Gelen Dosyalar</div><span class="status wait" id="dataStatus">kontrol</span></div>
+    <div id="inbox"><div class="empty">Veri bekleniyor...</div></div>
+  </div>
+  <div class="foot">Kaynak view’lar: <b>bank_statement_files_inbox_v57_view</b> ve <b>free_automation_health_v57_view</b>. Veri yoksa “eksik veri” gösterilir. Gerçek kurulumdan önce Supabase SQL dosyası çalıştırılmalıdır.</div>
+</div>
+<script>
+const SU='https://iilfwosoroflzubkaryj.supabase.co', SK='sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
+const db=supabase.createClient(SU,SK);
+const esc=s=>String(s??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
+const num=v=>Number.isFinite(+v)?+v:0;
+function stat(t){const s=String(t||'eksik veri');let c='wait';if(['processed','ok','İşlendi'].includes(s))c='ok';if(['failed','Hata'].includes(s))c='bad';return `<span class="status ${c}">${esc(s)}</span>`}
+function card(k,v,n,c='blue'){return `<div class="card"><div class="k">${esc(k)}</div><div class="v ${c}">${esc(v)}</div><div class="n">${esc(n||'')}</div></div>`}
+async function fetchRows(table,fn){try{const q=fn?fn(db.from(table)):db.from(table).select('*');const {data,error}=await q;if(error)return {rows:[],error:error.message};return {rows:data||[],error:null}}catch(e){return {rows:[],error:e.message||'eksik veri'}}}
+async function loadInbox(){const kpis=document.getElementById('kpis'), inbox=document.getElementById('inbox'), ds=document.getElementById('dataStatus');kpis.innerHTML='<div class="empty">Gelen dosyalar okunuyor...</div>';inbox.innerHTML='<div class="empty">Drive intake kayıtları okunuyor...</div>';
+ const health=await fetchRows('free_automation_health_v57_view',q=>q.select('*').eq('company','alayli').limit(1));
+ const files=await fetchRows('bank_statement_files_inbox_v57_view',q=>q.select('*').eq('company','alayli').limit(50));
+ const issues=[health.error,files.error].filter(Boolean);const h=health.rows[0]||{};
+ kpis.innerHTML=[card('Toplam Dosya',health.rows.length?String(num(h.total_files)):'eksik veri','Gmail/Drive intake kayıtları','blue'),card('Yeni',health.rows.length?String(num(h.new_files)):'eksik veri','Okuma bekleyen dosyalar','warn'),card('Onay Bekleyen',health.rows.length?String(num(h.approval_waiting_files)):'eksik veri','Onay merkezine düşenler','warn'),card('İşlenen',health.rows.length?String(num(h.processed_files)):'eksik veri','Tamamlanan dosyalar','green'),card('Hata',health.rows.length?String(num(h.failed_files)):'eksik veri','Kontrol gerektirenler',num(h.failed_files)>0?'red':'green')].join('');
+ ds.textContent=issues.length?'eksik veri':'ok';ds.className='status '+(issues.length?'wait':'ok');
+ if(!files.rows.length){inbox.innerHTML=`<div class="empty">${issues.length?'Eksik kurulum: '+esc([...new Set(issues)].join(', ')):'Henüz gelen ekstre dosyası yok.'}</div>`;return;}
+ inbox.innerHTML=`<div class="table-wrap"><table class="tbl"><thead><tr><th>Dosya</th><th>Durum</th><th>Mail</th><th>Tarih</th><th>Tür/Boyut</th><th>Not</th></tr></thead><tbody>${files.rows.map(r=>`<tr><td><div class="file">${r.drive_file_url?`<a href="${esc(r.drive_file_url)}" target="_blank">${esc(r.file_name)}</a>`:esc(r.file_name)}</div><div class="small">${esc(r.drive_file_id||'-')}</div></td><td>${stat(r.status_label||r.parse_status)}</td><td>${esc(r.gmail_from||'-')}<div class="small">${esc(r.gmail_subject||'-')}</div></td><td>${esc((r.received_at||r.gmail_date||'-').toString().substring(0,19).replace('T',' '))}</td><td>${esc(r.file_extension||'-')} / ${esc(r.file_size_bytes||'-')}</td><td>${esc(r.parser_note||'Parser bekliyor')}</td></tr>`).join('')}</tbody></table></div>`;
+}
+loadInbox();
+</script>
+</body>
+</html>

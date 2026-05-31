@@ -1,0 +1,29 @@
+name: Verify Incoming Bank Statements UI v57
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'gelen-ekstreler-v57.html'
+      - 'tools/verify_incoming_bank_statements_ui_v57.cjs'
+      - 'package.json'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-incoming-bank-statements-ui-v57:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify incoming bank statements UI
+        run: npm run verify:incoming-bank-statements-ui-v57

@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>AperiON v61 CEO Cockpit</title>
+  <link rel="stylesheet" href="assets/css/aperion-mobile-v60.css">
+  <script src="assets/js/dashboard-state-v60.js"></script>
+  <script src="assets/js/dashboard-data-v60.js"></script>
+</head>
+<body class="aperion-mobile-v60">
+  <div class="aperion-mobile-shell">
+    <div style="background:#fff7ed;border-bottom:1px solid #fed7aa;color:#9a3412;padding:8px 14px;font-size:12px;font-weight:900;text-align:center;">
+      v61 CEO Cockpit · Sadece Görüntüleme · Kesin kayıt oluşturmaz
+    </div>
+    <header class="aperion-topbar-v60">
+      <button class="aperion-icon-button" aria-label="Menu">☰</button>
+      <div class="aperion-topbar-title">AperiON CEO</div>
+      <button class="aperion-icon-button" aria-label="Profile">•</button>
+    </header>
+
+    <section class="ceo-status-card" id="ceoStatusCard">
+      <div class="ceo-status-icon">◉</div>
+      <div class="ceo-status-text" id="ceoStatusText">Sistem verileri taranıyor...</div>
+    </section>
+
+    <section class="aperion-period-area-v60">
+      <div class="aperion-period-scroll" id="periodChips"></div>
+      <div class="aperion-custom-date-panel" id="customDatePanel">
+        <input type="date" id="customStart" aria-label="Başlangıç tarihi">
+        <input type="date" id="customEnd" aria-label="Bitiş tarihi">
+        <button type="button" onclick="applyCustomPeriod()">Uygula</button>
+      </div>
+    </section>
+
+    <main>
+      <section class="risk-wrapper" id="riskRadarWrapper"></section>
+
+      <div class="section-title">Operasyon</div>
+      <section class="aperion-kpi-grid-v60">
+        <article class="aperion-kpi-card-v60" onclick="goDetail('sales')">
+          <div class="aperion-kpi-title">Satış Gücü</div>
+          <div class="aperion-kpi-value" id="salesValue">₺0</div>
+          <div class="aperion-kpi-subtext">Kategori, ürün, müşteri</div>
+        </article>
+        <article class="aperion-kpi-card-v60" onclick="goDetail('expenses')">
+          <div class="aperion-kpi-title">Gider Baskısı</div>
+          <div class="aperion-kpi-value" id="expensesValue">₺0</div>
+          <div class="aperion-kpi-subtext">Kategori, tedarikçi, ödeme tipi</div>
+        </article>
+        <article class="aperion-kpi-card-v60" onclick="goDetail('purchases')">
+          <div class="aperion-kpi-title">Alış Hacmi</div>
+          <div class="aperion-kpi-value" id="purchasesValue">₺0</div>
+          <div class="aperion-kpi-subtext">Ürün, tedarikçi, marka</div>
+        </article>
+        <article class="aperion-kpi-card-v60 aperion-kpi-profit" onclick="goDetail('profit')">
+          <div class="aperion-kpi-title">Kâr Sağlığı</div>
+          <div class="aperion-kpi-value" id="profitValue">₺0</div>
+          <div class="aperion-kpi-subtext" id="profitEstimate">Tahmini: ₺0</div>
+        </article>
+      </section>
+
+      <div class="section-title">Nakit Akışı</div>
+      <section class="pulse-grid" id="financePulseGrid"></section>
+
+      <div class="section-title">Aksiyon Planı</div>
+      <section class="priority-list" id="ceoPrioritiesList"></section>
+
+      <section class="aperion-section-card-v60">
+        <strong>Veri Güveni</strong>
+        <p class="aperion-kpi-subtext" id="dataTrustText">Kaynak, son güncelleme ve kayıt sayısı küçük rozetlerle gösterilecek.</p>
+      </section>
+    </main>
+
+    <nav class="aperion-bottom-nav-v60">
+      <a class="aperion-nav-item-v60 active" href="dashboard-v60.html">📊<span>Özet</span></a>
+      <a class="aperion-nav-item-v60" href="belge-merkezi-v58.html">📄<span>Belgeler</span></a>
+      <a class="aperion-nav-item-v60" href="finans-onay-merkezi-v58.html">💼<span>Finans</span></a>
+      <a class="aperion-nav-item-v60" href="index.html">⌂<span>Ana</span></a>
+    </nav>
+  </div>
+
+<script>
+function money(n){ return new Intl.NumberFormat('tr-TR',{maximumFractionDigits:0}).format(Number(n||0)) + ' TL'; }
+
+function renderPeriodChips(){
+  const current = AperionDashboardState.getPeriod();
+  document.getElementById('periodChips').innerHTML = AperionDashboardState.periods.map(p =>
+    `<button type="button" class="aperion-period-chip ${p.id===current.id?'active':''}" data-period="${p.id}">${p.label}</button>`
+  ).join('');
+  document.querySelectorAll('.aperion-period-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const id = chip.dataset.period;
+      document.getElementById('customDatePanel').classList.toggle('open', id === 'custom');
+      if(id !== 'custom') AperionDashboardState.setPeriod(id);
+      else AperionDashboardState.setPeriod({ id: 'custom' });
+    });
+  });
+}
+
+function generateCeoSentence(data){
+  const sales = Number(data.sales || 0);
+  const expenses = Number(data.expenses || 0);
+  const profit = Number(data.profit || 0);
+  const cashPosition = Number(data.cash || profit || 0);
+  const collectionsRisk = Number(data.overdueCollections || 3) > 0;
+  if(cashPosition < 0 && collectionsRisk) return 'Nakit döngüsünde daralma var. Tahsilat gecikmeleri çözülmeden <strong>yeni harcama onaylamayın.</strong>';
+  if(sales > expenses * 1.5 && cashPosition > 0) return 'Büyüme agresif, nakit pozisyonu güçlü. <strong>Yatırım fırsatları veya kâr realizasyonu</strong> değerlendirilebilir.';
+  if(expenses > sales && sales > 0) return 'Gider baskısı ciro artışını yutuyor. Operasyonel maliyetler <strong>acilen denetim altına alınmalı.</strong>';
+  if(collectionsRisk) return 'Satışlar gerçekleşiyor ancak <strong>tahsilat hızı yavaş.</strong> Nakit akışı için tahsilata odaklanın.';
+  if(profit < 0) return 'Kâr sağlığı negatif sinyal veriyor. Maliyet ve tahsilat tarafı <strong>bugün kontrol edilmeli.</strong>';
+  return 'Sistem stabil. Rutin onayları temizleyin, <strong>eksik maliyetleri tamamlatın.</strong>';
+}
+
+function renderFinancePulse(data){
+  const cash = Number(data.cash || data.profit || 0);
+  const expected = Number(data.expectedCollections || Math.round(Number(data.sales || 0) * 0.18));
+  const upcoming = Number(data.upcomingPayments || Math.round(Number(data.expenses || 0) * 0.75));
+  const net = cash + expected - upcoming;
+  document.getElementById('financePulseGrid').innerHTML = `
+    <div class="pulse-card"><span class="pulse-label">Nakit</span><span class="pulse-val">${money(cash)}</span></div>
+    <div class="pulse-card"><span class="pulse-label">Beklenen</span><span class="pulse-val">${money(expected)}</span></div>
+    <div class="pulse-card"><span class="pulse-label">Ödenecek</span><span class="pulse-val negative">-${money(upcoming)}</span></div>
+    <div class="pulse-card"><span class="pulse-label">Net Kısa Vade</span><span class="pulse-val ${net >= 0 ? 'positive' : 'negative'}">${money(net)}</span></div>
+  `;
+}
+
+function renderCeoPriorities(data){
+  const missingCost = Number(data.missingCostCount || 12);
+  const pending = Number(data.pendingApprovals || 4);
+  const overdue = Number(data.overdueCollections || 3);
+  const list = [
+    { type:'danger', icon:'!', text:`${overdue} tahsilat gecikti. Önce tahsilatı kapat.`, actionUrl:'#' },
+    { type:'warn', icon:'₺', text:'Bugünkü kritik ödemeleri kontrol et.', actionUrl:'finans-onay-merkezi-v58.html' },
+    { type:'warn', icon:'↻', text:'Moka / POS geçişlerini eşleştir.', actionUrl:'finans-onay-merkezi-v58.html' },
+    { type:'', icon:'✓', text:`${pending} kaydı Onay Merkezi’nde temizle.`, actionUrl:'finans-onay-merkezi-v58.html' },
+    { type:'danger', icon:'%', text:`${missingCost} eksik maliyeti tamamlat.`, actionUrl:AperionDashboardState.buildDetailUrl('profit') }
+  ];
+  document.getElementById('ceoPrioritiesList').innerHTML = list.slice(0,5).map(p => `
+    <div class="priority-item" onclick="location.href='${p.actionUrl}'">
+      <div class="priority-icon ${p.type}">${p.icon}</div>
+      <div class="priority-text">${p.text}</div>
+      <div style="color:#94a3b8;font-size:18px;">→</div>
+    </div>
+  `).join('');
+}
+
+function renderRiskRadar(data){
+  const missingCost = Number(data.missingCostCount || 12);
+  const pending = Number(data.pendingApprovals || 4);
+  const syncOk = data.dataSync !== false;
+  document.getElementById('riskRadarWrapper').innerHTML = `
+    <div class="risk-badge risk-warn" onclick="location.href='finans-onay-merkezi-v58.html'">${pending} Onay</div>
+    <div class="risk-badge risk-high" onclick="goDetail('profit')">${missingCost} Eksik Maliyet</div>
+    <div class="risk-badge risk-warn">Tahsilat Takibi</div>
+    <div class="risk-badge ${syncOk ? 'risk-low' : 'risk-warn'}">${syncOk ? 'Veri Güncel' : 'Eşitleme Bekliyor'}</div>
+  `;
+}
+
+async function renderValues(){
+  const p = AperionDashboardState.getPeriod();
+  const data = await AperionDashboardData.getSummary(p);
+  document.getElementById('salesValue').textContent = money(data.sales);
+  document.getElementById('expensesValue').textContent = money(data.expenses);
+  document.getElementById('purchasesValue').textContent = money(data.purchases);
+  document.getElementById('profitValue').textContent = money(data.profit);
+  document.getElementById('profitEstimate').textContent = 'Tahmini: ' + money(data.profitEstimated);
+  document.getElementById('ceoStatusText').innerHTML = generateCeoSentence(data);
+  renderRiskRadar(data);
+  renderFinancePulse(data);
+  renderCeoPriorities(data);
+  document.getElementById('dataTrustText').textContent = 'Merkezi veri katmanı aktif · Dönem: ' + p.label + ' · Ana ekran sadece gösterim modunda.';
+}
+
+function applyCustomPeriod(){
+  const start = document.getElementById('customStart').value;
+  const end = document.getElementById('customEnd').value;
+  if(!start || !end){ alert('Başlangıç ve bitiş tarihi seç.'); return; }
+  AperionDashboardState.setCustomPeriod(start, end);
+  document.getElementById('customDatePanel').classList.remove('open');
+}
+
+function goDetail(moduleName){ window.location.href = AperionDashboardState.buildDetailUrl(moduleName); }
+
+window.addEventListener('aperion:period-change', () => { renderPeriodChips(); renderValues(); });
+renderPeriodChips();
+renderValues();
+</script>
+</body>
+</html>
