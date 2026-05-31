@@ -88,13 +88,16 @@
     return String(moduleName || '')
       .replace(/^\//, '')
       .replace(/\.html$/i, '')
-      .replace(/-detail-v60$/i, '');
+      .replace(/-detail-v60$/i, '')
+      .replace(/^detail-v60\?module=/i, '')
+      .replace(/[^a-z_]/gi, '');
   }
 
   function buildDetailUrl(moduleName) {
     const module = cleanModuleName(moduleName);
     const period = getPeriod();
-    const url = new URL(`${module}-detail-v60.html`, window.location.href);
+    const url = new URL('detail-v60.html', window.location.href);
+    url.searchParams.set('module', module || 'sales');
     url.searchParams.set('period', period.id);
     if (period.id === 'custom') {
       if (period.start) url.searchParams.set('start', period.start);
