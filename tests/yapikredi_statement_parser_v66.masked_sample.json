@@ -1,0 +1,59 @@
+{
+  "version": "v66",
+  "purpose": "Masked sample output for Yapı Kredi statement parser",
+  "source": "gmail_yapikredi_pdf",
+  "account": {
+    "bank": "Yapı Kredi",
+    "bizimhesap_account_name": "YAPI KREDİ ŞİRKET",
+    "bank_account_code": "YAPI_KREDI_SIRKET",
+    "iban_masked": "TR50**************5056",
+    "period": "masked"
+  },
+  "sample_pending_rows": [
+    {
+      "bank_row_key": "26052026092753-01",
+      "transaction_date": "26/05/2026",
+      "transaction_time": "09:27:53",
+      "description_type": "bank_fee_bsmv",
+      "amount": -0.80,
+      "movement_type": "banka_masrafi",
+      "gider_yeri_adi": "Banka Masrafları",
+      "counterparty_name": "Yapı Kredi Bankası",
+      "confidence_score": 95,
+      "approval_status": "pending"
+    },
+    {
+      "bank_row_key": "26052026092753-03",
+      "transaction_date": "26/05/2026",
+      "transaction_time": "09:27:53",
+      "description_type": "internal_transfer_candidate",
+      "amount": -36000.00,
+      "movement_type": "virman",
+      "gider_yeri_adi": "Virman / Bankalar Arası Aktarım",
+      "counterparty_name": "Karşı banka hesabı kontrol edilecek",
+      "confidence_score": 75,
+      "approval_status": "needs_review"
+    },
+    {
+      "bank_row_key": "26052026041728-04",
+      "transaction_date": "26/05/2026",
+      "transaction_time": "04:17:28",
+      "description_type": "pos_collection",
+      "amount": 340.00,
+      "movement_type": "pos",
+      "gelir_yeri_adi": "POS Tahsilatları",
+      "counterparty_name": "Yapı Kredi POS",
+      "confidence_score": 85,
+      "approval_status": "pending"
+    }
+  ],
+  "quality_gate": {
+    "mail_load_button": "not_allowed",
+    "must_generate_bank_row_key": true,
+    "must_classify_movement": true,
+    "must_suggest_cari": true,
+    "must_suggest_expense_or_income_place": true,
+    "must_set_confidence_score": true,
+    "must_keep_uncertain_records_needs_review": true
+  }
+}
