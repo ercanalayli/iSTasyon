@@ -1,0 +1,41 @@
+{
+  "version": "v64",
+  "purpose": "Finance movement pending pool suggestion fields before approval",
+  "company_code": "ALAYLI_MEDIKAL",
+  "required_before_approval": [
+    "bank_row_key",
+    "bank_account_code",
+    "movement_direction",
+    "movement_type",
+    "center_type",
+    "center_name",
+    "confidence_score",
+    "suggestion_reason",
+    "approval_status"
+  ],
+  "expense_required_before_approval": [
+    "gider_yeri_adi",
+    "counterparty_name"
+  ],
+  "income_required_before_approval": [
+    "gelir_yeri_adi"
+  ],
+  "fields": [
+    { "name": "bank_row_key", "type": "text", "required": true, "note": "Yapi Kredi date time row key such as 26052026092753-01" },
+    { "name": "bank_account_code", "type": "text", "required": true, "default": "YAPI_KREDI_SIRKET" },
+    { "name": "movement_direction", "type": "text", "required": true, "allowed": ["giris", "cikis"] },
+    { "name": "movement_type", "type": "text", "required": true },
+    { "name": "counterparty_name", "type": "text", "required": false },
+    { "name": "counterparty_cari_id", "type": "text", "required": false },
+    { "name": "counterparty_cari_status", "type": "text", "required": false, "allowed": ["matched", "not_matched", "not_required"] },
+    { "name": "center_type", "type": "text", "required": true },
+    { "name": "center_name", "type": "text", "required": true },
+    { "name": "gider_yeri_id", "type": "text", "required": false },
+    { "name": "gider_yeri_adi", "type": "text", "required": false },
+    { "name": "gelir_yeri_id", "type": "text", "required": false },
+    { "name": "gelir_yeri_adi", "type": "text", "required": false },
+    { "name": "confidence_score", "type": "integer", "required": true, "min": 0, "max": 100 },
+    { "name": "suggestion_reason", "type": "text", "required": true },
+    { "name": "approval_status", "type": "text", "required": true, "allowed": ["pending", "approved", "rejected", "needs_review"] }
+  ]
+}
