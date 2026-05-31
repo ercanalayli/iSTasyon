@@ -46,9 +46,12 @@
     const valid = PERIODS.some(p => p.id === id) ? id : 'today';
     return {
       id: valid,
+      period: valid,
       label: PERIODS.find(p => p.id === valid).label,
       start: period && period.start ? period.start : null,
       end: period && period.end ? period.end : null,
+      startDate: period && period.start ? period.start : null,
+      endDate: period && period.end ? period.end : null,
     };
   }
 
@@ -77,9 +80,21 @@
     return period;
   }
 
+  function setCustomPeriod(start, end, options = {}) {
+    return setPeriod({ id: 'custom', start, end }, options);
+  }
+
+  function cleanModuleName(moduleName) {
+    return String(moduleName || '')
+      .replace(/^\//, '')
+      .replace(/\.html$/i, '')
+      .replace(/-detail-v60$/i, '');
+  }
+
   function buildDetailUrl(moduleName) {
+    const module = cleanModuleName(moduleName);
     const period = getPeriod();
-    const url = new URL(`${moduleName}-detail-v60.html`, window.location.href);
+    const url = new URL(`${module}-detail-v60.html`, window.location.href);
     url.searchParams.set('period', period.id);
     if (period.id === 'custom') {
       if (period.start) url.searchParams.set('start', period.start);
@@ -92,6 +107,7 @@
     periods: PERIODS,
     getPeriod,
     setPeriod,
+    setCustomPeriod,
     buildDetailUrl,
   };
 })();
