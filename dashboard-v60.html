@@ -6,6 +6,7 @@
   <title>AperiON v60 Dashboard</title>
   <link rel="stylesheet" href="assets/css/aperion-mobile-v60.css">
   <script src="assets/js/dashboard-state-v60.js"></script>
+  <script src="assets/js/dashboard-data-v60.js"></script>
 </head>
 <body class="aperion-mobile-v60">
   <div class="aperion-mobile-shell">
@@ -55,7 +56,7 @@
 
       <section class="aperion-section-card-v60">
         <strong>Veri Güveni</strong>
-        <p class="aperion-kpi-subtext">Kaynak, son güncelleme ve kayıt sayısı küçük rozetlerle gösterilecek.</p>
+        <p class="aperion-kpi-subtext" id="dataTrustText">Kaynak, son güncelleme ve kayıt sayısı küçük rozetlerle gösterilecek.</p>
       </section>
     </main>
 
@@ -68,17 +69,6 @@
   </div>
 
 <script>
-const demoData = {
-  today: { sales: 245350, expenses: 32900, purchases: 78600, profit: 58100, profitEstimated: 64200 },
-  yesterday: { sales: 198200, expenses: 27500, purchases: 62400, profit: 48600, profitEstimated: 51100 },
-  this_week: { sales: 1248750, expenses: 218400, purchases: 402700, profit: 286500, profitEstimated: 312900 },
-  this_month: { sales: 4824500, expenses: 914000, purchases: 1568000, profit: 1104500, profitEstimated: 1220000 },
-  last_month: { sales: 4390000, expenses: 1005000, purchases: 1480000, profit: 982000, profitEstimated: 1050000 },
-  this_year: { sales: 28450000, expenses: 6175000, purchases: 9520000, profit: 6520000, profitEstimated: 7180000 },
-  last_year: { sales: 22100000, expenses: 5840000, purchases: 8100000, profit: 4680000, profitEstimated: 5020000 },
-  custom: { sales: 0, expenses: 0, purchases: 0, profit: 0, profitEstimated: 0 }
-};
-
 function money(n){ return new Intl.NumberFormat('tr-TR',{maximumFractionDigits:0}).format(Number(n||0)) + ' TL'; }
 
 function renderPeriodChips(){
@@ -96,21 +86,23 @@ function renderPeriodChips(){
   });
 }
 
-function renderValues(){
+async function renderValues(){
   const p = AperionDashboardState.getPeriod();
-  const data = demoData[p.id] || demoData.today;
+  const data = await AperionDashboardData.getSummary(p);
   document.getElementById('salesValue').textContent = money(data.sales);
   document.getElementById('expensesValue').textContent = money(data.expenses);
   document.getElementById('purchasesValue').textContent = money(data.purchases);
   document.getElementById('profitValue').textContent = money(data.profit);
   document.getElementById('profitEstimate').textContent = 'Tahmini: ' + money(data.profitEstimated);
+  document.getElementById('dataTrustText').textContent = 'Merkezi veri katmanı aktif · Dönem: ' + p.label;
 }
 
 function applyCustomPeriod(){
   const start = document.getElementById('customStart').value;
   const end = document.getElementById('customEnd').value;
   if(!start || !end){ alert('Başlangıç ve bitiş tarihi seç.'); return; }
-  AperionDashboardState.setPeriod({ id:'custom', start, end });
+  AperionDashboardState.setCustomPeriod(start, end);
+  document.getElementById('customDatePanel').classList.remove('open');
 }
 
 function goDetail(moduleName){
