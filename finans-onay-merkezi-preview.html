@@ -11,6 +11,7 @@
     .updated { background:#ecfdf3; border:1px solid #bbf7d0; color:#047857; text-align:center; padding:9px 10px; font-size:12px; font-weight:900; margin-bottom:14px; border-radius:8px; }
     .notice { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; padding:10px; border-radius:10px; font-size:12px; font-weight:800; margin-bottom:15px; line-height:1.35; }
     .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(15,23,42,0.05); margin-bottom: 15px; border:1px solid #e2e8f0; }
+    .section-title { font-size: 13px; font-weight: 900; margin-bottom: 10px; color: #475569; }
     .form-group { margin-bottom: 10px; display: flex; gap: 10px; }
     input, button { padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; flex: 1; font-size: 15px; }
     button { background: #0f172a; color: white; border: none; font-weight: bold; cursor: pointer; flex: none; width: 100%; margin-top: 5px; }
@@ -18,10 +19,13 @@
     .quick { white-space:nowrap; width:auto; margin:0; background:#fff; color:#0f172a; border:1px solid #cbd5e1; padding:8px 10px; border-radius:999px; font-size:12px; }
     .pending-list { display: flex; flex-direction: column; gap: 10px; }
     .pending-item { border: 1px solid #e2e8f0; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 8px; background: #fff; }
+    .pending-item.duplicate { border-left-color:#ef4444; background:#fff7f7; opacity:.85; }
     .item-header { display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 5px; }
-    .item-desc { font-weight: bold; font-size: 14px; color: #1e293b; margin-bottom: 8px; }
+    .item-desc { font-weight: bold; font-size: 14px; color: #1e293b; margin-bottom: 8px; line-height:1.35; }
     .item-amount { font-size: 16px; font-weight: 900; color: #0f172a; }
-    .item-id { font-size: 10px; color:#94a3b8; font-family: monospace; margin-top: 5px; word-break: break-all; }
+    .amount-in { color:#047857; }
+    .amount-out { color:#dc2626; }
+    .item-id { font-size: 10px; color:#94a3b8; font-family: monospace; margin-top: 5px; word-break: break-all; line-height:1.45; }
     .action-btns { display: flex; gap: 8px; margin-top: 10px; }
     .btn-approve { background: #10b981; padding: 8px; font-size: 12px; flex: 1; color: white; border: none; border-radius: 6px; cursor: pointer; }
     .btn-reject { background: #ef4444; padding: 8px; font-size: 12px; flex: 1; color: white; border: none; border-radius: 6px; cursor: pointer; }
@@ -29,16 +33,34 @@
     .empty { font-size: 12px; color: #94a3b8; }
     .sim-log { font-size: 12px; color: #ef4444; margin-top: 8px; font-weight: bold; }
     .ok-log { color:#047857; }
+    .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+    .info-box { border:1px solid #e2e8f0; border-radius:10px; padding:10px; background:#f8fafc; }
+    .info-label { font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase; }
+    .info-value { font-size:16px; font-weight:900; margin-top:4px; }
   </style>
 </head>
 <body>
 
-  <div class="banner">YENİ ÖZELLİK: Banka Hareketi & Onay Merkezi Preview</div>
-  <div class="updated">Güncellendi: 31.05.2026 17:45 · Sadece test/simülasyon</div>
-  <div class="notice">Bu ekran canlı finans kaydı oluşturmaz. Banka ekstresi satırının parser havuzuna düşmesi, mükerrer kontrolü ve onaydan sonra ledger simülasyonuna geçmesi test edilir.</div>
+  <div class="banner">YENİ ÖZELLİK: Mailden Banka Hareketi & Onay Merkezi</div>
+  <div class="updated">Güncellendi: 01.06.2026 00:42 · Tek ekran · Gmail/Yapı Kredi → Pending</div>
+  <div class="notice">Bu ekran canlı finans kaydı oluşturmaz. Mailden gelen Yapı Kredi hesap hareketleri burada Onay Bekleyenler’e düşer. Aynı tarih aralığı tekrar gönderilirse işlenmiş satır ID’leri mükerrer olarak süzülür.</div>
 
   <div class="card">
-    <div style="font-size: 12px; font-weight: bold; margin-bottom: 10px; color: #64748b;">Banka Ekstresi Satırı Simüle Et:</div>
+    <div class="section-title">Mailden Gelen Yapı Kredi Ekstresi</div>
+    <div class="item-id">Konu: Hesap_Hareketleri_ERHAN_ALAYLI_20260601_001746128<br>Ek: Hesap_Hareketleri_ERHAN_ALAYLI_20260601_001746128.pdf<br>IBAN: TR500006701000000077455056<br>ID kuralı: tarih+saat+satır sıra no</div>
+    <button onclick="loadYapiKrediMailMovements()">Mailden Gelen Hareketleri Onaya Düşür</button>
+    <button onclick="markFirstRowsProcessed()" style="background:#334155;">İlk 2 Satırı Daha Önce İşlenmiş Say</button>
+    <div class="info-grid">
+      <div class="info-box"><div class="info-label">Okunan</div><div class="info-value" id="readCount">0</div></div>
+      <div class="info-box"><div class="info-label">Yeni</div><div class="info-value" id="newCount">0</div></div>
+      <div class="info-box"><div class="info-label">Mükerrer</div><div class="info-value" id="dupCount">0</div></div>
+      <div class="info-box"><div class="info-label">Kaynak</div><div class="info-value" style="font-size:13px">Gmail PDF</div></div>
+    </div>
+    <div id="mailLog" class="sim-log"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Manuel Banka Ekstresi Satırı Simüle Et</div>
     <div class="quick-row">
       <button class="quick" onclick="fillExample('2026-05-31','1250','EFT: Müşteri A')">EFT Müşteri</button>
       <button class="quick" onclick="fillExample('2026-05-31','4500','Moka United aktarım')">Moka</button>
@@ -55,20 +77,47 @@
   </div>
 
   <div class="card">
-    <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Onay Bekleyenler (Pending)</div>
+    <div class="section-title">Onay Bekleyenler (Pending)</div>
     <div class="pending-list" id="pendingList">
-      <div class="empty">Havuz boş. Yeni hareket ekleyin.</div>
+      <div class="empty">Havuz boş. Mailden gelen hareketleri yükleyin.</div>
     </div>
   </div>
 
   <div class="card">
-    <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Kesin Finans Defteri (Ledger Simülasyonu)</div>
+    <div class="section-title">Mükerrer / İşlenmiş Olanlar</div>
+    <div class="pending-list" id="duplicateList">
+      <div class="empty">Henüz mükerrer yok.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Kesin Finans Defteri (Ledger Simülasyonu)</div>
     <div class="ledger-log" id="ledgerLog">Bekliyor...</div>
   </div>
 
   <script>
     const pendingDB = [];
+    const duplicateDB = [];
     let hashRegistry = [];
+    const processedBankRowKeys = new Set();
+
+    const yapiKrediMailRows = [
+      { date:'29/05/2026', time:'08:23:52', seq:1, type:'Diğer', desc:'HGS Talimat-1128326136/16BYB273', amount:-500.00, balance:-3653.07 },
+      { date:'28/05/2026', time:'18:22:24', seq:1, type:'Diğer', desc:'HGS Onl.OSMANGAZİ/1128326136/16BYB273', amount:-315.00, balance:-3153.07 },
+      { date:'26/05/2026', time:'09:27:53', seq:1, type:'Diğer', desc:'BSMV ELEKTRONİK FON TRANSFERİ ÜCRETİ-FAST/ALAYLI MEDİKAL/yapı kredi de', amount:-0.80, balance:871.93 },
+      { date:'26/05/2026', time:'09:27:53', seq:2, type:'Diğer', desc:'ELEKTRONİK FON TRANSFERİ ÜCRETİ-FAST/ALAYLI MEDİKAL/yapı kredi de', amount:-15.96, balance:872.73 },
+      { date:'26/05/2026', time:'09:27:53', seq:3, type:'Para Gönder', desc:'GİDEN FAST - ALAYLI MEDİKAL ORTOPEDİ TAŞIMACILIK TİC LTD ŞTİ - yapı kredi den akbank virman', amount:-36000.00, balance:888.69 },
+      { date:'26/05/2026', time:'04:17:28', seq:1, type:'Diğer', desc:'1801241323X260526250526PEŞİNSATIŞ KATKIPAYI', amount:-0.51, balance:36888.69 },
+      { date:'26/05/2026', time:'04:17:28', seq:2, type:'Diğer', desc:'1801241323X260526250526ÜYE İŞYERİ ÜCRETİ - PEŞİN BSMV', amount:-0.18, balance:36889.20 },
+      { date:'26/05/2026', time:'04:17:28', seq:3, type:'Diğer', desc:'1801241323X260526250526ÜYE İŞYERİ ÜCRETİ - PEŞİN', amount:-3.53, balance:36889.38 },
+      { date:'26/05/2026', time:'04:17:28', seq:4, type:'Diğer', desc:'1801241323X260526250526PEŞİNSATIŞ', amount:340.00, balance:36892.91 },
+      { date:'22/05/2026', time:'15:49:01', seq:1, type:'Para Gönder', desc:'GELEN EFT - KTS KABELBAUM TEST SİSTEM - ISBANK EFT', amount:30000.00, balance:37497.91 }
+    ];
+
+    function onlyDigits(value) { return String(value || '').replace(/\D/g, ''); }
+    function buildYapiKrediGroupKey(date, time) { return onlyDigits(date) + onlyDigits(time); }
+    function buildYapiKrediRowKey(row) { return buildYapiKrediGroupKey(row.date, row.time) + '-' + String(row.seq).padStart(2, '0'); }
+    function formatTL(value) { return '₺' + Number(value).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
     function fillExample(date, amount, desc) {
       document.getElementById('tDate').value = date;
@@ -79,7 +128,7 @@
     function generateHash(str) {
       let hash = 0;
       for (let i = 0; i < str.length; i++) hash = Math.imul(31, hash) + str.charCodeAt(i) | 0;
-      return "txn_" + Math.abs(hash).toString(16);
+      return 'txn_' + Math.abs(hash).toString(16);
     }
 
     function addBankTransaction() {
@@ -104,30 +153,98 @@
       }
 
       hashRegistry.push(txnHash);
-      const newRecord = { id: txnHash, date, amount, desc, status: 'pending', company: 'ALAYLI Medikal' };
+      const newRecord = { id: txnHash, date, amount: Number(amount), desc, status: 'pending', company: 'ALAYLI Medikal', source:'manual' };
       pendingDB.push(newRecord);
       log.className = 'sim-log ok-log';
       log.textContent = `Havuza alındı: ${txnHash}`;
       renderPendingList();
     }
 
+    function markFirstRowsProcessed() {
+      processedBankRowKeys.add('29052026082352-01');
+      processedBankRowKeys.add('28052026182224-01');
+      document.getElementById('mailLog').className = 'sim-log ok-log';
+      document.getElementById('mailLog').textContent = 'İlk 2 Yapı Kredi satırı daha önce işlenmiş kabul edildi. Şimdi tekrar yükleyin.';
+    }
+
+    function loadYapiKrediMailMovements() {
+      let added = 0;
+      let duplicated = 0;
+      duplicateDB.length = 0;
+
+      for (const row of yapiKrediMailRows) {
+        const bankRowKey = buildYapiKrediRowKey(row);
+        const groupKey = buildYapiKrediGroupKey(row.date, row.time);
+        const existingInPending = pendingDB.some(x => x.id === bankRowKey);
+        const alreadyProcessed = processedBankRowKeys.has(bankRowKey);
+
+        const record = {
+          id: bankRowKey,
+          groupKey,
+          date: row.date,
+          time: row.time,
+          amount: row.amount,
+          balance: row.balance,
+          desc: row.desc,
+          type: row.type,
+          status: 'pending',
+          company: 'ALAYLI Medikal',
+          source: 'gmail_yapikredi_pdf'
+        };
+
+        if (alreadyProcessed || existingInPending) {
+          duplicated++;
+          duplicateDB.push({ ...record, status: alreadyProcessed ? 'processed' : 'pending_duplicate' });
+          continue;
+        }
+
+        pendingDB.push(record);
+        added++;
+      }
+
+      document.getElementById('readCount').textContent = yapiKrediMailRows.length;
+      document.getElementById('newCount').textContent = added;
+      document.getElementById('dupCount').textContent = duplicated;
+      document.getElementById('mailLog').className = 'sim-log ok-log';
+      document.getElementById('mailLog').textContent = `Mail PDF işlendi. Yeni: ${added}, Mükerrer/işlenmiş: ${duplicated}`;
+      renderPendingList();
+      renderDuplicateList();
+    }
+
     function renderPendingList() {
       const list = document.getElementById('pendingList');
       if (pendingDB.length === 0) {
-        list.innerHTML = `<div class="empty">Havuz boş.</div>`;
+        list.innerHTML = `<div class="empty">Havuz boş. Mailden gelen hareketleri yükleyin.</div>`;
         return;
       }
 
       list.innerHTML = pendingDB.map(txn => `
         <div class="pending-item" id="card_${txn.id}">
-          <div class="item-header"><span>${txn.company}</span><span>${txn.date}</span></div>
+          <div class="item-header"><span>${txn.company} · ${txn.source || 'parser'}</span><span>${txn.date}${txn.time ? ' ' + txn.time : ''}</span></div>
           <div class="item-desc">${txn.desc}</div>
-          <div class="item-amount">₺${Number(txn.amount).toLocaleString('tr-TR')}</div>
-          <div class="item-id">${txn.id}</div>
+          <div class="item-amount ${Number(txn.amount) < 0 ? 'amount-out' : 'amount-in'}">${formatTL(txn.amount)}</div>
+          <div class="item-id">ID: ${txn.id}${txn.groupKey ? `<br>Grup ID: ${txn.groupKey}` : ''}${txn.balance != null ? `<br>Bakiye: ${formatTL(txn.balance)}` : ''}<br>Durum: ONAY BEKLİYOR</div>
           <div class="action-btns">
             <button class="btn-approve" onclick="approveTxn('${txn.id}')">ONAYLA</button>
             <button class="btn-reject" onclick="rejectTxn('${txn.id}')">SİL</button>
           </div>
+        </div>
+      `).join('');
+    }
+
+    function renderDuplicateList() {
+      const list = document.getElementById('duplicateList');
+      if (duplicateDB.length === 0) {
+        list.innerHTML = `<div class="empty">Henüz mükerrer yok.</div>`;
+        return;
+      }
+
+      list.innerHTML = duplicateDB.map(txn => `
+        <div class="pending-item duplicate">
+          <div class="item-header"><span>${txn.company} · ${txn.source}</span><span>${txn.date} ${txn.time}</span></div>
+          <div class="item-desc">${txn.desc}</div>
+          <div class="item-amount ${Number(txn.amount) < 0 ? 'amount-out' : 'amount-in'}">${formatTL(txn.amount)}</div>
+          <div class="item-id">ID: ${txn.id}<br>Grup ID: ${txn.groupKey}<br>Durum: ${txn.status === 'processed' ? 'DAHA ÖNCE İŞLENMİŞ' : 'PENDING HAVUZDA ZATEN VAR'}</div>
         </div>
       `).join('');
     }
@@ -137,10 +254,11 @@
       if (txnIndex < 0) return;
       const txn = pendingDB[txnIndex];
       pendingDB.splice(txnIndex, 1);
+      if (String(txn.id).match(/^\d{14}-\d{2}$/)) processedBankRowKeys.add(txn.id);
       renderPendingList();
       const ledger = document.getElementById('ledgerLog');
       if (ledger.textContent.trim() === 'Bekliyor...') ledger.textContent = '';
-      ledger.innerHTML += `\n[ONAYLANDI] ${txn.date} | ₺${Number(txn.amount).toLocaleString('tr-TR')} | ${txn.desc} | ${txn.id} -> Kesin kayda işlendi.`;
+      ledger.innerHTML += `\n[ONAYLANDI] ${txn.date}${txn.time ? ' ' + txn.time : ''} | ${formatTL(txn.amount)} | ${txn.desc} | ${txn.id} -> Kesin kayda işlendi.`;
     }
 
     function rejectTxn(id) {
