@@ -11,33 +11,23 @@ body{margin:0;background:#f4f6fa;color:#0f172a;font-family:-apple-system,BlinkMa
 </head>
 <body>
 <div class="top">Mailden Banka Hareketi ve Akıllı Onay Merkezi</div>
-<div class="upd">Güncellendi: 01.06.2026 02:05 · Supabase pending adapter bağlı</div>
-<div class="note">Mailden yükle butonu yok. Sistem önce Supabase pending havuzunu okur; bağlantı yoksa demo veriyle açılır. Düzelt ve Onayla aktif.</div>
+<div class="upd">Güncellendi: 01.06.2026 02:32 · Gerçek Gmail Yapı Kredi ekstresi bağlandı</div>
+<div class="note">Mailden yükle butonu yok. Ekran önce Supabase pending havuzunu dener; canlı bağlantı yoksa gönderdiğin gerçek Gmail Yapı Kredi ekstresinden çıkarılan kayıtları gösterir. Demo veri yok.</div>
 <div class="source" id="sourceStatus">Veri kaynağı kontrol ediliyor...</div>
 <div class="card"><div class="title">Mail Sinyali</div><div class="grid"><div class="box"><div class="n" id="readCount">0</div><div class="l">OKUNAN</div></div><div class="box"><div class="n" id="newCount">0</div><div class="l">YENİ</div></div><div class="box"><div class="n" id="dupCount">0</div><div class="l">MÜKERRER</div></div></div></div>
 <div class="card"><div class="title">Onay Bekleyenler</div><div id="list"><div class="meta">Yükleniyor...</div></div></div>
 <div class="card"><div class="title">Onaylananlar</div><div class="ledger" id="ledger">Bekliyor...</div></div>
 <script>
-const demoRows=[
-{id:'26052026092753-01',bank_row_key:'26052026092753-01',transaction_date:'26/05/2026',transaction_time:'09:27:53',description:'BSMV EFT Ücreti',amount:-0.80,movement_type:'Banka masrafı',place:'Banka Masrafları',counterparty_name:'Yapı Kredi Bankası',confidence_score:95,suggestion_reason:'Açıklamada BSMV ve EFT ücreti geçti.',approval_status:'pending'},
-{id:'26052026092753-02',bank_row_key:'26052026092753-02',transaction_date:'26/05/2026',transaction_time:'09:27:53',description:'EFT Ücreti',amount:-15.96,movement_type:'Banka masrafı',place:'Banka Masrafları',counterparty_name:'Yapı Kredi Bankası',confidence_score:95,suggestion_reason:'Açıklamada EFT ücreti geçti.',approval_status:'pending'},
-{id:'26052026092753-03',bank_row_key:'26052026092753-03',transaction_date:'26/05/2026',transaction_time:'09:27:53',description:'Giden FAST Akbank virman',amount:-36000,movement_type:'Virman',place:'Virman / Bankalar Arası Aktarım',counterparty_name:'Akbank hesabı',confidence_score:75,suggestion_reason:'Açıklamada virman ve banka adı geçti. Karşı hesap kontrol edilmeli.',approval_status:'needs_review'},
-{id:'26052026041728-04',bank_row_key:'26052026041728-04',transaction_date:'26/05/2026',transaction_time:'04:17:28',description:'Peşin satış',amount:340,movement_type:'POS tahsilatı',place:'POS Tahsilatları',counterparty_name:'Yapı Kredi POS',confidence_score:85,suggestion_reason:'Açıklamada peşin satış geçti.',approval_status:'pending'},
-{id:'22052026154901-01',bank_row_key:'22052026154901-01',transaction_date:'22/05/2026',transaction_time:'15:49:01',description:'Gelen EFT KTS',amount:30000,movement_type:'Tahsilat',place:'Cari Tahsilatları',counterparty_name:'KTS Kabelbaum Test Sistem',confidence_score:65,suggestion_reason:'Gelen EFT algılandı. Cari eşleşmesi netleşmeli.',approval_status:'needs_review'}
-];
-let pending=[],approved=[],usingDemo=true;
+let pending=[],approved=[],remoteMode=false;
 function tl(x){return '₺'+Number(x||0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})}
 function asRow(r){return{ id:r.id||r.bank_row_key, bank_row_key:r.bank_row_key||r.id, dt:(r.transaction_date||'')+' '+(r.transaction_time||''), d:r.description||'', a:Number(r.amount||0), type:r.movement_type||'Diğer', place:r.place||r.gider_yeri_adi||r.gelir_yeri_adi||r.center_name||'Diğer / İnceleme Gerekli', cari:r.counterparty_name||'Cari eşleşmesi bekliyor', score:Number(r.confidence_score||0), why:r.suggestion_reason||'Otomatik sınıflandırma sonucu.', status:r.approval_status||'pending', editing:false }}
+async function fetchStaticGmailRows(){const res=await fetch('data/yapikredi-pending-20260601.json?v=2',{cache:'no-store'});if(!res.ok)throw new Error('Gerçek ekstre JSON okunamadı');return await res.json()}
 async function loadData(){
-  const adapter=window.AperionFinanceApprovalData;
-  if(adapter&&adapter.fetchPending){
-    const res=await adapter.fetchPending();
-    if(res.ok&&res.rows&&res.rows.length){
-      usingDemo=false; pending=res.rows.map(asRow); sourceStatus.textContent='Veri kaynağı: Supabase finance_movement_pool'; render(); return;
-    }
-    sourceStatus.textContent='Veri kaynağı: Demo · Supabase bağlantısı veya pending kayıt yok';
-  } else sourceStatus.textContent='Veri kaynağı: Demo · Data adapter yüklenemedi';
-  usingDemo=true; pending=demoRows.map(asRow); render();
+  try{
+    const adapter=window.AperionFinanceApprovalData;
+    if(adapter&&adapter.fetchPending){const res=await adapter.fetchPending();if(res.ok&&res.rows&&res.rows.length){remoteMode=true;pending=res.rows.map(asRow);sourceStatus.textContent='Veri kaynağı: Supabase finance_movement_pool';render();return}}
+    const rows=await fetchStaticGmailRows();remoteMode=false;pending=rows.map(asRow);sourceStatus.textContent='Veri kaynağı: Gmail Yapı Kredi gerçek ekstre JSON · Supabase beklemede';render();
+  }catch(e){sourceStatus.textContent='Veri kaynağı hatası: '+e.message;list.innerHTML='<div class="meta">Kayıtlar yüklenemedi.</div>'}
 }
 function render(){readCount.textContent=pending.length;newCount.textContent=pending.length;dupCount.textContent=0;list.innerHTML=pending.map(r=>`<div class="item"><div class="head"><span>${r.dt}</span><span>${r.bank_row_key}</span></div><div class="desc">${r.d}</div><div class="amt ${r.a<0?'out':'in'}">${tl(r.a)}</div><div class="meta">Hareket tipi: <b>${r.type}</b><br>Gider/Gelir yeri: <b>${r.place}</b><br>Cari/Karşı taraf: <b>${r.cari}</b><br>Güven: <span class="score">${r.score}</span><br>Sebep: ${r.why}<br>Durum: ${r.score>=80?'Onay bekliyor':'Needs review'}</div>${r.editing?editBox(r):buttons(r)}</div>`).join('')||'<div class="meta">Onay bekleyen hareket yok.</div>'}
 function buttons(r){return `<div class="actions"><button class="ok" onclick="approve('${r.id}')">Öneriyi Onayla</button><button class="edit" onclick="openEdit('${r.id}')">Düzelt ve Onayla</button><button class="wait" onclick="hold('${r.id}')">Beklet</button><button class="reject" onclick="removeRow('${r.id}')">Reddet</button></div>`}
@@ -45,11 +35,11 @@ function editBox(r){return `<div class="editbox"><label>Hareket tipi</label><inp
 function find(id){return pending.find(x=>x.id===id)}
 function openEdit(id){const r=find(id);if(r){r.editing=true;render()}}
 function cancelEdit(id){const r=find(id);if(r){r.editing=false;render()}}
-async function saveRemote(id,status,patch={}){if(usingDemo)return{ok:true};const a=window.AperionFinanceApprovalData;if(!a)return{ok:false};if(status==='approved')return a.approve(id,patch);if(status==='rejected')return a.reject(id);if(status==='needs_review')return a.hold(id);return{ok:false}}
+async function saveRemote(id,status,patch={}){if(!remoteMode)return{ok:true};const a=window.AperionFinanceApprovalData;if(!a)return{ok:false};if(status==='approved')return a.approve(id,patch);if(status==='rejected')return a.reject(id);if(status==='needs_review')return a.hold(id);return{ok:false}}
 async function saveEdit(id){const r=find(id);if(!r)return;r.type=document.getElementById('type_'+id).value;r.place=document.getElementById('place_'+id).value;r.cari=document.getElementById('cari_'+id).value;r.why='Kullanıcı tarafından düzeltildi ve onaylandı.';await approve(id,{movement_type:r.type,center_name:r.place,counterparty_name:r.cari,suggestion_reason:r.why})}
-async function approve(id,patch={}){const i=pending.findIndex(r=>r.id===id);if(i<0)return;const r=pending[i];const remote=await saveRemote(id,'approved',patch);if(!remote.ok&&!usingDemo){alert('Onay kaydedilemedi: '+(remote.message||remote.reason));return}pending.splice(i,1);approved.push(r);ledger.textContent=approved.map(x=>`ONAYLANDI ${x.dt} ${tl(x.a)} ${x.d} | ${x.type} | ${x.place} | ${x.cari} | ${x.bank_row_key}`).join('\n');render()}
-async function removeRow(id){const remote=await saveRemote(id,'rejected');if(!remote.ok&&!usingDemo){alert('Reddetme kaydedilemedi');return}pending=pending.filter(r=>r.id!==id);render()}
-async function hold(id){const r=find(id);if(!r)return;const remote=await saveRemote(id,'needs_review');if(!remote.ok&&!usingDemo){alert('Bekletme kaydedilemedi');return}r.why='Bekletildi. Sonra tekrar incelenecek.';r.score=50;render()}
+async function approve(id,patch={}){const i=pending.findIndex(r=>r.id===id);if(i<0)return;const r=pending[i];const remote=await saveRemote(id,'approved',patch);if(!remote.ok&&remoteMode){alert('Onay kaydedilemedi: '+(remote.message||remote.reason));return}pending.splice(i,1);approved.push(r);ledger.textContent=approved.map(x=>`ONAYLANDI ${x.dt} ${tl(x.a)} ${x.d} | ${x.type} | ${x.place} | ${x.cari} | ${x.bank_row_key}`).join('\n');render()}
+async function removeRow(id){const remote=await saveRemote(id,'rejected');if(!remote.ok&&remoteMode){alert('Reddetme kaydedilemedi');return}pending=pending.filter(r=>r.id!==id);render()}
+async function hold(id){const r=find(id);if(!r)return;const remote=await saveRemote(id,'needs_review');if(!remote.ok&&remoteMode){alert('Bekletme kaydedilemedi');return}r.why='Bekletildi. Sonra tekrar incelenecek.';r.score=50;render()}
 loadData();
 </script>
 </body>
