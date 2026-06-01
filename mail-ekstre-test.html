@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AperiON Mail Ekstre Test</title>
+<script src="assets/aperion-v69-yapikredi-parser.js?v=69"></script>
+<style>
+body{font-family:Inter,Arial,sans-serif;background:#F5F7FB;color:#111827;margin:0;padding:24px} .wrap{max-width:1100px;margin:auto}.card{background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:0 12px 28px rgba(15,23,42,.06)}h1{font-size:22px;margin:0 0 8px}.sub{color:#64748B;font-size:13px;margin-bottom:18px}textarea{width:100%;height:260px;border:1px solid #CBD5E1;border-radius:12px;padding:12px;font-family:ui-monospace,Consolas,monospace;font-size:12px}button{border:none;border-radius:10px;background:#2563EB;color:#fff;font-weight:900;padding:11px 16px;cursor:pointer;margin-top:10px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}.kpi{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:12px}.kpi b{display:block;font-size:22px;color:#2563EB}.kpi span{font-size:11px;color:#64748B;font-weight:800}.row{font-size:12px;border-bottom:1px solid #E5E7EB;padding:10px 0;display:grid;grid-template-columns:90px 1fr 120px 120px 110px;gap:8px;align-items:start}.head{font-weight:900;color:#475569}.badge{display:inline-block;padding:4px 7px;border-radius:999px;background:#FEF3C7;color:#92400E;font-weight:900;font-size:10px}pre{white-space:pre-wrap;background:#0F172A;color:#E2E8F0;border-radius:12px;padding:12px;max-height:360px;overflow:auto;font-size:11px}</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Mail Ekstre Test Merkezi</h1>
+    <div class="sub">Yapı Kredi PDF metnini yapıştır → pending_bank_movements JSON üret → duplicate key kontrol et. Mevcut AperiON ana ekranı bozulmaz.</div>
+    <textarea id="txt" placeholder="Gmail PDF parsed text buraya yapıştırılacak..."></textarea>
+    <button onclick="runParse()">Parser Test Et</button>
+  </div>
+  <div class="card">
+    <div class="grid">
+      <div class="kpi"><b id="kCount">0</b><span>Pending kayıt</span></div>
+      <div class="kpi"><b id="kDup">0</b><span>Mükerrer aday</span></div>
+      <div class="kpi"><b id="kIn">0 TL</b><span>Toplam giriş</span></div>
+      <div class="kpi"><b id="kOut">0 TL</b><span>Toplam çıkış</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row head"><div>Tarih</div><div>Açıklama</div><div>Giriş</div><div>Çıkış</div><div>Tip</div></div>
+    <div id="rows"></div>
+  </div>
+  <div class="card">
+    <h3>JSON Çıktısı</h3>
+    <pre id="json">Henüz çıktı yok.</pre>
+  </div>
+</div>
+<script>
+function tl(n){return Number(n||0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' TL'}
+function runParse(){
+  const text=document.getElementById('txt').value;
+  const payload=window.AperiONYapiKrediParser.toPendingPayload(text,{
+    company_id:'alayli',
+    mail_subject:'Hesap_Ozeti_ERHAN_ALAYLI_20260601_000508070',
+    mail_from:'alkammaliyonetim@gmail.com',
+    mail_date:'2026-06-01T00:05:41+03:00',
+    attachment_name:'Hesap_Ozeti_ERHAN_ALAYLI_20260601_000508070.pdf'
+  });
+  const rows=payload.rows||[];
+  document.getElementById('kCount').textContent=payload.pending_count;
+  document.getElementById('kDup').textContent=payload.duplicate_count;
+  document.getElementById('kIn').textContent=tl(rows.reduce((a,r)=>a+Number(r.amount_in||0),0));
+  document.getElementById('kOut').textContent=tl(rows.reduce((a,r)=>a+Number(r.amount_out||0),0));
+  document.getElementById('rows').innerHTML=rows.slice(0,120).map(r=>`<div class="row"><div>${r.transaction_date}</div><div>${r.description}<br><span class="badge">${r.status}</span></div><div>${tl(r.amount_in)}</div><div>${tl(r.amount_out)}</div><div>${r.detected_type}</div></div>`).join('');
+  document.getElementById('json').textContent=JSON.stringify(payload,null,2);
+}
+</script>
+</body>
+</html>
