@@ -1,0 +1,15 @@
+{
+  "name": "aperion-mail-ekstre-automation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "mail:check": "node mail-ekstre-worker.js",
+    "mail:check:dry": "DRY_RUN=1 node mail-ekstre-worker.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "latest",
+    "googleapis": "latest",
+    "pdf-parse": "latest"
+  }
+}
