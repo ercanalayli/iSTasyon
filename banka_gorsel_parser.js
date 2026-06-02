@@ -1,3 +1,6 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -114,6 +117,75 @@ function parseFromText(text) {
   return dedupe(rows);
 }
 
+function parseFromTextBlocks(text) {
+  const lines = String(text || '').split(/\r?\n/).map(fixText).filter(Boolean);
+  const rows = [];
+  const moneyRe = /-?\d[\d.]*,\d{2}\s*(?:TL|TRY|â‚º)?/gi;
+  let current = null;
+
+  for (const line of lines) {
+    const tarih = parseDate(line);
+    const monies = [...line.matchAll(moneyRe)].map(m => m[0]);
+    if (tarih && monies.length) {
+      if (current) rows.push(finalizeBlock(current));
+      const timeMatch = line.match(/\b(\d{1,2}:\d{2})(?::\d{2})?\b/);
+      const tutar = parseMoney(monies[0]);
+      const bakiye = monies.length > 1 ? parseMoney(monies[1]) : null;
+      const cleanLine = fixText(line
+        .replace(/\b\d{1,2}[./-]\d{1,2}[./-]\d{4}(?:[-\s]\d{1,2}:\d{2}(?::\d{2})?)?/g, '')
+        .replace(moneyRe, ''));
+      current = {
+        firma_id: FIRMA_ID,
+        kaynak_banka: BANKA,
+        kaynak_dosya: FILE,
+        saat: timeMatch ? `${timeMatch[1]}:00` : '',
+        tarih,
+        aciklamaSatirlari: cleanLine ? [cleanLine] : [],
+        tutar,
+        bakiye,
+        yon: tutar >= 0 ? 'giris' : 'cikis',
+        islem_tipi: 'gorsel_ekstre',
+      };
+      continue;
+    }
+    if (current && !isUiNoise(line)) {
+      current.aciklamaSatirlari.push(line);
+    }
+  }
+  if (current) rows.push(finalizeBlock(current));
+  return dedupe(rows);
+}
+
+function isUiNoise(line) {
+  const t = key(line);
+  return [
+    'hesapbilgileri',
+    'hareketler detay',
+    'para akis yonu',
+    'donem araligi',
+    'tumu sonlay',
+    'tarih tutar bakiye',
+    'ana sayfa menu nakit akisi',
+  ].some(x => t.includes(x)) || /^[.vw\s]+$/i.test(t);
+}
+
+function finalizeBlock(block) {
+  const aciklama = fixText((block.aciklamaSatirlari || []).join(' | ').replace(/\|\s*\|/g, '|'));
+  const base = {
+    ...block,
+    aciklama: aciklama || 'Banka hareketi',
+  };
+  delete base.aciklamaSatirlari;
+  const [tip, kat, durum, guven, risk] = classify(base);
+  base.aday_islem_tipi = tip;
+  base.aday_kategori = kat;
+  base.durum = durum;
+  base.guven = guven;
+  base.risk = risk;
+  base.hash = hash(base);
+  return base;
+}
+
 function dedupe(rows) {
   return [...new Map(rows.map(r => [r.hash, r])).values()];
 }
@@ -125,7 +197,7 @@ async function ocr(file) {
 }
 
 async function saveRows(rows, text) {
-  if (!SAVE_SUPABASE || !rows.length) return { raw: 0, approval: 0 };
+  if (!SAVE_SUPABASE || !rows.length) return { raw: 0, approval: 0, v57Raw: 0, v57Approval: 0 };
   const rawRows = rows.map(r => ({
     firma_id: r.firma_id,
     kaynak_banka: r.kaynak_banka,
@@ -151,6 +223,8 @@ async function saveRows(rows, text) {
   if (raw.error) throw new Error(`banka_raw: ${raw.error.message}`);
 
   let approval = 0;
+  let v57Raw = 0;
+  let v57Approval = 0;
   if (SAVE_APPROVAL) {
     for (const r of rows) {
       const row = {
@@ -174,9 +248,9 @@ async function saveRows(rows, text) {
       const exists = await db.from('bank_transactions')
         .select('id')
         .eq('firma_id', row.firma_id)
+        .eq('banka', row.banka)
         .eq('tarih', row.tarih)
         .eq('tutar', row.tutar)
-        .eq('aciklama', row.aciklama)
         .limit(1);
       if (exists.error) throw new Error(`bank_transactions: ${exists.error.message}`);
       if (exists.data?.length) continue;
@@ -184,13 +258,126 @@ async function saveRows(rows, text) {
       if (ins.error) throw new Error(`bank_transactions: ${ins.error.message}`);
       approval += 1;
     }
+    const v57 = await saveV57Approvals(rows, text);
+    v57Raw = v57.raw;
+    v57Approval = v57.approval;
   }
-  return { raw: raw.data?.length || 0, approval };
+  return { raw: raw.data?.length || 0, approval, v57Raw, v57Approval };
+}
+
+function v57Direction(row) {
+  if (row.aday_islem_tipi === 'virman' || row.aday_islem_tipi === 'transfer') return 'transfer';
+  if (Number(row.tutar || 0) > 0) return 'in';
+  if (Number(row.tutar || 0) < 0) return 'out';
+  return 'unknown';
+}
+
+function v57Type(row) {
+  const tip = row.aday_islem_tipi || (Number(row.tutar || 0) > 0 ? 'tahsilat' : 'odeme');
+  if (tip === 'cari_tahsilat') return 'tahsilat';
+  if (tip === 'banka_gider') return 'gider_odeme';
+  if (tip === 'transfer') return 'virman';
+  return tip;
+}
+
+async function saveV57Approvals(rows, text) {
+  let raw = 0;
+  let approval = 0;
+  for (const r of rows) {
+    const amount = Math.abs(Number(r.tutar || 0));
+    const direction = v57Direction(r);
+    const rawRow = {
+      company: r.firma_id,
+      bank_name: r.kaynak_banka,
+      transaction_date: r.tarih,
+      description: r.aciklama,
+      debit_amount: direction === 'out' ? amount : 0,
+      credit_amount: direction === 'in' ? amount : 0,
+      amount,
+      currency: 'TRY',
+      balance_after: r.bakiye,
+      direction,
+      raw_text: text,
+      source_type: 'telegram_bank_image',
+      source_file_name: r.kaynak_dosya,
+      transaction_hash: r.hash,
+      duplicate_status: 'unique',
+      status: r.durum === 'islenmeyecek' ? 'rejected' : 'approval_waiting',
+    };
+    const rawUpsert = await db.from('bank_transactions_raw')
+      .upsert(rawRow, { onConflict: 'company,transaction_hash' })
+      .select('id')
+      .single();
+    if (isMissingV57(rawUpsert.error)) return { raw, approval };
+    if (rawUpsert.error) throw new Error(`bank_transactions_raw: ${rawUpsert.error.message}`);
+    raw += 1;
+    const rawId = rawUpsert.data.id;
+
+    const suggestion = {
+      company: r.firma_id,
+      raw_transaction_id: rawId,
+      suggested_type: v57Type(r),
+      suggested_customer_name: r.karsi_taraf || r.aday_cari || '',
+      confidence_score: r.guven || 50,
+      match_reason: r.risk || 'Telegram banka gorseli OCR siniflandirma',
+      risk_note: r.guven >= 85 ? 'Tek tik onaya hazir.' : 'Kontrol onerilir.',
+      approval_status: r.guven >= 70 ? 'approval_waiting' : 'control_waiting',
+    };
+    const existingSuggestion = await db.from('cash_transaction_suggestions')
+      .select('id')
+      .eq('raw_transaction_id', rawId)
+      .limit(1);
+    if (isMissingV57(existingSuggestion.error)) return { raw, approval };
+    if (existingSuggestion.error) throw new Error(`cash_transaction_suggestions: ${existingSuggestion.error.message}`);
+    if (!existingSuggestion.data?.length) {
+      const suggestionInsert = await db.from('cash_transaction_suggestions').insert(suggestion);
+      if (isMissingV57(suggestionInsert.error)) return { raw, approval };
+      if (suggestionInsert.error) throw new Error(`cash_transaction_suggestions: ${suggestionInsert.error.message}`);
+    }
+
+    const existingApproval = await db.from('aperion_approval_center')
+      .select('id')
+      .eq('source_type', 'bank_transactions_raw')
+      .eq('source_id', rawId)
+      .limit(1);
+    if (isMissingV57(existingApproval.error)) return { raw, approval };
+    if (existingApproval.error) throw new Error(`aperion_approval_center: ${existingApproval.error.message}`);
+    if (existingApproval.data?.length) continue;
+    const approvalRow = {
+      company: r.firma_id,
+      source_type: 'bank_transactions_raw',
+      source_id: rawId,
+      approval_title: `${r.kaynak_banka} ${v57Type(r)} ${amount.toLocaleString('tr-TR')} TL`,
+      approval_description: r.aciklama,
+      suggested_entry_type: v57Type(r),
+      suggested_customer_name: r.karsi_taraf || r.aday_cari || '',
+      suggested_amount: amount,
+      confidence_score: r.guven || 50,
+      match_reason: r.risk || 'Telegram banka gorseli OCR siniflandirma',
+      risk_note: r.guven >= 85 ? 'Tek tik onaya hazir.' : 'Kontrol onerilir.',
+      status: r.durum === 'islenmeyecek' ? 'rejected' : 'approval_waiting',
+    };
+    const approvalInsert = await db.from('aperion_approval_center').insert(approvalRow);
+    if (isMissingV57(approvalInsert.error)) return { raw, approval };
+    if (approvalInsert.error) throw new Error(`aperion_approval_center: ${approvalInsert.error.message}`);
+    approval += 1;
+  }
+  return { raw, approval };
+}
+
+function isMissingV57(error) {
+  const msg = String(error?.message || '');
+  return Boolean(error && (
+    msg.includes("Could not find the table 'public.bank_transactions_raw'") ||
+    msg.includes("Could not find the table 'public.cash_transaction_suggestions'") ||
+    msg.includes("Could not find the table 'public.aperion_approval_center'") ||
+    msg.includes('schema cache')
+  ));
 }
 
 (async () => {
   const text = fs.existsSync(`${FILE}.txt`) ? fs.readFileSync(`${FILE}.txt`, 'utf8') : await ocr(FILE);
-  const rows = parseFromText(text);
+  const rows = parseFromTextBlocks(text);
   const payload = {
     olusturma_tarihi: new Date().toISOString(),
     kaynak_dosya: path.resolve(FILE),
@@ -201,7 +388,7 @@ async function saveRows(rows, text) {
   };
   if (OUT) fs.writeFileSync(OUT, JSON.stringify(payload, null, 2), 'utf8');
   const saved = await saveRows(rows, text);
-  console.log(`Gorsel banka: ${rows.length} hareket, banka_raw ${saved.raw}, onay ${saved.approval}`);
+  console.log(`Gorsel banka: ${rows.length} hareket, banka_raw ${saved.raw}, onay ${saved.approval}, v57_raw ${saved.v57Raw}, v57_onay ${saved.v57Approval}`);
 })().catch(e => {
   console.error('HATA:', e.message);
   process.exitCode = 1;

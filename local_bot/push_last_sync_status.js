@@ -2,9 +2,25 @@ const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
-const projectDir = process.env.APERION_PROJECT_DIR || 'C:\\Users\\HP\\Desktop\\ErpaltH';
+const projectDir = path.resolve(process.env.APERION_PROJECT_DIR || path.join(__dirname, '..'));
 const statusPath = path.join(projectDir, 'data', 'aperion_last_sync.json');
 const logPath = path.join(projectDir, 'logs', 'push_last_sync_status.log');
+const DEFAULT_SUPABASE_URL = 'https://iilfwosoroflzubkaryj.supabase.co';
+const DEFAULT_SUPABASE_KEY = 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
+
+function loadEnvFile() {
+  const envPath = path.join(projectDir, '.env');
+  if (!fs.existsSync(envPath)) return;
+  const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#') || !trimmed.includes('=')) continue;
+    const splitAt = trimmed.indexOf('=');
+    const key = trimmed.slice(0, splitAt).trim();
+    const value = trimmed.slice(splitAt + 1).trim().replace(/^['"]|['"]$/g, '');
+    if (key && process.env[key] === undefined) process.env[key] = value;
+  }
+}
 
 function log(message) {
   fs.mkdirSync(path.dirname(logPath), { recursive: true });
@@ -20,11 +36,9 @@ function readStatus() {
 }
 
 async function main() {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !serviceKey) {
-    throw new Error('SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY gerekli.');
-  }
+  loadEnvFile();
+  const supabaseUrl = process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
 
   const status = readStatus();
   const failed = (status.jobs || []).filter(job => job.status !== 'ok' && job.status !== 'skipped' && job.status !== 'planned');
@@ -45,6 +59,10 @@ async function main() {
 
   const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
   const { error } = await supabase.from('bot_sync_status').insert(payload);
+  if (error?.message?.includes("Could not find the table 'public.bot_sync_status'")) {
+    log('ATLANDI - bot_sync_status tablosu kurulu degil');
+    return;
+  }
   if (error) throw error;
   log(`OK - bot_sync_status yazildi: ${payload.company} ${payload.status} ${payload.finished_at}`);
 }

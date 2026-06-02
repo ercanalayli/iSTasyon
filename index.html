@@ -694,6 +694,13 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
           <div id="homeFinanceCalendar"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Finans takvimi yükleniyor...</div></div>
         </div>
         <div class="card" style="margin-bottom:16px">
+          <div class="card-hd">
+            <div class="card-l">Ana Finans Akışı</div>
+            <span style="font-family:var(--mono);font-size:9px;color:var(--t3)">eksik kaynak varsa kesin sonuç yazmaz</span>
+          </div>
+          <div id="mainFinanceFlow"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Finans akışı hesaplanıyor...</div></div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-l">Veri Denetimi</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">sales_raw kalite kontrol</span></div>
           <div id="dataAudit"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Kontrol ediliyor...</div></div>
         </div>
@@ -1099,8 +1106,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='145547-250526';
-const BUILD_STAMP='25.05.2026 14:55:47';
+const BUILD_CODE='163137-020626';
+const BUILD_STAMP='02.06.2026 16:31:37';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -1235,14 +1242,14 @@ async function selF(id){
   showDetay();
   await refresh();
 }
-function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';renderReportHub();loadFinanceHome();renderHomeSales();renderKarts();loadLastDataStatus();renderSourceMatrix();renderHomeExpenses();}
+function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';renderReportHub();loadFinanceHome();renderMainFinanceFlow();renderHomeSales();renderKarts();loadLastDataStatus();renderSourceMatrix();renderHomeExpenses();}
 function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(PILOT_FIRMA);document.getElementById('gB')?.remove();}
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'Ana Sayfa',s:'Yönetici özeti ve veri güveni'},satis:{t:'Satışlar',s:'Kategori, ürün ve müşteri kırılımı'},cariler:{t:'Müşteriler',s:'Cari performans ve risk'},finans:{t:'Finans Özeti',s:'Gider, banka ve tahsilat kontrolü'},stok:{t:'Ürünler',s:'Ürün bazlı kârlılık ve stok takibi'},hedef:{t:'Hedefler',s:'Gerçekleşen ve bütçe kontrolü'},gorevler:{t:'Görevler',s:'Onay ve takip merkezi'},veri:{t:'Veri Kontrol',s:'Kaynak, çekim ve doğrulama'},bildirim:{t:'Bildirim',s:'Telefon onay ve rapor ayarları'}};
 function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();loadSyncHealth();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();}
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]).filter(isAlayliRow);}catch(e){return[];}}
-async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);await loadSyncHealth();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();loadFinanceHome();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
+async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);await loadSyncHealth();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();loadFinanceHome();renderMainFinanceFlow();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=BUILD_CODE;genAI();}
 function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
 function pSels(){
   const fids=[...new Set(RAW.map(r=>r.firma_id).filter(Boolean))];
@@ -1550,14 +1557,94 @@ async function loadFinanceHome(){
   const overdue=financeNum(summary?.overdue_count||summary?.geciken_sayi||0);
   const approvals=financeNum(summary?.waiting_approvals||summary?.onay_bekleyen||0);
   el.innerHTML=`<div class="finance-home-grid">
-    <div class="finance-home-kpi"><div class="finance-home-k">Bugün Tahsilat</div><div class="finance-home-v">${summary?financeTL(todayIn):'kurulum bekliyor'}</div><div class="finance-home-n">telefon + takvim onayı</div></div>
-    <div class="finance-home-kpi"><div class="finance-home-k">Bugün Ödeme</div><div class="finance-home-v">${summary?financeTL(todayOut):'kurulum bekliyor'}</div><div class="finance-home-n">ödenecekler ve vadeler</div></div>
-    <div class="finance-home-kpi"><div class="finance-home-k">Geciken</div><div class="finance-home-v">${summary?fmt(overdue):'kurulum bekliyor'}</div><div class="finance-home-n">kontrol gereken kayıt</div></div>
-    <div class="finance-home-kpi"><div class="finance-home-k">Onay Bekleyen</div><div class="finance-home-v">${summary?fmt(approvals):'kurulum bekliyor'}</div><div class="finance-home-n">Telegram / AperiON kuyruğu</div></div>
+    <div class="finance-home-kpi"><div class="finance-home-k">Bugün Tahsilat</div><div class="finance-home-v">${summary?financeTL(todayIn):'takvim kurulumu eksik'}</div><div class="finance-home-n">telefon + takvim onayı</div></div>
+    <div class="finance-home-kpi"><div class="finance-home-k">Bugün Ödeme</div><div class="finance-home-v">${summary?financeTL(todayOut):'takvim kurulumu eksik'}</div><div class="finance-home-n">ödenecekler ve vadeler</div></div>
+    <div class="finance-home-kpi"><div class="finance-home-k">Geciken</div><div class="finance-home-v">${summary?fmt(overdue):'takvim kurulumu eksik'}</div><div class="finance-home-n">kontrol gereken kayıt</div></div>
+    <div class="finance-home-kpi"><div class="finance-home-k">Onay Bekleyen</div><div class="finance-home-v">${summary?fmt(approvals):'takvim kurulumu eksik'}</div><div class="finance-home-n">Telegram / AperiON kuyruğu</div></div>
     <div class="finance-home-list"><div class="finance-home-head">Yakın Finans Takvimi</div>${financeRowsHtml(calendarRows)}</div>
     <div class="finance-home-inbox"><div class="finance-home-head">Telegram Evrak</div>${inboxRows.length?inboxRows.map(r=>`<div class="finance-home-item" style="grid-template-columns:1fr auto"><div><div class="finance-home-title">${escHtml(financeTitle(r))}</div><div class="finance-home-sub">${escHtml((r.created_at||'').toString().substring(0,16))} · ${escHtml(r.category||r.kategori||r.durum||'evrak')}</div></div><div class="finance-home-amt">${escHtml(r.status||r.durum||'alındı')}</div></div>`).join(''):'<div class="finance-empty">Telegram evrak tablosu henüz kurulmadı veya kayıt yok.</div>'}</div>
-    ${setupIssues.length?`<div class="finance-empty" style="grid-column:1/-1">Eksik kurulum: ${escHtml([...new Set(setupIssues)].join(', '))}. Telegram bot kodu hazır; Supabase finans tabloları/görünümleri kurulunca ana sayfa canlı dolacak.</div>`:''}
+    ${setupIssues.length?`<div class="finance-empty" style="grid-column:1/-1">Eksik kurulum: ${escHtml([...new Set(setupIssues)].join(', '))}. Haziran tahakkukları için Supabase finans takvimi kurulmalı: finance/AperiON_Finance_Calendar_FULL_INSTALL_v58.sql.</div>`:''}
   </div>`;
+}
+const flowDate=r=>(mPick(r,['tarih','date','islem_tarihi','calendar_date','due_date','vade_tarihi','created_at'],'')||'').toString().substring(0,10);
+const flowAmount=r=>Math.abs(parseDynMoney(mPick(r,['tutar','amount','ciro','toplam','expected_amount','remaining_amount','paid_amount','collected_amount'],0)));
+const flowInRange=(r,a,b)=>{const d=flowDate(r);return d&&d>=a&&d<=b;};
+const flowCell=(v,count=0,cls='')=>`<div class="flow-money ${cls}">${Number.isFinite(+v)?dynMoney(v):'eksik veri'}</div><div class="flow-sub">${fmt(count)} kayıt</div>`;
+const flowRatio=(num,den)=>den>0?`<div class="flow-money">${dynPct(num/den*100)}</div><div class="flow-sub">${dynMoney(num)} / ${dynMoney(den)}</div>`:'<div class="flow-money warn">eksik veri</div><div class="flow-sub">payda yok</div>';
+function flowKind(r){
+  const dir=(r.direction||r.yon||'').toString().toLocaleLowerCase('tr-TR');
+  const t=[r.item_type,r.type,r.kind,r.status,r.title,r.description,r.aciklama,r.category,r.kategori].map(x=>(x||'').toString().toLocaleLowerCase('tr-TR')).join(' ');
+  if(dir==='in'||dir==='giris'||dir==='giriş'||t.includes('tahsil')||t.includes('alacak')||t.includes('receivable'))return 'tahsilat';
+  if(t.includes('alış')||t.includes('alis')||t.includes('tedarik')||t.includes('ürün')||t.includes('urun')||t.includes('purchase'))return 'urun_alis_odeme';
+  if(dir==='out'||dir==='cikis'||dir==='çıkış'||t.includes('ödeme')||t.includes('odeme')||t.includes('payable')||t.includes('gider'))return 'gider_odeme';
+  return '';
+}
+async function fetchFlowCalendarRows(from,to){
+  try{
+    const {data,error}=await db.from('finance_calendar_drawer_view').select('*').eq('company','ALAYLI').gte('calendar_date',from).lte('calendar_date',to).limit(5000);
+    if(error)return {rows:[],status:'eksik veri: finance_calendar_drawer_view'};
+    return {rows:data||[],status:(data||[]).length?'ok':'kayıt yok: finans takvimi'};
+  }catch(e){return {rows:[],status:'eksik veri: finans takvimi'};}
+}
+async function fetchFlowPurchaseRows(from,to,cf){
+  const tables=['purchase_raw','purchases_raw','alis_raw','urun_alis_raw','maliyetler'];
+  for(const table of tables){
+    try{
+      let q=db.from(table).select('*').gte('tarih',from).lte('tarih',to).limit(10000);
+      if(cf)q=q.eq('firma_id',cf);
+      const {data,error}=await q;
+      if(!error&&data?.length){
+        return {rows:data.map(r=>({tarih:flowDate(r),tutar:flowAmount(r),kaynak:table})).filter(r=>r.tarih&&r.tutar),status:`ok: ${table}`};
+      }
+    }catch(e){}
+  }
+  return {rows:[],status:'eksik veri: ürün alış ham tablosu yok'};
+}
+function flowSum(rows,a,b,amountFn=flowAmount){
+  const d=(rows||[]).filter(r=>flowInRange(r,a,b));
+  return {sum:d.reduce((s,r)=>s+(amountFn(r)||0),0),count:d.length};
+}
+async function renderMainFinanceFlow(){
+  const el=document.getElementById('mainFinanceFlow');if(!el)return;
+  el.innerHTML='<div class="finance-empty">Ana finans akışı hesaplanıyor...</div>';
+  const pr=pRange(), periods=[
+    {k:'tm',label:'Bugün',from:pr.todayS,to:pr.todayS},
+    {k:'dy',label:'Dün',from:pr.yestS,to:pr.yestS},
+    {k:'wk',label:'Bu Hafta',from:pr.weekS,to:pr.todayS},
+    {k:'mo',label:pr.monthName,from:pr.monthS,to:pr.todayS},
+    {k:'pm',label:pr.prevMonthName,from:pr.prevMonthS,to:pr.prevMonthE},
+    {k:'yr',label:String(pr.year),from:pr.yearS,to:pr.todayS},
+    {k:'ly',label:String(pr.prevYear),from:pr.prevYearS,to:pr.prevYearE}
+  ];
+  const from=pr.prevYearS,to=pr.todayS, sales=await salesWide(PILOT_FIRMA);
+  const cal=await fetchFlowCalendarRows(from,to), pur=await fetchFlowPurchaseRows(from,to,PILOT_FIRMA);
+  const expNow=await masrafData(pr.year,PILOT_FIRMA), expPrev=await masrafData(pr.prevYear,PILOT_FIRMA);
+  const expenses=[...expNow,...expPrev];
+  const calRows=cal.rows||[], receipts=calRows.filter(r=>flowKind(r)==='tahsilat');
+  const purchasePay=calRows.filter(r=>flowKind(r)==='urun_alis_odeme');
+  const expensePay=calRows.filter(r=>flowKind(r)==='gider_odeme');
+  const body=periods.map(p=>{
+    const s=flowSum(sales,p.from,p.to,r=>+r.ciro||0), t=flowSum(receipts,p.from,p.to), a=flowSum(pur.rows,p.from,p.to,r=>r.tutar), ao=flowSum(purchasePay,p.from,p.to), gt=flowSum(expenses,p.from,p.to,r=>r.tutar), go=flowSum(expensePay,p.from,p.to);
+    const missing=[];
+    if(!cal.rows.length)missing.push('tahsilat/ödeme kaynağı');
+    if(!pur.rows.length)missing.push('ürün alış kaynağı');
+    if(!expenses.length)missing.push('gider kaynağı');
+    return `<tr>
+      <td><div class="flow-period">${p.label}</div><div class="flow-sub">${p.from}${p.from!==p.to?' / '+p.to:''}</div></td>
+      <td>${flowCell(s.sum,s.count)}</td>
+      <td>${flowCell(t.sum,t.count)}</td>
+      <td>${pur.rows.length?flowCell(a.sum,a.count,'out'):'<div class="flow-money warn">eksik veri</div><div class="flow-sub">alış tablosu yok</div>'}</td>
+      <td>${cal.rows.length?flowCell(ao.sum,ao.count,'out'):'<div class="flow-money warn">eksik veri</div><div class="flow-sub">takvim yok</div>'}</td>
+      <td>${expenses.length?flowCell(gt.sum,gt.count,'out'):'<div class="flow-money warn">eksik veri</div><div class="flow-sub">gider yok</div>'}</td>
+      <td>${cal.rows.length?flowCell(go.sum,go.count,'out'):'<div class="flow-money warn">eksik veri</div><div class="flow-sub">takvim yok</div>'}</td>
+      <td>${flowRatio(t.sum,s.sum)}</td>
+      <td>${pur.rows.length?flowRatio(s.sum,a.sum):'<div class="flow-money warn">eksik veri</div><div class="flow-sub">alış yok</div>'}</td>
+      <td>${cal.rows.length?flowRatio(t.sum,go.sum+ao.sum):'<div class="flow-money warn">eksik veri</div><div class="flow-sub">ödeme yok</div>'}</td>
+      <td><span class="flow-status ${missing.length?'miss':'ok'}">${missing.length?'Eksik Veri':'Doğrulandı'}</span><div class="flow-sub">${missing.length?escHtml(missing.join(', ')):'kaynaklar okunuyor'}</div></td>
+    </tr>`;
+  }).join('');
+  el.innerHTML=`<div class="finance-flow-wrap"><table class="finance-flow-table"><thead><tr><th>Dönem</th><th>Satışlar</th><th>Tahsilatlar</th><th>Ürün Alışları</th><th>Ürün Alış Ödemeleri</th><th>Gider Tahakkuk</th><th>Gider Ödemeleri</th><th>Tahsilat / Satış</th><th>Satış / Alış</th><th>Tahsilat / Ürün Alış + Gider Ödeme</th><th>Veri Durumu</th></tr></thead><tbody>${body}</tbody></table></div>
+  <div class="flow-foot">Kaynaklar: sales_raw, finance_calendar_drawer_view, masraf_raw/bank_transactions, ürün alış ham tabloları. Banka ekran görüntüsü için banka_gorsel_parser.js hazır; Telegram onay akışı banka_onay modülü üzerinden bağlanır.</div>`;
 }
 async function renderReportHub(){
   const grid=document.getElementById('reportHubGrid'), stamp=document.getElementById('reportHubStamp');

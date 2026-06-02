@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync, appendFileSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync, appendFileSync, readFileSync, unlinkSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -21,6 +21,8 @@ const commit = dryRun ? '' : '--commit';
 const dataDir = path.join(__dirname, 'data');
 const logPath = path.join(__dirname, 'aperion_veri_senkron_log.txt');
 const statusPath = path.join(dataDir, 'aperion_last_sync.json');
+const lockPath = path.join(dataDir, 'aperion_sync.lock.json');
+const lockMaxAgeMs = Number(process.env.APERION_SYNC_LOCK_MAX_AGE_MS || 90 * 60 * 1000);
 
 mkdirSync(dataDir, { recursive: true });
 
@@ -30,24 +32,28 @@ const jobs = [
     file: 'bizimhesap_bot.js',
     args: ['--firma', firma, '--gecmis', salesFromIso, todayIso],
     required: true,
+    timeoutMs: 300000,
   },
   {
     label: 'BizimHesap son islemler denetimi',
     file: 'bizimhesap_son_islemler_izle.js',
-    args: ['--firma', firma, '--run-sync', '--resync-days', '45'],
+    args: ['--firma', firma, '--resync-days', '45'],
     required: false,
+    timeoutMs: 120000,
   },
   {
     label: `BizimHesap masraf ${year}`,
     file: 'bizimhesap_masraf_cek.js',
     args: [commit, '--firma', firma, '--from', `${year}-01-01`, '--to', todayIso, '--limit', '5000', '--out', `masraf_${firma}_${year}.json`],
     required: true,
+    timeoutMs: 240000,
   },
   {
     label: 'BizimHesap urun ve stok kartlari',
     file: 'bizimhesap_urun_stok_cek.js',
     args: [commit, '--firma', firma, '--out', `urun_stok_${firma}.json`],
     required: true,
+    timeoutMs: 240000,
   },
 ];
 
@@ -69,6 +75,55 @@ const status = {
 
 function saveStatus() {
   writeFileSync(statusPath, JSON.stringify(status, null, 2), 'utf8');
+}
+
+function readJsonSafe(filePath, fallback = null) {
+  try {
+    return JSON.parse(readFileSync(filePath, 'utf8'));
+  } catch {
+    return fallback;
+  }
+}
+
+function acquireLock() {
+  const lock = {
+    pid: process.pid,
+    firma,
+    startedAt: nowIso(),
+    projectDir: __dirname,
+  };
+  try {
+    writeFileSync(lockPath, JSON.stringify(lock, null, 2), { encoding: 'utf8', flag: 'wx' });
+    return true;
+  } catch (error) {
+    if (error?.code !== 'EEXIST') throw error;
+    const current = readJsonSafe(lockPath, {});
+    const startedAt = current?.startedAt ? new Date(current.startedAt).getTime() : 0;
+    const stale = !startedAt || Date.now() - startedAt > lockMaxAgeMs;
+    if (stale) {
+      unlinkSync(lockPath);
+      writeFileSync(lockPath, JSON.stringify({ ...lock, replacedStaleLock: current }, null, 2), { encoding: 'utf8', flag: 'wx' });
+      line(`ESKI KILIT TEMIZLENDI: ${lockPath}`);
+      return true;
+    }
+    const message = `SENKRON KILITLI: Devam eden is var (${current?.startedAt || 'bilinmiyor'}, pid=${current?.pid || 'bilinmiyor'})`;
+    status.ok = false;
+    status.issue = message;
+    status.finishedAt = nowIso();
+    saveStatus();
+    line(message);
+    process.exitCode = 75;
+    return false;
+  }
+}
+
+function releaseLock() {
+  try {
+    const current = readJsonSafe(lockPath, {});
+    if (!current?.pid || current.pid === process.pid) unlinkSync(lockPath);
+  } catch {
+    // Kilit zaten kalkmissa yapilacak is yok.
+  }
 }
 
 function diagnoseSyncFailure(output) {
@@ -135,6 +190,7 @@ function run(job) {
     encoding: 'utf8',
     env: { ...process.env, NODE_PATH: path.join(__dirname, 'node_modules') },
     shell: false,
+    timeout: job.timeoutMs || 300000,
   });
   if (r.stdout) {
     process.stdout.write(r.stdout);
@@ -144,7 +200,7 @@ function run(job) {
     process.stderr.write(r.stderr);
     appendFileSync(logPath, r.stderr, 'utf8');
   }
-  const code = r.status ?? 1;
+  const code = r.status ?? (r.error?.code === 'ETIMEDOUT' ? 124 : 1);
   const output = `${r.stdout || ''}\n${r.stderr || ''}`;
   const item = {
     label: job.label,
@@ -154,6 +210,7 @@ function run(job) {
     durationMs: Date.now() - started,
   };
   if (code !== 0) item.issue = diagnoseSyncFailure(output);
+  if (r.error?.code === 'ETIMEDOUT') item.issue = `${job.label} sure sinirini asti`;
   status.jobs.push(item);
   if (code !== 0) {
     status.ok = false;
@@ -190,10 +247,16 @@ function pushSyncStatus() {
   line(`${r.status === 0 ? 'STATUS PUSH BITTI' : 'STATUS PUSH HATA'}: ${r.status ?? 1}`);
 }
 
-line(`AperiON BizimHesap klon senkronu: firma=${firma}, mod=${status.mode}${planOnly ? ', plan' : ''}`);
-for (const job of jobs) run(job);
-status.finishedAt = nowIso();
-saveStatus();
-line(`SENKRON ${status.ok ? 'TAMAM' : 'KONTROL GEREKIYOR'}: ${statusPath}`);
-pushSyncStatus();
-if (!status.ok) process.exitCode = 1;
+if (acquireLock()) {
+  try {
+    line(`AperiON BizimHesap klon senkronu: firma=${firma}, mod=${status.mode}${planOnly ? ', plan' : ''}`);
+    for (const job of jobs) run(job);
+    status.finishedAt = nowIso();
+    saveStatus();
+    line(`SENKRON ${status.ok ? 'TAMAM' : 'KONTROL GEREKIYOR'}: ${statusPath}`);
+    pushSyncStatus();
+    if (!status.ok) process.exitCode = 1;
+  } finally {
+    releaseLock();
+  }
+}

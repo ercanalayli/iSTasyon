@@ -178,7 +178,17 @@ from finance_calendar_live_view
 group by company;
 
 -- Sales screen mini finance summary, v47 replacement.
+-- This project may not have the older sales_flow_kpi_today_view, so sales totals are read directly from sales_raw.
 create or replace view sales_flow_finance_mini_v47_view as
+with sales_today as (
+  select
+    'ALAYLI'::text as company,
+    coalesce(sum(ciro), 0)::numeric(18,2) as today_sales,
+    coalesce(sum(adet), 0)::numeric(18,2) as today_qty
+  from sales_raw
+  where firma_id = 'alayli'
+    and tarih = current_date
+)
 select
   coalesce(s.company, f.company) as company,
   coalesce(s.today_sales, 0) as today_sales,
@@ -192,7 +202,7 @@ select
   coalesce(f.today_cash_net, 0) as today_cash_net,
   coalesce(f.week_cash_net, 0) as week_cash_net,
   coalesce(f.month_end_cash_net, 0) as month_end_cash_net
-from sales_flow_kpi_today_view s
+from sales_today s
 full join finance_calendar_summary_view f on f.company = s.company;
 
 create index if not exists idx_finance_calendar_items_company_date on finance_calendar_items(company, item_date, status);
