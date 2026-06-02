@@ -1,8 +1,10 @@
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const projectDir = process.env.APERION_PROJECT_DIR || 'C:\\Users\\HP\\Desktop\\ErpaltH';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectDir = path.resolve(process.env.APERION_PROJECT_DIR || path.join(__dirname, '..'));
 const syncFile = path.join(projectDir, 'aperion_veri_senkron.js');
 const healthFile = path.join(projectDir, 'aperion_clone_health_check.cjs');
 const logDir = path.join(projectDir, 'logs');

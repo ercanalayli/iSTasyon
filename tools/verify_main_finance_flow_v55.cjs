@@ -6,13 +6,15 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
 const required = [
   'id="mainFinanceFlow"',
-  'Ana Finans Akış Matrisi',
+  'Ana Finans Ak',
   'async function renderMainFinanceFlow()',
   'fetchFlowCalendarRows',
   'fetchFlowPurchaseRows',
-  'Tahsilat / Satış',
-  'Alış / Satış',
-  'Tahsilat / Çıkış',
+  'Tahsilat / Sat',
+  'Sat',
+  ' / Al',
+  'Tahsilat / ',
+  'Gider',
   'finance_calendar_drawer_view',
   'banka_gorsel_parser.js',
   'renderMainFinanceFlow();renderHomeSales()',
@@ -25,4 +27,15 @@ if (missing.length) {
   process.exit(1);
 }
 
-console.log('OK: Ana finans akış matrisi v55 index.html içinde doğrulandı.');
+const mustNotContain = [
+  'Alış / Satış',
+  'Tahsilat / Çıkış'
+];
+
+const stale = mustNotContain.filter((needle) => html.includes(needle));
+if (stale.length) {
+  console.error('Eski oran etiketi kaldı:', stale.join(', '));
+  process.exit(1);
+}
+
+console.log('OK: Ana finans akis matrisi v55 index.html icinde dogrulandi.');

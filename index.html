@@ -1122,8 +1122,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='145547-250526';
-const BUILD_STAMP='25.05.2026 14:55:47';
+const BUILD_CODE='163137-020626';
+const BUILD_STAMP='02.06.2026 16:31:37';
 const buildLabel=()=>`SON GUNCELLEME ${BUILD_STAMP} - ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
@@ -1573,13 +1573,13 @@ async function loadFinanceHome(){
   const overdue=financeNum(summary?.overdue_count||summary?.geciken_sayi||0);
   const approvals=financeNum(summary?.waiting_approvals||summary?.onay_bekleyen||0);
   el.innerHTML=`<div class="finance-home-grid">
-    <div class="finance-home-kpi"><div class="finance-home-k">Bugün Tahsilat</div><div class="finance-home-v">${summary?financeTL(todayIn):'kurulum bekliyor'}</div><div class="finance-home-n">telefon + takvim onayı</div></div>
-    <div class="finance-home-kpi"><div class="finance-home-k">Bugün Ödeme</div><div class="finance-home-v">${summary?financeTL(todayOut):'kurulum bekliyor'}</div><div class="finance-home-n">ödenecekler ve vadeler</div></div>
-    <div class="finance-home-kpi"><div class="finance-home-k">Geciken</div><div class="finance-home-v">${summary?fmt(overdue):'kurulum bekliyor'}</div><div class="finance-home-n">kontrol gereken kayıt</div></div>
-    <div class="finance-home-kpi"><div class="finance-home-k">Onay Bekleyen</div><div class="finance-home-v">${summary?fmt(approvals):'kurulum bekliyor'}</div><div class="finance-home-n">Telegram / AperiON kuyruğu</div></div>
+    <div class="finance-home-kpi"><div class="finance-home-k">Bugün Tahsilat</div><div class="finance-home-v">${summary?financeTL(todayIn):'takvim kurulumu eksik'}</div><div class="finance-home-n">telefon + takvim onayı</div></div>
+    <div class="finance-home-kpi"><div class="finance-home-k">Bugün Ödeme</div><div class="finance-home-v">${summary?financeTL(todayOut):'takvim kurulumu eksik'}</div><div class="finance-home-n">ödenecekler ve vadeler</div></div>
+    <div class="finance-home-kpi"><div class="finance-home-k">Geciken</div><div class="finance-home-v">${summary?fmt(overdue):'takvim kurulumu eksik'}</div><div class="finance-home-n">kontrol gereken kayıt</div></div>
+    <div class="finance-home-kpi"><div class="finance-home-k">Onay Bekleyen</div><div class="finance-home-v">${summary?fmt(approvals):'takvim kurulumu eksik'}</div><div class="finance-home-n">Telegram / AperiON kuyruğu</div></div>
     <div class="finance-home-list"><div class="finance-home-head">Yakın Finans Takvimi</div>${financeRowsHtml(calendarRows)}</div>
     <div class="finance-home-inbox"><div class="finance-home-head">Telegram Evrak</div>${inboxRows.length?inboxRows.map(r=>`<div class="finance-home-item" style="grid-template-columns:1fr auto"><div><div class="finance-home-title">${escHtml(financeTitle(r))}</div><div class="finance-home-sub">${escHtml((r.created_at||'').toString().substring(0,16))} · ${escHtml(r.category||r.kategori||r.durum||'evrak')}</div></div><div class="finance-home-amt">${escHtml(r.status||r.durum||'alındı')}</div></div>`).join(''):'<div class="finance-empty">Telegram evrak tablosu henüz kurulmadı veya kayıt yok.</div>'}</div>
-    ${setupIssues.length?`<div class="finance-empty" style="grid-column:1/-1">Eksik kurulum: ${escHtml([...new Set(setupIssues)].join(', '))}. Telegram bot kodu hazır; Supabase finans tabloları/görünümleri kurulunca ana sayfa canlı dolacak.</div>`:''}
+    ${setupIssues.length?`<div class="finance-empty" style="grid-column:1/-1">Eksik kurulum: ${escHtml([...new Set(setupIssues)].join(', '))}. Haziran tahakkukları için Supabase finans takvimi kurulmalı: finance/AperiON_Finance_Calendar_FULL_INSTALL_v58.sql.</div>`:''}
   </div>`;
 }
 const flowDate=r=>(mPick(r,['tarih','date','islem_tarihi','calendar_date','due_date','vade_tarihi','created_at'],'')||'').toString().substring(0,10);
@@ -1654,12 +1654,12 @@ async function renderMainFinanceFlow(){
       <td>${expenses.length?flowCell(gt.sum,gt.count,'out'):'<div class="flow-money warn">eksik veri</div><div class="flow-sub">gider yok</div>'}</td>
       <td>${cal.rows.length?flowCell(go.sum,go.count,'out'):'<div class="flow-money warn">eksik veri</div><div class="flow-sub">takvim yok</div>'}</td>
       <td>${flowRatio(t.sum,s.sum)}</td>
-      <td>${pur.rows.length?flowRatio(a.sum,s.sum):'<div class="flow-money warn">eksik veri</div><div class="flow-sub">alış yok</div>'}</td>
+      <td>${pur.rows.length?flowRatio(s.sum,a.sum):'<div class="flow-money warn">eksik veri</div><div class="flow-sub">alış yok</div>'}</td>
       <td>${cal.rows.length?flowRatio(t.sum,go.sum+ao.sum):'<div class="flow-money warn">eksik veri</div><div class="flow-sub">ödeme yok</div>'}</td>
       <td><span class="flow-status ${missing.length?'miss':'ok'}">${missing.length?'Eksik Veri':'Doğrulandı'}</span><div class="flow-sub">${missing.length?escHtml(missing.join(', ')):'kaynaklar okunuyor'}</div></td>
     </tr>`;
   }).join('');
-  el.innerHTML=`<div class="finance-flow-wrap"><table class="finance-flow-table"><thead><tr><th>Dönem</th><th>Satışlar</th><th>Tahsilatlar</th><th>Ürün Alışları</th><th>Ürün Alış Ödemeleri</th><th>Gider Tahakkuk</th><th>Gider Ödemeleri</th><th>Tahsilat / Satış</th><th>Alış / Satış</th><th>Tahsilat / Çıkış</th><th>Veri Durumu</th></tr></thead><tbody>${body}</tbody></table></div>
+  el.innerHTML=`<div class="finance-flow-wrap"><table class="finance-flow-table"><thead><tr><th>Dönem</th><th>Satışlar</th><th>Tahsilatlar</th><th>Ürün Alışları</th><th>Ürün Alış Ödemeleri</th><th>Gider Tahakkuk</th><th>Gider Ödemeleri</th><th>Tahsilat / Satış</th><th>Satış / Alış</th><th>Tahsilat / Ürün Alış + Gider Ödeme</th><th>Veri Durumu</th></tr></thead><tbody>${body}</tbody></table></div>
   <div class="flow-foot">Kaynaklar: sales_raw, finance_calendar_drawer_view, masraf_raw/bank_transactions, ürün alış ham tabloları. Banka ekran görüntüsü için banka_gorsel_parser.js hazır; Telegram onay akışı banka_onay modülü üzerinden bağlanır.</div>`;
 }
 async function renderReportHub(){
