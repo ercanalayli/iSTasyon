@@ -4,8 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "mail:check": "node mail-ekstre-worker.js",
-    "mail:check:dry": "DRY_RUN=1 node mail-ekstre-worker.js"
+    "preflight": "node mail-ekstre-preflight.cjs",
+    "mail:check": "node mail-ekstre-worker-lite.js",
+    "mail:check:dry": "DRY_RUN=1 node mail-ekstre-worker-lite.js",
+    "gmail:probe": "node gmail-probe-lite.js",
+    "monitor": "node aperion-onay-monitor.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
