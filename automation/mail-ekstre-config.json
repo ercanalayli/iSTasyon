@@ -1,0 +1,43 @@
+{
+  "company_id": "alayli",
+  "mailbox": "alaylimedikal@gmail.com",
+  "lookback_days": 7,
+  "schedule": {
+    "daytime": "every_15_minutes_between_08_20",
+    "night": "hourly_between_20_08",
+    "manual_button": true
+  },
+  "banks": [
+    {
+      "bank": "isbank",
+      "label": "İş Bankası",
+      "query": "Turkiye Is Bankasi OR Is Bankasi OR Hesap Hareket OR Hesap Ekstre"
+    },
+    {
+      "bank": "yapikredi",
+      "label": "Yapı Kredi",
+      "query": "Yapi Kredi OR Hesap_Hareketleri OR Hesap_Ozeti OR Hesap Ozeti"
+    },
+    {
+      "bank": "vakifbank",
+      "label": "Vakıfbank",
+      "query": "Vakifbank OR E-Ekstre OR Hesap Ozeti"
+    },
+    {
+      "bank": "halkbank",
+      "label": "Halkbank",
+      "query": "Halkbank OR Halk Bankasi OR Hesap Ekstresi"
+    },
+    {
+      "bank": "garanti",
+      "label": "Garanti BBVA",
+      "query": "Garanti OR Hesap Hareket Dokumu"
+    }
+  ],
+  "rules": {
+    "never_post_without_approval": true,
+    "target_after_approval": "bizimhesap_queue",
+    "dedupe_field": "duplicate_key",
+    "status_first": "pending"
+  }
+}
