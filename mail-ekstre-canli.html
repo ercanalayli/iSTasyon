@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AperiON Mail Ekstre Canlı</title>
+<script src="assets/aperion-v69-dashboard-signal.js?v=69"></script>
+<script src="assets/aperion-v69-yapikredi-parser.js?v=69"></script>
+<style>
+body{font-family:Inter,Arial,sans-serif;background:#F5F7FB;color:#111827;margin:0;padding:24px}.wrap{max-width:1180px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}.title h1{font-size:24px;margin:0}.title p{font-size:13px;color:#64748B;margin:6px 0 0}.btn{border:none;border-radius:10px;background:#2563EB;color:#fff;font-size:12px;font-weight:900;padding:11px 14px;text-decoration:none;display:inline-block}.card{background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:0 12px 28px rgba(15,23,42,.06)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.kpi{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:14px}.kpi b{display:block;font-size:24px;color:#2563EB}.kpi span{font-size:11px;color:#64748B;font-weight:800}.row{font-size:12px;border-bottom:1px solid #E5E7EB;padding:10px 0;display:grid;grid-template-columns:92px 1fr 120px 120px 120px 90px;gap:8px;align-items:start}.head{font-weight:900;color:#475569}.badge{display:inline-block;padding:4px 7px;border-radius:999px;background:#FEF3C7;color:#92400E;font-weight:900;font-size:10px}.ok{background:#DCFCE7;color:#166534}.warn{background:#FEF3C7;color:#92400E}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}pre{white-space:pre-wrap;background:#0F172A;color:#E2E8F0;border-radius:12px;padding:12px;max-height:280px;overflow:auto;font-size:11px}</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="title">
+      <h1>🔔 AperiON Mail Ekstre Canlı Merkezi</h1>
+      <p>Gmail Yapı Kredi ekstresi → pending kayıt → mükerrer key → Onay Merkezi hazırlığı</p>
+    </div>
+    <a class="btn" href="index.html">AperiON Ana Ekran</a>
+  </div>
+
+  <div class="card">
+    <div id="mailStatementSignal"></div>
+    <div class="toolbar">
+      <button class="btn" onclick="loadSeed()">Seed Veriyi Yükle</button>
+      <button class="btn" onclick="exportJson()">JSON İndir</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grid">
+      <div class="kpi"><b id="cPending">0</b><span>Onay bekleyen</span></div>
+      <div class="kpi"><b id="cDup">0</b><span>Mükerrer aday</span></div>
+      <div class="kpi"><b id="cIn">0 TL</b><span>Toplam giriş</span></div>
+      <div class="kpi"><b id="cOut">0 TL</b><span>Toplam çıkış</span></div>
+      <div class="kpi"><b id="cNet">0 TL</b><span>Net nakit</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row head"><div>Tarih</div><div>Açıklama</div><div>Giriş</div><div>Çıkış</div><div>Tip / Cari</div><div>Güven</div></div>
+    <div id="rows"></div>
+  </div>
+
+  <div class="card">
+    <h3>Pending JSON</h3>
+    <pre id="json">Yükleniyor...</pre>
+  </div>
+</div>
+<script>
+let currentPayload=null;
+function tl(n){return Number(n||0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' TL'}
+async function loadSeed(){
+  const res=await fetch('data/pending-bank-movements-yapikredi-20260601.json?v='+Date.now(),{cache:'no-store'});
+  currentPayload=await res.json();
+  render(currentPayload);
+}
+function render(payload){
+  const rows=payload.rows||[];
+  const pending=rows.filter(r=>r.status==='pending').length;
+  const dup=rows.filter(r=>r.status==='duplicate_candidate').length;
+  const tin=rows.reduce((a,r)=>a+Number(r.amount_in||0),0);
+  const tout=rows.reduce((a,r)=>a+Number(r.amount_out||0),0);
+  document.getElementById('cPending').textContent=pending;
+  document.getElementById('cDup').textContent=dup;
+  document.getElementById('cIn').textContent=tl(tin);
+  document.getElementById('cOut').textContent=tl(tout);
+  document.getElementById('cNet').textContent=tl(tin-tout);
+  document.getElementById('rows').innerHTML=rows.map(r=>`<div class="row"><div>${r.transaction_date||''}</div><div>${r.description||''}<br><span class="badge ${r.status==='pending'?'ok':'warn'}">${r.status}</span><br><small>${r.duplicate_key||''}</small></div><div>${tl(r.amount_in)}</div><div>${tl(r.amount_out)}</div><div>${r.detected_type||''}<br><small>${r.suggested_counterparty||''}</small></div><div>${r.confidence_score||''}</div></div>`).join('');
+  document.getElementById('json').textContent=JSON.stringify(payload,null,2);
+}
+function exportJson(){
+  if(!currentPayload)return;
+  const blob=new Blob([JSON.stringify(currentPayload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pending-bank-movements-yapikredi-20260601.json';a.click();URL.revokeObjectURL(a.href);
+}
+loadSeed();
+</script>
+</body>
+</html>
