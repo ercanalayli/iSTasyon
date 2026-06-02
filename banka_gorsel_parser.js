@@ -248,12 +248,19 @@ async function saveRows(rows, text) {
       const exists = await db.from('bank_transactions')
         .select('id')
         .eq('firma_id', row.firma_id)
-        .eq('banka', row.banka)
-        .eq('tarih', row.tarih)
-        .eq('tutar', row.tutar)
+        .eq('raw->>hash', r.hash)
         .limit(1);
       if (exists.error) throw new Error(`bank_transactions: ${exists.error.message}`);
       if (exists.data?.length) continue;
+      const fuzzyExists = await db.from('bank_transactions')
+        .select('id,aciklama')
+        .eq('firma_id', row.firma_id)
+        .eq('banka', row.banka)
+        .eq('tarih', row.tarih)
+        .eq('tutar', row.tutar)
+        .limit(10);
+      if (fuzzyExists.error) throw new Error(`bank_transactions: ${fuzzyExists.error.message}`);
+      if ((fuzzyExists.data || []).some((x) => key(x.aciklama).includes(key(row.aciklama).slice(0, 40)) || key(row.aciklama).includes(key(x.aciklama).slice(0, 40)))) continue;
       const ins = await db.from('bank_transactions').insert(row);
       if (ins.error) throw new Error(`bank_transactions: ${ins.error.message}`);
       approval += 1;
@@ -281,6 +288,12 @@ function v57Type(row) {
 }
 
 async function saveV57Approvals(rows, text) {
+  const rpcSaved = await saveV57ApprovalsWithRpc(rows, text);
+  if (!rpcSaved.error) return rpcSaved.data;
+  if (!isMissingV57(rpcSaved.error) && !isMissingRpc(rpcSaved.error)) {
+    throw new Error(`ingest_bank_image_transactions_v59: ${rpcSaved.error.message}`);
+  }
+
   let raw = 0;
   let approval = 0;
   for (const r of rows) {
@@ -304,11 +317,9 @@ async function saveV57Approvals(rows, text) {
       duplicate_status: 'unique',
       status: r.durum === 'islenmeyecek' ? 'rejected' : 'approval_waiting',
     };
-    const rawUpsert = await db.from('bank_transactions_raw')
-      .upsert(rawRow, { onConflict: 'company,transaction_hash' })
-      .select('id')
-      .single();
+    const rawUpsert = await saveV57RawTransaction(rawRow);
     if (isMissingV57(rawUpsert.error)) return { raw, approval };
+    if (isRlsWriteBlocked(rawUpsert.error)) return { raw, approval };
     if (rawUpsert.error) throw new Error(`bank_transactions_raw: ${rawUpsert.error.message}`);
     raw += 1;
     const rawId = rawUpsert.data.id;
@@ -328,10 +339,12 @@ async function saveV57Approvals(rows, text) {
       .eq('raw_transaction_id', rawId)
       .limit(1);
     if (isMissingV57(existingSuggestion.error)) return { raw, approval };
+    if (isRlsWriteBlocked(existingSuggestion.error)) return { raw, approval };
     if (existingSuggestion.error) throw new Error(`cash_transaction_suggestions: ${existingSuggestion.error.message}`);
     if (!existingSuggestion.data?.length) {
       const suggestionInsert = await db.from('cash_transaction_suggestions').insert(suggestion);
       if (isMissingV57(suggestionInsert.error)) return { raw, approval };
+      if (isRlsWriteBlocked(suggestionInsert.error)) return { raw, approval };
       if (suggestionInsert.error) throw new Error(`cash_transaction_suggestions: ${suggestionInsert.error.message}`);
     }
 
@@ -341,6 +354,7 @@ async function saveV57Approvals(rows, text) {
       .eq('source_id', rawId)
       .limit(1);
     if (isMissingV57(existingApproval.error)) return { raw, approval };
+    if (isRlsWriteBlocked(existingApproval.error)) return { raw, approval };
     if (existingApproval.error) throw new Error(`aperion_approval_center: ${existingApproval.error.message}`);
     if (existingApproval.data?.length) continue;
     const approvalRow = {
@@ -359,10 +373,75 @@ async function saveV57Approvals(rows, text) {
     };
     const approvalInsert = await db.from('aperion_approval_center').insert(approvalRow);
     if (isMissingV57(approvalInsert.error)) return { raw, approval };
+    if (isRlsWriteBlocked(approvalInsert.error)) return { raw, approval };
     if (approvalInsert.error) throw new Error(`aperion_approval_center: ${approvalInsert.error.message}`);
     approval += 1;
   }
   return { raw, approval };
+}
+
+async function saveV57ApprovalsWithRpc(rows, text) {
+  const payload = rows.map((r) => ({
+    ...r,
+    direction: v57Direction(r),
+    suggested_type: v57Type(r),
+  }));
+  const res = await db.rpc('ingest_bank_image_transactions_v59', {
+    p_company: FIRMA_ID,
+    p_rows: payload,
+    p_raw_text: text,
+  });
+  if (res.error) return { error: res.error };
+  const first = Array.isArray(res.data) ? res.data[0] : res.data;
+  return {
+    data: {
+      raw: Number(first?.raw_count || 0),
+      approval: Number(first?.approval_count || 0),
+    },
+    error: null,
+  };
+}
+
+async function saveV57RawTransaction(rawRow) {
+  const upserted = await db.from('bank_transactions_raw')
+    .upsert(rawRow, { onConflict: 'company,transaction_hash' })
+    .select('id')
+    .single();
+  if (!isMissingUpsertConstraint(upserted.error)) return upserted;
+
+  const existing = await db.from('bank_transactions_raw')
+    .select('id')
+    .eq('company', rawRow.company)
+    .eq('transaction_hash', rawRow.transaction_hash)
+    .limit(1);
+  if (existing.error) return { error: existing.error };
+  if (existing.data?.length) {
+    const updated = await db.from('bank_transactions_raw')
+      .update(rawRow)
+      .eq('id', existing.data[0].id)
+      .select('id')
+      .single();
+    return updated.error ? { data: existing.data[0], error: null } : updated;
+  }
+
+  const inserted = await db.from('bank_transactions_raw')
+    .insert(rawRow)
+    .select('id')
+    .single();
+  if (!inserted.error) return inserted;
+
+  const raced = await db.from('bank_transactions_raw')
+    .select('id')
+    .eq('company', rawRow.company)
+    .eq('transaction_hash', rawRow.transaction_hash)
+    .limit(1);
+  if (!raced.error && raced.data?.length) return { data: raced.data[0], error: null };
+  return inserted;
+}
+
+function isMissingUpsertConstraint(error) {
+  const msg = String(error?.message || '');
+  return Boolean(error && msg.includes('no unique or exclusion constraint matching the ON CONFLICT specification'));
 }
 
 function isMissingV57(error) {
@@ -373,6 +452,20 @@ function isMissingV57(error) {
     msg.includes("Could not find the table 'public.aperion_approval_center'") ||
     msg.includes('schema cache')
   ));
+}
+
+function isMissingRpc(error) {
+  const msg = String(error?.message || '');
+  return Boolean(error && (
+    msg.includes('ingest_bank_image_transactions_v59') ||
+    msg.includes('Could not find the function') ||
+    msg.includes('schema cache')
+  ));
+}
+
+function isRlsWriteBlocked(error) {
+  const msg = String(error?.message || '');
+  return Boolean(error && msg.includes('violates row-level security policy'));
 }
 
 (async () => {
