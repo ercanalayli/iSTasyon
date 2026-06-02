@@ -1,0 +1,31 @@
+export function normalizePending(row){
+  return {
+    company_id: row.company_id || 'alayli',
+    source: row.source || 'gmail_bank_statement',
+    mailbox: row.mailbox || 'alaylimedikal@gmail.com',
+    bank_name: row.bank_name || '',
+    account_name: row.account_name || '',
+    iban_or_account_no: row.iban_or_account_no || '',
+    mail_id: row.mail_id || '',
+    mail_subject: row.mail_subject || '',
+    mail_from: row.mail_from || '',
+    mail_date: row.mail_date || '',
+    attachment_name: row.attachment_name || '',
+    statement_id: row.statement_id || '',
+    statement_period: row.statement_period || '',
+    transaction_date: row.transaction_date || null,
+    transaction_time: row.transaction_time || '',
+    value_date: row.value_date || null,
+    description: row.description || '',
+    amount_in: Number(row.amount_in || 0),
+    amount_out: Number(row.amount_out || 0),
+    balance_after: row.balance_after == null ? null : Number(row.balance_after),
+    raw_text: row.raw_text || '',
+    detected_type: row.detected_type || '',
+    suggested_counterparty: row.suggested_counterparty || '',
+    confidence_score: Number(row.confidence_score || 0),
+    status: row.status || 'pending',
+    duplicate_key: row.duplicate_key,
+    created_at: row.created_at || new Date().toISOString()
+  };
+}
