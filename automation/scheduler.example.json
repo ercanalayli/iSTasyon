@@ -1,0 +1,22 @@
+{
+  "name": "AperiON Mail Ekstre Scheduler",
+  "timezone": "Europe/Istanbul",
+  "rules": [
+    {
+      "name": "daytime_mail_check",
+      "description": "08:00-20:00 arasi her 15 dakikada bir mail ekstre kontrolu",
+      "cron": "*/15 8-20 * * *",
+      "command": "cd automation && npm run mail:check"
+    },
+    {
+      "name": "night_mail_check",
+      "description": "20:00-08:00 arasi saatte bir mail ekstre kontrolu",
+      "cron": "0 0-7,21-23 * * *",
+      "command": "cd automation && npm run mail:check"
+    }
+  ],
+  "manual_button": {
+    "label": "Simdi Mail Ekstre Kontrol Et",
+    "command": "cd automation && npm run mail:check"
+  }
+}
