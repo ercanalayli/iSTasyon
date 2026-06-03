@@ -5,6 +5,7 @@ import { searchMessages, mailboxQuery } from './lib/gmail-search.js';
 import { readMessageSummary } from './lib/gmail-message.js';
 import { readAttachmentBuffer, isReadableBankAttachment } from './lib/gmail-attachment.js';
 import { extractTextFromAttachment, hasEnoughText } from './lib/pdf-text.js';
+import { parseBankStatement } from './parsers/index.js';
 
 const gmail = makeGmail();
 const mailbox = process.env.GMAIL_MAILBOX || cfg.mailbox || 'alaylimedikal@gmail.com';
@@ -20,6 +21,7 @@ async function main(){
     attachments: 0,
     readable_attachments: 0,
     extracted_texts: 0,
+    parsed_rows: 0,
     messages: [],
     errors: []
   };
@@ -42,14 +44,19 @@ async function main(){
         };
         for(const a of msg.attachments){
           report.attachments++;
-          const att = { filename: a.filename, size: a.size, mimeType: a.mimeType, readable: isReadableBankAttachment(a), text_length: 0, text_ok: false };
+          const att = { filename: a.filename, size: a.size, mimeType: a.mimeType, readable: isReadableBankAttachment(a), text_length: 0, text_ok: false, parsed_rows: 0 };
           if(att.readable){
             report.readable_attachments++;
             const buf = await readAttachmentBuffer(gmail, msg.id, a.attachmentId);
             const text = await extractTextFromAttachment(a.filename, buf);
             att.text_length = String(text || '').length;
             att.text_ok = hasEnoughText(text);
-            if(att.text_ok) report.extracted_texts++;
+            if(att.text_ok){
+              report.extracted_texts++;
+              const rows = parseBankStatement(text, { company_id: cfg.company_id || 'alayli', mailbox, bank_hint: bank.bank, mail_id: msg.id, mail_subject: msg.subject, mail_from: msg.from, mail_date: msg.date, attachment_name: a.filename });
+              att.parsed_rows = rows.length;
+              report.parsed_rows += rows.length;
+            }
           }
           mailInfo.attachments.push(att);
         }
@@ -61,7 +68,7 @@ async function main(){
   }
 
   await fs.mkdir('automation/logs',{recursive:true});
-  await fs.writeFile(`automation/logs/mail-ekstre-extract-${Date.now()}.json`, JSON.stringify(report,null,2));
+  await fs.writeFile(`automation/logs/mail-ekstre-parse-${Date.now()}.json`, JSON.stringify(report,null,2));
   console.log(JSON.stringify(report,null,2));
   if(report.errors.length) process.exitCode = 2;
 }
