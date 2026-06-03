@@ -3,6 +3,8 @@ import cfg from './mail-ekstre-config.json' assert { type: 'json' };
 import { makeGmail } from './lib/gmail-auth.js';
 import { searchMessages, mailboxQuery } from './lib/gmail-search.js';
 import { readMessageSummary } from './lib/gmail-message.js';
+import { readAttachmentBuffer, isReadableBankAttachment } from './lib/gmail-attachment.js';
+import { extractTextFromAttachment, hasEnoughText } from './lib/pdf-text.js';
 
 const gmail = makeGmail();
 const mailbox = process.env.GMAIL_MAILBOX || cfg.mailbox || 'alaylimedikal@gmail.com';
@@ -16,6 +18,8 @@ async function main(){
     lookback_days: lookback,
     scanned_messages: 0,
     attachments: 0,
+    readable_attachments: 0,
+    extracted_texts: 0,
     messages: [],
     errors: []
   };
@@ -27,16 +31,29 @@ async function main(){
       report.scanned_messages += found.length;
       for(const item of found){
         const msg = await readMessageSummary(gmail, item.id);
-        report.attachments += msg.attachments.length;
-        report.messages.push({
+        const mailInfo = {
           bank: bank.bank,
           id: msg.id,
           from: msg.from,
           to: msg.to,
           subject: msg.subject,
           date: msg.date,
-          attachments: msg.attachments.map(a => ({ filename: a.filename, size: a.size, mimeType: a.mimeType }))
-        });
+          attachments: []
+        };
+        for(const a of msg.attachments){
+          report.attachments++;
+          const att = { filename: a.filename, size: a.size, mimeType: a.mimeType, readable: isReadableBankAttachment(a), text_length: 0, text_ok: false };
+          if(att.readable){
+            report.readable_attachments++;
+            const buf = await readAttachmentBuffer(gmail, msg.id, a.attachmentId);
+            const text = await extractTextFromAttachment(a.filename, buf);
+            att.text_length = String(text || '').length;
+            att.text_ok = hasEnoughText(text);
+            if(att.text_ok) report.extracted_texts++;
+          }
+          mailInfo.attachments.push(att);
+        }
+        report.messages.push(mailInfo);
       }
     }catch(err){
       report.errors.push({ bank: bank.bank, error: err.message || String(err) });
@@ -44,7 +61,7 @@ async function main(){
   }
 
   await fs.mkdir('automation/logs',{recursive:true});
-  await fs.writeFile(`automation/logs/mail-ekstre-live-scan-${Date.now()}.json`, JSON.stringify(report,null,2));
+  await fs.writeFile(`automation/logs/mail-ekstre-extract-${Date.now()}.json`, JSON.stringify(report,null,2));
   console.log(JSON.stringify(report,null,2));
   if(report.errors.length) process.exitCode = 2;
 }
