@@ -1,29 +1,52 @@
 import fs from 'fs/promises';
 import cfg from './mail-ekstre-config.json' assert { type: 'json' };
-import { parseBankStatement } from './parsers/index.js';
+import { makeGmail } from './lib/gmail-auth.js';
+import { searchMessages, mailboxQuery } from './lib/gmail-search.js';
+import { readMessageSummary } from './lib/gmail-message.js';
 
-const now = new Date().toISOString();
-const dryRun = process.env.DRY_RUN !== '0';
+const gmail = makeGmail();
+const mailbox = process.env.GMAIL_MAILBOX || cfg.mailbox || 'alaylimedikal@gmail.com';
+const lookback = process.env.LOOKBACK_DAYS || cfg.lookback_days || 7;
 
 async function main(){
   const report = {
-    run_at: now,
-    mode: dryRun ? 'dry_run' : 'live',
+    run_at: new Date().toISOString(),
     company_id: cfg.company_id,
-    mailbox: cfg.mailbox,
-    note: 'Worker lite: Gmail OAuth and Supabase insert hooks are separated. This file validates config, parser router and reporting shape.',
-    banks: cfg.banks.map(b => ({ bank: b.bank, label: b.label, query: b.query, status: 'configured' })),
-    next_steps: [
-      'connect Gmail OAuth for alaylimedikal@gmail.com',
-      'fetch attachments from matching bank mails',
-      'pass extracted text to parseBankStatement',
-      'insert non-duplicate rows into pending_bank_movements',
-      'send approved rows to bizimhesap_queue'
-    ]
+    mailbox,
+    lookback_days: lookback,
+    scanned_messages: 0,
+    attachments: 0,
+    messages: [],
+    errors: []
   };
+
+  for(const bank of cfg.banks){
+    const query = mailboxQuery(mailbox, `(${bank.query}) has:attachment newer_than:${lookback}d`);
+    try{
+      const found = await searchMessages(gmail, query, 10);
+      report.scanned_messages += found.length;
+      for(const item of found){
+        const msg = await readMessageSummary(gmail, item.id);
+        report.attachments += msg.attachments.length;
+        report.messages.push({
+          bank: bank.bank,
+          id: msg.id,
+          from: msg.from,
+          to: msg.to,
+          subject: msg.subject,
+          date: msg.date,
+          attachments: msg.attachments.map(a => ({ filename: a.filename, size: a.size, mimeType: a.mimeType }))
+        });
+      }
+    }catch(err){
+      report.errors.push({ bank: bank.bank, error: err.message || String(err) });
+    }
+  }
+
   await fs.mkdir('automation/logs',{recursive:true});
-  await fs.writeFile(`automation/logs/mail-ekstre-lite-${Date.now()}.json`, JSON.stringify(report,null,2));
+  await fs.writeFile(`automation/logs/mail-ekstre-live-scan-${Date.now()}.json`, JSON.stringify(report,null,2));
   console.log(JSON.stringify(report,null,2));
+  if(report.errors.length) process.exitCode = 2;
 }
 
 main().catch(e=>{console.error(e);process.exit(1)});
