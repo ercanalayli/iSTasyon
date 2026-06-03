@@ -1,5 +1,7 @@
 import fs from 'fs/promises';
 import { createClient } from '@supabase/supabase-js';
+import { google } from 'googleapis';
+import pdf from 'pdf-parse';
 import cfg from './mail-ekstre-config.json' assert { type: 'json' };
 import { makeGmail } from './lib/gmail-auth.js';
 import { searchMessages, mailboxQuery } from './lib/gmail-search.js';
@@ -8,7 +10,8 @@ import { readAttachmentBuffer, isReadableBankAttachment } from './lib/gmail-atta
 import { extractTextFromAttachment, hasEnoughText } from './lib/pdf-text.js';
 import { parseBankStatement } from './parsers/index.js';
 
-const gmail = makeGmail();
+const sourceMode = process.env.EKSTRE_SOURCE || 'gmail';
+const gmail = sourceMode === 'gmail' ? makeGmail() : null;
 const mailbox = process.env.GMAIL_MAILBOX || cfg.mailbox || 'alaylimedikal@gmail.com';
 const lookback = process.env.LOOKBACK_DAYS || cfg.lookback_days || 7;
 const dryRun = process.env.DRY_RUN === '1';
@@ -18,24 +21,40 @@ function openDb(){
   return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
-async function main(){
-  const report = {
-    run_at: new Date().toISOString(),
-    mode: dryRun ? 'dry_run' : 'live',
-    company_id: cfg.company_id,
-    mailbox,
-    lookback_days: lookback,
-    scanned_messages: 0,
-    attachments: 0,
-    readable_attachments: 0,
-    extracted_texts: 0,
-    parsed_rows: 0,
-    ingest: null,
-    messages: [],
-    errors: []
-  };
-  const parsed = [];
+function makeDrive(){
+  const auth = new google.auth.OAuth2(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, process.env.GOOGLE_REDIRECT_URI || 'http://localhost');
+  auth.setCredentials({ refresh_token: process.env.GOOGLE_REFRESH_TOKEN });
+  return google.drive({ version: 'v3', auth });
+}
 
+async function loadRowsFromDrive(report){
+  const folderId = process.env.GDRIVE_EKSTRE_FOLDER_ID;
+  if(!folderId) throw new Error('GDRIVE_EKSTRE_FOLDER_ID eksik');
+  const drive = makeDrive();
+  const q = `'${folderId}' in parents and trashed = false`;
+  const res = await drive.files.list({ q, pageSize: 20, fields: 'files(id,name,mimeType,modifiedTime)' });
+  const files = res.data.files || [];
+  report.drive_folder_id = folderId;
+  report.scanned_messages = files.length;
+  const parsed = [];
+  for(const f of files){
+    if(!String(f.name || '').toLowerCase().endsWith('.pdf')) continue;
+    report.attachments++;
+    const raw = await drive.files.get({ fileId: f.id, alt: 'media' }, { responseType: 'arraybuffer' });
+    const text = (await pdf(Buffer.from(raw.data))).text || '';
+    if(!hasEnoughText(text)) continue;
+    report.readable_attachments++;
+    report.extracted_texts++;
+    const rows = parseBankStatement(text, { company_id: cfg.company_id || 'alayli', source: 'google_drive_bank_statement', mailbox: 'google_drive', bank_hint: f.name, statement_id: f.id, attachment_name: f.name });
+    report.parsed_rows += rows.length;
+    parsed.push(...rows.map(r => ({ ...r, source: 'google_drive_bank_statement', mailbox: 'google_drive', attachment_name: f.name, statement_id: f.id })));
+    report.messages.push({ bank: 'drive', id: f.id, subject: f.name, date: f.modifiedTime, attachments: [{ filename: f.name, parsed_rows: rows.length }] });
+  }
+  return parsed;
+}
+
+async function loadRowsFromGmail(report){
+  const parsed = [];
   for(const bank of cfg.banks){
     const query = mailboxQuery(mailbox, `(${bank.query}) has:attachment newer_than:${lookback}d`);
     try{
@@ -69,6 +88,33 @@ async function main(){
       report.errors.push({ bank: bank.bank, error: err.message || String(err) });
     }
   }
+  return parsed;
+}
+
+async function main(){
+  const report = {
+    run_at: new Date().toISOString(),
+    mode: dryRun ? 'dry_run' : 'live',
+    source: sourceMode,
+    company_id: cfg.company_id,
+    mailbox,
+    lookback_days: lookback,
+    scanned_messages: 0,
+    attachments: 0,
+    readable_attachments: 0,
+    extracted_texts: 0,
+    parsed_rows: 0,
+    ingest: null,
+    messages: [],
+    errors: []
+  };
+
+  let parsed = [];
+  try{
+    parsed = sourceMode === 'drive' ? await loadRowsFromDrive(report) : await loadRowsFromGmail(report);
+  }catch(err){
+    report.errors.push({ area: sourceMode, error: err.message || String(err) });
+  }
 
   if(dryRun){
     report.ingest = { dry_run: true, input: parsed.length, inserted: 0, duplicate: 0, failed: 0 };
@@ -86,7 +132,7 @@ async function main(){
   }
 
   await fs.mkdir('automation/logs',{recursive:true});
-  await fs.writeFile(`automation/logs/mail-ekstre-ingest-${Date.now()}.json`, JSON.stringify(report,null,2));
+  await fs.writeFile(`automation/logs/ekstre-${sourceMode}-${Date.now()}.json`, JSON.stringify(report,null,2));
   console.log(JSON.stringify(report,null,2));
   if(report.errors.length) process.exitCode = 2;
 }
