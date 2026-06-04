@@ -7,6 +7,8 @@
     "preflight": "node mail-ekstre-preflight.cjs",
     "mail:check": "node mail-ekstre-worker-lite.js",
     "mail:check:dry": "DRY_RUN=1 node mail-ekstre-worker-lite.js",
+    "drive:check": "EKSTRE_SOURCE=drive node mail-ekstre-worker-lite.js",
+    "drive:check:dry": "EKSTRE_SOURCE=drive DRY_RUN=1 node mail-ekstre-worker-lite.js",
     "gmail:probe": "node gmail-probe-lite.js",
     "monitor": "node aperion-onay-monitor.js"
   },
