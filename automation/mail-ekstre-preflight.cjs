@@ -12,7 +12,7 @@ function loadEnv(file) {
     if (!s || s.startsWith('#') || !s.includes('=')) continue;
     const i = s.indexOf('=');
     const k = s.slice(0, i).trim();
-    const v = s.slice(i + 1).trim().replace(/^['"]|['"]$/g, '');
+    const v = s.slice(i + 1).trim().replace(/^["']|["']$/g, '');
     if (k && process.env[k] === undefined) process.env[k] = v;
   }
 }
@@ -34,6 +34,7 @@ add('config', 'company_id', cfg?.company_id === 'alayli', cfg?.company_id || 'ek
 add('config', 'Google client id', Boolean(process.env.GOOGLE_CLIENT_ID), process.env.GOOGLE_CLIENT_ID ? 'var' : 'eksik');
 add('config', 'Google client secret', Boolean(process.env.GOOGLE_CLIENT_SECRET), process.env.GOOGLE_CLIENT_SECRET ? 'var' : 'eksik');
 add('config', 'Google refresh token', Boolean(process.env.GOOGLE_REFRESH_TOKEN), process.env.GOOGLE_REFRESH_TOKEN ? 'var' : 'eksik');
+add('config', 'Drive ekstre folder id', Boolean(process.env.GDRIVE_EKSTRE_FOLDER_ID), process.env.GDRIVE_EKSTRE_FOLDER_ID || 'eksik', 'warning');
 add('config', 'Supabase url', Boolean(process.env.SUPABASE_URL), process.env.SUPABASE_URL || 'eksik');
 add('config', 'Supabase service key', Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY), process.env.SUPABASE_SERVICE_ROLE_KEY ? 'var' : 'eksik');
 
@@ -49,7 +50,8 @@ for (const file of [
   'parsers/index.js',
   'sql/001_pending_bank_movements.sql',
   'sql/002_bizimhesap_queue.sql',
-  'sql/003_approve_pending_to_queue.sql'
+  'sql/003_approve_pending_to_queue.sql',
+  'sql/005_ingest_mail_bank_movements.sql'
 ]) {
   add('file', file, fs.existsSync(path.join(root, file)), file);
 }
