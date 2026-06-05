@@ -68,7 +68,7 @@ const lines = [
   `AperiON Mail Ekstre preflight: ${report.status}`,
   `Blokaj: ${blocking.length}`,
   '',
-  ...checks.map(c => `${c.ok ? 'OK' : 'BLOK'} [${c.area}] ${c.name}: ${c.detail}`)
+  ...checks.map(c => `${c.ok ? 'OK' : c.severity === 'warning' ? 'UYARI' : 'BLOK'} [${c.area}] ${c.name}: ${c.detail}`)
 ];
 
 fs.writeFileSync(path.join(outDir, 'mail-ekstre-preflight.json'), JSON.stringify(report, null, 2));
