@@ -1579,7 +1579,7 @@ async function loadFinanceHome(){
     if(error)setupIssues.push('takvim özet görünümü yok'); else summary=data?.[0]||null;
   }catch(e){setupIssues.push('takvim özet görünümü yok');}
   try{
-    const {data,error}=await db.from('finance_calendar_drawer_view').select('*').eq('company','ALAYLI').order('calendar_date',{ascending:true}).limit(8);
+    const {data,error}=await db.from('finance_calendar_drawer_view').select('*').eq('company','ALAYLI').order('calendar_date',{ascending:true}).limit(50);
     if(error)setupIssues.push('takvim liste görünümü yok'); else calendarRows=data||[];
   }catch(e){setupIssues.push('takvim liste görünümü yok');}
   try{
@@ -1588,14 +1588,17 @@ async function loadFinanceHome(){
   }catch(e){setupIssues.push('Telegram evrak tablosu yok');}
   const todayIn=financeNum(summary?.today_receivable||summary?.bugun_tahsilat||summary?.tahsilat_bugun);
   const todayOut=financeNum(summary?.today_payable||summary?.bugun_odeme||summary?.odeme_bugun);
-  const overdue=financeNum(summary?.overdue_count||summary?.geciken_sayi||0);
+  const overdueIn=financeNum(summary?.overdue_receivable||summary?.geciken_tahsilat||0);
+  const overdueOut=financeNum(summary?.overdue_payable||summary?.geciken_odeme||0);
+  const overdueCount=calendarRows.filter(r=>String(r.period_status||r.status||'').toLocaleLowerCase('tr-TR').includes('overdue')||String(r.period_status||r.status||'').toLocaleLowerCase('tr-TR').includes('gecik')).length;
+  const overdueTotal=overdueIn+overdueOut;
   const approvals=financeNum(summary?.waiting_approvals||summary?.onay_bekleyen||0);
   el.innerHTML=`<div class="finance-home-grid">
-    <div class="finance-home-kpi"><div class="finance-home-k">Bugün Tahsilat</div><div class="finance-home-v">${summary?financeTL(todayIn):'takvim kurulumu eksik'}</div><div class="finance-home-n">telefon + takvim onayı</div></div>
-    <div class="finance-home-kpi"><div class="finance-home-k">Bugün Ödeme</div><div class="finance-home-v">${summary?financeTL(todayOut):'takvim kurulumu eksik'}</div><div class="finance-home-n">ödenecekler ve vadeler</div></div>
-    <div class="finance-home-kpi"><div class="finance-home-k">Geciken</div><div class="finance-home-v">${summary?fmt(overdue):'takvim kurulumu eksik'}</div><div class="finance-home-n">kontrol gereken kayıt</div></div>
+    <div class="finance-home-kpi"><div class="finance-home-k">Bugün Tahsilat</div><div class="finance-home-v">${summary?financeTL(todayIn):'takvim kurulumu eksik'}</div><div class="finance-home-n">${overdueIn?`geciken tahsilat ${financeTL(overdueIn)}`:'bugün tahsilat kaydı yok'}</div></div>
+    <div class="finance-home-kpi"><div class="finance-home-k">Bugün Ödeme</div><div class="finance-home-v">${summary?financeTL(todayOut):'takvim kurulumu eksik'}</div><div class="finance-home-n">${overdueOut?`geciken ödeme ${financeTL(overdueOut)}`:'bugün ödeme kaydı yok'}</div></div>
+    <div class="finance-home-kpi"><div class="finance-home-k">Geciken</div><div class="finance-home-v">${summary?financeTL(overdueTotal):'takvim kurulumu eksik'}</div><div class="finance-home-n">${fmt(overdueCount)} kayıt · tahsilat ${financeTL(overdueIn)} / ödeme ${financeTL(overdueOut)}</div></div>
     <div class="finance-home-kpi"><div class="finance-home-k">Onay Bekleyen</div><div class="finance-home-v">${summary?fmt(approvals):'takvim kurulumu eksik'}</div><div class="finance-home-n">Telegram / AperiON kuyruğu</div></div>
-    <div class="finance-home-list"><div class="finance-home-head">Yakın Finans Takvimi</div>${financeRowsHtml(calendarRows)}</div>
+    <div class="finance-home-list"><div class="finance-home-head">Yakın Finans Takvimi</div>${financeRowsHtml(calendarRows.slice(0,8))}</div>
     <div class="finance-home-inbox"><div class="finance-home-head">Telegram Evrak</div>${inboxRows.length?inboxRows.map(r=>`<div class="finance-home-item" style="grid-template-columns:1fr auto"><div><div class="finance-home-title">${escHtml(financeTitle(r))}</div><div class="finance-home-sub">${escHtml((r.created_at||'').toString().substring(0,16))} · ${escHtml(r.category||r.kategori||r.durum||'evrak')}</div></div><div class="finance-home-amt">${escHtml(r.status||r.durum||'alındı')}</div></div>`).join(''):'<div class="finance-empty">Telegram evrak tablosu henüz kurulmadı veya kayıt yok.</div>'}</div>
     ${setupIssues.length?`<div class="finance-empty" style="grid-column:1/-1">Eksik kurulum: ${escHtml([...new Set(setupIssues)].join(', '))}. Haziran tahakkukları için Supabase finans takvimi kurulmalı: finance/AperiON_Finance_Calendar_FULL_INSTALL_v58.sql.</div>`:''}
   </div>`;
