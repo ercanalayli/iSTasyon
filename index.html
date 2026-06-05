@@ -437,6 +437,39 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .finance-home-amt{font-family:var(--mono);font-size:12px;font-weight:950;color:#0F766E;text-align:right}
 .finance-home-amt.pay{color:#B45309}
 .finance-empty{font-family:var(--mono);font-size:11px;color:#64748B;padding:14px;background:#F8FAFC;border:1px dashed #CBD5E1;border-radius:12px}
+.income-card{border:1px solid #CFE0F5;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 28px rgba(15,23,42,.055)}
+.income-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
+.income-title{font-size:20px;font-weight:950;color:#071327;letter-spacing:-.02em}
+.income-sub{font-size:12px;color:#334155;font-weight:750;margin-top:7px}
+.income-note{font-family:var(--mono);font-size:10px;color:#64748B;margin-top:10px;font-weight:800}
+.income-controls{display:flex;gap:8px;align-items:end;flex-wrap:wrap;justify-content:flex-end}
+.income-control label{display:block;font-family:var(--mono);font-size:9px;color:#475569;font-weight:950;text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.income-select,.income-btn{height:34px;border:1px solid #CBD5E1;background:#F8FAFC;color:#0F172A;border-radius:9px;padding:0 11px;font-size:12px;font-weight:900}
+.income-btn{cursor:pointer}
+.income-btn.on,.income-btn:hover{background:#1D4ED8;border-color:#1D4ED8;color:#fff}
+.income-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(320px,.7fr);gap:12px}
+.income-statement{border:1px solid #D8E4F4;border-radius:12px;padding:10px;background:#FFFFFF}
+.income-row{display:grid;grid-template-columns:minmax(190px,1fr) minmax(130px,.55fr) minmax(130px,.55fr) minmax(130px,.55fr);gap:10px;align-items:center;padding:9px 10px;border-bottom:1px solid #E7EEF8}
+.income-row:last-child{border-bottom:0}
+.income-row.head{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:#64748B;font-weight:950;background:#F8FAFC;border-radius:8px;margin-bottom:4px}
+.income-label{font-size:12px;font-weight:950;color:#0F172A}
+.income-cell{font-family:var(--mono);font-size:14px;font-weight:950;color:#0F172A;text-align:right}
+.income-cell.good{color:#047857}.income-cell.bad{color:#DC2626}.income-cell.warn{color:#B45309}
+.income-click{cursor:pointer;border-radius:8px;padding:6px 8px;margin:-6px -8px}
+.income-click:hover{background:#EEF4FF;color:#1D4ED8}
+.income-total{background:#F1F8FF;border:1px solid #BFD5FF;border-radius:10px;margin:8px 0;padding:10px}
+.income-net{background:#ECFDF5;border-color:#86EFAC}
+.income-net.loss{background:#FEF2F2;border-color:#FCA5A5}
+.income-side{display:grid;gap:12px}
+.income-chart-card{border:1px solid #D8E4F4;border-radius:12px;background:#F8FAFC;padding:10px;min-height:220px}
+.income-chart-title{font-size:11px;font-weight:950;color:#334155;margin-bottom:8px}
+.income-table-wrap{overflow:auto;border:1px solid #D8E4F4;border-radius:12px;background:#fff;margin-top:12px}
+.income-table{width:100%;border-collapse:collapse;min-width:920px}
+.income-table th{position:sticky;top:0;background:#F8FAFC;color:#64748B;font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.8px;text-align:left;padding:9px;border-bottom:1px solid #D8E4F4}
+.income-table td{padding:9px;border-bottom:1px solid #EEF2F7;font-size:12px}
+.income-table tr{cursor:pointer}.income-table tr:hover td{background:#F5F9FF}
+.income-foot{font-family:var(--mono);font-size:10px;color:#475569;border:1px solid #D8E4F4;background:#F8FAFC;border-radius:12px;padding:10px;margin-top:12px}
+@media(max-width:980px){.income-head,.income-layout{display:block}.income-controls{justify-content:flex-start;margin-top:10px}.income-row{grid-template-columns:1fr}.income-cell{text-align:left}}
 @media(max-width:980px){.finance-home-kpi,.finance-home-list,.finance-home-inbox{grid-column:1/-1}.finance-home-item{grid-template-columns:1fr}.finance-home-amt{text-align:left}}
 .exec-table td{padding:9px 10px}.exec-table th{padding:9px 10px}
 .dyn-grid{gap:8px;margin:9px 0 13px}.dyn-box{padding:10px;min-height:64px}
@@ -679,6 +712,9 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
           <div class="report-grid" id="reportHubGrid">
             <div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yukleniyor...</div>
           </div>
+        </div>
+        <div class="income-card" id="incomeStatementCard">
+          <div id="incomeStatementTop"><div class="finance-empty">Gelir tablosu hazırlanıyor...</div></div>
         </div>
         <div class="card finance-home-card" style="margin-bottom:16px">
           <div class="card-hd">
@@ -1275,14 +1311,14 @@ async function selF(id){
   showDetay();
   await refresh();
 }
-function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';renderReportHub();loadFinanceHome();renderMainFinanceFlow();renderHomeSales();renderKarts();loadLastDataStatus();renderSourceMatrix();renderHomeExpenses();}
+function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';renderReportHub();renderIncomeStatementTop();loadFinanceHome();renderMainFinanceFlow();renderHomeSales();renderKarts();loadLastDataStatus();renderSourceMatrix();renderHomeExpenses();}
 function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(PILOT_FIRMA);document.getElementById('gB')?.remove();}
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'Ana Sayfa',s:'Yönetici özeti ve veri güveni'},satis:{t:'Satışlar',s:'Kategori, ürün ve müşteri kırılımı'},cariler:{t:'Müşteriler',s:'Cari performans ve risk'},finans:{t:'Finans Özeti',s:'Gider, banka ve tahsilat kontrolü'},stok:{t:'Ürünler',s:'Ürün bazlı kârlılık ve stok takibi'},hedef:{t:'Hedefler',s:'Gerçekleşen ve bütçe kontrolü'},gorevler:{t:'Görevler',s:'Onay ve takip merkezi'},veri:{t:'Veri Kontrol',s:'Kaynak, çekim ve doğrulama'},bildirim:{t:'Bildirim',s:'Telefon onay ve rapor ayarları'}};
 function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();loadSyncHealth();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();}
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]).filter(isAlayliRow);}catch(e){return[];}}
-async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);await loadSyncHealth();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();loadFinanceHome();renderMainFinanceFlow();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=buildLabel();const bc=document.getElementById('buildCode');if(bc)bc.textContent=buildLabel();genAI();}
+async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);await loadSyncHealth();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();renderIncomeStatementTop();loadFinanceHome();renderMainFinanceFlow();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=buildLabel();const bc=document.getElementById('buildCode');if(bc)bc.textContent=buildLabel();genAI();}
 function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
 function pSels(){
   const fids=[...new Set(RAW.map(r=>r.firma_id).filter(Boolean))];
@@ -1682,6 +1718,141 @@ async function renderMainFinanceFlow(){
   }).join('');
   el.innerHTML=`<div class="finance-flow-wrap"><table class="finance-flow-table"><thead><tr><th>Dönem</th><th>Satışlar</th><th>Tahsilatlar</th><th>Ürün Alışları</th><th>Ürün Alış Ödemeleri</th><th>Gider Tahakkuk</th><th>Gider Ödemeleri</th><th>Tahsilat / Satış</th><th>Satış / Alış</th><th>Tahsilat / Ürün Alış + Gider Ödeme</th><th>Veri Durumu</th></tr></thead><tbody>${body}</tbody></table></div>
   <div class="flow-foot">Kaynaklar: sales_raw, finance_calendar_drawer_view, masraf_raw/bank_transactions, ürün alış ham tabloları. Banka ekran görüntüsü için banka_gorsel_parser.js hazır; Telegram onay akışı banka_onay modülü üzerinden bağlanır.</div>`;
+}
+let INCOME_MODE='month', incomeChartA=null, incomeChartB=null, LAST_INCOME_MODEL=null;
+function setIncomeMode(mode){
+  INCOME_MODE=mode||'month';
+  renderIncomeStatementTop();
+}
+function incomePeriod(mode=INCOME_MODE){
+  const pr=pRange(), base=periodFor(mode,pr);
+  return {...base, mode, caption:`${base.label} · ${base.from}${base.from!==base.to?' / '+base.to:''}`};
+}
+async function productCostMap(){
+  const map=new Map();
+  try{
+    for(let from=0;;from+=1000){
+      const {data,error}=await db.from('product_raw').select('urun,barkod,urun_kod,alis_fiyat,satis_fiyat,kategori,updated_at').eq('firma_id',PILOT_FIRMA).range(from,from+999);
+      if(error)break;
+      (data||[]).forEach(r=>{
+        const cost=parseDynMoney(r.alis_fiyat);
+        const price=parseDynMoney(r.satis_fiyat);
+        const keys=[r.urun,r.barkod,r.urun_kod].map(x=>String(x||'').trim().toLocaleLowerCase('tr-TR')).filter(Boolean);
+        keys.forEach(k=>{if(!map.has(k)||cost>0)map.set(k,{cost,price,kategori:r.kategori||'',updated_at:r.updated_at||''});});
+      });
+      if(!data||data.length<1000)break;
+    }
+  }catch(e){}
+  return map;
+}
+function incomeCostForSale(row,costMap){
+  const keys=[row.urun,row.barkod,row.urun_kod].map(x=>String(x||'').trim().toLocaleLowerCase('tr-TR')).filter(Boolean);
+  const hit=keys.map(k=>costMap.get(k)).find(x=>x&&Number(x.cost)>0);
+  const adet=+row.adet||0;
+  return {unit:hit?.cost||0,total:hit?.cost?hit.cost*adet:0,matched:!!hit};
+}
+async function buildIncomeModel(mode=INCOME_MODE){
+  const p=incomePeriod(mode), allSales=await salesWide(PILOT_FIRMA), sales=allSales.filter(r=>flowInRange(r,p.from,p.to));
+  const expNow=await masrafData(new Date(p.to).getFullYear(),PILOT_FIRMA);
+  const expPrev=p.from.substring(0,4)!==p.to.substring(0,4)?await masrafData(new Date(p.from).getFullYear(),PILOT_FIRMA):[];
+  const expenses=[...expNow,...expPrev].filter(r=>flowInRange(r,p.from,p.to));
+  const cal=await fetchFlowCalendarRows(p.from,p.to);
+  const bankRows=[];
+  try{
+    const {data}=await db.from('bank_transactions').select('*').eq('firma_id',PILOT_FIRMA).gte('tarih',p.from).lte('tarih',p.to).limit(5000);
+    bankRows.push(...(data||[]));
+  }catch(e){}
+  const costMap=await productCostMap();
+  const salesLines=sales.map(r=>({...r,__cost:incomeCostForSale(r,costMap)}));
+  const revenue=salesLines.reduce((s,r)=>s+(+r.ciro||0),0);
+  const qty=salesLines.reduce((s,r)=>s+(+r.adet||0),0);
+  const cogs=salesLines.reduce((s,r)=>s+r.__cost.total,0);
+  const missingCost=salesLines.filter(r=>!r.__cost.matched&&(+r.adet||0)>0&&(+r.ciro||0)>0).length;
+  const expenseTotal=expenses.reduce((s,r)=>s+(+r.tutar||0),0);
+  const receipts=bankRows.filter(r=>(+r.tutar||0)>0||String(r.tur||'').toLocaleLowerCase('tr-TR').includes('tahsil'));
+  const payments=bankRows.filter(r=>(+r.tutar||0)<0||String(r.tur||'').toLocaleLowerCase('tr-TR').includes('odeme')||String(r.tur||'').toLocaleLowerCase('tr-TR').includes('gider'));
+  const cashIn=receipts.reduce((s,r)=>s+Math.abs(+r.tutar||0),0);
+  const cashOut=payments.reduce((s,r)=>s+Math.abs(+r.tutar||0),0);
+  const calendarRows=cal.rows||[];
+  const receivableOpen=calendarRows.filter(r=>flowKind(r)==='tahsilat').reduce((s,r)=>s+flowAmount(r),0);
+  const payableOpen=calendarRows.filter(r=>flowKind(r)==='gider_odeme'||flowKind(r)==='urun_alis_odeme').reduce((s,r)=>s+flowAmount(r),0);
+  const gross=revenue-cogs, net=gross-expenseTotal, grossMargin=revenue?gross/revenue*100:0, netMargin=revenue?net/revenue*100:0;
+  const byCat={}, byProduct={}, byExpense={};
+  salesLines.forEach(r=>{
+    const k=nrmCat(r.kategori), u=(r.urun||'Ürün Yok').trim()||'Ürün Yok';
+    const target=byCat[k]||(byCat[k]={name:k,revenue:0,qty:0,cogs:0,rows:[]});
+    target.revenue+=(+r.ciro||0);target.qty+=(+r.adet||0);target.cogs+=r.__cost.total;target.rows.push(r);
+    const pr=byProduct[u]||(byProduct[u]={name:u,category:k,revenue:0,qty:0,cogs:0,rows:[]});
+    pr.revenue+=(+r.ciro||0);pr.qty+=(+r.adet||0);pr.cogs+=r.__cost.total;pr.rows.push(r);
+  });
+  expenses.forEach(r=>{const k=r.kategori||'Diğer';const x=byExpense[k]||(byExpense[k]={name:k,amount:0,rows:[]});x.amount+=(+r.tutar||0);x.rows.push(r);});
+  const categories=Object.values(byCat).map(x=>({...x,gross:x.revenue-x.cogs,margin:x.revenue?(x.revenue-x.cogs)/x.revenue*100:0})).sort((a,b)=>b.revenue-a.revenue);
+  const products=Object.values(byProduct).map(x=>({...x,gross:x.revenue-x.cogs,margin:x.revenue?(x.revenue-x.cogs)/x.revenue*100:0})).sort((a,b)=>b.revenue-a.revenue);
+  const expenseCats=Object.values(byExpense).sort((a,b)=>b.amount-a.amount);
+  return {period:p,sales:salesLines,expenses,bankRows,categories,products,expenseCats,revenue,qty,cogs,missingCost,expenseTotal,cashIn,cashOut,receivableOpen,payableOpen,gross,net,grossMargin,netMargin};
+}
+function incomeMoney(v,cls=''){return `<span class="income-click ${cls}" onclick="incomeDrill('${cls||'revenue'}')">${dynMoney(v)}</span>`;}
+function incomeRow(label,accrual,cash,ratio,type){
+  return `<div class="income-row"><div class="income-label">${label}</div><div class="income-cell">${incomeMoney(accrual,type)}</div><div class="income-cell">${dynMoney(cash)}</div><div class="income-cell ${ratio>=100?'good':ratio>0?'warn':''}">${Number.isFinite(ratio)?dynPct(ratio):'kaynak yok'}</div></div>`;
+}
+function incomeMiniChart(id,labels,data,colors,type='bar'){
+  setTimeout(()=>{
+    const canvas=document.getElementById(id);if(!canvas||!window.Chart)return;
+    const old=id==='incomeChartA'?incomeChartA:incomeChartB;if(old)old.destroy();
+    const chart=new Chart(canvas,{type,data:{labels,datasets:[{data,backgroundColor:colors,borderColor:colors,borderWidth:1,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:type==='bar'?{y:{beginAtZero:true,ticks:{callback:v=>'TL '+fmt(v)}},x:{ticks:{font:{size:10}}}}:{}}});
+    if(id==='incomeChartA')incomeChartA=chart;else incomeChartB=chart;
+  },60);
+}
+async function renderIncomeStatementTop(){
+  const el=document.getElementById('incomeStatementTop');if(!el)return;
+  el.innerHTML='<div class="finance-empty">Gelir tablosu hesaplanıyor...</div>';
+  const model=await buildIncomeModel(INCOME_MODE);LAST_INCOME_MODEL=model;
+  const p=model.period, receiptRatio=model.revenue?model.cashIn/model.revenue*100:0, paymentRatio=model.expenseTotal?model.cashOut/model.expenseTotal*100:0;
+  const activeBtn=m=>INCOME_MODE===m?'on':'';
+  el.innerHTML=`<div class="income-head">
+    <div><div class="income-title">Gelir Tablosu</div><div class="income-sub">${p.caption} · tutarlara tıklayınca kategori ve ürün kayıtları açılır.</div><div class="income-note">Tahakkuk esası: satış ve gider döneminde yazılır. Nakit gerçekleşme banka/tahsilat kaynağı geldikçe paralel gösterilir.</div></div>
+    <div class="income-controls">
+      <button class="income-btn ${activeBtn('today')}" onclick="setIncomeMode('today')">Bugün</button>
+      <button class="income-btn ${activeBtn('yesterday')}" onclick="setIncomeMode('yesterday')">Dün</button>
+      <button class="income-btn ${activeBtn('week')}" onclick="setIncomeMode('week')">Bu Hafta</button>
+      <button class="income-btn ${activeBtn('month')}" onclick="setIncomeMode('month')">Bu Ay</button>
+      <button class="income-btn ${activeBtn('last_month')}" onclick="setIncomeMode('last_month')">${pRange().prevMonthName}</button>
+      <button class="income-btn ${activeBtn('year')}" onclick="setIncomeMode('year')">${pRange().year}</button>
+    </div>
+  </div>
+  <div class="income-layout">
+    <div>
+      <div class="income-statement">
+        <div class="income-row head"><div>Kalem</div><div style="text-align:right">Tahakkuk</div><div style="text-align:right">Nakit</div><div style="text-align:right">Gerçekleşme</div></div>
+        ${incomeRow('Gelir tahakkukları',model.revenue,model.cashIn,receiptRatio,'revenue')}
+        ${incomeRow('Gider tahakkukları',model.expenseTotal,model.cashOut,paymentRatio,'expense')}
+        <div class="income-row income-total"><div class="income-label">Brüt kar</div><div class="income-cell good">${incomeMoney(model.gross,'gross')}</div><div class="income-cell">${model.cogs?`COGS ${dynMoney(model.cogs)}`:'maliyet kaynağı eksik'}</div><div class="income-cell">${dynPct(model.grossMargin)}</div></div>
+        <div class="income-row"><div class="income-label">KDV tahakkuk</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell">kaynak bağlanacak</div><div class="income-cell">KDV alanı yok</div></div>
+        <div class="income-row"><div class="income-label">Gelir vergisi tahakkuk</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell">kaynak bağlanacak</div><div class="income-cell">vergi etiketi yok</div></div>
+        <div class="income-row income-total income-net ${model.net<0?'loss':''}"><div class="income-label">Net kar</div><div class="income-cell ${model.net>=0?'good':'bad'}">${incomeMoney(model.net,'net')}</div><div class="income-cell">${dynMoney(model.cashIn-model.cashOut)}</div><div class="income-cell">${dynPct(model.netMargin)}</div></div>
+      </div>
+      <div class="income-foot">Kontrol: ${fmt(model.sales.length)} satış satırı · ${fmt(model.expenses.length)} gider tahakkuku · ${fmt(model.bankRows.length)} banka hareketi okundu. ${model.missingCost?`${fmt(model.missingCost)} satış satırında ürün alış maliyeti eksik; brüt kar temkinli gösterilir.`:'Ürün maliyet eşleşmesi tamam.'}</div>
+    </div>
+    <div class="income-side">
+      <div class="income-chart-card"><div class="income-chart-title">Tahakkuk / Nakit Gerçekleşme</div><canvas id="incomeChartA"></canvas></div>
+      <div class="income-chart-card"><div class="income-chart-title">Kategori Brüt Kar Dağılımı</div><canvas id="incomeChartB"></canvas></div>
+    </div>
+  </div>
+  <div class="income-table-wrap"><table class="income-table"><thead><tr><th>Kategori</th><th>Gelir</th><th>Maliyet</th><th>Brüt Kar</th><th>Marj</th><th>Adet</th><th>İşlem</th></tr></thead><tbody>${model.categories.slice(0,14).map(c=>`<tr onclick="incomeDrill('category',${jsArg(c.name)})"><td><b>${escHtml(c.name)}</b></td><td>${dynMoney(c.revenue)}</td><td>${c.cogs?dynMoney(c.cogs):'eksik'}</td><td>${dynMoney(c.gross)}</td><td>${dynPct(c.margin)}</td><td>${fmt(c.qty)}</td><td>${fmt(c.rows.length)}</td></tr>`).join('')||'<tr><td colspan="7">Kategori verisi yok</td></tr>'}</tbody></table></div>`;
+  incomeMiniChart('incomeChartA',['Gelir Tahakkuk','Gelen Ödeme','Gider Tahakkuk','Ödenen'],[model.revenue,model.cashIn,model.expenseTotal,model.cashOut],['#059669','#2563EB','#DC2626','#F59E0B']);
+  incomeMiniChart('incomeChartB',model.categories.slice(0,6).map(x=>x.name),model.categories.slice(0,6).map(x=>Math.max(0,x.gross)),['#2563EB','#059669','#F59E0B','#7C3AED','#0EA5E9','#EF4444'],'doughnut');
+}
+function incomeDrill(type,name=''){
+  const model=LAST_INCOME_MODEL;if(!model)return;
+  const t=document.getElementById('mo-t'), b=document.getElementById('mo-b'), m=document.getElementById('modal');
+  let title='Gelir Tablosu Detay', rows=[];
+  if(type==='expense'){title='Gider Tahakkukları';rows=model.expenses.map(r=>({a:r.kategori||'Gider',b:r.aciklama||'',c:r.tarih,d:r.tutar,e:r.kaynak||'masraf_raw'}));}
+  else if(type==='category'){const c=model.categories.find(x=>x.name===name);title=`Kategori: ${name}`;rows=(c?.rows||[]).map(r=>({a:r.urun||'Ürün',b:r.unvan||'',c:r.tarih,d:+r.ciro||0,e:`${fmt(+r.adet||0)} adet`}));}
+  else if(type==='gross'||type==='net'||type==='revenue'){title=type==='revenue'?'Gelir Tahakkukları':type==='gross'?'Brüt Kar Detayı':'Net Kar Detayı';rows=model.products.slice(0,80).map(r=>({a:r.name,b:r.category,c:`${fmt(r.qty)} adet`,d:r.revenue,e:`Kar ${dynMoney(r.gross)} · Marj ${dynPct(r.margin)}`}));}
+  else {title='Gelir Tablosu Ürünleri';rows=model.products.slice(0,80).map(r=>({a:r.name,b:r.category,c:`${fmt(r.qty)} adet`,d:r.revenue,e:`Kar ${dynMoney(r.gross)}`}));}
+  t.textContent=title;
+  b.innerHTML=`<div class="income-table-wrap"><table class="income-table"><thead><tr><th>Açıklama</th><th>Detay</th><th>Tarih/Adet</th><th>Tutar</th><th>Not</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${escHtml(r.a)}</td><td>${escHtml(r.b)}</td><td>${escHtml(r.c)}</td><td>${typeof r.d==='number'?dynMoney(r.d):escHtml(r.d)}</td><td>${escHtml(r.e)}</td></tr>`).join('')||'<tr><td colspan="5">Kayıt yok</td></tr>'}</tbody></table></div>`;
+  m.classList.add('open');
 }
 async function renderReportHub(){
   const grid=document.getElementById('reportHubGrid'), stamp=document.getElementById('reportHubStamp');
