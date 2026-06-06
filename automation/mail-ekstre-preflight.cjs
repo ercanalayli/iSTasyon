@@ -39,6 +39,7 @@ add('config', 'Supabase url', Boolean(process.env.SUPABASE_URL), process.env.SUP
 add('config', 'Supabase service key', Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY), process.env.SUPABASE_SERVICE_ROLE_KEY ? 'var' : 'eksik');
 
 for (const file of [
+  'sql/000_mail_ekstre_FULL_INSTALL.sql',
   'gmail-oauth-start.js',
   'gmail-oauth-finish.js',
   'gmail-probe-lite.js',

@@ -2,7 +2,6 @@ import fs from 'fs/promises';
 import { createClient } from '@supabase/supabase-js';
 import { google } from 'googleapis';
 import pdf from 'pdf-parse';
-import cfg from './mail-ekstre-config.json' assert { type: 'json' };
 import { makeGmail } from './lib/gmail-auth.js';
 import { searchMessages, mailboxQuery } from './lib/gmail-search.js';
 import { readMessageSummary } from './lib/gmail-message.js';
@@ -10,6 +9,9 @@ import { readAttachmentBuffer, isReadableBankAttachment } from './lib/gmail-atta
 import { extractTextFromAttachment, hasEnoughText } from './lib/pdf-text.js';
 import { parseBankStatement } from './parsers/index.js';
 
+const cfg = JSON.parse(await fs.readFile(new URL('./mail-ekstre-config.json', import.meta.url), 'utf8'));
+const DEFAULT_SUPABASE_URL = 'https://iilfwosoroflzubkaryj.supabase.co';
+const DEFAULT_SUPABASE_KEY = 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
 const sourceMode = process.env.EKSTRE_SOURCE || 'gmail';
 const gmail = sourceMode === 'gmail' ? makeGmail() : null;
 const mailbox = process.env.GMAIL_MAILBOX || cfg.mailbox || 'alaylimedikal@gmail.com';
@@ -17,8 +19,10 @@ const lookback = process.env.LOOKBACK_DAYS || cfg.lookback_days || 7;
 const dryRun = process.env.DRY_RUN === '1';
 
 function openDb(){
-  if(!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
-  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const url = process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
+  if(!url || !key) return null;
+  return createClient(url, key, { auth: { persistSession: false } });
 }
 
 function makeDrive(){
