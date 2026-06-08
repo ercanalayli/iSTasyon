@@ -74,6 +74,7 @@ jobs:
           node mail-ekstre-worker-lite.js | tee ../mail-ekstre-dry-run.txt
 
       - name: Report dry-run parsed rows
+        id: dryrun_report
         if: always()
         run: |
           node - <<'NODE'
@@ -82,6 +83,7 @@ jobs:
           const last = files.at(-1);
           if (!last) {
             console.log('DRY_RUN_REPORT=missing');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'parsed_rows=0\n');
             process.exit(0);
           }
           const report = JSON.parse(fs.readFileSync('automation/logs/'+last,'utf8'));
@@ -90,11 +92,12 @@ jobs:
           console.log('DRY_RUN_ATTACHMENTS='+report.attachments);
           console.log('DRY_RUN_READABLE_ATTACHMENTS='+report.readable_attachments);
           console.log('DRY_RUN_ERRORS='+report.errors.length);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `parsed_rows=${Number(report.parsed_rows || 0)}\n`);
           fs.writeFileSync('mail-ekstre-dry-run-summary.json', JSON.stringify(report,null,2));
           NODE
 
       - name: Live ingest to pending_bank_movements
-        if: ${{ (github.event_name == 'push' || inputs.live == true) && steps.sqlcheck.outputs.sql_ready == '1' && steps.dryrun.outcome == 'success' }}
+        if: ${{ (github.event_name == 'push' || inputs.live == true) && steps.sqlcheck.outputs.sql_ready == '1' && steps.dryrun.outcome == 'success' && steps.dryrun_report.outputs.parsed_rows != '0' }}
         working-directory: automation
         env:
           DRY_RUN: "0"
