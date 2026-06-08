@@ -58,6 +58,9 @@ function scoreProductMatch(supplierItem, product){
   if(codeA && codeB && codeA === codeB){
     score += 45;
     reasons.push('product_code_exact');
+  } else if(codeA && codeB && (codeA.startsWith(codeB + ' ') || codeA.startsWith(codeB + '-'))) {
+    score += 30;
+    reasons.push('product_code_prefix');
   }
 
   const exactContain = containsScore(supplierName, productName);
