@@ -203,8 +203,26 @@ async function main(){
 
   await fs.mkdir(LOG_DIR,{recursive:true});
   await fs.writeFile(new URL(`ekstre-${sourceMode}-${Date.now()}.json`, LOG_DIR), JSON.stringify(report,null,2));
-  console.log(JSON.stringify(report,null,2));
+  console.log(JSON.stringify(buildConsoleSummary(report), null, 2));
   if(report.errors.length) process.exitCode = 2;
+}
+
+function buildConsoleSummary(report){
+  return {
+    run_at: report.run_at,
+    mode: report.mode,
+    source: report.source,
+    company_id: report.company_id,
+    mailbox: report.mailbox,
+    lookback_days: report.lookback_days,
+    scanned_messages: report.scanned_messages,
+    attachments: report.attachments,
+    readable_attachments: report.readable_attachments,
+    extracted_texts: report.extracted_texts,
+    parsed_rows: report.parsed_rows,
+    ingest: report.ingest,
+    errors: report.errors
+  };
 }
 
 main().catch(e=>{console.error(e);process.exit(1)});
