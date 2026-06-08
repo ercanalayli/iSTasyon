@@ -200,3 +200,9 @@ begin
   return found;
 end;
 $$;
+
+grant execute on function ingest_mail_bank_movements(jsonb) to anon, authenticated, service_role;
+grant execute on function approve_pending_bank_movement(uuid, text) to anon, authenticated, service_role;
+grant execute on function reject_pending_bank_movement(uuid, text) to anon, authenticated, service_role;
+
+notify pgrst, 'reload schema';
