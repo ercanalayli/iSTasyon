@@ -3,6 +3,7 @@ const fs = require('fs');
 
 const LIVE_URL = process.env.APERION_LIVE_URL || 'https://aperion-istasyon.pages.dev/';
 const OUT_DIR = 'artifacts/live-data-status-control';
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const CHECK_MARKER = 'live-data-status-control-2026-05-20-01';
 
 function ensureDir(dir) { fs.mkdirSync(dir, { recursive: true }); }
@@ -23,7 +24,7 @@ async function main() {
   const results = [];
   try {
     await page.goto(LIVE_URL, { waitUntil: 'networkidle2', timeout: 70000 });
-    await page.waitForTimeout(4000);
+    await sleep(4000);
     await shot(page, '01-veri-durumu');
     results.push(['Canlı site açıldı', true]);
     results.push(['ANA KONTROL kartı', await hasText(page, 'ANA KONTROL')]);

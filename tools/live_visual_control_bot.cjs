@@ -8,6 +8,8 @@ function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 async function hasText(page, text) {
   return page.evaluate((target) => (document.body.innerText || '').toLocaleLowerCase('tr-TR').includes(target.toLocaleLowerCase('tr-TR')), text);
 }
@@ -21,7 +23,7 @@ async function clickText(page, text) {
     el.click();
     return true;
   }, text);
-  await page.waitForTimeout(1200);
+  await sleep(1200);
   return clicked;
 }
 
@@ -40,7 +42,7 @@ async function main() {
 
   try {
     await page.goto(LIVE_URL, { waitUntil: 'networkidle2', timeout: 70000 });
-    await page.waitForTimeout(3000);
+    await sleep(3000);
     results.push(['Canlı site açıldı', true]);
     await shot(page, '01-home');
 
