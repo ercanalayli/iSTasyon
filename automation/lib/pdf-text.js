@@ -2,13 +2,18 @@ import AdmZip from 'adm-zip';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
-const pdf = require('pdf-parse');
+const { PDFParse } = require('pdf-parse');
 
 export async function extractTextFromAttachment(filename, buffer){
   const name = String(filename || '').toLowerCase();
   if(name.endsWith('.pdf')){
-    const parsed = await pdf(buffer);
-    return parsed.text || '';
+    const parser = new PDFParse({ data: buffer });
+    try{
+      const parsed = await parser.getText();
+      return parsed.text || '';
+    }finally{
+      await parser.destroy();
+    }
   }
   return buffer.toString('utf8');
 }
