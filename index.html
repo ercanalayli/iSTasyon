@@ -2914,23 +2914,61 @@ function buildExpenseDynamic(rows,prevRows,yil,ciroTotal){
 async function bankaRawData(){
   const fi=document.getElementById('bankFi')?.value||'alayli';
   const durum=document.getElementById('bankDurum')?.value||'';
+  const statusMap={onay_bekliyor:'pending',islenecek:'approved',islenmeyecek:'rejected',islendi:'processed'};
+  const rows=[];
+  const errors=[];
   try{
     let q=db.from('banka_raw').select('*').order('tarih',{ascending:false}).limit(500);
     if(fi)q=q.eq('firma_id',fi);
     if(durum)q=q.eq('durum',durum);
     const {data,error}=await q;
     if(error)throw error;
-    return {rows:data||[],error:null};
-  }catch(e){return {rows:[],error:e.message||String(e)};}
+    rows.push(...(data||[]).map(r=>({...r,_source:'banka_raw',_source_label:'Telegram/Gorsel'})));
+  }catch(e){errors.push(e.message||String(e));}
+  try{
+    let q=db.from('pending_bank_movements').select('*').order('created_at',{ascending:false}).limit(500);
+    if(fi)q=q.eq('company_id',fi);
+    if(durum&&statusMap[durum])q=q.eq('status',statusMap[durum]);
+    const {data,error}=await q;
+    if(error)throw error;
+    rows.push(...(data||[]).map(r=>{
+      const amountIn=Number(r.amount_in||0), amountOut=Number(r.amount_out||0), incoming=amountIn>0;
+      const status=r.status||'pending';
+      return {
+        ...r,
+        _source:'pending_bank_movements',
+        _source_label:'Mail Ekstre',
+        tarih:r.transaction_date||r.mail_date||r.created_at,
+        yon:incoming?'giriş':'çıkış',
+        tutar:incoming?amountIn:-amountOut,
+        aday_islem_tipi:r.detected_type||(incoming?'cari_tahsilat':'banka_gider'),
+        aday_kategori:r.bank_name||r.source||'Mail Ekstre',
+        aday_cari:r.suggested_counterparty||r.bank_name||'-',
+        aciklama:r.description||r.mail_subject||r.attachment_name||'',
+        guven:Math.round(Number(r.confidence_score||0)),
+        durum:status==='pending'?'onay_bekliyor':status==='approved'?'islenecek':status==='rejected'?'islenmeyecek':status
+      };
+    }));
+  }catch(e){errors.push(e.message||String(e));}
+  rows.sort((a,b)=>String(b.created_at||b.tarih||'').localeCompare(String(a.created_at||a.tarih||'')));
+  return {rows,error:errors.length?errors.join(' · '):null};
 }
 function bankaBadge(r){
   const d=r.durum||'onay_bekliyor';
   const c=d==='islenecek'?'var(--green)':d==='islenmeyecek'?'var(--t3)':d==='islendi'?'var(--accent)':'var(--orange)';
   return `<span style="font-family:var(--mono);font-size:9px;font-weight:900;color:${c};border:1px solid ${c}44;background:${c}14;border-radius:999px;padding:4px 7px">${escHtml(d)}</span>`;
 }
-async function bankaKarar(id,durum){
-  const patch={durum,updated_at:new Date().toISOString()};
-  const {error}=await db.from('banka_raw').update(patch).eq('id',id);
+async function bankaKarar(id,durum,source='banka_raw'){
+  let error=null;
+  if(source==='pending_bank_movements'){
+    const rpc=durum==='islenecek'?'approve_pending_bank_movement':'reject_pending_bank_movement';
+    const res=await db.rpc(rpc,{p_id:id,p_note:'AperiON Onay Merkezi'});
+    error=res.error;
+  }else{
+    const patch={durum,updated_at:new Date().toISOString()};
+    const res=await db.from('banka_raw').update(patch).eq('id',id);
+    error=res.error;
+  }
   if(error){alert('Kaydedilemedi: '+error.message);return;}
   rBankaOnay();
 }
@@ -2948,12 +2986,14 @@ async function rBankaOnay(){
   document.getElementById('bOnay').textContent=fmt(onay);
   const groups={};
   rows.forEach(r=>{const k=r.durum||'onay_bekliyor';groups[k]=(groups[k]||0)+1;});
-  document.getElementById('bankaOnaySummary').innerHTML=result.error?`<div class="empty"><div class="empty-t">Banka tablosu hazır değil</div><div class="empty-d">${escHtml(result.error)}</div></div>`:Object.entries(groups).length?miniBars(groups,Math.max(...Object.values(groups),1),'var(--accent)'):'<div class="empty"><div class="empty-t">Banka onay verisi yok</div><div class="empty-d">Ekstre parser calisinca banka_raw burada gorunecek.</div></div>';
+  document.getElementById('bankaOnaySummary').innerHTML=result.error?`<div class="empty"><div class="empty-t">Bazı banka kaynakları okunamadı</div><div class="empty-d">${escHtml(result.error)}</div></div>`:Object.entries(groups).length?miniBars(groups,Math.max(...Object.values(groups),1),'var(--accent)'):'<div class="empty"><div class="empty-t">Banka onay verisi yok</div><div class="empty-d">Mail, Drive veya Telegram hareketi gelince burada gorunecek.</div></div>';
   document.getElementById('bankaOnayStamp').textContent=buildLabel();
-  if(result.error){el.innerHTML=`<tr><td colspan="9" style="padding:18px;color:var(--red);font-weight:800">Supabase banka_raw tablosu kurulmalı.</td></tr>`;return;}
   el.innerHTML=rows.length?rows.slice(0,120).map(r=>{
     const tut=Number(r.tutar||0), onayBtn=r.durum==='onay_bekliyor'||r.durum==='islenecek';
-    return `<tr><td>${escHtml((r.tarih||'').substring(0,10))}</td><td>${escHtml(r.yon||'')}</td><td style="font-family:var(--mono);font-weight:900;color:${tut>=0?'var(--green)':'var(--red)'}">${dynMoney(Math.abs(tut))}</td><td>${escHtml(r.aday_islem_tipi||r.aday_kategori||'-')}</td><td>${escHtml(r.aday_cari||'-')}</td><td style="max-width:440px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(r.aciklama||'')}">${escHtml(r.aciklama||'')}</td><td>${fmt(r.guven||0)}/100</td><td>${bankaBadge(r)}</td><td>${onayBtn?`<button class="empty-btn" onclick="bankaKarar(${r.id},'islenecek')">Onay</button> <button class="empty-btn" onclick="bankaKarar(${r.id},'islenmeyecek')">Ret</button>`:'-'}</td></tr>`;
+    const source=escHtml(r._source_label||'Banka');
+    const idArg=JSON.stringify(String(r.id));
+    const srcArg=JSON.stringify(r._source||'banka_raw');
+    return `<tr><td>${escHtml((r.tarih||'').substring(0,10))}<div style="font-family:var(--mono);font-size:9px;color:var(--t3)">${source}</div></td><td>${escHtml(r.yon||'')}</td><td style="font-family:var(--mono);font-weight:900;color:${tut>=0?'var(--green)':'var(--red)'}">${dynMoney(Math.abs(tut))}</td><td>${escHtml(r.aday_islem_tipi||r.aday_kategori||'-')}</td><td>${escHtml(r.aday_cari||'-')}</td><td style="max-width:440px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(r.aciklama||'')}">${escHtml(r.aciklama||'')}</td><td>${fmt(r.guven||0)}/100</td><td>${bankaBadge(r)}</td><td>${onayBtn?`<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg})">Onay</button> <button class="empty-btn" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg})">Ret</button>`:'-'}</td></tr>`;
   }).join(''):'<tr><td colspan="9" style="padding:18px;color:var(--t3)">Banka onay verisi yok</td></tr>';
 }
 async function renderHomeExpenses(){
