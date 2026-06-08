@@ -1,0 +1,118 @@
+name: AperiON Mail Ekstre Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      live:
+        description: "Dry-run başarılıysa pending_bank_movements tablosuna canlı yaz"
+        type: boolean
+        default: true
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/mail-ekstre-pipeline.yml"
+      - "automation/**"
+      - "tools/mail_ekstre_actions_check.cjs"
+      - "package.json"
+
+jobs:
+  mail-ekstre:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      GDRIVE_EKSTRE_FOLDER_ID: ${{ secrets.GDRIVE_EKSTRE_FOLDER_ID }}
+      EKSTRE_SOURCE: drive
+      GMAIL_MAILBOX: alaylimedikal@gmail.com
+      LOOKBACK_DAYS: "45"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Enforce mailbox
+        run: |
+          node -e "const cfg=require('./automation/mail-ekstre-config.json'); if(cfg.mailbox!=='alaylimedikal@gmail.com'){throw new Error('Wrong mailbox: '+cfg.mailbox)}; console.log('MAILBOX_OK='+cfg.mailbox)"
+
+      - name: Check secrets and Supabase SQL objects
+        id: sqlcheck
+        continue-on-error: true
+        run: node tools/mail_ekstre_actions_check.cjs | tee mail-ekstre-sql-check.txt
+
+      - name: Mail ekstre preflight
+        continue-on-error: true
+        run: npm run mail:ekstre:preflight | tee mail-ekstre-preflight.txt
+
+      - name: Drive dry-run
+        id: dryrun
+        continue-on-error: true
+        working-directory: automation
+        env:
+          DRY_RUN: "1"
+        run: |
+          node mail-ekstre-worker-lite.js | tee ../mail-ekstre-dry-run.txt
+
+      - name: Report dry-run parsed rows
+        if: always()
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const files = fs.existsSync('automation/logs') ? fs.readdirSync('automation/logs').filter(f=>f.startsWith('ekstre-drive-')).sort() : [];
+          const last = files.at(-1);
+          if (!last) {
+            console.log('DRY_RUN_REPORT=missing');
+            process.exit(0);
+          }
+          const report = JSON.parse(fs.readFileSync('automation/logs/'+last,'utf8'));
+          console.log('DRY_RUN_REPORT_FILE='+last);
+          console.log('DRY_RUN_PARSED_ROWS='+report.parsed_rows);
+          console.log('DRY_RUN_ATTACHMENTS='+report.attachments);
+          console.log('DRY_RUN_READABLE_ATTACHMENTS='+report.readable_attachments);
+          console.log('DRY_RUN_ERRORS='+report.errors.length);
+          fs.writeFileSync('mail-ekstre-dry-run-summary.json', JSON.stringify(report,null,2));
+          NODE
+
+      - name: Live ingest to pending_bank_movements
+        if: ${{ (github.event_name == 'push' || inputs.live == true) && steps.sqlcheck.outcome == 'success' }}
+        working-directory: automation
+        env:
+          DRY_RUN: "0"
+        run: |
+          node mail-ekstre-worker-lite.js | tee ../mail-ekstre-live-run.txt
+
+      - name: Check approval center rows
+        if: always()
+        run: |
+          node - <<'NODE'
+          const { createClient } = require('@supabase/supabase-js');
+          const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth:{persistSession:false} });
+          (async()=>{
+            for (const table of ['pending_bank_movements','bizimhesap_queue']) {
+              const {data,error,count}=await db.from(table).select('*',{count:'exact'}).eq(table==='pending_bank_movements'?'company_id':'company_id','alayli').limit(10);
+              console.log(`${error?'ERR':'OK'} ${table}: ${error?error.message:count+' rows / sample '+(data?.length||0)}`);
+            }
+          })().catch(e=>{console.error(e.message); process.exitCode=1});
+          NODE
+
+      - name: Upload mail ekstre reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mail-ekstre-reports
+          path: |
+            mail-ekstre-*.txt
+            mail-ekstre-*.json
+            automation/logs/*.json
+            automation/logs/*.txt
+          if-no-files-found: ignore
