@@ -456,17 +456,19 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .income-btn.on,.income-btn:hover{background:#1D4ED8;border-color:#1D4ED8;color:#fff}
 .income-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(320px,.7fr);gap:12px}
 .income-statement{border:1px solid #D8E4F4;border-radius:12px;padding:10px;background:#FFFFFF}
-.income-row{display:grid;grid-template-columns:minmax(190px,1fr) minmax(130px,.55fr) minmax(130px,.55fr) minmax(130px,.55fr);gap:10px;align-items:center;padding:9px 10px;border-bottom:1px solid #E7EEF8}
+.income-row{display:grid;grid-template-columns:minmax(190px,1fr) repeat(4,minmax(118px,.52fr));gap:10px;align-items:center;padding:9px 10px;border-bottom:1px solid #E7EEF8}
 .income-row:last-child{border-bottom:0}
 .income-row.head{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:#64748B;font-weight:950;background:#F8FAFC;border-radius:8px;margin-bottom:4px}
 .income-label{font-size:12px;font-weight:950;color:#0F172A}
 .income-cell{font-family:var(--mono);font-size:14px;font-weight:950;color:#0F172A;text-align:right}
 .income-cell.good{color:#047857}.income-cell.bad{color:#DC2626}.income-cell.warn{color:#B45309}
+.income-cell.muted{color:#64748B;font-size:12px}
 .income-click{cursor:pointer;border-radius:8px;padding:6px 8px;margin:-6px -8px}
 .income-click:hover{background:#EEF4FF;color:#1D4ED8}
 .income-total{background:#F1F8FF;border:1px solid #BFD5FF;border-radius:10px;margin:8px 0;padding:10px}
 .income-net{background:#ECFDF5;border-color:#86EFAC}
 .income-net.loss{background:#FEF2F2;border-color:#FCA5A5}
+.income-section{background:#F8FAFC;color:#334155;font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.8px;font-weight:950}
 .income-side{display:grid;gap:12px}
 .income-chart-card{border:1px solid #D8E4F4;border-radius:12px;background:#F8FAFC;padding:10px;height:220px;position:relative;overflow:hidden}
 .income-chart-title{font-size:11px;font-weight:950;color:#334155;margin-bottom:8px}
@@ -1804,6 +1806,30 @@ function incomeCostForSale(row,costMap){
   const adet=+row.adet||0;
   return {unit:hit?.cost||0,total:hit?.cost?hit.cost*adet:0,matched:!!hit};
 }
+function incomePlanBucket(row){
+  const text=[row.record_type,row.item_type,row.type,row.kind,row.frequency,row.recurrence,row.contract_type,row.title,row.description,row.category,row.kategori,row.note]
+    .map(x=>(x||'').toString().toLocaleLowerCase('tr-TR')).join(' ');
+  if(/sözleş|sozles|contract|abonelik|kira|lisans|taahhüt|taahhut/.test(text))return 'contract';
+  if(/sabit|fixed|aylık|aylik|maaş|maas|personel|sigorta|kredi kartı|kredi karti|sgk|vergi/.test(text))return 'fixed';
+  if(/öngörü|ongoru|forecast|budget|hedef|beklenen|plan/.test(text))return 'forecast';
+  return 'variable';
+}
+function incomePlanLabel(bucket){
+  return ({contract:'Sözleşmeli',fixed:'Sabit',forecast:'Öngörülen',variable:'Değişken'})[bucket]||'Diğer';
+}
+function incomePlanSummary(rows){
+  const out={
+    contract:{label:'Sözleşmeli',amount:0,count:0,rows:[]},
+    fixed:{label:'Sabit',amount:0,count:0,rows:[]},
+    forecast:{label:'Öngörülen',amount:0,count:0,rows:[]},
+    variable:{label:'Değişken',amount:0,count:0,rows:[]}
+  };
+  (rows||[]).forEach(r=>{
+    const k=incomePlanBucket(r), amount=flowAmount(r);
+    out[k].amount+=amount;out[k].count+=1;out[k].rows.push(r);
+  });
+  return out;
+}
 async function buildIncomeModel(mode=INCOME_MODE){
   const p=incomePeriod(mode), allSales=await salesWide(PILOT_FIRMA), sales=allSales.filter(r=>flowInRange(r,p.from,p.to));
   const expNow=await masrafData(new Date(p.to).getFullYear(),PILOT_FIRMA);
@@ -1827,8 +1853,12 @@ async function buildIncomeModel(mode=INCOME_MODE){
   const cashIn=receipts.reduce((s,r)=>s+Math.abs(+r.tutar||0),0);
   const cashOut=payments.reduce((s,r)=>s+Math.abs(+r.tutar||0),0);
   const calendarRows=cal.rows||[];
-  const receivableOpen=calendarRows.filter(r=>flowKind(r)==='tahsilat').reduce((s,r)=>s+flowAmount(r),0);
-  const payableOpen=calendarRows.filter(r=>flowKind(r)==='gider_odeme'||flowKind(r)==='urun_alis_odeme').reduce((s,r)=>s+flowAmount(r),0);
+  const planIncomeRows=calendarRows.filter(r=>flowKind(r)==='tahsilat');
+  const planExpenseRows=calendarRows.filter(r=>flowKind(r)==='gider_odeme'||flowKind(r)==='urun_alis_odeme');
+  const receivableOpen=planIncomeRows.reduce((s,r)=>s+flowAmount(r),0);
+  const payableOpen=planExpenseRows.reduce((s,r)=>s+flowAmount(r),0);
+  const planIncome=incomePlanSummary(planIncomeRows), planExpense=incomePlanSummary(planExpenseRows);
+  const plannedIncome=receivableOpen, plannedExpense=payableOpen, plannedNet=plannedIncome-plannedExpense;
   const gross=revenue-cogs, net=gross-expenseTotal, grossMargin=revenue?gross/revenue*100:0, netMargin=revenue?net/revenue*100:0;
   const byCat={}, byProduct={}, byExpense={};
   salesLines.forEach(r=>{
@@ -1842,11 +1872,26 @@ async function buildIncomeModel(mode=INCOME_MODE){
   const categories=Object.values(byCat).map(x=>({...x,gross:x.revenue-x.cogs,margin:x.revenue?(x.revenue-x.cogs)/x.revenue*100:0})).sort((a,b)=>b.revenue-a.revenue);
   const products=Object.values(byProduct).map(x=>({...x,gross:x.revenue-x.cogs,margin:x.revenue?(x.revenue-x.cogs)/x.revenue*100:0})).sort((a,b)=>b.revenue-a.revenue);
   const expenseCats=Object.values(byExpense).sort((a,b)=>b.amount-a.amount);
-  return {period:p,sales:salesLines,expenses,bankRows,categories,products,expenseCats,revenue,qty,cogs,missingCost,expenseTotal,cashIn,cashOut,receivableOpen,payableOpen,gross,net,grossMargin,netMargin};
+  return {period:p,sales:salesLines,expenses,bankRows,categories,products,expenseCats,revenue,qty,cogs,missingCost,expenseTotal,cashIn,cashOut,calendarRows,planIncomeRows,planExpenseRows,planIncome,planExpense,plannedIncome,plannedExpense,plannedNet,receivableOpen,payableOpen,gross,net,grossMargin,netMargin};
 }
 function incomeMoney(v,cls=''){return `<span class="income-click ${cls}" onclick="incomeDrill('${cls||'revenue'}')">${dynMoney(v)}</span>`;}
-function incomeRow(label,accrual,cash,ratio,type){
-  return `<div class="income-row"><div class="income-label">${label}</div><div class="income-cell">${incomeMoney(accrual,type)}</div><div class="income-cell">${dynMoney(cash)}</div><div class="income-cell ${ratio>=100?'good':ratio>0?'warn':''}">${Number.isFinite(ratio)?dynPct(ratio):'kaynak yok'}</div></div>`;
+function incomePlanMoney(v,type,bucket=''){
+  const click=type==='plan_income'?'incomeDrillPlanIncome':type==='plan_expense'?'incomeDrillPlanExpense':'incomeDrill';
+  return `<span class="income-click ${type}" onclick="${click}(${jsArg(bucket)})">${dynMoney(v)}</span>`;
+}
+function incomeRow(label,planned,accrual,cash,ratio,type,planType=''){
+  const planCell=planType?incomePlanMoney(planned,planType):dynMoney(planned);
+  return `<div class="income-row"><div class="income-label">${label}</div><div class="income-cell">${planCell}</div><div class="income-cell">${incomeMoney(accrual,type)}</div><div class="income-cell">${dynMoney(cash)}</div><div class="income-cell ${ratio>=100?'good':ratio>0?'warn':''}">${Number.isFinite(ratio)?dynPct(ratio):'kaynak yok'}</div></div>`;
+}
+function incomeSection(label){
+  return `<div class="income-row income-section"><div>${label}</div><div>Planlanan</div><div>Tahakkuk</div><div>Gerçekleşen</div><div>Oran</div></div>`;
+}
+function incomePlanBreakRows(summary,type){
+  const order=['contract','fixed','forecast','variable'];
+  return order.map(k=>{
+    const x=summary[k]||{label:incomePlanLabel(k),amount:0,count:0};
+    return `<div class="income-row"><div class="income-label">${x.label}</div><div class="income-cell">${incomePlanMoney(x.amount,type,k)}</div><div class="income-cell muted">plan kalemi</div><div class="income-cell muted">${fmt(x.count)} kayıt</div><div class="income-cell muted">${x.amount?dynMoney(x.amount):'kaynak yok'}</div></div>`;
+  }).join('');
 }
 function incomeMiniChart(id,labels,data,colors,type='bar'){
   setTimeout(()=>{
@@ -1918,23 +1963,28 @@ async function renderIncomeStatementTop(){
   <div class="income-layout">
     <div>
       <div class="income-statement">
-        <div class="income-row head"><div>Kalem</div><div style="text-align:right">Tahakkuk</div><div style="text-align:right">Nakit</div><div style="text-align:right">Gerçekleşme</div></div>
-        ${incomeRow('Gelir tahakkukları',model.revenue,model.cashIn,receiptRatio,'revenue')}
-        ${incomeRow('Gider tahakkukları',model.expenseTotal,model.cashOut,paymentRatio,'expense')}
-        <div class="income-row income-total"><div class="income-label">Brüt kar</div><div class="income-cell good">${incomeMoney(model.gross,'gross')}</div><div class="income-cell">${model.cogs?`COGS ${dynMoney(model.cogs)}`:'maliyet kaynağı eksik'}</div><div class="income-cell">${dynPct(model.grossMargin)}</div></div>
-        <div class="income-row"><div class="income-label">KDV tahakkuk</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell">kaynak bağlanacak</div><div class="income-cell">KDV alanı yok</div></div>
-        <div class="income-row"><div class="income-label">Gelir vergisi tahakkuk</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell">kaynak bağlanacak</div><div class="income-cell">vergi etiketi yok</div></div>
-        <div class="income-row income-total income-net ${model.net<0?'loss':''}"><div class="income-label">Net kar</div><div class="income-cell ${model.net>=0?'good':'bad'}">${incomeMoney(model.net,'net')}</div><div class="income-cell">${dynMoney(model.cashIn-model.cashOut)}</div><div class="income-cell">${dynPct(model.netMargin)}</div></div>
+        <div class="income-row head"><div>Kalem</div><div style="text-align:right">Öngörülen / Sözleşmeli / Sabit</div><div style="text-align:right">Tahakkuk Esası</div><div style="text-align:right">Gerçekleşen</div><div style="text-align:right">Gerçekleşme</div></div>
+        ${incomeSection('Gelirler')}
+        ${incomePlanBreakRows(model.planIncome,'plan_income')}
+        ${incomeRow('Gelir toplamı',model.plannedIncome,model.revenue,model.cashIn,receiptRatio,'revenue','plan_income')}
+        ${incomeSection('Giderler')}
+        ${incomePlanBreakRows(model.planExpense,'plan_expense')}
+        ${incomeRow('Gider toplamı',model.plannedExpense,model.expenseTotal,model.cashOut,paymentRatio,'expense','plan_expense')}
+        ${incomeSection('Kar ve Vergi')}
+        <div class="income-row income-total"><div class="income-label">Brüt kar</div><div class="income-cell">${dynMoney(model.plannedIncome-model.plannedExpense)}</div><div class="income-cell good">${incomeMoney(model.gross,'gross')}</div><div class="income-cell">${model.cogs?`COGS ${dynMoney(model.cogs)}`:'maliyet kaynağı eksik'}</div><div class="income-cell">${dynPct(model.grossMargin)}</div></div>
+        <div class="income-row"><div class="income-label">KDV tahakkuk</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell">kaynak bağlanacak</div><div class="income-cell">KDV alanı yok</div></div>
+        <div class="income-row"><div class="income-label">Gelir vergisi tahakkuk</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell">kaynak bağlanacak</div><div class="income-cell">vergi etiketi yok</div></div>
+        <div class="income-row income-total income-net ${model.net<0?'loss':''}"><div class="income-label">Net kar</div><div class="income-cell ${model.plannedNet>=0?'good':'bad'}">${dynMoney(model.plannedNet)}</div><div class="income-cell ${model.net>=0?'good':'bad'}">${incomeMoney(model.net,'net')}</div><div class="income-cell">${dynMoney(model.cashIn-model.cashOut)}</div><div class="income-cell">${dynPct(model.netMargin)}</div></div>
       </div>
-      <div class="income-foot">Kontrol: ${fmt(model.sales.length)} satış satırı · ${fmt(model.expenses.length)} gider tahakkuku · ${fmt(model.bankRows.length)} banka hareketi okundu. ${model.missingCost?`${fmt(model.missingCost)} satış satırında ürün alış maliyeti eksik; brüt kar temkinli gösterilir.`:'Ürün maliyet eşleşmesi tamam.'}</div>
+      <div class="income-foot">Kontrol: ${fmt(model.planIncomeRows.length+model.planExpenseRows.length)} plan/takvim kaydı · ${fmt(model.sales.length)} satış tahakkuk satırı · ${fmt(model.expenses.length)} gider tahakkuku · ${fmt(model.bankRows.length)} banka hareketi okundu. ${model.missingCost?`${fmt(model.missingCost)} satış satırında ürün alış maliyeti eksik; brüt kar temkinli gösterilir.`:'Ürün maliyet eşleşmesi tamam.'}</div>
     </div>
     <div class="income-side">
-      <div class="income-chart-card"><div class="income-chart-title">Tahakkuk / Nakit Gerçekleşme</div><canvas id="incomeChartA"></canvas></div>
+      <div class="income-chart-card"><div class="income-chart-title">Plan / Tahakkuk / Gerçekleşme</div><canvas id="incomeChartA"></canvas></div>
       <div class="income-chart-card"><div class="income-chart-title">Kategori Brüt Kar Dağılımı</div><canvas id="incomeChartB"></canvas></div>
     </div>
   </div>
   <div class="income-table-wrap"><table class="income-table"><thead><tr><th>Kategori</th><th>Gelir</th><th>Maliyet</th><th>Brüt Kar</th><th>Marj</th><th>Adet</th><th>İşlem</th></tr></thead><tbody>${model.categories.slice(0,14).map(c=>`<tr onclick="incomeDrill('category',${jsArg(c.name)})"><td><b>${escHtml(c.name)}</b></td><td>${dynMoney(c.revenue)}</td><td>${c.cogs?dynMoney(c.cogs):'eksik'}</td><td>${dynMoney(c.gross)}</td><td>${dynPct(c.margin)}</td><td>${fmt(c.qty)}</td><td>${fmt(c.rows.length)}</td></tr>`).join('')||'<tr><td colspan="7">Kategori verisi yok</td></tr>'}</tbody></table></div>`;
-  incomeMiniChart('incomeChartA',['Gelir Tahakkuk','Gelen Ödeme','Gider Tahakkuk','Ödenen'],[model.revenue,model.cashIn,model.expenseTotal,model.cashOut],['#059669','#2563EB','#DC2626','#F59E0B']);
+  incomeMiniChart('incomeChartA',['Plan Gelir','Tahakkuk Gelir','Gerçek Gelir','Plan Gider','Tahakkuk Gider','Gerçek Gider'],[model.plannedIncome,model.revenue,model.cashIn,model.plannedExpense,model.expenseTotal,model.cashOut],['#0EA5E9','#059669','#2563EB','#F59E0B','#DC2626','#7C3AED']);
   incomeMiniChart('incomeChartB',model.categories.slice(0,6).map(x=>x.name),model.categories.slice(0,6).map(x=>Math.max(0,x.gross)),['#2563EB','#059669','#F59E0B','#7C3AED','#0EA5E9','#EF4444'],'doughnut');
 }
 function incomeDrill(type,name=''){
@@ -2046,6 +2096,41 @@ function incomeDrill(type,name=''){
     ['Gelir',dynMoney(model.revenue)],
     ['Kategori',fmt(model.categories.length)]
   ]));
+}
+function incomeDrillPlanIncome(bucket=''){
+  incomeDrillPlan('income',bucket);
+}
+function incomeDrillPlanExpense(bucket=''){
+  incomeDrillPlan('expense',bucket);
+}
+function incomeDrillPlan(side,bucket=''){
+  const model=LAST_INCOME_MODEL;if(!model)return;
+  const rowsAll=side==='income'?model.planIncomeRows:model.planExpenseRows;
+  const rowsFiltered=bucket?rowsAll.filter(r=>incomePlanBucket(r)===bucket):rowsAll;
+  const title=`${side==='income'?'Planlanan Gelir':'Planlanan Gider'}${bucket?' · '+incomePlanLabel(bucket):''}`;
+  const rows=rowsFiltered.map(r=>({
+    bucket:incomePlanLabel(incomePlanBucket(r)),
+    name:mPick(r,['title','description','aciklama','counterparty','cari','category','kategori'],'Plan kaydı'),
+    type:mPick(r,['record_type','item_type','type','kind'],''),
+    date:flowDate(r),
+    d:flowAmount(r),
+    status:mPick(r,['status','approval_status','state'],'')
+  }));
+  openIncomeDetail(title,[
+    {key:'bucket',label:'Sınıf',fmt:v=>`<b>${escHtml(v)}</b>`},
+    {key:'name',label:'Kayıt / Cari'},
+    {key:'type',label:'Tip'},
+    {key:'date',label:'Tarih'},
+    {key:'d',label:'Tutar',fmt:v=>dynMoney(v)},
+    {key:'status',label:'Durum'}
+  ],rows,'d',-1,'',incomeSide(title,'Bu liste finans takvimi / plan kayıtlarından gelir. Tahakkuk ve gerçekleşme kolonları ayrı muhasebe katmanıdır.',[
+    ['Dönem',escHtml(model.period.caption)],
+    ['Toplam',dynMoney(rows.reduce((s,r)=>s+(+r.d||0),0))],
+    ['Kayıt',fmt(rows.length)]
+  ]),[
+    {label:'Gelir Tablosu',action:"document.getElementById('modal').classList.remove('open')"},
+    {label:side==='income'?'Gelir Planı':'Gider Planı',action:`incomeDrillPlan(${jsArg(side)},'')`}
+  ]);
 }
 function incomeDrillCategory(name){incomeDrill('category',name);}
 function incomeDrillProduct(name){incomeDrill('product',name);}
