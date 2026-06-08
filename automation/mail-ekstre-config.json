@@ -37,6 +37,36 @@
       "bank": "garanti",
       "label": "Garanti BBVA",
       "query": "Garanti OR Hesap Hareket Dokumu"
+    },
+    {
+      "bank": "ziraat",
+      "label": "Ziraat",
+      "query": "Ziraat OR Bankkart OR Hesap Ekstresi"
+    },
+    {
+      "bank": "qnb",
+      "label": "QNB Finansbank",
+      "query": "QNB OR Finansbank OR Enpara OR Hesap Ozeti"
+    },
+    {
+      "bank": "kuveytturk",
+      "label": "Kuveyt Turk",
+      "query": "Kuveyt OR KuveytTurk OR Kuveyt Turk OR Hesap Ekstresi"
+    },
+    {
+      "bank": "denizbank",
+      "label": "Denizbank",
+      "query": "Denizbank OR Deniz Bank OR Hesap Ekstresi"
+    },
+    {
+      "bank": "fibabanka",
+      "label": "Fibabanka",
+      "query": "Fibabanka OR Fiba Banka OR Hesap Ekstresi"
+    },
+    {
+      "bank": "generic",
+      "label": "Genel ekstre",
+      "query": "\"Hesap Hareketleri\" OR \"Hesap Ozeti\" OR \"Hesap Özeti\" OR \"Banka Ekstresi\" OR \"Ekstre\""
     }
   ],
   "rules": {

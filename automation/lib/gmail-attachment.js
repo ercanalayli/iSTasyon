@@ -10,5 +10,5 @@ export async function readAttachmentBuffer(gmail, messageId, attachmentId){
 
 export function isReadableBankAttachment(file){
   const name = String(file?.filename || '').toLowerCase();
-  return name.endsWith('.pdf') || name.endsWith('.txt') || name.endsWith('.csv');
+  return name.endsWith('.pdf') || name.endsWith('.txt') || name.endsWith('.csv') || name.endsWith('.xls') || name.endsWith('.xlsx');
 }

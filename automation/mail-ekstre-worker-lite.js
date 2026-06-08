@@ -80,15 +80,22 @@ async function listDriveFiles(drive, folderId, depth = 0, seen = new Set()){
 
 async function loadRowsFromGmail(report){
   const parsed = [];
+  const seenMessages = new Set();
+  const seenAttachments = new Set();
   for(const bank of cfg.banks){
     const query = mailboxQuery(mailbox, `(${bank.query}) has:attachment newer_than:${lookback}d`);
     try{
       const found = await searchMessages(gmail, query, 10);
-      report.scanned_messages += found.length;
       for(const item of found){
+        if(seenMessages.has(item.id)) continue;
+        seenMessages.add(item.id);
+        report.scanned_messages++;
         const msg = await readMessageSummary(gmail, item.id);
         const mailInfo = { bank: bank.bank, id: msg.id, from: msg.from, to: msg.to, subject: msg.subject, date: msg.date, attachments: [] };
         for(const a of msg.attachments){
+          const attachmentKey = `${msg.id}:${a.attachmentId || a.filename || ''}`;
+          if(seenAttachments.has(attachmentKey)) continue;
+          seenAttachments.add(attachmentKey);
           report.attachments++;
           const att = { filename: a.filename, size: a.size, mimeType: a.mimeType, readable: isReadableBankAttachment(a), text_length: 0, text_ok: false, parsed_rows: 0 };
           if(att.readable){
@@ -99,7 +106,7 @@ async function loadRowsFromGmail(report){
             att.text_ok = hasEnoughText(text);
             if(att.text_ok){
               report.extracted_texts++;
-              const rows = parseBankStatement(text, { company_id: cfg.company_id || 'alayli', mailbox, bank_hint: bank.bank, mail_id: msg.id, mail_subject: msg.subject, mail_from: msg.from, mail_date: msg.date, attachment_name: a.filename });
+              const rows = parseBankStatement(text, { company_id: cfg.company_id || 'alayli', mailbox, bank_hint: `${bank.bank} ${msg.from || ''} ${msg.subject || ''} ${a.filename || ''}`, mail_id: msg.id, mail_subject: msg.subject, mail_from: msg.from, mail_date: msg.date, attachment_name: a.filename });
               att.parsed_rows = rows.length;
               if(rows.length === 0) att.parser_probe = buildParserProbe(text);
               report.parsed_rows += rows.length;

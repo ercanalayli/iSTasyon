@@ -8,13 +8,18 @@ export function detectBank(text, meta = {}) {
   if (source.includes('VAKIFBANK')) return 'vakifbank';
   if (source.includes('HALKBANK') || source.includes('HALK BANKASI')) return 'halkbank';
   if (source.includes('GARANTI')) return 'garanti';
+  if (source.includes('ZIRAAT') || source.includes('BANKKART')) return 'ziraat';
+  if (source.includes('QNB') || source.includes('FINANSBANK') || source.includes('ENPARA')) return 'qnb';
+  if (source.includes('KUVEYT')) return 'kuveytturk';
+  if (source.includes('DENIZBANK') || source.includes('DENIZ BANK')) return 'denizbank';
+  if (source.includes('FIBABANKA') || source.includes('FIBA BANKA')) return 'fibabanka';
   return String(meta.bank_hint || 'unknown').toLowerCase();
 }
 
 export function parseBankStatement(text, meta = {}) {
   const bank = detectBank(text, meta);
-  if (bank === 'isbank' || bank.includes('is')) return parseIsbank(text, meta);
-  return parseGenericBank(text, { ...meta, bank_name: bank });
+  const rows = bank === 'isbank' || bank.includes('is') ? parseIsbank(text, meta) : parseGenericBank(text, { ...meta, bank_name: bank });
+  return qualityGate(rows);
 }
 
 function clean(v) {
@@ -87,6 +92,11 @@ function bankLabel(meta, bank) {
   if (bank === 'vakifbank' || s.includes('VAKIF')) return 'Vakifbank';
   if (bank === 'halkbank' || s.includes('HALK')) return 'Halkbank';
   if (bank === 'garanti' || s.includes('GARANTI')) return 'Garanti BBVA';
+  if (bank === 'ziraat' || s.includes('ZIRAAT') || s.includes('BANKKART')) return 'Ziraat';
+  if (bank === 'qnb' || s.includes('QNB') || s.includes('FINANSBANK') || s.includes('ENPARA')) return 'QNB Finansbank';
+  if (bank === 'kuveytturk' || s.includes('KUVEYT')) return 'Kuveyt Turk';
+  if (bank === 'denizbank' || s.includes('DENIZ')) return 'Denizbank';
+  if (bank === 'fibabanka' || s.includes('FIBA')) return 'Fibabanka';
   return bank || 'Banka';
 }
 
@@ -98,6 +108,17 @@ function statementId(meta) {
 
 function duplicate(bank, tx) {
   return [key(bank), tx.statement_id, tx.transaction_date, tx.value_date || '', (tx.amount_in || 0).toFixed(2), (tx.amount_out || 0).toFixed(2), tx.balance_after == null ? '' : Number(tx.balance_after || 0).toFixed(2), key(tx.description)].join('|');
+}
+
+function qualityGate(rows) {
+  const seen = new Set();
+  return rows.filter(row => {
+    const amount = Number(row.amount_in || 0) + Number(row.amount_out || 0);
+    if (!row.transaction_date || !row.description || amount <= 0 || !row.duplicate_key) return false;
+    if (seen.has(row.duplicate_key)) return false;
+    seen.add(row.duplicate_key);
+    return true;
+  });
 }
 
 export function parseGenericBank(text, meta = {}) {
@@ -194,16 +215,16 @@ function parseCardStatement(lines, meta, bankName, sid) {
     desc = desc.replace(/\b(ISLEM|TARIHI|ACIKLAMA|TUTAR|TL|TRY)\b/gi, '').trim();
     if (!desc || skip.test(key(desc).replace(/_/g, ' '))) return;
     const u = trUpper(desc);
-    const isCredit = u.includes('ODEME') || u.includes('IADE') || amount < 0;
+    const isInflow = u.includes('TAHSILAT') || u.includes('GELEN') || u.includes('ALACAK') || u.includes('IADE') || amount < 0;
     const abs = Math.abs(amount);
     const tx = baseTx(meta, bankName, sid, {
       transaction_date: String(cur.date || '').includes('-') ? cur.date : isoDate(cur.date),
       value_date: cur.valueDate || '',
       description: desc,
-      amount_in: isCredit ? abs : 0,
-      amount_out: isCredit ? 0 : abs,
+      amount_in: isInflow ? abs : 0,
+      amount_out: isInflow ? 0 : abs,
       balance_after: null,
-      detected_type: isCredit ? 'kredi_karti_odeme_iade' : 'kredi_karti_harcama',
+      detected_type: isInflow ? 'tahsilat_iade' : 'kredi_karti_harcama',
       confidence_score: 58
     });
     tx.duplicate_key = duplicate(bankName, tx);
