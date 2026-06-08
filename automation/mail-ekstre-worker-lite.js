@@ -17,6 +17,7 @@ const gmail = sourceMode === 'gmail' ? makeGmail() : null;
 const mailbox = process.env.GMAIL_MAILBOX || cfg.mailbox || 'alaylimedikal@gmail.com';
 const lookback = process.env.LOOKBACK_DAYS || cfg.lookback_days || 7;
 const dryRun = process.env.DRY_RUN === '1';
+const LOG_DIR = new URL('./logs/', import.meta.url);
 
 function openDb(){
   const url = process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
@@ -35,9 +36,7 @@ async function loadRowsFromDrive(report){
   const folderId = process.env.GDRIVE_EKSTRE_FOLDER_ID;
   if(!folderId) throw new Error('GDRIVE_EKSTRE_FOLDER_ID eksik');
   const drive = makeDrive();
-  const q = `'${folderId}' in parents and trashed = false`;
-  const res = await drive.files.list({ q, pageSize: 20, fields: 'files(id,name,mimeType,modifiedTime)' });
-  const files = res.data.files || [];
+  const files = await listDriveFiles(drive, folderId);
   report.drive_folder_id = folderId;
   report.scanned_messages = files.length;
   const parsed = [];
@@ -55,6 +54,28 @@ async function loadRowsFromDrive(report){
     report.messages.push({ bank: 'drive', id: f.id, subject: f.name, date: f.modifiedTime, attachments: [{ filename: f.name, parsed_rows: rows.length }] });
   }
   return parsed;
+}
+
+async function listDriveFiles(drive, folderId, depth = 0, seen = new Set()){
+  if(seen.has(folderId) || depth > 3) return [];
+  seen.add(folderId);
+  const escapedFolderId = String(folderId).replace(/'/g, "\\'");
+  const q = `'${escapedFolderId}' in parents and trashed = false`;
+  const res = await drive.files.list({
+    q,
+    pageSize: 100,
+    fields: 'files(id,name,mimeType,modifiedTime)',
+    includeItemsFromAllDrives: true,
+    supportsAllDrives: true
+  });
+  const items = res.data.files || [];
+  const nested = [];
+  for(const item of items){
+    if(item.mimeType === 'application/vnd.google-apps.folder'){
+      nested.push(...await listDriveFiles(drive, item.id, depth + 1, seen));
+    }
+  }
+  return items.filter(item => item.mimeType !== 'application/vnd.google-apps.folder').concat(nested);
 }
 
 async function loadRowsFromGmail(report){
@@ -135,8 +156,8 @@ async function main(){
     report.ingest = { input: 0, inserted: 0, duplicate: 0, failed: 0 };
   }
 
-  await fs.mkdir('automation/logs',{recursive:true});
-  await fs.writeFile(`automation/logs/ekstre-${sourceMode}-${Date.now()}.json`, JSON.stringify(report,null,2));
+  await fs.mkdir(LOG_DIR,{recursive:true});
+  await fs.writeFile(new URL(`ekstre-${sourceMode}-${Date.now()}.json`, LOG_DIR), JSON.stringify(report,null,2));
   console.log(JSON.stringify(report,null,2));
   if(report.errors.length) process.exitCode = 2;
 }
