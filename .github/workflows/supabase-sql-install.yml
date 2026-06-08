@@ -1,0 +1,42 @@
+name: Supabase SQL Install
+
+on:
+  workflow_dispatch:
+    inputs:
+      install_target:
+        description: "SQL paketi"
+        required: true
+        default: "mail-ekstre"
+        type: choice
+        options:
+          - mail-ekstre
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check database secret
+        shell: bash
+        run: |
+          if [ -z "${SUPABASE_DB_URL:-}" ]; then
+            echo "::error::SUPABASE_DB_URL secret eksik. Project Settings > Database > Connection string > URI degerini GitHub secret olarak ekleyin."
+            exit 1
+          fi
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+      - name: Install psql
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Apply mail ekstre SQL
+        shell: bash
+        run: |
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f automation/sql/000_mail_ekstre_FULL_INSTALL.sql
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
