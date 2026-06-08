@@ -13,6 +13,8 @@ const checks = [
   ['UI plan type fields', html.includes('planType') && html.includes('Sözleşmeli') && html.includes('Öngörülen')],
   ['UI date amount responsibility', html.includes('planStart') && html.includes('planEnd') && html.includes('planAmount') && html.includes('planResponsible')],
   ['UI save RPC call', html.includes("db.rpc('finance_calendar_create_plan'")],
+  ['UI expense template cards', html.includes('PLAN_TEMPLATES') && html.includes('İşyeri Kirası') && html.includes('Kredi Kartı Ekstresi')],
+  ['UI template apply function', html.includes('function applyPlanTemplate')],
   ['SQL scope column', liveSql.includes("scope text default 'business'")],
   ['SQL plan type column', liveSql.includes('plan_type text default')],
   ['SQL responsibility columns', liveSql.includes('responsible_person') && liveSql.includes('obligation_note')],

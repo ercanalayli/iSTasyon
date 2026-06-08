@@ -973,6 +973,7 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
       <div id="fplan" style="display:none">
         <div class="card" style="margin-bottom:14px">
           <div class="card-hd"><div class="card-l">Sözleşmeli / Sabit / Öngörülen Plan Girişi</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">işletme + kişisel ikinci beyin</span></div>
+          <div id="planTemplateCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:12px"></div>
           <div style="display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;align-items:end">
             <div><div class="wl">Kapsam</div><select class="sel" id="planScope" style="width:100%"><option value="business">İşletme</option><option value="personal">Kişisel</option></select></div>
             <div><div class="wl">Tür</div><select class="sel" id="planDirection" style="width:100%"><option value="out">Gider / Ödeme</option><option value="in">Gelir / Tahsilat</option><option value="neutral">Görev / Not</option></select></div>
@@ -3022,6 +3023,43 @@ async function rBankaOnay(){
 }
 function planTypeTR(v){return {contract:'Sözleşmeli',standard:'Standart',fixed:'Sabit',forecast:'Öngörülen',variable:'Değişken'}[v]||v||'-';}
 function planScopeTR(v){return v==='personal'?'Kişisel':'İşletme';}
+const PLAN_TEMPLATES=[
+  {scope:'business',title:'İşyeri Kirası',category:'Kira',plan_type:'contract',repeat:'monthly',party:'Mal sahibi',note:'Kira sözleşmesi, tahliye/ceza ve artış şartı takip edilecek.'},
+  {scope:'business',title:'Elektrik Faturası',category:'Elektrik',plan_type:'forecast',repeat:'monthly',party:'Elektrik dağıtım',note:'Son ödeme, tüketim trendi ve dönemsel sapma izlenecek.'},
+  {scope:'business',title:'Su Faturası',category:'Su',plan_type:'forecast',repeat:'monthly',party:'Su idaresi',note:'Son ödeme ve dönemsel tüketim kontrol edilecek.'},
+  {scope:'business',title:'Isınma / Doğalgaz',category:'Isınma',plan_type:'forecast',repeat:'monthly',party:'Doğalgaz / ısıtma',note:'Sezonluk artış ve vade riski izlenecek.'},
+  {scope:'business',title:'Yemek Gideri',category:'Yemek',plan_type:'standard',repeat:'monthly',party:'Yemek tedarikçisi',note:'Personel yemek bedeli, kişi başı maliyet ve sözleşme şartı takip edilecek.'},
+  {scope:'business',title:'Personel Maaşları',category:'Personel / Maaş',plan_type:'fixed',repeat:'monthly',party:'Personel',note:'Maaş, avans, prim, kesinti ve bordro sorumlulukları izlenecek.'},
+  {scope:'business',title:'Akaryakıt',category:'Akaryakıt',plan_type:'forecast',repeat:'monthly',party:'Akaryakıt istasyonu',note:'Araç bazlı tüketim ve olağan dışı sapma izlenecek.'},
+  {scope:'business',title:'Market / Mutfak',category:'Market',plan_type:'forecast',repeat:'monthly',party:'Market',note:'Ofis mutfak ve sarf tüketimi aylık bütçeye göre izlenecek.'},
+  {scope:'business',title:'Kargo / Lojistik',category:'Kargo',plan_type:'standard',repeat:'monthly',party:'Kargo firması',note:'Gönderi adedi, iade ve sözleşmeli fiyat farkı takip edilecek.'},
+  {scope:'business',title:'Banka Masrafı',category:'Banka Masraf',plan_type:'standard',repeat:'monthly',party:'Banka',note:'EFT/FAST, POS, hesap işletim ve komisyonlar kontrol edilecek.'},
+  {scope:'business',title:'İletişim / Telefon / İnternet',category:'İletişim',plan_type:'contract',repeat:'monthly',party:'Operatör',note:'Taahhüt, hat, internet, cayma bedeli ve son ödeme takip edilecek.'},
+  {scope:'personal',title:'Ev Kirası',category:'Kira',plan_type:'contract',repeat:'monthly',party:'Mal sahibi',note:'Kira sözleşmesi, artış oranı ve ödeme günü takip edilecek.'},
+  {scope:'personal',title:'Ev Elektrik Faturası',category:'Elektrik',plan_type:'forecast',repeat:'monthly',party:'Elektrik dağıtım',note:'Son ödeme ve tüketim sapması izlenecek.'},
+  {scope:'personal',title:'Ev Su Faturası',category:'Su',plan_type:'forecast',repeat:'monthly',party:'Su idaresi',note:'Son ödeme ve tüketim sapması izlenecek.'},
+  {scope:'personal',title:'Ev Isınma / Doğalgaz',category:'Isınma',plan_type:'forecast',repeat:'monthly',party:'Doğalgaz',note:'Kış sezonu bütçesi ve son ödeme takip edilecek.'},
+  {scope:'personal',title:'Çocuk Okul Ücreti',category:'Eğitim',plan_type:'contract',repeat:'monthly',party:'Okul',note:'Sözleşme taksitleri, servis/yemek/ek ücretler ve son ödeme takip edilecek.'},
+  {scope:'personal',title:'Maaş Geliri',category:'Maaş',plan_type:'fixed',repeat:'monthly',party:'İşveren',note:'Beklenen maaş, kesinti ve hesaba geçiş kontrol edilecek.',direction:'in'},
+  {scope:'personal',title:'Kredi Kartı Ekstresi',category:'Kredi Kartı',plan_type:'forecast',repeat:'monthly',party:'Banka',note:'Ekstre, asgari ödeme, son ödeme ve faiz riski takip edilecek.'},
+  {scope:'personal',title:'Araç Sigortası / Kasko',category:'Sigorta',plan_type:'contract',repeat:'yearly',party:'Sigorta şirketi',note:'Poliçe bitişi, yenileme, prim ve teminat sorumlulukları izlenecek.'},
+  {scope:'personal',title:'Akaryakıt',category:'Akaryakıt',plan_type:'forecast',repeat:'monthly',party:'Akaryakıt istasyonu',note:'Araç bazlı aylık yakıt bütçesi izlenecek.'},
+  {scope:'personal',title:'Market',category:'Market',plan_type:'forecast',repeat:'monthly',party:'Market',note:'Aylık hane alışveriş bütçesi ve sapmalar izlenecek.'},
+  {scope:'personal',title:'Telefon / İnternet',category:'İletişim',plan_type:'contract',repeat:'monthly',party:'Operatör',note:'Taahhüt, paket, son ödeme ve cayma riski takip edilecek.'}
+];
+function renderPlanTemplates(){
+  const el=document.getElementById('planTemplateCards');if(!el)return;
+  el.innerHTML=PLAN_TEMPLATES.map((t,i)=>`<button class="report-tile ${t.scope==='personal'?'report-cool':'report-hot'}" style="text-align:left;border:1px solid var(--b1);cursor:pointer;min-height:86px" onclick="applyPlanTemplate(${i})"><div class="report-k">${planScopeTR(t.scope)} · ${planTypeTR(t.plan_type)}</div><div class="report-v" style="font-size:14px;line-height:1.2">${escHtml(t.title)}</div><div class="report-d">${escHtml(t.category)} · ${escHtml(t.repeat)}</div></button>`).join('');
+}
+function applyPlanTemplate(i){
+  const t=PLAN_TEMPLATES[i];if(!t)return;
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||'';};
+  set('planScope',t.scope);set('planDirection',t.direction||'out');set('planType',t.plan_type);set('planRepeat',t.repeat);
+  set('planTitle',t.title);set('planCategory',t.category);set('planCounterparty',t.party);set('planResponsible',t.scope==='personal'?'Ben':'Yönetim / Muhasebe');
+  set('planObligation',t.note);set('planDesc',`${planScopeTR(t.scope)} ${planTypeTR(t.plan_type)} ${t.category} kartı.`);
+  initPlanDefaults();
+  const st=document.getElementById('planSaveStatus');if(st)st.textContent=`Şablon seçildi: ${t.title}. Tutar ve tarihleri kontrol edip kaydet.`;
+}
 function clearPlanForm(){
   ['planTitle','planAmount','planCategory','planCounterparty','planResponsible','planObligation','planDesc','planEnd'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const s=document.getElementById('planStart');if(s)s.value=new Date().toISOString().slice(0,10);
@@ -3068,6 +3106,7 @@ async function saveFinancePlan(){
 }
 async function loadFinancePlans(){
   initPlanDefaults();
+  renderPlanTemplates();
   const el=document.getElementById('planInventory');if(!el)return;
   el.innerHTML='<div class="finance-empty">Planlar okunuyor...</div>';
   let rows=[],error=null;
