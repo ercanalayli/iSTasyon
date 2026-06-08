@@ -555,9 +555,10 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .roadmap-st.wait{color:#854A0E;background:#FFFAEB;border-color:#FEDF89}
 #kartsDiv{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.55fr);gap:12px;align-items:start}
 #kartsDiv>.card{margin-bottom:0 !important}
-#kartsDiv>.report-hub{grid-column:1/-1;order:1}
-#kartsDiv>.card:nth-of-type(4){grid-column:1;order:2}
-#kartsDiv>.card:nth-of-type(7){grid-column:1;order:3}
+#kartsDiv>.income-card{grid-column:1/-1;order:1}
+#kartsDiv>.report-hub{grid-column:1/-1;order:2}
+#kartsDiv>.card:nth-of-type(4){grid-column:1;order:3}
+#kartsDiv>.card:nth-of-type(7){grid-column:1;order:4}
 #kartsDiv>.card:nth-of-type(2){grid-column:2;order:2}
 #kartsDiv>.card:nth-of-type(3){grid-column:2;order:3}
 #kartsDiv>.card:nth-of-type(5){grid-column:2;order:4}
@@ -728,6 +729,9 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   <div class="content">
     <div id="pg-dashboard" class="page on">
       <div id="kartsDiv">
+        <div class="income-card" id="incomeStatementCard">
+          <div id="incomeStatementTop"><div class="finance-empty">Gelir tablosu hazırlanıyor...</div></div>
+        </div>
         <div class="card report-hub">
           <div class="report-head">
             <div>
@@ -739,9 +743,6 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
           <div class="report-grid" id="reportHubGrid">
             <div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yukleniyor...</div>
           </div>
-        </div>
-        <div class="income-card" id="incomeStatementCard">
-          <div id="incomeStatementTop"><div class="finance-empty">Gelir tablosu hazırlanıyor...</div></div>
         </div>
         <div class="card finance-home-card" style="margin-bottom:16px">
           <div class="card-hd">
@@ -1832,26 +1833,73 @@ function incomeCostForSale(row,costMap){
   return {unit:hit?.cost||0,total:hit?.cost?hit.cost*adet:0,matched:!!hit};
 }
 function incomePlanBucket(row){
+  const direct=(row.plan_type||row.fixed_or_variable||'').toString().toLocaleLowerCase('tr-TR');
+  if(['contract','fixed','forecast','standard','variable'].includes(direct))return direct;
   const text=[row.record_type,row.item_type,row.type,row.kind,row.frequency,row.recurrence,row.contract_type,row.title,row.description,row.category,row.kategori,row.note]
     .map(x=>(x||'').toString().toLocaleLowerCase('tr-TR')).join(' ');
   if(/sözleş|sozles|contract|abonelik|kira|lisans|taahhüt|taahhut/.test(text))return 'contract';
   if(/sabit|fixed|aylık|aylik|maaş|maas|personel|sigorta|kredi kartı|kredi karti|sgk|vergi/.test(text))return 'fixed';
+  if(/standart|standard/.test(text))return 'standard';
   if(/öngörü|ongoru|forecast|budget|hedef|beklenen|plan/.test(text))return 'forecast';
   return 'variable';
 }
 function incomePlanLabel(bucket){
-  return ({contract:'Sözleşmeli',fixed:'Sabit',forecast:'Öngörülen',variable:'Değişken'})[bucket]||'Diğer';
+  return ({contract:'Sözleşmeli',fixed:'Sabit',standard:'Standart',forecast:'Öngörülen',variable:'Değişken'})[bucket]||'Diğer';
 }
 function incomePlanSummary(rows){
   const out={
     contract:{label:'Sözleşmeli',amount:0,count:0,rows:[]},
     fixed:{label:'Sabit',amount:0,count:0,rows:[]},
+    standard:{label:'Standart',amount:0,count:0,rows:[]},
     forecast:{label:'Öngörülen',amount:0,count:0,rows:[]},
     variable:{label:'Değişken',amount:0,count:0,rows:[]}
   };
   (rows||[]).forEach(r=>{
     const k=incomePlanBucket(r), amount=flowAmount(r);
     out[k].amount+=amount;out[k].count+=1;out[k].rows.push(r);
+  });
+  return out;
+}
+function incomeText(row){
+  return [row.description,row.aciklama,row.title,row.category,row.kategori,row.bank_name,row.source,row.detected_type,row.aday_islem_tipi,row.cari_name,row.suggested_counterparty]
+    .map(x=>(x||'').toString().toLocaleLowerCase('tr-TR')).join(' ');
+}
+function incomeCashAmount(row){
+  if(row.amount_in!==undefined||row.amount_out!==undefined)return Number(row.amount_in||0)-Number(row.amount_out||0);
+  return Number(row.tutar||row.amount||0);
+}
+function incomeCashBuckets(rows){
+  const out={mokaIn:0,cardIn:0,bankIn:0,otherIn:0,bankFee:0,creditCardOut:0,personnelOut:0,rentOut:0,taxOut:0,otherOut:0,paid:0,collected:0};
+  (rows||[]).forEach(r=>{
+    const amt=incomeCashAmount(r), abs=Math.abs(amt), t=incomeText(r);
+    if(amt>=0){
+      out.collected+=abs;
+      if(/moka|pos/.test(t))out.mokaIn+=abs;
+      else if(/kredi kart|credit card|kart/.test(t))out.cardIn+=abs;
+      else if(/banka|havale|eft|fast|tahsil/.test(t))out.bankIn+=abs;
+      else out.otherIn+=abs;
+    }else{
+      out.paid+=abs;
+      if(/banka masraf|komisyon|eft|fast|bsmv|masraf|pos/.test(t))out.bankFee+=abs;
+      else if(/kredi kart|credit card|kart/.test(t))out.creditCardOut+=abs;
+      else if(/personel|maaş|maas|sgk/.test(t))out.personnelOut+=abs;
+      else if(/kira/.test(t))out.rentOut+=abs;
+      else if(/vergi|sgk/.test(t))out.taxOut+=abs;
+      else out.otherOut+=abs;
+    }
+  });
+  return out;
+}
+function incomeExpenseAccrualBuckets(expenses){
+  const out={personnel:0,rent:0,tax:0,bank:0,card:0,other:0};
+  (expenses||[]).forEach(r=>{
+    const amt=Number(r.tutar||r.amount||0), t=incomeText(r);
+    if(/personel|maaş|maas/.test(t))out.personnel+=amt;
+    else if(/kira/.test(t))out.rent+=amt;
+    else if(/vergi|sgk/.test(t))out.tax+=amt;
+    else if(/banka|komisyon|masraf|eft|fast/.test(t))out.bank+=amt;
+    else if(/kredi kart|kart/.test(t))out.card+=amt;
+    else out.other+=amt;
   });
   return out;
 }
@@ -1866,6 +1914,11 @@ async function buildIncomeModel(mode=INCOME_MODE){
     const {data}=await db.from('bank_transactions').select('*').eq('firma_id',PILOT_FIRMA).gte('tarih',p.from).lte('tarih',p.to).limit(5000);
     bankRows.push(...(data||[]));
   }catch(e){}
+  const approvedBankRows=[];
+  try{
+    const {data}=await db.from('pending_bank_movements').select('*').eq('company_id',PILOT_FIRMA).eq('status','approved').gte('transaction_date',p.from).lte('transaction_date',p.to).limit(5000);
+    approvedBankRows.push(...(data||[]));
+  }catch(e){}
   const costMap=await productCostMap();
   const salesLines=sales.map(r=>({...r,__cost:incomeCostForSale(r,costMap)}));
   const revenue=salesLines.reduce((s,r)=>s+(+r.ciro||0),0);
@@ -1873,10 +1926,10 @@ async function buildIncomeModel(mode=INCOME_MODE){
   const cogs=salesLines.reduce((s,r)=>s+r.__cost.total,0);
   const missingCost=salesLines.filter(r=>!r.__cost.matched&&(+r.adet||0)>0&&(+r.ciro||0)>0).length;
   const expenseTotal=expenses.reduce((s,r)=>s+(+r.tutar||0),0);
-  const receipts=bankRows.filter(r=>(+r.tutar||0)>0||String(r.tur||'').toLocaleLowerCase('tr-TR').includes('tahsil'));
-  const payments=bankRows.filter(r=>(+r.tutar||0)<0||String(r.tur||'').toLocaleLowerCase('tr-TR').includes('odeme')||String(r.tur||'').toLocaleLowerCase('tr-TR').includes('gider'));
-  const cashIn=receipts.reduce((s,r)=>s+Math.abs(+r.tutar||0),0);
-  const cashOut=payments.reduce((s,r)=>s+Math.abs(+r.tutar||0),0);
+  const cashRows=[...bankRows,...approvedBankRows];
+  const cashBuckets=incomeCashBuckets(cashRows);
+  const cashIn=cashBuckets.collected;
+  const cashOut=cashBuckets.paid;
   const calendarRows=cal.rows||[];
   const planIncomeRows=calendarRows.filter(r=>flowKind(r)==='tahsilat');
   const planExpenseRows=calendarRows.filter(r=>flowKind(r)==='gider_odeme'||flowKind(r)==='urun_alis_odeme');
@@ -1885,6 +1938,7 @@ async function buildIncomeModel(mode=INCOME_MODE){
   const planIncome=incomePlanSummary(planIncomeRows), planExpense=incomePlanSummary(planExpenseRows);
   const plannedIncome=receivableOpen, plannedExpense=payableOpen, plannedNet=plannedIncome-plannedExpense;
   const gross=revenue-cogs, net=gross-expenseTotal, grossMargin=revenue?gross/revenue*100:0, netMargin=revenue?net/revenue*100:0;
+  const expenseBuckets=incomeExpenseAccrualBuckets(expenses);
   const byCat={}, byProduct={}, byExpense={};
   salesLines.forEach(r=>{
     const k=nrmCat(r.kategori), u=(r.urun||'Ürün Yok').trim()||'Ürün Yok';
@@ -1897,7 +1951,7 @@ async function buildIncomeModel(mode=INCOME_MODE){
   const categories=Object.values(byCat).map(x=>({...x,gross:x.revenue-x.cogs,margin:x.revenue?(x.revenue-x.cogs)/x.revenue*100:0})).sort((a,b)=>b.revenue-a.revenue);
   const products=Object.values(byProduct).map(x=>({...x,gross:x.revenue-x.cogs,margin:x.revenue?(x.revenue-x.cogs)/x.revenue*100:0})).sort((a,b)=>b.revenue-a.revenue);
   const expenseCats=Object.values(byExpense).sort((a,b)=>b.amount-a.amount);
-  return {period:p,sales:salesLines,expenses,bankRows,categories,products,expenseCats,revenue,qty,cogs,missingCost,expenseTotal,cashIn,cashOut,calendarRows,planIncomeRows,planExpenseRows,planIncome,planExpense,plannedIncome,plannedExpense,plannedNet,receivableOpen,payableOpen,gross,net,grossMargin,netMargin};
+  return {period:p,sales:salesLines,expenses,bankRows,approvedBankRows,cashRows,cashBuckets,expenseBuckets,categories,products,expenseCats,revenue,qty,cogs,missingCost,expenseTotal,cashIn,cashOut,calendarRows,planIncomeRows,planExpenseRows,planIncome,planExpense,plannedIncome,plannedExpense,plannedNet,receivableOpen,payableOpen,gross,net,grossMargin,netMargin};
 }
 function incomeMoney(v,cls=''){return `<span class="income-click ${cls}" onclick="incomeDrill('${cls||'revenue'}')">${dynMoney(v)}</span>`;}
 function incomePlanMoney(v,type,bucket=''){
@@ -1912,11 +1966,18 @@ function incomeSection(label){
   return `<div class="income-row income-section"><div>${label}</div><div>Planlanan</div><div>Tahakkuk</div><div>Gerçekleşen</div><div>Oran</div></div>`;
 }
 function incomePlanBreakRows(summary,type){
-  const order=['contract','fixed','forecast','variable'];
+  const order=['contract','fixed','standard','forecast','variable'];
   return order.map(k=>{
     const x=summary[k]||{label:incomePlanLabel(k),amount:0,count:0};
     return `<div class="income-row"><div class="income-label">${x.label}</div><div class="income-cell">${incomePlanMoney(x.amount,type,k)}</div><div class="income-cell muted">plan kalemi</div><div class="income-cell muted">${fmt(x.count)} kayıt</div><div class="income-cell muted">${x.amount?dynMoney(x.amount):'kaynak yok'}</div></div>`;
   }).join('');
+}
+function incomeMetricCard(label,value,sub,cls=''){
+  return `<div class="report-tile ${cls}" style="min-height:92px"><div class="report-k">${escHtml(label)}</div><div class="report-v">${dynMoney(value)}</div><div class="report-d">${escHtml(sub)}</div></div>`;
+}
+function incomeLine(label,planned,accrual,cash,type='revenue',planType=''){
+  const ratio=accrual?cash/accrual*100:(cash?100:0);
+  return incomeRow(label,planned,accrual,cash,ratio,type,planType);
 }
 function incomeMiniChart(id,labels,data,colors,type='bar'){
   setTimeout(()=>{
@@ -1973,35 +2034,64 @@ async function renderIncomeStatementTop(){
   el.innerHTML='<div class="finance-empty">Gelir tablosu hesaplanıyor...</div>';
   const model=await buildIncomeModel(INCOME_MODE);LAST_INCOME_MODEL=model;
   const p=model.period, receiptRatio=model.revenue?model.cashIn/model.revenue*100:0, paymentRatio=model.expenseTotal?model.cashOut/model.expenseTotal*100:0;
+  const cashNet=model.cashIn-model.cashOut, accrualNet=model.revenue-model.expenseTotal, accrualGap=accrualNet-cashNet, cashGap=model.revenue-model.cashIn;
+  const planIncome=model.planIncome, planExpense=model.planExpense, cb=model.cashBuckets, eb=model.expenseBuckets;
   const activeBtn=m=>INCOME_MODE===m?'on':'';
   el.innerHTML=`<div class="income-head">
-    <div><div class="income-title">Gelir Tablosu</div><div class="income-sub">${p.caption} · tutara tıklayınca önce kategori, kategoriye tıklayınca ürün/kayıt listesi açılır.</div><div class="income-note">Tahakkuk esası: satış ve gider döneminde yazılır. Nakit gerçekleşme banka/tahsilat kaynağı geldikçe paralel gösterilir.</div></div>
+    <div><div class="income-title">${p.label} Gelir Tablosu</div><div class="income-sub">${p.caption} · planlanan / tahakkuk / gerçekleşen aynı ekranda.</div><div class="income-note">Ana karar: kağıt üzerinde kâr, tahsilat ve nakit sıkışması beraber izlenir. Onaylanan banka/mail hareketleri gerçekleşen tarafı besler.</div></div>
     <div class="income-controls">
       <button class="income-btn ${activeBtn('today')}" onclick="setIncomeMode('today')">Bugün</button>
       <button class="income-btn ${activeBtn('yesterday')}" onclick="setIncomeMode('yesterday')">Dün</button>
       <button class="income-btn ${activeBtn('week')}" onclick="setIncomeMode('week')">Bu Hafta</button>
       <button class="income-btn ${activeBtn('month')}" onclick="setIncomeMode('month')">Bu Ay</button>
-      <button class="income-btn ${activeBtn('last_month')}" onclick="setIncomeMode('last_month')">${pRange().prevMonthName}</button>
-      <button class="income-btn ${activeBtn('year')}" onclick="setIncomeMode('year')">${pRange().year}</button>
+      <button class="income-btn ${activeBtn('last_month')}" onclick="setIncomeMode('last_month')">Geçen Ay</button>
+      <button class="income-btn ${activeBtn('year')}" onclick="setIncomeMode('year')">Bu Yıl</button>
+      <button class="income-btn ${activeBtn('last_year')}" onclick="setIncomeMode('last_year')">Geçen Yıl</button>
     </div>
+  </div>
+  <div class="report-grid" style="margin-bottom:12px">
+    ${incomeMetricCard('Planlanan Net',model.plannedNet,'sözleşmeli + sabit + öngörülen','report-cool')}
+    ${incomeMetricCard('Tahakkuk Net',accrualNet,'fatura/satış ve oluşan gider','report-warm')}
+    ${incomeMetricCard('Gerçekleşen Net',cashNet,'tahsil edilen - ödenen','report-royal')}
+    ${incomeMetricCard('Tahsil Edilecek',Math.max(model.revenue-model.cashIn,0),'tahakkuk var, nakit gelmedi','report-hot')}
+    ${incomeMetricCard('Ödenecek',Math.max(model.expenseTotal-model.cashOut,0),'gider oluştu, ödeme bekliyor','report-hot')}
+    ${incomeMetricCard('Nakit Farkı',cashGap,'gelir tahakkuku / tahsilat farkı',cashGap>0?'report-hot':'report-cool')}
+    ${incomeMetricCard('Tahakkuk Farkı',accrualGap,'tahakkuk neti - nakit neti',accrualGap>0?'report-warm':'report-cool')}
   </div>
   <div class="income-layout">
     <div>
       <div class="income-statement">
         <div class="income-row head"><div>Kalem</div><div style="text-align:right">Öngörülen / Sözleşmeli / Sabit</div><div style="text-align:right">Tahakkuk Esası</div><div style="text-align:right">Gerçekleşen</div><div style="text-align:right">Gerçekleşme</div></div>
         ${incomeSection('Gelirler')}
-        ${incomePlanBreakRows(model.planIncome,'plan_income')}
-        ${incomeRow('Gelir toplamı',model.plannedIncome,model.revenue,model.cashIn,receiptRatio,'revenue','plan_income')}
+        ${incomeLine('Sözleşmeli gelirler',planIncome.contract.amount,0,0,'revenue','plan_income')}
+        ${incomeLine('Sabit gelirler',planIncome.fixed.amount,0,0,'revenue','plan_income')}
+        ${incomeLine('Beklenen / tahmini gelirler',(planIncome.standard.amount+planIncome.forecast.amount+planIncome.variable.amount),0,0,'revenue','plan_income')}
+        ${incomeLine('Satış gelirleri',0,model.revenue,0,'revenue','')}
+        ${incomeLine('Moka / POS / kredi kartı tahsilatları',0,0,cb.mokaIn+cb.cardIn,'revenue','')}
+        ${incomeLine('Banka tahsilatları',0,0,cb.bankIn,'revenue','')}
+        ${incomeLine('Diğer gelirler',0,0,cb.otherIn,'revenue','')}
+        ${incomeRow('Toplam gelir',model.plannedIncome,model.revenue,model.cashIn,receiptRatio,'revenue','plan_income')}
         ${incomeSection('Giderler')}
-        ${incomePlanBreakRows(model.planExpense,'plan_expense')}
-        ${incomeRow('Gider toplamı',model.plannedExpense,model.expenseTotal,model.cashOut,paymentRatio,'expense','plan_expense')}
+        ${incomeLine('Sözleşmeli giderler',planExpense.contract.amount,0,0,'expense','plan_expense')}
+        ${incomeLine('Sabit giderler',planExpense.fixed.amount,0,0,'expense','plan_expense')}
+        ${incomeLine('Beklenen / tahmini giderler',(planExpense.standard.amount+planExpense.forecast.amount+planExpense.variable.amount),0,0,'expense','plan_expense')}
+        ${incomeLine('Masraflar',0,model.expenseTotal,0,'expense','')}
+        ${incomeLine('Banka giderleri',0,eb.bank,cb.bankFee,'expense','')}
+        ${incomeLine('Kredi kartı giderleri',0,eb.card,cb.creditCardOut,'expense','')}
+        ${incomeLine('Personel',0,eb.personnel,cb.personnelOut,'expense','')}
+        ${incomeLine('Kira',0,eb.rent,cb.rentOut,'expense','')}
+        ${incomeLine('Vergi / SGK',0,eb.tax,cb.taxOut,'expense','')}
+        ${incomeLine('Diğer giderler',0,eb.other,cb.otherOut,'expense','')}
+        ${incomeRow('Toplam gider',model.plannedExpense,model.expenseTotal,model.cashOut,paymentRatio,'expense','plan_expense')}
         ${incomeSection('Kar ve Vergi')}
         <div class="income-row income-total"><div class="income-label">Brüt kar</div><div class="income-cell">${dynMoney(model.plannedIncome-model.plannedExpense)}</div><div class="income-cell good">${incomeMoney(model.gross,'gross')}</div><div class="income-cell">${model.cogs?`COGS ${dynMoney(model.cogs)}`:'maliyet kaynağı eksik'}</div><div class="income-cell">${dynPct(model.grossMargin)}</div></div>
         <div class="income-row"><div class="income-label">KDV tahakkuk</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell">kaynak bağlanacak</div><div class="income-cell">KDV alanı yok</div></div>
         <div class="income-row"><div class="income-label">Gelir vergisi tahakkuk</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell">kaynak bağlanacak</div><div class="income-cell">vergi etiketi yok</div></div>
-        <div class="income-row income-total income-net ${model.net<0?'loss':''}"><div class="income-label">Net kar</div><div class="income-cell ${model.plannedNet>=0?'good':'bad'}">${dynMoney(model.plannedNet)}</div><div class="income-cell ${model.net>=0?'good':'bad'}">${incomeMoney(model.net,'net')}</div><div class="income-cell">${dynMoney(model.cashIn-model.cashOut)}</div><div class="income-cell">${dynPct(model.netMargin)}</div></div>
+        <div class="income-row income-total income-net ${accrualNet<0?'loss':''}"><div class="income-label">Net sonuç</div><div class="income-cell ${model.plannedNet>=0?'good':'bad'}">${dynMoney(model.plannedNet)}</div><div class="income-cell ${accrualNet>=0?'good':'bad'}">${incomeMoney(accrualNet,'net')}</div><div class="income-cell ${cashNet>=0?'good':'bad'}">${dynMoney(cashNet)}</div><div class="income-cell">${dynPct(model.netMargin)}</div></div>
+        <div class="income-row"><div class="income-label">Tahsil edilen / tahsil edilecek</div><div class="income-cell muted">plan izleniyor</div><div class="income-cell">${dynMoney(model.revenue)}</div><div class="income-cell">${dynMoney(model.cashIn)} / ${dynMoney(Math.max(model.revenue-model.cashIn,0))}</div><div class="income-cell">${dynPct(receiptRatio)}</div></div>
+        <div class="income-row"><div class="income-label">Ödenen / ödenecek</div><div class="income-cell muted">plan izleniyor</div><div class="income-cell">${dynMoney(model.expenseTotal)}</div><div class="income-cell">${dynMoney(model.cashOut)} / ${dynMoney(Math.max(model.expenseTotal-model.cashOut,0))}</div><div class="income-cell">${dynPct(paymentRatio)}</div></div>
       </div>
-      <div class="income-foot">Kontrol: ${fmt(model.planIncomeRows.length+model.planExpenseRows.length)} plan/takvim kaydı · ${fmt(model.sales.length)} satış tahakkuk satırı · ${fmt(model.expenses.length)} gider tahakkuku · ${fmt(model.bankRows.length)} banka hareketi okundu. ${model.missingCost?`${fmt(model.missingCost)} satış satırında ürün alış maliyeti eksik; brüt kar temkinli gösterilir.`:'Ürün maliyet eşleşmesi tamam.'}</div>
+      <div class="income-foot">Kontrol: ${fmt(model.planIncomeRows.length+model.planExpenseRows.length)} plan/takvim kaydı · ${fmt(model.sales.length)} satış tahakkuk satırı · ${fmt(model.expenses.length)} gider tahakkuku · ${fmt(model.bankRows.length)} banka/kasa hareketi · ${fmt(model.approvedBankRows.length)} onaylı mail ekstre hareketi okundu. ${model.missingCost?`${fmt(model.missingCost)} satış satırında ürün alış maliyeti eksik; brüt kar temkinli gösterilir.`:'Ürün maliyet eşleşmesi tamam.'}</div>
     </div>
     <div class="income-side">
       <div class="income-chart-card"><div class="income-chart-title">Plan / Tahakkuk / Gerçekleşme</div><canvas id="incomeChartA"></canvas></div>
