@@ -36,6 +36,35 @@ function isoDate(v) {
   return m ? `${m[3]}-${m[2]}-${m[1]}` : '';
 }
 
+function monthNo(v) {
+  const k = key(v);
+  const months = {
+    OCAK: '01',
+    SUBAT: '02',
+    MART: '03',
+    NISAN: '04',
+    MAYIS: '05',
+    HAZIRAN: '06',
+    TEMMUZ: '07',
+    AGUSTOS: '08',
+    EYLUL: '09',
+    EKIM: '10',
+    KASIM: '11',
+    ARALIK: '12'
+  };
+  return months[k] || '';
+}
+
+function parseDateLine(line) {
+  const slash = String(line || '').match(/^(\d{2}[\.\/]\d{2}[\.\/]\d{4})(?:\s+(\d{2}[\.\/]\d{2}[\.\/]\d{4}))?\s*(.*)$/);
+  if (slash) return { date: isoDate(slash[1]), valueDate: isoDate(slash[2]), rest: clean(slash[3] || '') };
+  const named = String(line || '').match(/^(\d{1,2})\s+([^\d\s]+)\s+(20\d{2})\s*(.*)$/u);
+  if (!named) return null;
+  const mm = monthNo(named[2]);
+  if (!mm) return null;
+  return { date: `${named[3]}-${mm}-${String(named[1]).padStart(2, '0')}`, valueDate: '', rest: clean(named[4] || '') };
+}
+
 function key(v) {
   return trUpper(v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 180);
 }
@@ -93,7 +122,7 @@ export function parseGenericBank(text, meta = {}) {
     desc = desc.replace(/Tarih Valor Tarihi Aciklama Islem Tutari Guncel Bakiye/gi, '').trim();
     if (!desc || /^ACILIS/i.test(desc)) return;
     const tx = baseTx(meta, bankName, sid, {
-      transaction_date: isoDate(cur.date),
+      transaction_date: String(cur.date || '').includes('-') ? cur.date : isoDate(cur.date),
       value_date: isoDate(cur.valueDate),
       description: desc,
       amount_in: amount > 0 ? amount : 0,
@@ -149,7 +178,6 @@ function baseTx(meta, bankName, sid, fields) {
 
 function parseCardStatement(lines, meta, bankName, sid) {
   const rows = [];
-  const dateStart = /^(\d{2}[\.\/]\d{2}[\.\/]\d{4})(?:\s+(\d{2}[\.\/]\d{2}[\.\/]\d{4}))?\s+(.+)$/;
   const amountRe = /-?\d{1,3}(?:\.\d{3})*,\d{2}(?:\s*(?:TL|TRY))?/g;
   const skip = /\b(TOPLAM|DONEM|DONEM BORCU|ASGARI|LIMIT|SON ODEME|EKSTRE|HESAP OZETI|FAIZ|VERGI|BORC|ALACAK BAKIYE|KALAN|MUSTERI NO|KART LIMITI)\b/i;
   let cur = null;
@@ -169,8 +197,8 @@ function parseCardStatement(lines, meta, bankName, sid) {
     const isCredit = u.includes('ODEME') || u.includes('IADE') || amount < 0;
     const abs = Math.abs(amount);
     const tx = baseTx(meta, bankName, sid, {
-      transaction_date: isoDate(cur.date),
-      value_date: isoDate(cur.valueDate),
+      transaction_date: String(cur.date || '').includes('-') ? cur.date : isoDate(cur.date),
+      value_date: cur.valueDate || '',
       description: desc,
       amount_in: isCredit ? abs : 0,
       amount_out: isCredit ? 0 : abs,
@@ -183,10 +211,10 @@ function parseCardStatement(lines, meta, bankName, sid) {
   }
 
   for (const line of lines) {
-    const m = line.match(dateStart);
-    if (m && m[1]) {
+    const parsedDate = parseDateLine(line);
+    if (parsedDate) {
       flush();
-      cur = { date: m[1], valueDate: m[2] || '', parts: [m[3] || ''] };
+      cur = { date: parsedDate.date, valueDate: parsedDate.valueDate || '', parts: [parsedDate.rest || ''] };
     } else if (cur) {
       cur.parts.push(line);
     }

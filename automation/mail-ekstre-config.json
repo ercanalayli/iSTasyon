@@ -16,12 +16,17 @@
     {
       "bank": "yapikredi",
       "label": "Yapı Kredi",
-      "query": "Yapi Kredi OR Hesap_Hareketleri OR Hesap_Ozeti OR Hesap Ozeti"
+      "query": "Yapi Kredi OR YAPIKREDI OR from:ekstre@ekstre.yapikredi.com.tr"
+    },
+    {
+      "bank": "akbank",
+      "label": "Akbank",
+      "query": "Akbank OR Axess OR from:bilgi.akbank.com"
     },
     {
       "bank": "vakifbank",
       "label": "Vakıfbank",
-      "query": "Vakifbank OR E-Ekstre OR Hesap Ozeti"
+      "query": "Vakifbank OR Vakif Bank OR E-Ekstre"
     },
     {
       "bank": "halkbank",
