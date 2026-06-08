@@ -47,12 +47,21 @@ jobs:
 
       - name: Check secrets and Supabase SQL objects
         id: sqlcheck
-        continue-on-error: true
-        run: node tools/mail_ekstre_actions_check.cjs | tee mail-ekstre-sql-check.txt
+        run: |
+          set +e
+          node tools/mail_ekstre_actions_check.cjs | tee mail-ekstre-sql-check.txt
+          code=${PIPESTATUS[0]}
+          if grep -q "MAIL_SQL_READY=1" mail-ekstre-sql-check.txt; then
+            echo "sql_ready=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "sql_ready=0" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
 
       - name: Mail ekstre preflight
-        continue-on-error: true
-        run: npm run mail:ekstre:preflight | tee mail-ekstre-preflight.txt
+        run: |
+          set -o pipefail
+          npm run mail:ekstre:preflight | tee mail-ekstre-preflight.txt
 
       - name: Drive dry-run
         id: dryrun
@@ -61,6 +70,7 @@ jobs:
         env:
           DRY_RUN: "1"
         run: |
+          set -o pipefail
           node mail-ekstre-worker-lite.js | tee ../mail-ekstre-dry-run.txt
 
       - name: Report dry-run parsed rows
@@ -84,11 +94,12 @@ jobs:
           NODE
 
       - name: Live ingest to pending_bank_movements
-        if: ${{ (github.event_name == 'push' || inputs.live == true) && steps.sqlcheck.outcome == 'success' }}
+        if: ${{ (github.event_name == 'push' || inputs.live == true) && steps.sqlcheck.outputs.sql_ready == '1' && steps.dryrun.outcome == 'success' }}
         working-directory: automation
         env:
           DRY_RUN: "0"
         run: |
+          set -o pipefail
           node mail-ekstre-worker-lite.js | tee ../mail-ekstre-live-run.txt
 
       - name: Check approval center rows
