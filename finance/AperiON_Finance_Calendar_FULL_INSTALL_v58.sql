@@ -1,4 +1,4 @@
-﻿-- AperiON Finance Calendar FULL INSTALL v58
+-- AperiON Finance Calendar FULL INSTALL v58
 -- Bu dosya Supabase SQL Editor icin tek parca kurulum paketidir.
 -- Kural: Mevcut veriyi silmez. Tablo/view/fonksiyon yoksa olusturur, seed kayitlari ayni baslik+tarih varsa tekrar eklemez.
 -- Sira: v47 canli model, v48 aksiyon RPC, v47 seed.
@@ -39,6 +39,16 @@ create table if not exists finance_calendar_items (
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+alter table finance_calendar_items add column if not exists scope text default 'business'; -- business, personal
+alter table finance_calendar_items add column if not exists plan_type text default 'variable'; -- contract, standard, fixed, forecast, variable
+alter table finance_calendar_items add column if not exists start_date date;
+alter table finance_calendar_items add column if not exists end_date date;
+alter table finance_calendar_items add column if not exists recurrence_rule text default 'once'; -- once, monthly, weekly, yearly
+alter table finance_calendar_items add column if not exists responsible_person text;
+alter table finance_calendar_items add column if not exists counterparty_type text; -- firma, kisi, kurum, banka, aile, okul
+alter table finance_calendar_items add column if not exists obligation_note text;
+alter table finance_calendar_items add column if not exists risk_note text;
 
 create table if not exists finance_calendar_holidays (
   id bigserial primary key,
@@ -115,6 +125,15 @@ select
   cari_name,
   account_name,
   category,
+  scope,
+  plan_type,
+  start_date,
+  end_date,
+  recurrence_rule,
+  responsible_person,
+  counterparty_type,
+  obligation_note,
+  risk_note,
   expected_amount,
   paid_amount,
   collected_amount,
@@ -214,6 +233,7 @@ full join finance_calendar_summary_view f on f.company = s.company;
 
 create index if not exists idx_finance_calendar_items_company_date on finance_calendar_items(company, item_date, status);
 create index if not exists idx_finance_calendar_items_type_status on finance_calendar_items(company, item_type, status);
+create index if not exists idx_finance_calendar_items_scope_plan on finance_calendar_items(company, scope, plan_type, item_date, status);
 create index if not exists idx_fixed_payment_contracts_company_active on fixed_payment_contracts(company, active, start_date, end_date);
 create index if not exists idx_finance_calendar_action_log_item on finance_calendar_action_log(item_id, created_at);
 
@@ -450,6 +470,64 @@ begin
 end;
 $$;
 
+create or replace function finance_calendar_create_plan(
+  p_company text default 'ALAYLI',
+  p_scope text default 'business',
+  p_plan_type text default 'forecast',
+  p_direction text default 'out',
+  p_item_type text default 'payable',
+  p_title text default null,
+  p_counterparty text default null,
+  p_counterparty_type text default null,
+  p_category text default null,
+  p_amount numeric default 0,
+  p_start_date date default current_date,
+  p_end_date date default null,
+  p_recurrence_rule text default 'monthly',
+  p_responsible_person text default null,
+  p_description text default null,
+  p_obligation_note text default null,
+  p_priority text default 'normal',
+  p_actor text default 'web'
+)
+returns jsonb
+language plpgsql
+security definer
+as $$
+declare
+  v_id bigint;
+  v_title text := nullif(trim(coalesce(p_title,'')), '');
+  v_direction text := case when p_direction in ('in','out','neutral') then p_direction else 'out' end;
+  v_item_type text := coalesce(nullif(p_item_type,''), case when v_direction='in' then 'receivable' when v_direction='out' then 'payable' else 'task' end);
+  v_plan_type text := coalesce(nullif(p_plan_type,''), 'forecast');
+  v_scope text := coalesce(nullif(p_scope,''), 'business');
+  v_date date := coalesce(p_start_date, current_date);
+begin
+  if v_title is null then
+    return jsonb_build_object('ok', false, 'error', 'title_required');
+  end if;
+
+  insert into finance_calendar_items (
+    company, item_date, original_due_date, effective_due_date, item_type, direction,
+    title, description, cari_name, category, expected_amount, status, priority,
+    fixed_or_variable, source_type, note, scope, plan_type, start_date, end_date,
+    recurrence_rule, responsible_person, counterparty_type, obligation_note, risk_note
+  ) values (
+    coalesce(p_company,'ALAYLI'), v_date, v_date, finance_next_business_day(v_date), v_item_type, v_direction,
+    v_title, p_description, p_counterparty, p_category, coalesce(p_amount,0), 'open', coalesce(p_priority,'normal'),
+    case when v_plan_type in ('contract','standard','fixed') then 'fixed' else 'variable' end,
+    'manual_plan', p_description, v_scope, v_plan_type, v_date, p_end_date,
+    coalesce(nullif(p_recurrence_rule,''),'monthly'), p_responsible_person, p_counterparty_type, p_obligation_note, p_obligation_note
+  ) returning id into v_id;
+
+  perform finance_calendar_log_action(coalesce(p_company,'ALAYLI'), v_id, 'created_plan', null, 'open', null, v_date, coalesce(p_amount,0), p_actor, 'manual_plan', p_obligation_note);
+
+  return jsonb_build_object('ok', true, 'item_id', v_id);
+end;
+$$;
+
+grant execute on function finance_calendar_create_plan(text,text,text,text,text,text,text,text,text,numeric,date,date,text,text,text,text,text,text) to anon, authenticated, service_role;
+
 -- Optional checks:
 -- select finance_calendar_mark_paid(1, null, 'telegram', 'test');
 -- select * from finance_calendar_action_log order by id desc limit 20;
@@ -466,13 +544,13 @@ $$;
 
 insert into finance_calendar_holidays (holiday_date, holiday_name, country)
 values
-  ('2026-01-01','YÄ±lbaÅŸÄ±','TR'),
-  ('2026-04-23','Ulusal Egemenlik ve Ã‡ocuk BayramÄ±','TR'),
-  ('2026-05-01','Emek ve DayanÄ±ÅŸma GÃ¼nÃ¼','TR'),
-  ('2026-05-19','AtatÃ¼rkâ€™Ã¼ Anma, GenÃ§lik ve Spor BayramÄ±','TR'),
-  ('2026-07-15','Demokrasi ve Milli Birlik GÃ¼nÃ¼','TR'),
-  ('2026-08-30','Zafer BayramÄ±','TR'),
-  ('2026-10-29','Cumhuriyet BayramÄ±','TR')
+  ('2026-01-01','Yılbaşı','TR'),
+  ('2026-04-23','Ulusal Egemenlik ve Çocuk Bayramı','TR'),
+  ('2026-05-01','Emek ve Dayanışma Günü','TR'),
+  ('2026-05-19','Atatürk’ü Anma, Gençlik ve Spor Bayramı','TR'),
+  ('2026-07-15','Demokrasi ve Milli Birlik Günü','TR'),
+  ('2026-08-30','Zafer Bayramı','TR'),
+  ('2026-10-29','Cumhuriyet Bayramı','TR')
 on conflict (holiday_date) do nothing;
 
 insert into finance_calendar_items (
@@ -482,31 +560,31 @@ insert into finance_calendar_items (
 )
 select * from (values
   ('ALAYLI', current_date, current_date, finance_next_business_day(current_date), 'payable', 'out',
-   'BugÃ¼n Ã¶denecek - Ã¶rnek tedarikÃ§i Ã¶demesi', 'Ä°lk canlÄ± finans takvimi kontrol kaydÄ±', 'Demo TedarikÃ§i', 'Banka', 'TedarikÃ§i Ã–demesi',
-   125000::numeric, 'open', 'high', 'variable', 'seed', 'CanlÄ± veriye geÃ§ince silinebilir veya kapatÄ±labilir'),
+   'Bugün ödenecek - örnek tedarikçi ödemesi', 'İlk canlı finans takvimi kontrol kaydı', 'Demo Tedarikçi', 'Banka', 'Tedarikçi Ödemesi',
+   125000::numeric, 'open', 'high', 'variable', 'seed', 'Canlı veriye geçince silinebilir veya kapatılabilir'),
 
   ('ALAYLI', current_date, current_date, finance_next_business_day(current_date), 'receivable', 'in',
-   'BugÃ¼n tahsil edilecek - Ã¶rnek cari tahsilatÄ±', 'Ä°lk canlÄ± tahsilat kontrol kaydÄ±', 'Demo Cari', 'Kasa/Banka', 'Cari Tahsilat',
-   155000::numeric, 'open', 'high', 'variable', 'seed', 'CanlÄ± veriye geÃ§ince silinebilir veya kapatÄ±labilir'),
+   'Bugün tahsil edilecek - örnek cari tahsilatı', 'İlk canlı tahsilat kontrol kaydı', 'Demo Cari', 'Kasa/Banka', 'Cari Tahsilat',
+   155000::numeric, 'open', 'high', 'variable', 'seed', 'Canlı veriye geçince silinebilir veya kapatılabilir'),
 
   ('ALAYLI', current_date - interval '2 days', current_date - interval '2 days', finance_next_business_day((current_date - interval '2 days')::date), 'payable', 'out',
-   'Geciken Ã¶deme - Ã¶rnek kredi kartÄ±', 'Geciken Ã¶deme uyarÄ± testi', 'Banka/Kart', 'Kredi KartÄ±', 'Kredi KartÄ±',
-   48500::numeric, 'open', 'critical', 'variable', 'seed', 'Geciken Ã¶deme KPI testi'),
+   'Geciken ödeme - örnek kredi kartı', 'Geciken ödeme uyarı testi', 'Banka/Kart', 'Kredi Kartı', 'Kredi Kartı',
+   48500::numeric, 'open', 'critical', 'variable', 'seed', 'Geciken ödeme KPI testi'),
 
   ('ALAYLI', current_date - interval '3 days', current_date - interval '3 days', finance_next_business_day((current_date - interval '3 days')::date), 'receivable', 'in',
-   'Geciken tahsilat - Ã¶rnek mÃ¼ÅŸteri', 'Geciken tahsilat uyarÄ± testi', 'Demo MÃ¼ÅŸteri', 'Cari', 'Tahsilat',
+   'Geciken tahsilat - örnek müşteri', 'Geciken tahsilat uyarı testi', 'Demo Müşteri', 'Cari', 'Tahsilat',
    72000::numeric, 'open', 'critical', 'variable', 'seed', 'Geciken tahsilat KPI testi'),
 
   ('ALAYLI', current_date + interval '1 day', current_date + interval '1 day', finance_next_business_day((current_date + interval '1 day')::date), 'credit', 'out',
-   'YarÄ±n kredi taksiti - Ã¶rnek', 'Kredi taksiti kontrol kaydÄ±', 'Banka', 'Kredi', 'Kredi Taksiti',
-   22650::numeric, 'open', 'normal', 'fixed', 'seed', 'Kredi taksiti Ã¶rnek kaydÄ±'),
+   'Yarın kredi taksiti - örnek', 'Kredi taksiti kontrol kaydı', 'Banka', 'Kredi', 'Kredi Taksiti',
+   22650::numeric, 'open', 'normal', 'fixed', 'seed', 'Kredi taksiti örnek kaydı'),
 
   ('ALAYLI', current_date, current_date, finance_next_business_day(current_date), 'task', 'neutral',
-   'BugÃ¼n yapÄ±lacak - banka ekstresi kontrolÃ¼', 'Banka hareketleri ve Moka transferleri kontrol edilecek', null, null, 'GÃ¶rev',
-   0::numeric, 'open', 'high', 'variable', 'seed', 'GÃ¶rev KPI testi'),
+   'Bugün yapılacak - banka ekstresi kontrolü', 'Banka hareketleri ve Moka transferleri kontrol edilecek', null, null, 'Görev',
+   0::numeric, 'open', 'high', 'variable', 'seed', 'Görev KPI testi'),
 
   ('ALAYLI', current_date, current_date, finance_next_business_day(current_date), 'approval', 'neutral',
-   'Onay bekleyen - fiyat listesi eÅŸleÅŸmesi', 'Telegram fiyat listesi Ã¼rÃ¼n eÅŸleÅŸmesi kontrol edilecek', 'Demo TedarikÃ§i', null, 'Onay',
+   'Onay bekleyen - fiyat listesi eşleşmesi', 'Telegram fiyat listesi ürün eşleşmesi kontrol edilecek', 'Demo Tedarikçi', null, 'Onay',
    0::numeric, 'waiting_approval', 'normal', 'variable', 'seed', 'Onay merkezi testi')
 ) as v(company,item_date,original_due_date,effective_due_date,item_type,direction,title,description,cari_name,account_name,category,expected_amount,status,priority,fixed_or_variable,source_type,note)
 where not exists (
@@ -519,3 +597,4 @@ where not exists (
 -- Quick check after seed:
 -- select * from finance_calendar_summary_view where company='ALAYLI';
 -- select * from finance_calendar_drawer_view where company='ALAYLI';
+

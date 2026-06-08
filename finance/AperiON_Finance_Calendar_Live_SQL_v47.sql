@@ -33,6 +33,16 @@ create table if not exists finance_calendar_items (
   updated_at timestamptz default now()
 );
 
+alter table finance_calendar_items add column if not exists scope text default 'business'; -- business, personal
+alter table finance_calendar_items add column if not exists plan_type text default 'variable'; -- contract, standard, fixed, forecast, variable
+alter table finance_calendar_items add column if not exists start_date date;
+alter table finance_calendar_items add column if not exists end_date date;
+alter table finance_calendar_items add column if not exists recurrence_rule text default 'once'; -- once, monthly, weekly, yearly
+alter table finance_calendar_items add column if not exists responsible_person text;
+alter table finance_calendar_items add column if not exists counterparty_type text; -- firma, kisi, kurum, banka, aile, okul
+alter table finance_calendar_items add column if not exists obligation_note text;
+alter table finance_calendar_items add column if not exists risk_note text;
+
 create table if not exists finance_calendar_holidays (
   id bigserial primary key,
   holiday_date date not null unique,
@@ -108,6 +118,15 @@ select
   cari_name,
   account_name,
   category,
+  scope,
+  plan_type,
+  start_date,
+  end_date,
+  recurrence_rule,
+  responsible_person,
+  counterparty_type,
+  obligation_note,
+  risk_note,
   expected_amount,
   paid_amount,
   collected_amount,
@@ -207,5 +226,6 @@ full join finance_calendar_summary_view f on f.company = s.company;
 
 create index if not exists idx_finance_calendar_items_company_date on finance_calendar_items(company, item_date, status);
 create index if not exists idx_finance_calendar_items_type_status on finance_calendar_items(company, item_type, status);
+create index if not exists idx_finance_calendar_items_scope_plan on finance_calendar_items(company, scope, plan_type, item_date, status);
 create index if not exists idx_fixed_payment_contracts_company_active on fixed_payment_contracts(company, active, start_date, end_date);
 create index if not exists idx_finance_calendar_action_log_item on finance_calendar_action_log(item_id, created_at);

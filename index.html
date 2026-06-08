@@ -898,6 +898,7 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
         <div class="ft-tab on" onclick="fT('genel',this)">Satış Özeti</div>
         <div class="ft-tab" onclick="fT('masraf',this)">Masraf Raporu</div>
         <div class="ft-tab" onclick="fT('banka',this)">Banka Onay</div>
+        <div class="ft-tab" onclick="fT('plan',this)">Plan Girişi</div>
       </div>
       <div id="fg">
         <div class="fbar">
@@ -968,6 +969,29 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
         <div class="card"><div class="card-hd"><div class="card-l">Banka Hareketleri</div><span id="bankaOnayStamp" style="font-family:var(--mono);font-size:9px;color:var(--t3)">—</span></div>
           <table class="pt"><thead><tr><th>Tarih</th><th>Yön</th><th>Tutar</th><th>Öneri</th><th>Cari</th><th>Açıklama</th><th>Güven</th><th>Durum</th><th>İşlem</th></tr></thead><tbody id="bankaOnayRows"></tbody></table>
         </div>
+      </div>
+      <div id="fplan" style="display:none">
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-hd"><div class="card-l">Sözleşmeli / Sabit / Öngörülen Plan Girişi</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">işletme + kişisel ikinci beyin</span></div>
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;align-items:end">
+            <div><div class="wl">Kapsam</div><select class="sel" id="planScope" style="width:100%"><option value="business">İşletme</option><option value="personal">Kişisel</option></select></div>
+            <div><div class="wl">Tür</div><select class="sel" id="planDirection" style="width:100%"><option value="out">Gider / Ödeme</option><option value="in">Gelir / Tahsilat</option><option value="neutral">Görev / Not</option></select></div>
+            <div><div class="wl">Plan tipi</div><select class="sel" id="planType" style="width:100%"><option value="contract">Sözleşmeli</option><option value="standard">Standart</option><option value="fixed">Sabit</option><option value="forecast">Öngörülen</option><option value="variable">Değişken</option></select></div>
+            <div><div class="wl">Tekrar</div><select class="sel" id="planRepeat" style="width:100%"><option value="monthly">Aylık</option><option value="weekly">Haftalık</option><option value="yearly">Yıllık</option><option value="once">Tek sefer</option></select></div>
+            <div style="grid-column:span 2"><div class="wl">Başlık</div><input class="wi" id="planTitle" placeholder="Telefon faturası, okul ücreti, kira, maaş, sigorta..."></div>
+            <div><div class="wl">Tutar</div><input class="wi" id="planAmount" inputmode="decimal" placeholder="0,00"></div>
+            <div><div class="wl">Kategori</div><input class="wi" id="planCategory" placeholder="Okul, banka, fatura, personel..."></div>
+            <div><div class="wl">Başlangıç</div><input class="wi" id="planStart" type="date"></div>
+            <div><div class="wl">Bitiş</div><input class="wi" id="planEnd" type="date"></div>
+            <div><div class="wl">İlgili firma / kişi</div><input class="wi" id="planCounterparty" placeholder="Kurum, banka, kişi, müşteri..."></div>
+            <div><div class="wl">Sorumlu</div><input class="wi" id="planResponsible" placeholder="Ben, muhasebe, aile..."></div>
+            <div style="grid-column:span 2"><div class="wl">Yaptırım / sorumluluk / açıklama</div><textarea class="wi" id="planObligation" style="min-height:70px;resize:vertical" placeholder="Son ödeme, gecikme riski, sözleşme şartı, takip notu..."></textarea></div>
+            <div style="grid-column:span 2"><div class="wl">Detay</div><textarea class="wi" id="planDesc" style="min-height:70px;resize:vertical" placeholder="Ek açıklama, belge, özel koşul..."></textarea></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><button class="wb" onclick="clearPlanForm()">Temizle</button><button class="wb ok" onclick="saveFinancePlan()">Kaydet</button></div>
+          <div id="planSaveStatus" style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:10px">Plan kaydı bekliyor.</div>
+        </div>
+        <div class="card"><div class="card-hd"><div class="card-l">Plan Envanteri</div><span id="planInventoryStamp" style="font-family:var(--mono);font-size:9px;color:var(--t3)">—</span></div><div id="planInventory"></div></div>
       </div>
     </div>
     <!-- STOK & ÜRÜN -->
@@ -1343,7 +1367,7 @@ function showDetay(){document.getElementById('kartsDiv').style.display='none';do
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'Ana Sayfa',s:'Yönetici özeti ve veri güveni'},satis:{t:'Satışlar',s:'Kategori, ürün ve müşteri kırılımı'},cariler:{t:'Müşteriler',s:'Cari performans ve risk'},finans:{t:'Finans Özeti',s:'Gider, banka ve tahsilat kontrolü'},stok:{t:'Ürünler',s:'Ürün bazlı kârlılık ve stok takibi'},hedef:{t:'Hedefler',s:'Gerçekleşen ve bütçe kontrolü'},gorevler:{t:'Görevler',s:'Onay ve takip merkezi'},veri:{t:'Veri Kontrol',s:'Kaynak, çekim ve doğrulama'},bildirim:{t:'Bildirim',s:'Telefon onay ve rapor ayarları'}};
 function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();loadSyncHealth();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();}
-function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();}
+function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';const fp=document.getElementById('fplan');if(fp)fp.style.display=t==='plan'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();if(t==='plan')loadFinancePlans();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]).filter(isAlayliRow);}catch(e){return[];}}
 async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);await loadSyncHealth();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderReportHub();renderIncomeStatementTop();loadFinanceHome();renderMainFinanceFlow();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=buildLabel();const bc=document.getElementById('buildCode');if(bc)bc.textContent=buildLabel();genAI();}
 function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
@@ -2995,6 +3019,69 @@ async function rBankaOnay(){
     const srcArg=JSON.stringify(r._source||'banka_raw');
     return `<tr><td>${escHtml((r.tarih||'').substring(0,10))}<div style="font-family:var(--mono);font-size:9px;color:var(--t3)">${source}</div></td><td>${escHtml(r.yon||'')}</td><td style="font-family:var(--mono);font-weight:900;color:${tut>=0?'var(--green)':'var(--red)'}">${dynMoney(Math.abs(tut))}</td><td>${escHtml(r.aday_islem_tipi||r.aday_kategori||'-')}</td><td>${escHtml(r.aday_cari||'-')}</td><td style="max-width:440px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(r.aciklama||'')}">${escHtml(r.aciklama||'')}</td><td>${fmt(r.guven||0)}/100</td><td>${bankaBadge(r)}</td><td>${onayBtn?`<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg})">Onay</button> <button class="empty-btn" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg})">Ret</button>`:'-'}</td></tr>`;
   }).join(''):'<tr><td colspan="9" style="padding:18px;color:var(--t3)">Banka onay verisi yok</td></tr>';
+}
+function planTypeTR(v){return {contract:'Sözleşmeli',standard:'Standart',fixed:'Sabit',forecast:'Öngörülen',variable:'Değişken'}[v]||v||'-';}
+function planScopeTR(v){return v==='personal'?'Kişisel':'İşletme';}
+function clearPlanForm(){
+  ['planTitle','planAmount','planCategory','planCounterparty','planResponsible','planObligation','planDesc','planEnd'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const s=document.getElementById('planStart');if(s)s.value=new Date().toISOString().slice(0,10);
+  const st=document.getElementById('planSaveStatus');if(st)st.textContent='Plan kaydı bekliyor.';
+}
+function initPlanDefaults(){
+  const s=document.getElementById('planStart');if(s&&!s.value)s.value=new Date().toISOString().slice(0,10);
+}
+async function saveFinancePlan(){
+  initPlanDefaults();
+  const status=document.getElementById('planSaveStatus');
+  const direction=document.getElementById('planDirection')?.value||'out';
+  const title=(document.getElementById('planTitle')?.value||'').trim();
+  if(!title){if(status)status.textContent='Başlık gerekli.';return;}
+  const payload={
+    p_company:'ALAYLI',
+    p_scope:document.getElementById('planScope')?.value||'business',
+    p_plan_type:document.getElementById('planType')?.value||'forecast',
+    p_direction:direction,
+    p_item_type:direction==='in'?'receivable':direction==='out'?'payable':'task',
+    p_title:title,
+    p_counterparty:(document.getElementById('planCounterparty')?.value||'').trim(),
+    p_counterparty_type:'',
+    p_category:(document.getElementById('planCategory')?.value||'').trim(),
+    p_amount:parseDynMoney(document.getElementById('planAmount')?.value||0),
+    p_start_date:document.getElementById('planStart')?.value||new Date().toISOString().slice(0,10),
+    p_end_date:document.getElementById('planEnd')?.value||null,
+    p_recurrence_rule:document.getElementById('planRepeat')?.value||'monthly',
+    p_responsible_person:(document.getElementById('planResponsible')?.value||'').trim(),
+    p_description:(document.getElementById('planDesc')?.value||'').trim(),
+    p_obligation_note:(document.getElementById('planObligation')?.value||'').trim(),
+    p_priority:'normal',
+    p_actor:'web'
+  };
+  if(status)status.textContent='Kaydediliyor...';
+  const {data,error}=await db.rpc('finance_calendar_create_plan',payload);
+  if(error||data?.ok===false){if(status)status.textContent='Kaydedilemedi: '+(error?.message||data?.error||'bilinmeyen hata');return;}
+  if(status)status.textContent=`Kaydedildi: #${data?.item_id||''}`;
+  clearPlanForm();
+  await loadFinancePlans();
+  loadFinanceHome();
+  renderMainFinanceFlow();
+  renderIncomeStatementTop();
+}
+async function loadFinancePlans(){
+  initPlanDefaults();
+  const el=document.getElementById('planInventory');if(!el)return;
+  el.innerHTML='<div class="finance-empty">Planlar okunuyor...</div>';
+  let rows=[],error=null;
+  try{
+    const res=await db.from('finance_calendar_items').select('id,scope,plan_type,direction,title,cari_name,category,expected_amount,start_date,end_date,item_date,recurrence_rule,responsible_person,obligation_note,status,created_at').eq('company','ALAYLI').eq('source_type','manual_plan').order('created_at',{ascending:false}).limit(120);
+    rows=res.data||[];error=res.error;
+  }catch(e){error=e;}
+  document.getElementById('planInventoryStamp').textContent=buildLabel();
+  if(error){el.innerHTML=`<div class="finance-empty">Plan tablosu/RPC kurulumu gerekiyor: ${escHtml(error.message||String(error))}</div>`;return;}
+  const groups={};
+  rows.forEach(r=>{const k=`${planScopeTR(r.scope)} · ${planTypeTR(r.plan_type)}`;groups[k]=(groups[k]||0)+Number(r.expected_amount||0);});
+  const summary=Object.keys(groups).length?miniBars(groups,Math.max(...Object.values(groups),1),'var(--accent)'):'<div class="finance-empty">Henüz plan kaydı yok.</div>';
+  const table=rows.length?`<table class="pt"><thead><tr><th>Kapsam</th><th>Tip</th><th>Başlık</th><th>Taraf</th><th>Kategori</th><th>Başlangıç</th><th>Bitiş</th><th>Tutar</th><th>Sorumlu</th><th>Durum</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${planScopeTR(r.scope)}</td><td>${planTypeTR(r.plan_type)}</td><td style="font-weight:900">${escHtml(r.title||'')}</td><td>${escHtml(r.cari_name||'-')}</td><td>${escHtml(r.category||'-')}</td><td>${escHtml(r.start_date||r.item_date||'')}</td><td>${escHtml(r.end_date||'-')}</td><td style="font-family:var(--mono);font-weight:900;color:${r.direction==='in'?'var(--green)':'var(--red)'}">${dynMoney(r.expected_amount||0)}</td><td>${escHtml(r.responsible_person||'-')}</td><td>${escHtml(r.status||'open')}</td></tr>`).join('')}</tbody></table>`:'';
+  el.innerHTML=`${summary}<div style="margin-top:12px">${table}</div>`;
 }
 async function renderHomeExpenses(){
   const el=document.getElementById('homeExpenseDyn');if(!el)return;
