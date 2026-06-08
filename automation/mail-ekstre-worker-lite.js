@@ -101,6 +101,7 @@ async function loadRowsFromGmail(report){
               report.extracted_texts++;
               const rows = parseBankStatement(text, { company_id: cfg.company_id || 'alayli', mailbox, bank_hint: bank.bank, mail_id: msg.id, mail_subject: msg.subject, mail_from: msg.from, mail_date: msg.date, attachment_name: a.filename });
               att.parsed_rows = rows.length;
+              if(rows.length === 0) att.parser_probe = buildParserProbe(text);
               report.parsed_rows += rows.length;
               parsed.push(...rows);
             }
@@ -114,6 +115,25 @@ async function loadRowsFromGmail(report){
     }
   }
   return parsed;
+}
+
+function buildParserProbe(text){
+  const lines = String(text || '')
+    .replace(/\r/g, '\n')
+    .split('\n')
+    .map(line => line.replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+  const interesting = lines.filter(line =>
+    /\d/.test(line) &&
+    (/\d{1,2}[\.\/-]\d{1,2}/.test(line) || /\d{1,3}(?:\.\d{3})*,\d{2}/.test(line) || /TL|TRY|TUTAR|ISLEM|HESAP|ODEME|BORC/i.test(line))
+  );
+  return interesting.slice(0, 30).map(line =>
+    line
+      .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/ig, 'mail@masked')
+      .replace(/\bTR\d{2}[A-Z0-9]{10,}\b/ig, 'TR##MASKED')
+      .replace(/\d/g, '#')
+      .slice(0, 180)
+  );
 }
 
 async function main(){
