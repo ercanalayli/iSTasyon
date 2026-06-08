@@ -3,10 +3,19 @@ name: AperiON Mail Ekstre Pipeline
 on:
   workflow_dispatch:
     inputs:
+      source:
+        description: "Ekstre kaynagi"
+        type: choice
+        options:
+          - gmail
+          - drive
+        default: gmail
       live:
-        description: "Dry-run başarılıysa pending_bank_movements tablosuna canlı yaz"
+        description: "Dry-run basariliysa pending_bank_movements tablosuna canli yaz"
         type: boolean
         default: true
+  schedule:
+    - cron: "*/15 5-17 * * *"
   push:
     branches:
       - main
@@ -27,7 +36,7 @@ jobs:
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
       GDRIVE_EKSTRE_FOLDER_ID: ${{ secrets.GDRIVE_EKSTRE_FOLDER_ID }}
-      EKSTRE_SOURCE: drive
+      EKSTRE_SOURCE: ${{ inputs.source || 'gmail' }}
       GMAIL_MAILBOX: alaylimedikal@gmail.com
       LOOKBACK_DAYS: "45"
     steps:
@@ -50,7 +59,6 @@ jobs:
         run: |
           set +e
           node tools/mail_ekstre_actions_check.cjs | tee mail-ekstre-sql-check.txt
-          code=${PIPESTATUS[0]}
           if grep -q "MAIL_SQL_READY=1" mail-ekstre-sql-check.txt; then
             echo "sql_ready=1" >> "$GITHUB_OUTPUT"
           else
@@ -63,7 +71,7 @@ jobs:
           set -o pipefail
           npm run mail:ekstre:preflight | tee mail-ekstre-preflight.txt
 
-      - name: Drive dry-run
+      - name: Ekstre dry-run
         id: dryrun
         continue-on-error: true
         working-directory: automation
@@ -79,7 +87,7 @@ jobs:
         run: |
           node - <<'NODE'
           const fs = require('fs');
-          const files = fs.existsSync('automation/logs') ? fs.readdirSync('automation/logs').filter(f=>f.startsWith('ekstre-drive-')).sort() : [];
+          const files = fs.existsSync('automation/logs') ? fs.readdirSync('automation/logs').filter(f=>f.startsWith('ekstre-')).sort() : [];
           const last = files.at(-1);
           if (!last) {
             console.log('DRY_RUN_REPORT=missing');
@@ -88,6 +96,7 @@ jobs:
           }
           const report = JSON.parse(fs.readFileSync('automation/logs/'+last,'utf8'));
           console.log('DRY_RUN_REPORT_FILE='+last);
+          console.log('DRY_RUN_SOURCE='+report.source);
           console.log('DRY_RUN_PARSED_ROWS='+report.parsed_rows);
           console.log('DRY_RUN_ATTACHMENTS='+report.attachments);
           console.log('DRY_RUN_READABLE_ATTACHMENTS='+report.readable_attachments);
@@ -97,7 +106,7 @@ jobs:
           NODE
 
       - name: Live ingest to pending_bank_movements
-        if: ${{ (github.event_name == 'push' || inputs.live == true) && steps.sqlcheck.outputs.sql_ready == '1' && steps.dryrun.outcome == 'success' && steps.dryrun_report.outputs.parsed_rows != '0' }}
+        if: ${{ (github.event_name == 'push' || github.event_name == 'schedule' || inputs.live == true) && steps.sqlcheck.outputs.sql_ready == '1' && steps.dryrun.outcome == 'success' && steps.dryrun_report.outputs.parsed_rows != '0' }}
         working-directory: automation
         env:
           DRY_RUN: "0"
@@ -114,7 +123,7 @@ jobs:
           const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth:{persistSession:false} });
           (async()=>{
             for (const table of ['pending_bank_movements','bizimhesap_queue']) {
-              const {data,error,count}=await db.from(table).select('*',{count:'exact'}).eq(table==='pending_bank_movements'?'company_id':'company_id','alayli').limit(10);
+              const {data,error,count}=await db.from(table).select('*',{count:'exact'}).eq('company_id','alayli').limit(10);
               console.log(`${error?'ERR':'OK'} ${table}: ${error?error.message:count+' rows / sample '+(data?.length||0)}`);
             }
           })().catch(e=>{console.error(e.message); process.exitCode=1});
