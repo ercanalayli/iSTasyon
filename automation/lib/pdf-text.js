@@ -1,5 +1,8 @@
-import pdf from 'pdf-parse';
-import xlsx from 'xlsx';
+import AdmZip from 'adm-zip';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const pdf = require('pdf-parse');
 
 export async function extractTextFromAttachment(filename, buffer){
   const name = String(filename || '').toLowerCase();
@@ -7,15 +10,35 @@ export async function extractTextFromAttachment(filename, buffer){
     const parsed = await pdf(buffer);
     return parsed.text || '';
   }
-  if(name.endsWith('.xls') || name.endsWith('.xlsx')){
-    const wb = xlsx.read(buffer, { type: 'buffer', cellDates: false, raw: false });
-    return wb.SheetNames.map(sheetName => {
-      const sheet = wb.Sheets[sheetName];
-      const rows = xlsx.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-      return rows.map(row => row.map(cell => String(cell || '').trim()).filter(Boolean).join(' ')).filter(Boolean).join('\n');
-    }).join('\n');
-  }
   return buffer.toString('utf8');
+}
+
+export async function extractTextItemsFromAttachment(filename, buffer){
+  const name = String(filename || '');
+  const lower = name.toLowerCase();
+  if(!lower.endsWith('.zip')){
+    return [{ filename: name, text: await extractTextFromAttachment(name, buffer), container_name: '' }];
+  }
+
+  const zip = new AdmZip(buffer);
+  const items = [];
+  for(const entry of zip.getEntries()){
+    if(entry.isDirectory) continue;
+    const entryName = entry.entryName || entry.name || '';
+    if(!isSupportedInnerFile(entryName)) continue;
+    try{
+      const text = await extractTextFromAttachment(entryName, entry.getData());
+      items.push({ filename: entryName, text, container_name: name });
+    }catch(err){
+      items.push({ filename: entryName, text: '', container_name: name, error: err.message || String(err) });
+    }
+  }
+  return items;
+}
+
+function isSupportedInnerFile(filename){
+  const name = String(filename || '').toLowerCase();
+  return name.endsWith('.pdf') || name.endsWith('.txt') || name.endsWith('.csv');
 }
 
 export function hasEnoughText(text){

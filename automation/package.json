@@ -15,6 +15,7 @@
   "dependencies": {
     "@supabase/supabase-js": "latest",
     "googleapis": "latest",
+    "adm-zip": "latest",
     "pdf-parse": "latest"
   }
 }

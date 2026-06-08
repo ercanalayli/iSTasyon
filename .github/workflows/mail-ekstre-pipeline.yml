@@ -48,7 +48,9 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: |
+          npm ci --no-audit --no-fund
+          npm ci --prefix automation --no-audit --no-fund
 
       - name: Enforce mailbox
         run: |

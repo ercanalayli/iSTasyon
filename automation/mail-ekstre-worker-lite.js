@@ -1,12 +1,11 @@
 import fs from 'fs/promises';
 import { createClient } from '@supabase/supabase-js';
 import { google } from 'googleapis';
-import pdf from 'pdf-parse';
 import { makeGmail } from './lib/gmail-auth.js';
 import { searchMessages, mailboxQuery } from './lib/gmail-search.js';
 import { readMessageSummary } from './lib/gmail-message.js';
 import { readAttachmentBuffer, isReadableBankAttachment } from './lib/gmail-attachment.js';
-import { extractTextFromAttachment, hasEnoughText } from './lib/pdf-text.js';
+import { extractTextItemsFromAttachment, hasEnoughText } from './lib/pdf-text.js';
 import { parseBankStatement } from './parsers/index.js';
 
 const cfg = JSON.parse(await fs.readFile(new URL('./mail-ekstre-config.json', import.meta.url), 'utf8'));
@@ -41,17 +40,27 @@ async function loadRowsFromDrive(report){
   report.scanned_messages = files.length;
   const parsed = [];
   for(const f of files){
-    if(!String(f.name || '').toLowerCase().endsWith('.pdf')) continue;
+    if(!isReadableBankAttachment({ filename: f.name })) continue;
     report.attachments++;
     const raw = await drive.files.get({ fileId: f.id, alt: 'media' }, { responseType: 'arraybuffer' });
-    const text = (await pdf(Buffer.from(raw.data))).text || '';
-    if(!hasEnoughText(text)) continue;
     report.readable_attachments++;
-    report.extracted_texts++;
-    const rows = parseBankStatement(text, { company_id: cfg.company_id || 'alayli', source: 'google_drive_bank_statement', mailbox: 'google_drive', bank_hint: f.name, statement_id: f.id, attachment_name: f.name });
-    report.parsed_rows += rows.length;
-    parsed.push(...rows.map(r => ({ ...r, source: 'google_drive_bank_statement', mailbox: 'google_drive', attachment_name: f.name, statement_id: f.id })));
-    report.messages.push({ bank: 'drive', id: f.id, subject: f.name, date: f.modifiedTime, attachments: [{ filename: f.name, parsed_rows: rows.length }] });
+    const textItems = await extractTextItemsFromAttachment(f.name, Buffer.from(raw.data));
+    const attachments = [];
+    for(const item of textItems){
+      const text = item.text || '';
+      const att = { filename: item.filename, container_name: item.container_name || '', text_length: String(text).length, text_ok: hasEnoughText(text), parsed_rows: 0 };
+      if(item.error) att.error = item.error;
+      if(att.text_ok){
+        report.extracted_texts++;
+        const rows = parseBankStatement(text, { company_id: cfg.company_id || 'alayli', source: 'google_drive_bank_statement', mailbox: 'google_drive', bank_hint: `${f.name} ${item.filename}`, statement_id: f.id, attachment_name: item.container_name ? `${item.container_name}/${item.filename}` : item.filename });
+        att.parsed_rows = rows.length;
+        if(rows.length === 0) att.parser_probe = buildParserProbe(text);
+        report.parsed_rows += rows.length;
+        parsed.push(...rows.map(r => ({ ...r, source: 'google_drive_bank_statement', mailbox: 'google_drive', attachment_name: item.container_name ? `${item.container_name}/${item.filename}` : item.filename, statement_id: f.id })));
+      }
+      attachments.push(att);
+    }
+    report.messages.push({ bank: 'drive', id: f.id, subject: f.name, date: f.modifiedTime, attachments });
   }
   return parsed;
 }
@@ -101,17 +110,26 @@ async function loadRowsFromGmail(report){
           if(att.readable){
             report.readable_attachments++;
             const buf = await readAttachmentBuffer(gmail, msg.id, a.attachmentId);
-            const text = await extractTextFromAttachment(a.filename, buf);
-            att.text_length = String(text || '').length;
-            att.text_ok = hasEnoughText(text);
-            if(att.text_ok){
-              report.extracted_texts++;
-              const rows = parseBankStatement(text, { company_id: cfg.company_id || 'alayli', mailbox, bank_hint: `${bank.bank} ${msg.from || ''} ${msg.subject || ''} ${a.filename || ''}`, mail_id: msg.id, mail_subject: msg.subject, mail_from: msg.from, mail_date: msg.date, attachment_name: a.filename });
-              att.parsed_rows = rows.length;
-              if(rows.length === 0) att.parser_probe = buildParserProbe(text);
-              report.parsed_rows += rows.length;
-              parsed.push(...rows);
+            const textItems = await extractTextItemsFromAttachment(a.filename, buf);
+            att.inner_files = [];
+            for(const item of textItems){
+              const text = item.text || '';
+              const inner = { filename: item.filename, container_name: item.container_name || '', text_length: String(text).length, text_ok: hasEnoughText(text), parsed_rows: 0 };
+              if(item.error) inner.error = item.error;
+              if(inner.text_ok){
+                report.extracted_texts++;
+                const attachmentName = item.container_name ? `${item.container_name}/${item.filename}` : item.filename;
+                const rows = parseBankStatement(text, { company_id: cfg.company_id || 'alayli', mailbox, bank_hint: `${bank.bank} ${msg.from || ''} ${msg.subject || ''} ${attachmentName || ''}`, mail_id: msg.id, mail_subject: msg.subject, mail_from: msg.from, mail_date: msg.date, attachment_name: attachmentName });
+                inner.parsed_rows = rows.length;
+                if(rows.length === 0) inner.parser_probe = buildParserProbe(text);
+                report.parsed_rows += rows.length;
+                parsed.push(...rows);
+              }
+              att.inner_files.push(inner);
             }
+            att.text_length = att.inner_files.reduce((sum, item) => sum + Number(item.text_length || 0), 0);
+            att.text_ok = att.inner_files.some(item => item.text_ok);
+            att.parsed_rows = att.inner_files.reduce((sum, item) => sum + Number(item.parsed_rows || 0), 0);
           }
           mailInfo.attachments.push(att);
         }

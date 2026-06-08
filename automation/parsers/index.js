@@ -1,18 +1,19 @@
 import { parseIsbank } from './isbank-parser.js';
 
 export function detectBank(text, meta = {}) {
-  const source = `${meta.bank_hint || ''} ${meta.mail_subject || ''} ${meta.attachment_name || ''} ${text || ''}`.toLocaleUpperCase('tr-TR');
-  if (source.includes('IS BANKASI') || source.includes('TURKIYE IS BANKASI') || source.includes('TURKIYE IS')) return 'isbank';
-  if (source.includes('YAPI KREDI') || source.includes('YAPIKREDI') || source.includes('HESAP_HAREKETLERI') || source.includes('HESAP_OZETI')) return 'yapikredi';
-  if (source.includes('AKBANK') || source.includes('AXESS')) return 'akbank';
-  if (source.includes('VAKIFBANK')) return 'vakifbank';
-  if (source.includes('HALKBANK') || source.includes('HALK BANKASI')) return 'halkbank';
-  if (source.includes('GARANTI')) return 'garanti';
-  if (source.includes('ZIRAAT') || source.includes('BANKKART')) return 'ziraat';
-  if (source.includes('QNB') || source.includes('FINANSBANK') || source.includes('ENPARA')) return 'qnb';
-  if (source.includes('KUVEYT')) return 'kuveytturk';
-  if (source.includes('DENIZBANK') || source.includes('DENIZ BANK')) return 'denizbank';
-  if (source.includes('FIBABANKA') || source.includes('FIBA BANKA')) return 'fibabanka';
+  const source = `${meta.bank_hint || ''} ${meta.mail_subject || ''} ${meta.attachment_name || ''} ${text || ''}`;
+  const sourceKey = key(source);
+  if (sourceKey.includes('IS_BANKASI') || sourceKey.includes('TURKIYE_IS_BANKASI') || sourceKey.includes('TURKIYE_IS')) return 'isbank';
+  if (sourceKey.includes('YAPI_KREDI') || sourceKey.includes('YAPIKREDI') || sourceKey.includes('HESAP_HAREKETLERI') || sourceKey.includes('HESAP_OZETI')) return 'yapikredi';
+  if (sourceKey.includes('AKBANK') || sourceKey.includes('AXESS')) return 'akbank';
+  if (sourceKey.includes('VAKIFBANK')) return 'vakifbank';
+  if (sourceKey.includes('HALKBANK') || sourceKey.includes('HALK_BANKASI')) return 'halkbank';
+  if (sourceKey.includes('GARANTI')) return 'garanti';
+  if (sourceKey.includes('ZIRAAT') || sourceKey.includes('BANKKART')) return 'ziraat';
+  if (sourceKey.includes('QNB') || sourceKey.includes('FINANSBANK') || sourceKey.includes('ENPARA')) return 'qnb';
+  if (sourceKey.includes('KUVEYT')) return 'kuveytturk';
+  if (sourceKey.includes('DENIZBANK') || sourceKey.includes('DENIZ_BANK')) return 'denizbank';
+  if (sourceKey.includes('FIBABANKA') || sourceKey.includes('FIBA_BANKA')) return 'fibabanka';
   return String(meta.bank_hint || 'unknown').toLowerCase();
 }
 
@@ -86,7 +87,7 @@ function typeOf(desc, amount) {
 }
 
 function bankLabel(meta, bank) {
-  const s = `${meta.bank_hint || ''} ${meta.bank_name || ''} ${meta.mail_subject || ''} ${meta.attachment_name || ''}`.toLocaleUpperCase('tr-TR');
+  const s = key(`${meta.bank_hint || ''} ${meta.bank_name || ''} ${meta.mail_subject || ''} ${meta.attachment_name || ''}`);
   if (bank === 'yapikredi' || s.includes('YAPI')) return 'Yapi Kredi';
   if (bank === 'akbank' || s.includes('AKBANK') || s.includes('AXESS')) return 'Akbank';
   if (bank === 'vakifbank' || s.includes('VAKIF')) return 'Vakifbank';
