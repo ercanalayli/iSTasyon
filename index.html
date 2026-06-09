@@ -443,6 +443,10 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .finance-home-status.ok{background:#ECFDF5;color:#047857;border-color:#A7F3D0}
 .finance-home-status.warn{background:#FFFBEB;color:#B45309;border-color:#FDE68A}
 .finance-home-status.bad{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}
+.finance-home-kpi.bank-money{grid-column:span 2;background:linear-gradient(135deg,#0F172A,#10251F);border-color:#1F6F54;box-shadow:0 18px 38px rgba(15,23,42,.16)}
+.finance-home-kpi.bank-money .finance-home-k{color:#A7F3D0}
+.finance-home-kpi.bank-money .finance-home-v{color:#FFFFFF;font-size:28px}
+.finance-home-kpi.bank-money .finance-home-n{color:#D1FAE5}
 .finance-empty{font-family:var(--mono);font-size:11px;color:#64748B;padding:14px;background:#F8FAFC;border:1px dashed #CBD5E1;border-radius:12px}
 .income-card{border:1px solid #CFE0F5;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 28px rgba(15,23,42,.055)}
 .income-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
@@ -2009,6 +2013,30 @@ function financeMiniRows(rows,emptyText,amountFn=financeAmount){
   return rows.map(r=>`<div class="finance-home-item"><div><div class="finance-home-title">${escHtml(financeTitle(r))}</div><div class="finance-home-sub">${escHtml(financeDate(r))} · ${escHtml(r.source||r.kaynak||r.bank_name||r.banka||r.mailbox||r.status||r.onay_durumu||'kayıt')}</div></div><div class="finance-home-amt">${amountFn(r)?financeTL(amountFn(r)):escHtml(r.status||r.onay_durumu||'alındı')}</div></div>`).join('');
 }
 function statusPill(text,cls=''){return `<span class="finance-home-status ${cls}">${escHtml(text)}</span>`;}
+function bankBalanceValue(row){
+  const val=mPick(row,['balance_after','bakiye','balance','yeni_bakiye','account_balance'],null);
+  const n=parseDynMoney(val);
+  return Number.isFinite(n)&&val!==null&&val!==undefined&&String(val)!==''?n:null;
+}
+function bankBalanceName(row){
+  return (row.bank_name||row.kaynak_banka||row.banka||row.bank||row.source_name||row.source||row._source_label||'Banka').toString().trim()||'Banka';
+}
+function bankBalanceDate(row){
+  return (row.transaction_date||row.tarih||row.mail_date||row.created_at||row.updated_at||'').toString();
+}
+function latestBankBalances(rows){
+  const map=new Map();
+  (rows||[]).forEach(row=>{
+    const balance=bankBalanceValue(row);
+    if(balance===null)return;
+    const name=bankBalanceName(row);
+    const date=bankBalanceDate(row);
+    const prev=map.get(name);
+    if(!prev||String(date).localeCompare(String(prev.date))>=0)map.set(name,{name,balance,date,row});
+  });
+  const items=[...map.values()].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  return {items,total:items.reduce((s,x)=>s+x.balance,0),latest:items[0]?.date||''};
+}
 async function loadFinanceHome(){
   const el=document.getElementById('homeFinanceCalendar');if(!el)return;
   el.innerHTML='<div class="finance-empty">Finans takvimi kontrol ediliyor...</div>';
@@ -2047,7 +2075,11 @@ async function loadFinanceHome(){
   const mailPending=mailRows.filter(r=>String(r.status||'pending')==='pending').length;
   const bankWaiting=bankRows.filter(r=>['bekliyor','onay_bekliyor','pending'].includes(String(r.onay_durumu||r.status||'').toLocaleLowerCase('tr-TR'))).length;
   const queueOpen=queueRows.filter(r=>!['done','completed','islendi','iptal','cancelled'].includes(String(r.status||r.durum||'').toLocaleLowerCase('tr-TR'))).length;
+  const bankBalance=latestBankBalances([...mailRows,...bankRows]);
+  const balanceSourceCount=bankBalance.items.length;
+  const balanceLatest=bankBalance.latest?bankBalance.latest.substring(0,16):'ekstre bekleniyor';
   el.innerHTML=`<div class="finance-home-grid">
+    <div class="finance-home-kpi bank-money"><div class="finance-home-k">Güncel Banka Parası</div><div class="finance-home-v">${balanceSourceCount?financeTL(bankBalance.total):'ekstre bekleniyor'}</div><div class="finance-home-n">${balanceSourceCount?`${fmt(balanceSourceCount)} banka · son bakiye ${escHtml(balanceLatest)}`:'mail/Drive ekstresinde bakiye alanı bekleniyor'}</div></div>
     <div class="finance-home-kpi"><div class="finance-home-k">Bugün Tahsilat</div><div class="finance-home-v">${summary?financeTL(todayIn):'takvim kurulumu eksik'}</div><div class="finance-home-n">${overdueIn?`geciken tahsilat ${financeTL(overdueIn)}`:'bugün tahsilat kaydı yok'}</div></div>
     <div class="finance-home-kpi"><div class="finance-home-k">Bugün Ödeme</div><div class="finance-home-v">${summary?financeTL(todayOut):'takvim kurulumu eksik'}</div><div class="finance-home-n">${overdueOut?`geciken ödeme ${financeTL(overdueOut)}`:'bugün ödeme kaydı yok'}</div></div>
     <div class="finance-home-kpi"><div class="finance-home-k">Geciken</div><div class="finance-home-v">${summary?financeTL(overdueTotal):'takvim kurulumu eksik'}</div><div class="finance-home-n">${fmt(overdueCount)} kayıt · tahsilat ${financeTL(overdueIn)} / ödeme ${financeTL(overdueOut)}</div></div>
@@ -2058,6 +2090,7 @@ async function loadFinanceHome(){
     <div class="finance-home-kpi"><div class="finance-home-k">İletişim Durumu</div><div class="finance-home-v" style="font-size:14px">${statusPill(bankRows.length||mailRows.length?'CANLI':'BEKLİYOR',bankRows.length||mailRows.length?'ok':'warn')}</div><div class="finance-home-n">mail ekstre + Telegram tek panel</div></div>
     <div class="finance-home-list"><div class="finance-home-head">Yakın Finans Takvimi</div>${financeRowsHtml(calendarRows.slice(0,8))}</div>
     <div class="finance-home-inbox"><div class="finance-home-head">Telegram Evrak</div>${inboxRows.length?financeMiniRows(inboxRows,'Telegram evrak kaydı yok'):financeMiniRows(bankRows,'Telegram evrak tablosu boş; banka hareket kuyruğu da boş',r=>financeNum(r.tutar||r.amount))}</div>
+    <div class="finance-home-mini"><div class="finance-home-head">Banka Bakiye Kaynağı</div>${bankBalance.items.length?bankBalance.items.map(x=>`<div class="finance-home-item"><div><div class="finance-home-title">${escHtml(x.name)}</div><div class="finance-home-sub">${escHtml(String(x.date).substring(0,16))} · ekstre son bakiyesi</div></div><div class="finance-home-amt">${financeTL(x.balance)}</div></div>`).join(''):'<div class="finance-empty">Bakiye içeren banka ekstresi bekleniyor.</div>'}</div>
     <div class="finance-home-mini"><div class="finance-home-head">Mail Ekstre Kuyruğu</div>${financeMiniRows(mailRows,'Mail ekstre hareketi yok. Gmail/Drive yetkisi veya yeni ekstre bekleniyor.',r=>financeNum(r.amount_in||r.amount_out||r.tutar||0))}</div>
     <div class="finance-home-mini"><div class="finance-home-head">Telegram Banka Onayı</div>${financeMiniRows(bankRows,'Telegram banka görseli veya bekleyen banka hareketi yok.',r=>financeNum(r.tutar||r.amount||0))}</div>
     <div class="finance-home-mini"><div class="finance-home-head">BizimHesap İşleme Kuyruğu</div>${financeMiniRows(queueRows,'Onaylanıp BizimHesap kuyruğuna alınmış kayıt yok.',r=>financeNum(r.amount||r.tutar||0))}</div>
