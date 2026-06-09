@@ -641,6 +641,216 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   .report-tile,.report-tile.big,.report-tile.wide,.report-tile:not(.big):not(.wide){grid-column:1 !important}
   .report-proof{grid-template-columns:1fr}
 }
+
+/* Home command surface v61: Retool/Geckoboard inspired operational dashboard */
+#pg-dashboard{
+  margin:-10px;
+  padding:10px;
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 84% 0%,rgba(16,185,129,.18),transparent 30%),
+    radial-gradient(circle at 12% 8%,rgba(245,158,11,.14),transparent 34%),
+    linear-gradient(145deg,#101113 0%,#181712 44%,#F4F6F1 44%,#F4F6F1 100%);
+}
+#pg-dashboard #kartsDiv{display:grid !important;grid-template-columns:minmax(0,1fr);gap:14px}
+#pg-dashboard #kartsDiv>*{
+  grid-column:1/-1 !important;
+  width:100% !important;
+  min-width:0 !important;
+}
+#pg-dashboard #kartsDiv>.income-card{order:1 !important}
+#pg-dashboard #kartsDiv>.report-hub{order:2 !important}
+#pg-dashboard #kartsDiv>.finance-home-card{order:3 !important}
+#pg-dashboard #kartsDiv>#fGrid{order:99 !important}
+#pg-dashboard #kartsDiv>.card{order:10}
+#pg-dashboard .income-card{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.16);
+  background:
+    linear-gradient(135deg,rgba(18,19,20,.96),rgba(27,26,21,.92) 58%,rgba(245,248,244,.98) 58%);
+  border-radius:20px;
+  padding:18px;
+  box-shadow:0 28px 70px rgba(6,8,12,.26);
+}
+#pg-dashboard .income-card::before{
+  content:'';
+  position:absolute;
+  left:-10%;
+  right:40%;
+  bottom:-34px;
+  height:180px;
+  pointer-events:none;
+  opacity:.72;
+  background:repeating-radial-gradient(ellipse at bottom left,transparent 0 22px,rgba(245,158,11,.46) 23px,transparent 24px);
+}
+#pg-dashboard .income-card>*{position:relative;z-index:1}
+#pg-dashboard .income-head{
+  min-height:118px;
+  align-items:flex-start;
+  padding:3px 4px 14px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+#pg-dashboard .income-title{
+  max-width:760px;
+  color:#F7F7EF;
+  font-size:34px;
+  line-height:1.02;
+  font-weight:900;
+}
+#pg-dashboard .income-sub{
+  max-width:760px;
+  color:rgba(247,247,239,.76);
+  font-size:13px;
+}
+#pg-dashboard .income-note{
+  display:inline-flex;
+  max-width:780px;
+  color:#F6C15C;
+  border:1px solid rgba(246,193,92,.28);
+  background:rgba(246,193,92,.08);
+  border-radius:999px;
+  padding:7px 10px;
+}
+#pg-dashboard .income-controls{
+  max-width:560px;
+  padding:8px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  background:rgba(255,255,255,.07);
+  backdrop-filter:blur(14px);
+}
+#pg-dashboard .income-btn{
+  height:34px;
+  border-color:rgba(255,255,255,.18);
+  background:rgba(255,255,255,.08);
+  color:#F7F7EF;
+  border-radius:999px;
+  padding:0 12px;
+}
+#pg-dashboard .income-btn.on,#pg-dashboard .income-btn:hover{
+  color:#121314;
+  border-color:#F6C15C;
+  background:#F6C15C;
+}
+#pg-dashboard .income-card .report-grid{
+  grid-template-columns:repeat(7,minmax(0,1fr)) !important;
+  padding:14px 0 4px !important;
+  background:transparent !important;
+}
+#pg-dashboard .income-card .report-tile{
+  min-height:118px !important;
+  border-color:rgba(255,255,255,.14);
+  background:rgba(255,255,255,.92);
+  box-shadow:0 18px 38px rgba(6,8,12,.13);
+}
+#pg-dashboard .income-card .report-tile::before{height:3px}
+#pg-dashboard .income-card .report-k{
+  color:#4B5563;
+  font-size:10px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+#pg-dashboard .income-card .report-v{
+  margin-top:9px;
+  font-size:24px;
+  line-height:1.05;
+  color:#121314;
+  letter-spacing:-.01em;
+}
+#pg-dashboard .income-card .report-d{font-size:11px;color:#667085;font-weight:750}
+#pg-dashboard .income-layout{
+  grid-template-columns:minmax(0,1.24fr) minmax(330px,.76fr);
+  margin-top:8px;
+}
+#pg-dashboard .income-statement{
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(247,248,244,.98);
+  border-radius:18px;
+  padding:12px;
+  box-shadow:0 18px 44px rgba(6,8,12,.12);
+}
+#pg-dashboard .income-row{
+  grid-template-columns:minmax(220px,1.12fr) repeat(4,minmax(128px,.56fr));
+  border-bottom-color:#E4E7EC;
+  padding:10px 11px;
+}
+#pg-dashboard .income-row.head{
+  background:#171817;
+  color:#DDE4D6;
+  border-radius:12px;
+}
+#pg-dashboard .income-section{
+  background:#EEF4EA;
+  color:#2F3A2F;
+  border-radius:10px;
+  margin-top:6px;
+}
+#pg-dashboard .income-label{font-size:12px;color:#111827}
+#pg-dashboard .income-cell{font-size:13px}
+#pg-dashboard .income-total{
+  background:#F7F9EF;
+  border-color:#D5E3C8;
+}
+#pg-dashboard .income-net{
+  background:#ECFDF3;
+  border-color:#84CC9A;
+  box-shadow:inset 3px 0 0 #22C55E;
+}
+#pg-dashboard .income-net.loss{
+  background:#FFF1F1;
+  border-color:#FDA4AF;
+  box-shadow:inset 3px 0 0 #EF4444;
+}
+#pg-dashboard .income-chart-card{
+  border-color:rgba(255,255,255,.12);
+  background:#171817;
+  border-radius:18px;
+  box-shadow:0 18px 44px rgba(6,8,12,.16);
+}
+#pg-dashboard .income-chart-title{color:#F7F7EF}
+#pg-dashboard .income-table-wrap{
+  border-color:#E2E8D8;
+  border-radius:16px;
+  box-shadow:0 14px 32px rgba(6,8,12,.08);
+}
+#pg-dashboard .income-table th{
+  background:#171817;
+  color:#DDE4D6;
+  border-bottom-color:#2D302B;
+}
+#pg-dashboard .income-foot{
+  border-color:rgba(255,255,255,.14);
+  background:rgba(255,255,255,.9);
+  color:#344054;
+  border-radius:16px;
+}
+#pg-dashboard .report-hub,#pg-dashboard .finance-home-card,#pg-dashboard #kartsDiv>.card:not(.report-hub){
+  border:1px solid rgba(15,23,42,.08);
+  border-radius:18px;
+  box-shadow:0 18px 44px rgba(15,23,42,.08);
+}
+#pg-dashboard .report-head{
+  border-radius:18px 18px 0 0;
+  background:linear-gradient(90deg,#FFFFFF,#F2F6EF);
+}
+#pg-dashboard .report-title{font-size:19px !important}
+#pg-dashboard .report-hub .report-grid{
+  background:#F7F8F4 !important;
+}
+@media(max-width:1320px){
+  #pg-dashboard .income-card{background:linear-gradient(180deg,#121314,#1D1B15 260px,#F4F6F1 260px)}
+  #pg-dashboard .income-card .report-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important}
+  #pg-dashboard .income-card .report-tile{grid-column:auto !important}
+}
+@media(max-width:980px){
+  #pg-dashboard{margin:-6px;padding:6px;border-radius:16px}
+  #pg-dashboard .income-card{padding:14px;border-radius:16px}
+  #pg-dashboard .income-title{font-size:25px}
+  #pg-dashboard .income-head{min-height:0}
+  #pg-dashboard .income-card .report-grid{grid-template-columns:1fr !important}
+  #pg-dashboard .income-row{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
