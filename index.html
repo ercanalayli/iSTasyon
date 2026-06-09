@@ -686,25 +686,74 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 }
 #pg-dashboard .income-card>*{position:relative;z-index:1}
 #pg-dashboard .income-head{
-  min-height:118px;
-  align-items:flex-start;
-  padding:3px 4px 14px;
+  display:grid;
+  grid-template-columns:minmax(0,1.05fr) minmax(340px,.72fr) minmax(280px,.48fr);
+  gap:14px;
+  min-height:260px;
+  align-items:stretch;
+  padding:18px;
+  border-radius:18px;
   border-bottom:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(135deg,#121314,#1D1B15);
+}
+#pg-dashboard .income-cockpit-main{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-height:238px;
+  padding:8px 22px 8px 0;
+}
+#pg-dashboard .income-eyebrow{
+  display:inline-flex;
+  align-self:flex-start;
+  color:#111827;
+  background:#F6C15C;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:11px;
+  font-weight:900;
+  margin-bottom:18px;
 }
 #pg-dashboard .income-title{
-  max-width:760px;
+  max-width:660px;
   color:#F7F7EF;
-  font-size:34px;
-  line-height:1.02;
+  font-size:38px;
+  line-height:1;
   font-weight:900;
 }
 #pg-dashboard .income-sub{
-  max-width:760px;
+  max-width:660px;
   color:rgba(247,247,239,.76);
   font-size:13px;
+  line-height:1.45;
 }
+#pg-dashboard .income-decision{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:6px 10px;
+  max-width:660px;
+  margin-top:16px;
+  border:1px solid rgba(255,255,255,.13);
+  background:rgba(255,255,255,.075);
+  border-radius:16px;
+  padding:12px;
+}
+#pg-dashboard .income-decision span{
+  grid-row:span 2;
+  align-self:center;
+  font-size:10px;
+  font-weight:950;
+  text-transform:uppercase;
+  color:rgba(247,247,239,.56);
+  letter-spacing:.06em;
+}
+#pg-dashboard .income-decision b{font-size:18px;color:#F7F7EF}
+#pg-dashboard .income-decision em{font-style:normal;color:rgba(247,247,239,.72);font-size:12px;font-weight:750}
+#pg-dashboard .income-decision.good{box-shadow:inset 3px 0 0 #22C55E}
+#pg-dashboard .income-decision.warn{box-shadow:inset 3px 0 0 #F6C15C}
+#pg-dashboard .income-decision.bad{box-shadow:inset 3px 0 0 #EF4444}
 #pg-dashboard .income-note{
-  display:inline-flex;
+  display:none;
   max-width:780px;
   color:#F6C15C;
   border:1px solid rgba(246,193,92,.28);
@@ -712,8 +761,79 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   border-radius:999px;
   padding:7px 10px;
 }
+#pg-dashboard .income-command-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+#pg-dashboard .income-command-actions button{
+  height:34px;
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.08);
+  color:#F7F7EF;
+  border-radius:999px;
+  padding:0 12px;
+  font-size:11px;
+  font-weight:900;
+  cursor:pointer;
+}
+#pg-dashboard .income-command-actions button:hover{background:#F7F7EF;color:#111827}
+#pg-dashboard .income-op-board,#pg-dashboard .income-component-panel{
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:14px;
+  backdrop-filter:blur(16px);
+  box-shadow:0 18px 38px rgba(0,0,0,.16);
+}
+#pg-dashboard .income-op-title{
+  color:rgba(247,247,239,.88);
+  font-size:12px;
+  font-weight:950;
+  letter-spacing:.03em;
+  margin-bottom:10px;
+}
+#pg-dashboard .income-op-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}
+#pg-dashboard .income-op-grid>div{
+  min-height:72px;
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(0,0,0,.22);
+  border-radius:14px;
+  padding:11px;
+}
+#pg-dashboard .income-op-grid span,#pg-dashboard .income-component-list span{
+  display:block;
+  color:rgba(247,247,239,.58);
+  font-size:10px;
+  text-transform:uppercase;
+  font-weight:950;
+  letter-spacing:.06em;
+  margin-bottom:7px;
+}
+#pg-dashboard .income-op-grid b{
+  display:block;
+  color:#F7F7EF;
+  font-family:var(--mono);
+  font-size:16px;
+  line-height:1.1;
+}
+#pg-dashboard .income-op-bar{margin-top:10px}
+#pg-dashboard .income-op-bar-top{display:flex;justify-content:space-between;gap:10px;color:rgba(247,247,239,.72);font-size:11px;font-weight:850}
+#pg-dashboard .income-op-bar-top b{font-family:var(--mono);color:#F7F7EF}
+#pg-dashboard .income-op-track{height:8px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;margin-top:6px}
+#pg-dashboard .income-op-track i{display:block;height:100%;border-radius:999px;background:#22C55E}
+#pg-dashboard .income-op-track i.warn{background:#F6C15C}
+#pg-dashboard .income-op-track i.bad{background:#EF4444}
+#pg-dashboard .income-pipeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:13px}
+#pg-dashboard .income-pipe-step{
+  min-height:54px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.18);
+  border-radius:12px;
+  padding:8px;
+}
+#pg-dashboard .income-pipe-step span{display:block;color:rgba(247,247,239,.62);font-size:10px;font-weight:900;margin-bottom:7px}
+#pg-dashboard .income-pipe-step b{color:#F7F7EF;font-family:var(--mono);font-size:14px}
+#pg-dashboard .income-pipe-step.ok{box-shadow:inset 0 -3px 0 #22C55E}
+#pg-dashboard .income-pipe-step.wait{box-shadow:inset 0 -3px 0 #F6C15C}
 #pg-dashboard .income-controls{
-  max-width:560px;
+  max-width:none;
   padding:8px;
   border:1px solid rgba(255,255,255,.12);
   border-radius:16px;
@@ -733,6 +853,14 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   border-color:#F6C15C;
   background:#F6C15C;
 }
+#pg-dashboard .income-component-list{display:grid;gap:8px;margin-top:10px}
+#pg-dashboard .income-component-list>div{
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(0,0,0,.2);
+  border-radius:13px;
+  padding:10px;
+}
+#pg-dashboard .income-component-list b{display:block;color:#F7F7EF;font-size:12px;line-height:1.3}
 #pg-dashboard .income-card .report-grid{
   grid-template-columns:repeat(7,minmax(0,1fr)) !important;
   padding:14px 0 4px !important;
@@ -839,15 +967,22 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   background:#F7F8F4 !important;
 }
 @media(max-width:1320px){
-  #pg-dashboard .income-card{background:linear-gradient(180deg,#121314,#1D1B15 260px,#F4F6F1 260px)}
+  #pg-dashboard .income-card{background:#F4F6F1}
+  #pg-dashboard .income-head{grid-template-columns:minmax(0,1fr) minmax(300px,.78fr);min-height:0}
+  #pg-dashboard .income-cockpit-main{grid-column:1;min-height:0}
+  #pg-dashboard .income-component-panel{grid-column:1/-1}
   #pg-dashboard .income-card .report-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important}
   #pg-dashboard .income-card .report-tile{grid-column:auto !important}
 }
 @media(max-width:980px){
   #pg-dashboard{margin:-6px;padding:6px;border-radius:16px}
   #pg-dashboard .income-card{padding:14px;border-radius:16px}
+  #pg-dashboard .income-head{grid-template-columns:1fr;gap:10px}
+  #pg-dashboard .income-cockpit-main{padding:0;min-height:0}
   #pg-dashboard .income-title{font-size:25px}
   #pg-dashboard .income-head{min-height:0}
+  #pg-dashboard .income-op-grid{grid-template-columns:1fr 1fr}
+  #pg-dashboard .income-pipeline{grid-template-columns:1fr 1fr}
   #pg-dashboard .income-card .report-grid{grid-template-columns:1fr !important}
   #pg-dashboard .income-row{grid-template-columns:1fr}
 }
@@ -2185,6 +2320,18 @@ function incomePlanBreakRows(summary,type){
 function incomeMetricCard(label,value,sub,cls=''){
   return `<div class="report-tile ${cls}" style="min-height:92px"><div class="report-k">${escHtml(label)}</div><div class="report-v">${dynMoney(value)}</div><div class="report-d">${escHtml(sub)}</div></div>`;
 }
+function incomeStatusClass(value,mode='net'){
+  if(mode==='ratio')return value>=85?'good':value>=45?'warn':'bad';
+  if(mode==='inverse')return value<=0?'good':value<250000?'warn':'bad';
+  return value>=0?'good':'bad';
+}
+function incomeBar(label,value,max,cls='good'){
+  const pct=Math.max(0,Math.min(100,max?value/max*100:0));
+  return `<div class="income-op-bar"><div class="income-op-bar-top"><span>${escHtml(label)}</span><b>${dynPct(pct)}</b></div><div class="income-op-track"><i class="${cls}" style="width:${pct}%"></i></div></div>`;
+}
+function incomePipelineStep(label,count,state='ok'){
+  return `<div class="income-pipe-step ${state}"><span>${escHtml(label)}</span><b>${escHtml(String(count))}</b></div>`;
+}
 function incomeLine(label,planned,accrual,cash,type='revenue',planType=''){
   const ratio=accrual?cash/accrual*100:(cash?100:0);
   return incomeRow(label,planned,accrual,cash,ratio,type,planType);
@@ -2246,17 +2393,60 @@ async function renderIncomeStatementTop(){
   const p=model.period, receiptRatio=model.revenue?model.cashIn/model.revenue*100:0, paymentRatio=model.expenseTotal?model.cashOut/model.expenseTotal*100:0;
   const cashNet=model.cashIn-model.cashOut, accrualNet=model.revenue-model.expenseTotal, accrualGap=accrualNet-cashNet, cashGap=model.revenue-model.cashIn;
   const planIncome=model.planIncome, planExpense=model.planExpense, cb=model.cashBuckets, eb=model.expenseBuckets;
+  const dataHealth=[model.sales.length,model.expenses.length,model.bankRows.length+model.approvedBankRows.length].filter(Boolean).length;
+  const actionCount=(cashGap>0?1:0)+(Math.max(model.expenseTotal-model.cashOut,0)>0?1:0)+(model.missingCost?1:0)+(model.approvedBankRows.length?1:0);
+  const commandState=accrualNet<0?'Tahakkuk zararı':cashNet<0?'Nakit negatif':cashGap>0?'Tahsilat takibi':'Kontrol altında';
+  const commandClass=accrualNet<0||cashNet<0?'bad':cashGap>0?'warn':'good';
   const activeBtn=m=>INCOME_MODE===m?'on':'';
   el.innerHTML=`<div class="income-head">
-    <div><div class="income-title">${p.label} Gelir Tablosu</div><div class="income-sub">${p.caption} · planlanan / tahakkuk / gerçekleşen aynı ekranda.</div><div class="income-note">Ana karar: kağıt üzerinde kâr, tahsilat ve nakit sıkışması beraber izlenir. Onaylanan banka/mail hareketleri gerçekleşen tarafı besler.</div></div>
-    <div class="income-controls">
-      <button class="income-btn ${activeBtn('today')}" onclick="setIncomeMode('today')">Bugün</button>
-      <button class="income-btn ${activeBtn('yesterday')}" onclick="setIncomeMode('yesterday')">Dün</button>
-      <button class="income-btn ${activeBtn('week')}" onclick="setIncomeMode('week')">Bu Hafta</button>
-      <button class="income-btn ${activeBtn('month')}" onclick="setIncomeMode('month')">Bu Ay</button>
-      <button class="income-btn ${activeBtn('last_month')}" onclick="setIncomeMode('last_month')">Geçen Ay</button>
-      <button class="income-btn ${activeBtn('year')}" onclick="setIncomeMode('year')">Bu Yıl</button>
-      <button class="income-btn ${activeBtn('last_year')}" onclick="setIncomeMode('last_year')">Geçen Yıl</button>
+    <div class="income-cockpit-main">
+      <div class="income-eyebrow">AperiON Operational Finance App</div>
+      <div class="income-title">${p.label} Gelir Tablosu</div>
+      <div class="income-sub">${p.caption} · planlanan / tahakkuk / gerçekleşen aynı ekranda.</div>
+      <div class="income-decision ${commandClass}">
+        <span>Karar durumu</span><b>${escHtml(commandState)}</b>
+        <em>${cashGap>0?'Tahakkuk var, tahsilat bekliyor.':cashNet<0?'Nakit çıkışı tahsilatı aşmış.':'Nakit ve tahakkuk birlikte izleniyor.'}</em>
+      </div>
+      <div class="income-command-actions">
+        <button onclick="incomeDrill('revenue')">Gelire İn</button>
+        <button onclick="incomeDrill('expense')">Gidere İn</button>
+        <button onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Banka Onay</button>
+        <button onclick="gP('finans',null)">Finans Merkezi</button>
+      </div>
+    </div>
+    <div class="income-op-board">
+      <div class="income-op-title">Live Operations Board</div>
+      <div class="income-op-grid">
+        <div><span>Plan Net</span><b>${dynMoney(model.plannedNet)}</b></div>
+        <div><span>Tahakkuk Net</span><b>${dynMoney(accrualNet)}</b></div>
+        <div><span>Nakit Net</span><b>${dynMoney(cashNet)}</b></div>
+        <div><span>Aksiyon</span><b>${fmt(actionCount)}</b></div>
+      </div>
+      ${incomeBar('Tahsilat gerçekleşme',model.cashIn,model.revenue,incomeStatusClass(receiptRatio,'ratio'))}
+      ${incomeBar('Ödeme gerçekleşme',model.cashOut,Math.max(model.expenseTotal,1),incomeStatusClass(paymentRatio,'ratio'))}
+      <div class="income-pipeline">
+        ${incomePipelineStep('Satış',model.sales.length,model.sales.length?'ok':'wait')}
+        ${incomePipelineStep('Gider',model.expenses.length,model.expenses.length?'ok':'wait')}
+        ${incomePipelineStep('Banka',model.bankRows.length+model.approvedBankRows.length,(model.bankRows.length+model.approvedBankRows.length)?'ok':'wait')}
+        ${incomePipelineStep('Onay',model.approvedBankRows.length,model.approvedBankRows.length?'ok':'wait')}
+      </div>
+    </div>
+    <div class="income-component-panel">
+      <div class="income-op-title">App Components</div>
+      <div class="income-controls">
+        <button class="income-btn ${activeBtn('today')}" onclick="setIncomeMode('today')">Bugün</button>
+        <button class="income-btn ${activeBtn('yesterday')}" onclick="setIncomeMode('yesterday')">Dün</button>
+        <button class="income-btn ${activeBtn('week')}" onclick="setIncomeMode('week')">Bu Hafta</button>
+        <button class="income-btn ${activeBtn('month')}" onclick="setIncomeMode('month')">Bu Ay</button>
+        <button class="income-btn ${activeBtn('last_month')}" onclick="setIncomeMode('last_month')">Geçen Ay</button>
+        <button class="income-btn ${activeBtn('year')}" onclick="setIncomeMode('year')">Bu Yıl</button>
+        <button class="income-btn ${activeBtn('last_year')}" onclick="setIncomeMode('last_year')">Geçen Yıl</button>
+      </div>
+      <div class="income-component-list">
+        <div><span>Data source</span><b>${dataHealth}/3</b></div>
+        <div><span>Drilldown</span><b>Kategori → Ürün → Kayıt</b></div>
+        <div><span>Approval</span><b>Mail/Banka → Onay Merkezi</b></div>
+      </div>
     </div>
   </div>
   <div class="report-grid" style="margin-bottom:12px">
