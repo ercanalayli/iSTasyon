@@ -14,6 +14,7 @@ const checks = [
   ['gmail and drive secrets used', ['GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','GOOGLE_REFRESH_TOKEN','GDRIVE_EKSTRE_FOLDER_ID'].every(k => workflow.includes(k))],
   ['pending ingest live path', workflow.includes('Live ingest to pending_bank_movements') && worker.includes('ingest_mail_bank_movements')],
   ['bank balance parser fields', html.includes('balance_after') && html.includes('bakiye') && html.includes('latestBankBalances')],
+  ['wide bank balance query', html.includes('bankBalanceRows') && html.includes(".not('balance_after','is',null)") && html.includes(".not('bakiye','is',null)")],
   ['home current bank money card', html.includes('Güncel Banka Parası') && html.includes('Banka Bakiye Kaynağı')],
   ['approved/onay flow preserved', html.includes('pending_bank_movements') && html.includes('approve_pending_bank_movement')],
   ['bank money styling', html.includes('.finance-home-kpi.bank-money')]

@@ -2040,7 +2040,7 @@ function latestBankBalances(rows){
 async function loadFinanceHome(){
   const el=document.getElementById('homeFinanceCalendar');if(!el)return;
   el.innerHTML='<div class="finance-empty">Finans takvimi kontrol ediliyor...</div>';
-  let summary=null, calendarRows=[], inboxRows=[], mailRows=[], bankRows=[], queueRows=[], setupIssues=[];
+  let summary=null, calendarRows=[], inboxRows=[], mailRows=[], bankRows=[], bankBalanceRows=[], queueRows=[], setupIssues=[];
   try{
     const {data,error}=await db.from('finance_calendar_summary_view').select('*').eq('company','ALAYLI').limit(1);
     if(error)setupIssues.push('takvim özet görünümü yok'); else summary=data?.[0]||null;
@@ -2058,9 +2058,21 @@ async function loadFinanceHome(){
     if(error)setupIssues.push('mail ekstre kuyruğu yok'); else mailRows=data||[];
   }catch(e){setupIssues.push('mail ekstre kuyruğu yok');}
   try{
+    const {data,error}=await db.from('pending_bank_movements').select('*').eq('company_id',PILOT_FIRMA).not('balance_after','is',null).order('transaction_date',{ascending:false}).limit(500);
+    if(!error)bankBalanceRows.push(...(data||[]));
+  }catch(e){}
+  try{
     const {data,error}=await db.from('bank_transactions').select('*').eq('firma_id',PILOT_FIRMA).order('id',{ascending:false}).limit(8);
     if(error)setupIssues.push('Telegram banka kuyruğu yok'); else bankRows=data||[];
   }catch(e){setupIssues.push('Telegram banka kuyruğu yok');}
+  try{
+    const {data,error}=await db.from('bank_transactions').select('*').eq('firma_id',PILOT_FIRMA).not('bakiye','is',null).order('tarih',{ascending:false}).limit(200);
+    if(!error)bankBalanceRows.push(...(data||[]));
+  }catch(e){}
+  try{
+    const {data,error}=await db.from('banka_raw').select('*').eq('firma_id',PILOT_FIRMA).not('bakiye','is',null).order('tarih',{ascending:false}).limit(200);
+    if(!error)bankBalanceRows.push(...(data||[]));
+  }catch(e){}
   try{
     const {data,error}=await db.from('bizimhesap_posting_queue').select('*').order('created_at',{ascending:false}).limit(5);
     if(error)setupIssues.push('BizimHesap posting kuyruğu yok'); else queueRows=data||[];
@@ -2075,7 +2087,7 @@ async function loadFinanceHome(){
   const mailPending=mailRows.filter(r=>String(r.status||'pending')==='pending').length;
   const bankWaiting=bankRows.filter(r=>['bekliyor','onay_bekliyor','pending'].includes(String(r.onay_durumu||r.status||'').toLocaleLowerCase('tr-TR'))).length;
   const queueOpen=queueRows.filter(r=>!['done','completed','islendi','iptal','cancelled'].includes(String(r.status||r.durum||'').toLocaleLowerCase('tr-TR'))).length;
-  const bankBalance=latestBankBalances([...mailRows,...bankRows]);
+  const bankBalance=latestBankBalances([...bankBalanceRows,...mailRows,...bankRows]);
   const balanceSourceCount=bankBalance.items.length;
   const balanceLatest=bankBalance.latest?bankBalance.latest.substring(0,16):'ekstre bekleniyor';
   el.innerHTML=`<div class="finance-home-grid">
