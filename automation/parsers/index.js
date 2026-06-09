@@ -108,7 +108,7 @@ function statementId(meta) {
 }
 
 function duplicate(bank, tx) {
-  return [key(bank), tx.statement_id, tx.transaction_date, tx.value_date || '', (tx.amount_in || 0).toFixed(2), (tx.amount_out || 0).toFixed(2), tx.balance_after == null ? '' : Number(tx.balance_after || 0).toFixed(2), key(tx.description)].join('|');
+  return [key(bank), tx.transaction_date, tx.transaction_time || '', tx.value_date || '', (tx.amount_in || 0).toFixed(2), (tx.amount_out || 0).toFixed(2), tx.balance_after == null ? '' : Number(tx.balance_after || 0).toFixed(2), key(tx.description)].join('|');
 }
 
 function qualityGate(rows) {

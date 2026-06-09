@@ -5,6 +5,9 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const workflow = fs.readFileSync(path.join(root, '.github/workflows/mail-ekstre-pipeline.yml'), 'utf8');
 const worker = fs.readFileSync(path.join(root, 'automation/mail-ekstre-worker-lite.js'), 'utf8');
+const parser = fs.readFileSync(path.join(root, 'automation/parsers/index.js'), 'utf8');
+const isbankParser = fs.readFileSync(path.join(root, 'automation/parsers/isbank-parser.js'), 'utf8');
+const sql = fs.readFileSync(path.join(root, 'automation/sql/005_ingest_mail_bank_movements.sql'), 'utf8');
 const cfg = JSON.parse(fs.readFileSync(path.join(root, 'automation/mail-ekstre-config.json'), 'utf8'));
 
 const checks = [
@@ -15,9 +18,14 @@ const checks = [
   ['pending ingest live path', workflow.includes('Live ingest to pending_bank_movements') && worker.includes('ingest_mail_bank_movements')],
   ['bank balance parser fields', html.includes('balance_after') && html.includes('bakiye') && html.includes('latestBankBalances')],
   ['wide bank balance query', html.includes('bankBalanceRows') && html.includes(".not('balance_after','is',null)") && html.includes(".not('bakiye','is',null)")],
-  ['home current bank money card', html.includes('Güncel Banka Parası') && html.includes('Banka Bakiye Kaynağı')],
+  ['home current bank money card', html.includes('bank-money') && html.includes('bankBalance.items')],
+  ['banks most visible home card', html.includes('bankCommandCard') && html.includes('Banka Komuta Merkezi') && html.indexOf('bankCommandCard') < html.indexOf('incomeStatementCard')],
+  ['movement ids visible', html.includes('function shortId') && html.includes('son hareket ID') && html.includes('<th>ID</th>')],
+  ['statement independent duplicate key', !/tx\.statement_id,\s*tx\.transaction_date/.test(parser) && !/tx\.statement_id,\s*tx\.transaction_date/.test(isbankParser)],
+  ['worker prefilters historical duplicates', worker.includes('filterAlreadyStoredRows') && worker.includes('rowSignature') && worker.includes('skipped_existing')],
+  ['rpc duplicate signature guard', sql.includes('duplicate_key = v_key') && sql.includes("coalesce(bank_name,'')") && sql.includes("coalesce(description,'')")],
   ['approved/onay flow preserved', html.includes('pending_bank_movements') && html.includes('approve_pending_bank_movement')],
-  ['bank money styling', html.includes('.finance-home-kpi.bank-money')]
+  ['bank money styling', html.includes('.finance-home-kpi.bank-money') && html.includes('.bank-command-card')]
 ];
 
 console.log('AperiON Mail Bank Balance v63 Verify');
@@ -32,4 +40,4 @@ if (!ok) {
   console.error('RESULT: FAIL - Mail ekstre / guncel banka parasi hatti eksik.');
   process.exit(1);
 }
-console.log('RESULT: OK - Sabah/aksam mail ekstre kontrolu ve guncel banka parasi ekrani bagli.');
+console.log('RESULT: OK - Bankalar en ustte, ID/dedupe/onay ve guncel bakiye hatti bagli.');

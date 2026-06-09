@@ -88,7 +88,19 @@ begin
       continue;
     end if;
 
-    if exists (select 1 from pending_bank_movements where duplicate_key = v_key) then
+    if exists (
+      select 1 from pending_bank_movements
+      where duplicate_key = v_key
+         or (
+          coalesce(bank_name,'') = coalesce(v_item->>'bank_name','')
+          and transaction_date = nullif(v_item->>'transaction_date', '')::date
+          and coalesce(transaction_time,'') = coalesce(v_item->>'transaction_time','')
+          and coalesce(amount_in,0) = coalesce(nullif(v_item->>'amount_in', '')::numeric, 0)
+          and coalesce(amount_out,0) = coalesce(nullif(v_item->>'amount_out', '')::numeric, 0)
+          and coalesce(balance_after,0) = coalesce(nullif(v_item->>'balance_after', '')::numeric, 0)
+          and coalesce(description,'') = coalesce(v_item->>'description','')
+        )
+    ) then
       v_duplicate := v_duplicate + 1;
       continue;
     end if;

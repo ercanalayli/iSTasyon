@@ -5,7 +5,7 @@ function isoDate(v){const m=String(v||'').match(/(\d{2})[\.\/](\d{2})[\.\/](\d{4
 function key(v){return trUpper(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,160)}
 function typeOf(desc,amount){const u=trUpper(desc);if(u.includes('POS')||u.includes('ÜYE İŞYERİ')||u.includes('UYE ISYERI'))return 'pos';if(u.includes('FAST')||u.includes('EFT')||u.includes('HAVALE'))return amount>=0?'tahsilat':'odeme';if(u.includes('SGK'))return 'sgk';if(u.includes('VERGİ')||u.includes('VERGI'))return 'vergi';if(u.includes('KART'))return 'kredi_karti';if(u.includes('MASRAF')||u.includes('ÜCRET')||u.includes('UCRET'))return 'banka_masrafi';return amount>=0?'tahsilat':'odeme'}
 function statementId(meta){const s=`${meta.mail_subject||''} ${meta.attachment_name||''}`;const m=s.match(/(20\d{6})[_-]?(\d{6,})/);return m?`${m[1]}_${m[2]}`:key(s).slice(0,80)}
-function duplicate(tx){return ['ISBANK',tx.statement_id,tx.transaction_date,tx.transaction_time||'',(tx.amount_in||0).toFixed(2),(tx.amount_out||0).toFixed(2),(tx.balance_after||0).toFixed(2),key(tx.description)].join('|')}
+function duplicate(tx){return ['ISBANK',tx.transaction_date,tx.transaction_time||'',(tx.amount_in||0).toFixed(2),(tx.amount_out||0).toFixed(2),(tx.balance_after||0).toFixed(2),key(tx.description)].join('|')}
 export function parseIsbank(text,meta={}){
   const src=clean(text);const lines=src.split('\n').map(clean).filter(Boolean);const sid=statementId(meta);const rows=[];
   const re=/^(\d{2}[\.\/]\d{2}[\.\/]\d{4})(?:\s+(\d{2}:\d{2}:\d{2}))?\s+(.+)$/;

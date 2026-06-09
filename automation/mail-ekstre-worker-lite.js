@@ -161,6 +161,64 @@ function buildParserProbe(text){
   );
 }
 
+function rowSignature(row){
+  const norm = value => String(value || '')
+    .toLocaleUpperCase('tr-TR')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 180);
+  const money = value => Number(value || 0).toFixed(2);
+  return [
+    norm(row.bank_name || row.bank || row.source || 'BANKA'),
+    String(row.transaction_date || '').substring(0, 10),
+    String(row.transaction_time || ''),
+    money(row.amount_in),
+    money(row.amount_out),
+    row.balance_after == null ? '' : money(row.balance_after),
+    norm(row.description)
+  ].join('|');
+}
+
+async function filterAlreadyStoredRows(db, rows, report){
+  if(!rows.length || !db) return rows;
+  const dates = rows.map(r => String(r.transaction_date || '').substring(0, 10)).filter(Boolean).sort();
+  const from = dates[0], to = dates[dates.length - 1];
+  if(!from || !to) return rows;
+  const { data, error } = await db
+    .from('pending_bank_movements')
+    .select('id,duplicate_key,bank_name,transaction_date,transaction_time,description,amount_in,amount_out,balance_after,status')
+    .eq('company_id', cfg.company_id || 'alayli')
+    .gte('transaction_date', from)
+    .lte('transaction_date', to)
+    .limit(20000);
+  if(error){
+    report.errors.push({ area: 'prefilter_existing', error: error.message });
+    return rows;
+  }
+  const keys = new Set((data || []).map(r => r.duplicate_key).filter(Boolean));
+  const signatures = new Map((data || []).map(r => [rowSignature(r), r.id]));
+  const fresh = [];
+  const skipped = [];
+  for(const row of rows){
+    const sig = rowSignature(row);
+    if(keys.has(row.duplicate_key) || signatures.has(sig)){
+      skipped.push({ duplicate_key: row.duplicate_key, existing_id: signatures.get(sig) || null, bank_name: row.bank_name, transaction_date: row.transaction_date, amount_in: row.amount_in, amount_out: row.amount_out });
+    }else{
+      fresh.push(row);
+    }
+  }
+  report.prefilter = {
+    checked_existing: (data || []).length,
+    input: rows.length,
+    skipped_existing: skipped.length,
+    fresh: fresh.length,
+    sample: skipped.slice(0, 10)
+  };
+  return fresh;
+}
+
 async function main(){
   const report = {
     run_at: new Date().toISOString(),
@@ -193,7 +251,10 @@ async function main(){
     if(!db){
       report.errors.push({ area: 'supabase', error: 'SUPABASE_URL veya SUPABASE_SERVICE_ROLE_KEY eksik' });
     }else{
-      const res = await db.rpc('ingest_mail_bank_movements', { p_rows: parsed });
+      const freshRows = await filterAlreadyStoredRows(db, parsed, report);
+      const res = freshRows.length
+        ? await db.rpc('ingest_mail_bank_movements', { p_rows: freshRows })
+        : { data: { input: parsed.length, inserted: 0, duplicate: report.prefilter?.skipped_existing || 0, failed: 0, prefiltered: true }, error: null };
       if(res.error) report.errors.push({ area: 'ingest_rpc', error: res.error.message });
       report.ingest = res.data || null;
     }
