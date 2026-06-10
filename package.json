@@ -71,6 +71,7 @@
     "sync:bizimhesap": "node aperion_veri_senkron.js --firma alayli",
     "sync:bizimhesap:plan": "node aperion_veri_senkron.js --firma alayli --plan",
     "sync:bizimhesap:dry": "node aperion_veri_senkron.js --firma alayli --dry-run",
+    "expense:cards:build": "node tools/build_expense_cards_from_masraf_v59.cjs",
     "test": "node finance_smoke_test.cjs && node scripts/verify_finance_manifest.cjs && npm run telegram:finance-v48:test && npm run telegram:risk-v49:test && npm run telegram:morning-digest-v50:test && npm run telegram:critical-risk-v51:test"
   },
   "dependencies": {
