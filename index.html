@@ -1369,7 +1369,8 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
         </div>
         <div class="card" style="margin-bottom:14px"><div class="card-hd"><div class="card-l">Banka → BizimHesap Akış Haritası</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">Mail/Telegram → AperiON onayı → BizimHesap banka/kasa kaydı → işlendi</span></div><div id="bankaOnaySummary"></div></div>
         <div class="card"><div class="card-hd"><div class="card-l">BizimHesap'a İşlenecek Banka Hareketleri</div><span id="bankaOnayStamp" style="font-family:var(--mono);font-size:9px;color:var(--t3)">—</span></div>
-          <table class="pt"><thead><tr><th>ID</th><th>Tarih / Saat</th><th>Banka</th><th>Açıklama</th><th>Borç</th><th>Alacak</th><th>Bakiye</th><th>AperiON Durumu</th><th>BizimHesap Kaydı</th><th>İşlem</th></tr></thead><tbody id="bankaOnayRows"></tbody></table>
+          <div id="bankaActionNotice" class="empty" style="display:none;margin-bottom:10px"></div>
+          <table class="pt"><thead><tr><th>ID</th><th>Tarih / Saat</th><th>Banka</th><th>Açıklama</th><th>Borç</th><th>Alacak</th><th>Bakiye</th><th>AperiON Analizi</th><th>BizimHesap Kayıt Planı</th><th>BizimHesap Kaydı</th><th>İşlem</th></tr></thead><tbody id="bankaOnayRows"></tbody></table>
         </div>
       </div>
       <div id="fplan" style="display:none">
@@ -3724,6 +3725,84 @@ function bankNameOf(r){return r.bank_name||r.kaynak_banka||r.banka||r.source_nam
 function bankCredit(r){const n=Number(r.amount_in||0);if(n>0)return n;const t=Number(r.tutar||0);return t>0?t:0;}
 function bankDebit(r){const n=Number(r.amount_out||0);if(n>0)return n;const t=Number(r.tutar||0);return t<0?Math.abs(t):0;}
 function bankBalanceDisplay(r){const b=bankBalanceValue(r);return b===null?'-':dynMoney(b);}
+function bankTextForAnalysis(r){
+  return [r.description,r.aciklama,r.raw_text,r.mail_subject,r.attachment_name,r.detected_type,r.suggested_counterparty,r.aday_cari]
+    .filter(Boolean).join(' ').toLocaleUpperCase('tr-TR');
+}
+function bankCounterpartyGuess(r){
+  const explicit=(r.suggested_counterparty||r.aday_cari||'').toString().trim();
+  if(explicit&&explicit!=='-'&&!/^(AKBANK|GARANTI|YAPI|VAKIF|IS BANK|İŞ BANK|BANKA|MAIL EKSTRE)$/i.test(explicit))return explicit;
+  const text=(r.description||r.aciklama||'').toString();
+  const patterns=[
+    /(?:GELEN EFT|GIDEN EFT|GİDEN EFT|FAST|HAVALE|EFT)\s*[-:]?\s*([A-ZÇĞİÖŞÜ0-9 .&'-]{5,80})/i,
+    /(?:ALICI|GONDEREN|GÖNDEREN|MUSTERI|MÜŞTERİ)\s*[:\-]\s*([A-ZÇĞİÖŞÜ0-9 .&'-]{5,80})/i,
+    /(ALAYLI MED[İI]KAL[^*\/,;]*)/i
+  ];
+  for(const p of patterns){
+    const m=text.match(p);
+    if(m&&m[1])return m[1].replace(/\s+/g,' ').trim().slice(0,80);
+  }
+  if(/POS|NET SATI[ŞS]|KREDI KART|KREDİ KART/.test(bankTextForAnalysis(r)))return 'POS / Kredi kartı tahsilatı';
+  if(/KOMISYON|KOMİSYON|BSMV|ÜCRET|UCRET|MASRAF/.test(bankTextForAnalysis(r)))return bankNameOf(r);
+  return 'Cari eşleştirme onayda';
+}
+function bankPostingPlan(r){
+  const debit=bankDebit(r), credit=bankCredit(r), text=bankTextForAnalysis(r);
+  const detected=String(r.detected_type||r.aday_islem_tipi||'').toLocaleLowerCase('tr-TR');
+  const bank=bankNameOf(r);
+  let cari=bankCounterpartyGuess(r);
+  let type=credit>0?'Tahsilat':'Ödeme';
+  let target='BizimHesap Banka';
+  let account=`${bank} banka hesabı`;
+  let category=credit>0?'Cari tahsilat':'Cari ödeme';
+  let confidence=Number(r.confidence_score||r.guven||0);
+  const reasons=[];
+  if(credit>0){reasons.push('alacak/giriş');confidence=Math.max(confidence,72);}
+  if(debit>0){reasons.push('borç/çıkış');confidence=Math.max(confidence,70);}
+  if(/POS|NET SATI[ŞS]|KREDI KART|KREDİ KART|BATCH YATAN/.test(text)){
+    type='POS tahsilatı';category='Satış tahsilatı';cari='POS / Kart müşterileri';confidence=Math.max(confidence,88);reasons.push('POS açıklaması');
+  }
+  if(/KOMISYON|KOMİSYON|BSMV|ÜCRET|UCRET|MASRAF|KATKI PAYI/.test(text)){
+    type='Banka masrafı';category='Banka masrafı';target='BizimHesap gider/banka masraf kaydı';confidence=Math.max(confidence,90);reasons.push('komisyon/masraf');
+  }
+  if(/KREDI KART BOR[ÇC]|KREDİ KART BOR[ÇC]|KART BOR[ÇC]/.test(text)){
+    type='Kredi kartı ödemesi';category='Kredi kartı borç ödemesi';target='BizimHesap banka/kredi kartı virmanı';confidence=Math.max(confidence,86);reasons.push('kart borcu');
+  }
+  if(/VIRMAN|VİRMAN|HESAPLAR ARASI/.test(text)){
+    type='Banka virmanı';category='Banka hesapları arası transfer';target='BizimHesap banka virmanı';cari='Banka içi virman';confidence=Math.max(confidence,84);reasons.push('virman');
+  }
+  if(/SGK|VERGI|VERGİ|KDV|STOPAJ/.test(text)){
+    type='Vergi/SGK ödemesi';category='Vergi/SGK';target='BizimHesap gider/ödeme kaydı';confidence=Math.max(confidence,84);reasons.push('vergi/sgk');
+  }
+  if(/ELEKTRIK|ELEKTRİK|ULUDA[GĞ]|SU |DOGALGAZ|DOĞALGAZ|TELEKOM|TURKCELL|VODAFONE|TURKNET/.test(text)){
+    type='Fatura ödemesi';category='Sabit gider faturası';target='BizimHesap gider/ödeme kaydı';confidence=Math.max(confidence,82);reasons.push('fatura anahtar kelimesi');
+  }
+  if(detected.includes('pos'))reasons.push(detected);
+  if(!reasons.length)reasons.push('açıklama/tutar yönü');
+  return {type,target,account,cari,category,confidence:Math.min(99,Math.round(confidence||65)),reasons:[...new Set(reasons)].slice(0,3)};
+}
+function bankPlanHtml(r){
+  const p=bankPostingPlan(r);
+  const c=p.confidence>=85?'var(--green)':p.confidence>=70?'var(--orange)':'var(--red)';
+  return `<div style="min-width:260px">
+    <div style="font-weight:950;color:var(--text)">${escHtml(p.type)}</div>
+    <div style="font-size:10px;color:var(--t2);line-height:1.45;margin-top:3px">Cari: <b>${escHtml(p.cari)}</b><br>Hesap: ${escHtml(p.account)}<br>Kategori: ${escHtml(p.category)}</div>
+    <div style="margin-top:5px"><span style="font-family:var(--mono);font-size:9px;font-weight:900;color:${c};border:1px solid ${c}55;background:${c}14;border-radius:999px;padding:3px 7px">güven ${fmt(p.confidence)}%</span></div>
+  </div>`;
+}
+function bankAnalysisHtml(r){
+  const p=bankPostingPlan(r);
+  return `<div style="min-width:230px">
+    <div style="font-weight:950">${escHtml(p.target)}</div>
+    <div style="font-size:10px;color:var(--t2);line-height:1.45;margin-top:3px">${escHtml(p.reasons.join(' · '))}<br>${escHtml(r._destination||'-')}</div>
+  </div>`;
+}
+function bankNotice(kind,title,msg){
+  const el=document.getElementById('bankaActionNotice');if(!el)return;
+  const color=kind==='ok'?'var(--green)':kind==='warn'?'var(--orange)':'var(--red)';
+  el.style.display='block';
+  el.innerHTML=`<div class="empty-t" style="color:${color}">${escHtml(title)}</div><div class="empty-d">${escHtml(msg)}</div>`;
+}
 function bankQueueStatusTR(q,r=null){
   const s=String(q?.status||'');
   if(!s){
@@ -3759,19 +3838,24 @@ function bankaBadge(r){
   const c=d==='islenecek'?'var(--green)':d==='islenmeyecek'?'var(--t3)':d==='islendi'?'var(--accent)':'var(--orange)';
   return `<span style="font-family:var(--mono);font-size:9px;font-weight:900;color:${c};border:1px solid ${c}44;background:${c}14;border-radius:999px;padding:4px 7px">${escHtml(d)}</span>`;
 }
-async function bankaKarar(id,durum,source='banka_raw'){
+async function bankaKarar(id,durum,source='banka_raw',btn=null){
   let error=null;
+  if(btn){btn.disabled=true;btn.textContent=durum==='islenecek'?'İşleniyor...':'Reddediliyor...';}
+  bankNotice('warn','İşlem başladı','AperiON onayı kaydediliyor, BizimHesap kuyruğu kontrol ediliyor.');
+  let queueId=null;
   if(source==='pending_bank_movements'){
     const rpc=durum==='islenecek'?'approve_pending_bank_movement':'reject_pending_bank_movement';
     const res=await db.rpc(rpc,{p_id:id,p_note:'AperiON Onay Merkezi'});
     error=res.error;
+    queueId=res.data;
   }else{
     const patch={durum,updated_at:new Date().toISOString()};
     const res=await db.from('banka_raw').update(patch).eq('id',id);
     error=res.error;
   }
-  if(error){alert('Kaydedilemedi: '+error.message);return;}
-  rBankaOnay();
+  if(error){bankNotice('err','Kaydedilemedi',error.message||String(error));if(btn){btn.disabled=false;btn.textContent=durum==='islenecek'?"BizimHesap'a Kaydet":'Ret';}return;}
+  bankNotice('ok',durum==='islenecek'?'BizimHesap kuyruğuna alındı':'Kayıt reddedildi',queueId?`Kuyruk ID: ${queueId}`:'Durum kaydedildi.');
+  await rBankaOnay();
 }
 async function rBankaOnay(){
   const result=await bankaRawData();
@@ -3807,11 +3891,12 @@ async function rBankaOnay(){
       <td style="font-family:var(--mono);font-weight:900;color:var(--red)">${debit?dynMoney(debit):'-'}</td>
       <td style="font-family:var(--mono);font-weight:900;color:var(--green)">${credit?dynMoney(credit):'-'}</td>
       <td style="font-family:var(--mono);font-weight:900;color:var(--text)">${bankBalanceDisplay(r)}</td>
-      <td>${escHtml(r._destination||'-')}<div style="font-size:9px;color:var(--t3);margin-top:4px">${escHtml(r.aday_islem_tipi||r.aday_kategori||'')} · onay sonrası BizimHesap</div></td>
+      <td>${bankAnalysisHtml(r)}</td>
+      <td>${bankPlanHtml(r)}</td>
       <td><span style="font-family:var(--mono);font-size:9px;font-weight:900;color:${bhColor};border:1px solid ${bhColor}44;background:${bhColor}14;border-radius:999px;padding:4px 7px">${escHtml(bh)}</span></td>
-      <td>${onayBtn?`<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg})">BizimHesap'a Kaydet</button> <button class="empty-btn" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg})">Ret</button>`:'-'}</td>
+      <td>${onayBtn?`<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)">BizimHesap'a Kaydet</button> <button class="empty-btn" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg},this)">Ret</button>`:'-'}</td>
     </tr>`;
-  }).join(''):'<tr><td colspan="10" style="padding:18px;color:var(--t3)">Banka hareketi yok</td></tr>';
+  }).join(''):'<tr><td colspan="11" style="padding:18px;color:var(--t3)">Banka hareketi yok</td></tr>';
 }
 function planTypeTR(v){return {contract:'Sözleşmeli',standard:'Standart',fixed:'Sabit',forecast:'Öngörülen',variable:'Değişken'}[v]||v||'-';}
 function planScopeTR(v){return v==='personal'?'Kişisel':'İşletme';}

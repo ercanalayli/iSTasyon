@@ -1,6 +1,7 @@
 create or replace function approve_pending_bank_movement(p_id uuid, p_note text default null)
 returns uuid
 language plpgsql
+security definer
 as $$
 declare
   v_row pending_bank_movements%rowtype;
@@ -55,6 +56,36 @@ begin
       'amount_out', v_row.amount_out,
       'detected_type', v_row.detected_type,
       'suggested_counterparty', v_row.suggested_counterparty,
+      'suggested_bizimhesap_action',
+        case
+          when upper(coalesce(v_row.description,'')) like '%KOMISYON%'
+            or upper(coalesce(v_row.description,'')) like '%KOMİSYON%'
+            or upper(coalesce(v_row.description,'')) like '%BSMV%'
+            or upper(coalesce(v_row.description,'')) like '%ÜCRET%'
+            or upper(coalesce(v_row.description,'')) like '%UCRET%'
+            or upper(coalesce(v_row.description,'')) like '%MASRAF%'
+          then 'bank_fee_expense'
+          when upper(coalesce(v_row.description,'')) like '%VIRMAN%'
+            or upper(coalesce(v_row.description,'')) like '%VİRMAN%'
+          then 'bank_transfer'
+          when upper(coalesce(v_row.description,'')) like '%KREDI KART BORC%'
+            or upper(coalesce(v_row.description,'')) like '%KREDİ KART BORÇ%'
+          then 'credit_card_payment'
+          when coalesce(v_row.amount_in,0) > 0
+          then 'customer_collection'
+          else 'supplier_or_expense_payment'
+        end,
+      'target_account', coalesce(v_row.bank_name,'Banka') || ' banka hesabı',
+      'target_counterparty', nullif(v_row.suggested_counterparty,''),
+      'suggested_category',
+        case
+          when coalesce(v_row.amount_in,0) > 0 then 'Tahsilat'
+          when upper(coalesce(v_row.description,'')) like '%KOMISYON%'
+            or upper(coalesce(v_row.description,'')) like '%KOMİSYON%'
+            or upper(coalesce(v_row.description,'')) like '%BSMV%'
+          then 'Banka masrafı'
+          else 'Ödeme'
+        end,
       'source', v_row.source,
       'mail_subject', v_row.mail_subject,
       'attachment_name', v_row.attachment_name,
@@ -66,3 +97,6 @@ begin
   return v_queue_id;
 end;
 $$;
+
+grant execute on function approve_pending_bank_movement(uuid, text) to anon, authenticated, service_role;
+notify pgrst, 'reload schema';
