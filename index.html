@@ -662,15 +662,36 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   .report-proof{grid-template-columns:1fr}
 }
 
+.command-hero{position:relative;overflow:hidden;border:1px solid rgba(15,23,42,.08);border-radius:20px;background:#FFFFFF;box-shadow:0 22px 60px rgba(15,23,42,.09);padding:18px;margin-bottom:14px}
+.command-hero::before{content:'';position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,#0F766E,#2563EB,#F59E0B)}
+.command-hero-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
+.command-eyebrow{font-family:var(--mono);font-size:10px;font-weight:950;letter-spacing:.12em;text-transform:uppercase;color:#2563EB}
+.command-title{font-size:26px;font-weight:950;color:#0F172A;letter-spacing:-.02em;margin-top:5px}
+.command-sub{font-size:12px;font-weight:750;color:#64748B;margin-top:6px;max-width:760px;line-height:1.45}
+.command-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.command-actions button{height:34px;border:1px solid #CBD5E1;background:#F8FAFC;color:#0F172A;border-radius:999px;padding:0 12px;font-size:11px;font-weight:900;cursor:pointer}
+.command-actions button.primary{background:#0F172A;border-color:#0F172A;color:#FFFFFF}
+.command-actions button:hover{border-color:#2563EB;color:#2563EB}
+.command-grid{display:grid;grid-template-columns:1.1fr repeat(4,minmax(0,.72fr));gap:10px}
+.command-decision,.command-metric{border:1px solid #E2E8F0;background:#FFFFFF;border-radius:16px;padding:14px;min-height:120px}
+.command-decision{background:#F8FAFC}
+.command-decision.state-good{background:#ECFDF5;border-color:#A7F3D0}
+.command-decision.state-warn{background:#FFFBEB;border-color:#FDE68A}
+.command-decision.state-bad{background:#FEF2F2;border-color:#FECACA}
+.command-k{font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.08em;color:#64748B}
+.command-v{font-family:var(--mono);font-size:23px;font-weight:950;color:#0F172A;margin-top:8px;line-height:1.05}
+.command-n{font-size:11px;font-weight:760;color:#64748B;line-height:1.4;margin-top:7px}
+.command-metric.good .command-v{color:#047857}.command-metric.bad .command-v{color:#DC2626}.command-metric.warn .command-v{color:#B45309}
+.command-pipe{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.command-chip{display:inline-flex;border:1px solid #CBD5E1;background:#FFFFFF;border-radius:999px;padding:4px 7px;font-family:var(--mono);font-size:9px;font-weight:950;color:#334155}
+.command-chip.good{background:#ECFDF5;color:#047857;border-color:#A7F3D0}.command-chip.warn{background:#FFFBEB;color:#B45309;border-color:#FDE68A}.command-chip.bad{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}
+
 /* Home command surface v61: Retool/Geckoboard inspired operational dashboard */
 #pg-dashboard{
   margin:-10px;
   padding:10px;
   border-radius:22px;
-  background:
-    radial-gradient(circle at 84% 0%,rgba(16,185,129,.18),transparent 30%),
-    radial-gradient(circle at 12% 8%,rgba(245,158,11,.14),transparent 34%),
-    linear-gradient(145deg,#101113 0%,#181712 44%,#F4F6F1 44%,#F4F6F1 100%);
+  background:linear-gradient(180deg,#F8FAFC 0%,#EEF2F7 100%);
 }
 #pg-dashboard #kartsDiv{display:grid !important;grid-template-columns:minmax(0,1fr);gap:14px}
 #pg-dashboard #kartsDiv>*{
@@ -678,9 +699,10 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   width:100% !important;
   min-width:0 !important;
 }
-#pg-dashboard #kartsDiv>.bank-command-card{order:1 !important}
-#pg-dashboard #kartsDiv>.income-card{order:2 !important}
-#pg-dashboard #kartsDiv>.report-hub{order:3 !important}
+#pg-dashboard #kartsDiv>.command-hero{order:1 !important}
+#pg-dashboard #kartsDiv>.bank-command-card{order:2 !important}
+#pg-dashboard #kartsDiv>.income-card{order:3 !important}
+#pg-dashboard #kartsDiv>.report-hub{order:7 !important}
 #pg-dashboard #kartsDiv>.finance-home-card{order:4 !important}
 #pg-dashboard #kartsDiv>#fGrid{order:99 !important}
 #pg-dashboard #kartsDiv>.card{order:10}
@@ -988,6 +1010,8 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   background:#F7F8F4 !important;
 }
 @media(max-width:1320px){
+  .command-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .command-decision{grid-column:1/-1}
   #pg-dashboard .income-card{background:#F4F6F1}
   #pg-dashboard .income-head{grid-template-columns:minmax(0,1fr) minmax(300px,.78fr);min-height:0}
   #pg-dashboard .income-cockpit-main{grid-column:1;min-height:0}
@@ -997,6 +1021,9 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 }
 @media(max-width:980px){
   #pg-dashboard{margin:-6px;padding:6px;border-radius:16px}
+  .command-hero-head{display:block}.command-actions{justify-content:flex-start;margin-top:12px}
+  .command-grid{grid-template-columns:1fr}
+  .command-title{font-size:21px}
   #pg-dashboard .income-card{padding:14px;border-radius:16px}
   #pg-dashboard .income-head{grid-template-columns:1fr;gap:10px}
   #pg-dashboard .income-cockpit-main{padding:0;min-height:0}
@@ -1097,6 +1124,9 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   <div class="content">
     <div id="pg-dashboard" class="page on">
       <div id="kartsDiv">
+        <div class="command-hero" id="executiveCommandCard">
+          <div id="executiveBrief"><div class="finance-empty">Üst akıl özeti hazırlanıyor...</div></div>
+        </div>
         <div class="bank-command-card" id="bankCommandCard">
           <div id="bankCommandCenter"><div class="finance-empty">Banka komuta merkezi hazırlanıyor...</div></div>
         </div>
@@ -1735,14 +1765,14 @@ async function selF(id){
   showDetay();
   await refresh();
 }
-function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';loadBankCommandCenter();renderReportHub();renderIncomeStatementTop();loadFinanceHome();renderMainFinanceFlow();renderHomeSales();renderKarts();loadLastDataStatus();renderSourceMatrix();renderHomeExpenses();}
+function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';renderExecutiveBrief();renderIncomeStatementTop();loadBankCommandCenter();renderReportHub();loadFinanceHome();renderMainFinanceFlow();renderHomeSales();renderKarts();loadLastDataStatus();renderSourceMatrix();renderHomeExpenses();}
 function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(PILOT_FIRMA);document.getElementById('gB')?.remove();}
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'Üst Akıl Paneli',s:'Bugün, risk, banka, onay ve karar öncelikleri'},satis:{t:'Satış ve Tahsilat',s:'Kategori, ürün, müşteri ve tahsilat akışı'},cariler:{t:'Cari Risk',s:'Bakiye, tahsilat ve risk skoru'},finans:{t:'Finans Operasyonu',s:'Banka, gelir tablosu, gider kartları ve nakit kontrolü'},stok:{t:'Ürün Karlılığı',s:'Stok, fiyat ve marj takibi'},hedef:{t:'Hedef ve Bütçe',s:'Plan, hedef ve sapma kontrolü'},gorevler:{t:'Onay ve İş Akışı',s:'Bekleyen kararlar ve BizimHesap işleme kuyruğu'},veri:{t:'Veri Sağlığı',s:'Kaynak, çekim ve doğrulama'},bildirim:{t:'Bildirim Merkezi',s:'Telegram, mail ve rapor ayarları'}};
 function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();loadSyncHealth();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();}
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';const fp=document.getElementById('fplan');if(fp)fp.style.display=t==='plan'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();if(t==='plan')loadFinancePlans();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]).filter(isAlayliRow);}catch(e){return[];}}
-async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);await loadSyncHealth();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();loadBankCommandCenter();renderReportHub();renderIncomeStatementTop();loadFinanceHome();renderMainFinanceFlow();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=buildLabel();const bc=document.getElementById('buildCode');if(bc)bc.textContent=buildLabel();genAI();}
+async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);await loadSyncHealth();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderExecutiveBrief();renderIncomeStatementTop();loadBankCommandCenter();renderReportHub();loadFinanceHome();renderMainFinanceFlow();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=buildLabel();const bc=document.getElementById('buildCode');if(bc)bc.textContent=buildLabel();genAI();}
 function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
 function pSels(){
   const fids=[...new Set(RAW.map(r=>r.firma_id).filter(Boolean))];
@@ -2036,14 +2066,17 @@ function financeMiniRows(rows,emptyText,amountFn=financeAmount){
 }
 function statusPill(text,cls=''){return `<span class="finance-home-status ${cls}">${escHtml(text)}</span>`;}
 function bankBalanceValue(row){
+  if(!row)return null;
   const val=mPick(row,['balance_after','bakiye','balance','yeni_bakiye','account_balance'],null);
   const n=parseDynMoney(val);
   return Number.isFinite(n)&&val!==null&&val!==undefined&&String(val)!==''?n:null;
 }
 function bankBalanceName(row){
+  if(!row)return 'Banka';
   return (row.bank_name||row.kaynak_banka||row.banka||row.bank||row.source_name||row.source||row._source_label||'Banka').toString().trim()||'Banka';
 }
 function bankBalanceDate(row){
+  if(!row)return '';
   return (row.transaction_date||row.tarih||row.mail_date||row.created_at||row.updated_at||'').toString();
 }
 function latestBankBalances(rows){
@@ -2073,6 +2106,58 @@ function mailEkstreScheduleText(){
   }else next='yarın 08:00';
   return `Mail ekstre kontrolü: 10:00 ve 17:00 sabit, 08:00-20:45 arası 15 dakikada bir. Sıradaki: ${next}`;
 }
+async function fetchPendingBankMovements(maxRows=5000){
+  const rows=[];
+  for(let from=0;from<maxRows;from+=1000){
+    const {data,error}=await db.from('pending_bank_movements').select('*').eq('company_id',PILOT_FIRMA).order('created_at',{ascending:false}).range(from,from+999);
+    if(error)throw error;
+    rows.push(...(data||[]));
+    if(!data||data.length<1000)break;
+  }
+  return rows;
+}
+async function renderExecutiveBrief(){
+  const el=document.getElementById('executiveBrief');if(!el)return;
+  el.innerHTML='<div class="finance-empty">Üst akıl özeti hesaplanıyor...</div>';
+  let model=null, pendingRows=[], queueRows=[], issues=[];
+  try{model=await buildIncomeModel(INCOME_MODE);}catch(e){issues.push('gelir tablosu modeli okunamadı');}
+  try{
+    pendingRows=await fetchPendingBankMovements(5000);
+  }catch(e){issues.push('mail ekstre hareketleri okunamadı');}
+  try{
+    const {data,error}=await db.from('bizimhesap_queue').select('*').order('created_at',{ascending:false}).limit(500);
+    if(error)throw error;queueRows=data||[];
+  }catch(e){issues.push('BizimHesap kuyruğu okunamadı');}
+  const accrualNet=model?model.revenue-model.expenseTotal:0;
+  const cashNet=model?model.cashIn-model.cashOut:0;
+  const plannedNet=model?model.plannedNet:0;
+  const cashGap=model?Math.max(model.revenue-model.cashIn,0):0;
+  const pending=pendingRows.filter(r=>['pending','needs_review',''].includes(String(r.status||'pending'))).length;
+  const approved=pendingRows.filter(r=>String(r.status||'')==='approved').length;
+  const ready=queueRows.filter(r=>String(r.status||'')==='ready_for_bizimhesap').length;
+  const processed=queueRows.filter(r=>String(r.status||'')==='processed').length;
+  const latest=pendingRows.map(r=>r.created_at||r.transaction_date||'').filter(Boolean).sort().at(-1)||'';
+  const stateClass=(!model||issues.length)?'state-warn':(cashNet<0||accrualNet<0?'state-bad':(pending||cashGap?'state-warn':'state-good'));
+  const stateText=!model?'Kurulum kontrolü':cashNet<0?'Nakit negatif':accrualNet<0?'Tahakkuk zararı':pending?'Onay bekliyor':cashGap?'Tahsilat takibi':'Kontrol altında';
+  const stateNote=pending?`${fmt(pending)} banka hareketi Onay Merkezi'nde. Onay yoksa BizimHesap kaydı yok.`:cashGap?`Tahakkuk var, ${dynMoney(cashGap)} tahsilat bekliyor.`:'Kritik akışlar aynı ekranda izleniyor.';
+  const metricCls=v=>v<0?'bad':'good';
+  el.innerHTML=`<div class="command-hero-head">
+    <div><div class="command-eyebrow">AperiON Üst Akıl</div><div class="command-title">Komuta Merkezi</div><div class="command-sub">Planlanan, tahakkuk eden ve gerçekleşen nakit aynı anda okunur. Banka hareketi onaysız kesin kayda dönüşmez.</div></div>
+    <div class="command-actions">
+      <button class="primary" onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Banka Onay</button>
+      <button onclick="gP('finans',null)">Gelir Tablosu</button>
+      <button onclick="gP('gorevler',null)">Onay Akışı</button>
+    </div>
+  </div>
+  <div class="command-grid">
+    <div class="command-decision ${stateClass}"><div class="command-k">Bugünkü karar</div><div class="command-v">${escHtml(stateText)}</div><div class="command-n">${escHtml(stateNote)}</div><div class="command-pipe"><span class="command-chip ${pending?'warn':'good'}">${fmt(pending)} onay</span><span class="command-chip ${ready?'warn':'good'}">${fmt(ready)} kuyruk</span><span class="command-chip ${processed?'good':''}">${fmt(processed)} işlendi</span></div></div>
+    <div class="command-metric ${metricCls(plannedNet)}"><div class="command-k">Planlanan Net</div><div class="command-v">${model?dynMoney(plannedNet):'kurulum'}</div><div class="command-n">sözleşmeli + sabit + öngörülen</div></div>
+    <div class="command-metric ${metricCls(accrualNet)}"><div class="command-k">Tahakkuk Net</div><div class="command-v">${model?dynMoney(accrualNet):'kurulum'}</div><div class="command-n">fatura/satış ve oluşan gider</div></div>
+    <div class="command-metric ${metricCls(cashNet)}"><div class="command-k">Gerçekleşen Net</div><div class="command-v">${model?dynMoney(cashNet):'kurulum'}</div><div class="command-n">tahsil edilen - ödenen</div></div>
+    <div class="command-metric ${pending?'warn':'good'}"><div class="command-k">Banka Akışı</div><div class="command-v">${fmt(pendingRows.length)}</div><div class="command-n">${latest?`son içeri alma ${escHtml(latest.substring(0,16).replace('T',' '))}`:'ekstre bekleniyor'} · ${fmt(approved)} onaylı</div></div>
+  </div>
+  ${issues.length?`<div class="finance-empty" style="margin-top:10px">Eksik kaynak: ${escHtml([...new Set(issues)].join(' · '))}</div>`:''}`;
+}
 async function loadBankCommandCenter(){
   const el=document.getElementById('bankCommandCenter');if(!el)return;
   const primaryCards=BANK_COMMAND_PRIMARY.map(name=>`<div class="bank-command-bank"><div class="bank-command-k">${escHtml(name)}</div><div class="bank-command-v">bakiye bekleniyor</div><div class="bank-command-n">0 yeni/onay bekleyen · ana banka</div><span class="bank-command-id">ekstre bekleniyor</span></div>`).join('');
@@ -2086,8 +2171,7 @@ async function loadBankCommandCenter(){
   </div>`;
   let pending=[], processed=[], bankRaw=[], errors=[];
   try{
-    const {data,error}=await db.from('pending_bank_movements').select('*').eq('company_id',PILOT_FIRMA).order('transaction_date',{ascending:false}).limit(2000);
-    if(error)errors.push(error.message); else pending=data||[];
+    pending=await fetchPendingBankMovements(5000);
   }catch(e){errors.push(e.message||String(e));}
   try{
     const {data,error}=await db.from('bank_transactions').select('*').eq('firma_id',PILOT_FIRMA).order('tarih',{ascending:false}).limit(500);
@@ -2170,9 +2254,9 @@ async function loadFinanceHome(){
     if(!error)bankBalanceRows.push(...(data||[]));
   }catch(e){}
   try{
-    const {data,error}=await db.from('bizimhesap_posting_queue').select('*').order('created_at',{ascending:false}).limit(5);
-    if(error)setupIssues.push('BizimHesap posting kuyruğu yok'); else queueRows=data||[];
-  }catch(e){setupIssues.push('BizimHesap posting kuyruğu yok');}
+    const {data,error}=await db.from('bizimhesap_queue').select('*').order('created_at',{ascending:false}).limit(8);
+    if(error)setupIssues.push('BizimHesap kuyruğu yok'); else queueRows=data||[];
+  }catch(e){setupIssues.push('BizimHesap kuyruğu yok');}
   const todayIn=financeNum(summary?.today_receivable||summary?.bugun_tahsilat||summary?.tahsilat_bugun);
   const todayOut=financeNum(summary?.today_payable||summary?.bugun_odeme||summary?.odeme_bugun);
   const overdueIn=financeNum(summary?.overdue_receivable||summary?.geciken_tahsilat||0);
@@ -2182,7 +2266,7 @@ async function loadFinanceHome(){
   const approvals=financeNum(summary?.waiting_approvals||summary?.onay_bekleyen||0);
   const mailPending=mailRows.filter(r=>String(r.status||'pending')==='pending').length;
   const bankWaiting=bankRows.filter(r=>['bekliyor','onay_bekliyor','pending'].includes(String(r.onay_durumu||r.status||'').toLocaleLowerCase('tr-TR'))).length;
-  const queueOpen=queueRows.filter(r=>!['done','completed','islendi','iptal','cancelled'].includes(String(r.status||r.durum||'').toLocaleLowerCase('tr-TR'))).length;
+  const queueOpen=queueRows.filter(r=>!['done','completed','processed','islendi','iptal','cancelled'].includes(String(r.status||r.durum||'').toLocaleLowerCase('tr-TR'))).length;
   const bankBalance=latestBankBalances([...bankBalanceRows,...mailRows,...bankRows]);
   const balanceSourceCount=bankBalance.items.length;
   const balanceLatest=bankBalance.latest?bankBalance.latest.substring(0,16):'ekstre bekleniyor';
@@ -2295,10 +2379,22 @@ function incomePeriod(mode=INCOME_MODE){
   const pr=pRange(), base=periodFor(mode,pr);
   return {...base, mode, caption:`${base.label} · ${base.from}${base.from!==base.to?' / '+base.to:''}`};
 }
+async function salesRowsRange(from,to,cf=PILOT_FIRMA,maxRows=30000){
+  const all=[];
+  for(let start=0;start<maxRows;start+=1000){
+    let q=db.from('sales_raw').select('*').gte('tarih',from).lte('tarih',to).order('id').range(start,start+999);
+    if(cf)q=q.eq('firma_id',cf);
+    const {data,error}=await q;
+    if(error)break;
+    all.push(...(data||[]));
+    if(!data||data.length<1000)break;
+  }
+  return applyProductRules(all.filter(isAlayliRow));
+}
 async function productCostMap(){
   const map=new Map();
   try{
-    for(let from=0;;from+=1000){
+    for(let from=0;from<6000;from+=1000){
       const {data,error}=await db.from('product_raw').select('urun,barkod,urun_kod,alis_fiyat,satis_fiyat,kategori,updated_at').eq('firma_id',PILOT_FIRMA).range(from,from+999);
       if(error)break;
       (data||[]).forEach(r=>{
@@ -2390,7 +2486,7 @@ function incomeExpenseAccrualBuckets(expenses){
   return out;
 }
 async function buildIncomeModel(mode=INCOME_MODE){
-  const p=incomePeriod(mode), allSales=await salesWide(PILOT_FIRMA), sales=allSales.filter(r=>flowInRange(r,p.from,p.to));
+  const p=incomePeriod(mode), sales=await salesRowsRange(p.from,p.to,PILOT_FIRMA);
   const expNow=await masrafData(new Date(p.to).getFullYear(),PILOT_FIRMA);
   const expPrev=p.from.substring(0,4)!==p.to.substring(0,4)?await masrafData(new Date(p.from).getFullYear(),PILOT_FIRMA):[];
   const expenses=[...expNow,...expPrev].filter(r=>flowInRange(r,p.from,p.to));
