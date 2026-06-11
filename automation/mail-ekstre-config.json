@@ -2,6 +2,13 @@
   "company_id": "alayli",
   "mailbox": "alaylimedikal@gmail.com",
   "lookback_days": 7,
+  "primary_banks": [
+    "akbank",
+    "garanti",
+    "isbank",
+    "vakifbank",
+    "yapikredi"
+  ],
   "schedule": {
     "daytime": "every_15_minutes_between_08_20",
     "night": "hourly_between_20_08",
@@ -9,34 +16,34 @@
   },
   "banks": [
     {
-      "bank": "isbank",
-      "label": "İş Bankası",
-      "query": "Turkiye Is Bankasi OR Is Bankasi OR Hesap Hareket OR Hesap Ekstre"
-    },
-    {
-      "bank": "yapikredi",
-      "label": "Yapı Kredi",
-      "query": "Yapi Kredi OR YAPIKREDI OR from:ekstre@ekstre.yapikredi.com.tr"
-    },
-    {
       "bank": "akbank",
       "label": "Akbank",
       "query": "Akbank OR Axess OR from:bilgi.akbank.com"
     },
     {
+      "bank": "garanti",
+      "label": "Garanti BBVA",
+      "query": "Garanti OR GarantiBBVA OR \"Hesap Hareket Dokumu\" OR \"Hesap Hareketleri\""
+    },
+    {
+      "bank": "isbank",
+      "label": "Is Bankasi",
+      "query": "Turkiye Is Bankasi OR Is Bankasi OR IsCep OR \"Hesap Hareket\" OR \"Hesap Ekstre\""
+    },
+    {
       "bank": "vakifbank",
-      "label": "Vakıfbank",
-      "query": "Vakifbank OR Vakif Bank OR E-Ekstre"
+      "label": "VakifBank",
+      "query": "Vakifbank OR Vakif Bank OR VakifBank OR E-Ekstre"
+    },
+    {
+      "bank": "yapikredi",
+      "label": "Yapi Kredi",
+      "query": "Yapi Kredi OR YAPIKREDI OR \"Hesap Hareketleri\" OR from:ekstre@ekstre.yapikredi.com.tr"
     },
     {
       "bank": "halkbank",
       "label": "Halkbank",
       "query": "Halkbank OR Halk Bankasi OR Hesap Ekstresi"
-    },
-    {
-      "bank": "garanti",
-      "label": "Garanti BBVA",
-      "query": "Garanti OR Hesap Hareket Dokumu"
     },
     {
       "bank": "ziraat",
@@ -66,7 +73,7 @@
     {
       "bank": "generic",
       "label": "Genel ekstre",
-      "query": "\"Hesap Hareketleri\" OR \"Hesap Ozeti\" OR \"Hesap Özeti\" OR \"Banka Ekstresi\" OR \"Ekstre\""
+      "query": "\"Hesap Hareketleri\" OR \"Hesap Ozeti\" OR \"Banka Ekstresi\" OR \"Ekstre\""
     }
   ],
   "rules": {

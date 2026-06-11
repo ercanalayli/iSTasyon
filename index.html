@@ -2059,10 +2059,19 @@ function latestBankBalances(rows){
   const items=[...map.values()].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   return {items,total:items.reduce((s,x)=>s+x.balance,0),latest:items[0]?.date||''};
 }
+const BANK_COMMAND_PRIMARY=['Akbank','Garanti BBVA','Is Bankasi','VakifBank','Yapi Kredi'];
 function shortId(id){return String(id||'').replace(/-/g,'').slice(0,10)||'-';}
 async function loadBankCommandCenter(){
   const el=document.getElementById('bankCommandCenter');if(!el)return;
-  el.innerHTML='<div class="finance-empty">Banka komuta merkezi kontrol ediliyor...</div>';
+  const primaryCards=BANK_COMMAND_PRIMARY.map(name=>`<div class="bank-command-bank"><div class="bank-command-k">${escHtml(name)}</div><div class="bank-command-v">bakiye bekleniyor</div><div class="bank-command-n">0 yeni/onay bekleyen · ana banka</div><span class="bank-command-id">ekstre bekleniyor</span></div>`).join('');
+  el.innerHTML=`<div class="bank-command-head">
+    <div><div class="bank-command-title">Banka Komuta Merkezi</div><div class="bank-command-sub">Akbank · Garanti BBVA · Is Bankasi · VakifBank · Yapi Kredi</div></div>
+    <div class="bank-command-actions"><button onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Onay Merkezi</button><button onclick="loadBankCommandCenter()">Yenile</button></div>
+  </div>
+  <div class="bank-command-grid">
+    <div class="bank-command-total"><div class="bank-command-k">Toplam Güncel Banka Parası</div><div class="bank-command-v">bakiye bekleniyor</div><div class="bank-command-n">Mail/Drive/Telegram ekstresi geldikçe güncellenir.</div><span class="bank-command-id">hareket ID bekleniyor</span></div>
+    ${primaryCards}
+  </div>`;
   let pending=[], processed=[], bankRaw=[], errors=[];
   try{
     const {data,error}=await db.from('pending_bank_movements').select('*').eq('company_id',PILOT_FIRMA).order('transaction_date',{ascending:false}).limit(2000);
@@ -2083,6 +2092,7 @@ async function loadBankCommandCenter(){
   const allRows=[...pending,...processed,...bankRaw];
   const lastRow=[...allRows].sort((a,b)=>String(bankBalanceDate(b)).localeCompare(String(bankBalanceDate(a))))[0];
   const byBank=new Map();
+  BANK_COMMAND_PRIMARY.forEach(name=>byBank.set(name,{name,rows:[],pending:0,approved:0,last:null,balance:null,primary:true}));
   allRows.forEach(r=>{
     const name=bankBalanceName(r), x=byBank.get(name)||{name,rows:[],pending:0,approved:0,last:null,balance:null};
     x.rows.push(r);
@@ -2094,12 +2104,12 @@ async function loadBankCommandCenter(){
     if(b!==null&&(!x.balance||String(d).localeCompare(String(x.balance.date))>=0))x.balance={value:b,date:d,id:r.id};
     byBank.set(name,x);
   });
-  const banks=[...byBank.values()].sort((a,b)=>(b.pending-a.pending)||String(bankBalanceDate(b.last)).localeCompare(String(bankBalanceDate(a.last))));
-  const bankCards=banks.slice(0,6).map(b=>`<div class="bank-command-bank">
+  const banks=[...byBank.values()].sort((a,b)=>(Number(b.primary||0)-Number(a.primary||0))||(b.pending-a.pending)||String(bankBalanceDate(b.last)).localeCompare(String(bankBalanceDate(a.last))));
+  const bankCards=banks.slice(0,8).map(b=>`<div class="bank-command-bank">
     <div class="bank-command-k">${escHtml(b.name)}</div>
     <div class="bank-command-v">${b.balance?financeTL(b.balance.value):'bakiye yok'}</div>
-    <div class="bank-command-n">${fmt(b.pending)} yeni/onay bekleyen · ${fmt(b.rows.length)} kayıt</div>
-    <span class="bank-command-id">son ID ${escHtml(shortId(b.last?.id||b.balance?.id))}</span>
+    <div class="bank-command-n">${fmt(b.pending)} yeni/onay bekleyen · ${fmt(b.rows.length)} kayıt${b.primary?' · ana banka':''}</div>
+    <span class="bank-command-id">${b.last||b.balance?`son ID ${escHtml(shortId(b.last?.id||b.balance?.id))}`:'ekstre bekleniyor'}</span>
   </div>`).join('');
   el.innerHTML=`<div class="bank-command-head">
     <div><div class="bank-command-title">Banka Komuta Merkezi</div><div class="bank-command-sub">Mail/Drive/Telegram ekstreleri · kayıtlı hareketler duplicate_key + hareket imzası ile süzülür · yeni kayıtlar Onay Merkezi'ne düşer</div></div>

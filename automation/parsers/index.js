@@ -4,11 +4,11 @@ export function detectBank(text, meta = {}) {
   const source = `${meta.bank_hint || ''} ${meta.mail_subject || ''} ${meta.attachment_name || ''} ${text || ''}`;
   const sourceKey = key(source);
   if (sourceKey.includes('IS_BANKASI') || sourceKey.includes('TURKIYE_IS_BANKASI') || sourceKey.includes('TURKIYE_IS')) return 'isbank';
-  if (sourceKey.includes('YAPI_KREDI') || sourceKey.includes('YAPIKREDI') || sourceKey.includes('HESAP_HAREKETLERI') || sourceKey.includes('HESAP_OZETI')) return 'yapikredi';
   if (sourceKey.includes('AKBANK') || sourceKey.includes('AXESS')) return 'akbank';
-  if (sourceKey.includes('VAKIFBANK')) return 'vakifbank';
+  if (sourceKey.includes('VAKIFBANK') || sourceKey.includes('VAKIF_BANK')) return 'vakifbank';
   if (sourceKey.includes('HALKBANK') || sourceKey.includes('HALK_BANKASI')) return 'halkbank';
-  if (sourceKey.includes('GARANTI')) return 'garanti';
+  if (sourceKey.includes('GARANTI') || sourceKey.includes('GARANTI_BBVA')) return 'garanti';
+  if (sourceKey.includes('YAPI_KREDI') || sourceKey.includes('YAPIKREDI') || sourceKey.includes('HESAP_HAREKETLERI') || sourceKey.includes('HESAP_OZETI')) return 'yapikredi';
   if (sourceKey.includes('ZIRAAT') || sourceKey.includes('BANKKART')) return 'ziraat';
   if (sourceKey.includes('QNB') || sourceKey.includes('FINANSBANK') || sourceKey.includes('ENPARA')) return 'qnb';
   if (sourceKey.includes('KUVEYT')) return 'kuveytturk';
@@ -90,7 +90,7 @@ function bankLabel(meta, bank) {
   const s = key(`${meta.bank_hint || ''} ${meta.bank_name || ''} ${meta.mail_subject || ''} ${meta.attachment_name || ''}`);
   if (bank === 'yapikredi' || s.includes('YAPI')) return 'Yapi Kredi';
   if (bank === 'akbank' || s.includes('AKBANK') || s.includes('AXESS')) return 'Akbank';
-  if (bank === 'vakifbank' || s.includes('VAKIF')) return 'Vakifbank';
+  if (bank === 'vakifbank' || s.includes('VAKIF')) return 'VakifBank';
   if (bank === 'halkbank' || s.includes('HALK')) return 'Halkbank';
   if (bank === 'garanti' || s.includes('GARANTI')) return 'Garanti BBVA';
   if (bank === 'ziraat' || s.includes('ZIRAAT') || s.includes('BANKKART')) return 'Ziraat';
