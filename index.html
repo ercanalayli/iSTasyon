@@ -1333,13 +1333,13 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
         </div>
         <div class="kpi-row">
           <div class="kpi c"><div class="kpi-l">Toplam Hareket</div><div class="kpi-v" id="bTop">—</div></div>
-          <div class="kpi g"><div class="kpi-l">Tahsilat Adayı</div><div class="kpi-v" id="bTah">—</div></div>
-          <div class="kpi r"><div class="kpi-l">Gider Adayı</div><div class="kpi-v" id="bGid">—</div></div>
+          <div class="kpi g"><div class="kpi-l">Son Güncelleme</div><div class="kpi-v" id="bLastUpdate" style="font-size:16px">—</div></div>
           <div class="kpi o"><div class="kpi-l">Onay Bekleyen</div><div class="kpi-v" id="bOnay">—</div></div>
+          <div class="kpi r"><div class="kpi-l">BizimHesap Kuyruğu</div><div class="kpi-v" id="bQueue">—</div></div>
         </div>
-        <div class="card" style="margin-bottom:14px"><div class="card-hd"><div class="card-l">Banka Onay Merkezi</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">Onay yoksa BizimHesap işlemi yok</span></div><div id="bankaOnaySummary"></div></div>
-        <div class="card"><div class="card-hd"><div class="card-l">Banka Hareketleri</div><span id="bankaOnayStamp" style="font-family:var(--mono);font-size:9px;color:var(--t3)">—</span></div>
-          <table class="pt"><thead><tr><th>ID</th><th>Tarih</th><th>Yön</th><th>Tutar</th><th>Öneri</th><th>Cari</th><th>Açıklama</th><th>Güven</th><th>Durum</th><th>İşlem</th></tr></thead><tbody id="bankaOnayRows"></tbody></table>
+        <div class="card" style="margin-bottom:14px"><div class="card-hd"><div class="card-l">Banka Akış Haritası</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">Mail/Telegram → Onay Merkezi → BizimHesap kuyruğu → işlendi</span></div><div id="bankaOnaySummary"></div></div>
+        <div class="card"><div class="card-hd"><div class="card-l">Banka Hesap Hareketleri</div><span id="bankaOnayStamp" style="font-family:var(--mono);font-size:9px;color:var(--t3)">—</span></div>
+          <table class="pt"><thead><tr><th>ID</th><th>Tarih / Saat</th><th>Banka</th><th>Açıklama</th><th>Borç</th><th>Alacak</th><th>Bakiye</th><th>Kayıt Nereye Gitti?</th><th>BizimHesap</th><th>İşlem</th></tr></thead><tbody id="bankaOnayRows"></tbody></table>
         </div>
       </div>
       <div id="fplan" style="display:none">
@@ -3573,13 +3573,22 @@ async function bankaRawData(){
   const statusMap={onay_bekliyor:'pending',islenecek:'approved',islenmeyecek:'rejected',islendi:'processed'};
   const rows=[];
   const errors=[];
+  let queueRows=[];
+  try{
+    let q=db.from('bizimhesap_queue').select('*').order('created_at',{ascending:false}).limit(1000);
+    if(fi)q=q.eq('company_id',fi);
+    const {data,error}=await q;
+    if(error)throw error;
+    queueRows=data||[];
+  }catch(e){errors.push(e.message||String(e));}
+  const queueByPending=new Map(queueRows.map(q=>[String(q.pending_bank_movement_id||''),q]));
   try{
     let q=db.from('banka_raw').select('*').order('tarih',{ascending:false}).limit(500);
     if(fi)q=q.eq('firma_id',fi);
     if(durum)q=q.eq('durum',durum);
     const {data,error}=await q;
     if(error)throw error;
-    rows.push(...(data||[]).map(r=>({...r,_source:'banka_raw',_source_label:'Telegram/Gorsel'})));
+    rows.push(...(data||[]).map(r=>({...r,_source:'banka_raw',_source_label:'Telegram/Gorsel',_destination:bankDestination({...r,_source:'banka_raw'}),_queue:null})));
   }catch(e){errors.push(e.message||String(e));}
   try{
     let q=db.from('pending_bank_movements').select('*').order('created_at',{ascending:false}).limit(500);
@@ -3590,11 +3599,14 @@ async function bankaRawData(){
     rows.push(...(data||[]).map(r=>{
       const amountIn=Number(r.amount_in||0), amountOut=Number(r.amount_out||0), incoming=amountIn>0;
       const status=r.status||'pending';
+      const queue=queueByPending.get(String(r.id));
       return {
         ...r,
+        _queue:queue||null,
         _source:'pending_bank_movements',
         _source_label:'Mail Ekstre',
         tarih:r.transaction_date||r.mail_date||r.created_at,
+        saat:r.transaction_time||'',
         yon:incoming?'giriş':'çıkış',
         tutar:incoming?amountIn:-amountOut,
         aday_islem_tipi:r.detected_type||(incoming?'cari_tahsilat':'banka_gider'),
@@ -3602,12 +3614,36 @@ async function bankaRawData(){
         aday_cari:r.suggested_counterparty||r.bank_name||'-',
         aciklama:r.description||r.mail_subject||r.attachment_name||'',
         guven:Math.round(Number(r.confidence_score||0)),
-        durum:status==='pending'?'onay_bekliyor':status==='approved'?'islenecek':status==='rejected'?'islenmeyecek':status
+        durum:status==='pending'?'onay_bekliyor':status==='approved'?'islenecek':status==='rejected'?'islenmeyecek':status,
+        _destination:bankDestination({...r,_source:'pending_bank_movements'},queue)
       };
     }));
   }catch(e){errors.push(e.message||String(e));}
   rows.sort((a,b)=>String(b.created_at||b.tarih||'').localeCompare(String(a.created_at||a.tarih||'')));
-  return {rows,error:errors.length?errors.join(' · '):null};
+  return {rows,queueRows,error:errors.length?errors.join(' · '):null};
+}
+function bankRowTime(r){return (r.transaction_time||r.saat||'').toString().substring(0,8);}
+function bankRowUpdatedAt(r){return (r.updated_at||r.approved_at||r.created_at||r.mail_date||r.tarih||r.transaction_date||'').toString();}
+function bankNameOf(r){return r.bank_name||r.kaynak_banka||r.banka||r.source_name||r._source_label||'Banka';}
+function bankCredit(r){const n=Number(r.amount_in||0);if(n>0)return n;const t=Number(r.tutar||0);return t>0?t:0;}
+function bankDebit(r){const n=Number(r.amount_out||0);if(n>0)return n;const t=Number(r.tutar||0);return t<0?Math.abs(t):0;}
+function bankBalanceDisplay(r){const b=bankBalanceValue(r);return b===null?'-':dynMoney(b);}
+function bankQueueStatusTR(q){const s=String(q?.status||'');if(!s)return 'kuyruk yok';if(s==='ready_for_bizimhesap')return 'BizimHesap kuyruğunda';if(s==='processed')return 'BizimHesap işlendi';if(s==='failed')return 'BizimHesap hata';return s;}
+function bankQueueTone(label){if(label.includes('işlendi'))return '#059669';if(label.includes('kuyruğunda'))return '#2563eb';if(label.includes('hata'))return '#dc2626';return '#64748b';}
+function bankDestination(r,q=null){
+  if(r._source==='banka_raw'){
+    const d=r.durum||'onay_bekliyor';
+    if(d==='islendi')return 'İşlendi';
+    if(d==='islenecek')return 'İşlenecek listesi';
+    if(d==='islenmeyecek')return 'Reddedildi';
+    return 'Telegram/Görsel Onay Merkezi';
+  }
+  const s=String(r.status||'pending');
+  if(s==='pending'||s==='needs_review')return 'Mail Ekstre Onay Merkezi';
+  if(s==='rejected')return 'Reddedildi';
+  if(s==='approved')return q?bankQueueStatusTR(q):'Onaylandı, kuyruk kontrol';
+  if(s==='processed')return 'İşlendi';
+  return s||'-';
 }
 function bankaBadge(r){
   const d=r.durum||'onay_bekliyor';
@@ -3631,26 +3667,42 @@ async function bankaKarar(id,durum,source='banka_raw'){
 async function rBankaOnay(){
   const result=await bankaRawData();
   const rows=result.rows||[];
+  const queueRows=result.queueRows||[];
   const el=document.getElementById('bankaOnayRows');
   if(!el)return;
-  const tah=rows.filter(r=>r.aday_islem_tipi==='cari_tahsilat').length;
-  const gid=rows.filter(r=>r.aday_islem_tipi==='banka_gider').length;
   const onay=rows.filter(r=>r.durum==='onay_bekliyor').length;
+  const queueReady=queueRows.filter(q=>String(q.status||'')==='ready_for_bizimhesap').length;
+  const queueProcessed=queueRows.filter(q=>String(q.status||'')==='processed').length;
+  const latest=rows.map(bankRowUpdatedAt).filter(Boolean).sort().at(-1)||'';
   document.getElementById('bTop').textContent=fmt(rows.length);
-  document.getElementById('bTah').textContent=fmt(tah);
-  document.getElementById('bGid').textContent=fmt(gid);
+  document.getElementById('bLastUpdate').textContent=latest?latest.substring(0,16).replace('T',' '):'bekleniyor';
   document.getElementById('bOnay').textContent=fmt(onay);
+  document.getElementById('bQueue').textContent=`${fmt(queueReady)} / ${fmt(queueProcessed)}`;
   const groups={};
-  rows.forEach(r=>{const k=r.durum||'onay_bekliyor';groups[k]=(groups[k]||0)+1;});
+  rows.forEach(r=>{const k=r._destination||r.durum||'onay_bekliyor';groups[k]=(groups[k]||0)+1;});
   document.getElementById('bankaOnaySummary').innerHTML=result.error?`<div class="empty"><div class="empty-t">Bazı banka kaynakları okunamadı</div><div class="empty-d">${escHtml(result.error)}</div></div>`:Object.entries(groups).length?miniBars(groups,Math.max(...Object.values(groups),1),'var(--accent)'):'<div class="empty"><div class="empty-t">Banka onay verisi yok</div><div class="empty-d">Mail, Drive veya Telegram hareketi gelince burada gorunecek.</div></div>';
-  document.getElementById('bankaOnayStamp').textContent=buildLabel();
+  document.getElementById('bankaOnayStamp').textContent=`Son güncelleme: ${latest?latest.substring(0,19).replace('T',' '):'bekleniyor'} · BizimHesap kuyruğu: ${fmt(queueReady)} hazır / ${fmt(queueProcessed)} işlendi`;
   el.innerHTML=rows.length?rows.slice(0,120).map(r=>{
-    const tut=Number(r.tutar||0), onayBtn=r.durum==='onay_bekliyor'||r.durum==='islenecek';
+    const onayBtn=r.durum==='onay_bekliyor';
     const source=escHtml(r._source_label||'Banka');
     const idArg=JSON.stringify(String(r.id));
     const srcArg=JSON.stringify(r._source||'banka_raw');
-    return `<tr><td><span class="bank-command-id">${escHtml(shortId(r.id))}</span></td><td>${escHtml((r.tarih||'').substring(0,10))}<div style="font-family:var(--mono);font-size:9px;color:var(--t3)">${source}</div></td><td>${escHtml(r.yon||'')}</td><td style="font-family:var(--mono);font-weight:900;color:${tut>=0?'var(--green)':'var(--red)'}">${dynMoney(Math.abs(tut))}</td><td>${escHtml(r.aday_islem_tipi||r.aday_kategori||'-')}</td><td>${escHtml(r.aday_cari||'-')}</td><td style="max-width:440px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(r.aciklama||'')}">${escHtml(r.aciklama||'')}</td><td>${fmt(r.guven||0)}/100</td><td>${bankaBadge(r)}</td><td>${onayBtn?`<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg})">Onay</button> <button class="empty-btn" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg})">Ret</button>`:'-'}</td></tr>`;
-  }).join(''):'<tr><td colspan="10" style="padding:18px;color:var(--t3)">Banka onay verisi yok</td></tr>';
+    const debit=bankDebit(r), credit=bankCredit(r);
+    const bh=bankQueueStatusTR(r._queue);
+    const bhColor=bankQueueTone(bh);
+    return `<tr>
+      <td><span class="bank-command-id">${escHtml(shortId(r.id))}</span><div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:4px">${source}</div></td>
+      <td>${escHtml((r.tarih||'').substring(0,10))}<div style="font-family:var(--mono);font-size:9px;color:var(--t3)">${escHtml(bankRowTime(r)||'-')}</div></td>
+      <td>${escHtml(bankNameOf(r))}</td>
+      <td style="max-width:520px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(r.aciklama||'')}">${escHtml(r.aciklama||'')}</td>
+      <td style="font-family:var(--mono);font-weight:900;color:var(--red)">${debit?dynMoney(debit):'-'}</td>
+      <td style="font-family:var(--mono);font-weight:900;color:var(--green)">${credit?dynMoney(credit):'-'}</td>
+      <td style="font-family:var(--mono);font-weight:900;color:var(--text)">${bankBalanceDisplay(r)}</td>
+      <td>${escHtml(r._destination||'-')}<div style="font-size:9px;color:var(--t3);margin-top:4px">${escHtml(r.aday_islem_tipi||r.aday_kategori||'')}</div></td>
+      <td><span style="font-family:var(--mono);font-size:9px;font-weight:900;color:${bhColor};border:1px solid ${bhColor}44;background:${bhColor}14;border-radius:999px;padding:4px 7px">${escHtml(bh)}</span></td>
+      <td>${onayBtn?`<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg})">Onay</button> <button class="empty-btn" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg})">Ret</button>`:'-'}</td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="10" style="padding:18px;color:var(--t3)">Banka hareketi yok</td></tr>';
 }
 function planTypeTR(v){return {contract:'Sözleşmeli',standard:'Standart',fixed:'Sabit',forecast:'Öngörülen',variable:'Değişken'}[v]||v||'-';}
 function planScopeTR(v){return v==='personal'?'Kişisel':'İşletme';}
