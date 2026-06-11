@@ -1,0 +1,106 @@
+name: AperiON BizimHesap Queue Worker
+
+on:
+  schedule:
+    # 10:15 and 17:15 Europe/Istanbul, after mail ekstre checks.
+    - cron: "15 7,14 * * *"
+  workflow_dispatch:
+    inputs:
+      live:
+        description: "BizimHesap formunu ac ve doldur"
+        required: false
+        default: "false"
+      save:
+        description: "Kaydet butonuna bas"
+        required: false
+        default: "false"
+      limit:
+        description: "Islenecek maksimum kuyruk kaydi"
+        required: false
+        default: "1"
+  push:
+    branches: [ main ]
+    paths:
+      - 'bizimhesap_queue_worker.cjs'
+      - 'bizimhesap_common.cjs'
+      - 'automation/sql/002_bizimhesap_queue.sql'
+      - 'automation/sql/003_approve_pending_to_queue.sql'
+      - 'automation/sql/000_mail_ekstre_FULL_INSTALL.sql'
+      - 'package.json'
+      - '.github/workflows/bizimhesap-queue-worker.yml'
+
+jobs:
+  queue-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Syntax check
+        run: node --check bizimhesap_queue_worker.cjs
+
+      - name: Dry-run queue plan
+        if: ${{ github.event_name == 'push' || github.event_name == 'schedule' || inputs.live != 'true' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          COMPANY_ID: alayli
+        run: npm run bizimhesap:queue:dry
+
+      - name: Scheduled live save
+        if: ${{ github.event_name == 'schedule' && vars.BIZIMHESAP_QUEUE_AUTO_SAVE == '1' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          BIZIMHESAP_EMAIL: ${{ secrets.BIZIMHESAP_EMAIL }}
+          BIZIMHESAP_PASSWORD: ${{ secrets.BIZIMHESAP_PASSWORD }}
+          BIZIMHESAP_HEADLESS: "true"
+          BIZIMHESAP_POSTING_LIVE: "1"
+          BIZIMHESAP_POSTING_SAVE: "1"
+          COMPANY_ID: alayli
+        run: node bizimhesap_queue_worker.cjs --firma alayli --limit 10 --commit --save
+
+      - name: Live form fill
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.live == 'true' && inputs.save != 'true' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          BIZIMHESAP_EMAIL: ${{ secrets.BIZIMHESAP_EMAIL }}
+          BIZIMHESAP_PASSWORD: ${{ secrets.BIZIMHESAP_PASSWORD }}
+          BIZIMHESAP_HEADLESS: "true"
+          BIZIMHESAP_POSTING_LIVE: "1"
+          COMPANY_ID: alayli
+        run: node bizimhesap_queue_worker.cjs --firma alayli --limit "${{ inputs.limit }}" --commit
+
+      - name: Live save
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.live == 'true' && inputs.save == 'true' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          BIZIMHESAP_EMAIL: ${{ secrets.BIZIMHESAP_EMAIL }}
+          BIZIMHESAP_PASSWORD: ${{ secrets.BIZIMHESAP_PASSWORD }}
+          BIZIMHESAP_HEADLESS: "true"
+          BIZIMHESAP_POSTING_LIVE: "1"
+          BIZIMHESAP_POSTING_SAVE: "1"
+          COMPANY_ID: alayli
+        run: node bizimhesap_queue_worker.cjs --firma alayli --limit "${{ inputs.limit }}" --commit --save
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bizimhesap-queue-worker
+          path: |
+            data/bizimhesap_queue_dryrun.json
+            bizimhesap_queue_worker.log
+            diagnostics/**
+          if-no-files-found: ignore
