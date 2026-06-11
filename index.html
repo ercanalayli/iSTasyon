@@ -1060,21 +1060,21 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
     const nav=document.querySelector('.sb-nav');
     if(!nav)return;
     nav.innerHTML=`
-      <div class="sb-sec">Komuta</div>
-      <div class="sb-item on" onclick="gP('dashboard',this)"><span class="sb-ico">01</span><span><span class="sb-lbl">Yonetici Masasi</span><span class="sb-sub">ciro, gider, banka, veri guveni</span></span></div>
-      <div class="sb-item" onclick="gP('veri',this)"><span class="sb-ico">02</span><span><span class="sb-lbl">Veri Guveni</span><span class="sb-sub">kaynak, cekim, dogrulama</span></span></div>
-      <div class="sb-sec">Ticaret</div>
-      <div class="sb-item" onclick="gP('satis',this)"><span class="sb-ico">ST</span><span><span class="sb-lbl">Satis Akisi</span><span class="sb-sub">kategori, urun, musteri</span></span></div>
-      <div class="sb-item" onclick="gP('stok',this)"><span class="sb-ico">UR</span><span><span class="sb-lbl">Urun Karliligi</span><span class="sb-sub">stok, fiyat, kar</span></span></div>
-      <div class="sb-item" onclick="gP('cariler',this)"><span class="sb-ico">CR</span><span><span class="sb-lbl">Cari Kartlar</span><span class="sb-sub">musteri, risk, tahsilat</span></span></div>
-      <div class="sb-sec">Para</div>
-      <div class="sb-item" onclick="gP('finans',this)"><span class="sb-ico">FN</span><span><span class="sb-lbl">Finans Merkezi</span><span class="sb-sub">gelir, gider, net sonuc</span></span></div>
-      <div class="sb-item" onclick="gP('finans',this);setTimeout(()=>document.querySelector('.ft-tab[onclick*=masraf]')?.click(),60)"><span class="sb-ico">GD</span><span><span class="sb-lbl">Gider Analizi</span><span class="sb-sub">kategori, oran, trend</span></span></div>
-      <div class="sb-item" onclick="gP('finans',this);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)"><span class="sb-ico">BK</span><span><span class="sb-lbl">Banka Islem</span><span class="sb-sub">ekstre, onay, BizimHesap</span></span></div>
-      <div class="sb-sec">Takip</div>
-      <div class="sb-item" onclick="gP('hedef',this)"><span class="sb-ico">HF</span><span><span class="sb-lbl">Hedef &amp; Butce</span><span class="sb-sub">plan, hedef, sapma</span></span></div>
-      <div class="sb-item" onclick="gP('gorevler',this)"><span class="sb-ico">OK</span><span><span class="sb-lbl">Onay Kuyrugu</span><span class="sb-sub">bekleyen isler</span></span><span id="gorevBadge" class="badge" style="display:none">0</span></div>
-      <div class="sb-item" onclick="gP('bildirim',this)"><span class="sb-ico">BL</span><span><span class="sb-lbl">Bildirimler</span><span class="sb-sub">telefon onay ve rapor</span></span></div>`;
+      <div class="sb-sec">Komuta Merkezi</div>
+      <div class="sb-item on" onclick="gP('dashboard',this)"><span class="sb-ico">AI</span><span><span class="sb-lbl">Üst Akıl Paneli</span><span class="sb-sub">bugün, risk, karar, banka</span></span></div>
+      <div class="sb-item" onclick="gP('gorevler',this)"><span class="sb-ico">ON</span><span><span class="sb-lbl">Onay ve İş Akışı</span><span class="sb-sub">bekleyen kararlar</span></span><span id="gorevBadge" class="badge" style="display:none">0</span></div>
+      <div class="sb-item" onclick="gP('veri',this)"><span class="sb-ico">VG</span><span><span class="sb-lbl">Veri Sağlığı</span><span class="sb-sub">kaynak, çekim, doğrulama</span></span></div>
+      <div class="sb-sec">Finans Operasyonu</div>
+      <div class="sb-item" onclick="gP('finans',this);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)"><span class="sb-ico">BK</span><span><span class="sb-lbl">Banka Canlı</span><span class="sb-sub">ekstre, bakiye, onay</span></span></div>
+      <div class="sb-item" onclick="gP('finans',this)"><span class="sb-ico">GT</span><span><span class="sb-lbl">Gelir Tablosu</span><span class="sb-sub">plan, tahakkuk, nakit</span></span></div>
+      <div class="sb-item" onclick="gP('finans',this);setTimeout(()=>document.querySelector('.ft-tab[onclick*=masraf]')?.click(),60)"><span class="sb-ico">GK</span><span><span class="sb-lbl">Gider Kartları</span><span class="sb-sub">fatura, kategori, trend</span></span></div>
+      <div class="sb-sec">Ticaret Zekası</div>
+      <div class="sb-item" onclick="gP('satis',this)"><span class="sb-ico">SA</span><span><span class="sb-lbl">Satış ve Tahsilat</span><span class="sb-sub">kategori, ürün, müşteri</span></span></div>
+      <div class="sb-item" onclick="gP('stok',this)"><span class="sb-ico">ÜR</span><span><span class="sb-lbl">Ürün Karlılığı</span><span class="sb-sub">stok, fiyat, marj</span></span></div>
+      <div class="sb-item" onclick="gP('cariler',this)"><span class="sb-ico">CR</span><span><span class="sb-lbl">Cari Risk</span><span class="sb-sub">bakiye, tahsilat, skor</span></span></div>
+      <div class="sb-sec">Plan ve İletişim</div>
+      <div class="sb-item" onclick="gP('hedef',this)"><span class="sb-ico">HB</span><span><span class="sb-lbl">Hedef ve Bütçe</span><span class="sb-sub">plan, hedef, sapma</span></span></div>
+      <div class="sb-item" onclick="gP('bildirim',this)"><span class="sb-ico">BL</span><span><span class="sb-lbl">Bildirim Merkezi</span><span class="sb-sub">Telegram, mail, rapor</span></span></div>`;
   })();
   </script>
   <div class="sb-u"><div class="sb-ui"><div class="sb-av">E</div><div style="flex:1;overflow:hidden"><div class="sb-un">Admin</div><div class="sb-ur"> Yönetici</div></div><span class="sb-lo" onclick="logout()">X</span></div></div>
@@ -1738,7 +1738,7 @@ async function selF(id){
 function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';loadBankCommandCenter();renderReportHub();renderIncomeStatementTop();loadFinanceHome();renderMainFinanceFlow();renderHomeSales();renderKarts();loadLastDataStatus();renderSourceMatrix();renderHomeExpenses();}
 function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(PILOT_FIRMA);document.getElementById('gB')?.remove();}
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
-const PT={dashboard:{t:'Ana Sayfa',s:'Yönetici özeti ve veri güveni'},satis:{t:'Satışlar',s:'Kategori, ürün ve müşteri kırılımı'},cariler:{t:'Müşteriler',s:'Cari performans ve risk'},finans:{t:'Finans Özeti',s:'Gider, banka ve tahsilat kontrolü'},stok:{t:'Ürünler',s:'Ürün bazlı kârlılık ve stok takibi'},hedef:{t:'Hedefler',s:'Gerçekleşen ve bütçe kontrolü'},gorevler:{t:'Görevler',s:'Onay ve takip merkezi'},veri:{t:'Veri Kontrol',s:'Kaynak, çekim ve doğrulama'},bildirim:{t:'Bildirim',s:'Telefon onay ve rapor ayarları'}};
+const PT={dashboard:{t:'Üst Akıl Paneli',s:'Bugün, risk, banka, onay ve karar öncelikleri'},satis:{t:'Satış ve Tahsilat',s:'Kategori, ürün, müşteri ve tahsilat akışı'},cariler:{t:'Cari Risk',s:'Bakiye, tahsilat ve risk skoru'},finans:{t:'Finans Operasyonu',s:'Banka, gelir tablosu, gider kartları ve nakit kontrolü'},stok:{t:'Ürün Karlılığı',s:'Stok, fiyat ve marj takibi'},hedef:{t:'Hedef ve Bütçe',s:'Plan, hedef ve sapma kontrolü'},gorevler:{t:'Onay ve İş Akışı',s:'Bekleyen kararlar ve BizimHesap işleme kuyruğu'},veri:{t:'Veri Sağlığı',s:'Kaynak, çekim ve doğrulama'},bildirim:{t:'Bildirim Merkezi',s:'Telegram, mail ve rapor ayarları'}};
 function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();loadSyncHealth();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();}
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';const fp=document.getElementById('fplan');if(fp)fp.style.display=t==='plan'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();if(t==='plan')loadFinancePlans();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]).filter(isAlayliRow);}catch(e){return[];}}
@@ -2061,15 +2061,27 @@ function latestBankBalances(rows){
 }
 const BANK_COMMAND_PRIMARY=['Akbank','Garanti BBVA','Is Bankasi','VakifBank','Yapi Kredi'];
 function shortId(id){return String(id||'').replace(/-/g,'').slice(0,10)||'-';}
+function mailEkstreScheduleText(){
+  const now=new Date();
+  const minutes=now.getHours()*60+now.getMinutes();
+  const start=8*60,end=20*60+45;
+  let next;
+  if(minutes<start)next='08:00';
+  else if(minutes<=end){
+    const nextMin=Math.min(end,Math.ceil((minutes+1)/15)*15);
+    next=`${String(Math.floor(nextMin/60)).padStart(2,'0')}:${String(nextMin%60).padStart(2,'0')}`;
+  }else next='yarın 08:00';
+  return `Mail ekstre kontrolü: 08:05 ve 19:05 sabit, 08:00-20:45 arası 15 dakikada bir. Sıradaki: ${next}`;
+}
 async function loadBankCommandCenter(){
   const el=document.getElementById('bankCommandCenter');if(!el)return;
   const primaryCards=BANK_COMMAND_PRIMARY.map(name=>`<div class="bank-command-bank"><div class="bank-command-k">${escHtml(name)}</div><div class="bank-command-v">bakiye bekleniyor</div><div class="bank-command-n">0 yeni/onay bekleyen · ana banka</div><span class="bank-command-id">ekstre bekleniyor</span></div>`).join('');
   el.innerHTML=`<div class="bank-command-head">
-    <div><div class="bank-command-title">Banka Komuta Merkezi</div><div class="bank-command-sub">Akbank · Garanti BBVA · Is Bankasi · VakifBank · Yapi Kredi</div></div>
+    <div><div class="bank-command-title">Banka Komuta Merkezi</div><div class="bank-command-sub">Akbank · Garanti BBVA · Is Bankasi · VakifBank · Yapi Kredi · ${escHtml(mailEkstreScheduleText())}</div></div>
     <div class="bank-command-actions"><button onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Onay Merkezi</button><button onclick="loadBankCommandCenter()">Yenile</button></div>
   </div>
   <div class="bank-command-grid">
-    <div class="bank-command-total"><div class="bank-command-k">Toplam Güncel Banka Parası</div><div class="bank-command-v">bakiye bekleniyor</div><div class="bank-command-n">Mail/Drive/Telegram ekstresi geldikçe güncellenir.</div><span class="bank-command-id">hareket ID bekleniyor</span></div>
+    <div class="bank-command-total"><div class="bank-command-k">Toplam Güncel Banka Parası</div><div class="bank-command-v">bakiye bekleniyor</div><div class="bank-command-n">${escHtml(mailEkstreScheduleText())}</div><span class="bank-command-id">hareket ID bekleniyor</span></div>
     ${primaryCards}
   </div>`;
   let pending=[], processed=[], bankRaw=[], errors=[];
@@ -2112,7 +2124,7 @@ async function loadBankCommandCenter(){
     <span class="bank-command-id">${b.last||b.balance?`son ID ${escHtml(shortId(b.last?.id||b.balance?.id))}`:'ekstre bekleniyor'}</span>
   </div>`).join('');
   el.innerHTML=`<div class="bank-command-head">
-    <div><div class="bank-command-title">Banka Komuta Merkezi</div><div class="bank-command-sub">Mail/Drive/Telegram ekstreleri · kayıtlı hareketler duplicate_key + hareket imzası ile süzülür · yeni kayıtlar Onay Merkezi'ne düşer</div></div>
+    <div><div class="bank-command-title">Banka Komuta Merkezi</div><div class="bank-command-sub">${escHtml(mailEkstreScheduleText())} · kayıtlı hareketler süzülür · yeni kayıtlar Onay Merkezi'ne düşer</div></div>
     <div class="bank-command-actions"><button onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Onay Merkezi</button><button onclick="loadBankCommandCenter()">Yenile</button></div>
   </div>
   <div class="bank-command-grid">
