@@ -12,7 +12,7 @@ const cfg = JSON.parse(fs.readFileSync(path.join(root, 'automation/mail-ekstre-c
 
 const checks = [
   ['correct mailbox locked', cfg.mailbox === 'alaylimedikal@gmail.com' && workflow.includes('GMAIL_MAILBOX: alaylimedikal@gmail.com')],
-  ['morning evening cron exists', workflow.includes('cron: "0 7 * * *"') && workflow.includes('cron: "5 16 * * *"')],
+  ['morning evening cron exists', workflow.includes('cron: "0 7 * * *"') && workflow.includes('cron: "0 14 * * *"')],
   ['intraday follow-up remains', workflow.includes('cron: "*/15 5-17 * * *"')],
   ['gmail and drive secrets used', ['GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','GOOGLE_REFRESH_TOKEN','GDRIVE_EKSTRE_FOLDER_ID'].every(k => workflow.includes(k))],
   ['pending ingest live path', workflow.includes('Live ingest to pending_bank_movements') && worker.includes('ingest_mail_bank_movements')],
