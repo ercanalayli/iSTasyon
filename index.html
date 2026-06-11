@@ -2071,7 +2071,7 @@ function mailEkstreScheduleText(){
     const nextMin=Math.min(end,Math.ceil((minutes+1)/15)*15);
     next=`${String(Math.floor(nextMin/60)).padStart(2,'0')}:${String(nextMin%60).padStart(2,'0')}`;
   }else next='yarın 08:00';
-  return `Mail ekstre kontrolü: 08:05 ve 19:05 sabit, 08:00-20:45 arası 15 dakikada bir. Sıradaki: ${next}`;
+  return `Mail ekstre kontrolü: 10:00 ve 19:05 sabit, 08:00-20:45 arası 15 dakikada bir. Sıradaki: ${next}`;
 }
 async function loadBankCommandCenter(){
   const el=document.getElementById('bankCommandCenter');if(!el)return;
