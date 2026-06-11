@@ -54,8 +54,8 @@ function ensureDiagnosticsDir() {
 
 function getBizimHesapConfig() {
   return {
-    email: process.env.BIZIMHESAP_EMAIL || 'alaylimedikal@gmail.com',
-    password: process.env.BIZIMHESAP_PASSWORD || '',
+    email: process.env.BIZIMHESAP_EMAIL || process.env.BIZIMHESAP_USER || 'alaylimedikal@gmail.com',
+    password: process.env.BIZIMHESAP_PASSWORD || process.env.BIZIMHESAP_PASS || '',
     loginUrl: process.env.BIZIMHESAP_LOGIN_URL || 'https://bizimhesap.com/bhlogin',
     firmUrl: process.env.BIZIMHESAP_FIRM_URL || 'https://bizimhesap.com/web/ngn/sec/ngnmultiaccount',
   };
