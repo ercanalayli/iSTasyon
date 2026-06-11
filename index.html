@@ -1367,9 +1367,9 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
           <div class="kpi o"><div class="kpi-l">Onay Bekleyen</div><div class="kpi-v" id="bOnay">—</div></div>
           <div class="kpi r"><div class="kpi-l">BizimHesap Kuyruğu</div><div class="kpi-v" id="bQueue">—</div></div>
         </div>
-        <div class="card" style="margin-bottom:14px"><div class="card-hd"><div class="card-l">Banka Akış Haritası</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">Mail/Telegram → Onay Merkezi → BizimHesap kuyruğu → işlendi</span></div><div id="bankaOnaySummary"></div></div>
-        <div class="card"><div class="card-hd"><div class="card-l">Banka Hesap Hareketleri</div><span id="bankaOnayStamp" style="font-family:var(--mono);font-size:9px;color:var(--t3)">—</span></div>
-          <table class="pt"><thead><tr><th>ID</th><th>Tarih / Saat</th><th>Banka</th><th>Açıklama</th><th>Borç</th><th>Alacak</th><th>Bakiye</th><th>Kayıt Nereye Gitti?</th><th>BizimHesap</th><th>İşlem</th></tr></thead><tbody id="bankaOnayRows"></tbody></table>
+        <div class="card" style="margin-bottom:14px"><div class="card-hd"><div class="card-l">Banka → BizimHesap Akış Haritası</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">Mail/Telegram → AperiON onayı → BizimHesap banka/kasa kaydı → işlendi</span></div><div id="bankaOnaySummary"></div></div>
+        <div class="card"><div class="card-hd"><div class="card-l">BizimHesap'a İşlenecek Banka Hareketleri</div><span id="bankaOnayStamp" style="font-family:var(--mono);font-size:9px;color:var(--t3)">—</span></div>
+          <table class="pt"><thead><tr><th>ID</th><th>Tarih / Saat</th><th>Banka</th><th>Açıklama</th><th>Borç</th><th>Alacak</th><th>Bakiye</th><th>AperiON Durumu</th><th>BizimHesap Kaydı</th><th>İşlem</th></tr></thead><tbody id="bankaOnayRows"></tbody></table>
         </div>
       </div>
       <div id="fplan" style="display:none">
@@ -2138,23 +2138,23 @@ async function renderExecutiveBrief(){
   const processed=queueRows.filter(r=>String(r.status||'')==='processed').length;
   const latest=pendingRows.map(r=>r.created_at||r.transaction_date||'').filter(Boolean).sort().at(-1)||'';
   const stateClass=(!model||issues.length)?'state-warn':(cashNet<0||accrualNet<0?'state-bad':(pending||cashGap?'state-warn':'state-good'));
-  const stateText=!model?'Kurulum kontrolü':cashNet<0?'Nakit negatif':accrualNet<0?'Tahakkuk zararı':pending?'Onay bekliyor':cashGap?'Tahsilat takibi':'Kontrol altında';
-  const stateNote=pending?`${fmt(pending)} banka hareketi Onay Merkezi'nde. Onay yoksa BizimHesap kaydı yok.`:cashGap?`Tahakkuk var, ${dynMoney(cashGap)} tahsilat bekliyor.`:'Kritik akışlar aynı ekranda izleniyor.';
+  const stateText=pending?'BizimHesap onayı bekliyor':!model?'Kurulum kontrolü':cashNet<0?'Nakit negatif':accrualNet<0?'Tahakkuk zararı':cashGap?'Tahsilat takibi':'Kontrol altında';
+  const stateNote=pending?`${fmt(pending)} banka hareketi BizimHesap banka kaydı için onay bekliyor. Onaylanınca kayıt kuyruğa alınır.`:cashGap?`Tahakkuk var, ${dynMoney(cashGap)} tahsilat bekliyor.`:'Kritik akışlar aynı ekranda izleniyor.';
   const metricCls=v=>v<0?'bad':'good';
   el.innerHTML=`<div class="command-hero-head">
-    <div><div class="command-eyebrow">AperiON Üst Akıl</div><div class="command-title">Komuta Merkezi</div><div class="command-sub">Planlanan, tahakkuk eden ve gerçekleşen nakit aynı anda okunur. Banka hareketi onaysız kesin kayda dönüşmez.</div></div>
+    <div><div class="command-eyebrow">AperiON Üst Akıl</div><div class="command-title">Komuta Merkezi</div><div class="command-sub">Bankadan gelen hareket AperiON'da kontrol edilir, sen onaylarsın, BizimHesap banka/kasa kaydına işlenir.</div></div>
     <div class="command-actions">
-      <button class="primary" onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Banka Onay</button>
+      <button class="primary" onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">BizimHesap'a İşle</button>
       <button onclick="gP('finans',null)">Gelir Tablosu</button>
       <button onclick="gP('gorevler',null)">Onay Akışı</button>
     </div>
   </div>
   <div class="command-grid">
-    <div class="command-decision ${stateClass}"><div class="command-k">Bugünkü karar</div><div class="command-v">${escHtml(stateText)}</div><div class="command-n">${escHtml(stateNote)}</div><div class="command-pipe"><span class="command-chip ${pending?'warn':'good'}">${fmt(pending)} onay</span><span class="command-chip ${ready?'warn':'good'}">${fmt(ready)} kuyruk</span><span class="command-chip ${processed?'good':''}">${fmt(processed)} işlendi</span></div></div>
+    <div class="command-decision ${stateClass}"><div class="command-k">Banka → BizimHesap kararı</div><div class="command-v">${escHtml(stateText)}</div><div class="command-n">${escHtml(stateNote)}</div><div class="command-pipe"><span class="command-chip ${pending?'warn':'good'}">${fmt(pending)} onay bekliyor</span><span class="command-chip ${ready?'warn':'good'}">${fmt(ready)} BizimHesap kuyruğu</span><span class="command-chip ${processed?'good':''}">${fmt(processed)} işlendi</span></div></div>
     <div class="command-metric ${metricCls(plannedNet)}"><div class="command-k">Planlanan Net</div><div class="command-v">${model?dynMoney(plannedNet):'kurulum'}</div><div class="command-n">sözleşmeli + sabit + öngörülen</div></div>
     <div class="command-metric ${metricCls(accrualNet)}"><div class="command-k">Tahakkuk Net</div><div class="command-v">${model?dynMoney(accrualNet):'kurulum'}</div><div class="command-n">fatura/satış ve oluşan gider</div></div>
     <div class="command-metric ${metricCls(cashNet)}"><div class="command-k">Gerçekleşen Net</div><div class="command-v">${model?dynMoney(cashNet):'kurulum'}</div><div class="command-n">tahsil edilen - ödenen</div></div>
-    <div class="command-metric ${pending?'warn':'good'}"><div class="command-k">Banka Akışı</div><div class="command-v">${fmt(pendingRows.length)}</div><div class="command-n">${latest?`son içeri alma ${escHtml(latest.substring(0,16).replace('T',' '))}`:'ekstre bekleniyor'} · ${fmt(approved)} onaylı</div></div>
+    <div class="command-metric ${pending?'warn':'good'}"><div class="command-k">BizimHesap'a gidecek banka kaydı</div><div class="command-v">${fmt(Math.abs(pendingRows.length))}</div><div class="command-n">${latest?`son içeri alma ${escHtml(latest.substring(0,16).replace('T',' '))}`:'ekstre bekleniyor'} · ${fmt(approved)} onaylanmış</div></div>
   </div>
   ${issues.length?`<div class="finance-empty" style="margin-top:10px">Eksik kaynak: ${escHtml([...new Set(issues)].join(' · '))}</div>`:''}`;
 }
@@ -2162,11 +2162,11 @@ async function loadBankCommandCenter(){
   const el=document.getElementById('bankCommandCenter');if(!el)return;
   const primaryCards=BANK_COMMAND_PRIMARY.map(name=>`<div class="bank-command-bank"><div class="bank-command-k">${escHtml(name)}</div><div class="bank-command-v">bakiye bekleniyor</div><div class="bank-command-n">0 yeni/onay bekleyen · ana banka</div><span class="bank-command-id">ekstre bekleniyor</span></div>`).join('');
   el.innerHTML=`<div class="bank-command-head">
-    <div><div class="bank-command-title">Banka Komuta Merkezi</div><div class="bank-command-sub">Akbank · Garanti BBVA · Is Bankasi · VakifBank · Yapi Kredi · ${escHtml(mailEkstreScheduleText())}</div></div>
-    <div class="bank-command-actions"><button onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Onay Merkezi</button><button onclick="loadBankCommandCenter()">Yenile</button></div>
+    <div><div class="bank-command-title">Banka Komuta Merkezi → BizimHesap Kayıt</div><div class="bank-command-sub">Akbank · Garanti BBVA · Is Bankasi · VakifBank · Yapi Kredi · Onaylanan her hareket BizimHesap banka/kasa kaydına hazırlanır · ${escHtml(mailEkstreScheduleText())}</div></div>
+    <div class="bank-command-actions"><button onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Kayıt Onayı</button><button onclick="loadBankCommandCenter()">Yenile</button></div>
   </div>
   <div class="bank-command-grid">
-    <div class="bank-command-total"><div class="bank-command-k">Toplam Güncel Banka Parası</div><div class="bank-command-v">bakiye bekleniyor</div><div class="bank-command-n">${escHtml(mailEkstreScheduleText())}</div><span class="bank-command-id">hareket ID bekleniyor</span></div>
+    <div class="bank-command-total"><div class="bank-command-k">Toplam Güncel Banka Parası</div><div class="bank-command-v">bakiye bekleniyor</div><div class="bank-command-n">Ekstre geldikçe bankalar AperiON ile eşgüdümde güncellenir.</div><span class="bank-command-id">hareket ID bekleniyor</span></div>
     ${primaryCards}
   </div>`;
   let pending=[], processed=[], bankRaw=[], errors=[];
@@ -2204,15 +2204,15 @@ async function loadBankCommandCenter(){
   const bankCards=banks.slice(0,8).map(b=>`<div class="bank-command-bank">
     <div class="bank-command-k">${escHtml(b.name)}</div>
     <div class="bank-command-v">${b.balance?financeTL(b.balance.value):'bakiye yok'}</div>
-    <div class="bank-command-n">${fmt(b.pending)} yeni/onay bekleyen · ${fmt(b.rows.length)} kayıt${b.primary?' · ana banka':''}</div>
+    <div class="bank-command-n">${fmt(b.pending)} BizimHesap kaydı onay bekliyor · ${fmt(b.rows.length)} hareket${b.primary?' · ana banka':''}</div>
     <span class="bank-command-id">${b.last||b.balance?`son ID ${escHtml(shortId(b.last?.id||b.balance?.id))}`:'ekstre bekleniyor'}</span>
   </div>`).join('');
   el.innerHTML=`<div class="bank-command-head">
-    <div><div class="bank-command-title">Banka Komuta Merkezi</div><div class="bank-command-sub">${escHtml(mailEkstreScheduleText())} · kayıtlı hareketler süzülür · yeni kayıtlar Onay Merkezi'ne düşer</div></div>
-    <div class="bank-command-actions"><button onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Onay Merkezi</button><button onclick="loadBankCommandCenter()">Yenile</button></div>
+    <div><div class="bank-command-title">Banka Komuta Merkezi → BizimHesap Kayıt</div><div class="bank-command-sub">${escHtml(mailEkstreScheduleText())} · kayıtlı hareketler süzülür · yeni kayıtlar onaya düşer · onaylananlar BizimHesap kuyruğuna alınır</div></div>
+    <div class="bank-command-actions"><button onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Kayıt Onayı</button><button onclick="loadBankCommandCenter()">Yenile</button></div>
   </div>
   <div class="bank-command-grid">
-    <div class="bank-command-total"><div class="bank-command-k">Toplam Güncel Banka Parası</div><div class="bank-command-v">${balance.items.length?financeTL(balance.total):'bakiye bekleniyor'}</div><div class="bank-command-n">${balance.items.length?`${fmt(balance.items.length)} banka · son ekstre ${escHtml(String(balance.latest).substring(0,16))}`:'Bakiye içeren ekstre bekleniyor.'}</div><span class="bank-command-pill ${pendingNew.length?'warn':''}">${fmt(pendingNew.length)} onay bekleyen</span><span class="bank-command-pill">${fmt(approved.length)} onaylı</span><span class="bank-command-pill">${fmt(rejected.length)} ret</span><span class="bank-command-id">son hareket ID ${escHtml(shortId(lastRow?.id))}</span></div>
+    <div class="bank-command-total"><div class="bank-command-k">Toplam Güncel Banka Parası</div><div class="bank-command-v">${balance.items.length?financeTL(balance.total):'bakiye bekleniyor'}</div><div class="bank-command-n">${balance.items.length?`${fmt(balance.items.length)} banka · son ekstre ${escHtml(String(balance.latest).substring(0,16))}`:'Bakiye içeren ekstre bekleniyor.'}</div><span class="bank-command-pill ${pendingNew.length?'warn':''}">${fmt(pendingNew.length)} BizimHesap onayı</span><span class="bank-command-pill">${fmt(approved.length)} kuyruğa alınan</span><span class="bank-command-pill">${fmt(rejected.length)} ret</span><span class="bank-command-id">son hareket ID ${escHtml(shortId(lastRow?.id))}</span></div>
     ${bankCards||'<div class="bank-command-bank"><div class="bank-command-k">Banka bekleniyor</div><div class="bank-command-v">ekstre yok</div><div class="bank-command-n">Mail gelince burada banka kartı açılır.</div></div>'}
   </div>
   ${errors.length?`<div class="finance-empty" style="margin-top:10px">Banka kaynak uyarısı: ${escHtml(errors.join(' · '))}</div>`:''}`;
@@ -3724,8 +3724,21 @@ function bankNameOf(r){return r.bank_name||r.kaynak_banka||r.banka||r.source_nam
 function bankCredit(r){const n=Number(r.amount_in||0);if(n>0)return n;const t=Number(r.tutar||0);return t>0?t:0;}
 function bankDebit(r){const n=Number(r.amount_out||0);if(n>0)return n;const t=Number(r.tutar||0);return t<0?Math.abs(t):0;}
 function bankBalanceDisplay(r){const b=bankBalanceValue(r);return b===null?'-':dynMoney(b);}
-function bankQueueStatusTR(q){const s=String(q?.status||'');if(!s)return 'kuyruk yok';if(s==='ready_for_bizimhesap')return 'BizimHesap kuyruğunda';if(s==='processed')return 'BizimHesap işlendi';if(s==='failed')return 'BizimHesap hata';return s;}
-function bankQueueTone(label){if(label.includes('işlendi'))return '#059669';if(label.includes('kuyruğunda'))return '#2563eb';if(label.includes('hata'))return '#dc2626';return '#64748b';}
+function bankQueueStatusTR(q,r=null){
+  const s=String(q?.status||'');
+  if(!s){
+    const rs=String(r?.status||r?.durum||'pending');
+    if(rs==='pending'||rs==='needs_review'||rs==='onay_bekliyor')return 'Onay bekliyor';
+    if(rs==='approved'||rs==='islenecek')return 'Onaylandı, BizimHesap kuyruğu kontrol';
+    if(rs==='rejected'||rs==='islenmeyecek')return 'BizimHesap’a gönderilmeyecek';
+    return 'BizimHesap kaydı bekliyor';
+  }
+  if(s==='ready_for_bizimhesap')return 'BizimHesap kuyruğunda';
+  if(s==='processed')return 'BizimHesap işlendi';
+  if(s==='failed')return 'BizimHesap hata';
+  return s;
+}
+function bankQueueTone(label){if(label.includes('işlendi'))return '#059669';if(label.includes('kuyruğunda')||label.includes('Onaylandı'))return '#2563eb';if(label.includes('hata')||label.includes('gönderilmeyecek'))return '#dc2626';if(label.includes('Onay bekliyor'))return '#d97706';return '#64748b';}
 function bankDestination(r,q=null){
   if(r._source==='banka_raw'){
     const d=r.durum||'onay_bekliyor';
@@ -3735,7 +3748,7 @@ function bankDestination(r,q=null){
     return 'Telegram/Görsel Onay Merkezi';
   }
   const s=String(r.status||'pending');
-  if(s==='pending'||s==='needs_review')return 'Mail Ekstre Onay Merkezi';
+  if(s==='pending'||s==='needs_review')return 'AperiON onayında, hedef BizimHesap banka kaydı';
   if(s==='rejected')return 'Reddedildi';
   if(s==='approved')return q?bankQueueStatusTR(q):'Onaylandı, kuyruk kontrol';
   if(s==='processed')return 'İşlendi';
@@ -3777,14 +3790,14 @@ async function rBankaOnay(){
   const groups={};
   rows.forEach(r=>{const k=r._destination||r.durum||'onay_bekliyor';groups[k]=(groups[k]||0)+1;});
   document.getElementById('bankaOnaySummary').innerHTML=result.error?`<div class="empty"><div class="empty-t">Bazı banka kaynakları okunamadı</div><div class="empty-d">${escHtml(result.error)}</div></div>`:Object.entries(groups).length?miniBars(groups,Math.max(...Object.values(groups),1),'var(--accent)'):'<div class="empty"><div class="empty-t">Banka onay verisi yok</div><div class="empty-d">Mail, Drive veya Telegram hareketi gelince burada gorunecek.</div></div>';
-  document.getElementById('bankaOnayStamp').textContent=`Son güncelleme: ${latest?latest.substring(0,19).replace('T',' '):'bekleniyor'} · BizimHesap kuyruğu: ${fmt(queueReady)} hazır / ${fmt(queueProcessed)} işlendi`;
+  document.getElementById('bankaOnayStamp').textContent=`Son güncelleme: ${latest?latest.substring(0,19).replace('T',' '):'bekleniyor'} · BizimHesap banka kaydı kuyruğu: ${fmt(queueReady)} hazır / ${fmt(queueProcessed)} işlendi`;
   el.innerHTML=rows.length?rows.slice(0,120).map(r=>{
     const onayBtn=r.durum==='onay_bekliyor';
     const source=escHtml(r._source_label||'Banka');
     const idArg=JSON.stringify(String(r.id));
     const srcArg=JSON.stringify(r._source||'banka_raw');
     const debit=bankDebit(r), credit=bankCredit(r);
-    const bh=bankQueueStatusTR(r._queue);
+    const bh=bankQueueStatusTR(r._queue,r);
     const bhColor=bankQueueTone(bh);
     return `<tr>
       <td><span class="bank-command-id">${escHtml(shortId(r.id))}</span><div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:4px">${source}</div></td>
@@ -3794,9 +3807,9 @@ async function rBankaOnay(){
       <td style="font-family:var(--mono);font-weight:900;color:var(--red)">${debit?dynMoney(debit):'-'}</td>
       <td style="font-family:var(--mono);font-weight:900;color:var(--green)">${credit?dynMoney(credit):'-'}</td>
       <td style="font-family:var(--mono);font-weight:900;color:var(--text)">${bankBalanceDisplay(r)}</td>
-      <td>${escHtml(r._destination||'-')}<div style="font-size:9px;color:var(--t3);margin-top:4px">${escHtml(r.aday_islem_tipi||r.aday_kategori||'')}</div></td>
+      <td>${escHtml(r._destination||'-')}<div style="font-size:9px;color:var(--t3);margin-top:4px">${escHtml(r.aday_islem_tipi||r.aday_kategori||'')} · onay sonrası BizimHesap</div></td>
       <td><span style="font-family:var(--mono);font-size:9px;font-weight:900;color:${bhColor};border:1px solid ${bhColor}44;background:${bhColor}14;border-radius:999px;padding:4px 7px">${escHtml(bh)}</span></td>
-      <td>${onayBtn?`<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg})">Onay</button> <button class="empty-btn" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg})">Ret</button>`:'-'}</td>
+      <td>${onayBtn?`<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg})">BizimHesap'a Kaydet</button> <button class="empty-btn" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg})">Ret</button>`:'-'}</td>
     </tr>`;
   }).join(''):'<tr><td colspan="10" style="padding:18px;color:var(--t3)">Banka hareketi yok</td></tr>';
 }
