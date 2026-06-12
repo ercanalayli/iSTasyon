@@ -1140,6 +1140,10 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
         <div class="bank-command-card" id="bankCommandCard">
           <div id="bankCommandCenter"><div class="finance-empty">Banka komuta merkezi hazırlanıyor...</div></div>
         </div>
+        <div class="card" id="homeMorningApprovalCard">
+          <div class="card-hd"><div><div class="card-l">Sabah Onay Kartları</div><div style="font-size:11px;color:var(--t3);font-weight:800;margin-top:3px">Mailden gelen banka hareketleri analiz edilir; tek tıkla BizimHesap kuyruğuna alınır.</div></div><button class="empty-btn" onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Tümünü Aç</button></div>
+          <div id="homeMorningApprovalCards"><div class="finance-empty">Sabah onay kartları hazırlanıyor...</div></div>
+        </div>
         <div class="income-card" id="incomeStatementCard">
           <div id="incomeStatementTop"><div class="finance-empty">Gelir tablosu hazırlanıyor...</div></div>
         </div>
@@ -2228,6 +2232,7 @@ async function loadBankCommandCenter(){
     ${bankCards||'<div class="bank-command-bank"><div class="bank-command-k">Banka bekleniyor</div><div class="bank-command-v">ekstre yok</div><div class="bank-command-n">Mail gelince burada banka kartı açılır.</div></div>'}
   </div>
   ${errors.length?`<div class="finance-empty" style="margin-top:10px">Banka kaynak uyarısı: ${escHtml(errors.join(' · '))}</div>`:''}`;
+  renderHomeMorningApprovalCards(pendingNew);
 }
 async function loadFinanceHome(){
   const el=document.getElementById('homeFinanceCalendar');if(!el)return;
@@ -3838,6 +3843,25 @@ function renderBankMorningCards(rows){
   const el=document.getElementById('bankaMorningCards');if(!el)return;
   const pending=rows.filter(r=>r.durum==='onay_bekliyor').slice(0,12);
   el.innerHTML=pending.length?`<div class="morning-approval-grid">${pending.map(bankMorningCardHtml).join('')}</div>`:'<div class="empty"><div class="empty-t">Sabah onay kartı yok</div><div class="empty-d">Mail/Drive ekstre gelince analizli kartlar burada görünecek.</div></div>';
+}
+function renderHomeMorningApprovalCards(rows){
+  const el=document.getElementById('homeMorningApprovalCards');if(!el)return;
+  const mapped=(rows||[]).slice(0,6).map(r=>{
+    const amountIn=Number(r.amount_in||0), amountOut=Number(r.amount_out||0), incoming=amountIn>0;
+    return {
+      ...r,
+      _source:'pending_bank_movements',
+      _source_label:'Mail Ekstre',
+      tarih:r.transaction_date||r.mail_date||r.created_at,
+      saat:r.transaction_time||'',
+      tutar:incoming?amountIn:-amountOut,
+      aciklama:r.description||r.mail_subject||r.attachment_name||'',
+      aday_cari:r.suggested_counterparty||r.bank_name||'-',
+      durum:'onay_bekliyor',
+      _destination:'AperiON onayında, hedef BizimHesap banka kaydı'
+    };
+  });
+  el.innerHTML=mapped.length?`<div class="morning-approval-grid">${mapped.map(bankMorningCardHtml).join('')}</div>`:'<div class="finance-empty">Bu sabah onay bekleyen banka hareketi yok.</div>';
 }
 function bankNotice(kind,title,msg){
   const el=document.getElementById('bankaActionNotice');if(!el)return;
