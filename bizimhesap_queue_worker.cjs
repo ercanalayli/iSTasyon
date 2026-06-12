@@ -109,7 +109,7 @@ function classifyQueueRow(row) {
   if (amountIn > 0) reasons.push('banka alacak/giriş');
   if (amountOut > 0) reasons.push('banka borç/çıkış');
 
-  if (/pos|batch yatan|pesin satis|peşin satis|net satis|kredi kart/.test(text)) {
+  if (amountIn > 0 && /pos|batch yatan|pesin satis|peşin satis|net satis|kredi kart/.test(text)) {
     kind = 'pos_collection';
     title = 'POS tahsilatı';
     target = 'BizimHesap banka tahsilatı';
@@ -118,7 +118,7 @@ function classifyQueueRow(row) {
     confidence = 88;
     reasons.push('POS açıklaması');
   }
-  if (/komisyon|bsmv|ucret|ücret|masraf|katki payi/.test(text)) {
+  if (/komisyon|bsmv|ucret|ücret|masraf|katki payi/.test(text) || (amountOut > 0 && /pos|kredi kart|uye isyeri|üye işyeri/.test(text))) {
     kind = 'bank_fee_expense';
     title = 'Banka/POS masrafı';
     target = 'BizimHesap gider/masraf kaydı';

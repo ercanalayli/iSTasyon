@@ -463,6 +463,16 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .bank-command-id{display:inline-flex;margin-top:8px;border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:4px 7px;font-family:var(--mono);font-size:9px;color:#E0F2FE;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bank-command-pill{display:inline-flex;border-radius:999px;padding:4px 7px;margin:7px 5px 0 0;font-size:10px;font-weight:900;background:rgba(255,255,255,.12);color:#F8FAFC}
 .bank-command-pill.warn{background:rgba(245,158,11,.22);color:#FDE68A}
+.morning-approval-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.morning-approval-card{border:1px solid #E2E8F0;border-left:5px solid #F59E0B;border-radius:14px;background:#fff;padding:12px;box-shadow:0 10px 26px rgba(15,23,42,.06)}
+.morning-approval-head{display:flex;justify-content:space-between;gap:8px;color:#64748B;font-size:11px;font-weight:900}
+.morning-approval-desc{font-size:14px;font-weight:950;line-height:1.28;margin:8px 0;color:#0F172A}
+.morning-approval-amt{font-family:var(--mono);font-size:22px;font-weight:950;margin:6px 0}
+.morning-approval-amt.in{color:#059669}.morning-approval-amt.out{color:#DC2626}
+.morning-approval-meta{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:8px;font-size:10px;line-height:1.55;color:#334155;font-weight:750}
+.morning-approval-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.morning-approval-actions button{height:38px;border:0;border-radius:10px;color:#fff;font-weight:950;cursor:pointer}
+.morning-approval-actions .ok{background:#10B981}.morning-approval-actions .reject{background:#EF4444}
 .finance-empty{font-family:var(--mono);font-size:11px;color:#64748B;padding:14px;background:#F8FAFC;border:1px dashed #CBD5E1;border-radius:12px}
 .income-card{border:1px solid #CFE0F5;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 28px rgba(15,23,42,.055)}
 .income-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
@@ -1368,6 +1378,7 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
           <div class="kpi r"><div class="kpi-l">BizimHesap Kuyruğu</div><div class="kpi-v" id="bQueue">—</div></div>
         </div>
         <div class="card" style="margin-bottom:14px"><div class="card-hd"><div class="card-l">Banka → BizimHesap Akış Haritası</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">Mail/Telegram → AperiON onayı → BizimHesap banka/kasa kaydı → işlendi</span></div><div id="bankaOnaySummary"></div></div>
+        <div class="card" style="margin-bottom:14px"><div class="card-hd"><div><div class="card-l">Sabah Onay Kartları</div><div style="font-size:11px;color:var(--t3);font-weight:800;margin-top:3px">Analiz edilmiş banka hareketleri; tek tık onay BizimHesap kuyruğuna alır.</div></div><a class="empty-btn" href="finans-onay-merkezi-final.html?v=2" target="_blank">Mobil Onay Merkezi</a></div><div id="bankaMorningCards"></div></div>
         <div class="card"><div class="card-hd"><div class="card-l">BizimHesap'a İşlenecek Banka Hareketleri</div><span id="bankaOnayStamp" style="font-family:var(--mono);font-size:9px;color:var(--t3)">—</span></div>
           <div id="bankaActionNotice" class="empty" style="display:none;margin-bottom:10px"></div>
           <table class="pt"><thead><tr><th>ID</th><th>Tarih / Saat</th><th>Banka</th><th>Açıklama</th><th>Borç</th><th>Alacak</th><th>Bakiye</th><th>AperiON Analizi</th><th>BizimHesap Kayıt Planı</th><th>BizimHesap Kaydı</th><th>İşlem</th></tr></thead><tbody id="bankaOnayRows"></tbody></table>
@@ -3759,10 +3770,10 @@ function bankPostingPlan(r){
   const reasons=[];
   if(credit>0){reasons.push('alacak/giriş');confidence=Math.max(confidence,72);}
   if(debit>0){reasons.push('borç/çıkış');confidence=Math.max(confidence,70);}
-  if(/POS|NET SATI[ŞS]|KREDI KART|KREDİ KART|BATCH YATAN/.test(text)){
+  if(credit>0&&/POS|NET SATI[ŞS]|KREDI KART|KREDİ KART|BATCH YATAN/.test(text)){
     type='POS tahsilatı';category='Satış tahsilatı';cari='POS / Kart müşterileri';confidence=Math.max(confidence,88);reasons.push('POS açıklaması');
   }
-  if(/KOMISYON|KOMİSYON|BSMV|ÜCRET|UCRET|MASRAF|KATKI PAYI/.test(text)){
+  if(/KOMISYON|KOMİSYON|BSMV|ÜCRET|UCRET|MASRAF|KATKI PAYI/.test(text)||(debit>0&&/POS|KREDI KART|KREDİ KART|ÜYE İŞYERİ|UYE ISYERI/.test(text))){
     type='Banka masrafı';category='Banka masrafı';target='BizimHesap gider/banka masraf kaydı';confidence=Math.max(confidence,90);reasons.push('komisyon/masraf');
   }
   if(/KREDI KART BOR[ÇC]|KREDİ KART BOR[ÇC]|KART BOR[ÇC]/.test(text)){
@@ -3796,6 +3807,37 @@ function bankAnalysisHtml(r){
     <div style="font-weight:950">${escHtml(p.target)}</div>
     <div style="font-size:10px;color:var(--t2);line-height:1.45;margin-top:3px">${escHtml(p.reasons.join(' · '))}<br>${escHtml(r._destination||'-')}</div>
   </div>`;
+}
+function bankMorningCardHtml(r){
+  const p=bankPostingPlan(r);
+  const debit=bankDebit(r), credit=bankCredit(r);
+  const amount=credit||debit;
+  const signed=credit?dynMoney(amount):`-${dynMoney(amount)}`;
+  const idArg=JSON.stringify(String(r.id));
+  const srcArg=JSON.stringify(r._source||'banka_raw');
+  const source=escHtml(r._source_label||'Mail Ekstre');
+  const date=escHtml(`${(r.tarih||'').substring(0,10)} ${bankRowTime(r)||''}`.trim());
+  return `<div class="morning-approval-card">
+    <div class="morning-approval-head"><span>${source}</span><span>${date}</span></div>
+    <div class="morning-approval-desc">${escHtml(r.aciklama||'')}</div>
+    <div class="morning-approval-amt ${credit?'in':'out'}">${signed}</div>
+    <div class="morning-approval-meta">
+      ID: ${escHtml(shortId(r.id))}<br>
+      Banka: <b>${escHtml(bankNameOf(r))}</b> · Bakiye: <b>${bankBalanceDisplay(r)}</b><br>
+      BizimHesap: <b>${escHtml(p.type)}</b> / ${escHtml(p.category)}<br>
+      Cari: <b>${escHtml(p.cari)}</b><br>
+      Güven: <b>${fmt(p.confidence)}%</b> · ${escHtml(p.reasons.join(' · '))}
+    </div>
+    <div class="morning-approval-actions">
+      <button class="ok" onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)">ONAYLA</button>
+      <button class="reject" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg},this)">SİL</button>
+    </div>
+  </div>`;
+}
+function renderBankMorningCards(rows){
+  const el=document.getElementById('bankaMorningCards');if(!el)return;
+  const pending=rows.filter(r=>r.durum==='onay_bekliyor').slice(0,12);
+  el.innerHTML=pending.length?`<div class="morning-approval-grid">${pending.map(bankMorningCardHtml).join('')}</div>`:'<div class="empty"><div class="empty-t">Sabah onay kartı yok</div><div class="empty-d">Mail/Drive ekstre gelince analizli kartlar burada görünecek.</div></div>';
 }
 function bankNotice(kind,title,msg){
   const el=document.getElementById('bankaActionNotice');if(!el)return;
@@ -3875,6 +3917,7 @@ async function rBankaOnay(){
   rows.forEach(r=>{const k=r._destination||r.durum||'onay_bekliyor';groups[k]=(groups[k]||0)+1;});
   document.getElementById('bankaOnaySummary').innerHTML=result.error?`<div class="empty"><div class="empty-t">Bazı banka kaynakları okunamadı</div><div class="empty-d">${escHtml(result.error)}</div></div>`:Object.entries(groups).length?miniBars(groups,Math.max(...Object.values(groups),1),'var(--accent)'):'<div class="empty"><div class="empty-t">Banka onay verisi yok</div><div class="empty-d">Mail, Drive veya Telegram hareketi gelince burada gorunecek.</div></div>';
   document.getElementById('bankaOnayStamp').textContent=`Son güncelleme: ${latest?latest.substring(0,19).replace('T',' '):'bekleniyor'} · BizimHesap banka kaydı kuyruğu: ${fmt(queueReady)} hazır / ${fmt(queueProcessed)} işlendi`;
+  renderBankMorningCards(rows);
   el.innerHTML=rows.length?rows.slice(0,120).map(r=>{
     const onayBtn=r.durum==='onay_bekliyor';
     const source=escHtml(r._source_label||'Banka');

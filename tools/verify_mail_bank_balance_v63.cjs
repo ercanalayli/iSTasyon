@@ -25,6 +25,7 @@ const checks = [
   ['worker prefilters historical duplicates', worker.includes('filterAlreadyStoredRows') && worker.includes('rowSignature') && worker.includes('skipped_existing')],
   ['rpc duplicate signature guard', sql.includes('duplicate_key = v_key') && sql.includes("coalesce(bank_name,'')") && sql.includes("coalesce(description,'')")],
   ['approved/onay flow preserved', html.includes('pending_bank_movements') && html.includes('approve_pending_bank_movement')],
+  ['morning approval cards', html.includes('Sabah Onay Kartları') && html.includes('morning-approval-card') && html.includes('renderBankMorningCards')],
   ['bank money styling', html.includes('.finance-home-kpi.bank-money') && html.includes('.bank-command-card')]
 ];
 
