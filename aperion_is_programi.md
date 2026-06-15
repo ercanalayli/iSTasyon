@@ -27,6 +27,8 @@ Bu liste her islemden sonra guncellenecek.
 - [x] Supabase SQL install workflow main push ile otomatik calisacak sekilde baglandi
 - [x] Planlanan / sozlesmeli / sabit / ongorulen isletme ve kisisel kart seed dosyasi eklendi
 - [x] Gelir tablosu agir sorgu icin 5 dk sicak cache + 1 saat kalici cache eklendi
+- [x] Hourly BizimHesap Sync workflow main push ile otomatik canli test calistiracak sekilde baglandi
+- [x] Mail ekstre preflight raporuna BizimHesap kuyruk kapatma RPC kontrolu eklendi
 
 ## Sari - Kismen Bitti
 
@@ -34,13 +36,13 @@ Bu liste her islemden sonra guncellenecek.
 - [ ] Gelir tablosu: planlanan / tahakkuk / gerceklesen
 - [ ] Satis ve urun karliligi ekrani
 - [ ] Banka ekstre okuma ve Onay Merkezi'ne dusme
-- [ ] Onay Merkezi analiz ekrani
+- [ ] Onay Merkezi analiz ekrani: kayit plani var, tek tik sonrasi kuyruk kapatma SQL canli kilidi bekliyor
 - [ ] Kalici cache / isletme hafizasi: satis ve gelir modeli baglandi, diger agir sorgular sirada
 
 ## Kirmizi - Kaldi
 
 - [ ] GitHub secret SUPABASE_DB_URL eksik; SQL install workflow Check database secret adiminda duruyor
-- [ ] GitHub Actions BizimHesap senkronunun yeni secret/preflight ile canli yeniden test edilmesi
+- [ ] GitHub Actions BizimHesap senkronunun yeni main push run sonucu kontrol edilecek
 - [ ] Telegram gorsel / evrak akisi
 - [ ] Sabit / sozlesmeli / ongorulen gelir-gider kartlarinin Supabase RPC ile tam canli kayit testi
 - [ ] Kisisel ikinci beyin finans modulunun gercek banka/kredi karti ekstreleriyle canli testi
@@ -48,4 +50,4 @@ Bu liste her islemden sonra guncellenecek.
 
 ## Aktif Siradaki Is
 
-SUPABASE_DB_URL GitHub secret olarak eklenecek; sonra Supabase SQL Install workflow yeniden calistirilip queue processed RPC canliya uygulanacak.
+Hourly BizimHesap Sync main push ile yeniden calistirilacak. SUPABASE_DB_URL GitHub secret olarak eklenecek; sonra Supabase SQL Install workflow yeniden calistirilip queue processed RPC canliya uygulanacak.

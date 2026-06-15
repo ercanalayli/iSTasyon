@@ -2,6 +2,21 @@ name: Hourly BizimHesap Sync
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/hourly-bizimhesap-sync.yml"
+      - "aperion_veri_senkron.js"
+      - "bizimhesap_common.cjs"
+      - "bizimhesap_bot.js"
+      - "bizimhesap_son_islemler_izle.js"
+      - "bizimhesap_masraf_cek.js"
+      - "bizimhesap_urun_stok_cek.js"
+      - "tools/check_bizimhesap_action_secrets.cjs"
+      - "tools/stress_check_index_sales_today.cjs"
+      - "package.json"
+      - "package-lock.json"
   schedule:
     # Hourly BizimHesap source sync.
     - cron: '7 * * * *'
@@ -15,7 +30,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm install
+          cache: 'npm'
+      - run: npm ci --no-audit --no-fund
       - name: Check BizimHesap secrets
         env:
           BIZIMHESAP_EMAIL: ${{ secrets.BIZIMHESAP_EMAIL }}

@@ -46,13 +46,20 @@ async function main() {
 
   const ingest = await rpcCheck(db, 'ingest_mail_bank_movements', { p_rows: [] });
   const approve = await rpcCheck(db, 'approve_pending_bank_movement', { p_id: '00000000-0000-0000-0000-000000000000', p_note: 'preflight' });
+  const processed = await rpcCheck(db, 'mark_bizimhesap_queue_processed', {
+    p_queue_id: '00000000-0000-0000-0000-000000000000',
+    p_message: 'preflight',
+    p_result: {},
+  });
   console.log(`${ingest.ok ? 'OK' : 'MISS'} rpc ingest_mail_bank_movements: ${ingest.detail}`);
   console.log(`${approve.ok ? 'OK' : 'MISS'} rpc approve_pending_bank_movement: ${approve.detail}`);
+  console.log(`${processed.ok ? 'OK' : 'MISS'} rpc mark_bizimhesap_queue_processed: ${processed.detail}`);
 
   const mailSqlOk = tables.find(t => t.name === 'pending_bank_movements')?.ok &&
     tables.find(t => t.name === 'bizimhesap_queue')?.ok &&
     ingest.ok;
   console.log(`MAIL_SQL_READY=${mailSqlOk ? '1' : '0'}`);
+  console.log(`BIZIMHESAP_QUEUE_CLOSE_READY=${processed.ok ? '1' : '0'}`);
   if (!mailSqlOk) process.exitCode = 3;
 }
 
