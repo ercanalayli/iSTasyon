@@ -29,6 +29,7 @@ Bu liste her islemden sonra guncellenecek.
 - [x] Gelir tablosu agir sorgu icin 5 dk sicak cache + 1 saat kalici cache eklendi
 - [x] Hourly BizimHesap Sync workflow main push ile otomatik canli test calistiracak sekilde baglandi
 - [x] Mail ekstre preflight raporuna BizimHesap kuyruk kapatma RPC kontrolu eklendi
+- [x] Yeni main push kontrolu: Mail Ekstre Pipeline, Bot CI, Live Visual Control ve Pages basarili
 
 ## Sari - Kismen Bitti
 
@@ -42,7 +43,7 @@ Bu liste her islemden sonra guncellenecek.
 ## Kirmizi - Kaldi
 
 - [ ] GitHub secret SUPABASE_DB_URL eksik; SQL install workflow Check database secret adiminda duruyor
-- [ ] GitHub Actions BizimHesap senkronunun yeni main push run sonucu kontrol edilecek
+- [ ] GitHub Actions Hourly BizimHesap Sync yeni run Check BizimHesap secrets adiminda durdu: BIZIMHESAP_EMAIL / BIZIMHESAP_PASSWORD Actions secret olarak gorunmuyor veya bos
 - [ ] Telegram gorsel / evrak akisi
 - [ ] Sabit / sozlesmeli / ongorulen gelir-gider kartlarinin Supabase RPC ile tam canli kayit testi
 - [ ] Kisisel ikinci beyin finans modulunun gercek banka/kredi karti ekstreleriyle canli testi
@@ -50,4 +51,4 @@ Bu liste her islemden sonra guncellenecek.
 
 ## Aktif Siradaki Is
 
-Hourly BizimHesap Sync main push ile yeniden calistirilacak. SUPABASE_DB_URL GitHub secret olarak eklenecek; sonra Supabase SQL Install workflow yeniden calistirilip queue processed RPC canliya uygulanacak.
+BIZIMHESAP_EMAIL, BIZIMHESAP_PASSWORD ve SUPABASE_DB_URL GitHub Actions repository secrets icinde kesinlesecek; sonra Hourly BizimHesap Sync ve Supabase SQL Install yeniden calistirilacak.
