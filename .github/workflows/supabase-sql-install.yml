@@ -10,6 +10,15 @@ on:
         type: choice
         options:
           - mail-ekstre
+  push:
+    branches:
+      - main
+    paths:
+      - "automation/sql/000_mail_ekstre_FULL_INSTALL.sql"
+      - "automation/sql/003_approve_pending_to_queue.sql"
+      - "automation/sql/004_reject_pending_bank_movement.sql"
+      - "automation/sql/006_mark_bizimhesap_queue_processed.sql"
+      - ".github/workflows/supabase-sql-install.yml"
 
 jobs:
   install:

@@ -1278,10 +1278,10 @@ body.dashboard-mode #fGrid{display:none !important}
           <div class="card-hd"><div><div class="card-l">Sabah Onay Kartları</div><div style="font-size:11px;color:var(--t3);font-weight:800;margin-top:3px">Mailden gelen banka hareketleri analiz edilir; tek tıkla BizimHesap kuyruğuna alınır.</div></div><button class="empty-btn" onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Tümünü Aç</button></div>
           <div id="homeMorningApprovalCards"><div class="finance-empty">Sabah onay kartları hazırlanıyor...</div></div>
         </div>
-        <div class="income-card" id="incomeStatementCard">
+        <div id="incomeStatementCard" class="income-card">
           <div id="incomeStatementTop"><div class="dashboard-income-fallback"><div class="income-op-title">Gelir Tablosu</div><div class="dash-income-big">hesaplanıyor</div><div class="dash-income-note">Planlanan / tahakkuk / gerçekleşen net sonuç hazırlanıyor.</div></div></div>
         </div>
-        <div class="card report-hub dashboard-secondary" id="reportHubCard">
+        <div class="card report-hub" id="reportHubCard">
           <div class="report-head">
             <div>
               <div class="report-title">Ana Sayfa Kontrol Paneli</div>
@@ -1329,12 +1329,13 @@ body.dashboard-mode #fGrid{display:none !important}
             <div class="roadmap-item"><div class="roadmap-no">07</div><div><div class="roadmap-t">Satış ve ürün kârlılığı ekranı</div><div class="roadmap-d">Kategori aç/kapat, ürün kartı, arama, sıralama, drilldown</div></div><span class="roadmap-st wait">kısmen</span></div>
             <div class="roadmap-item"><div class="roadmap-no">08</div><div><div class="roadmap-t">Banka ekstre okuma</div><div class="roadmap-d">Çok bankalı parser, son kayıt takibi, canlı bakiye</div></div><span class="roadmap-st wait">kısmen</span></div>
             <div class="roadmap-item"><div class="roadmap-no">09</div><div><div class="roadmap-t">Onay Merkezi analiz ekranı</div><div class="roadmap-d">Cari, hesap, işlem türü, güven puanı, mükerrer kontrol</div></div><span class="roadmap-st wait">kısmen</span></div>
-            <div class="roadmap-item"><div class="roadmap-no">10</div><div><div class="roadmap-t">BizimHesap'a tek tık kayıt</div><div class="roadmap-d">Onaylanan banka/gelir/gider kaydını botla işleme</div></div><span class="roadmap-st hot">kaldı</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">10</div><div><div class="roadmap-t">BizimHesap'a tek tık kayıt</div><div class="roadmap-d">Canlı test: Akbank 09.06.2026 banka masrafı 0,80 TL işlendi</div></div><span class="roadmap-st done">bitti</span></div>
             <div class="roadmap-item"><div class="roadmap-no">11</div><div><div class="roadmap-t">Telegram görsel / evrak akışı</div><div class="roadmap-d">Görüntü analizi, onay kuyruğu ve kayıt hazırlığı</div></div><span class="roadmap-st hot">kaldı</span></div>
-            <div class="roadmap-item"><div class="roadmap-no">12</div><div><div class="roadmap-t">Sabit / sözleşmeli / öngörülen gelir-gider</div><div class="roadmap-d">İşletme kartları, tarih, tutar, kişi/firma, sorumluluk</div></div><span class="roadmap-st hot">kaldı</span></div>
-            <div class="roadmap-item"><div class="roadmap-no">13</div><div><div class="roadmap-t">Kişisel ikinci beyin finans modülü</div><div class="roadmap-d">Aile, kart, fatura, okul, maaş, sigorta takibi</div></div><span class="roadmap-st hot">kaldı</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">12</div><div><div class="roadmap-t">Sabit / sözleşmeli / öngörülen gelir-gider</div><div class="roadmap-d">İşletme kart seed'i, plan girişi ve gelir tablosu plan katmanı bağlı</div></div><span class="roadmap-st wait">kısmen</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">13</div><div><div class="roadmap-t">Kişisel ikinci beyin finans modülü</div><div class="roadmap-d">Kişisel kira, fatura, okul, maaş, kart, sigorta kart seed'i bağlı</div></div><span class="roadmap-st wait">kısmen</span></div>
             <div class="roadmap-item"><div class="roadmap-no">14</div><div><div class="roadmap-t">Kalıcı cache / işletme hafızası</div><div class="roadmap-d">Ağır sorguyu azaltma, kural dosyaları, günlük kayıt</div></div><span class="roadmap-st wait">kısmen</span></div>
-            <div class="roadmap-item"><div class="roadmap-no">15</div><div><div class="roadmap-t">Canlı profesyonel yayın</div><div class="roadmap-d">Onay sonrası GitHub Pages / canlı ekran güncellemesi</div></div><span class="roadmap-st hot">kaldı</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">15</div><div><div class="roadmap-t">Canlı GitHub yayın</div><div class="roadmap-d">Kod, workflow ve ana ekran değişiklikleri main branch'e push edildi</div></div><span class="roadmap-st done">bitti</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">16</div><div><div class="roadmap-t">Supabase SQL otomatik kurulum</div><div class="roadmap-d">SQL değişince workflow otomatik çalışır; queue processed kilidi kurulur</div></div><span class="roadmap-st done">bitti</span></div>
           </div>
         </div>
         <div class="card dashboard-secondary" id="salesReconCard" style="margin-bottom:16px">
@@ -2692,6 +2693,58 @@ function incomePlanSummary(rows){
   });
   return out;
 }
+const INCOME_MODEL_CACHE_TTL_MS=5*60*1000;
+const INCOME_MODEL_STALE_MS=60*60*1000;
+const INCOME_MODEL_CACHE=new Map();
+function incomeCacheKey(mode,p){return `income_${PILOT_FIRMA}_${mode}_${p.from}_${p.to}_${BUILD_CODE}`;}
+function readIncomeCache(key){
+  const mem=INCOME_MODEL_CACHE.get(key);
+  if(mem&&Date.now()-mem.at<INCOME_MODEL_CACHE_TTL_MS)return mem.model;
+  try{
+    const saved=JSON.parse(localStorage.getItem(`ap_${key}`)||'null');
+    if(saved?.model&&Date.now()-saved.at<INCOME_MODEL_STALE_MS){
+      INCOME_MODEL_CACHE.set(key,{at:saved.at,model:saved.model});
+      return saved.model;
+    }
+  }catch(e){}
+  return null;
+}
+function writeIncomeCache(key,model){
+  const payload={at:Date.now(),model};
+  INCOME_MODEL_CACHE.set(key,payload);
+  try{localStorage.setItem(`ap_${key}`,JSON.stringify(payload));}catch(e){}
+}
+async function fetchPlanSeedRows(period){
+  try{
+    const res=await fetch(`data/aperion_plan_kartlari_seed.json?v=${BUILD_CODE}`,{cache:'no-store'});
+    if(!res.ok)return [];
+    const json=await res.json();
+    return expandPlanSeedRows(json.cards||[],period);
+  }catch(e){return [];}
+}
+function expandPlanSeedRows(cards,period){
+  const out=[];
+  const from=period.from,to=period.to;
+  (cards||[]).forEach((card,i)=>{
+    const start=(card.start_date||from).substring(0,10), end=(card.end_date||'9999-12-31').substring(0,10);
+    if(start>to||end<from)return;
+    out.push({
+      ...card,
+      id:`seed_${i}`,
+      source_type:'seed_plan_template',
+      status:'template_amount_waiting',
+      item_date:start<from?from:start,
+      title:card.title,
+      description:card.obligation_note||card.note||'',
+      amount:card.expected_amount||0,
+      expected_amount:card.expected_amount||0,
+      category:card.category||'Plan',
+      cari_name:card.cari_name||card.party||'',
+      record_type:card.direction==='in'?'receivable':'payable'
+    });
+  });
+  return out;
+}
 function incomeText(row){
   return [row.description,row.aciklama,row.title,row.category,row.kategori,row.bank_name,row.source,row.detected_type,row.aday_islem_tipi,row.cari_name,row.suggested_counterparty]
     .map(x=>(x||'').toString().toLocaleLowerCase('tr-TR')).join(' ');
@@ -2736,7 +2789,9 @@ function incomeExpenseAccrualBuckets(expenses){
   return out;
 }
 async function buildIncomeModel(mode=INCOME_MODE){
-  const p=incomePeriod(mode), sales=await salesRowsRange(p.from,p.to,PILOT_FIRMA);
+  const p=incomePeriod(mode), cacheKey=incomeCacheKey(mode,p), cached=readIncomeCache(cacheKey);
+  if(cached)return cached;
+  const sales=await salesRowsRange(p.from,p.to,PILOT_FIRMA);
   const expNow=await masrafData(new Date(p.to).getFullYear(),PILOT_FIRMA);
   const expPrev=p.from.substring(0,4)!==p.to.substring(0,4)?await masrafData(new Date(p.from).getFullYear(),PILOT_FIRMA):[];
   const expenses=[...expNow,...expPrev].filter(r=>flowInRange(r,p.from,p.to));
@@ -2762,7 +2817,8 @@ async function buildIncomeModel(mode=INCOME_MODE){
   const cashBuckets=incomeCashBuckets(cashRows);
   const cashIn=cashBuckets.collected;
   const cashOut=cashBuckets.paid;
-  const calendarRows=cal.rows||[];
+  const seedPlanRows=await fetchPlanSeedRows(p);
+  const calendarRows=[...(cal.rows||[]),...seedPlanRows];
   const planIncomeRows=calendarRows.filter(r=>flowKind(r)==='tahsilat');
   const planExpenseRows=calendarRows.filter(r=>flowKind(r)==='gider_odeme'||flowKind(r)==='urun_alis_odeme');
   const receivableOpen=planIncomeRows.reduce((s,r)=>s+flowAmount(r),0);
@@ -2783,7 +2839,9 @@ async function buildIncomeModel(mode=INCOME_MODE){
   const categories=Object.values(byCat).map(x=>({...x,gross:x.revenue-x.cogs,margin:x.revenue?(x.revenue-x.cogs)/x.revenue*100:0})).sort((a,b)=>b.revenue-a.revenue);
   const products=Object.values(byProduct).map(x=>({...x,gross:x.revenue-x.cogs,margin:x.revenue?(x.revenue-x.cogs)/x.revenue*100:0})).sort((a,b)=>b.revenue-a.revenue);
   const expenseCats=Object.values(byExpense).sort((a,b)=>b.amount-a.amount);
-  return {period:p,sales:salesLines,expenses,bankRows,approvedBankRows,cashRows,cashBuckets,expenseBuckets,categories,products,expenseCats,revenue,qty,cogs,missingCost,expenseTotal,cashIn,cashOut,calendarRows,planIncomeRows,planExpenseRows,planIncome,planExpense,plannedIncome,plannedExpense,plannedNet,receivableOpen,payableOpen,gross,net,grossMargin,netMargin};
+  const model={period:p,sales:salesLines,expenses,bankRows,approvedBankRows,cashRows,cashBuckets,expenseBuckets,categories,products,expenseCats,revenue,qty,cogs,missingCost,expenseTotal,cashIn,cashOut,calendarRows,seedPlanRows,planIncomeRows,planExpenseRows,planIncome,planExpense,plannedIncome,plannedExpense,plannedNet,receivableOpen,payableOpen,gross,net,grossMargin,netMargin};
+  writeIncomeCache(cacheKey,model);
+  return model;
 }
 function incomeMoney(v,cls=''){return `<span class="income-click ${cls}" onclick="incomeDrill('${cls||'revenue'}')">${dynMoney(v)}</span>`;}
 function incomePlanMoney(v,type,bucket=''){
@@ -3379,8 +3437,10 @@ const SALES_WIDE_COLUMNS='id,firma_id,tarih,urun,kategori,unvan,adet,ciro,urun_k
 const SALES_IDB_NAME='aperion_sales_cache_v1', SALES_IDB_STORE='kv';
 function clearSalesWideCache(){
   SALES_WIDE_CACHE={key:'',rows:null,at:0,promise:null};
+  INCOME_MODEL_CACHE.clear();
   try{Object.keys(sessionStorage).filter(k=>k.startsWith('ap_sales_wide_')).forEach(k=>sessionStorage.removeItem(k));}catch(e){}
   try{Object.keys(localStorage).filter(k=>k.startsWith('ap_sales_wide_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
+  try{Object.keys(localStorage).filter(k=>k.startsWith('ap_income_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
   salesCacheDeleteAll();
 }
 function salesDb(){
