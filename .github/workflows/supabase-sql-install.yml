@@ -46,6 +46,9 @@ jobs:
       - name: Apply mail ekstre SQL
         shell: bash
         run: |
-          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f automation/sql/000_mail_ekstre_FULL_INSTALL.sql
+          if ! psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f automation/sql/000_mail_ekstre_FULL_INSTALL.sql; then
+            echo "::error::Supabase SQL uygulanamadi. SUPABASE_DB_URL icindeki database password yanlis olabilir. Supabase > Project Settings > Database > Connection string > URI degerini, dogru DB password ile yeniden GitHub secret olarak kaydedin."
+            exit 1
+          fi
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}

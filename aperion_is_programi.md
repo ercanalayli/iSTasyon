@@ -32,6 +32,7 @@ Bu liste her islemden sonra guncellenecek.
 - [x] Yeni main push kontrolu: Mail Ekstre Pipeline, Bot CI, Live Visual Control ve Pages basarili
 - [x] Banka hareketi -> BizimHesap kayit plani ortak karar motoruna alindi; preview ve queue worker ayni motoru kullaniyor
 - [x] Banka onay dry-run: 25 hareket analiz edildi, 19 yuksek guven, 6 inceleme gerekli; queue dry-run 1 hazir kayit plani uretildi
+- [x] GitHub secret kilidi acildi: BIZIMHESAP_EMAIL/PASSWORD ve SUPABASE_DB_URL artik workflow tarafinda okunuyor
 
 ## Sari - Kismen Bitti
 
@@ -44,8 +45,9 @@ Bu liste her islemden sonra guncellenecek.
 
 ## Kirmizi - Kaldi
 
-- [ ] GitHub secret SUPABASE_DB_URL eksik; SQL install workflow Check database secret adiminda duruyor
-- [ ] GitHub Actions Hourly BizimHesap Sync yeni run Check BizimHesap secrets adiminda durdu: BIZIMHESAP_EMAIL / BIZIMHESAP_PASSWORD Actions secret olarak gorunmuyor veya bos
+- [ ] GitHub Actions Hourly BizimHesap Sync secret kontrolu gecti; BizimHesap yeni giris/dogrulama/firma seciminde takiliyor
+- [ ] BIZIMHESAP_EMAIL secret degeri tam dogrulanacak: tek kabul edilen hesap alaylimedikal@gmail.com
+- [ ] SUPABASE_DB_URL secret icindeki database password hatali: psql "password authentication failed for user postgres" verdi
 - [ ] Telegram gorsel / evrak akisi
 - [ ] Sabit / sozlesmeli / ongorulen gelir-gider kartlarinin Supabase RPC ile tam canli kayit testi
 - [ ] Kisisel ikinci beyin finans modulunun gercek banka/kredi karti ekstreleriyle canli testi
@@ -53,4 +55,4 @@ Bu liste her islemden sonra guncellenecek.
 
 ## Aktif Siradaki Is
 
-BIZIMHESAP_EMAIL, BIZIMHESAP_PASSWORD ve SUPABASE_DB_URL GitHub Actions repository secrets icinde kesinlesecek; sonra Hourly BizimHesap Sync ve Supabase SQL Install yeniden calistirilacak.
+BIZIMHESAP_EMAIL tam olarak alaylimedikal@gmail.com yapilacak. SUPABASE_DB_URL dogru database password ile guncellenecek. Sonra Hourly BizimHesap Sync ve Supabase SQL Install yeniden calistirilacak.
