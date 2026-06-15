@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import puppeteer from 'puppeteer';
 
 const require = createRequire(import.meta.url);
+const { loadAperionMemory, appendTransactionLog } = require('./tools/aperion_memory.cjs');
 const {
   launchOptions,
   loginBizimHesap,
@@ -20,9 +21,11 @@ const val = (flag, fallback) => has(flag) ? args[args.indexOf(flag) + 1] : fallb
 
 const FIRMA_ARG = val('--firma', 'alayli');
 const SHOW = has('--show');
+const RESUME = has('--resume');
 const LIMIT = Number(val('--limit', process.env.INVOICE_DETAIL_LIMIT || 200));
 const QUEUE_PATH = val('--queue', path.join(__dirname, 'data', 'bizimhesap_fatura_acma_kuyrugu.json'));
 const OUT_PATH = val('--out', path.join(__dirname, 'data', 'bizimhesap_fatura_detaylari_raw.json'));
+const MEMORY = loadAperionMemory();
 
 const FIRMALAR = {
   alayli: { id: 'alayli', adi: 'ALAYLI MEDIKAL', arama: 'ALAYLI' },
@@ -30,13 +33,21 @@ const FIRMALAR = {
   odyoform: { id: 'odyoform', adi: 'ODYOFORM ISITME CIHAZLARI', arama: 'ODYOFORM' },
 };
 
-const DETAIL_URLS = [
-  'https://bizimhesap.com/web/ngn/newportal',
-  'https://bizimhesap.com/web/ngn/acc/ngncostss',
-  'https://bizimhesap.com/web/ngn/sale/ngnpurchaseinvoices',
-  'https://bizimhesap.com/web/ngn/buy/ngnpurchaseinvoices',
-  'https://bizimhesap.com/web/ngn/acc/ngncurrentaccounts',
-  'https://bizimhesap.com/web/ngn/inv/ngninvoices',
+const DETAIL_TARGETS = [
+  { url: 'https://bizimhesap.com/web/ngn/newportal', labels: [] },
+  { url: 'https://bizimhesap.com/web/ngn/acc/ngncostss', labels: ['Masraflar'] },
+  { url: 'https://bizimhesap.com/web/ngn/buy/ngnpurchaseinvoices', labels: ['Alislar', 'Alışlar'] },
+  { url: 'https://bizimhesap.com/web/ngn/inv/ngninvoices', labels: ['Gelen E-Faturalar', 'E-Faturalar'] },
+  { url: 'https://bizimhesap.com/web/ngn/acc/ngncurrentaccounts', labels: ['Tedarikciler', 'Tedarikçiler', 'Musteriler', 'Müşteriler'] },
+];
+
+const ACTIVE_DETAIL_TARGETS = [
+  { url: 'https://bizimhesap.com/web/ngn/newportal', labels: [] },
+  { url: 'https://bizimhesap.com/web/ngn/acc/ngncosts', labels: ['Masraflar'] },
+  { url: 'https://bizimhesap.com/web/ngn/doc/ngnretailpurchases', labels: ['Alislar', 'Alislar'] },
+  { url: 'https://bizimhesap.com/web/ngn/app/ngneinvoices', labels: ['Gelen E-Faturalar', 'E-Faturalar'] },
+  { url: 'https://bizimhesap.com/web/ngn/org/ngnsuppliers', labels: ['Tedarikciler'] },
+  { url: 'https://bizimhesap.com/web/ngn/pos/ngncustomers', labels: ['Musteriler'] },
 ];
 
 function nowIso() {
@@ -70,7 +81,7 @@ function tasksFromQueue(queue) {
   }));
 }
 
-function emptyDetail(task, status = 'failed', error = '') {
+function emptyDetail(task, status = 'failed', error = '', extra = {}) {
   const searchKey = buildSearchKeys(task)[0] || '';
   return {
     task_id: task.task_id || '',
@@ -93,6 +104,7 @@ function emptyDetail(task, status = 'failed', error = '') {
     kalemler: [],
     raw_text: '',
     error,
+    diagnostics: extra.diagnostics || [],
   };
 }
 
@@ -101,6 +113,12 @@ function buildReport(tasks, details) {
     created_at: nowIso(),
     source: 'bizimhesap',
     firma_id: FIRMA_ARG,
+    memory: {
+      dir: MEMORY.dir,
+      active_company: MEMORY.config.active_company || 'ALAYLI Medikal',
+      rule_note: 'Ozet satir on bilgidir; kesin karar fatura detayi okununca verilir.',
+      gotcha_rules: MEMORY.gotchaRules.length
+    },
     summary: {
       queue_count: tasks.length,
       read_success: details.filter(x => x.read_status === 'ok').length,
@@ -149,7 +167,16 @@ function firstMatch(text, patterns) {
 }
 
 async function startBrowser() {
-  const browser = await puppeteer.launch(launchOptions({ headless: !SHOW, width: 1440, height: 900 }));
+  let browser;
+  try {
+    browser = await puppeteer.launch(launchOptions({ headless: !SHOW, width: 1440, height: 900 }));
+  } catch (error) {
+    const fallbackProfile = path.join(__dirname, '.bizimhesap-profile-invoice-reader');
+    browser = await puppeteer.launch({
+      ...launchOptions({ headless: !SHOW, width: 1440, height: 900 }),
+      userDataDir: fallbackProfile,
+    });
+  }
   const page = await browser.newPage();
   await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122 Safari/537.36');
   await page.setExtraHTTPHeaders({ 'Accept-Language': 'tr-TR,tr;q=0.9' });
@@ -166,9 +193,41 @@ async function searchOnPage(page, key) {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^A-Z0-9]+/g, ' ')
       .trim();
+    const text = value => String(value || '').replace(/\s+/g, ' ').trim();
     const visible = el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
     const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
     const searchText = norm(needle);
+
+    const openExistingCandidate = () => {
+      const candidates = [...document.querySelectorAll('tr,a,button,div,span')]
+        .filter(visible)
+        .map(el => ({ el, text: String(el.innerText || el.value || el.title || '').replace(/\s+/g, ' ').trim() }))
+        .filter(x => x.text && x.text.length < 900);
+
+      const searchTokens = searchText.split(' ').filter(token => token.length >= 2);
+      const exact = candidates.find(x => {
+        const candidateText = norm(x.text);
+        return candidateText.includes(searchText) || searchTokens.every(token => candidateText.includes(token));
+      });
+      if (!exact) return { opened: false, candidates: candidates.map(x => x.text).slice(0, 30) };
+      const row = exact.el.closest('tr');
+      const rowAction = row
+        ? [...row.querySelectorAll('a,button,[role="button"]')]
+          .filter(visible)
+          .find(el => /ISLEM|DETAY|AC|GOR|DUZENLE|FATURA/.test(norm(el.innerText || el.value || el.title || el.getAttribute('aria-label'))))
+        : null;
+      const directAction = exact.el.matches('a,button,[role="button"]') ? exact.el : exact.el.closest('a,button,[role="button"]');
+      const clickable = rowAction || directAction;
+      if (!clickable) {
+        return { opened: true, matched_text: exact.text, clicked_text: '', no_action: true };
+      }
+      clickable.click();
+      return { opened: true, matched_text: exact.text, clicked_text: text(clickable.innerText || clickable.value || clickable.title || '') };
+    };
+
+    const ready = openExistingCandidate();
+    if (ready.opened) return ready;
+
     const inputs = [...document.querySelectorAll('input[type="search"],input[type="text"],input:not([type]),textarea')]
       .filter(visible)
       .filter(el => !/password|email|date/i.test(el.type || ''));
@@ -189,38 +248,118 @@ async function searchOnPage(page, key) {
       await sleep(900);
     }
 
-    const candidates = [...document.querySelectorAll('tr,a,button,div,span')]
-      .filter(visible)
-      .map(el => ({ el, text: String(el.innerText || el.value || el.title || '').replace(/\s+/g, ' ').trim() }))
-      .filter(x => x.text && x.text.length < 900);
-
-    const exact = candidates.find(x => norm(x.text).includes(searchText));
-    if (!exact) return { opened: false, candidates: candidates.map(x => x.text).slice(0, 30) };
-    const clickable = exact.el.closest('a,button,tr') || exact.el;
-    clickable.click();
-    return { opened: true, matched_text: exact.text };
+    return openExistingCandidate();
   }, key);
 }
 
 async function findAndOpenInvoice(page, task) {
   const keys = buildSearchKeys(task);
   const candidates = [];
-  for (const url of DETAIL_URLS) {
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+  for (const target of targetsForTask(task)) {
+    await openDetailTarget(page, target);
     await new Promise(resolve => setTimeout(resolve, 900));
     for (const key of keys) {
       const result = await searchOnPage(page, key).catch(error => ({ opened: false, error: error.message }));
+      if (result.no_action) {
+        candidates.push({ url: page.url(), key, result });
+        if (!task.fatura_no_adayi) {
+          return { ok: false, noAction: true, key, url: page.url(), result, candidates };
+        }
+        continue;
+      }
       if (result.opened) {
         await Promise.race([
           page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {}),
           new Promise(resolve => setTimeout(resolve, 1600)),
         ]);
-        return { ok: true, key, url, result };
+        return { ok: true, key, url: page.url(), result };
       }
-      candidates.push({ url, key, result });
+      candidates.push({ url: page.url(), key, result });
     }
   }
   return { ok: false, key: keys[0] || '', candidates };
+}
+
+function targetsForTask(task) {
+  const text = normalizeText([task.fatura_tipi_adayi, task.kaynak_kategori, task.aciklama].filter(Boolean).join(' '));
+  if (/GIDER|MASRAF|IADE|KARGO|MARKET|BANKA|FATURA|ALIS/.test(text)) {
+    return [
+      ACTIVE_DETAIL_TARGETS.find(target => target.url.includes('/acc/ngncosts')),
+      ACTIVE_DETAIL_TARGETS.find(target => target.url.includes('/doc/ngnretailpurchases')),
+      ACTIVE_DETAIL_TARGETS.find(target => target.url.includes('/app/ngneinvoices')),
+      ACTIVE_DETAIL_TARGETS[0],
+    ].filter(Boolean);
+  }
+  return ACTIVE_DETAIL_TARGETS;
+}
+
+async function openDetailTarget(page, target) {
+  await page.goto(target.url, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+  await new Promise(resolve => setTimeout(resolve, 700));
+  await clearPageSearchFilters(page);
+  if (!(await isPublicLanding(page)) || !target.labels.length) return;
+
+  await page.goto('https://bizimhesap.com/web/ngn/newportal', { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+  await new Promise(resolve => setTimeout(resolve, 700));
+  await clearPageSearchFilters(page);
+  for (const label of target.labels) {
+    const clicked = await clickMenuLabel(page, label).catch(() => false);
+    if (clicked) {
+      await Promise.race([
+        page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {}),
+        new Promise(resolve => setTimeout(resolve, 1400)),
+      ]);
+      return;
+    }
+  }
+}
+
+async function clearPageSearchFilters(page) {
+  await page.evaluate(async () => {
+    const visible = el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const inputs = [...document.querySelectorAll('input[type="search"], input[aria-controls][type="text"]')]
+      .filter(visible);
+    for (const input of inputs) {
+      if (!input.value) continue;
+      input.focus();
+      input.value = '';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Backspace', bubbles: true }));
+    }
+    if (inputs.length) await sleep(400);
+  }).catch(() => {});
+}
+
+async function isPublicLanding(page) {
+  return page.evaluate(() => {
+    const n = String(document.body?.innerText || '')
+      .toLocaleUpperCase('tr-TR')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    return n.includes('HAKKINDA') && n.includes('OZELLIKLER') && n.includes('FIYAT') && n.includes('GIRIS');
+  }).catch(() => false);
+}
+
+async function clickMenuLabel(page, label) {
+  return page.evaluate((wanted) => {
+    const norm = value => String(value || '')
+      .toLocaleUpperCase('tr-TR')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^A-Z0-9]+/g, ' ')
+      .trim();
+    const visible = el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+    const wantedNorm = norm(wanted);
+    const el = [...document.querySelectorAll('a,button,li,span,div')]
+      .filter(visible)
+      .find(node => norm(node.innerText || node.title || node.getAttribute('aria-label')).includes(wantedNorm));
+    if (!el) return false;
+    const clickable = el.closest('a,button,[role="button"]') || el;
+    clickable.click();
+    return true;
+  }, label);
 }
 
 async function readDetailPage(page, task, search) {
@@ -248,18 +387,21 @@ async function readDetailPage(page, task, search) {
   const pdf = data.links.find(x => /\.pdf(\?|$)/i.test(x.href) || /PDF/i.test(x.text))?.href || '';
   const xml = data.links.find(x => /\.xml(\?|$)/i.test(x.href) || /XML|UBL/i.test(x.text))?.href || '';
   const kalemler = extractLineItems(data.tables);
-  const faturaNo = firstMatch(raw, [
-    /Fatura\s*No[:\s]+([A-Z0-9-]+)/i,
-    /Belge\s*No[:\s]+([A-Z0-9-]+)/i,
-    /No[:\s]+([A-Z]{1,5}\d{6,})/i,
-  ]) || task.fatura_no_adayi || '';
+  const expectedNo = String(task.fatura_no_adayi || '').trim();
+  const expectedNoFound = expectedNo && normalizeText(raw).includes(normalizeText(expectedNo));
+  const faturaNo = expectedNoFound ? expectedNo : firstMatch(raw, [
+    /Fatura\s*No\s*:\s*([A-Z0-9-]+)/i,
+    /Belge\s*No\s*:\s*([A-Z0-9-]+)/i,
+    /\b([A-Z]{1,5}\d{10,})\b/i,
+  ]);
   const genelToplam = firstMoneyAfter(raw, ['Genel Toplam', 'Odenecek Tutar', 'Toplam Tutar']) || Number(task.tutar || 0);
   const kdvToplam = firstMoneyAfter(raw, ['KDV Toplam', 'Hesaplanan KDV', 'KDV']) || kalemler.reduce((sum, item) => sum + item.kdv_tutari, 0);
   const araToplam = firstMoneyAfter(raw, ['Ara Toplam', 'Mal Hizmet Toplam', 'Matrah']) || Math.max(0, genelToplam - kdvToplam);
+  const validation = validateDetailRead(raw, task, { faturaNo, kalemler, genelToplam });
 
   return {
     task_id: task.task_id || '',
-    read_status: raw.length > 80 ? (faturaNo || kalemler.length || genelToplam ? 'ok' : 'needs_review') : 'needs_review',
+    read_status: validation.ok ? 'ok' : 'needs_review',
     search_key: search.key || buildSearchKeys(task)[0] || '',
     fatura_tipi: firstMatch(raw, [/Fatura\s*Tipi[:\s]+([^\n]+)/i]) || task.fatura_tipi_adayi || '',
     fatura_no: faturaNo,
@@ -277,8 +419,38 @@ async function readDetailPage(page, task, search) {
     belge_xml: xml,
     kalemler,
     raw_text: raw.slice(0, 20000),
-    error: '',
+    error: validation.error,
   };
+}
+
+function validateDetailRead(raw, task, parsed) {
+  const n = normalizeText(raw);
+  if (!raw || raw.length < 80) return { ok: false, error: 'Detay sayfasi metni bos veya cok kisa' };
+
+  const isListPage = (
+    (n.includes('YENI MASRAF GIR') || n.includes('MASRAF KALEMLERI') || n.includes('ODENMISLER ODENECEKLER'))
+    && (n.match(/\bISLEM\b/g) || []).length > 8
+  );
+  if (isListPage) return { ok: false, error: 'Liste ekrani okundu; fatura/masraf detay ekrani acilmadi' };
+
+  const isPurchaseListPage = (
+    n.includes('KAYITLI TEDARIKCIDEN ALIS GIR')
+    && n.includes('TARIH ISIM UNVAN BELGE NO TUTAR DURUMU')
+  );
+  if (isPurchaseListPage) return { ok: false, error: 'Alis listesi okundu; fatura detayi acilmadi' };
+
+  const expectedNo = String(task.fatura_no_adayi || '').trim();
+  if (expectedNo && !n.includes(normalizeText(expectedNo))) {
+    return { ok: false, error: `Aday fatura no detayda dogrulanamadi: ${expectedNo}` };
+  }
+
+  const markers = ['FATURA', 'BELGE', 'CARI', 'TEDARIKCI', 'GENEL TOPLAM', 'ARA TOPLAM', 'KDV']
+    .filter(marker => n.includes(marker)).length;
+  if (!parsed.faturaNo && !parsed.kalemler.length && markers < 2) {
+    return { ok: false, error: 'Fatura detayi icin yeterli alan bulunamadi' };
+  }
+
+  return { ok: true, error: '' };
 }
 
 function firstMoneyAfter(raw, labels) {
@@ -357,7 +529,10 @@ function extractLineItems(tables) {
 async function main() {
   const queue = readJson(QUEUE_PATH, { tasks: [] });
   const tasks = tasksFromQueue(queue);
-  const details = [];
+  const existingDetails = RESUME ? readJson(OUT_PATH, { details: [] }).details || [] : [];
+  const taskIds = new Set(tasks.map(task => task.task_id));
+  const details = existingDetails.filter(detail => taskIds.has(detail.task_id));
+  const doneIds = new Set(details.map(detail => detail.task_id));
   writeReport(tasks, details);
 
   if (!tasks.length) {
@@ -374,10 +549,17 @@ async function main() {
     await selectFirma(page, firma, message => console.log(message));
 
     for (const task of tasks) {
+      if (doneIds.has(task.task_id)) continue;
       try {
         const search = await findAndOpenInvoice(page, task);
-        if (!search.ok) {
-          details.push(emptyDetail(task, 'not_found', 'BizimHesap icinde fatura/cari hareket bulunamadi'));
+        if (search.noAction) {
+          details.push(emptyDetail(task, 'needs_review', 'Satir bulundu ama detay/duzenle aksiyonu yok', {
+            diagnostics: summarizeSearchDiagnostics(search),
+          }));
+        } else if (!search.ok) {
+          details.push(emptyDetail(task, 'not_found', 'BizimHesap icinde fatura/cari hareket bulunamadi', {
+            diagnostics: summarizeSearchDiagnostics(search),
+          }));
         } else {
           const detail = await readDetailPage(page, task, search);
           details.push(detail);
@@ -386,6 +568,7 @@ async function main() {
         await savePageDiagnostics(page, `fatura_detay_${task.task_id}`.replace(/[^a-z0-9_-]+/gi, '_')).catch(() => {});
         details.push(emptyDetail(task, 'failed', error.message));
       }
+      doneIds.add(task.task_id);
       writeReport(tasks, details);
     }
   } finally {
@@ -393,8 +576,19 @@ async function main() {
   }
 
   const report = writeReport(tasks, details);
+  appendTransactionLog(`${new Date().toISOString().slice(0, 10)} | ALAYLI | bizimhesap | fatura_detay_okuma | ${tasks.length} kuyruk | ${report.summary.read_success} ok | 0.00 | ${report.summary.read_failed ? 'kontrol' : 'ok'}`);
   console.log(JSON.stringify(report.summary, null, 2));
   console.log(OUT_PATH);
+}
+
+function summarizeSearchDiagnostics(search) {
+  return (search.candidates || []).slice(-8).map(item => ({
+    url: item.url,
+    key: item.key,
+    opened: Boolean(item.result?.opened),
+    error: item.result?.error || '',
+    candidates: (item.result?.candidates || []).slice(0, 5),
+  }));
 }
 
 main().catch(error => {

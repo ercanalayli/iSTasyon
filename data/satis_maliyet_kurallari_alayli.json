@@ -1,0 +1,21 @@
+{
+  "firma_id": "alayli",
+  "source": "user_confirmed_category_markup",
+  "calculation": "satis_tutari = maliyet * katsayi; maliyet = satis_tutari / katsayi; kar = satis_tutari - maliyet",
+  "unknown_category_policy": "Kategori eslesmezse kar orani kullaniciya sorulacak ve kayit kesin kar hesabina alinmayacak.",
+  "rules": [
+    { "id": "hasta_bezi_toptan", "kategori": "Hasta bezi distribütör/toptan", "katsayi": 1.16 },
+    { "id": "hasta_bezi", "kategori": "Hasta bezi", "katsayi": 1.35 },
+    { "id": "ortopedi_tekstil", "kategori": "Ortopedi tekstil", "katsayi": 1.8 },
+    { "id": "medikal_sonda", "kategori": "Medikal sonda", "katsayi": 1.35 },
+    { "id": "ortopedi_yurume", "kategori": "Ortopedi yürüme yardımcı", "katsayi": 1.7 },
+    { "id": "medikal_sarf", "kategori": "Medikal sarf", "katsayi": 1.5 },
+    { "id": "kolostomi", "kategori": "Kolostomi", "katsayi": 1.2 },
+    { "id": "kiralik", "kategori": "Kiralık", "katsayi": 0 },
+    { "id": "medikal_solunum", "kategori": "Medikal solunum", "katsayi": 1.6 },
+    { "id": "islak_mendil_temizlik", "kategori": "Medikal ıslak mendil / vücut temizleme", "katsayi": 1.6 },
+    { "id": "medikal_elektronik", "kategori": "Medikal elektronik", "katsayi": 1.6 },
+    { "id": "medikal_karyola_sandalye", "kategori": "Medikal karyola / tekerlekli sandalye", "katsayi": 1.5 },
+    { "id": "medikal_akulu", "kategori": "Medikal akülü", "katsayi": 1.5 }
+  ]
+}

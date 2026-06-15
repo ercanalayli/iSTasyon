@@ -57,6 +57,7 @@ function getBizimHesapConfig() {
     email: process.env.BIZIMHESAP_EMAIL || process.env.BIZIMHESAP_USER || 'alaylimedikal@gmail.com',
     password: process.env.BIZIMHESAP_PASSWORD || process.env.BIZIMHESAP_PASS || '',
     loginUrl: process.env.BIZIMHESAP_LOGIN_URL || 'https://bizimhesap.com/bhlogin',
+    homeUrl: process.env.BIZIMHESAP_HOME_URL || 'https://bizimhesap.com/web/ngn/newportal',
     firmUrl: process.env.BIZIMHESAP_FIRM_URL || 'https://bizimhesap.com/web/ngn/sec/ngnmultiaccount',
   };
 }
@@ -64,7 +65,7 @@ function getBizimHesapConfig() {
 function requireBizimHesapPassword() {
   const config = getBizimHesapConfig();
   if (!config.password) {
-    throw new Error('BIZIMHESAP_PASSWORD .env icinde yok');
+    throw new Error('BIZIMHESAP_PASSWORD ortam degiskeni/GitHub secret icinde yok');
   }
   return config;
 }
@@ -101,6 +102,20 @@ async function isPasswordRequestPage(page) {
   return url.includes('ngnpasswordchangerequest') || text.includes('SIFRENIZI MI UNUTTUNUZ');
 }
 
+async function isBizimHesapAppPage(page) {
+  const url = page.url();
+  if (!url.includes('/web/ngn/') || await isPasswordRequestPage(page)) return false;
+  const text = normalizeText(await bodyText(page));
+  return !text.includes('TEKRAR HOS GELDINIZ') && !text.includes('GIRIS YAP');
+}
+
+async function isLoginPage(page) {
+  const url = page.url();
+  const text = normalizeText(await bodyText(page));
+  const hasPassword = await page.$('#txtPassword, input[type="password"]').catch(() => null);
+  return Boolean(hasPassword) || url.includes('/bhlogin') || text.includes('TEKRAR HOS GELDINIZ') || text.includes('E POSTA ADRESI');
+}
+
 async function assertNotPasswordRequest(page) {
   if (await isPasswordRequestPage(page)) {
     await savePageDiagnostics(page, 'bizimhesap_login_sorunu');
@@ -124,6 +139,20 @@ async function leavePasswordRequestIfPossible(page, log = () => {}) {
   throw new Error('BizimHesap giris dogrulamasi kontrol bekliyor');
 }
 
+async function tryExistingBizimHesapSession(page, log = () => {}) {
+  const { firmUrl, homeUrl } = getBizimHesapConfig();
+  for (const url of [firmUrl, homeUrl]) {
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+    await page.waitForSelector('body', { timeout: 12000 }).catch(() => {});
+    await leavePasswordRequestIfPossible(page, log).catch(() => {});
+    if (await isBizimHesapAppPage(page)) {
+      log('  -> kalici oturum acik: ' + page.url());
+      return true;
+    }
+  }
+  return false;
+}
+
 function firmaAliases(firma = {}) {
   return [
     firma.adi,
@@ -141,6 +170,15 @@ function firmaAliases(firma = {}) {
   ].filter(Boolean);
 }
 
+function preferredFirmaNames(firma = {}) {
+  return [
+    firma.adi,
+    firma.arama,
+    'ALAYLI MEDIKAL',
+    'ALAYLI MEDÄ°KAL',
+  ].filter(Boolean).map(normalizeText).filter(Boolean);
+}
+
 async function selectFirma(page, firma = {}, log = () => {}) {
   const { firmUrl } = getBizimHesapConfig();
   await page.goto(firmUrl, { waitUntil: 'networkidle2', timeout: 25000 }).catch(() => {});
@@ -148,7 +186,8 @@ async function selectFirma(page, firma = {}, log = () => {}) {
   await leavePasswordRequestIfPossible(page, log);
 
   const aliases = firmaAliases(firma).map(normalizeText).filter(Boolean);
-  const result = await page.evaluate((wanted) => {
+  const preferred = preferredFirmaNames(firma);
+  const result = await page.evaluate(({ wanted, preferredWanted }) => {
     const normalize = value => String(value || '')
       .toLocaleUpperCase('tr-TR')
       .normalize('NFD')
@@ -166,23 +205,38 @@ async function selectFirma(page, firma = {}, log = () => {}) {
       .filter(visible)
       .map(el => ({ el, text: String(el.innerText || el.value || el.title || '').replace(/\s+/g, ' ').trim() }))
       .filter(x => x.text && x.text.length < 180);
-    const exact = nodes.find(x =>
-      ['BUTTON', 'A'].includes(x.el.tagName) && wanted.some(w => normalize(x.text) === w)
-    );
-    const buttonMatch = exact || nodes.find(x =>
-      ['BUTTON', 'A'].includes(x.el.tagName) && wanted.some(w => normalize(x.text).includes(w))
-    );
-    const spanMatch = buttonMatch || nodes.find(x =>
-      x.el.closest('button,a') && wanted.some(w => normalize(x.text).includes(w))
-    );
-    const match = spanMatch;
+    const rowText = el => {
+      const clickable = el.closest('a') || el.closest('button') || el;
+      const row = clickable.closest('.btn,.panel,.card,.row,li,tr,div') || clickable;
+      return normalize(row.innerText || clickable.innerText || el.innerText || '');
+    };
+    const scoreNode = x => {
+      const text = normalize(x.text);
+      const full = rowText(x.el);
+      if (!wanted.some(w => text.includes(w) || full.includes(w))) return -1;
+
+      let score = 0;
+      if (preferredWanted.some(w => text === w || full === w)) score += 1000;
+      if (preferredWanted.some(w => text.includes(w) || full.includes(w))) score += 700;
+      if (text === 'ALAYLI MEDIKAL' || full === 'ALAYLI MEDIKAL') score += 900;
+      if (text.includes('ALAYLI MEDIKAL') || full.includes('ALAYLI MEDIKAL')) score += 650;
+      if (text.includes('ORTOPEDI') || full.includes('ORTOPEDI')) score += 60;
+      if (text.includes('KULAK') || full.includes('KULAK') || text.includes('ISITME') || full.includes('ISITME')) score -= 500;
+      if (text === 'ALAYLI' || full === 'ALAYLI') score += 20;
+      score -= Math.max(0, text.length - 20);
+      return score;
+    };
+    const match = nodes
+      .map(x => ({ ...x, score: scoreNode(x) }))
+      .filter(x => x.score >= 0)
+      .sort((a, b) => b.score - a.score)[0];
     if (match) {
       const clickable = match.el.closest('a') || match.el.closest('button') || match.el;
       clickable.click();
-      return { ok: true, candidates: nodes.map(x => x.text).slice(0, 80) };
+      return { ok: true, selected: match.text, candidates: nodes.map(x => x.text).slice(0, 80) };
     }
     return { ok: false, candidates: nodes.map(x => x.text).slice(0, 80) };
-  }, aliases);
+  }, { wanted: aliases, preferredWanted: preferred });
 
   if (!result.ok) {
     const dir = ensureDiagnosticsDir();
@@ -208,20 +262,22 @@ async function selectFirma(page, firma = {}, log = () => {}) {
 async function loginBizimHesap(page, log = () => {}) {
   const config = getBizimHesapConfig();
   log('[LOGIN] BizimHesap');
+  if (await tryExistingBizimHesapSession(page, log)) return;
+
   await page.goto(config.loginUrl, { waitUntil: 'networkidle2', timeout: 30000 });
   await page.waitForSelector('body', { timeout: 12000 });
 
-  if (page.url().includes('/web/ngn/') && !(await isPasswordRequestPage(page))) {
+  if (await isBizimHesapAppPage(page)) {
     log('  -> oturum acik');
     return;
   }
 
   if (!config.password) {
     await savePageDiagnostics(page, 'bizimhesap_sifre_gerekli');
-    throw new Error('BIZIMHESAP_PASSWORD .env icinde yok');
+    throw new Error('BIZIMHESAP_PASSWORD ortam degiskeni/GitHub secret icinde yok');
   }
 
-  let pwEl = await page.$('input[type="password"]');
+  let pwEl = await page.$('#txtPassword') || await page.$('input[type="password"]');
   if (!pwEl) {
     const clicked = await page.evaluate(() => {
       const norm = s => String(s || '').toLocaleLowerCase('tr-TR');
@@ -234,13 +290,13 @@ async function loginBizimHesap(page, log = () => {}) {
   }
 
   await assertNotPasswordRequest(page);
-  await page.waitForSelector('input[type="password"]', { timeout: 12000 });
-  const emailEl = await page.$('input[type="email"]') || await page.$('input[type="text"]');
+  await page.waitForSelector('#txtPassword, input[type="password"]', { timeout: 12000 });
+  const emailEl = await page.$('#txtEmail') || await page.$('input[type="email"]') || await page.$('input[type="text"]');
   if (!emailEl) throw new Error('BizimHesap e-posta alani bulunamadi');
 
   await emailEl.click({ clickCount: 3 });
   await emailEl.type(config.email, { delay: 25 });
-  pwEl = await page.$('input[type="password"]');
+  pwEl = await page.$('#txtPassword') || await page.$('input[type="password"]');
   await pwEl.click({ clickCount: 3 });
   await pwEl.type(config.password, { delay: 25 });
 
@@ -255,6 +311,10 @@ async function loginBizimHesap(page, log = () => {}) {
   await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 20000 }).catch(() => {});
   await new Promise(resolve => setTimeout(resolve, 1200));
   await leavePasswordRequestIfPossible(page, log);
+  if (await isLoginPage(page)) {
+    await savePageDiagnostics(page, 'bizimhesap_login_yeni_sistem_kontrol');
+    throw new Error('BizimHesap girisi tamamlanmadi: sifre, captcha veya yeni dogrulama sistemi kontrol istiyor');
+  }
   log('  -> ' + page.url());
 }
 

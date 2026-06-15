@@ -81,6 +81,43 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;back
 .content::-webkit-scrollbar{width:4px}
 .content::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
 .page{display:none}.page.on{display:block}
+body.dashboard-mode .content{overflow:hidden;padding:12px}
+body.dashboard-mode #pg-dashboard,body.dashboard-mode #kartsDiv{height:100%;min-height:0}
+body.dashboard-mode #kartsDiv{display:grid;grid-template-columns:minmax(520px,1.1fr) minmax(420px,.9fr);grid-template-rows:auto minmax(220px,1fr) minmax(170px,.75fr);gap:10px;overflow:hidden}
+body.dashboard-mode #executiveCommandCard{grid-column:1 / -1;margin:0;min-height:0}
+body.dashboard-mode #bankCommandCard{grid-column:1;grid-row:2;margin:0;min-height:0;overflow:hidden}
+body.dashboard-mode #incomeStatementCard{grid-column:2;grid-row:2;margin:0;min-height:0;overflow:hidden}
+body.dashboard-mode #homeMorningApprovalCard{grid-column:1;grid-row:3;margin:0;min-height:0;overflow:hidden}
+body.dashboard-mode #roadmapCard{grid-column:2;grid-row:3;margin:0;min-height:0;overflow:hidden;padding:12px}
+body.dashboard-mode .dashboard-secondary{display:none!important}
+body.dashboard-mode .command-hero{padding:12px}
+body.dashboard-mode .command-title{font-size:20px}
+body.dashboard-mode .command-grid{grid-template-columns:1.35fr repeat(4,1fr);gap:8px}
+body.dashboard-mode .bank-command-card{padding:14px}
+body.dashboard-mode .bank-command-grid{grid-template-columns:1fr 1fr;gap:8px;max-height:100%;overflow:hidden}
+body.dashboard-mode .bank-command-bank:nth-child(n+7){display:none}
+body.dashboard-mode .income-card{padding:12px}
+body.dashboard-mode #incomeStatementTop{height:100%;display:flex;flex-direction:column;gap:8px}
+body.dashboard-mode .income-head{grid-template-columns:1fr;gap:8px}
+body.dashboard-mode .income-cockpit-main,.dashboard-mode .income-component-panel{display:none}
+body.dashboard-mode .income-op-board{min-height:0}
+body.dashboard-mode .income-op-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+body.dashboard-mode .income-op-grid div{padding:10px}
+body.dashboard-mode .income-op-grid b{font-size:16px}
+body.dashboard-mode .income-progress{margin-top:7px}
+body.dashboard-mode #incomeStatementTop>.report-grid{grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+body.dashboard-mode #incomeStatementTop>.report-grid .report-card:nth-child(n+4){display:none}
+body.dashboard-mode .income-layout{display:none}
+body.dashboard-mode .roadmap-grid{grid-template-columns:1fr;gap:6px;max-height:calc(100% - 34px);overflow:auto}
+body.dashboard-mode .roadmap-item{padding:6px 8px}
+body.dashboard-mode .roadmap-d{display:none}
+body.dashboard-mode #homeMorningApprovalCards{height:calc(100% - 36px);overflow:hidden}
+body.dashboard-mode .morning-approval-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;height:100%;overflow:hidden}
+body.dashboard-mode .morning-approval-card{min-height:0;padding:10px}
+body.dashboard-mode .morning-approval-card:nth-child(n+5){display:none}
+body.dashboard-mode .morning-approval-desc{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+body.dashboard-mode .morning-approval-meta{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-width:1180px){body.dashboard-mode .content{overflow:auto}body.dashboard-mode #kartsDiv{height:auto;display:block}body.dashboard-mode .dashboard-secondary{display:block!important}}
 .fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
 .fk{border-radius:var(--r);overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;background:var(--s1);border:1px solid var(--b1)}
 .fk:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.5)}
@@ -474,6 +511,35 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .morning-approval-actions button{height:38px;border:0;border-radius:10px;color:#fff;font-weight:950;cursor:pointer}
 .morning-approval-actions .ok{background:#10B981}.morning-approval-actions .reject{background:#EF4444}
 .finance-empty{font-family:var(--mono);font-size:11px;color:#64748B;padding:14px;background:#F8FAFC;border:1px dashed #CBD5E1;border-radius:12px}
+.dashboard-income-fallback{height:100%;min-height:180px;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:linear-gradient(145deg,#151515,#23251F);color:#F8FAFC;padding:18px;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.dash-income-big{font-family:var(--mono);font-size:28px;font-weight:950;letter-spacing:-.02em;color:#E7F8EF}
+.dash-income-note{font-size:12px;font-weight:800;color:#A7B3A7;line-height:1.45}
+.dash-income-error{border-color:#FEDF89;background:linear-gradient(145deg,#20180A,#332813)}
+.bank-approval-table{min-width:1260px}
+.bank-approval-table th{font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.bank-approval-table td{vertical-align:middle}
+.bank-move-cell{min-width:260px}
+.bank-move-top{display:flex;gap:8px;align-items:center;font-family:var(--mono);font-size:9px;color:var(--t3);font-weight:900}
+.bank-move-date{font-family:var(--mono);font-size:10px;color:#475569;margin-top:5px;font-weight:800}
+.bank-move-desc{font-size:12px;font-weight:850;color:#0F172A;line-height:1.35;margin-top:5px;max-width:360px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bank-amount{min-width:130px;font-family:var(--mono)}
+.bank-amount b{display:block;font-size:16px;font-weight:950;white-space:nowrap}
+.bank-amount.in b{color:var(--green)}.bank-amount.out b{color:var(--red)}
+.bank-amount span,.bank-amount em{display:block;font-size:9px;color:var(--t3);font-style:normal;margin-top:4px}
+.bank-decision{min-width:230px;border:1px solid #E4E7EC;border-radius:11px;background:#F8FAFC;padding:10px}
+.bank-decision.good{border-color:#A7F3D0;background:#ECFDF5}.bank-decision.warn{border-color:#FDE68A;background:#FFFBEB}.bank-decision.bad{border-color:#FECACA;background:#FEF2F2}
+.bank-decision-title{font-weight:950;color:#0F172A}
+.bank-decision-line{font-size:11px;color:#475569;margin-top:5px;line-height:1.35}
+.bank-decision-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.bank-decision-tags span{font-family:var(--mono);font-size:9px;font-weight:900;border:1px solid rgba(15,23,42,.12);background:#fff;border-radius:999px;padding:3px 6px;color:#334155}
+.bank-decision-tags .dup{color:#B42318;background:#FEF3F2;border-color:#FECDCA}
+.bank-posting{min-width:250px;display:grid;gap:6px}
+.bank-posting-target{font-weight:950;color:#0F172A;margin-bottom:2px}
+.bank-posting div:not(.bank-posting-target){display:grid;grid-template-columns:62px minmax(0,1fr);gap:6px;font-size:11px;line-height:1.3}
+.bank-posting span{color:#667085;font-weight:800}.bank-posting b{color:#101828;font-weight:950}
+.bank-control{min-width:160px;display:grid;gap:5px}
+.bank-control span{display:inline-flex;width:max-content;font-family:var(--mono);font-size:9px;font-weight:950;border:1px solid;border-radius:999px;padding:4px 7px}
+.bank-control small{font-family:var(--mono);font-size:9px;color:#667085}
 .income-card{border:1px solid #CFE0F5;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 28px rgba(15,23,42,.055)}
 .income-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
 .income-title{font-size:20px;font-weight:950;color:#071327;letter-spacing:-.02em}
@@ -533,13 +599,20 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .empty{padding:30px 18px}
 .page{animation:pageIn .14s ease-out}
 @keyframes pageIn{from{opacity:.72;transform:translateY(3px)}to{opacity:1;transform:none}}
+body.sales-mode .content{overflow:hidden}
 .sb-item,.report-tile,.kpi,.cat-chip,.customer-card,.expense-card,.pt tr,.exec-table tr{transition:background .12s,border-color .12s,box-shadow .12s,transform .12s}
 .report-tile,.kpi.click,.cat-chip,.customer-card,.expense-card,.pt tr.dyn-click{cursor:pointer}
-#pg-satis>.fbar{position:sticky;top:0;z-index:20;margin:-2px 0 12px;padding:8px 10px;display:flex;align-items:center;gap:6px;border-radius:12px;background:rgba(255,255,255,.98);backdrop-filter:blur(10px)}
+#pg-satis.on{height:100%;display:grid;grid-template-rows:auto auto minmax(0,1fr);gap:10px;overflow:hidden}
+#pg-satis>.flow-head{margin-bottom:0}
+#pg-satis>.fbar{position:relative;top:auto;z-index:20;margin:0;padding:8px 10px;display:flex;align-items:center;gap:6px;border-radius:12px;background:rgba(255,255,255,.98);backdrop-filter:blur(10px);overflow:auto}
 #pg-satis .sel{min-width:150px;max-width:230px;height:32px}
-.sales-kpi-grid{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:8px;margin-bottom:10px}
-.sales-shell{padding:12px;border-bottom:1px solid var(--b1)}
-.sales-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 9px}
+#uW{min-height:0}
+.sales-screen{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);gap:10px;overflow:hidden}
+.sales-kpi-grid{display:grid;grid-template-columns:repeat(7,minmax(112px,1fr));gap:8px;margin-bottom:8px}
+.sales-kpi-grid .kpi{min-height:78px;padding:10px 12px}
+.sales-kpi-grid .kpi-v{font-size:18px;letter-spacing:-.02em}
+.sales-shell{min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);padding:10px;border:1px solid var(--b1);border-radius:13px;background:#fff;box-shadow:0 16px 34px rgba(15,23,42,.055);overflow:hidden}
+.sales-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 8px}
 .sales-title{font-size:14px;font-weight:950;color:#101828;letter-spacing:-.01em}
 .sales-sub{font-size:10px;color:#667085;font-weight:800;margin-top:3px}
 .sales-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
@@ -550,17 +623,34 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .sales-cat-n{font-size:11px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sales-cat-v{font-family:var(--mono);font-size:16px;color:#047857;font-weight:950;margin-top:7px}
 .sales-cat-s{font-family:var(--mono);font-size:10px;color:#667085;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sales-table-zone{padding:12px}
+.sales-table-zone{padding:0;min-height:0;overflow:hidden}
 .sales-table-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:8px}
 .sales-table-wrap{overflow:auto;border:1px solid #E4E7EC;border-radius:11px;background:#fff}
 .sales-table-wrap .pt{min-width:1080px;margin:0;border:0}
 .sales-table-wrap .pt th{position:sticky;top:0;z-index:2;background:#F8FAFC}
 .sales-table-wrap .pt tr:hover td{background:#F5F9FF}
-.category-table-wrap{overflow:auto;border:1px solid #E4E7EC;border-radius:11px;background:#fff}
+.category-table-wrap{height:100%;overflow:auto;border:1px solid #E4E7EC;border-radius:11px;background:#fff}
 .category-table-wrap .pt{min-width:1080px;margin:0;border:0}
+.category-table-wrap .pt th{position:sticky;top:0;z-index:3;background:#F8FAFC}
 .category-table-wrap .pt tr{cursor:pointer}
 .category-table-wrap .pt tr.on td{background:#EEF4FF}
 .category-table-wrap .pt tr:hover td{background:#F5F9FF}
+.sales-master-row td{background:#FBFCFE !important;border-top:1px solid #D8E4F4}
+.sales-master-row.open td{background:#EEF7FF !important}
+.sales-master-toggle{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:#EAF1FF;color:#1D4ED8;font-family:var(--mono);font-size:13px;font-weight:950;margin-right:7px;vertical-align:middle}
+.sales-master-row.open .sales-master-toggle{background:#1D4ED8;color:#fff}
+.sales-product-row td{background:#FFFFFF !important}
+.sales-product-row:hover td{background:#F8FBFF !important}
+.sales-product-name{display:flex;align-items:center;gap:8px;font-weight:900;color:#0F172A;max-width:360px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sales-product-dot{width:8px;height:8px;border-radius:999px;background:#10B981;box-shadow:0 0 0 4px rgba(16,185,129,.1);flex-shrink:0}
+.sales-heat{border-radius:7px;padding:5px 7px;display:inline-block;min-width:74px;text-align:right;font-family:var(--mono);font-weight:950}
+.sales-heat.hot{background:#DCFCE7;color:#166534}
+.sales-heat.mid{background:#FEF3C7;color:#92400E}
+.sales-heat.cold{background:#FEE2E2;color:#991B1B}
+.sales-spark{width:68px;height:24px;display:inline-flex;align-items:end;gap:2px}
+.sales-spark span{display:block;width:6px;border-radius:999px 999px 2px 2px;background:#60A5FA;min-height:3px}
+.sales-quick-search{min-width:220px;max-width:280px;height:32px;border:1px solid #D0D5DD;border-radius:9px;background:#fff;padding:0 10px;font-size:11px;font-weight:800;color:#101828}
+.sales-quick-search:focus{outline:2px solid rgba(29,78,216,.16);border-color:#93C5FD}
 .cat-rank{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:#EEF4FF;color:#1D4ED8;font-family:var(--mono);font-size:10px;font-weight:950;margin-right:8px}
 .cat-name-main{font-weight:950;color:#101828;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cat-name-sub{font-family:var(--mono);font-size:10px;color:#667085;margin-top:4px;font-weight:750}
@@ -580,6 +670,7 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .roadmap-t{font-size:12px;font-weight:950;color:#101828;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .roadmap-d{font-size:10px;font-weight:750;color:#667085;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .roadmap-st{font-size:9px;font-weight:950;color:#475467;border:1px solid #D0D5DD;background:#fff;border-radius:999px;padding:3px 7px;white-space:nowrap}
+.roadmap-st.done{color:#047857;background:#ECFDF3;border-color:#ABEFC6}
 .roadmap-st.hot{color:#B42318;background:#FEF3F2;border-color:#FECDCA}
 .roadmap-st.next{color:#0369A1;background:#EFF8FF;border-color:#B9E6FE}
 .roadmap-st.wait{color:#854A0E;background:#FFFAEB;border-color:#FEDF89}
@@ -626,7 +717,9 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   .content{padding:10px;padding-bottom:calc(var(--bh) + 14px)}
   .report-grid{gap:8px;padding:10px}
   .card{padding:12px;margin-bottom:10px}
-  .sales-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #pg-satis.on{height:calc(100vh - var(--bh) - 76px)}
+  .sales-screen{height:100%;min-height:0}
+  .sales-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:178px;overflow:auto}
   .sales-cat-grid{grid-template-columns:1fr}
   .home-main-grid{grid-template-columns:1fr}
   #kartsDiv{display:block}
@@ -1046,9 +1139,50 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   #pg-dashboard .income-card .report-grid{grid-template-columns:1fr !important}
   #pg-dashboard .income-row{grid-template-columns:1fr}
 }
+/* Final dashboard lock: single-screen command layout */
+body.dashboard-mode #pg-dashboard #kartsDiv{
+  height:100% !important;
+  display:grid !important;
+  grid-template-columns:minmax(500px,1.1fr) minmax(390px,.9fr) !important;
+  grid-template-rows:auto minmax(220px,1fr) minmax(160px,.72fr) !important;
+  gap:10px !important;
+  overflow:hidden !important;
+}
+body.dashboard-mode #pg-dashboard #kartsDiv>*{
+  width:auto !important;
+  min-width:0 !important;
+  grid-column:auto !important;
+}
+body.dashboard-mode #pg-dashboard #kartsDiv>#executiveCommandCard{grid-column:1 / -1 !important;grid-row:1 !important;order:1 !important}
+body.dashboard-mode #pg-dashboard #kartsDiv>#bankCommandCard{grid-column:1 !important;grid-row:2 !important;order:2 !important}
+body.dashboard-mode #pg-dashboard #kartsDiv>#incomeStatementCard{grid-column:2 !important;grid-row:2 !important;order:3 !important}
+body.dashboard-mode #pg-dashboard #kartsDiv>#homeMorningApprovalCard{grid-column:1 !important;grid-row:3 !important;order:4 !important}
+body.dashboard-mode #pg-dashboard #kartsDiv>#roadmapCard{grid-column:2 !important;grid-row:3 !important;order:5 !important}
+body.dashboard-mode #pg-dashboard #kartsDiv>#bankCommandCard,
+body.dashboard-mode #pg-dashboard #kartsDiv>#incomeStatementCard,
+body.dashboard-mode #pg-dashboard #kartsDiv>#homeMorningApprovalCard,
+body.dashboard-mode #pg-dashboard #kartsDiv>#roadmapCard{height:100% !important;min-height:0 !important;max-height:100% !important}
+body.dashboard-mode #bankCommandCenter{height:100%;min-height:0;overflow:hidden}
+body.dashboard-mode .bank-command-head{margin-bottom:8px}
+body.dashboard-mode .bank-command-grid{height:calc(100% - 64px);overflow:hidden;grid-template-columns:1fr 1fr}
+body.dashboard-mode .bank-command-total,.dashboard-mode .bank-command-bank{min-height:0;padding:10px}
+body.dashboard-mode .bank-command-v{font-size:22px}
+body.dashboard-mode .bank-command-n{font-size:10px}
+body.dashboard-mode .bank-command-total{grid-column:1/-1;min-height:58px}
+body.dashboard-mode .bank-command-bank:nth-child(n+6){display:none}
+body.dashboard-mode #reportHubCard,
+body.dashboard-mode #financeCalendarCard,
+body.dashboard-mode #mainFinanceFlowCard,
+body.dashboard-mode #dataAuditCard,
+body.dashboard-mode #salesReconCard,
+body.dashboard-mode #homeSalesCard,
+body.dashboard-mode #lastDataCard,
+body.dashboard-mode #sourceMatrixCard,
+body.dashboard-mode #homeExpenseCard,
+body.dashboard-mode #fGrid{display:none !important}
 </style>
 </head>
-<body>
+<body class="dashboard-mode">
 <div id="loading"><div class="ld-l">AperiON</div><div class="ld-b"></div><div class="ld-s">ErpaltH iSTasyon</div></div>
 <div class="mo" id="widgetMo" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="mo-box" style="max-width:480px">
@@ -1121,7 +1255,7 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
   <div class="tb" id="tb">
     <div class="tb-l">
   <div class="tb-badge" id="tbBadge"><div class="tb-bd" id="tbDot"></div><span class="tb-bn" id="tbName">ALY Alayli Medikal</span></div>
-      <div><div class="tb-t" id="tbT">ERP Radar</div><div class="tb-s" id="tbS">Anlık veri istihbaratı</div></div>
+      <div><div class="tb-t" id="tbT">Üst Akıl Paneli</div><div class="tb-s" id="tbS">Bugün, risk, banka, onay ve karar öncelikleri</div></div>
     </div>
     <div class="tb-r">
       <div class="tb-live"><div class="tb-ld"></div><span class="tb-lt">CANLI</span></div>
@@ -1145,9 +1279,9 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
           <div id="homeMorningApprovalCards"><div class="finance-empty">Sabah onay kartları hazırlanıyor...</div></div>
         </div>
         <div class="income-card" id="incomeStatementCard">
-          <div id="incomeStatementTop"><div class="finance-empty">Gelir tablosu hazırlanıyor...</div></div>
+          <div id="incomeStatementTop"><div class="dashboard-income-fallback"><div class="income-op-title">Gelir Tablosu</div><div class="dash-income-big">hesaplanıyor</div><div class="dash-income-note">Planlanan / tahakkuk / gerçekleşen net sonuç hazırlanıyor.</div></div></div>
         </div>
-        <div class="card report-hub">
+        <div class="card report-hub dashboard-secondary" id="reportHubCard">
           <div class="report-head">
             <div>
               <div class="report-title">Ana Sayfa Kontrol Paneli</div>
@@ -1159,7 +1293,7 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
             <div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yukleniyor...</div>
           </div>
         </div>
-        <div class="card finance-home-card" style="margin-bottom:16px">
+        <div class="card finance-home-card dashboard-secondary" id="financeCalendarCard" style="margin-bottom:16px">
           <div class="card-hd">
             <div>
               <div class="card-l">Finans Takvimi</div>
@@ -1172,44 +1306,54 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
           </div>
           <div id="homeFinanceCalendar"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Finans takvimi yükleniyor...</div></div>
         </div>
-        <div class="card" style="margin-bottom:16px">
+        <div class="card dashboard-secondary" id="mainFinanceFlowCard" style="margin-bottom:16px">
           <div class="card-hd">
             <div class="card-l">Ana Finans Akışı</div>
             <span style="font-family:var(--mono);font-size:9px;color:var(--t3)">eksik kaynak varsa kesin sonuç yazmaz</span>
           </div>
           <div id="mainFinanceFlow"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Finans akışı hesaplanıyor...</div></div>
         </div>
-        <div class="card" style="margin-bottom:16px">
+        <div class="card dashboard-secondary" id="dataAuditCard" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-l">Veri Denetimi</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">sales_raw kalite kontrol</span></div>
           <div id="dataAudit"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Kontrol ediliyor...</div></div>
         </div>
-        <div class="card" style="margin-bottom:16px">
-          <div class="card-hd"><div class="card-l">Ana Is Programi</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">bitmeyen ana kapsam</span></div>
+        <div class="card" id="roadmapCard" style="margin-bottom:16px">
+          <div class="card-hd"><div class="card-l">AperiON Ana İş Programı</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">her işlem sonrası güncellenecek</span></div>
           <div class="roadmap-grid">
-            <div class="roadmap-item"><div class="roadmap-no">01</div><div><div class="roadmap-t">BizimHesap klon veri yapisi</div><div class="roadmap-d">satis, gider, cari, stok, banka ham veri ayrimi</div></div><span class="roadmap-st hot">aktif</span></div>
-            <div class="roadmap-item"><div class="roadmap-no">02</div><div><div class="roadmap-t">Veri guveni ve mutabakat</div><div class="roadmap-d">kaynak, cekim, dogrulama, uyusmazlik kontrolu</div></div><span class="roadmap-st hot">aktif</span></div>
-            <div class="roadmap-item"><div class="roadmap-no">03</div><div><div class="roadmap-t">Banka ekstresi onay sistemi</div><div class="roadmap-d">parser, ogrenme, telegram onay, BizimHesap dry-run</div></div><span class="roadmap-st next">siradaki</span></div>
-            <div class="roadmap-item"><div class="roadmap-no">04</div><div><div class="roadmap-t">Dinamik urun karlilik karti</div><div class="roadmap-d">son alis, son satis, kar, marj, donem karsilastirma</div></div><span class="roadmap-st wait">bekliyor</span></div>
-            <div class="roadmap-item"><div class="roadmap-no">05</div><div><div class="roadmap-t">Dinamik cari karti</div><div class="roadmap-d">tahakkuk, tahsilat, bakiye, risk, odeme skoru</div></div><span class="roadmap-st wait">bekliyor</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">01</div><div><div class="roadmap-t">BizimHesap kalıcı oturum / firma seçimi</div><div class="roadmap-d">Yeni giriş sistemi + alttaki ALAYLI MEDİKAL seçimi</div></div><span class="roadmap-st done">bitti</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">02</div><div><div class="roadmap-t">Fatura detay okuma altyapısı</div><div class="roadmap-d">Kuyruk, fatura açma, ham detay JSON çıktısı</div></div><span class="roadmap-st done">bitti</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">03</div><div><div class="roadmap-t">Gider kartı + fatura detayı bağlama</div><div class="roadmap-d">Detaydan gider kartı eşleştirme ve onay ayırma</div></div><span class="roadmap-st done">bitti</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">04</div><div><div class="roadmap-t">Satış maliyet / kâr katsayı motoru</div><div class="roadmap-d">Kategori katsayısı ile maliyet, brüt kâr ve marj</div></div><span class="roadmap-st done">bitti</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">05</div><div><div class="roadmap-t">Ana ekran tek sayfa üst akıl paneli</div><div class="roadmap-d">Kaydırmasız komuta ekranı, profesyonel operasyon görünümü</div></div><span class="roadmap-st wait">kısmen</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">06</div><div><div class="roadmap-t">Gelir tablosu: plan / tahakkuk / gerçekleşen</div><div class="roadmap-d">Bugün, dün, hafta, ay, yıl filtreli karar tablosu</div></div><span class="roadmap-st wait">kısmen</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">07</div><div><div class="roadmap-t">Satış ve ürün kârlılığı ekranı</div><div class="roadmap-d">Kategori aç/kapat, ürün kartı, arama, sıralama, drilldown</div></div><span class="roadmap-st wait">kısmen</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">08</div><div><div class="roadmap-t">Banka ekstre okuma</div><div class="roadmap-d">Çok bankalı parser, son kayıt takibi, canlı bakiye</div></div><span class="roadmap-st wait">kısmen</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">09</div><div><div class="roadmap-t">Onay Merkezi analiz ekranı</div><div class="roadmap-d">Cari, hesap, işlem türü, güven puanı, mükerrer kontrol</div></div><span class="roadmap-st wait">kısmen</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">10</div><div><div class="roadmap-t">BizimHesap'a tek tık kayıt</div><div class="roadmap-d">Onaylanan banka/gelir/gider kaydını botla işleme</div></div><span class="roadmap-st hot">kaldı</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">11</div><div><div class="roadmap-t">Telegram görsel / evrak akışı</div><div class="roadmap-d">Görüntü analizi, onay kuyruğu ve kayıt hazırlığı</div></div><span class="roadmap-st hot">kaldı</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">12</div><div><div class="roadmap-t">Sabit / sözleşmeli / öngörülen gelir-gider</div><div class="roadmap-d">İşletme kartları, tarih, tutar, kişi/firma, sorumluluk</div></div><span class="roadmap-st hot">kaldı</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">13</div><div><div class="roadmap-t">Kişisel ikinci beyin finans modülü</div><div class="roadmap-d">Aile, kart, fatura, okul, maaş, sigorta takibi</div></div><span class="roadmap-st hot">kaldı</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">14</div><div><div class="roadmap-t">Kalıcı cache / işletme hafızası</div><div class="roadmap-d">Ağır sorguyu azaltma, kural dosyaları, günlük kayıt</div></div><span class="roadmap-st wait">kısmen</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">15</div><div><div class="roadmap-t">Canlı profesyonel yayın</div><div class="roadmap-d">Onay sonrası GitHub Pages / canlı ekran güncellemesi</div></div><span class="roadmap-st hot">kaldı</span></div>
           </div>
         </div>
-        <div class="card" style="margin-bottom:16px">
+        <div class="card dashboard-secondary" id="salesReconCard" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-l">Satış Mutabakatı</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">BizimHesap raporu ile karşılaştır</span></div>
           <div id="salesRecon"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Hazırlanıyor...</div></div>
         </div>
-        <div class="card" style="margin-bottom:16px">
+        <div class="card dashboard-secondary" id="homeSalesCard" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-l">Ana Sayfa Satış Özeti</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">toplam + kategori, ürüne iniş</span></div>
           <div id="homeSalesDyn"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yükleniyor...</div></div>
         </div>
-        <div class="card" style="margin-bottom:16px">
+        <div class="card dashboard-secondary" id="lastDataCard" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-l">Son Çekilen Veri</div><button onclick="loadLastDataStatus()" style="background:none;border:1px solid var(--b1);border-radius:4px;padding:3px 8px;color:var(--t3);font-family:var(--mono);font-size:9px;cursor:pointer">↻</button></div>
           <div id="lastDataGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yükleniyor...</div></div>
         </div>
-        <div class="card" style="margin-bottom:16px">
+        <div class="card dashboard-secondary" id="sourceMatrixCard" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-l">Firma Veri Kaynaklari</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">firma + program ayrimi</span></div>
           <div id="sourceMatrix"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yukleniyor...</div></div>
         </div>
-        <div class="card" style="margin-bottom:16px">
+        <div class="card dashboard-secondary" id="homeExpenseCard" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-l">Ana Ekran Dinamik Giderler</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">Bu yıl / kategori</span></div>
           <div id="homeExpenseDyn"><div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Yükleniyor...</div></div>
         </div>
@@ -1275,6 +1419,8 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
         <select class="sel" id="uFi" onchange="rU()"><option value="">Tüm</option></select>
         <div class="fsep"></div><span class="fbar-l">Kat.</span>
         <select class="sel" id="uKa" onchange="rU()"><option value="">Tümü</option></select>
+        <div class="fsep"></div>
+        <input class="sales-quick-search" id="uSearch" placeholder="Ürün, kategori, müşteri ara..." oninput="rU()">
         <div class="fsep"></div>
         <button class="fb" onclick="srtU('adet',this)" id="sA">↓ Adet</button>
         <button class="fb on" onclick="srtU('ciro',this)" id="sC">↓ Ciro</button>
@@ -1385,7 +1531,7 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
         <div class="card" style="margin-bottom:14px"><div class="card-hd"><div><div class="card-l">Sabah Onay Kartları</div><div style="font-size:11px;color:var(--t3);font-weight:800;margin-top:3px">Analiz edilmiş banka hareketleri; tek tık onay BizimHesap kuyruğuna alır.</div></div><a class="empty-btn" href="finans-onay-merkezi-final.html?v=2" target="_blank">Mobil Onay Merkezi</a></div><div id="bankaMorningCards"></div></div>
         <div class="card"><div class="card-hd"><div class="card-l">BizimHesap'a İşlenecek Banka Hareketleri</div><span id="bankaOnayStamp" style="font-family:var(--mono);font-size:9px;color:var(--t3)">—</span></div>
           <div id="bankaActionNotice" class="empty" style="display:none;margin-bottom:10px"></div>
-          <table class="pt"><thead><tr><th>ID</th><th>Tarih / Saat</th><th>Banka</th><th>Açıklama</th><th>Borç</th><th>Alacak</th><th>Bakiye</th><th>AperiON Analizi</th><th>BizimHesap Kayıt Planı</th><th>BizimHesap Kaydı</th><th>İşlem</th></tr></thead><tbody id="bankaOnayRows"></tbody></table>
+          <table class="pt bank-approval-table"><thead><tr><th>Hareket</th><th>Tutar</th><th>AperiON Kararı</th><th>BizimHesap Kayıt Planı</th><th>Kontrol</th><th>İşlem</th></tr></thead><tbody id="bankaOnayRows"></tbody></table>
         </div>
       </div>
       <div id="fplan" style="display:none">
@@ -1644,8 +1790,8 @@ const DATA_SOURCES={
     {id:'events',n:'Son İşlemler İzleme',t:'bizimhesap_events',kind:'table',date:'tarih',mode:'aktif'},
     {id:'bankApproval',n:'Banka Onay Hareketleri',t:'bank_transactions',kind:'bank_approval',date:'tarih',mode:'aktif'},
     {id:'bankRaw',n:'Banka Ham Ekstre',t:'banka_raw',kind:'table',date:'tarih',mode:'kurulum'},
-    {id:'customers',n:'Cari Kartlar',t:'customers',kind:'table',date:'updated_at',mode:'eksik'},
-    {id:'transactions',n:'Cari / Kasa Hareketleri',t:'transactions',kind:'table',date:'tarih',mode:'eksik'},
+    {id:'customers',n:'Cari Kartlar',t:'customers',kind:'table',date:'created_at',mode:'eksik'},
+    {id:'transactions',n:'Cari / Kasa Hareketleri',t:'transactions',kind:'table',date:'created_at',mode:'eksik'},
     {id:'products',n:'Ürün ve Stok Kartları',t:'product_raw',kind:'table',date:'updated_at',mode:'eksik'}
   ]
 };
@@ -1727,8 +1873,8 @@ DATA_SOURCES.alayli=[
   {id:'events',n:'Son Islemler Izleme',t:'bizimhesap_events',kind:'table',date:'tarih',mode:'aktif'},
   {id:'bankApproval',n:'Banka Onay Hareketleri',t:'bank_transactions',kind:'bank_approval',date:'tarih',mode:'aktif'},
   {id:'bankRaw',n:'Banka Ham Ekstre',t:'banka_raw',kind:'table',date:'tarih',mode:'kurulum'},
-  {id:'customers',n:'Cari Kartlar',t:'customers',kind:'table',date:'updated_at',mode:'eksik'},
-  {id:'transactions',n:'Cari / Kasa Hareketleri',t:'transactions',kind:'table',date:'tarih',mode:'eksik'},
+  {id:'customers',n:'Cari Kartlar',t:'customers',kind:'table',date:'created_at',mode:'eksik'},
+  {id:'transactions',n:'Cari / Kasa Hareketleri',t:'transactions',kind:'table',date:'created_at',mode:'eksik'},
   {id:'collections',n:'Tahsilat / Odeme Hareketleri',t:'collections_raw',kind:'table',date:'tarih',mode:'eksik'},
   {id:'products',n:'Urun Kartlari',t:'product_raw',kind:'table',date:'updated_at',mode:'eksik'},
   {id:'stock',n:'Stok Hareketleri',t:'stock_raw',kind:'table',date:'tarih',mode:'eksik'},
@@ -1766,8 +1912,8 @@ function renderProdMapPanel(){
   rows.forEach(r=>{const n=(r.urun_orj||r.urun||'').trim();if(!n||seen.has(prodKey(n)))return;seen.add(prodKey(n));s.innerHTML+=`<option value="${n.replace(/"/g,'&quot;')}">${n.substring(0,80)} — ${nrmCat(r.kategori)}</option>`;});
   l.innerHTML=PROD_MAP.length?PROD_MAP.map((m,i)=>`<div style="display:flex;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--b1);font-size:12px"><div style="flex:1;min-width:0"><strong>${m.from}</strong> → <strong style="color:var(--green)">${m.to||m.from}</strong><span style="color:var(--t3)"> / ${m.cat||'Kategori yok'}</span></div><button class="wb pr" onclick="delProdMap(${i})" style="width:auto;padding:6px 10px">Sil</button></div>`).join(''):'<div style="font-family:var(--mono);font-size:10px;color:var(--t3)">Henüz eşleştirme yok.</div>';
 }
-function saveProdMap(){const from=(document.getElementById('pmOld')?.value||'').trim(),to=(document.getElementById('pmNew')?.value||'').trim(),cat=(document.getElementById('pmCat')?.value||'').trim();if(!from||(!to&&!cat))return alert('Eski ürün ve yeni ad/kategori gerekli.');const key=prodKey(from);PROD_MAP=PROD_MAP.filter(x=>x.from_key!==key);PROD_MAP.push({from,from_key:key,to,cat,ts:new Date().toISOString()});saveProdMapStore();refresh();renderProdMapPanel();}
-function delProdMap(i){PROD_MAP.splice(i,1);saveProdMapStore();refresh();renderProdMapPanel();}
+function saveProdMap(){const from=(document.getElementById('pmOld')?.value||'').trim(),to=(document.getElementById('pmNew')?.value||'').trim(),cat=(document.getElementById('pmCat')?.value||'').trim();if(!from||(!to&&!cat))return alert('Eski ürün ve yeni ad/kategori gerekli.');const key=prodKey(from);PROD_MAP=PROD_MAP.filter(x=>x.from_key!==key);PROD_MAP.push({from,from_key:key,to,cat,ts:new Date().toISOString()});saveProdMapStore();clearSalesWideCache();refresh();renderProdMapPanel();}
+function delProdMap(i){PROD_MAP.splice(i,1);saveProdMapStore();clearSalesWideCache();refresh();renderProdMapPanel();}
 function buildDD(){const dd=document.getElementById('firmaDD');dd.innerHTML=VISIBLE_FIRMS.map(id=>{const f=F[id];const cnt=RAW.filter(r=>r.firma_id===id).length;return`<div class="sb-ddi on" onclick="selF('${id}')"><span class="sb-ddd" style="background:${f.c}"></span><span style="flex:1">${f.i} ${f.n}</span><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">${cnt}</span></div>`;}).join('');}
 function toggleDD(){buildDD();document.getElementById('firmaDD').classList.toggle('open');}
 document.addEventListener('click',e=>{if(!e.target.closest('.sb-fs'))document.getElementById('firmaDD').classList.remove('open');});
@@ -1785,14 +1931,37 @@ function showKarts(){document.getElementById('kartsDiv').style.display='block';d
 function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(PILOT_FIRMA);document.getElementById('gB')?.remove();}
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'Üst Akıl Paneli',s:'Bugün, risk, banka, onay ve karar öncelikleri'},satis:{t:'Satış ve Tahsilat',s:'Kategori, ürün, müşteri ve tahsilat akışı'},cariler:{t:'Cari Risk',s:'Bakiye, tahsilat ve risk skoru'},finans:{t:'Finans Operasyonu',s:'Banka, gelir tablosu, gider kartları ve nakit kontrolü'},stok:{t:'Ürün Karlılığı',s:'Stok, fiyat ve marj takibi'},hedef:{t:'Hedef ve Bütçe',s:'Plan, hedef ve sapma kontrolü'},gorevler:{t:'Onay ve İş Akışı',s:'Bekleyen kararlar ve BizimHesap işleme kuyruğu'},veri:{t:'Veri Sağlığı',s:'Kaynak, çekim ve doğrulama'},bildirim:{t:'Bildirim Merkezi',s:'Telegram, mail ve rapor ayarları'}};
-function gP(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));document.getElementById('pg-'+id).classList.add('on');if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));const p=PT[id]||{t:id,s:''};document.getElementById('tbT').textContent=p.t;document.getElementById('tbS').textContent=p.s;if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();loadSyncHealth();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();}
-function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';const fp=document.getElementById('fplan');if(fp)fp.style.display=t==='plan'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();if(t==='plan')loadFinancePlans();}
+function gP(id,el){
+  const requested=id;
+  const page=document.getElementById('pg-'+id);
+  if(!page&&id==='banka')id='finans';
+  const target=document.getElementById('pg-'+id);
+  if(!target){console.warn('Sayfa bulunamadı:',requested);return;}
+  document.body.classList.toggle('sales-mode',id==='satis');
+  document.body.classList.toggle('dashboard-mode',id==='dashboard');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.sb-item,.bn-btn').forEach(n=>n.classList.remove('on'));
+  target.classList.add('on');
+  if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="gP('${id}'"]`).forEach(n=>n.classList.add('on'));
+  const p=PT[id]||{t:id,s:''};
+  const tbT=document.getElementById('tbT'),tbS=document.getElementById('tbS');
+  if(tbT)tbT.textContent=p.t;if(tbS)tbS.textContent=p.s;
+  if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();loadSyncHealth();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();
+  if(requested==='banka')setTimeout(()=>fT('banka'),0);
+}
+function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="fT('${t}'"]`).forEach(x=>x.classList.add('on'));document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';const fp=document.getElementById('fplan');if(fp)fp.style.display=t==='plan'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();if(t==='plan')loadFinancePlans();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]).filter(isAlayliRow);}catch(e){return[];}}
 async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);await loadSyncHealth();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderExecutiveBrief();renderIncomeStatementTop();loadBankCommandCenter();renderReportHub();loadFinanceHome();renderMainFinanceFlow();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=buildLabel();const bc=document.getElementById('buildCode');if(bc)bc.textContent=buildLabel();genAI();}
-function sM(m,btn,all){cM=m;if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}refresh();if(all){rU();rC();rA();}}
+function sM(m,btn,all){
+  cM=m;
+  if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+  if(btn?.closest('#pg-satis')){rU();return;}
+  refresh();
+  if(all){rU();rC();rA();}
+}
 function pSels(){
   const fids=[...new Set(RAW.map(r=>r.firma_id).filter(Boolean))];
-  const kats=[...new Set(RAW.map(r=>r.kategori).filter(Boolean))].sort();
+  const kats=[...new Set(RAW.map(r=>salesMainCategory(r)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'tr'));
 
   ['uFi','cFi','rFi','mFi','stokFi'].forEach(id=>{
     const s=document.getElementById(id);
@@ -1820,7 +1989,7 @@ function pSels(){
   if(ks){
     const v=ks.value;
     ks.innerHTML='<option value="">Tümü</option>';
-    kats.forEach(k=>ks.innerHTML+=`<option value="${k}">${k}</option>`);
+    kats.forEach(k=>ks.innerHTML+=`<option value="${escHtml(k)}">${escHtml(k)}</option>`);
     ks.value=v;
   }
 }
@@ -1859,9 +2028,10 @@ async function loadLastDataStatus(){
 async function sourceMetric(fid,src){
   if(src.mode==='beklemede')return {status:'Beklemede',ok:false,warn:true,count:0,last:null,updated:null,note:'planlandı'};
   const dateCol=src.date||'tarih';
+  const canScope=!['customers','transactions'].includes(src.t);
   try{
     let q=db.from(src.t).select(`${dateCol}`,{count:'exact'});
-    if(fid)q=q.eq('firma_id',fid);
+    if(fid&&canScope)q=q.eq('firma_id',fid);
     const r=await q.order(dateCol,{ascending:false}).limit(1000);
     if(r.error){
       if(String(r.error.message||'').includes('firma_id')){
@@ -1873,7 +2043,7 @@ async function sourceMetric(fid,src){
         }
       }
       let q2=db.from(src.t).select('*',{count:'exact'});
-      if(fid)q2=q2.eq('firma_id',fid);
+      if(fid&&canScope)q2=q2.eq('firma_id',fid);
       const r2=await q2.limit(1000);
       if(r2.error)return {status:'Tablo Yok',ok:false,warn:true,count:0,last:null,updated:null,note:r2.error.message};
       const rows=r2.data||[], last=rows.map(x=>String(x[dateCol]||x.tarih||x.date||x.created_at||'').substring(0,10)).filter(Boolean).sort().pop()||null;
@@ -1882,8 +2052,13 @@ async function sourceMetric(fid,src){
     const rows=r.data||[];
     const last=rows.map(x=>String(x[dateCol]||x.tarih||x.date||x.created_at||'').substring(0,10)).filter(Boolean).sort().pop()||null;
     let updated=null, bekleyen=0;
-    const cu=await db.from(src.t).select('created_at').eq('firma_id',fid).order('created_at',{ascending:false}).limit(1);
-    if(!cu.error)updated=String(cu.data?.[0]?.created_at||'').substring(0,19)||null;
+    let cu=db.from(src.t).select('created_at').order('created_at',{ascending:false}).limit(1);
+    if(fid&&canScope)cu=cu.eq('firma_id',fid);
+    let cur=await cu;
+    if(cur.error&&String(cur.error.message||'').includes('firma_id')){
+      cur=await db.from(src.t).select('created_at').order('created_at',{ascending:false}).limit(1);
+    }
+    if(!cur.error)updated=String(cur.data?.[0]?.created_at||'').substring(0,19)||null;
     if(src.kind==='bank_approval'){
       const br=await db.from(src.t).select('onay_durumu,bizimhesap_durumu').eq('firma_id',fid).limit(1000);
       if(!br.error)bekleyen=(br.data||[]).filter(x=>String(x.onay_durumu||'').toLowerCase()!=='onaylandi'||String(x.bizimhesap_durumu||'').toLowerCase()!=='kaydedildi').length;
@@ -2132,10 +2307,30 @@ async function fetchPendingBankMovements(maxRows=5000){
   }
   return rows;
 }
+async function fetchAutomationHealth(){
+  const empty={mail:null,queue:null,bizimhesap:null,summary:'otomasyon durumu okunamadı',ok:false};
+  try{
+    const res=await fetch('https://api.github.com/repos/ercanalayli/iSTasyon/actions/runs?per_page=20',{cache:'no-store'});
+    if(!res.ok)throw new Error('GitHub Actions okunamadı');
+    const body=await res.json();
+    const runs=body.workflow_runs||[];
+    const pick=name=>runs.find(r=>String(r.name||'').toLocaleLowerCase('tr-TR').includes(name));
+    const mail=pick('mail ekstre pipeline');
+    const queue=pick('bizimhesap queue worker');
+    const bizimhesap=pick('hourly bizimhesap sync');
+    const ok=x=>x&&x.status==='completed'&&x.conclusion==='success';
+    const parts=[
+      `Mail ${ok(mail)?'OK':'kontrol'}`,
+      `Queue ${ok(queue)?'OK':'kontrol'}`,
+      `BizimHesap ${ok(bizimhesap)?'OK':'hata'}`
+    ];
+    return {mail,queue,bizimhesap,summary:parts.join(' · '),ok:ok(mail)&&ok(queue)&&ok(bizimhesap)};
+  }catch(e){return empty;}
+}
 async function renderExecutiveBrief(){
   const el=document.getElementById('executiveBrief');if(!el)return;
   el.innerHTML='<div class="finance-empty">Üst akıl özeti hesaplanıyor...</div>';
-  let model=null, pendingRows=[], queueRows=[], issues=[];
+  let model=null, pendingRows=[], queueRows=[], actionHealth=null, issues=[];
   try{model=await buildIncomeModel(INCOME_MODE);}catch(e){issues.push('gelir tablosu modeli okunamadı');}
   try{
     pendingRows=await fetchPendingBankMovements(5000);
@@ -2144,6 +2339,8 @@ async function renderExecutiveBrief(){
     const {data,error}=await db.from('bizimhesap_queue').select('*').order('created_at',{ascending:false}).limit(500);
     if(error)throw error;queueRows=data||[];
   }catch(e){issues.push('BizimHesap kuyruğu okunamadı');}
+  actionHealth=await fetchAutomationHealth();
+  if(actionHealth?.bizimhesap&&actionHealth.bizimhesap.conclusion!=='success')issues.push('Saatlik BizimHesap Sync hata: GitHub BIZIMHESAP_EMAIL/PASSWORD secret kontrol');
   const accrualNet=model?model.revenue-model.expenseTotal:0;
   const cashNet=model?model.cashIn-model.cashOut:0;
   const plannedNet=model?model.plannedNet:0;
@@ -2166,7 +2363,7 @@ async function renderExecutiveBrief(){
     </div>
   </div>
   <div class="command-grid">
-    <div class="command-decision ${stateClass}"><div class="command-k">Banka → BizimHesap kararı</div><div class="command-v">${escHtml(stateText)}</div><div class="command-n">${escHtml(stateNote)}</div><div class="command-pipe"><span class="command-chip ${pending?'warn':'good'}">${fmt(pending)} onay bekliyor</span><span class="command-chip ${ready?'warn':'good'}">${fmt(ready)} BizimHesap kuyruğu</span><span class="command-chip ${processed?'good':''}">${fmt(processed)} işlendi</span></div></div>
+    <div class="command-decision ${stateClass}"><div class="command-k">Banka → BizimHesap kararı</div><div class="command-v">${escHtml(stateText)}</div><div class="command-n">${escHtml(stateNote)}</div><div class="command-pipe"><span class="command-chip ${pending?'warn':'good'}">${fmt(pending)} onay bekliyor</span><span class="command-chip ${ready?'warn':'good'}">${fmt(ready)} BizimHesap kuyruğu</span><span class="command-chip ${processed?'good':''}">${fmt(processed)} işlendi</span><span class="command-chip ${actionHealth?.ok?'good':'warn'}">${escHtml(actionHealth?.summary||'Actions kontrol')}</span></div></div>
     <div class="command-metric ${metricCls(plannedNet)}"><div class="command-k">Planlanan Net</div><div class="command-v">${model?dynMoney(plannedNet):'kurulum'}</div><div class="command-n">sözleşmeli + sabit + öngörülen</div></div>
     <div class="command-metric ${metricCls(accrualNet)}"><div class="command-k">Tahakkuk Net</div><div class="command-v">${model?dynMoney(accrualNet):'kurulum'}</div><div class="command-n">fatura/satış ve oluşan gider</div></div>
     <div class="command-metric ${metricCls(cashNet)}"><div class="command-k">Gerçekleşen Net</div><div class="command-v">${model?dynMoney(cashNet):'kurulum'}</div><div class="command-n">tahsil edilen - ödenen</div></div>
@@ -2263,7 +2460,7 @@ async function loadFinanceHome(){
     if(error)setupIssues.push('Telegram banka kuyruğu yok'); else bankRows=data||[];
   }catch(e){setupIssues.push('Telegram banka kuyruğu yok');}
   try{
-    const {data,error}=await db.from('bank_transactions').select('*').eq('firma_id',PILOT_FIRMA).not('bakiye','is',null).order('tarih',{ascending:false}).limit(200);
+    const {data,error}=await db.from('bank_transactions').select('*').eq('firma_id',PILOT_FIRMA).order('tarih',{ascending:false}).limit(200);
     if(!error)bankBalanceRows.push(...(data||[]));
   }catch(e){}
   try{
@@ -2425,11 +2622,47 @@ async function productCostMap(){
   }catch(e){}
   return map;
 }
+const SALES_COST_RULES=[
+  {id:'hasta_bezi_toptan',label:'Hasta bezi distribütör/toptan',match:/HASTA BEZI|KULOTLU|KULOT|BELBANT|BEL BANT|SERME/,channel:/DISTRIBUTOR|DISTRIBUTOR|DISTRIBUTÖR|TOPTAN/,markup:1.16},
+  {id:'hasta_bezi',label:'Hasta bezi',match:/HASTA BEZI|KULOTLU|KULOT|BELBANT|BEL BANT|SERME/,markup:1.35},
+  {id:'ortopedi_tekstil',label:'Ortopedi tekstil',match:/ORTOPEDI TEKSTIL|ORTEZ|KORSE|VARIS|TEKSTIL/,markup:1.8},
+  {id:'medikal_sonda',label:'Medikal sonda',match:/MEDIKAL SONDA|SONDA|UROLOJ/,markup:1.35},
+  {id:'kolostomi',label:'Kolostomi',match:/KOLOSTOMI|OSTOMI|STOMA/,markup:1.2},
+  {id:'kiralik',label:'Kiralık',match:/KIRALIK|KIRALAMA|KIRA/,markup:0},
+  {id:'medikal_solunum',label:'Medikal solunum',match:/MEDIKAL SOLUNUM|SOLUNUM|OKSIJEN|CPAP|BIPAP|NEBUL|ASPIRATOR/,markup:1.6},
+  {id:'islak_mendil_temizlik',label:'Islak mendil / vücut temizleme',match:/ISLAK MENDIL|MENDIL|VUCUT TEMIZLEME|TEMIZLEME/,markup:1.6},
+  {id:'medikal_karyola_sandalye',label:'Medikal karyola / tekerlekli sandalye',match:/MEDIKAL KARYOLA|KARYOLA|TEKERLEKLI SANDALYE|SANDALYE/,markup:1.5},
+  {id:'medikal_akulu',label:'Medikal akülü',match:/MEDIKAL AKULU|AKULU|AKÜLÜ|AKU|AKÜ/,markup:1.5},
+  {id:'medikal_elektronik',label:'Medikal elektronik',match:/MEDIKAL ELEKTRONIK|ELEKTRONIK|TANSIYON|ATES|ATEŞ|DERECE|OLCER|ÖLÇER/,markup:1.6},
+  {id:'ortopedi_yurume',label:'Ortopedi yürüme yardımcı',match:/ORTOPEDI YURUME|YURUME YARDIMCI|BASTON|WALKER|KOLTUK DEGNEGI/,markup:1.7},
+  {id:'medikal_sarf',label:'Medikal sarf',match:/MEDIKAL SARF|SARF|GAZLI BEZ|ENJEKTOR|ELDIVEN|MASKE|FLASTER|YARA BAKIM/,markup:1.5}
+];
+function salesCostText(row){
+  return [row?.kategori,row?.ana_kategori,row?.urun,row?.urun_adi,row?.aciklama,row?.not,row?.musteri,row?.unvan,row?.cari_unvan,row?.kanal,row?.satis_tipi,row?.tip]
+    .map(x=>String(x||'').toLocaleUpperCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/İ/g,'I'))
+    .join(' ');
+}
+function salesCostRuleFor(row){
+  const text=salesCostText(row);
+  const hbToptan=SALES_COST_RULES.find(r=>r.id==='hasta_bezi_toptan');
+  if(hbToptan.match.test(text)&&hbToptan.channel.test(text))return hbToptan;
+  return SALES_COST_RULES.filter(r=>r.id!=='hasta_bezi_toptan').find(r=>r.match.test(text))||null;
+}
+function salesCostFromRule(row){
+  const rule=salesCostRuleFor(row), revenue=+row.ciro||+row.tutar||0, qty=+row.adet||0;
+  if(!rule)return {unit:0,total:0,matched:false,source:'rule_missing',rule:null,markup:0,profit:0,margin:NaN,note:'Kategori kar oranı sorulacak'};
+  if(rule.markup===0)return {unit:0,total:0,matched:true,source:'category_rule',rule:rule.label,markup:0,profit:revenue,margin:revenue?100:0,note:'Kiralık: maliyet 0'};
+  const total=revenue/rule.markup, unit=qty?total/qty:0, profit=revenue-total;
+  return {unit,total,matched:true,source:'category_rule',rule:rule.label,markup:rule.markup,profit,margin:revenue?profit/revenue*100:0,note:`Kural: satış / ${String(rule.markup).replace('.',',')}`};
+}
 function incomeCostForSale(row,costMap){
+  const ruleCost=salesCostFromRule(row);
+  if(ruleCost.matched||ruleCost.source==='rule_missing')return ruleCost;
   const keys=[row.urun,row.barkod,row.urun_kod].map(x=>String(x||'').trim().toLocaleLowerCase('tr-TR')).filter(Boolean);
   const hit=keys.map(k=>costMap.get(k)).find(x=>x&&Number(x.cost)>0);
   const adet=+row.adet||0;
-  return {unit:hit?.cost||0,total:hit?.cost?hit.cost*adet:0,matched:!!hit};
+  const total=hit?.cost?hit.cost*adet:0, revenue=+row.ciro||0, profit=revenue-total;
+  return {unit:hit?.cost||0,total,matched:!!hit,source:hit?'purchase_data':'missing',rule:hit?'Alış fiyatı':'',markup:0,profit,margin:revenue&&hit?profit/revenue*100:NaN,note:hit?'Alış fiyatı kaynağı':'Kategori kar oranı sorulacak'};
 }
 function incomePlanBucket(row){
   const direct=(row.plan_type||row.fixed_or_variable||'').toString().toLocaleLowerCase('tr-TR');
@@ -2642,8 +2875,13 @@ function openIncomeDetail(title,cols,rows,sortKey='d',sortDir=-1,clickFn='',side
 }
 async function renderIncomeStatementTop(){
   const el=document.getElementById('incomeStatementTop');if(!el)return;
-  el.innerHTML='<div class="finance-empty">Gelir tablosu hesaplanıyor...</div>';
-  const model=await buildIncomeModel(INCOME_MODE);LAST_INCOME_MODEL=model;
+  el.innerHTML='<div class="dashboard-income-fallback"><div class="income-op-title">Gelir Tablosu</div><div class="dash-income-big">hesaplanıyor</div><div class="dash-income-note">Planlanan / tahakkuk / gerçekleşen net sonuç hazırlanıyor.</div></div>';
+  let model;
+  try{model=await buildIncomeModel(INCOME_MODE);LAST_INCOME_MODEL=model;}
+  catch(e){
+    el.innerHTML=`<div class="dashboard-income-fallback dash-income-error"><div class="income-op-title">Gelir Tablosu</div><div class="dash-income-big">kaynak bekliyor</div><div class="dash-income-note">${escHtml(e.message||'Veri modeli kurulunca plan/tahakkuk/nakit aynı panelde görünecek.')}</div><button class="income-btn" onclick="gP('finans',null)">Finans Merkezine Git</button></div>`;
+    return;
+  }
   const p=model.period, receiptRatio=model.revenue?model.cashIn/model.revenue*100:0, paymentRatio=model.expenseTotal?model.cashOut/model.expenseTotal*100:0;
   const cashNet=model.cashIn-model.cashOut, accrualNet=model.revenue-model.expenseTotal, accrualGap=accrualNet-cashNet, cashGap=model.revenue-model.cashIn;
   const planIncome=model.planIncome, planExpense=model.planExpense, cb=model.cashBuckets, eb=model.expenseBuckets;
@@ -2745,7 +2983,7 @@ async function renderIncomeStatementTop(){
         <div class="income-row"><div class="income-label">Tahsil edilen / tahsil edilecek</div><div class="income-cell muted">plan izleniyor</div><div class="income-cell">${dynMoney(model.revenue)}</div><div class="income-cell">${dynMoney(model.cashIn)} / ${dynMoney(Math.max(model.revenue-model.cashIn,0))}</div><div class="income-cell">${dynPct(receiptRatio)}</div></div>
         <div class="income-row"><div class="income-label">Ödenen / ödenecek</div><div class="income-cell muted">plan izleniyor</div><div class="income-cell">${dynMoney(model.expenseTotal)}</div><div class="income-cell">${dynMoney(model.cashOut)} / ${dynMoney(Math.max(model.expenseTotal-model.cashOut,0))}</div><div class="income-cell">${dynPct(paymentRatio)}</div></div>
       </div>
-      <div class="income-foot">Kontrol: ${fmt(model.planIncomeRows.length+model.planExpenseRows.length)} plan/takvim kaydı · ${fmt(model.sales.length)} satış tahakkuk satırı · ${fmt(model.expenses.length)} gider tahakkuku · ${fmt(model.bankRows.length)} banka/kasa hareketi · ${fmt(model.approvedBankRows.length)} onaylı mail ekstre hareketi okundu. ${model.missingCost?`${fmt(model.missingCost)} satış satırında ürün alış maliyeti eksik; brüt kar temkinli gösterilir.`:'Ürün maliyet eşleşmesi tamam.'}</div>
+      <div class="income-foot">Kontrol: ${fmt(model.planIncomeRows.length+model.planExpenseRows.length)} plan/takvim kaydı · ${fmt(model.sales.length)} satış tahakkuk satırı · ${fmt(model.expenses.length)} gider tahakkuku · ${fmt(model.bankRows.length)} banka/kasa hareketi · ${fmt(model.approvedBankRows.length)} onaylı mail ekstre hareketi okundu. ${model.missingCost?`${fmt(model.missingCost)} satış satırında kategori kar oranı eksik; oran sorulacak.`:'Kategori bazlı maliyet/kar kuralları uygulandı.'}</div>
     </div>
     <div class="income-side">
       <div class="income-chart-card"><div class="income-chart-title">Plan / Tahakkuk / Gerçekleşme</div><canvas id="incomeChartA"></canvas></div>
@@ -3084,7 +3322,7 @@ async function renderKarts(){
   }).join('');
 }
 
-async function ulUp(){if(!upParsed.length)return;const mode=document.getElementById('uM').value;const batch=parseInt(document.getElementById('uB').value);document.getElementById('bU').disabled=true;document.getElementById('uPW').style.display='block';if(mode==='replace_all'){await db.from('sales_raw').delete().eq('firma_id',upF);ulg('Silindi','ok');}else if(mode==='replace_period'){const aylar=[...new Set(upParsed.map(r=>`${r.yil}-${p2(r.ay)}`))];for(const ym of aylar){const[y,m]=ym.split('-');await db.from('sales_raw').delete().eq('firma_id',upF).eq('yil',+y).eq('ay',+m);}ulg(`${aylar.length} ay temizlendi`,'ok');}let total=0,errors=0;const batches=[];for(let i=0;i<upParsed.length;i+=batch)batches.push(upParsed.slice(i,i+batch));ulg(`${upParsed.length} satır, ${batches.length} paket`,'info');for(let i=0;i<batches.length;i++){const{data,error}=await db.from('sales_raw').insert(batches[i]).select('id');if(error){ulg(`Paket ${i+1}: ${error.message}`,'err');errors++;}else total+=data.length;const pct=Math.round((i+1)/batches.length*100);document.getElementById('uPB').style.width=pct+'%';document.getElementById('uPT').textContent=`${pct}% - ${total} kayıt`;await new Promise(r=>setTimeout(r,50));}ulg(`✅ ${total} kayıt yüklendi${errors?', '+errors+' hata':''}!`,'ok');document.getElementById('bU').disabled=false;renderKarts();}
+async function ulUp(){if(!upParsed.length)return;const mode=document.getElementById('uM').value;const batch=parseInt(document.getElementById('uB').value);document.getElementById('bU').disabled=true;document.getElementById('uPW').style.display='block';if(mode==='replace_all'){await db.from('sales_raw').delete().eq('firma_id',upF);ulg('Silindi','ok');}else if(mode==='replace_period'){const aylar=[...new Set(upParsed.map(r=>`${r.yil}-${p2(r.ay)}`))];for(const ym of aylar){const[y,m]=ym.split('-');await db.from('sales_raw').delete().eq('firma_id',upF).eq('yil',+y).eq('ay',+m);}ulg(`${aylar.length} ay temizlendi`,'ok');}let total=0,errors=0;const batches=[];for(let i=0;i<upParsed.length;i+=batch)batches.push(upParsed.slice(i,i+batch));ulg(`${upParsed.length} satır, ${batches.length} paket`,'info');for(let i=0;i<batches.length;i++){const{data,error}=await db.from('sales_raw').insert(batches[i]).select('id');if(error){ulg(`Paket ${i+1}: ${error.message}`,'err');errors++;}else total+=data.length;const pct=Math.round((i+1)/batches.length*100);document.getElementById('uPB').style.width=pct+'%';document.getElementById('uPT').textContent=`${pct}% - ${total} kayıt`;await new Promise(r=>setTimeout(r,50));}ulg(`✅ ${total} kayıt yüklendi${errors?', '+errors+' hata':''}!`,'ok');document.getElementById('bU').disabled=false;clearSalesWideCache();renderKarts();}
 function clUp(){upFile=null;upParsed=[];document.getElementById('uFN').textContent='';dz.classList.remove('done','drag');document.getElementById('uPW').style.display='none';document.getElementById('bP').disabled=true;document.getElementById('bU').disabled=true;document.getElementById('uLog').innerHTML='<span class="info">Temizlendi.</span>';}
 document.querySelectorAll('.wt').forEach(t=>t.addEventListener('click',()=>t.classList.toggle('on')));
 function sWP(){localStorage.setItem('ap_wp',JSON.stringify({wp1:{name:document.getElementById('w1n').value,phone:document.getElementById('w1p').value,key:document.getElementById('w1k').value},wp2:{name:document.getElementById('w2n').value,phone:document.getElementById('w2p').value,key:document.getElementById('w2k').value}}));alert('✅ Kaydedildi!');}
@@ -3098,7 +3336,7 @@ const sumRows=rows=>({adet:rows.reduce((s,r)=>s+(+r.adet||0),0),ciro:rows.reduce
 async function buildProdNotify(){
   const names=prodNotifyItems();if(!names.length)return 'Secilen urun yok.';
   const pr=pRange(), now=new Date(), weekS=fD(new Date(now.getFullYear(),now.getMonth(),now.getDate()-6));
-  const {data,error}=await db.from('sales_raw').select('urun,adet,ciro,tarih,firma_id,kategori,cari_unvan,musteri').eq('firma_id',PILOT_FIRMA).gte('tarih',pr.prevYearS).lte('tarih',pr.todayS).limit(20000);
+  const {data,error}=await db.from('sales_raw').select('urun,adet,ciro,tarih,firma_id,kategori,unvan').eq('firma_id',PILOT_FIRMA).gte('tarih',pr.prevYearS).lte('tarih',pr.todayS).limit(20000);
   if(error)return 'Urun raporu alinamadi: '+error.message;
   const all=applyProductRules(data||[]).filter(isAlayliRow), lines=['AperiON Secilen Urun Raporu',pr.todayS,''];
   names.forEach(name=>{
@@ -3133,13 +3371,85 @@ function srtU(k,btn){
   rU();
 }
 let uCat='';
+let SALES_OPEN_CATS={};
+let SALES_WIDE_CACHE={key:'',rows:null,at:0,promise:null};
+const SALES_CACHE_TTL_MS=10*60*1000;
+const SALES_CACHE_STALE_MS=6*60*60*1000;
+const SALES_WIDE_COLUMNS='id,firma_id,tarih,urun,kategori,unvan,adet,ciro,urun_kod,created_at';
+const SALES_IDB_NAME='aperion_sales_cache_v1', SALES_IDB_STORE='kv';
+function clearSalesWideCache(){
+  SALES_WIDE_CACHE={key:'',rows:null,at:0,promise:null};
+  try{Object.keys(sessionStorage).filter(k=>k.startsWith('ap_sales_wide_')).forEach(k=>sessionStorage.removeItem(k));}catch(e){}
+  try{Object.keys(localStorage).filter(k=>k.startsWith('ap_sales_wide_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
+  salesCacheDeleteAll();
+}
+function salesDb(){
+  return new Promise((resolve,reject)=>{
+    if(!('indexedDB' in window))return reject(new Error('indexedDB yok'));
+    const req=indexedDB.open(SALES_IDB_NAME,1);
+    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(SALES_IDB_STORE))db.createObjectStore(SALES_IDB_STORE,{keyPath:'key'});};
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error||new Error('indexedDB acilamadi'));
+  });
+}
+async function salesCacheRead(key){
+  try{
+    const dbi=await salesDb();
+    const val=await new Promise((resolve,reject)=>{
+      const tx=dbi.transaction(SALES_IDB_STORE,'readonly'), st=tx.objectStore(SALES_IDB_STORE), rq=st.get(key);
+      rq.onsuccess=()=>resolve(rq.result||null);rq.onerror=()=>reject(rq.error);
+    });
+    try{dbi.close();}catch(e){}
+    if(val?.rows)return val;
+  }catch(e){}
+  try{return JSON.parse(localStorage.getItem(key)||sessionStorage.getItem(key)||'null');}catch(e){return null;}
+}
+async function salesCacheWrite(key,rows,at=Date.now()){
+  const payload={key,at,rows};
+  try{
+    const dbi=await salesDb();
+    await new Promise((resolve,reject)=>{
+      const tx=dbi.transaction(SALES_IDB_STORE,'readwrite'), st=tx.objectStore(SALES_IDB_STORE), rq=st.put(payload);
+      rq.onsuccess=()=>resolve();rq.onerror=()=>reject(rq.error);
+    });
+    try{dbi.close();}catch(e){}
+  }catch(e){
+    try{localStorage.setItem(key,JSON.stringify(payload));}catch(e2){}
+  }
+  try{sessionStorage.setItem(key,JSON.stringify(payload));}catch(e){}
+}
+async function salesCacheDeleteAll(){
+  try{
+    const dbi=await salesDb();
+    await new Promise((resolve,reject)=>{
+      const tx=dbi.transaction(SALES_IDB_STORE,'readwrite'), st=tx.objectStore(SALES_IDB_STORE), rq=st.clear();
+      rq.onsuccess=()=>resolve();rq.onerror=()=>reject(rq.error);
+    });
+    try{dbi.close();}catch(e){}
+  }catch(e){}
+}
 function selectSalesCategory(k){
   uCat=k||'';
   const s=document.getElementById('uKa');
   if(s)s.value=uCat;
   rU();
 }
+function toggleSalesCategory(k){
+  SALES_OPEN_CATS[k]=!SALES_OPEN_CATS[k];
+  selectSalesCategory(k);
+}
 const nrmCat=v=>(v||'Kategorisiz').toString().trim()||'Kategorisiz';
+function salesMainCategory(row){
+  const txt=`${row?.kategori||''} ${row?.urun||''}`.toLocaleUpperCase('tr-TR');
+  const plain=txt.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/İ/g,'I');
+  if(/HASTA\s*BEZ|KULOTLU|KÜLOTLÜ|BELBANT|BEL\s*BANT|SERME/.test(plain))return 'HASTA BEZİ';
+  if(/KULAK|ISITME|PIL|CIHAZ/.test(plain))return 'KULAK İŞİTME';
+  if(/ORTOPED|YURUME|TEKERLEKLI|SANDALYE|BASTON|KOLTUK/.test(plain))return 'ORTOPEDİ';
+  if(/MEDIKAL\s*SONDA|SONDA|KOLOSTOMI|UROLOJ/.test(plain))return 'MEDİKAL SARF';
+  if(/TANSIYON|ELEKTRONIK|AKULU/.test(plain))return 'MEDİKAL ELEKTRONİK';
+  if(/YARA|BAKIM|ISLAK|MENDIL|TEMIZLEME/.test(plain))return 'BAKIM VE TEMİZLİK';
+  return nrmCat(row?.kategori);
+}
 const pRange=()=>{
   const now=new Date(), y=now.getFullYear(), m=now.getMonth();
   const fd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -3172,6 +3482,7 @@ const priceCell=(cur,prev)=>`<div class="metric-cell"><span class="price-main">S
 function categoryRowsWide(cats,pr){
   return Object.entries(cats).map(([k,rows])=>({
     k,
+    products:productRowsWide(rows,pr),
     dy:met(rows,pr.yestS,pr.yestS),
     wk:met(rows,pr.weekS,pr.todayS),
     tm:met(rows,pr.todayS,pr.todayS),
@@ -3181,47 +3492,122 @@ function categoryRowsWide(cats,pr){
     ly:met(rows,pr.prevYearS,pr.prevYearE)
   }));
 }
+function productRowsWide(rows,pr){
+  const products={};
+  rows.forEach(r=>{
+    const u=(r.urun||'Ürün Yok').toString().trim()||'Ürün Yok';
+    (products[u]||(products[u]=[])).push(r);
+  });
+  return Object.entries(products).map(([n,list])=>{
+    const yr=met(list,pr.yearS,pr.todayS), rule=salesCostFromRule(list[0]||{});
+    const yrCost=list.filter(r=>inR(r,pr.yearS,pr.todayS)).reduce((s,r)=>s+salesCostFromRule(r).total,0);
+    return {
+      n,
+      cat:nrmCat(list[0]?.kategori),
+      costRule:rule,
+      yrProfit:yr.ciro-yrCost,
+      yrMargin:yr.ciro?(yr.ciro-yrCost)/yr.ciro*100:NaN,
+      dy:met(list,pr.yestS,pr.yestS),
+      wk:met(list,pr.weekS,pr.todayS),
+      tm:met(list,pr.todayS,pr.todayS),
+      mo:met(list,pr.monthS,pr.todayS),
+      pm:met(list,pr.prevMonthS,pr.prevMonthE),
+      yr,
+      ly:met(list,pr.prevYearS,pr.prevYearE)
+    };
+  });
+}
+function salesHeatCell(metric,max){
+  const val=metric?.ciro||0, cls=!max||val>=max*.66?'hot':val>=max*.22?'mid':'cold';
+  return `<span class="sales-heat ${cls}">TL ${fmt(val)}</span><div class="metric-qty">${fmt(metric?.adet||0)} adet</div>`;
+}
+function salesSpark(metrics){
+  const vals=metrics.map(m=>m?.ciro||0), max=Math.max(...vals,1);
+  return `<span class="sales-spark">${vals.map(v=>`<span style="height:${Math.max(3,Math.round(v/max*22))}px"></span>`).join('')}</span>`;
+}
+function productChildRows(cat,activeKey,searchText=''){
+  const list=[...(cat.products||[])].filter(p=>{
+    const q=searchText.toLocaleLowerCase('tr-TR');
+    if(!q)return true;
+    return `${p.n} ${p.cat}`.toLocaleLowerCase('tr-TR').includes(q);
+  }).sort((a,b)=>(b[activeKey]?.ciro||0)-(a[activeKey]?.ciro||0)).slice(0,40);
+  const max=Math.max(...list.map(p=>p[activeKey]?.ciro||0),1);
+  if(!list.length)return `<tr class="sales-product-row"><td colspan="8"><div class="empty" style="padding:14px"><div class="empty-t">Bu ana kategori içinde aramaya uyan ürün yok</div></div></td></tr>`;
+  return list.map(p=>`<tr class="sales-product-row dyn-click" onclick='openProductProfitCard(${jsAttrArg(p.n)})'>
+    <td><div class="sales-product-name" title="${escHtml(p.n)}"><span class="sales-product-dot"></span><span>${escHtml(p.n)}</span></div><div class="cat-name-sub">${escHtml(p.cat)} · ürüne gir</div></td>
+    <td>${salesHeatCell(p.dy,max)}</td><td>${salesHeatCell(p.wk,max)}</td><td>${salesHeatCell(p.mo,max)}</td><td>${salesHeatCell(p.pm,max)}</td><td>${salesHeatCell(p.yr,max)}</td><td>${salesHeatCell(p.ly,max)}</td>
+    <td><div class="metric-cell"><span class="price-main">Kar ${p.costRule?.matched?dynMoney(p.yrProfit):'oran sor'}</span><span class="price-sub">${p.costRule?.matched?`${escHtml(p.costRule.rule)} · ${dynPct(p.yrMargin)}`:'kar oranı sorulacak'}</span></div></td>
+  </tr>`).join('');
+}
 function categoryPerformanceTable(rows,activeKey,selectedCat='',limit=18){
   const pr=pRange(), total=rows.reduce((s,r)=>s+(r[activeKey]?.ciro||0),0);
   const ordered=[...rows].sort((a,b)=>(b[activeKey]?.ciro||0)-(a[activeKey]?.ciro||0)).slice(0,limit);
   if(!ordered.length)return'<div class="empty"><div class="empty-t">Kategori verisi yok</div></div>';
   return `<div class="category-table-wrap"><table class="pt"><thead><tr><th>Kategori</th><th>Dün</th><th>Bu Hafta</th><th>${pr.monthName}</th><th>${pr.prevMonthName}</th><th>${pr.year}</th><th>${pr.prevYear}</th><th>Pay / Ortalama</th></tr></thead><tbody>${ordered.map((r,i)=>{
     const active=r[activeKey]||{ciro:0,adet:0,avg:0}, pay=total?active.ciro/total*100:0;
-    return `<tr class="${selectedCat===r.k?'on':''}" onclick="selectSalesCategory(${jsArg(r.k)})"><td style="max-width:310px"><span class="cat-rank">${i+1}</span><span class="cat-name-main">${escHtml(r.k)}</span><div class="cat-name-sub">${fmt(active.rows)} işlem · ürünlere gir</div></td><td>${sumCell(r.dy)}</td><td>${sumCell(r.wk)}</td><td>${sumCell(r.mo)}</td><td>${sumCell(r.pm)}</td><td>${sumCell(r.yr)}</td><td>${sumCell(r.ly)}</td><td><div class="metric-cell"><span class="price-main">${dynPct(pay)}</span><span class="price-sub">Ort TL ${fmt(active.avg)} / LY TL ${fmt(r.ly.avg)}</span></div></td></tr>`;
+    const open=!!SALES_OPEN_CATS[r.k]||selectedCat===r.k;
+    return `<tr class="sales-master-row ${open?'open':''}" onclick='toggleSalesCategory(${jsAttrArg(r.k)})'><td style="max-width:310px"><span class="sales-master-toggle">${open?'−':'+'}</span><span class="cat-rank">${i+1}</span><span class="cat-name-main">${escHtml(r.k)}</span><div class="cat-name-sub">${fmt(active.rows)} işlem · ${fmt(r.products?.length||0)} ürün · aç/kapat</div></td><td>${sumCell(r.dy)}</td><td>${sumCell(r.wk)}</td><td>${sumCell(r.mo)}</td><td>${sumCell(r.pm)}</td><td>${sumCell(r.yr)}</td><td>${sumCell(r.ly)}</td><td><div class="metric-cell"><span class="price-main">${dynPct(pay)}</span><span class="price-sub">Ort TL ${fmt(active.avg)} / LY TL ${fmt(r.ly.avg)}</span></div></td></tr>${open?productChildRows(r,activeKey,document.getElementById('uSearch')?.value||''):''}`;
   }).join('')}</tbody></table></div>`;
 }
 async function salesWide(cf){
-  const pr=pRange(), all=[];
+  const pr=pRange(), key=`ap_sales_wide_${PILOT_FIRMA}_${pr.prevYearS}_${pr.todayS}_${BUILD_CODE}`;
+  const fresh=SALES_WIDE_CACHE.key===key&&SALES_WIDE_CACHE.rows&&(Date.now()-SALES_WIDE_CACHE.at)<SALES_CACHE_TTL_MS;
+  if(fresh)return SALES_WIDE_CACHE.rows;
+  if(SALES_WIDE_CACHE.key===key&&SALES_WIDE_CACHE.promise)return SALES_WIDE_CACHE.promise;
+  try{
+    const cached=JSON.parse(sessionStorage.getItem(key)||'null');
+    if(cached?.rows&&cached?.at&&(Date.now()-cached.at)<SALES_CACHE_TTL_MS){
+      SALES_WIDE_CACHE={key,rows:cached.rows,at:cached.at,promise:null};
+      return SALES_WIDE_CACHE.rows;
+    }
+  }catch(e){}
+  const persistent=await salesCacheRead(key);
+  if(persistent?.rows&&persistent?.at&&(Date.now()-persistent.at)<SALES_CACHE_STALE_MS){
+    SALES_WIDE_CACHE={key,rows:persistent.rows,at:persistent.at,promise:null};
+    if((Date.now()-persistent.at)>SALES_CACHE_TTL_MS)refreshSalesWideInBackground(key,pr);
+    return persistent.rows;
+  }
+  const loader=fetchSalesWideFromDb(key,pr);
+  SALES_WIDE_CACHE={key,rows:null,at:0,promise:loader};
+  try{return await loader;}finally{if(SALES_WIDE_CACHE.key===key)SALES_WIDE_CACHE.promise=null;}
+}
+async function fetchSalesWideFromDb(key,pr){
+  const all=[];
   for(let from=0;;from+=1000){
-    let q=db.from('sales_raw').select('*').gte('tarih',pr.prevYearS).lte('tarih',pr.todayS).order('id').range(from,from+999);
+    let q=db.from('sales_raw').select(SALES_WIDE_COLUMNS).gte('tarih',pr.prevYearS).lte('tarih',pr.todayS).order('id').range(from,from+999);
     q=q.eq('firma_id',PILOT_FIRMA);
     const {data,error}=await q;if(error)break;
     all.push(...(data||[]));if(!data||data.length<1000)break;
   }
-  return applyProductRules(all.filter(isAlayliRow));
+  const rows=applyProductRules(all.filter(isAlayliRow));
+  SALES_WIDE_CACHE={key,rows,at:Date.now(),promise:null};
+  await salesCacheWrite(key,rows,SALES_WIDE_CACHE.at);
+  return rows;
+}
+function refreshSalesWideInBackground(key,pr){
+  if(SALES_WIDE_CACHE.promise)return;
+  SALES_WIDE_CACHE.promise=fetchSalesWideFromDb(key,pr).then(rows=>{
+    if(document.getElementById('pg-satis')?.classList.contains('on'))rU();
+    return rows;
+  }).catch(()=>SALES_WIDE_CACHE.rows||[]).finally(()=>{if(SALES_WIDE_CACHE.key===key)SALES_WIDE_CACHE.promise=null;});
 }
 async function rU(){
   const cf=PILOT_FIRMA;
   const ck=document.getElementById('uKa')?.value||uCat||'';
+  const q=(document.getElementById('uSearch')?.value||'').trim().toLocaleLowerCase('tr-TR');
   const w=document.getElementById('uW');if(!w)return;
-  w.innerHTML='<div class="empty"><div class="empty-t">Yonetim raporu hazirlaniyor...</div></div>';
+  if(!SALES_WIDE_CACHE.rows)w.innerHTML='<div class="empty"><div class="empty-t">Yonetim raporu hazirlaniyor...</div></div>';
   const pr=pRange(), d=await salesWide(cf), active=periodFor(cM,pr);
-  const base=ck?d.filter(r=>nrmCat(r.kategori)===ck):d;
+  const searched=q?d.filter(r=>`${r.urun||''} ${r.kategori||''} ${r.unvan||''} ${r.cari_unvan||''} ${r.musteri||''}`.toLocaleLowerCase('tr-TR').includes(q)):d;
+  const base=ck?searched.filter(r=>salesMainCategory(r)===ck):searched;
   const cats={};
-  d.forEach(r=>{const k=nrmCat(r.kategori);(cats[k]||(cats[k]=[])).push(r);});
+  searched.forEach(r=>{const k=salesMainCategory(r);(cats[k]||(cats[k]=[])).push(r);});
   const catRows=categoryRowsWide(cats,pr);
-  const prod={}, cari={};
-  base.forEach(r=>{
-    const u=(r.urun||'Urun Yok').trim(), c=(r.unvan||'Cari Yok').trim();
-    (prod[u]||(prod[u]=[])).push(r);(cari[c]||(cari[c]=[])).push(r);
-  });
-  const makeRows=obj=>Object.entries(obj).map(([n,rows])=>({n,cat:nrmCat(rows[0]?.kategori),dy:met(rows,pr.yestS,pr.yestS),wk:met(rows,pr.weekS,pr.todayS),tm:met(rows,pr.todayS,pr.todayS),mo:met(rows,pr.monthS,pr.todayS),pm:met(rows,pr.prevMonthS,pr.prevMonthE),yr:met(rows,pr.yearS,pr.todayS),ly:met(rows,pr.prevYearS,pr.prevYearE)})).sort((a,b)=>srtK==='adet'?b[active.key].adet-a[active.key].adet:b[active.key].ciro-a[active.key].ciro);
-  const prods=makeRows(prod).slice(0,80), caris=makeRows(cari).slice(0,40);
   const top=met(base,pr.yearS,pr.todayS), last=met(base,pr.prevYearS,pr.prevYearE), month=met(base,pr.monthS,pr.todayS), prevMonth=met(base,pr.prevMonthS,pr.prevMonthE), week=met(base,pr.weekS,pr.todayS), todayM=met(base,pr.todayS,pr.todayS), yday=met(base,pr.yestS,pr.yestS);
   const growth=last.ciro?((top.ciro-last.ciro)/last.ciro*100):0;
   const lm=document.getElementById('lastMonthBtn');if(lm)lm.textContent=pr.prevMonthName;
   w.innerHTML=`
-    <div class="sales-shell">
+    <div class="sales-screen">
       <div class="sales-kpi-grid">
         <div class="kpi g"><div class="kpi-l">Bugün</div><div class="kpi-v">TL ${fmt(todayM.ciro)}</div><div class="kpi-s">${fmt(todayM.adet)} adet · ${fmt(todayM.rows)} işlem</div></div>
         <div class="kpi g"><div class="kpi-l">Dün</div><div class="kpi-v">TL ${fmt(yday.ciro)}</div><div class="kpi-s">${fmt(yday.adet)} adet · ${fmt(yday.rows)} işlem</div></div>
@@ -3231,17 +3617,15 @@ async function rU(){
         <div class="kpi o"><div class="kpi-l">${pr.year}</div><div class="kpi-v">TL ${fmt(top.ciro)}</div><div class="kpi-s">${fmt(top.adet)} adet</div></div>
         <div class="kpi r"><div class="kpi-l">${pr.prevYear}</div><div class="kpi-v">TL ${fmt(last.ciro)}</div><div class="kpi-s">${growth>=0?'+':''}${growth.toFixed(1)}%</div></div>
       </div>
-      <div class="sales-head">
-        <div><div class="sales-title">Kategori Performansi - ${active.label}${ck?` / ${ck}`:''}</div><div class="sales-sub">Kategoriye bas: ürün listesi anında filtrelenir.</div></div>
-        <div class="sales-actions">${ck?`<button class="fb" onclick="selectSalesCategory('')">Tüm Kategoriler</button>`:''}</div>
+      <div class="sales-shell">
+        <div class="sales-head">
+          <div><div class="sales-title">Kategori ve Ürün Matrisi - ${active.label}${ck?` / ${ck}`:''}</div><div class="sales-sub">Ana kategori aç/kapat; ürün tıklanınca dinamik ürün kartı açılır. Sayfa tek ekranda kalır.</div></div>
+          <div class="sales-actions">${ck?`<button class="fb" onclick="selectSalesCategory('')">Tüm Kategoriler</button>`:''}</div>
+        </div>
+        <div class="sales-table-zone">
+          ${categoryPerformanceTable(catRows,active.key,ck,22)}
+        </div>
       </div>
-      ${categoryPerformanceTable(catRows,active.key,ck,18)}
-    </div>
-    <div class="sales-table-zone">
-      <div class="sales-table-head"><div><div class="sales-title">Urun Dinamik Raporu</div><div class="sales-sub">${ck||'Tüm kategoriler'} · ilk 80 ürün</div></div></div>
-      <div class="sales-table-wrap">${reportTable(prods,'urun')}</div>
-      <div class="sales-table-head" style="margin-top:14px"><div><div class="sales-title">Cari Dinamik Raporu</div><div class="sales-sub">${ck||'Tüm kategoriler'} · ilk 40 cari</div></div></div>
-      <div class="sales-table-wrap">${reportTable(caris,'cari')}</div>
     </div>`;
 }
 const dynNum=n=>Number.isFinite(+n)?Math.round(+n).toLocaleString('tr-TR'):'veri yok';
@@ -3261,6 +3645,7 @@ function parseDynMoney(v){
 }
 const escHtml=v=>(v??'').toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const jsArg=v=>JSON.stringify(v??'');
+const jsAttrArg=v=>escHtml(jsArg(v));
 const rowDate=r=>(r?.tarih||r?.alis_tarihi||r?.satis_tarihi||r?.islem_tarihi||r?.created_at||'').toString().substring(0,10);
 const rowQty=r=>+(r?.adet??r?.miktar??r?.qty??0)||0;
 const rowAmount=r=>+(r?.ciro??r?.tutar??r?.toplam??r?.alis_tutari??r?.satis_tutari??0)||0;
@@ -3272,15 +3657,9 @@ const dynBox=(l,v,s='')=>`<div class="dyn-box"><div class="dyn-l">${escHtml(l)}<
 function periodSales(rows,a,b){const d=rows.filter(r=>rowDate(r)>=a&&rowDate(r)<=b),adet=d.reduce((s,r)=>s+rowQty(r),0),ciro=d.reduce((s,r)=>s+rowAmount(r),0);return{rows:d,adet,ciro,avg:safeAvg(ciro,adet)};}
 function productCodeOf(rows){return rows.find(r=>r.urun_kod)?.urun_kod||rows.find(r=>r.urun_kodu)?.urun_kodu||rows.find(r=>r.kod)?.kod||rows.find(r=>r.barkod)?.barkod||'veri yok';}
 async function loadProductSales(productName,firmId){
-  const pr=pRange(), out=[];
-  for(let from=0;;from+=1000){
-    let q=db.from('sales_raw').select('*').gte('tarih',pr.prevYearS).lte('tarih',pr.todayS).order('tarih',{ascending:true}).range(from,from+999);
-    q=q.eq('firma_id',PILOT_FIRMA);
-    const {data,error}=await q;if(error)break;
-    out.push(...(data||[]));if(!data||data.length<1000)break;
-  }
+  const out=await salesWide(PILOT_FIRMA);
   const key=prodKey(productName);
-  return applyProductRules(out.filter(isAlayliRow)).filter(r=>prodKey(r.urun)===key);
+  return out.filter(r=>prodKey(r.urun)===key).sort((a,b)=>rowDate(a).localeCompare(rowDate(b)));
 }
 async function loadPurchaseRows(productName,firmId){
   const tables=['alis_raw','purchases_raw','purchase_raw','maliyetler','fiyat_listesi'],key=prodKey(productName),rows=[];
@@ -3295,7 +3674,16 @@ async function loadPurchaseRows(productName,firmId){
   return rows;
 }
 function purchasePeriod(rows,a,b){const d=rows.filter(r=>{const dt=rowDate(r);return dt&&dt>=a&&dt<=b;});const adet=d.reduce((s,r)=>s+rowQty(r),0),tutar=d.reduce((s,r)=>s+(rowAmount(r)||rowUnit(r)*rowQty(r)),0);return{rows:d,adet,tutar,avg:adet&&tutar?tutar/adet:NaN};}
-function profitBlock(s,p){if(!Number.isFinite(p.avg))return{profit:NaN,unit:NaN,margin:NaN,note:'alış verisi eksik'};const profit=s.ciro-(s.adet*p.avg);return{profit,unit:safeAvg(profit,s.adet),margin:s.ciro?profit/s.ciro*100:NaN,note:''};}
+function profitBlock(s,p){
+  const rule=s.rows?.map(r=>salesCostFromRule(r)).find(x=>x.matched);
+  if(rule){
+    const totalCost=s.rows.reduce((sum,r)=>sum+salesCostFromRule(r).total,0), profit=s.ciro-totalCost;
+    return {profit,unit:safeAvg(profit,s.adet),margin:s.ciro?profit/s.ciro*100:NaN,cost:totalCost,avgCost:safeAvg(totalCost,s.adet),rule:rule.rule,markup:rule.markup,note:rule.note};
+  }
+  if(!Number.isFinite(p.avg))return{profit:NaN,unit:NaN,margin:NaN,cost:NaN,avgCost:NaN,rule:'Oran eksik',markup:0,note:'kategori kar oranı sorulacak'};
+  const cost=s.adet*p.avg, profit=s.ciro-cost;
+  return{profit,unit:safeAvg(profit,s.adet),margin:s.ciro?profit/s.ciro*100:NaN,cost,avgCost:p.avg,rule:'Alış verisi',markup:0,note:''};
+}
 function cmp(cur,prev){if(!Number.isFinite(cur)||!Number.isFinite(prev)||prev===0)return 'eksik veri';const v=(cur-prev)/Math.abs(prev)*100;return (v>=0?'+':'')+dynPct(v);}
 function productTopCustomer(rows){
   const m={};
@@ -3326,6 +3714,7 @@ async function openProductProfitCard(productName){
   const yday=periodSales(sales,pr.yestS,pr.yestS), week=periodSales(sales,pr.weekS,pr.todayS), month=periodSales(sales,pr.monthS,pr.todayS), prevMonth=periodSales(sales,pr.prevMonthS,pr.prevMonthE);
   const thisSales=periodSales(sales,pr.yearS,pr.todayS), lastSales=periodSales(sales,pr.prevYearS,pr.prevYearE), thisBuy=purchasePeriod(buys,pr.yearS,pr.todayS), lastBuy=purchasePeriod(buys,pr.prevYearS,pr.prevYearE);
   const thisProfit=profitBlock(thisSales,thisBuy), lastProfit=profitBlock(lastSales,lastBuy);
+  const costRule=salesCostFromRule(sales[0]||{});
   const lastSale=[...sales].filter(r=>rowQty(r)&&rowAmount(r)).sort((a,b)=>rowDate(a).localeCompare(rowDate(b))).at(-1), lastBuyRow=[...buys].sort((a,b)=>rowDate(a).localeCompare(rowDate(b))).at(-1);
   const lastBuyPrice=buyUnit(lastBuyRow), topCustomer=productTopCustomer(sales), topThisCustomer=productTopCustomer(thisSales.rows), src=lastBuyRow?`${lastBuyRow._kaynak||'alış verisi'} · ${lastBuyRow.tedarikci||lastBuyRow.unvan||lastBuyRow.cari_unvan||lastBuyRow.aciklama||'kaynak adı yok'}`:'alış kaynağı yok';
   t.textContent='Dinamik Ürün Kârlılık Kartı';
@@ -3343,7 +3732,7 @@ async function openProductProfitCard(productName){
       <div style="background:var(--s2);border:1px solid var(--b1);border-radius:14px;padding:18px">
         <div style="font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--t3);font-weight:900">Kârlılık Kontrolü</div>
         <div style="font-family:var(--mono);font-size:22px;font-weight:950;color:${Number.isFinite(thisProfit.profit)?'var(--green)':'var(--orange)'};margin-top:8px">${Number.isFinite(thisProfit.profit)?dynMoney(thisProfit.profit):'eksik veri'}</div>
-        <div style="font-size:11px;color:var(--t3);margin-top:6px">Bu yıl tahmini kâr · Marj ${dynPct(thisProfit.margin)}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:6px">Bu yıl tahmini kâr · Marj ${dynPct(thisProfit.margin)} · ${escHtml(thisProfit.rule||'oran eksik')}</div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:10px;margin-bottom:18px">
@@ -3351,13 +3740,13 @@ async function openProductProfitCard(productName){
     </div>
     <div class="dyn-sec">Alış, Satış ve Müşteri Kanıtı</div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
-      ${productProofRow('Son alış fiyatı',Number.isFinite(lastBuyPrice)?dynMoney(lastBuyPrice):'veri yok',`${rowDate(lastBuyRow)||'tarih yok'} · ${src}`,'var(--orange)')}
-      ${productProofRow('Bu yıl ort. alış',Number.isFinite(thisBuy.avg)?dynMoney(thisBuy.avg):'eksik veri',`${dynNum(thisBuy.adet)} adet alış verisi`,'var(--accent)')}
+      ${productProofRow('Maliyet kuralı',costRule.matched?`${costRule.rule} · ${costRule.markup?String(costRule.markup).replace('.',',')+'x':'0 maliyet'}`:'oran sorulacak',costRule.note,'var(--orange)')}
+      ${productProofRow('Bu yıl hesaplanan maliyet',Number.isFinite(thisProfit.cost)?dynMoney(thisProfit.cost):'eksik veri',`Ort. maliyet ${Number.isFinite(thisProfit.avgCost)?dynMoney(thisProfit.avgCost):'eksik'}`,'var(--accent)')}
       ${productProofRow('Geçen yıl ort. alış',Number.isFinite(lastBuy.avg)?dynMoney(lastBuy.avg):'eksik veri',`${dynNum(lastBuy.adet)} adet alış verisi`,'var(--accent)')}
       ${productProofRow('En çok kime satılmış',topThisCustomer.name!=='veri yok'?topThisCustomer.name:topCustomer.name,Number.isFinite(topThisCustomer.ciro)?`Bu yıl ${dynMoney(topThisCustomer.ciro)}`:Number.isFinite(topCustomer.ciro)?`Tüm kayıt ${dynMoney(topCustomer.ciro)}`:'satış carisi yok','var(--green)')}
     </div>
     <div class="dyn-sec">Son Hareket</div>
-    <div class="dyn-grid">${dynBox('En son satış kime',lastSale?.unvan||'veri yok')}${dynBox('En son satış tarihi',rowDate(lastSale)||'veri yok')}${dynBox('En son satış fiyatı',lastSale&&rowQty(lastSale)?dynMoney(rowAmount(lastSale)/rowQty(lastSale)):'veri yok')}${dynBox('En son alış kimden',lastBuyRow?.tedarikci||lastBuyRow?.unvan||lastBuyRow?.cari_unvan||'veri yok')}${dynBox('En son alış tarihi',rowDate(lastBuyRow)||'veri yok')}${dynBox('Alış veri kaynağı',lastBuyRow?lastBuyRow._kaynak||'veri var':'veri yok')}</div>
+    <div class="dyn-grid">${dynBox('En son satış kime',lastSale?.unvan||'veri yok')}${dynBox('En son satış tarihi',rowDate(lastSale)||'veri yok')}${dynBox('En son satış fiyatı',lastSale&&rowQty(lastSale)?dynMoney(rowAmount(lastSale)/rowQty(lastSale)):'veri yok')}${dynBox('En son alış kimden',lastBuyRow?.tedarikci||lastBuyRow?.unvan||lastBuyRow?.cari_unvan||'veri yok')}${dynBox('En son alış tarihi',rowDate(lastBuyRow)||'veri yok')}${dynBox('Maliyet kaynağı',thisProfit.rule||'oran sorulacak')}</div>
     <div class="dyn-sec">Bu Yıl / Geçen Yıl Karşılaştırma</div>
     <div class="dyn-grid">${dynBox('Adet değişimi',cmp(thisSales.adet,lastSales.adet))}${dynBox('Ciro değişimi',cmp(thisSales.ciro,lastSales.ciro))}${dynBox('Ortalama satış fiyatı değişimi',cmp(thisSales.avg,lastSales.avg))}${dynBox('Ortalama alış fiyatı değişimi',cmp(thisBuy.avg,lastBuy.avg))}${dynBox('Kâr değişimi',cmp(thisProfit.profit,lastProfit.profit))}${dynBox('Marj değişimi',Number.isFinite(thisProfit.margin)&&Number.isFinite(lastProfit.margin)?dynPct(thisProfit.margin-lastProfit.margin):'eksik veri')}</div>`;
   m.classList.add('open');
@@ -3365,8 +3754,11 @@ async function openProductProfitCard(productName){
 function reportTable(rows,type){
   if(!rows.length)return'<div class="empty"><div class="empty-t">Veri yok</div></div>';
   const pr=pRange();
-  return `<table class="pt"><thead><tr><th>${type==='urun'?'Ürün':'Cari'}</th><th>Dün</th><th>Bu Hafta</th><th>${pr.monthName}</th><th>${pr.prevMonthName}</th><th>${pr.year}</th><th>${pr.prevYear}</th><th>${type==='urun'?'Kârlılık / Fiyat':'Fiyat'}</th></tr></thead><tbody>${rows.map(r=>`<tr class="${type==='urun'?'dyn-click':''}" ${type==='urun'?`onclick="openProductProfitCard(${jsArg(r.n)})"`:''}><td style="font-weight:800;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(r.n)}">${escHtml(r.n)}<div style="font-size:11px;color:#64748B;margin-top:4px;font-weight:700">${escHtml(r.cat)}</div></td><td>${sumCell(r.dy)}</td><td>${sumCell(r.wk)}</td><td>${sumCell(r.mo)}</td><td>${sumCell(r.pm)}</td><td>${sumCell(r.yr)}</td><td>${sumCell(r.ly)}</td><td>${priceCell(r.yr,r.ly)}</td></tr>`).join('')}</tbody></table>`;
+  return `<table class="pt"><thead><tr><th>${type==='urun'?'Ürün':'Cari'}</th><th>Dün</th><th>Bu Hafta</th><th>${pr.monthName}</th><th>${pr.prevMonthName}</th><th>${pr.year}</th><th>${pr.prevYear}</th><th>${type==='urun'?'Kârlılık / Fiyat':'Fiyat'}</th></tr></thead><tbody>${rows.map(r=>`<tr class="${type==='urun'?'dyn-click':''}" ${type==='urun'?`onclick='openProductProfitCard(${jsAttrArg(r.n)})'`:''}><td style="font-weight:800;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(r.n)}">${escHtml(r.n)}<div style="font-size:11px;color:#64748B;margin-top:4px;font-weight:700">${escHtml(r.cat)}</div></td><td>${sumCell(r.dy)}</td><td>${sumCell(r.wk)}</td><td>${sumCell(r.mo)}</td><td>${sumCell(r.pm)}</td><td>${sumCell(r.yr)}</td><td>${sumCell(r.ly)}</td><td>${priceCell(r.yr,r.ly)}</td></tr>`).join('')}</tbody></table>`;
 }
+window.selectSalesCategory=selectSalesCategory;
+window.toggleSalesCategory=toggleSalesCategory;
+window.openProductProfitCard=openProductProfitCard;
 
 // -- CARİLER ---------------------------------------------------------------
 let seciliCari = null;
@@ -3737,18 +4129,23 @@ async function bankaRawData(){
 }
 function bankRowTime(r){return (r.transaction_time||r.saat||'').toString().substring(0,8);}
 function bankRowUpdatedAt(r){return (r.updated_at||r.approved_at||r.created_at||r.mail_date||r.tarih||r.transaction_date||'').toString();}
-function bankNameOf(r){return r.bank_name||r.kaynak_banka||r.banka||r.source_name||r._source_label||'Banka';}
+function repairBankText(v){
+  const s=(v??'').toString();
+  if(!/[ÃÄÅÂ]/.test(s))return s;
+  try{return decodeURIComponent(escape(s));}catch(_){return s;}
+}
+function bankNameOf(r){return repairBankText(r.bank_name||r.kaynak_banka||r.banka||r.source_name||r._source_label||'Banka');}
 function bankCredit(r){const n=Number(r.amount_in||0);if(n>0)return n;const t=Number(r.tutar||0);return t>0?t:0;}
 function bankDebit(r){const n=Number(r.amount_out||0);if(n>0)return n;const t=Number(r.tutar||0);return t<0?Math.abs(t):0;}
 function bankBalanceDisplay(r){const b=bankBalanceValue(r);return b===null?'-':dynMoney(b);}
 function bankTextForAnalysis(r){
   return [r.description,r.aciklama,r.raw_text,r.mail_subject,r.attachment_name,r.detected_type,r.suggested_counterparty,r.aday_cari]
-    .filter(Boolean).join(' ').toLocaleUpperCase('tr-TR');
+    .filter(Boolean).map(repairBankText).join(' ').toLocaleUpperCase('tr-TR');
 }
 function bankCounterpartyGuess(r){
-  const explicit=(r.suggested_counterparty||r.aday_cari||'').toString().trim();
+  const explicit=repairBankText(r.suggested_counterparty||r.aday_cari||'').trim();
   if(explicit&&explicit!=='-'&&!/^(AKBANK|GARANTI|YAPI|VAKIF|IS BANK|İŞ BANK|BANKA|MAIL EKSTRE)$/i.test(explicit))return explicit;
-  const text=(r.description||r.aciklama||'').toString();
+  const text=repairBankText(r.description||r.aciklama||'');
   const patterns=[
     /(?:GELEN EFT|GIDEN EFT|GİDEN EFT|FAST|HAVALE|EFT)\s*[-:]?\s*([A-ZÇĞİÖŞÜ0-9 .&'-]{5,80})/i,
     /(?:ALICI|GONDEREN|GÖNDEREN|MUSTERI|MÜŞTERİ)\s*[:\-]\s*([A-ZÇĞİÖŞÜ0-9 .&'-]{5,80})/i,
@@ -3811,6 +4208,55 @@ function bankAnalysisHtml(r){
   return `<div style="min-width:230px">
     <div style="font-weight:950">${escHtml(p.target)}</div>
     <div style="font-size:10px;color:var(--t2);line-height:1.45;margin-top:3px">${escHtml(p.reasons.join(' · '))}<br>${escHtml(r._destination||'-')}</div>
+  </div>`;
+}
+function bankDuplicateKey(r){
+  return [bankNameOf(r),(r.tarih||r.transaction_date||'').toString().substring(0,10),bankDebit(r)||bankCredit(r),(r.aciklama||r.description||'').toString().slice(0,80)]
+    .join('|').toLocaleLowerCase('tr-TR');
+}
+function bankMovementCell(r){
+  const source=escHtml(r._source_label||'Banka');
+  const date=escHtml((r.tarih||'').substring(0,10));
+  const time=escHtml(bankRowTime(r)||'-');
+  return `<div class="bank-move-cell">
+    <div class="bank-move-top"><span class="bank-command-id">${escHtml(shortId(r.id))}</span><span>${source}</span></div>
+    <div class="bank-move-date">${date} · ${time} · ${escHtml(bankNameOf(r))}</div>
+    <div class="bank-move-desc" title="${escHtml(r.aciklama||'')}">${escHtml(r.aciklama||'')}</div>
+  </div>`;
+}
+function bankAmountCell(r){
+  const debit=bankDebit(r), credit=bankCredit(r), amount=credit||debit;
+  return `<div class="bank-amount ${credit?'in':'out'}">
+    <b>${credit?dynMoney(amount):`-${dynMoney(amount)}`}</b>
+    <span>${credit?'Alacak / giriş':'Borç / çıkış'}</span>
+    <em>Bakiye ${bankBalanceDisplay(r)}</em>
+  </div>`;
+}
+function bankDecisionCell(r,dupCount=1){
+  const p=bankPostingPlan(r), c=p.confidence>=85?'good':p.confidence>=70?'warn':'bad';
+  return `<div class="bank-decision ${c}">
+    <div class="bank-decision-title">${escHtml(p.type)}</div>
+    <div class="bank-decision-line">Cari: <b>${escHtml(p.cari)}</b></div>
+    <div class="bank-decision-line">Kategori: ${escHtml(p.category)}</div>
+    <div class="bank-decision-tags"><span>güven ${fmt(p.confidence)}%</span><span>${escHtml(p.reasons.join(' · '))}</span>${dupCount>1?`<span class="dup">mükerrer aday ${fmt(dupCount)}</span>`:''}</div>
+  </div>`;
+}
+function bankPostingCell(r){
+  const p=bankPostingPlan(r);
+  return `<div class="bank-posting">
+    <div class="bank-posting-target">${escHtml(p.target)}</div>
+    <div><span>Hesap</span><b>${escHtml(p.account)}</b></div>
+    <div><span>Cari</span><b>${escHtml(p.cari)}</b></div>
+    <div><span>Kayıt türü</span><b>${escHtml(p.type)}</b></div>
+  </div>`;
+}
+function bankControlCell(r,dupCount=1){
+  const bh=bankQueueStatusTR(r._queue,r), bhColor=bankQueueTone(bh), qid=r._queue?.id||r._queue?.queue_id||'';
+  return `<div class="bank-control">
+    <span style="color:${bhColor};border-color:${bhColor}55;background:${bhColor}14">${escHtml(bh)}</span>
+    <small>ID ${escHtml(shortId(r.id))}</small>
+    <small>${qid?`Kuyruk ${escHtml(shortId(qid))}`:'Kuyruk yok'}</small>
+    <small>${dupCount>1?'Mükerrer kontrol gerekli':'Mükerrer temiz'}</small>
   </div>`;
 }
 function bankMorningCardHtml(r){
@@ -3914,13 +4360,23 @@ async function bankaKarar(id,durum,source='banka_raw',btn=null){
     const res=await db.rpc(rpc,{p_id:id,p_note:'AperiON Onay Merkezi'});
     error=res.error;
     queueId=res.data;
+    if(error&&String(error.message||'').toLowerCase().includes('function')){
+      bankNotice('err','SQL/RPC eksik','approve/reject fonksiyonu Supabase içinde yok. Kayıt yarım onaylanmadı; önce Bank Statement Ingestion SQL kurulmalı.');
+      if(btn){btn.disabled=false;btn.textContent=durum==='islenecek'?"BizimHesap'a Kaydet":'Ret';}
+      return;
+    }
+    if(durum==='islenecek'&&!queueId){
+      bankNotice('err','Kuyruk oluşmadı','Onay fonksiyonu çalıştı ama BizimHesap kuyruk ID üretmedi. Kayıt kesinleşmedi; SQL fonksiyonu kontrol edilmeli.');
+      if(btn){btn.disabled=false;btn.textContent="BizimHesap'a Kaydet";}
+      return;
+    }
   }else{
     const patch={durum,updated_at:new Date().toISOString()};
     const res=await db.from('banka_raw').update(patch).eq('id',id);
     error=res.error;
   }
   if(error){bankNotice('err','Kaydedilemedi',error.message||String(error));if(btn){btn.disabled=false;btn.textContent=durum==='islenecek'?"BizimHesap'a Kaydet":'Ret';}return;}
-  bankNotice('ok',durum==='islenecek'?'BizimHesap kuyruğuna alındı':'Kayıt reddedildi',queueId?`Kuyruk ID: ${queueId}`:'Durum kaydedildi.');
+  bankNotice('ok',durum==='islenecek'?(queueId?'BizimHesap kuyruğuna alındı':'AperiON onayı kaydedildi'):'Kayıt reddedildi',queueId?`Kuyruk ID: ${queueId}`:(source==='pending_bank_movements'&&durum==='islenecek'?'BizimHesap kuyruğu için approve_pending_bank_movement SQL fonksiyonu kontrol edilmeli.':'Durum kaydedildi.'));
   await rBankaOnay();
 }
 async function rBankaOnay(){
@@ -3942,28 +4398,21 @@ async function rBankaOnay(){
   document.getElementById('bankaOnaySummary').innerHTML=result.error?`<div class="empty"><div class="empty-t">Bazı banka kaynakları okunamadı</div><div class="empty-d">${escHtml(result.error)}</div></div>`:Object.entries(groups).length?miniBars(groups,Math.max(...Object.values(groups),1),'var(--accent)'):'<div class="empty"><div class="empty-t">Banka onay verisi yok</div><div class="empty-d">Mail, Drive veya Telegram hareketi gelince burada gorunecek.</div></div>';
   document.getElementById('bankaOnayStamp').textContent=`Son güncelleme: ${latest?latest.substring(0,19).replace('T',' '):'bekleniyor'} · BizimHesap banka kaydı kuyruğu: ${fmt(queueReady)} hazır / ${fmt(queueProcessed)} işlendi`;
   renderBankMorningCards(rows);
+  const duplicateCounts=rows.reduce((m,r)=>{const k=bankDuplicateKey(r);m[k]=(m[k]||0)+1;return m;},{});
   el.innerHTML=rows.length?rows.slice(0,120).map(r=>{
     const onayBtn=r.durum==='onay_bekliyor';
-    const source=escHtml(r._source_label||'Banka');
     const idArg=JSON.stringify(String(r.id));
     const srcArg=JSON.stringify(r._source||'banka_raw');
-    const debit=bankDebit(r), credit=bankCredit(r);
-    const bh=bankQueueStatusTR(r._queue,r);
-    const bhColor=bankQueueTone(bh);
+    const dupCount=duplicateCounts[bankDuplicateKey(r)]||1;
     return `<tr>
-      <td><span class="bank-command-id">${escHtml(shortId(r.id))}</span><div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:4px">${source}</div></td>
-      <td>${escHtml((r.tarih||'').substring(0,10))}<div style="font-family:var(--mono);font-size:9px;color:var(--t3)">${escHtml(bankRowTime(r)||'-')}</div></td>
-      <td>${escHtml(bankNameOf(r))}</td>
-      <td style="max-width:520px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(r.aciklama||'')}">${escHtml(r.aciklama||'')}</td>
-      <td style="font-family:var(--mono);font-weight:900;color:var(--red)">${debit?dynMoney(debit):'-'}</td>
-      <td style="font-family:var(--mono);font-weight:900;color:var(--green)">${credit?dynMoney(credit):'-'}</td>
-      <td style="font-family:var(--mono);font-weight:900;color:var(--text)">${bankBalanceDisplay(r)}</td>
-      <td>${bankAnalysisHtml(r)}</td>
-      <td>${bankPlanHtml(r)}</td>
-      <td><span style="font-family:var(--mono);font-size:9px;font-weight:900;color:${bhColor};border:1px solid ${bhColor}44;background:${bhColor}14;border-radius:999px;padding:4px 7px">${escHtml(bh)}</span></td>
+      <td>${bankMovementCell(r)}</td>
+      <td>${bankAmountCell(r)}</td>
+      <td>${bankDecisionCell(r,dupCount)}</td>
+      <td>${bankPostingCell(r)}</td>
+      <td>${bankControlCell(r,dupCount)}</td>
       <td>${onayBtn?`<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)">BizimHesap'a Kaydet</button> <button class="empty-btn" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg},this)">Ret</button>`:'-'}</td>
     </tr>`;
-  }).join(''):'<tr><td colspan="11" style="padding:18px;color:var(--t3)">Banka hareketi yok</td></tr>';
+  }).join(''):'<tr><td colspan="6" style="padding:18px;color:var(--t3)">Banka hareketi yok</td></tr>';
 }
 function planTypeTR(v){return {contract:'Sözleşmeli',standard:'Standart',fixed:'Sabit',forecast:'Öngörülen',variable:'Değişken'}[v]||v||'-';}
 function planScopeTR(v){return v==='personal'?'Kişisel':'İşletme';}

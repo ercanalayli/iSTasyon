@@ -3,6 +3,7 @@ name: Hourly BizimHesap Sync
 on:
   workflow_dispatch:
   schedule:
+    # Hourly BizimHesap source sync.
     - cron: '7 * * * *'
 
 jobs:
@@ -15,6 +16,11 @@ jobs:
         with:
           node-version: '20'
       - run: npm install
+      - name: Check BizimHesap secrets
+        env:
+          BIZIMHESAP_EMAIL: ${{ secrets.BIZIMHESAP_EMAIL }}
+          BIZIMHESAP_PASSWORD: ${{ secrets.BIZIMHESAP_PASSWORD }}
+        run: npm run verify:bizimhesap:secrets
       - name: Pull latest BizimHesap data
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

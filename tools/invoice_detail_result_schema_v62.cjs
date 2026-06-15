@@ -1,9 +1,11 @@
 const fs = require('fs');
 const path = require('path');
+const { loadAperionMemory } = require('./aperion_memory.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const queuePath = process.argv[2] || path.join(ROOT, 'data', 'bizimhesap_fatura_acma_kuyrugu.json');
 const outPath = process.argv[3] || path.join(ROOT, 'data', 'bizimhesap_fatura_detay_sablonu.json');
+const MEMORY = loadAperionMemory();
 
 const queue = JSON.parse(fs.readFileSync(queuePath, 'utf8'));
 const tasks = Array.isArray(queue) ? queue : queue.tasks || [];
@@ -11,6 +13,13 @@ const tasks = Array.isArray(queue) ? queue : queue.tasks || [];
 const result = {
   created_at: new Date().toISOString(),
   source_queue: queuePath,
+  memory: {
+    dir: MEMORY.dir,
+    active_company: MEMORY.config.active_company || 'ALAYLI Medikal',
+    model_description: 'ALAYLI Medikal icin BizimHesaptan gelen satis, gider, fatura, cari, odeme ve banka hareketlerini okuyarak gider karti eslestirme, fatura detay kontrolu, mukerrer odeme yakalama, nakit/POS ayrimi, tahakkuk-gerceklesen takibi ve Onay Merkezi yonlendirmesi yapar.',
+    gotcha_rules: MEMORY.gotchaRules.length,
+    expense_card_templates: MEMORY.expenseCardNames.length
+  },
   summary: {
     task_count: tasks.length,
     waiting_detail_read: tasks.filter(x => x.durum === 'fatura_detayi_acilacak').length

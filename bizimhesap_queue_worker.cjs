@@ -32,6 +32,7 @@ const FIRMALAR = [
 const ROUTES = {
   accounts: process.env.BIZIMHESAP_ACCOUNTS_URL || 'https://bizimhesap.com/web/ngn/acc/ngnaccounts',
   expenses: process.env.BIZIMHESAP_EXPENSES_URL || 'https://bizimhesap.com/web/ngn/acc/ngncostss',
+  expenseEntry: process.env.BIZIMHESAP_EXPENSE_ENTRY_URL || 'https://bizimhesap.com/web/ngn/acc/ngncostentry',
   customers: process.env.BIZIMHESAP_CUSTOMERS_URL || 'https://bizimhesap.com/web/ngn/pos/ngncustomers',
   collectionCashPath: '/web/ngn/acc/ngncollectioncash',
 };
@@ -47,8 +48,19 @@ function log(msg) {
   fs.appendFileSync('bizimhesap_queue_worker.log', line + '\n');
 }
 
+function fixMojibake(value) {
+  const text = String(value || '');
+  if (!/[ÃÄÅÂ]/.test(text)) return text;
+  try {
+    const repaired = Buffer.from(text, 'latin1').toString('utf8');
+    return repaired && repaired.length >= Math.min(3, text.length / 2) ? repaired : text;
+  } catch {
+    return text;
+  }
+}
+
 function normalize(value) {
-  return String(value || '')
+  return fixMojibake(value)
     .toLocaleLowerCase('tr-TR')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -85,7 +97,7 @@ function analysisText(payload) {
     payload.suggested_bizimhesap_action,
     payload.mail_subject,
     payload.attachment_name,
-  ].filter(Boolean).join(' ');
+  ].filter(Boolean).map(fixMojibake).join(' ');
 }
 
 function classifyQueueRow(row) {
@@ -96,14 +108,15 @@ function classifyQueueRow(row) {
   let kind = amountIn > 0 ? 'customer_collection' : 'supplier_or_expense_payment';
   let title = amountIn > 0 ? 'Cari tahsilat' : 'Cari ödeme';
   let target = 'BizimHesap banka/kasa';
-  let category = amountIn > 0 ? 'Tahsilat' : 'Ödeme';
+  let category = p.suggested_category || (amountIn > 0 ? 'Tahsilat' : 'Ödeme');
   let counterparty = p.target_counterparty || p.suggested_counterparty || '';
   let account = p.target_account || `${p.bank_name || 'Banka'} banka hesabı`;
-  let confidence = amountIn > 0 ? 72 : 70;
+  let confidence = Number(p.confidence_score || p.confidence || 0) || (amountIn > 0 ? 72 : 70);
   const reasons = [];
 
   if (p.suggested_bizimhesap_action) {
     kind = p.suggested_bizimhesap_action;
+    if (p.suggested_category) category = p.suggested_category;
     reasons.push(`payload:${p.suggested_bizimhesap_action}`);
   }
   if (amountIn > 0) reasons.push('banka alacak/giriş');
@@ -184,8 +197,24 @@ function classifyQueueRow(row) {
   };
 }
 
+function cleanPlan(plan) {
+  return {
+    ...plan,
+    title: fixMojibake(plan.title),
+    target: fixMojibake(plan.target),
+    category: fixMojibake(plan.category),
+    counterparty: fixMojibake(plan.counterparty),
+    account: fixMojibake(plan.account),
+    time: fixMojibake(plan.time),
+    bank_name: fixMojibake(plan.bank_name),
+    description: fixMojibake(plan.description),
+    source: fixMojibake(plan.source),
+    reasons: (plan.reasons || []).map(fixMojibake),
+  };
+}
+
 function dryRunPlan(row) {
-  const plan = classifyQueueRow(row);
+  const plan = cleanPlan(classifyQueueRow(row));
   const safeToAutoSave = plan.confidence >= 84 && !['supplier_or_expense_payment'].includes(plan.kind);
   const stopReason = safeToAutoSave ? '' : 'Canlı kayıtta kullanıcı/cari eşleştirme kontrolü gerekli.';
   const steps = [
@@ -217,6 +246,15 @@ async function fetchQueueRows() {
 }
 
 async function markQueue(row, status, message, extra = {}) {
+  if (status === 'processed') {
+    const { error: rpcError } = await db.rpc('mark_bizimhesap_queue_processed', {
+      p_queue_id: row.id,
+      p_message: message,
+      p_result: extra,
+    });
+    if (!rpcError) return;
+    log(`Queue RPC processed yazılamadı ${row.id}: ${rpcError.message}`);
+  }
   const payload = queuePayload(row);
   const nextPayload = {
     ...payload,
@@ -247,8 +285,7 @@ async function startBrowser() {
 
 async function openPostingForm(page, plan) {
   if (['bank_fee_expense', 'tax_or_sgk_payment', 'utility_bill_payment', 'supplier_or_expense_payment'].includes(plan.kind)) {
-    await page.goto(ROUTES.expenses, { waitUntil: 'networkidle2', timeout: 30000 });
-    await clickByText(page, ['yeni masraf gir', 'yeni masraf', 'masraf ekle', 'gider ekle', 'ekle']);
+    await page.goto(ROUTES.expenseEntry, { waitUntil: 'networkidle2', timeout: 30000 });
     return;
   }
   if (['customer_collection', 'pos_collection'].includes(plan.kind)) {
@@ -312,6 +349,42 @@ async function fillPostingForm(page, row, plan) {
   await page.waitForSelector('input,textarea,select,button', { timeout: 15000 });
   const fill = await page.evaluate((p, queueId) => {
     const norm = s => String(s || '').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const directSet = (id, value) => {
+      const el = document.getElementById(id);
+      if (!el) return false;
+      el.focus();
+      el.value = value == null ? '' : String(value);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      el.blur();
+      return true;
+    };
+    const directSelect = (id, texts) => {
+      const el = document.getElementById(id);
+      if (!el) return false;
+      const wants = texts.map(norm).filter(Boolean);
+      const opt = [...el.options].find(o => wants.some(w => norm(o.text).includes(w)));
+      if (!opt) return false;
+      el.value = opt.value;
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
+    };
+    const trDate = value => {
+      const s = String(value || '');
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      return m ? `${m[3]}.${m[2]}.${m[1]}` : s;
+    };
+    const directDesc = `APERION QUEUE:${queueId} | ${p.title} | ${p.description || ''}`.slice(0, 250);
+    const direct = {
+      date: directSet('txtDocumentDate', trDate(p.date)),
+      amount: directSet('txtAmount', p.amountText),
+      description: directSet('txtNote', directDesc),
+      counterparty: true,
+      account: directSelect('ddlCashierNew', [p.account, p.bank_name, 'akbank sirket', 'akbank şirket']),
+      category: directSelect('ddlCostAccounts', [p.category, 'banka masraflari', 'banka masrafları', 'mali giderler banka masraflari', 'mali giderler banka masrafları']),
+      paid: directSelect('ddlPaymentOption', ['odendi', 'ödendi']),
+    };
+    if (direct.date && direct.amount && direct.description && direct.account && direct.category && direct.paid) return direct;
     const visible = el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
     const fields = () => [...document.querySelectorAll('input,textarea')].filter(visible);
     const fieldText = el => norm([el.name, el.id, el.placeholder, el.getAttribute('aria-label'), el.closest('label')?.innerText].join(' '));

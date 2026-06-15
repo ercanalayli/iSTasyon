@@ -1,11 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { loadAperionMemory, appendTransactionLog } = require('./aperion_memory.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const detailPath = process.argv[2] || path.join(ROOT, 'data', 'bizimhesap_fatura_detaylari_raw.json');
 const cardsPath = process.argv[3] || path.join(ROOT, 'data', 'gider_kartlari_alayli_2026.json');
 const outPath = process.argv[4] || path.join(ROOT, 'data', 'aperion_gider_kart_fatura_eslesmeleri.json');
+const MEMORY = loadAperionMemory();
 
 function readJson(filePath, fallback) {
   try {
@@ -39,6 +41,18 @@ function invoiceText(detail) {
     detail.raw_text,
     ...(detail.kalemler || []).map(item => item.mal_hizmet),
   ].filter(Boolean).join(' '));
+}
+
+function memoryFlags(detail) {
+  const text = invoiceText(detail);
+  const flags = [];
+  if (/kapora|on odeme|avans/.test(text)) flags.push('kapora_avans');
+  if (/iade|refund|ters kayit/.test(text)) flags.push('iade_ters_kayit');
+  if (/okul|egitim|kolej|universite|hayir|kurban|zekat|bagis/.test(text)) flags.push('kisisel_aile_onayi');
+  if (/market|mutfak|temizlik|ikram/.test(text)) flags.push('market_ayrimi');
+  if (/kargo|nakliye|tasima/.test(text)) flags.push('kargo_nakliye');
+  if (/pazaryeri|komisyon|moka|pos/.test(text)) flags.push('pos_pazaryeri_komisyon');
+  return flags;
 }
 
 function fingerprint(detail) {
@@ -135,6 +149,7 @@ for (const detail of details) {
   seen.add(id);
 
   const decision = classify(detail);
+  const gotcha_flags = memoryFlags(detail);
   const existing = decision.decision === 'mapped' ? findCard(cards, decision) : null;
   const record = {
     match_id: id,
@@ -149,15 +164,20 @@ for (const detail of details) {
     existing_card: Boolean(existing),
     confidence: decision.confidence,
     reason: decision.reason,
+    gotcha_flags,
+    memory_context: {
+      active_company: MEMORY.config.active_company || 'ALAYLI Medikal',
+      rule_note: 'Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler.',
+    },
     source: 'bizimhesap_invoice_detail',
   };
 
-  if (detail.read_status !== 'ok' || decision.decision !== 'mapped' || !existing) {
+  if (detail.read_status !== 'ok' || decision.decision !== 'mapped' || !existing || gotcha_flags.length) {
     approvalCenter.push({
       ...record,
       approval_reason: detail.read_status !== 'ok'
         ? 'Fatura detayi okunamadi veya eksik'
-        : (!existing ? 'Gider karti yok, kart onerisi gerekiyor' : decision.reason),
+        : (gotcha_flags.length ? `Hafiza kontrol bayragi: ${gotcha_flags.join(', ')}` : (!existing ? 'Gider karti yok, kart onerisi gerekiyor' : decision.reason)),
     });
   }
 
@@ -183,6 +203,13 @@ const output = {
   created_at: new Date().toISOString(),
   source: 'bizimhesap_invoice_detail',
   firma_id: detailsPayload.firma_id || 'alayli',
+  memory: {
+    dir: MEMORY.dir,
+    active_company: MEMORY.config.active_company || 'ALAYLI Medikal',
+    gotcha_rules: MEMORY.gotchaRules.length,
+    expense_card_templates: MEMORY.expenseCardNames.length,
+    rule_note: 'BizimHesap kaynak sistemdir; AperiON kesin kayit oncesi hafiza, fatura detayi, mukerrer ve onay kontrolu yapar.',
+  },
   inputs: {
     details: detailPath,
     cards: cardsPath,
@@ -202,5 +229,6 @@ const output = {
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, JSON.stringify(output, null, 2), 'utf8');
+appendTransactionLog(`${new Date().toISOString().slice(0, 10)} | ALAYLI | aperion | fatura_gider_karti_eslestirme | ${matches.length} detay | ${approvalCenter.length} onay | 0.00 | ok`);
 console.log(JSON.stringify(output.summary, null, 2));
 console.log(outPath);

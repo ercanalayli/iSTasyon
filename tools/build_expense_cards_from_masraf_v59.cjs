@@ -1,9 +1,11 @@
 const fs = require('fs');
 const path = require('path');
+const { loadAperionMemory, appendTransactionLog } = require('./aperion_memory.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const input = process.argv[2] || path.join(ROOT, 'masraf_alayli_2026.json');
 const output = process.argv[3] || path.join(ROOT, 'data', 'gider_kartlari_alayli_2026.json');
+const MEMORY = loadAperionMemory();
 
 const norm = (v) => String(v || '').toLocaleLowerCase('tr-TR')
   .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -78,9 +80,31 @@ for (const row of rows) {
 }
 
 const cards = [...cardMap.values()].sort((a, b) => b.total_amount - a.total_amount);
+for (const cardName of MEMORY.expenseCardNames) {
+  if (!cards.find(card => norm(card.card_name) === norm(cardName))) {
+    cards.push({
+      owner: MEMORY.config.active_company_id || 'alayli',
+      owner_type: /kisisel|aile/i.test(cardName) ? 'personal' : 'business',
+      main_category: 'Memory Template',
+      sub_category: 'Hazir Kart',
+      expense_class: 'template',
+      card_name: cardName,
+      status: 'memory_template',
+      reason: 'aperion-memory/gider-kartlari.md icinden geldi',
+      movement_count: 0,
+      total_amount: 0
+    });
+  }
+}
 const report = {
   created_at: new Date().toISOString(),
   input,
+  memory: {
+    dir: MEMORY.dir,
+    active_company: MEMORY.config.active_company || 'ALAYLI Medikal',
+    gotcha_rules: MEMORY.gotchaRules.length,
+    expense_card_templates: MEMORY.expenseCardNames.length
+  },
   summary: {
     rows: rows.length,
     cards: cards.length,
@@ -94,5 +118,6 @@ const report = {
 
 fs.mkdirSync(path.dirname(output), { recursive: true });
 fs.writeFileSync(output, JSON.stringify(report, null, 2), 'utf8');
+appendTransactionLog(`${new Date().toISOString().slice(0, 10)} | ALAYLI | aperion | gider_kartlari_uretildi | ${path.basename(input)} | ${cards.length} kart | ${report.summary.total_amount.toFixed(2)} | ok`);
 console.log(JSON.stringify(report.summary, null, 2));
 console.log(output);

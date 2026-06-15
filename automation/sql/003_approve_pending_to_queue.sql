@@ -54,6 +54,7 @@ begin
       'description', v_row.description,
       'amount_in', v_row.amount_in,
       'amount_out', v_row.amount_out,
+      'confidence_score', v_row.confidence_score,
       'detected_type', v_row.detected_type,
       'suggested_counterparty', v_row.suggested_counterparty,
       'suggested_bizimhesap_action',

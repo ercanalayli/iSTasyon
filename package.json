@@ -68,9 +68,11 @@
     "mail:ekstre:preflight": "node automation/mail-ekstre-preflight.cjs",
     "mail:ekstre:dry": "cd automation && set DRY_RUN=1&& node mail-ekstre-worker-lite.js",
     "mail:ekstre:run": "cd automation && node mail-ekstre-worker-lite.js",
+    "bank:approval:preview": "node tools/preview_pending_bank_to_bizimhesap_plan.cjs --firma alayli --limit 25",
     "bizimhesap:queue:dry": "node bizimhesap_queue_worker.cjs --firma alayli --limit 25",
     "bizimhesap:queue:form": "node bizimhesap_queue_worker.cjs --firma alayli --limit 1 --commit",
     "bizimhesap:queue:save": "node bizimhesap_queue_worker.cjs --firma alayli --limit 1 --commit --save",
+    "verify:bizimhesap:secrets": "node tools/check_bizimhesap_action_secrets.cjs",
     "verify:bizimhesap:queue": "node tools/verify_bizimhesap_queue_worker_v65.cjs",
     "sync:bizimhesap": "node aperion_veri_senkron.js --firma alayli",
     "sync:bizimhesap:plan": "node aperion_veri_senkron.js --firma alayli --plan",
@@ -78,6 +80,7 @@
     "expense:cards:build": "node tools/build_expense_cards_from_masraf_v59.cjs",
     "invoice:tasks:build": "node tools/build_invoice_detail_tasks_v60.cjs",
     "expense:aperion:build": "npm run expense:cards:build && npm run invoice:tasks:build",
+    "expense:aperion:memory": "npm run expense:aperion:build && node tools/invoice_detail_result_schema_v62.cjs",
     "invoice:details:read": "node bizimhesap_fatura_detay_oku.js",
     "invoice:details:link": "node tools/link_invoice_details_to_expense_cards_v64.cjs",
     "expense:aperion:full": "npm run sync:bizimhesap && npm run expense:aperion:build && npm run invoice:details:read && npm run invoice:details:link",
@@ -85,10 +88,13 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "@whiskeysockets/baileys": "^7.0.0-rc13",
     "dotenv": "^16.3.1",
     "googleapis": "^144.0.0",
-    "puppeteer": "^22.0.0",
     "pdf-parse": "^1.1.1",
+    "pino": "^10.3.1",
+    "puppeteer": "^22.0.0",
+    "qrcode-terminal": "^0.12.0",
     "xlsx": "^0.18.5"
   }
 }
