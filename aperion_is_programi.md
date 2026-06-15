@@ -39,6 +39,7 @@ Bu liste her islemden sonra guncellenecek.
 
 ## Kirmizi - Kaldi
 
+- [ ] GitHub secret SUPABASE_DB_URL eksik; SQL install workflow Check database secret adiminda duruyor
 - [ ] GitHub Actions BizimHesap senkronunun yeni secret/preflight ile canli yeniden test edilmesi
 - [ ] Telegram gorsel / evrak akisi
 - [ ] Sabit / sozlesmeli / ongorulen gelir-gider kartlarinin Supabase RPC ile tam canli kayit testi
@@ -47,4 +48,4 @@ Bu liste her islemden sonra guncellenecek.
 
 ## Aktif Siradaki Is
 
-Main branch'e yeni commit push edilecek. Push sonrasi Supabase SQL install ve Hourly BizimHesap Sync workflow run sonuclari kontrol edilecek.
+SUPABASE_DB_URL GitHub secret olarak eklenecek; sonra Supabase SQL Install workflow yeniden calistirilip queue processed RPC canliya uygulanacak.
