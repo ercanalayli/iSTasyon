@@ -30,6 +30,8 @@ Bu liste her islemden sonra guncellenecek.
 - [x] Hourly BizimHesap Sync workflow main push ile otomatik canli test calistiracak sekilde baglandi
 - [x] Mail ekstre preflight raporuna BizimHesap kuyruk kapatma RPC kontrolu eklendi
 - [x] Yeni main push kontrolu: Mail Ekstre Pipeline, Bot CI, Live Visual Control ve Pages basarili
+- [x] Banka hareketi -> BizimHesap kayit plani ortak karar motoruna alindi; preview ve queue worker ayni motoru kullaniyor
+- [x] Banka onay dry-run: 25 hareket analiz edildi, 19 yuksek guven, 6 inceleme gerekli; queue dry-run 1 hazir kayit plani uretildi
 
 ## Sari - Kismen Bitti
 
@@ -37,7 +39,7 @@ Bu liste her islemden sonra guncellenecek.
 - [ ] Gelir tablosu: planlanan / tahakkuk / gerceklesen
 - [ ] Satis ve urun karliligi ekrani
 - [ ] Banka ekstre okuma ve Onay Merkezi'ne dusme
-- [ ] Onay Merkezi analiz ekrani: kayit plani var, tek tik sonrasi kuyruk kapatma SQL canli kilidi bekliyor
+- [ ] Onay Merkezi analiz ekrani: kayit plani ortak motorla gorunuyor, tek tik sonrasi kuyruk kapatma SQL canli kilidi bekliyor
 - [ ] Kalici cache / isletme hafizasi: satis ve gelir modeli baglandi, diger agir sorgular sirada
 
 ## Kirmizi - Kaldi

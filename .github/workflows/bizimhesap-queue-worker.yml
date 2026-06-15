@@ -23,6 +23,7 @@ on:
     paths:
       - 'bizimhesap_queue_worker.cjs'
       - 'bizimhesap_common.cjs'
+      - 'tools/bank_posting_plan.cjs'
       - 'automation/sql/002_bizimhesap_queue.sql'
       - 'automation/sql/003_approve_pending_to_queue.sql'
       - 'automation/sql/000_mail_ekstre_FULL_INSTALL.sql'
@@ -43,10 +44,13 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci --no-audit --no-fund
 
       - name: Syntax check
-        run: node --check bizimhesap_queue_worker.cjs
+        run: |
+          node --check tools/bank_posting_plan.cjs
+          node --check tools/preview_pending_bank_to_bizimhesap_plan.cjs
+          node --check bizimhesap_queue_worker.cjs
 
       - name: Dry-run queue plan
         if: ${{ github.event_name == 'push' || github.event_name == 'schedule' || inputs.live != 'true' }}

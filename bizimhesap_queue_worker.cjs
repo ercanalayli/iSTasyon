@@ -3,6 +3,7 @@ const path = require('path');
 const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
 const { launchOptions, loginBizimHesap, selectFirma, savePageDiagnostics } = require('./bizimhesap_common.cjs');
+const { classifyQueueRow: classifyQueueBankPlan } = require('./tools/bank_posting_plan.cjs');
 
 const args = process.argv.slice(2);
 const LIMIT = Number(valueArg('--limit', process.env.BIZIMHESAP_QUEUE_LIMIT || 10));
@@ -101,6 +102,7 @@ function analysisText(payload) {
 }
 
 function classifyQueueRow(row) {
+  return classifyQueueBankPlan(row);
   const p = queuePayload(row);
   const text = normalize(analysisText(p));
   const amountIn = Number(p.amount_in || 0);

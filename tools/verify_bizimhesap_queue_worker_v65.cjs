@@ -20,6 +20,8 @@ console.log('-------------------------------------------');
 assertHas('bizimhesap_queue_worker.cjs', "from('bizimhesap_queue')", 'reads BizimHesap queue');
 assertHas('bizimhesap_queue_worker.cjs', "ready_for_bizimhesap", 'processes ready queue');
 assertHas('bizimhesap_queue_worker.cjs', 'classifyQueueRow', 'classifies posting type');
+assertHas('bizimhesap_queue_worker.cjs', 'bank_posting_plan.cjs', 'uses shared bank posting plan');
+assertHas('tools/preview_pending_bank_to_bizimhesap_plan.cjs', 'bank_posting_plan.cjs', 'preview uses shared bank posting plan');
 assertHas('bizimhesap_queue_worker.cjs', 'BIZIMHESAP_POSTING_LIVE', 'live mode lock');
 assertHas('bizimhesap_queue_worker.cjs', 'BIZIMHESAP_POSTING_SAVE', 'save mode lock');
 assertHas('bizimhesap_queue_worker.cjs', "status === 'processed'", 'marks processed');
