@@ -27,6 +27,16 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Restore BizimHesap session cache
+        id: bizimhesap-session-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .bizimhesap-profile
+          key: bizimhesap-session-alayli-${{ github.run_id }}
+          restore-keys: |
+            bizimhesap-session-alayli-
+      - name: Prepare BizimHesap profile dir
+        run: mkdir -p .bizimhesap-profile
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -44,6 +54,13 @@ jobs:
           BIZIMHESAP_EMAIL: ${{ secrets.BIZIMHESAP_EMAIL }}
           BIZIMHESAP_PASSWORD: ${{ secrets.BIZIMHESAP_PASSWORD }}
           BIZIMHESAP_HEADLESS: "true"
+          BIZIMHESAP_PROFILE_DIR: .bizimhesap-profile
         run: npm run sync:bizimhesap -- --firma alayli
+      - name: Save BizimHesap session cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .bizimhesap-profile
+          key: bizimhesap-session-alayli-${{ github.run_id }}
       - name: Verify sales today screen source
         run: node tools/stress_check_index_sales_today.cjs
