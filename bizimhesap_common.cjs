@@ -313,9 +313,10 @@ async function loginBizimHesap(page, log = () => {}) {
   await leavePasswordRequestIfPossible(page, log);
   if (await isLoginPage(page)) {
     log('  -> giris sonrasi oturum URLleri tekrar deneniyor');
-    if (await tryExistingBizimHesapSession(page, log)) return;
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    if (await tryExistingBizimHesapSession(page, log)) return;
+    for (let attempt = 1; attempt <= 5; attempt += 1) {
+      if (await tryExistingBizimHesapSession(page, log)) return;
+      await new Promise(resolve => setTimeout(resolve, 3000 + attempt * 1000));
+    }
     await savePageDiagnostics(page, 'bizimhesap_login_yeni_sistem_kontrol');
     throw new Error('BizimHesap girisi tamamlanmadi: sifre, captcha veya yeni dogrulama sistemi kontrol istiyor');
   }

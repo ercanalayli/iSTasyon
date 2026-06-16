@@ -140,6 +140,10 @@ function diagnoseSyncFailure(output) {
   return 'Senkron isi hata verdi, log kontrol edilmeli';
 }
 
+function isSessionFailure(issue) {
+  return /BizimHesap giris|BizimHesap firma/i.test(String(issue || ''));
+}
+
 function runtimeFile(file) {
   if (!file.endsWith('.js')) return path.join(__dirname, file);
   const sourcePath = path.join(__dirname, file);
@@ -184,35 +188,49 @@ function run(job) {
   line(`BASLADI: ${job.label}`);
   const started = Date.now();
   const runPath = runtimeFile(job.file);
-  const r = spawnSync(process.execPath, [runPath, ...cleanArgs], {
-    cwd: __dirname,
-    stdio: 'pipe',
-    encoding: 'utf8',
-    env: { ...process.env, NODE_PATH: path.join(__dirname, 'node_modules') },
-    shell: false,
-    timeout: job.timeoutMs || 300000,
-  });
-  if (r.stdout) {
-    process.stdout.write(r.stdout);
-    appendFileSync(logPath, r.stdout, 'utf8');
+  const attempts = [];
+  const execute = (attempt) => {
+    const r = spawnSync(process.execPath, [runPath, ...cleanArgs], {
+      cwd: __dirname,
+      stdio: 'pipe',
+      encoding: 'utf8',
+      env: { ...process.env, NODE_PATH: path.join(__dirname, 'node_modules') },
+      shell: false,
+      timeout: job.timeoutMs || 300000,
+    });
+    if (r.stdout) {
+      process.stdout.write(r.stdout);
+      appendFileSync(logPath, r.stdout, 'utf8');
+    }
+    if (r.stderr) {
+      process.stderr.write(r.stderr);
+      appendFileSync(logPath, r.stderr, 'utf8');
+    }
+    const code = r.status ?? (r.error?.code === 'ETIMEDOUT' ? 124 : 1);
+    const output = `${r.stdout || ''}\n${r.stderr || ''}`;
+    const issue = code === 0 ? '' : diagnoseSyncFailure(output);
+    attempts.push({ attempt, code, issue });
+    return { code, output, error: r.error, issue };
+  };
+  let result = execute(1);
+  if (result.code !== 0 && isSessionFailure(result.issue)) {
+    line(`TEKRAR DENENECEK: ${job.label} (${result.issue})`);
+    result = execute(2);
   }
-  if (r.stderr) {
-    process.stderr.write(r.stderr);
-    appendFileSync(logPath, r.stderr, 'utf8');
-  }
-  const code = r.status ?? (r.error?.code === 'ETIMEDOUT' ? 124 : 1);
-  const output = `${r.stdout || ''}\n${r.stderr || ''}`;
+  const code = result.code;
   const item = {
     label: job.label,
     file: job.file,
     status: code === 0 ? 'ok' : 'failed',
     code,
+    required: job.required,
+    attempts,
     durationMs: Date.now() - started,
   };
-  if (code !== 0) item.issue = diagnoseSyncFailure(output);
-  if (r.error?.code === 'ETIMEDOUT') item.issue = `${job.label} sure sinirini asti`;
+  if (code !== 0) item.issue = result.issue;
+  if (result.error?.code === 'ETIMEDOUT') item.issue = `${job.label} sure sinirini asti`;
   status.jobs.push(item);
-  if (code !== 0) {
+  if (code !== 0 && job.required) {
     status.ok = false;
     status.issue = status.issue || item.issue;
   }
