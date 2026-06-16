@@ -131,6 +131,9 @@ function diagnoseSyncFailure(output) {
   if (text.includes('ngnpasswordchangerequest') || text.includes('sifrenizi mi unuttunuz') || text.includes('şifrenizi mi unuttunuz')) {
     return 'BizimHesap giris dogrulamasi kontrol bekliyor';
   }
+  if (text.includes('giris tamamlanmadi') || text.includes('giriş tamamlanmadi') || text.includes('giris dogrulamasi') || text.includes('giriş dogrulamasi')) {
+    return 'BizimHesap giris dogrulamasi kontrol bekliyor';
+  }
   if (text.includes('firma bulunamad') || text.includes('firma secilemedi') || text.includes('firma seçilemedi')) {
     return 'BizimHesap firma secim ekrani acilamadi';
   }
