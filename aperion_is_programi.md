@@ -42,6 +42,8 @@ Bu liste her islemden sonra guncellenecek.
 - [x] GitHub Actions icin BizimHesap kalici oturum cache'i eklendi: .bizimhesap-profile restore/save
 - [x] GitHub Actions cache ilk run'da basariyla kaydedildi
 - [x] BizimHesap senkron runner final tekrar eklendi: zorunlu is kalirsa isinmis oturumla sonda yeniden denenir
+- [x] GitHub Actions Hourly BizimHesap Sync basarili: satis_raw 904 kayit, product_raw 3211 kayit, masraf_raw 88 kayit, son islemler OK
+- [x] Verify sales today screen source basarili: Bugun/Dun/Hafta/Ay/Yil ve sales_raw static stress check OK
 
 ## Sari - Kismen Bitti
 
@@ -52,13 +54,10 @@ Bu liste her islemden sonra guncellenecek.
 - [ ] Onay Merkezi analiz ekrani: kayit plani ortak motorla gorunuyor, tek tik sonrasi kuyruk kapatma SQL canli kilidi bekliyor
 - [ ] Kalici cache / isletme hafizasi: satis ve gelir modeli baglandi, diger agir sorgular sirada
 - [ ] BizimHesap GitHub senkron akisi: masraf/stok basarili, satis/son islemler icin oturum isinma sirasi ve login retry eklendi
-- [ ] BizimHesap GitHub senkron akisi: satis oturum isiticisi olarak basa alindi; urun/stok ve masraf sonrasinda calisacak
-- [ ] BizimHesap GitHub senkron akisi: cache patch'i canli run ile dogrulanacak
-- [ ] BizimHesap GitHub senkron akisi: final retry patch'i canli run ile dogrulanacak
+- [ ] Ana ekran / rapor tasarimi: tek sayfa ust akil kalite seviyesine tasinacak
 
 ## Kirmizi - Kaldi
 
-- [ ] GitHub Actions Hourly BizimHesap Sync son canli run: urun/stok, masraf, son islemler gecti; satis final retry patch'i canli test edilecek
 - [ ] SUPABASE_DB_URL secret icindeki database password hatali: psql "password authentication failed for user postgres" verdi
 - [ ] Telegram gorsel / evrak akisi
 - [ ] Sabit / sozlesmeli / ongorulen gelir-gider kartlarinin Supabase RPC ile tam canli kayit testi
@@ -67,4 +66,4 @@ Bu liste her islemden sonra guncellenecek.
 
 ## Aktif Siradaki Is
 
-BizimHesap login retry ve oturum isinma sirasi push edilip Hourly BizimHesap Sync yeniden calistirilacak. SUPABASE_DB_URL dogru database password ile guncellenince Supabase SQL Install yeniden calistirilacak.
+Hourly BizimHesap Sync yesil. Siradaki kilit SUPABASE_DB_URL dogru database password ile guncellenince Supabase SQL Install yeniden calistirilacak; sonra Telegram/mail ekstre/onay merkezi akisi tamamlanacak.
