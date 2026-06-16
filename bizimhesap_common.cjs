@@ -309,9 +309,13 @@ async function loginBizimHesap(page, log = () => {}) {
   });
   if (!clicked) throw new Error('BizimHesap giris butonu bulunamadi');
   await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 20000 }).catch(() => {});
-  await new Promise(resolve => setTimeout(resolve, 1200));
+  await new Promise(resolve => setTimeout(resolve, 2500));
   await leavePasswordRequestIfPossible(page, log);
   if (await isLoginPage(page)) {
+    log('  -> giris sonrasi oturum URLleri tekrar deneniyor');
+    if (await tryExistingBizimHesapSession(page, log)) return;
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    if (await tryExistingBizimHesapSession(page, log)) return;
     await savePageDiagnostics(page, 'bizimhesap_login_yeni_sistem_kontrol');
     throw new Error('BizimHesap girisi tamamlanmadi: sifre, captcha veya yeni dogrulama sistemi kontrol istiyor');
   }

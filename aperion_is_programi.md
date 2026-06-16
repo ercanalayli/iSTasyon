@@ -33,6 +33,8 @@ Bu liste her islemden sonra guncellenecek.
 - [x] Banka hareketi -> BizimHesap kayit plani ortak karar motoruna alindi; preview ve queue worker ayni motoru kullaniyor
 - [x] Banka onay dry-run: 25 hareket analiz edildi, 19 yuksek guven, 6 inceleme gerekli; queue dry-run 1 hazir kayit plani uretildi
 - [x] GitHub secret kilidi acildi: BIZIMHESAP_EMAIL/PASSWORD ve SUPABASE_DB_URL artik workflow tarafinda okunuyor
+- [x] GitHub BizimHesap secret kontrolu gecti: BIZIMHESAP_EMAIL alaylimedikal@gmail.com ve password workflow tarafinda okunuyor
+- [x] GitHub Hourly BizimHesap Sync kismi canli calisti: masraf_raw ve product_raw yenilendi
 
 ## Sari - Kismen Bitti
 
@@ -42,11 +44,11 @@ Bu liste her islemden sonra guncellenecek.
 - [ ] Banka ekstre okuma ve Onay Merkezi'ne dusme
 - [ ] Onay Merkezi analiz ekrani: kayit plani ortak motorla gorunuyor, tek tik sonrasi kuyruk kapatma SQL canli kilidi bekliyor
 - [ ] Kalici cache / isletme hafizasi: satis ve gelir modeli baglandi, diger agir sorgular sirada
+- [ ] BizimHesap GitHub senkron akisi: masraf/stok basarili, satis/son islemler icin oturum isinma sirasi ve login retry eklendi
 
 ## Kirmizi - Kaldi
 
-- [ ] GitHub Actions Hourly BizimHesap Sync secret kontrolu gecti; BizimHesap yeni giris/dogrulama/firma seciminde takiliyor
-- [ ] BIZIMHESAP_EMAIL secret degeri tam dogrulanacak: tek kabul edilen hesap alaylimedikal@gmail.com
+- [ ] GitHub Actions Hourly BizimHesap Sync son canli run: satis ve son islemler BizimHesap yeni giris/dogrulama kontrolunde takildi; patch sonrasi tekrar test edilecek
 - [ ] SUPABASE_DB_URL secret icindeki database password hatali: psql "password authentication failed for user postgres" verdi
 - [ ] Telegram gorsel / evrak akisi
 - [ ] Sabit / sozlesmeli / ongorulen gelir-gider kartlarinin Supabase RPC ile tam canli kayit testi
@@ -55,4 +57,4 @@ Bu liste her islemden sonra guncellenecek.
 
 ## Aktif Siradaki Is
 
-BIZIMHESAP_EMAIL tam olarak alaylimedikal@gmail.com yapilacak. SUPABASE_DB_URL dogru database password ile guncellenecek. Sonra Hourly BizimHesap Sync ve Supabase SQL Install yeniden calistirilacak.
+BizimHesap login retry ve oturum isinma sirasi push edilip Hourly BizimHesap Sync yeniden calistirilacak. SUPABASE_DB_URL dogru database password ile guncellenince Supabase SQL Install yeniden calistirilacak.

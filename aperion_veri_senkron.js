@@ -28,20 +28,6 @@ mkdirSync(dataDir, { recursive: true });
 
 const jobs = [
   {
-    label: `BizimHesap satis kaynak yenileme ${salesFromIso} - ${todayIso}`,
-    file: 'bizimhesap_bot.js',
-    args: ['--firma', firma, '--gecmis', salesFromIso, todayIso],
-    required: true,
-    timeoutMs: 300000,
-  },
-  {
-    label: 'BizimHesap son islemler denetimi',
-    file: 'bizimhesap_son_islemler_izle.js',
-    args: ['--firma', firma, '--resync-days', '45'],
-    required: false,
-    timeoutMs: 120000,
-  },
-  {
     label: `BizimHesap masraf ${year}`,
     file: 'bizimhesap_masraf_cek.js',
     args: [commit, '--firma', firma, '--from', `${year}-01-01`, '--to', todayIso, '--limit', '5000', '--out', `masraf_${firma}_${year}.json`],
@@ -54,6 +40,20 @@ const jobs = [
     args: [commit, '--firma', firma, '--out', `urun_stok_${firma}.json`],
     required: true,
     timeoutMs: 240000,
+  },
+  {
+    label: `BizimHesap satis kaynak yenileme ${salesFromIso} - ${todayIso}`,
+    file: 'bizimhesap_bot.js',
+    args: ['--firma', firma, '--gecmis', salesFromIso, todayIso],
+    required: true,
+    timeoutMs: 300000,
+  },
+  {
+    label: 'BizimHesap son islemler denetimi',
+    file: 'bizimhesap_son_islemler_izle.js',
+    args: ['--firma', firma, '--resync-days', '45'],
+    required: false,
+    timeoutMs: 120000,
   },
 ];
 
