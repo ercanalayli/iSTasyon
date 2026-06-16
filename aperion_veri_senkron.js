@@ -77,6 +77,17 @@ function saveStatus() {
   writeFileSync(statusPath, JSON.stringify(status, null, 2), 'utf8');
 }
 
+function recomputeStatus() {
+  const latest = new Map();
+  for (const item of status.jobs) {
+    if (item?.file && item.required) latest.set(item.file, item);
+  }
+  const failed = [...latest.values()].filter(item => !['ok', 'planned'].includes(item.status));
+  status.ok = failed.length === 0;
+  if (failed.length) status.issue = failed[0].issue || `${failed[0].label} hata verdi`;
+  else delete status.issue;
+}
+
 function readJsonSafe(filePath, fallback = null) {
   try {
     return JSON.parse(readFileSync(filePath, 'utf8'));
@@ -174,18 +185,20 @@ function run(job) {
 
   if (!existsSync(fullPath)) {
     const skipped = { label: job.label, file: job.file, status: job.required ? 'missing' : 'skipped', code: null };
+    skipped.required = job.required;
     status.jobs.push(skipped);
     if (job.required) status.ok = false;
     line(`${job.required ? 'EKSIK' : 'ATLANDI'}: ${job.label} (${job.file})`);
     saveStatus();
-    return;
+    return skipped;
   }
 
   if (planOnly) {
-    status.jobs.push({ label: job.label, file: job.file, status: 'planned', code: 0, args: cleanArgs });
+    const planned = { label: job.label, file: job.file, status: 'planned', code: 0, args: cleanArgs, required: job.required };
+    status.jobs.push(planned);
     line(`PLAN: node ${job.file} ${cleanArgs.join(' ')}`);
     saveStatus();
-    return;
+    return planned;
   }
 
   line(`BASLADI: ${job.label}`);
@@ -239,6 +252,7 @@ function run(job) {
   }
   line(`${code === 0 ? 'BITTI' : 'HATA'}: ${job.label} (${code})`);
   saveStatus();
+  return item;
 }
 
 function pushSyncStatus() {
@@ -271,7 +285,17 @@ function pushSyncStatus() {
 if (acquireLock()) {
   try {
     line(`AperiON BizimHesap klon senkronu: firma=${firma}, mod=${status.mode}${planOnly ? ', plan' : ''}`);
-    for (const job of jobs) run(job);
+    const firstPass = jobs.map(job => run(job));
+    const retryFiles = new Set(firstPass
+      .filter(item => item?.required && item.status !== 'ok' && item.status !== 'planned')
+      .map(item => item.file));
+    if (retryFiles.size && !planOnly) {
+      line(`FINAL TEKRAR: ${[...retryFiles].join(', ')} isinmis oturumla yeniden denenecek`);
+      for (const job of jobs.filter(j => retryFiles.has(j.file))) {
+        run({ ...job, label: `${job.label} final tekrar` });
+      }
+    }
+    recomputeStatus();
     status.finishedAt = nowIso();
     saveStatus();
     line(`SENKRON ${status.ok ? 'TAMAM' : 'KONTROL GEREKIYOR'}: ${statusPath}`);

@@ -40,6 +40,8 @@ Bu liste her islemden sonra guncellenecek.
 - [x] GitHub Hourly BizimHesap Sync retry mekanizmasi canli logda calisti
 - [x] GitHub Hourly BizimHesap Sync son run: satis_raw 903 kayit, masraf_raw 88 kayit yazdi
 - [x] GitHub Actions icin BizimHesap kalici oturum cache'i eklendi: .bizimhesap-profile restore/save
+- [x] GitHub Actions cache ilk run'da basariyla kaydedildi
+- [x] BizimHesap senkron runner final tekrar eklendi: zorunlu is kalirsa isinmis oturumla sonda yeniden denenir
 
 ## Sari - Kismen Bitti
 
@@ -52,10 +54,11 @@ Bu liste her islemden sonra guncellenecek.
 - [ ] BizimHesap GitHub senkron akisi: masraf/stok basarili, satis/son islemler icin oturum isinma sirasi ve login retry eklendi
 - [ ] BizimHesap GitHub senkron akisi: satis oturum isiticisi olarak basa alindi; urun/stok ve masraf sonrasinda calisacak
 - [ ] BizimHesap GitHub senkron akisi: cache patch'i canli run ile dogrulanacak
+- [ ] BizimHesap GitHub senkron akisi: final retry patch'i canli run ile dogrulanacak
 
 ## Kirmizi - Kaldi
 
-- [ ] GitHub Actions Hourly BizimHesap Sync son canli run: GitHub runner BizimHesap giris dogrulamasini tetikledi; kalici session cache patch'i canli test edilecek
+- [ ] GitHub Actions Hourly BizimHesap Sync son canli run: urun/stok, masraf, son islemler gecti; satis final retry patch'i canli test edilecek
 - [ ] SUPABASE_DB_URL secret icindeki database password hatali: psql "password authentication failed for user postgres" verdi
 - [ ] Telegram gorsel / evrak akisi
 - [ ] Sabit / sozlesmeli / ongorulen gelir-gider kartlarinin Supabase RPC ile tam canli kayit testi
