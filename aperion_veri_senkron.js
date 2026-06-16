@@ -28,18 +28,18 @@ mkdirSync(dataDir, { recursive: true });
 
 const jobs = [
   {
-    label: 'BizimHesap urun ve stok kartlari',
-    file: 'bizimhesap_urun_stok_cek.js',
-    args: [commit, '--firma', firma, '--out', `urun_stok_${firma}.json`],
-    required: true,
-    timeoutMs: 240000,
-  },
-  {
     label: `BizimHesap satis kaynak yenileme ${salesFromIso} - ${todayIso}`,
     file: 'bizimhesap_bot.js',
     args: ['--firma', firma, '--gecmis', salesFromIso, todayIso],
     required: true,
     timeoutMs: 300000,
+  },
+  {
+    label: 'BizimHesap urun ve stok kartlari',
+    file: 'bizimhesap_urun_stok_cek.js',
+    args: [commit, '--firma', firma, '--out', `urun_stok_${firma}.json`],
+    required: true,
+    timeoutMs: 240000,
   },
   {
     label: `BizimHesap masraf ${year}`,

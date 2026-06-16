@@ -38,6 +38,7 @@ Bu liste her islemden sonra guncellenecek.
 - [x] GitHub Hourly BizimHesap Sync canli run: satis_raw 899 kayit yazdi
 - [x] GitHub Hourly BizimHesap Sync son run: product_raw 3211 kayit, satis_raw 900 kayit, son islemler 3 yeni kayit yazdi
 - [x] GitHub Hourly BizimHesap Sync retry mekanizmasi canli logda calisti
+- [x] GitHub Hourly BizimHesap Sync son run: satis_raw 903 kayit, masraf_raw 88 kayit yazdi
 
 ## Sari - Kismen Bitti
 
@@ -48,11 +49,11 @@ Bu liste her islemden sonra guncellenecek.
 - [ ] Onay Merkezi analiz ekrani: kayit plani ortak motorla gorunuyor, tek tik sonrasi kuyruk kapatma SQL canli kilidi bekliyor
 - [ ] Kalici cache / isletme hafizasi: satis ve gelir modeli baglandi, diger agir sorgular sirada
 - [ ] BizimHesap GitHub senkron akisi: masraf/stok basarili, satis/son islemler icin oturum isinma sirasi ve login retry eklendi
-- [ ] BizimHesap GitHub senkron akisi: masraf oturum yakalandiktan sonra calisacak sekilde sona alindi; son canli run bekleniyor
+- [ ] BizimHesap GitHub senkron akisi: satis oturum isiticisi olarak basa alindi; urun/stok ve masraf sonrasinda calisacak
 
 ## Kirmizi - Kaldi
 
-- [ ] GitHub Actions Hourly BizimHesap Sync son canli run: tek kalan masraf erken sirada giris hatasi; yeni siralama canli test edilecek
+- [ ] GitHub Actions Hourly BizimHesap Sync son canli run: tek kalan urun/stok erken sirada giris hatasi; satis-first siralama canli test edilecek
 - [ ] SUPABASE_DB_URL secret icindeki database password hatali: psql "password authentication failed for user postgres" verdi
 - [ ] Telegram gorsel / evrak akisi
 - [ ] Sabit / sozlesmeli / ongorulen gelir-gider kartlarinin Supabase RPC ile tam canli kayit testi
