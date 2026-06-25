@@ -2,13 +2,16 @@
   "module_id": "alayli_fiyat_sevkiyat_merkezi",
   "company": "ALAYLI Medikal",
   "title": "ALAYLI Fiyat ve Sevkiyat Kontrol Merkezi",
-  "status": "mvp",
+  "status": "mvp_plus_import",
   "entry_file": "alayli-fiyat-sevkiyat.html",
+  "import_file": "alayli-fiyat-veri-aktarim.html",
   "menu_group": "ALAYLI Medikal",
   "menu_label": "Fiyat ve Sevkiyat",
   "active_price_lists": ["Nisan 2026", "Mayis 2026"],
   "archive_price_lists": ["Temmuz 2025", "Agustos 2025", "Ekim 2025"],
   "cost_rule": "fatura_net_alis - fiyat_farki - pesin_iskonto",
   "dashboard_cards": ["toplam_paket", "kdv_dahil_satis", "tahmini_kar", "riskli_satir"],
-  "screens": ["dashboard", "proforma_sevkiyat", "urun_master", "alis_gecmisi", "kurallar", "uyari_merkezi"]
+  "screens": ["dashboard", "proforma_sevkiyat", "urun_master", "alis_gecmisi", "kurallar", "uyari_merkezi", "veri_aktarim"],
+  "import_sources": ["fiyat_listesi_excel", "alis_faturasi_excel", "sevkiyat_proforma_excel"],
+  "local_storage_key": "aperion_alayli_import_v1"
 }
