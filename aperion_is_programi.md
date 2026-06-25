@@ -40,6 +40,8 @@ Bu liste her islemden sonra guncellenecek.
 - [x] GitHub Hourly BizimHesap Sync retry mekanizmasi canli logda calisti
 - [x] GitHub Hourly BizimHesap Sync son run: satis_raw 903 kayit, masraf_raw 88 kayit yazdi
 - [x] GitHub Actions icin BizimHesap kalici oturum cache'i eklendi: .bizimhesap-profile restore/save
+- [x] BizimHesap B2B API dokumani incelendi: fatura/cari/urun/stok endpointleri var; banka/kasa hareketi endpointi dokumanda yok
+- [x] BizimHesap B2B API icin guvenli istemci ve preflight eklendi: token maskelenir, canli yazma kilitli kalir
 - [x] GitHub Actions cache ilk run'da basariyla kaydedildi
 - [x] BizimHesap senkron runner final tekrar eklendi: zorunlu is kalirsa isinmis oturumla sonda yeniden denenir
 - [x] GitHub Actions Hourly BizimHesap Sync basarili: satis_raw 904 kayit, product_raw 3211 kayit, masraf_raw 88 kayit, son islemler OK
