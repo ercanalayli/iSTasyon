@@ -68,6 +68,7 @@
     "mail:ekstre:preflight": "node automation/mail-ekstre-preflight.cjs",
     "mail:ekstre:dry": "cd automation && set DRY_RUN=1&& node mail-ekstre-worker-lite.js",
     "mail:ekstre:run": "cd automation && node mail-ekstre-worker-lite.js",
+    "verify:mail-bank-notifications": "node tools/verify_mail_body_bank_notifications.mjs",
     "bank:approval:preview": "node tools/preview_pending_bank_to_bizimhesap_plan.cjs --firma alayli --limit 25",
     "bizimhesap:queue:dry": "node bizimhesap_queue_worker.cjs --firma alayli --limit 25",
     "bizimhesap:queue:form": "node bizimhesap_queue_worker.cjs --firma alayli --limit 1 --commit",

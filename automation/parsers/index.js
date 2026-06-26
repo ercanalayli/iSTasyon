@@ -3,7 +3,7 @@ import { parseIsbank } from './isbank-parser.js';
 export function detectBank(text, meta = {}) {
   const source = `${meta.bank_hint || ''} ${meta.mail_subject || ''} ${meta.attachment_name || ''} ${text || ''}`;
   const sourceKey = key(source);
-  if (sourceKey.includes('IS_BANKASI') || sourceKey.includes('TURKIYE_IS_BANKASI') || sourceKey.includes('TURKIYE_IS')) return 'isbank';
+  if (sourceKey.includes('IS_BANKASI') || sourceKey.includes('ISBANK') || sourceKey.includes('TURKIYE_IS_BANKASI') || sourceKey.includes('TURKIYE_IS')) return 'isbank';
   if (sourceKey.includes('AKBANK') || sourceKey.includes('AXESS')) return 'akbank';
   if (sourceKey.includes('VAKIFBANK') || sourceKey.includes('VAKIF_BANK')) return 'vakifbank';
   if (sourceKey.includes('HALKBANK') || sourceKey.includes('HALK_BANKASI')) return 'halkbank';
@@ -19,8 +19,45 @@ export function detectBank(text, meta = {}) {
 
 export function parseBankStatement(text, meta = {}) {
   const bank = detectBank(text, meta);
+  const isNotification = meta.source === 'gmail_bank_notification' || meta.attachment_name === 'mail_body';
+  if (isNotification) {
+    const notificationRows = parseBankNotification(text, { ...meta, bank_name: bank });
+    if (notificationRows.length) return qualityGate(notificationRows);
+  }
   const rows = bank === 'isbank' || bank.includes('is') ? parseIsbank(text, meta) : parseGenericBank(text, { ...meta, bank_name: bank });
-  return qualityGate(rows);
+  const notificationRows = rows.length ? rows : parseBankNotification(text, { ...meta, bank_name: bank });
+  return qualityGate(notificationRows);
+}
+
+export function parseBankNotification(text, meta = {}) {
+  const src = clean(text);
+  if (!src) return [];
+  const joined = clean(src.replace(/\n+/g, ' '));
+  const bank = detectBank(src, meta);
+  const bankName = bankLabel(meta, bank);
+  const sid = statementId({ ...meta, attachment_name: meta.attachment_name || 'mail_body' }) || key(`${meta.mail_id || ''} ${meta.mail_subject || ''}`);
+  const dateInfo = findNotificationDate(joined, meta);
+  const amountInfo = findNotificationAmount(joined);
+  if (!dateInfo.date || !amountInfo) return [];
+
+  const signedAmount = detectNotificationDirection(joined, amountInfo.amount);
+  const abs = Math.abs(signedAmount || amountInfo.amount);
+  const desc = notificationDescription(joined, meta);
+  if (!desc || !abs) return [];
+
+  const tx = baseTx(meta, bankName, sid, {
+    transaction_date: dateInfo.date,
+    transaction_time: dateInfo.time,
+    value_date: '',
+    description: desc,
+    amount_in: signedAmount >= 0 ? abs : 0,
+    amount_out: signedAmount < 0 ? abs : 0,
+    balance_after: findNotificationBalance(joined),
+    detected_type: typeOf(desc, signedAmount),
+    confidence_score: dateInfo.fromMailDate ? 72 : 84
+  });
+  tx.duplicate_key = duplicate(bankName, tx);
+  return [tx];
 }
 
 function clean(v) {
@@ -40,6 +77,12 @@ function money(v) {
 function isoDate(v) {
   const m = String(v || '').match(/(\d{2})[\.\/](\d{2})[\.\/](\d{4})/);
   return m ? `${m[3]}-${m[2]}-${m[1]}` : '';
+}
+
+function isoDateFromJs(value) {
+  const d = new Date(value || '');
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toISOString().slice(0, 10);
 }
 
 function monthNo(v) {
@@ -76,18 +119,19 @@ function key(v) {
 }
 
 function typeOf(desc, amount) {
-  const u = trUpper(desc);
+  const u = key(desc).replace(/_/g, ' ');
   if (u.includes('POS') || u.includes('UYE ISYERI') || u.includes('UYE IS YERI') || u.includes('PESIN SATIS') || u.includes('PESINSATIS')) return amount >= 0 ? 'pos_tahsilat' : 'pos_masraf';
-  if (u.includes('FAST') || u.includes('EFT') || u.includes('HAVALE')) return amount >= 0 ? 'tahsilat' : 'odeme';
   if (u.includes('SGK')) return 'sgk';
   if (u.includes('VERGI')) return 'vergi';
   if (u.includes('BSMV') || u.includes('UCRET') || u.includes('MASRAF')) return 'banka_masrafi';
+  if (u.includes('FAST') || u.includes('EFT') || u.includes('HAVALE')) return amount >= 0 ? 'tahsilat' : 'odeme';
   if (u.includes('HGS')) return 'hgs';
   return amount >= 0 ? 'tahsilat' : 'odeme';
 }
 
 function bankLabel(meta, bank) {
   const s = key(`${meta.bank_hint || ''} ${meta.bank_name || ''} ${meta.mail_subject || ''} ${meta.attachment_name || ''}`);
+  if (bank === 'isbank' || s.includes('ISBANK') || s.includes('IS_BANKASI') || s.includes('TURKIYE_IS')) return 'Turkiye Is Bankasi';
   if (bank === 'yapikredi' || s.includes('YAPI')) return 'Yapi Kredi';
   if (bank === 'akbank' || s.includes('AKBANK') || s.includes('AXESS')) return 'Akbank';
   if (bank === 'vakifbank' || s.includes('VAKIF')) return 'VakifBank';
@@ -109,6 +153,85 @@ function statementId(meta) {
 
 function duplicate(bank, tx) {
   return [key(bank), tx.transaction_date, tx.transaction_time || '', tx.value_date || '', (tx.amount_in || 0).toFixed(2), (tx.amount_out || 0).toFixed(2), tx.balance_after == null ? '' : Number(tx.balance_after || 0).toFixed(2), key(tx.description)].join('|');
+}
+
+function findNotificationDate(text, meta = {}) {
+  const numeric = String(text || '').match(/(\d{1,2})[\.\/-](\d{1,2})[\.\/-](20\d{2})(?:\s*(?:-|,|\s)\s*(\d{1,2})[:\.](\d{2}))?/);
+  if (numeric) {
+    return {
+      date: `${numeric[3]}-${String(numeric[2]).padStart(2, '0')}-${String(numeric[1]).padStart(2, '0')}`,
+      time: numeric[4] ? `${String(numeric[4]).padStart(2, '0')}:${numeric[5]}` : ''
+    };
+  }
+  const named = String(text || '').match(/(\d{1,2})\s+([A-Za-zÇĞİÖŞÜçğıöşü]+)\s+(20\d{2})(?:\s*(\d{1,2})[:\.](\d{2}))?/u);
+  if (named) {
+    const mm = monthNo(named[2]);
+    if (mm) {
+      return {
+        date: `${named[3]}-${mm}-${String(named[1]).padStart(2, '0')}`,
+        time: named[4] ? `${String(named[4]).padStart(2, '0')}:${named[5]}` : ''
+      };
+    }
+  }
+  return { date: isoDateFromJs(meta.mail_date), time: '', fromMailDate: true };
+}
+
+function findNotificationAmount(text) {
+  const matches = [...String(text || '').matchAll(/([+-]?\s*\d{1,3}(?:\.\d{3})*(?:,\d{2})|[+-]?\s*\d+(?:,\d{2})?)\s*(?:TL|TRY|₺)/gi)]
+    .map(match => ({ raw: match[0], index: match.index || 0, amount: money(match[1]) }))
+    .filter(item => Number.isFinite(item.amount) && item.amount !== 0 && !/[Xx*]/.test(item.raw));
+  if (!matches.length) return null;
+  const preferred = matches.find(item => {
+    const around = trUpper(String(text || '').slice(Math.max(0, item.index - 60), item.index + 90));
+    return /TUTAR|MIKTAR|ODEME|GONDER|GELEN|YATAN|TAHSIL|UCRET|KOMISYON|FAST|EFT|HAVALE|POS/.test(around);
+  });
+  return preferred || matches[0];
+}
+
+function detectNotificationDirection(text, amount) {
+  if (amount < 0) return amount;
+  const u = trUpper(text);
+  const outgoing = [
+    'HESABINIZDAN',
+    'GIDEN',
+    'BORC',
+    'BORCLARIN TAHSILAT',
+    'TAHSIL EDILMISTIR',
+    'ODEME',
+    'ODENDI',
+    'KOMISYON',
+    'UCRET',
+    'VERGI OTOMATIK',
+    'KREDI KARTI BORC'
+  ].some(token => u.includes(token));
+  const incoming = [
+    'HESABINIZA',
+    'GELEN',
+    'YATAN',
+    'PARA GONDERILDI',
+    'POS ODEMESI',
+    'ALACAK'
+  ].some(token => u.includes(token));
+  if (outgoing && !incoming) return -Math.abs(amount);
+  if (outgoing && incoming && /HESABINIZDAN|GIDEN|KOMISYON|UCRET|VERGI|BORC/.test(u)) return -Math.abs(amount);
+  return Math.abs(amount);
+}
+
+function findNotificationBalance(text) {
+  const m = String(text || '').match(/(?:BAKIYE|KALAN)[^\d-]*(-?\d{1,3}(?:\.\d{3})*,\d{2})\s*(?:TL|TRY|₺)?/i);
+  return m ? money(m[1]) : null;
+}
+
+function notificationDescription(text, meta = {}) {
+  const parts = [
+    meta.mail_subject || '',
+    String(text || '').split(/\n|Sayin|Sayın|Degerli|Değerli/i).map(clean).filter(Boolean)[0] || text
+  ].filter(Boolean);
+  return clean(parts.join(' - '))
+    .replace(/\s+/g, ' ')
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/ig, 'mail@masked')
+    .replace(/\bTR\d{2}[A-Z0-9]{8,}\b/ig, 'TR##MASKED')
+    .slice(0, 320);
 }
 
 function qualityGate(rows) {

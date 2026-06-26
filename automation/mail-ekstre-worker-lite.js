@@ -92,7 +92,7 @@ async function loadRowsFromGmail(report){
   const seenMessages = new Set();
   const seenAttachments = new Set();
   for(const bank of cfg.banks){
-    const query = mailboxQuery(mailbox, `(${bank.query}) has:attachment newer_than:${lookback}d`);
+    const query = mailboxQuery(mailbox, `(${bank.query}) newer_than:${lookback}d`);
     try{
       const found = await searchMessages(gmail, query, 10);
       for(const item of found){
@@ -100,7 +100,28 @@ async function loadRowsFromGmail(report){
         seenMessages.add(item.id);
         report.scanned_messages++;
         const msg = await readMessageSummary(gmail, item.id);
-        const mailInfo = { bank: bank.bank, id: msg.id, from: msg.from, to: msg.to, subject: msg.subject, date: msg.date, attachments: [] };
+        const mailInfo = { bank: bank.bank, id: msg.id, from: msg.from, to: msg.to, subject: msg.subject, date: msg.date, body_text_length: 0, body_parsed_rows: 0, attachments: [] };
+        const bodyText = [msg.subject, msg.snippet, msg.body_text].filter(Boolean).join('\n');
+        if(bodyText.trim()){
+          report.body_texts++;
+          mailInfo.body_text_length = bodyText.length;
+          const rows = parseBankStatement(bodyText, {
+            company_id: cfg.company_id || 'alayli',
+            source: 'gmail_bank_notification',
+            mailbox,
+            bank_hint: `${bank.bank} ${msg.from || ''} ${msg.subject || ''}`,
+            mail_id: msg.id,
+            mail_subject: msg.subject,
+            mail_from: msg.from,
+            mail_date: msg.date,
+            attachment_name: 'mail_body'
+          });
+          mailInfo.body_parsed_rows = rows.length;
+          if(rows.length === 0) mailInfo.body_parser_probe = buildParserProbe(bodyText);
+          report.body_parsed_rows += rows.length;
+          report.parsed_rows += rows.length;
+          parsed.push(...rows);
+        }
         for(const a of msg.attachments){
           const attachmentKey = `${msg.id}:${a.attachmentId || a.filename || ''}`;
           if(seenAttachments.has(attachmentKey)) continue;
@@ -230,6 +251,8 @@ async function main(){
     scanned_messages: 0,
     attachments: 0,
     readable_attachments: 0,
+    body_texts: 0,
+    body_parsed_rows: 0,
     extracted_texts: 0,
     parsed_rows: 0,
     ingest: null,
@@ -240,6 +263,7 @@ async function main(){
   let parsed = [];
   try{
     parsed = sourceMode === 'drive' ? await loadRowsFromDrive(report) : await loadRowsFromGmail(report);
+    parsed = dedupeParsedRows(parsed, report);
   }catch(err){
     report.errors.push({ area: sourceMode, error: err.message || String(err) });
   }
@@ -268,6 +292,20 @@ async function main(){
   if(report.errors.length) process.exitCode = 2;
 }
 
+function dedupeParsedRows(rows, report){
+  const seen = new Set();
+  const unique = [];
+  for(const row of rows){
+    const key = row.duplicate_key || rowSignature(row);
+    if(!key || seen.has(key)) continue;
+    seen.add(key);
+    unique.push(row);
+  }
+  report.duplicates_inside_run = rows.length - unique.length;
+  report.parsed_rows_unique = unique.length;
+  return unique;
+}
+
 function buildConsoleSummary(report){
   return {
     run_at: report.run_at,
@@ -279,8 +317,12 @@ function buildConsoleSummary(report){
     scanned_messages: report.scanned_messages,
     attachments: report.attachments,
     readable_attachments: report.readable_attachments,
+    body_texts: report.body_texts,
+    body_parsed_rows: report.body_parsed_rows,
     extracted_texts: report.extracted_texts,
     parsed_rows: report.parsed_rows,
+    parsed_rows_unique: report.parsed_rows_unique,
+    duplicates_inside_run: report.duplicates_inside_run,
     ingest: report.ingest,
     errors: report.errors
   };
