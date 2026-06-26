@@ -61,6 +61,9 @@ jobs:
         run: |
           node -e "const cfg=require('./automation/mail-ekstre-config.json'); if(cfg.mailbox!=='alaylimedikal@gmail.com'){throw new Error('Wrong mailbox: '+cfg.mailbox)}; console.log('MAILBOX_OK='+cfg.mailbox)"
 
+      - name: Verify bank notification email parser
+        run: npm run verify:mail-bank-notifications
+
       - name: Check secrets and Supabase SQL objects
         id: sqlcheck
         run: |
