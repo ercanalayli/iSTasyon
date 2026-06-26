@@ -1180,6 +1180,338 @@ body.dashboard-mode #lastDataCard,
 body.dashboard-mode #sourceMatrixCard,
 body.dashboard-mode #homeExpenseCard,
 body.dashboard-mode #fGrid{display:none !important}
+
+/* AperiON Command Design Lock v72: cleaner hierarchy, separated color lanes, glow actions */
+body.dashboard-mode{
+  --dash-bg:#EDF2F7;
+  --dash-ink:#111827;
+  --dash-muted:#64748B;
+  --dash-line:#D9E2EF;
+  --dash-blue:#2563EB;
+  --dash-green:#059669;
+  --dash-red:#DC2626;
+  --dash-amber:#D97706;
+  --dash-violet:#7C3AED;
+  --dash-cyan:#0284C7;
+}
+body.dashboard-mode .content{
+  background:
+    linear-gradient(180deg,#F8FAFC 0,#EFF4FA 48%,#E7EEF7 100%);
+}
+body.dashboard-mode #pg-dashboard{
+  margin:-4px;
+  padding:8px;
+  background:transparent;
+}
+body.dashboard-mode #pg-dashboard #kartsDiv{
+  gap:12px !important;
+  grid-template-columns:minmax(560px,1.08fr) minmax(450px,.92fr) !important;
+  grid-template-rows:minmax(150px,.42fr) minmax(260px,1fr) minmax(176px,.64fr) !important;
+}
+body.dashboard-mode .command-hero,
+body.dashboard-mode .bank-command-card,
+body.dashboard-mode .income-card,
+body.dashboard-mode #homeMorningApprovalCard,
+body.dashboard-mode #roadmapCard{
+  border-radius:18px !important;
+  border:1px solid rgba(15,23,42,.10) !important;
+  box-shadow:0 18px 42px rgba(15,23,42,.10) !important;
+}
+body.dashboard-mode .command-hero:hover,
+body.dashboard-mode .bank-command-card:hover,
+body.dashboard-mode .income-card:hover,
+body.dashboard-mode #homeMorningApprovalCard:hover,
+body.dashboard-mode #roadmapCard:hover{
+  transform:translateY(-1px);
+  box-shadow:0 22px 54px rgba(15,23,42,.14),0 0 0 2px rgba(37,99,235,.10) !important;
+}
+body.dashboard-mode button,
+body.dashboard-mode .empty-btn,
+body.dashboard-mode .mini-action{
+  transition:transform .15s,border-color .15s,background .15s,color .15s,box-shadow .15s !important;
+}
+body.dashboard-mode button:hover,
+body.dashboard-mode .empty-btn:hover,
+body.dashboard-mode .mini-action:hover{
+  transform:translateY(-1px);
+  box-shadow:0 0 0 3px rgba(37,99,235,.14),0 12px 24px rgba(37,99,235,.16) !important;
+}
+body.dashboard-mode .command-hero{
+  padding:16px !important;
+  background:
+    radial-gradient(circle at 88% 18%,rgba(37,99,235,.10),transparent 28%),
+    linear-gradient(180deg,#FFFFFF,#F9FBFF) !important;
+}
+body.dashboard-mode .command-hero::before{
+  height:5px;
+  background:linear-gradient(90deg,#0F766E 0 24%,#2563EB 24% 52%,#7C3AED 52% 74%,#D97706 74% 100%) !important;
+}
+body.dashboard-mode .command-hero-head{
+  margin-bottom:12px !important;
+  align-items:center;
+}
+body.dashboard-mode .command-title{
+  font-size:24px !important;
+  letter-spacing:-.01em;
+}
+body.dashboard-mode .command-sub{
+  max-width:900px;
+  color:#475569;
+}
+body.dashboard-mode .command-actions button{
+  border-radius:10px !important;
+  height:36px;
+  background:#FFFFFF;
+  border-color:#D4DDEB;
+}
+body.dashboard-mode .command-actions button.primary{
+  background:#111827 !important;
+  color:#FFFFFF !important;
+  border-color:#111827 !important;
+}
+body.dashboard-mode .command-actions button.primary:hover{
+  background:#2563EB !important;
+  border-color:#2563EB !important;
+}
+body.dashboard-mode .command-grid{
+  grid-template-columns:1.36fr repeat(4,minmax(0,1fr)) !important;
+  gap:10px !important;
+}
+body.dashboard-mode .command-decision,
+body.dashboard-mode .command-metric{
+  min-height:104px !important;
+  border-radius:14px !important;
+  padding:13px !important;
+  position:relative;
+  overflow:hidden;
+  background:#FFFFFF;
+}
+body.dashboard-mode .command-decision::before,
+body.dashboard-mode .command-metric::before{
+  content:'';
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:4px;
+  background:#94A3B8;
+}
+body.dashboard-mode .command-decision.state-good::before{background:var(--dash-green)}
+body.dashboard-mode .command-decision.state-warn::before{background:var(--dash-amber)}
+body.dashboard-mode .command-decision.state-bad::before{background:var(--dash-red)}
+body.dashboard-mode .command-metric:nth-child(2)::before{background:var(--dash-blue)}
+body.dashboard-mode .command-metric:nth-child(3)::before{background:var(--dash-violet)}
+body.dashboard-mode .command-metric:nth-child(4)::before{background:var(--dash-red)}
+body.dashboard-mode .command-metric:nth-child(5)::before{background:var(--dash-amber)}
+body.dashboard-mode .command-decision.state-warn{background:#FFF8EA !important;border-color:#FED7AA !important}
+body.dashboard-mode .command-decision.state-good{background:#ECFDF5 !important;border-color:#A7F3D0 !important}
+body.dashboard-mode .command-decision.state-bad{background:#FEF2F2 !important;border-color:#FECACA !important}
+body.dashboard-mode .command-k{
+  font-size:10px;
+  color:#667085;
+}
+body.dashboard-mode .command-v{
+  font-size:22px !important;
+  letter-spacing:0;
+}
+body.dashboard-mode .command-chip{
+  border-radius:8px;
+  background:#FFFFFF;
+}
+body.dashboard-mode .bank-command-card{
+  background:
+    linear-gradient(135deg,#052E2B,#0B3D34 48%,#0D2D2B 100%) !important;
+  border-color:rgba(16,185,129,.28) !important;
+}
+body.dashboard-mode .bank-command-card::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at 82% 18%,rgba(167,243,208,.18),transparent 32%);
+}
+body.dashboard-mode .bank-command-head,
+body.dashboard-mode .bank-command-grid{position:relative;z-index:1}
+body.dashboard-mode .bank-command-title{font-size:21px}
+body.dashboard-mode .bank-command-sub{
+  color:#B7F7D7;
+  line-height:1.35;
+}
+body.dashboard-mode .bank-command-actions button{
+  border-radius:10px;
+  background:rgba(255,255,255,.10);
+}
+body.dashboard-mode .bank-command-actions button:hover{
+  background:#ECFDF5;
+  color:#064E3B;
+}
+body.dashboard-mode .bank-command-total,
+body.dashboard-mode .bank-command-bank{
+  border-radius:14px !important;
+  background:rgba(255,255,255,.10) !important;
+  border-color:rgba(255,255,255,.15) !important;
+}
+body.dashboard-mode .bank-command-total{
+  background:linear-gradient(135deg,rgba(16,185,129,.30),rgba(255,255,255,.10)) !important;
+}
+body.dashboard-mode .bank-command-total:hover,
+body.dashboard-mode .bank-command-bank:hover{
+  background:rgba(255,255,255,.16) !important;
+  box-shadow:0 0 0 2px rgba(167,243,208,.20);
+}
+body.dashboard-mode .bank-command-k{color:#A7F3D0}
+body.dashboard-mode .bank-command-v{
+  font-size:24px !important;
+  letter-spacing:0;
+}
+body.dashboard-mode #pg-dashboard .income-card{
+  background:#FFFFFF !important;
+  border-color:rgba(15,23,42,.10) !important;
+  padding:16px !important;
+}
+body.dashboard-mode #pg-dashboard .income-card::before{display:none !important}
+body.dashboard-mode #pg-dashboard .income-head{
+  min-height:100%;
+  grid-template-columns:1fr !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+}
+body.dashboard-mode #pg-dashboard .income-cockpit-main,
+body.dashboard-mode #pg-dashboard .income-component-panel{display:none !important}
+body.dashboard-mode #pg-dashboard .income-op-board{
+  display:block !important;
+  border-radius:16px;
+  border:1px solid #DCE6F4;
+  background:linear-gradient(180deg,#F8FAFF,#FFFFFF) !important;
+  box-shadow:none !important;
+  color:#111827;
+}
+body.dashboard-mode #pg-dashboard .income-op-title{
+  color:#111827;
+  font-size:13px;
+}
+body.dashboard-mode #pg-dashboard .income-op-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+}
+body.dashboard-mode #pg-dashboard .income-op-grid>div{
+  border-radius:13px;
+  border:1px solid #E2E8F0;
+  background:#FFFFFF !important;
+}
+body.dashboard-mode #pg-dashboard .income-op-grid span,
+body.dashboard-mode #pg-dashboard .income-component-list span{
+  color:#667085;
+}
+body.dashboard-mode #pg-dashboard .income-op-grid b{
+  color:#111827;
+}
+body.dashboard-mode #pg-dashboard .income-pipeline{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+body.dashboard-mode #pg-dashboard .income-pipe-step{
+  border-color:#E2E8F0;
+  background:#F8FAFC !important;
+}
+body.dashboard-mode #pg-dashboard .income-pipe-step span{color:#64748B}
+body.dashboard-mode #pg-dashboard .income-pipe-step b{color:#111827}
+body.dashboard-mode #pg-dashboard .income-card .report-grid,
+body.dashboard-mode #pg-dashboard .income-card .report-tile,
+body.dashboard-mode #pg-dashboard .income-layout{display:none !important}
+body.dashboard-mode #homeMorningApprovalCard,
+body.dashboard-mode #roadmapCard{
+  background:#FFFFFF !important;
+  padding:14px !important;
+}
+body.dashboard-mode #homeMorningApprovalCard{
+  border-left:5px solid #F59E0B !important;
+}
+body.dashboard-mode #roadmapCard{
+  border-left:5px solid #2563EB !important;
+}
+body.dashboard-mode .card-hd{
+  margin-bottom:10px;
+  padding-bottom:8px;
+  border-bottom:1px solid #E7EDF6;
+}
+body.dashboard-mode .card-l{
+  color:#344054;
+  letter-spacing:.12em;
+}
+body.dashboard-mode .morning-approval-card,
+body.dashboard-mode .roadmap-item{
+  border-radius:12px !important;
+  border:1px solid #E2E8F0 !important;
+  background:#F8FAFC !important;
+}
+body.dashboard-mode .morning-approval-card{
+  border-left:4px solid #F59E0B !important;
+}
+body.dashboard-mode .morning-approval-card:hover,
+body.dashboard-mode .roadmap-item:hover{
+  transform:translateY(-1px);
+  border-color:#93C5FD !important;
+  box-shadow:0 0 0 3px rgba(37,99,235,.10),0 14px 28px rgba(15,23,42,.10);
+}
+body.dashboard-mode .roadmap-item:nth-child(4n+1){border-left:4px solid #2563EB !important}
+body.dashboard-mode .roadmap-item:nth-child(4n+2){border-left:4px solid #059669 !important}
+body.dashboard-mode .roadmap-item:nth-child(4n+3){border-left:4px solid #D97706 !important}
+body.dashboard-mode .roadmap-item:nth-child(4n+4){border-left:4px solid #7C3AED !important}
+body.dashboard-mode .roadmap-st.done{
+  background:#DCFCE7 !important;
+  color:#047857 !important;
+  border:1px solid #86EFAC !important;
+}
+body.dashboard-mode .roadmap-st.wait{
+  background:#FEF3C7 !important;
+  color:#92400E !important;
+  border:1px solid #FCD34D !important;
+}
+body.dashboard-mode .roadmap-st.hot{
+  background:#FEE2E2 !important;
+  color:#B91C1C !important;
+  border:1px solid #FCA5A5 !important;
+}
+body.dashboard-mode .tb{
+  background:rgba(255,255,255,.98);
+  box-shadow:0 8px 24px rgba(15,23,42,.07);
+}
+body.dashboard-mode .tb-btn:hover,
+body.dashboard-mode .tb-ver:hover,
+body.dashboard-mode .tb-live:hover{
+  box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+body.dashboard-mode .sb{
+  background:#0F172A;
+  color:#E5E7EB;
+}
+body.dashboard-mode .sb-logo,
+body.dashboard-mode .sb-fs,
+body.dashboard-mode .sb-u{
+  border-color:rgba(255,255,255,.08);
+}
+body.dashboard-mode .sb-item{color:#CBD5E1}
+body.dashboard-mode .sb-item:hover{
+  background:rgba(37,99,235,.16);
+  color:#FFFFFF;
+}
+body.dashboard-mode .sb-item.on{
+  background:#EAF1FF;
+  color:#1D4ED8;
+  border-left-color:#60A5FA;
+}
+body.dashboard-mode .sb-fb{
+  background:#111F35;
+  border-color:rgba(255,255,255,.10);
+}
+body.dashboard-mode .sb-fn{color:#34D399}
+body.dashboard-mode .sb-mark{background:#2563EB}
+@media(max-width:1180px){
+  body.dashboard-mode #pg-dashboard #kartsDiv{
+    display:block !important;
+    height:auto !important;
+    overflow:visible !important;
+  }
+  body.dashboard-mode .content{overflow:auto}
+}
 </style>
 </head>
 <body class="dashboard-mode">
