@@ -15,6 +15,7 @@ const sourceMode = process.env.EKSTRE_SOURCE || 'gmail';
 const gmail = sourceMode === 'gmail' ? makeGmail() : null;
 const mailbox = process.env.GMAIL_MAILBOX || cfg.mailbox || 'alaylimedikal@gmail.com';
 const lookback = process.env.LOOKBACK_DAYS || cfg.lookback_days || 7;
+const maxMessagesPerBank = Number(process.env.GMAIL_MAX_MESSAGES_PER_BANK || cfg.gmail_max_messages_per_bank || 25);
 const dryRun = process.env.DRY_RUN === '1';
 const LOG_DIR = new URL('./logs/', import.meta.url);
 
@@ -94,7 +95,7 @@ async function loadRowsFromGmail(report){
   for(const bank of cfg.banks){
     const query = mailboxQuery(mailbox, `(${bank.query}) newer_than:${lookback}d`);
     try{
-      const found = await searchMessages(gmail, query, 10);
+      const found = await searchMessages(gmail, query, maxMessagesPerBank);
       for(const item of found){
         if(seenMessages.has(item.id)) continue;
         seenMessages.add(item.id);
@@ -248,6 +249,7 @@ async function main(){
     company_id: cfg.company_id,
     mailbox,
     lookback_days: lookback,
+    gmail_max_messages_per_bank: maxMessagesPerBank,
     scanned_messages: 0,
     attachments: 0,
     readable_attachments: 0,
@@ -314,6 +316,7 @@ function buildConsoleSummary(report){
     company_id: report.company_id,
     mailbox: report.mailbox,
     lookback_days: report.lookback_days,
+    gmail_max_messages_per_bank: report.gmail_max_messages_per_bank,
     scanned_messages: report.scanned_messages,
     attachments: report.attachments,
     readable_attachments: report.readable_attachments,

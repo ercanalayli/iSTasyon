@@ -2,6 +2,7 @@
   "company_id": "alayli",
   "mailbox": "alaylimedikal@gmail.com",
   "lookback_days": 7,
+  "gmail_max_messages_per_bank": 25,
   "primary_banks": [
     "akbank",
     "garanti",
@@ -18,27 +19,27 @@
     {
       "bank": "akbank",
       "label": "Akbank",
-      "query": "Akbank OR Axess OR from:bilgi.akbank.com"
+      "query": "Akbank OR Axess OR AkbankDirekt OR from:bilgi.akbank.com"
     },
     {
       "bank": "garanti",
       "label": "Garanti BBVA",
-      "query": "Garanti OR GarantiBBVA OR \"Hesap Hareket Dokumu\" OR \"Hesap Hareketleri\""
+      "query": "Garanti OR GarantiBBVA OR \"Garanti BBVA\" OR \"Hesap Hareket Dokumu\" OR \"Hesap Hareketleri\""
     },
     {
       "bank": "isbank",
       "label": "Is Bankasi",
-      "query": "Turkiye Is Bankasi OR Is Bankasi OR IsCep OR \"Hesap Hareket\" OR \"Hesap Ekstre\""
+      "query": "\"Türkiye İş Bankası\" OR \"Turkiye Is Bankasi\" OR \"İş Bankası\" OR \"Is Bankasi\" OR IsCep OR İşCep OR \"Hesap Hareket\" OR \"Hesap Ekstre\" OR \"TL Özeti\""
     },
     {
       "bank": "vakifbank",
       "label": "VakifBank",
-      "query": "Vakifbank OR Vakif Bank OR VakifBank OR E-Ekstre"
+      "query": "Vakifbank OR VakıfBank OR \"Vakif Bank\" OR \"Vakıf Bank\" OR VakifBank OR E-Ekstre OR \"FAST Anlık Ödeme\" OR \"FAST Anlik Odeme\""
     },
     {
       "bank": "yapikredi",
       "label": "Yapi Kredi",
-      "query": "Yapi Kredi OR YAPIKREDI OR \"Hesap Hareketleri\" OR from:ekstre@ekstre.yapikredi.com.tr"
+      "query": "\"Yapı Kredi\" OR \"Yapi Kredi\" OR YAPIKREDI OR \"Akıllı Asistan\" OR \"Akilli Asistan\" OR \"Gelen EFT\" OR \"Üye İşyeri\" OR \"Uye Isyeri\" OR \"Hesap Hareketleri\" OR from:ekstre@ekstre.yapikredi.com.tr"
     },
     {
       "bank": "halkbank",
@@ -73,7 +74,7 @@
     {
       "bank": "generic",
       "label": "Genel ekstre",
-      "query": "\"Hesap Hareketleri\" OR \"Hesap Ozeti\" OR \"Banka Ekstresi\" OR \"Ekstre\""
+      "query": "\"Hesap Hareketleri\" OR \"Hesap Özeti\" OR \"Hesap Ozeti\" OR \"Banka Ekstresi\" OR \"Ekstre\" OR \"E-Ekstre\" OR \"Banka Hareketleri\""
     }
   ],
   "rules": {
