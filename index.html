@@ -4706,6 +4706,28 @@ function bankNotice(kind,title,msg){
   const color=kind==='ok'?'var(--green)':kind==='warn'?'var(--orange)':'var(--red)';
   el.style.display='block';
   el.innerHTML=`<div class="empty-t" style="color:${color}">${escHtml(title)}</div><div class="empty-d">${escHtml(msg)}</div>`;
+  try{el.scrollIntoView({block:'nearest',behavior:'smooth'});}catch(e){}
+}
+function bankButtonSet(btn,label,disabled=true,tone=''){
+  if(!btn)return;
+  btn.disabled=!!disabled;
+  btn.textContent=label;
+  btn.dataset.state=tone||label;
+}
+function bankRowFeedback(btn,kind,msg){
+  if(!btn)return;
+  const cell=btn.closest('td');
+  if(!cell)return;
+  let fb=cell.querySelector('.bank-action-feedback');
+  if(!fb){
+    fb=document.createElement('div');
+    fb.className='bank-action-feedback';
+    fb.style.cssText='margin-top:6px;font-family:var(--mono);font-size:9px;font-weight:900;line-height:1.35';
+    cell.appendChild(fb);
+  }
+  const color=kind==='ok'?'var(--green)':kind==='warn'?'var(--orange)':'var(--red)';
+  fb.style.color=color;
+  fb.textContent=msg;
 }
 function bankQueueStatusTR(q,r=null){
   const s=String(q?.status||'');
@@ -4744,32 +4766,47 @@ function bankaBadge(r){
 }
 async function bankaKarar(id,durum,source='banka_raw',btn=null){
   let error=null;
-  if(btn){btn.disabled=true;btn.textContent=durum==='islenecek'?'İşleniyor...':'Reddediliyor...';}
+  const approveLabel=source==='pending_bank_movements'?'Kuyruğa Al':"BizimHesap'a Kaydet";
+  if(btn){bankButtonSet(btn,durum==='islenecek'?'Kuyruğa alınıyor...':'Reddediliyor...',true,'working');bankRowFeedback(btn,'warn','AperiON onayı işleniyor...');}
   bankNotice('warn','İşlem başladı','AperiON onayı kaydediliyor, BizimHesap kuyruğu kontrol ediliyor.');
   let queueId=null;
-  if(source==='pending_bank_movements'){
-    const rpc=durum==='islenecek'?'approve_pending_bank_movement':'reject_pending_bank_movement';
-    const res=await db.rpc(rpc,{p_id:id,p_note:'AperiON Onay Merkezi'});
-    error=res.error;
-    queueId=res.data;
-    if(error&&String(error.message||'').toLowerCase().includes('function')){
-      bankNotice('err','SQL/RPC eksik','approve/reject fonksiyonu Supabase içinde yok. Kayıt yarım onaylanmadı; önce Bank Statement Ingestion SQL kurulmalı.');
-      if(btn){btn.disabled=false;btn.textContent=durum==='islenecek'?"BizimHesap'a Kaydet":'Ret';}
-      return;
+  try{
+    if(source==='pending_bank_movements'){
+      const rpc=durum==='islenecek'?'approve_pending_bank_movement':'reject_pending_bank_movement';
+      const res=await db.rpc(rpc,{p_id:id,p_note:'AperiON Onay Merkezi'});
+      error=res.error;
+      queueId=res.data;
+      if(error&&String(error.message||'').toLowerCase().includes('function')){
+        bankNotice('err','SQL/RPC eksik','approve/reject fonksiyonu Supabase içinde yok. Kayıt yarım onaylanmadı; önce Bank Statement Ingestion SQL kurulmalı.');
+        bankButtonSet(btn,durum==='islenecek'?approveLabel:'Ret',false,'err');
+        bankRowFeedback(btn,'err','SQL/RPC eksik.');
+        return;
+      }
+      if(durum==='islenecek'&&!queueId){
+        bankNotice('err','Kuyruk oluşmadı','Onay fonksiyonu çalıştı ama BizimHesap kuyruk ID üretmedi. Kayıt kesinleşmedi; SQL fonksiyonu kontrol edilmeli.');
+        bankButtonSet(btn,approveLabel,false,'err');
+        bankRowFeedback(btn,'err','Kuyruk ID oluşmadı.');
+        return;
+      }
+    }else{
+      const patch={durum,updated_at:new Date().toISOString()};
+      const res=await db.from('banka_raw').update(patch).eq('id',id);
+      error=res.error;
     }
-    if(durum==='islenecek'&&!queueId){
-      bankNotice('err','Kuyruk oluşmadı','Onay fonksiyonu çalıştı ama BizimHesap kuyruk ID üretmedi. Kayıt kesinleşmedi; SQL fonksiyonu kontrol edilmeli.');
-      if(btn){btn.disabled=false;btn.textContent="BizimHesap'a Kaydet";}
-      return;
+    if(error)throw error;
+    const title=durum==='islenecek'?(queueId?'BizimHesap kuyruğuna alındı':'AperiON onayı kaydedildi'):'Kayıt reddedildi';
+    const msg=queueId?`Kuyruk ID: ${queueId}. Sıradaki adım: BizimHesap worker bu kaydı gerçek kayda dönüştürür.`:(source==='pending_bank_movements'&&durum==='islenecek'?'BizimHesap kuyruğu kontrol edilmeli.':'Durum kaydedildi.');
+    bankNotice('ok',title,msg);
+    if(btn){
+      bankButtonSet(btn,durum==='islenecek'?'Kuyrukta':'Reddedildi',true,'ok');
+      bankRowFeedback(btn,'ok',queueId?`Kuyruk: ${shortId(queueId)}`:'Durum kaydedildi');
     }
-  }else{
-    const patch={durum,updated_at:new Date().toISOString()};
-    const res=await db.from('banka_raw').update(patch).eq('id',id);
-    error=res.error;
+    await rBankaOnay();
+  }catch(e){
+    const msg=e.message||String(e);
+    bankNotice('err','Kaydedilemedi',msg);
+    if(btn){bankButtonSet(btn,durum==='islenecek'?approveLabel:'Ret',false,'err');bankRowFeedback(btn,'err',msg);}
   }
-  if(error){bankNotice('err','Kaydedilemedi',error.message||String(error));if(btn){btn.disabled=false;btn.textContent=durum==='islenecek'?"BizimHesap'a Kaydet":'Ret';}return;}
-  bankNotice('ok',durum==='islenecek'?(queueId?'BizimHesap kuyruğuna alındı':'AperiON onayı kaydedildi'):'Kayıt reddedildi',queueId?`Kuyruk ID: ${queueId}`:(source==='pending_bank_movements'&&durum==='islenecek'?'BizimHesap kuyruğu için approve_pending_bank_movement SQL fonksiyonu kontrol edilmeli.':'Durum kaydedildi.'));
-  await rBankaOnay();
 }
 async function rBankaOnay(){
   const result=await bankaRawData();
@@ -4802,7 +4839,7 @@ async function rBankaOnay(){
       <td>${bankDecisionCell(r,dupCount)}</td>
       <td>${bankPostingCell(r)}</td>
       <td>${bankControlCell(r,dupCount)}</td>
-      <td>${onayBtn?`<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)">BizimHesap'a Kaydet</button> <button class="empty-btn" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg},this)">Ret</button>`:'-'}</td>
+      <td>${onayBtn?`<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)">${r._source==='pending_bank_movements'?'Kuyruğa Al':"BizimHesap'a Kaydet"}</button> <button class="empty-btn" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg},this)">Ret</button>`:'-'}</td>
     </tr>`;
   }).join(''):'<tr><td colspan="6" style="padding:18px;color:var(--t3)">Banka hareketi yok</td></tr>';
 }

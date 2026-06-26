@@ -4,6 +4,11 @@ on:
   schedule:
     # 10:15 and 17:15 Europe/Istanbul, after mail ekstre checks.
     - cron: "15 7,14 * * *"
+    # Daytime follow-up: approved queue should not wait until evening.
+    - cron: "*/15 8-17 * * *"
+  workflow_run:
+    workflows: ["AperiON Mail Ekstre Pipeline"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       live:
@@ -60,8 +65,8 @@ jobs:
           COMPANY_ID: alayli
         run: npm run bizimhesap:queue:dry
 
-      - name: Scheduled live save
-        if: ${{ github.event_name == 'schedule' && vars.BIZIMHESAP_QUEUE_AUTO_SAVE == '1' }}
+      - name: Scheduled approved queue live save
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

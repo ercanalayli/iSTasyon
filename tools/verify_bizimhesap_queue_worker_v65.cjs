@@ -30,7 +30,9 @@ assertHas('bizimhesap_queue_worker.cjs', 'aperion_posting_result', 'writes posti
 assertHas('package.json', 'bizimhesap:queue:dry', 'npm dry command');
 assertHas('package.json', 'bizimhesap:queue:form', 'npm form command');
 assertHas('package.json', 'bizimhesap:queue:save', 'npm save command');
-assertHas('.github/workflows/bizimhesap-queue-worker.yml', 'BIZIMHESAP_QUEUE_AUTO_SAVE', 'scheduled auto-save lock');
+assertHas('.github/workflows/bizimhesap-queue-worker.yml', 'Scheduled approved queue live save', 'scheduled approved queue save');
+assertHas('.github/workflows/bizimhesap-queue-worker.yml', 'workflow_run', 'mail pipeline completion trigger');
+assertHas('.github/workflows/bizimhesap-queue-worker.yml', 'BIZIMHESAP_POSTING_SAVE: "1"', 'scheduled save unlock scoped to worker');
 assertHas('.github/workflows/bizimhesap-queue-worker.yml', 'workflow_dispatch', 'manual dispatch');
 assertHas('.github/workflows/bizimhesap-queue-worker.yml', 'Upload diagnostics', 'diagnostics upload');
 
