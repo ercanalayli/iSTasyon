@@ -18,6 +18,8 @@ Genel durum: Sistem calisan bir omurgaya sahip, ancak tum moduller gunluk guveni
 
 Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonraki turlarda durum, karar, sonraki is ve kalite kontrol bu dosyalardan surdurulecektir.
 
+2026-06-27 veri guveni turu sonucu: BizimHesap dry-run satis akisi artik satis tablosuna delete/insert yapmadan `[DRY-RUN] ... yazilmayacak` logu ile cikiyor. Son islemler botu dry-run modunda Supabase/state yazimini atliyor; Supabase hatasi olursa artik sadece loglanmayip hata olarak yukari tasiniyor.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -49,14 +51,12 @@ Son denetimde calisan komutlar:
 
 ## Kritik Riskler
 
-1. `sync:bizimhesap:dry` tam dry-run degil; satis botu DB yaziyor gibi log uretiyor.
-2. GitHub hourly BizimHesap workflow son kontrolde basarisiz gorundu.
-3. Windows gorevleri kurulu olsa da bazi son sonuc kodlari temiz basari degil.
-4. `bizimhesap_son_islemler_izle.js` conflict hatasini basari icinde saklayabiliyor.
-5. Banka hareketlerinde dusuk guvenli kayitlar var; otomatik kesin kayit riskli.
-6. BizimHesap'a tek tik kayit akisi testten geciyor ama tum canli kayitlar icin tam kanit yok.
-7. Cari ve urun kartlari muhasebe anlaminda tam kaynak bagli degil.
-8. Veri guveni var ama tum veri kaynaklari bagli olmadigi icin tam degil.
+1. GitHub hourly BizimHesap workflow son kontrolde basarisiz gorundu.
+2. Windows gorevleri kurulu olsa da bazi son sonuc kodlari temiz basari degil.
+3. Banka hareketlerinde dusuk guvenli kayitlar var; otomatik kesin kayit riskli.
+4. BizimHesap'a tek tik kayit akisi testten geciyor ama tum canli kayitlar icin tam kanit yok.
+5. Cari ve urun kartlari muhasebe anlaminda tam kaynak bagli degil.
+6. Veri guveni var ama tum veri kaynaklari bagli olmadigi icin tam degil.
 
 ## Olgunluk Tahmini
 

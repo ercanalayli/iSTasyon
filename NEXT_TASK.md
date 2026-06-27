@@ -4,36 +4,28 @@ Son guncelleme: 2026-06-27 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Veri guveni temelini kilitlemek.
+Banka onay kaydinin BizimHesap'a gercekten islenip islenmedigini kanitlamak.
 
-Bu turdan sonraki ilk teknik hedef: dry-run, hata yakalama ve senkron saglik durumunu guvenilir hale getirmek.
-
-Durum: Koordineli calisma protokolu dosyalari canli `main` branch'e gecirildi. Siradaki tur yeni ozellik degil, veri guveni duzeltme turu olmalidir.
+Durum: Veri guveni turunda dry-run satis yazimi ve son-islemler hata saklama sorunu duzeltildi. Siradaki tur yeni tasarim degil, banka onay kaydinin uctan uca durum kaniti olmalidir.
 
 ## Neden Bu Hedef?
 
-Son denetimde ana testler gecti, fakat iki kritik guven sorunu bulundu:
-
-- `npm run sync:bizimhesap:dry` satis botunda DB yaziyor gibi davraniyor.
-- `bizimhesap_son_islemler_izle.js` Supabase conflict hatasini basari icinde saklayabiliyor.
-
-Bu iki konu cozulmeden Finans Komuta Merkezi ve banka onay ekrani gunluk karar merkezi olarak tam guvenilir sayilamaz.
+Kullanici banka hareketini onayladiginda ekranda sadece "kuyrukta" yazmasi yetmez. Her kayit icin su durum zinciri gorunmelidir: AperiON onayi, BizimHesap kuyruğu, worker sonucu, BizimHesap'ta kayit var/yok.
 
 ## Siradaki Is Paketi
 
-1. `aperion_veri_senkron.js` dry-run davranisini incele.
-2. `bizimhesap_bot.js` icinde dry-run/commit ayrimini netlestir.
-3. `bizimhesap_son_islemler_izle.js` conflict hatasini gorunur hata haline getir.
-4. `aperion_last_sync.json` icinde kismi hata ve uyari alanlarini netlestir.
-5. `npm run sync:bizimhesap:dry` tekrar calistir.
-6. `npm run preflight` tekrar calistir.
+1. Banka onay kartlarindaki queue/result alanlarini Supabase kaynaklariyla eslestir.
+2. `bizimhesap_posting_queue` processed/failed sonucunu banka hareketi kartina geri bagla.
+3. BizimHesap kaydi yoksa ekranda acikca "BizimHesap kayit yok" goster.
+4. Processed kayit icin islenen tarih, queue id ve sonuc notunu goster.
+5. `npm run bank:approval:preview` ve `npm run verify:bizimhesap:queue` calistir.
 
 ## Kabul Kriteri
 
-- Dry-run hicbir canli tabloya yazmamalidir.
-- Son islemler conflict hatasi olursa is `ok` sayilmamalidir veya acik `warning` olarak raporlanmalidir.
-- `aperion_last_sync.json` gercek durumu saklamadan yazmalidir.
-- Test sonucu tur sonunda raporlanmalidir.
+- Her banka hareketi icin "nereye gitti" alani gorunur olmalidir.
+- Kuyruga alinan kayit queue id ile izlenebilmelidir.
+- Islenen kayit processed/failed olarak ayirt edilmelidir.
+- Canli BizimHesap kaydi yapilacaksa kullanici onayi alinmalidir.
 
 ## Bekleyen Sonraki Hedefler
 

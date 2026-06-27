@@ -16,6 +16,7 @@ const GECMIS_MOD = args.includes('--gecmis');
 const GECMIS_BASLANGIC = GECMIS_MOD ? args[args.indexOf('--gecmis')+1] : null;
 const GECMIS_BITIS     = GECMIS_MOD ? args[args.indexOf('--gecmis')+2] : null;
 const FIRMA_ARG = args.includes('--firma') ? args[args.indexOf('--firma') + 1] : null;
+const DRY_RUN = args.includes('--dry-run');
 
 // ── TARİH HESAPLA ──────────────────────────────────────────────────────────
 function fmtTR(d) { return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`; }
@@ -217,6 +218,10 @@ async function raporCek(page, tarihTR) {
 // ── SUPABASE KAYDET ────────────────────────────────────────────────────────
 async function kaydet(rows, firma, tarihISO) {
   if (!rows.length) { log('  ⚠ Veri yok'); return 0; }
+  if (DRY_RUN) {
+    log(`  [DRY-RUN] ${rows.length} satir yazilmayacak (${firma.id} ${tarihISO})`);
+    return rows.length;
+  }
   log(`  [DB] ${rows.length} satır yazılıyor...`);
 
   // Gun/firma bazinda raporu yenile

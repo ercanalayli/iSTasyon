@@ -11,6 +11,7 @@ const FIRMA = valueArg('--firma', 'alayli');
 const LOOP = args.includes('--loop');
 const RUN_SYNC = args.includes('--run-sync');
 const HEADFUL = args.includes('--headful');
+const DRY_RUN = args.includes('--dry-run');
 const INTERVAL_MS = Number(valueArg('--interval-ms', 10 * 60 * 1000));
 const RESYNC_DAYS = Number(valueArg('--resync-days', 45));
 
@@ -239,6 +240,7 @@ async function scrapeEvents() {
 }
 
 async function saveSupabase(events) {
+  if (DRY_RUN) return { saved: 0, skipped: true, dryRun: true };
   if (!events.length) return { saved: 0, skipped: true };
   const db = createClient(SUPABASE.url, SUPABASE.key);
   const { error } = await db.from(SUPABASE.table).upsert(events, { onConflict: 'hash' });
@@ -248,7 +250,7 @@ async function saveSupabase(events) {
 
 function runResync(events) {
   const important = events.filter(e => e.resync_gerekli);
-  if (!important.length || !RUN_SYNC) return false;
+  if (!important.length || !RUN_SYNC || DRY_RUN) return false;
   const from = startDate(RESYNC_DAYS);
   const to = todayISO();
   log(`Son islem degisikligi bulundu. Satis senkron: ${from} - ${to}`);
@@ -282,10 +284,14 @@ async function once() {
     yeni_kayitlar: yeni,
   };
   writeJson(OUT_FILE, payload);
-  writeJson(STATE_FILE, { kontrol_tarihi: payload.kontrol_tarihi, hashes: events.map(e => e.hash) });
+  if (!DRY_RUN) writeJson(STATE_FILE, { kontrol_tarihi: payload.kontrol_tarihi, hashes: events.map(e => e.hash) });
   const save = await saveSupabase(yeni);
   log(`Son Islemler: ${events.length} toplam, ${yeni.length} yeni`);
-  if (save.error) log(`Supabase yazilmadi: ${save.error}`);
+  if (save.dryRun) log('Supabase yazilmadi: dry-run modu');
+  if (save.error) {
+    log(`Supabase yazilmadi: ${save.error}`);
+    throw new Error(`Supabase yazilmadi: ${save.error}`);
+  }
   runResync(yeni);
 }
 

@@ -29,6 +29,24 @@
 - Hourly BizimHesap GitHub workflow son kontrolde basarisiz gorundu.
 - Banka onay merkezi teknik olarak bagli, ancak tum canli kayitlar icin uctan uca kanit tamam degil.
 
+### Duzeltildi
+
+- `aperion_veri_senkron.js` dry-run modunu satis ve son-islemler botlarina da iletir hale getirildi.
+- `bizimhesap_bot.js` dry-run modunda `sales_raw` icin delete/insert yapmadan onizleme sayisini loglar.
+- `bizimhesap_son_islemler_izle.js` dry-run modunda Supabase/state yazimini atlar.
+- `bizimhesap_son_islemler_izle.js` Supabase hatasini artik sadece loglamaz; hata olarak yukari tasir.
+
+### Dogrulandi
+
+- `node --check aperion_veri_senkron.js`
+- `node --check bizimhesap_bot.js`
+- `node --check bizimhesap_son_islemler_izle.js`
+- `npm run sync:bizimhesap:plan`
+- `npm run sync:bizimhesap:dry`
+- `npm run preflight`
+- `npm run verify:bizimhesap:queue`
+- `npm run finance-smoke`
+
 ### Degismedi
 
 - Canli BizimHesap kaydi yapilmadi.

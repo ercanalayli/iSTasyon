@@ -18,6 +18,7 @@ const salesFromIso = `${salesFrom.getFullYear()}-${String(salesFrom.getMonth() +
 const dryRun = has('--dry-run');
 const planOnly = has('--plan');
 const commit = dryRun ? '' : '--commit';
+const dryRunArg = dryRun ? '--dry-run' : '';
 const dataDir = path.join(__dirname, 'data');
 const logPath = path.join(__dirname, 'aperion_veri_senkron_log.txt');
 const statusPath = path.join(dataDir, 'aperion_last_sync.json');
@@ -30,7 +31,7 @@ const jobs = [
   {
     label: `BizimHesap satis kaynak yenileme ${salesFromIso} - ${todayIso}`,
     file: 'bizimhesap_bot.js',
-    args: ['--firma', firma, '--gecmis', salesFromIso, todayIso],
+    args: [dryRunArg, '--firma', firma, '--gecmis', salesFromIso, todayIso],
     required: true,
     timeoutMs: 300000,
   },
@@ -51,7 +52,7 @@ const jobs = [
   {
     label: 'BizimHesap son islemler denetimi',
     file: 'bizimhesap_son_islemler_izle.js',
-    args: ['--firma', firma, '--resync-days', '45'],
+    args: [dryRunArg, '--firma', firma, '--resync-days', '45'],
     required: false,
     timeoutMs: 120000,
   },
