@@ -507,6 +507,8 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .morning-approval-amt{font-family:var(--mono);font-size:22px;font-weight:950;margin:6px 0}
 .morning-approval-amt.in{color:#059669}.morning-approval-amt.out{color:#DC2626}
 .morning-approval-meta{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:8px;font-size:10px;line-height:1.55;color:#334155;font-weight:750}
+.morning-approval-audit{display:flex;align-items:center;gap:6px;flex-wrap:wrap;border:1px solid;border-radius:10px;padding:7px 8px;margin-top:8px;font-size:10px;font-weight:950;line-height:1.25}
+.morning-approval-audit span{font-family:var(--mono);font-weight:900;color:inherit;opacity:.9}
 .morning-approval-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
 .morning-approval-actions button{height:38px;border:0;border-radius:10px;color:#fff;font-weight:950;cursor:pointer}
 .morning-approval-actions .ok{background:#10B981}.morning-approval-actions .reject{background:#EF4444}
@@ -1738,7 +1740,7 @@ body.dashboard-mode #homeMorningApprovalCard{
 }
 body.dashboard-mode #homeMorningApprovalCards{
   height:auto !important;
-  max-height:304px !important;
+  max-height:380px !important;
   overflow:hidden !important;
 }
 body.dashboard-mode .morning-approval-grid{
@@ -1749,7 +1751,7 @@ body.dashboard-mode .morning-approval-grid{
   overflow:visible !important;
 }
 body.dashboard-mode .morning-approval-card{
-  min-height:124px !important;
+  min-height:166px !important;
   padding:12px !important;
   background:#FFFFFF !important;
   border:1px solid #E2E8F0 !important;
@@ -1778,6 +1780,9 @@ body.dashboard-mode .morning-approval-meta{
   -webkit-line-clamp:2 !important;
   -webkit-box-orient:vertical !important;
   overflow:hidden !important;
+}
+body.dashboard-mode .morning-approval-audit{
+  margin-top:8px !important;
 }
 body.dashboard-mode .morning-approval-actions{
   margin-top:8px !important;
@@ -4944,6 +4949,16 @@ function bankControlCell(r,dupCount=1){
     <small>${dupCount>1?'Mükerrer kontrol gerekli':'Mükerrer temiz'}</small>
   </div>`;
 }
+function bankPostingAuditLine(r){
+  const q=r?._queue||null;
+  const status=bankQueueStatusTR(q,r);
+  const tone=bankQueueTone(status);
+  const qid=q?.id||q?.queue_id||'';
+  const definite=status.includes('işlendi')?'BizimHesap kayıt var':status.includes('hata')?'BizimHesap hata':qid?'Kuyrukta, worker bekliyor':'BizimHesap kayıt yok';
+  return `<div class="morning-approval-audit" style="border-color:${tone}55;background:${tone}10;color:${tone}">
+    <b>${escHtml(status)}</b><span>${qid?`Kuyruk ${escHtml(shortId(qid))}`:'Kuyruk yok'}</span><span>${escHtml(definite)}</span>
+  </div>`;
+}
 function bankMorningCardHtml(r){
   const p=bankPostingPlan(r);
   const debit=bankDebit(r), credit=bankCredit(r);
@@ -4964,6 +4979,7 @@ function bankMorningCardHtml(r){
       Cari: <b>${escHtml(p.cari)}</b><br>
       Güven: <b>${fmt(p.confidence)}%</b> · ${escHtml(p.reasons.join(' · '))}
     </div>
+    ${bankPostingAuditLine(r)}
     <div class="morning-approval-actions">
       <button class="ok" onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)">ONAYLA</button>
       <button class="reject" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg},this)">SİL</button>
