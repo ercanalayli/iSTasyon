@@ -20,6 +20,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-27 veri guveni turu sonucu: BizimHesap dry-run satis akisi artik satis tablosuna delete/insert yapmadan `[DRY-RUN] ... yazilmayacak` logu ile cikiyor. Son islemler botu dry-run modunda Supabase/state yazimini atliyor; Supabase hatasi olursa artik sadece loglanmayip hata olarak yukari tasiniyor.
 
+2026-06-27 banka onay zinciri turu sonucu: Banka Canli ekrani artik iki onay hattini birlikte okur: mail ekstre icin `pending_bank_movements -> bizimhesap_queue`, Telegram/gorsel eski hat icin `bank_transactions -> bizimhesap_posting_queue`. Her kayitta kuyruk id, worker sonucu ve BizimHesap kayit var/yok bilgisi ekranda gosterilir.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -54,7 +56,7 @@ Son denetimde calisan komutlar:
 1. GitHub hourly BizimHesap workflow son kontrolde basarisiz gorundu.
 2. Windows gorevleri kurulu olsa da bazi son sonuc kodlari temiz basari degil.
 3. Banka hareketlerinde dusuk guvenli kayitlar var; otomatik kesin kayit riskli.
-4. BizimHesap'a tek tik kayit akisi testten geciyor ama tum canli kayitlar icin tam kanit yok.
+4. BizimHesap'a tek tik kayit akisi testten geciyor; ancak yeni canli kayit testi kullanici onayi olmadan yapilmadi.
 5. Cari ve urun kartlari muhasebe anlaminda tam kaynak bagli degil.
 6. Veri guveni var ama tum veri kaynaklari bagli olmadigi icin tam degil.
 

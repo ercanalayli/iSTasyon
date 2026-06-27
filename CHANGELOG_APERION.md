@@ -47,6 +47,20 @@
 - `npm run verify:bizimhesap:queue`
 - `npm run finance-smoke`
 
+### Banka Onay Zinciri
+
+- Banka Canli ekrani `pending_bank_movements -> bizimhesap_queue` hattina ek olarak `bank_transactions -> bizimhesap_posting_queue` hattini da okur hale getirildi.
+- Banka hareketi kontrol alanina kuyruk id, worker sonucu ve BizimHesap kayit var/yok bilgisi eklendi.
+- Telegram/gorsel `bank_transactions` kayitlari icin onay/ret butonlari `approve_bank_transaction_v58` ve `reject_bank_transaction_v58` RPC'lerine baglandi.
+- Ust KPI'da queue sayimi hem `ready_for_bizimhesap/processed` hem de `pending/posted` durumlarini kapsayacak sekilde genisletildi.
+
+### Banka Onay Dogrulamasi
+
+- `npm run bank:approval:preview`
+- `npm run verify:bizimhesap:queue`
+- `npm run finance-smoke`
+- `npm run verify:main-finance-flow-v55`
+
 ### Degismedi
 
 - Canli BizimHesap kaydi yapilmadi.

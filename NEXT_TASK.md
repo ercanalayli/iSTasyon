@@ -4,28 +4,28 @@ Son guncelleme: 2026-06-27 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Banka onay kaydinin BizimHesap'a gercekten islenip islenmedigini kanitlamak.
+Firma izolasyonu ve veri karisma riskini kilitlemek.
 
-Durum: Veri guveni turunda dry-run satis yazimi ve son-islemler hata saklama sorunu duzeltildi. Siradaki tur yeni tasarim degil, banka onay kaydinin uctan uca durum kaniti olmalidir.
+Durum: Banka onay ekrani iki onay/kuyruk hattini birlikte okuyacak sekilde guncellendi. Siradaki tur yeni tasarim degil, ALAYLI verisinin diger firmalara karismadigini kaynak, sorgu ve ekran seviyesinde garantiye almak olmalidir.
 
 ## Neden Bu Hedef?
 
-Kullanici banka hareketini onayladiginda ekranda sadece "kuyrukta" yazmasi yetmez. Her kayit icin su durum zinciri gorunmelidir: AperiON onayi, BizimHesap kuyruğu, worker sonucu, BizimHesap'ta kayit var/yok.
+Tek dashboard coklu firma mimarisine hazirlaniyor. Bu nedenle her sorguda `firma_id`, `company_id` veya `company` filtresi net olmali; ALAYLI disi veri ana karar ekranina karismamalidir.
 
 ## Siradaki Is Paketi
 
-1. Banka onay kartlarindaki queue/result alanlarini Supabase kaynaklariyla eslestir.
-2. `bizimhesap_posting_queue` processed/failed sonucunu banka hareketi kartina geri bagla.
-3. BizimHesap kaydi yoksa ekranda acikca "BizimHesap kayit yok" goster.
-4. Processed kayit icin islenen tarih, queue id ve sonuc notunu goster.
-5. `npm run bank:approval:preview` ve `npm run verify:bizimhesap:queue` calistir.
+1. `index.html` icindeki Supabase sorgularinda firma filtresi olmayan kritik sorgulari bul.
+2. Banka, satis, cari, urun, finans ve takvim sorgularini firma izolasyonu acisindan siniflandir.
+3. Eksik firma filtresi varsa dar kapsamli duzelt.
+4. Veri Guveni ekraninda firma izolasyonu durumunu gorunur hale getir.
+5. `npm run preflight`, `npm run finance-smoke`, `npm run verify:main-finance-flow-v55` calistir.
 
 ## Kabul Kriteri
 
-- Her banka hareketi icin "nereye gitti" alani gorunur olmalidir.
-- Kuyruga alinan kayit queue id ile izlenebilmelidir.
-- Islenen kayit processed/failed olarak ayirt edilmelidir.
-- Canli BizimHesap kaydi yapilacaksa kullanici onayi alinmalidir.
+- ALAYLI seciliyken baska firma kaydi ana karar ekranina girmemelidir.
+- Firma filtresi olmayan kritik sorgular belgelenmeli veya duzeltilmelidir.
+- Coklu firma mimarisine uygun kaynak alanlari korunmalidir.
+- Test sonucu tur sonunda raporlanmalidir.
 
 ## Bekleyen Sonraki Hedefler
 

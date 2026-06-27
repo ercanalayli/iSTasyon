@@ -4769,6 +4769,7 @@ async function bankaRawData(){
   const rows=[];
   const errors=[];
   let queueRows=[];
+  let postingQueueRows=[];
   try{
     let q=db.from('bizimhesap_queue').select('*').order('created_at',{ascending:false}).limit(1000);
     if(fi)q=q.eq('company_id',fi);
@@ -4778,12 +4779,56 @@ async function bankaRawData(){
   }catch(e){errors.push(e.message||String(e));}
   const queueByPending=new Map(queueRows.map(q=>[String(q.pending_bank_movement_id||''),q]));
   try{
+    let q=db.from('bizimhesap_posting_queue').select('*').order('created_at',{ascending:false}).limit(1000);
+    if(fi)q=q.eq('company',fi);
+    const {data,error}=await q;
+    if(error)throw error;
+    postingQueueRows=data||[];
+  }catch(e){errors.push(e.message||String(e));}
+  const postingQueueByBankTx=new Map();
+  postingQueueRows.forEach(q=>{
+    const m=String(q.description||'').match(/bank_transactions#(\d+)/i);
+    if(m&&m[1]&&!postingQueueByBankTx.has(m[1]))postingQueueByBankTx.set(m[1],q);
+  });
+  try{
     let q=db.from('banka_raw').select('*').order('tarih',{ascending:false}).limit(500);
     if(fi)q=q.eq('firma_id',fi);
     if(durum)q=q.eq('durum',durum);
     const {data,error}=await q;
     if(error)throw error;
     rows.push(...(data||[]).map(r=>({...r,_source:'banka_raw',_source_label:'Telegram/Gorsel',_destination:bankDestination({...r,_source:'banka_raw'}),_queue:null})));
+  }catch(e){errors.push(e.message||String(e));}
+  try{
+    let q=db.from('bank_transactions').select('*').order('tarih',{ascending:false}).limit(500);
+    if(fi)q=q.eq('firma_id',fi);
+    if(durum){
+      const legacyStatus={onay_bekliyor:'bekliyor',islenecek:'onaylandi',islenmeyecek:'reddedildi',islendi:'onaylandi'}[durum];
+      if(legacyStatus)q=q.eq('onay_durumu',legacyStatus);
+    }
+    const {data,error}=await q;
+    if(error)throw error;
+    rows.push(...(data||[]).map(r=>{
+      const queue=postingQueueByBankTx.get(String(r.id));
+      const signed=Number(r.tutar||0);
+      const status=r.onay_durumu==='bekliyor'?'onay_bekliyor':r.onay_durumu==='reddedildi'?'islenmeyecek':(queue?.status==='posted'||queue?.status==='processed')?'islendi':'islenecek';
+      return {
+        ...r,
+        _queue:queue||null,
+        _source:'bank_transactions',
+        _source_label:'Telegram/Gorsel',
+        yon:signed>=0?'giriş':'çıkış',
+        tutar:signed,
+        amount_in:signed>0?signed:0,
+        amount_out:signed<0?Math.abs(signed):0,
+        bank_name:r.banka||r.hesap||'Banka',
+        description:r.aciklama||'',
+        detected_type:r.tur||'',
+        suggested_counterparty:r.cari_unvan||r.karsi_taraf||'',
+        confidence_score:r.sinif_guven||0,
+        durum:status,
+        _destination:bankDestination({...r,_source:'bank_transactions',durum:status},queue)
+      };
+    }));
   }catch(e){errors.push(e.message||String(e));}
   try{
     let q=db.from('pending_bank_movements').select('*').order('created_at',{ascending:false}).limit(500);
@@ -4815,7 +4860,7 @@ async function bankaRawData(){
     }));
   }catch(e){errors.push(e.message||String(e));}
   rows.sort((a,b)=>String(b.created_at||b.tarih||'').localeCompare(String(a.created_at||a.tarih||'')));
-  return {rows,queueRows,error:errors.length?errors.join(' · '):null};
+  return {rows,queueRows:[...queueRows,...postingQueueRows],error:errors.length?errors.join(' · '):null};
 }
 function bankRowTime(r){return (r.transaction_time||r.saat||'').toString().substring(0,8);}
 function bankRowUpdatedAt(r){return (r.updated_at||r.approved_at||r.created_at||r.mail_date||r.tarih||r.transaction_date||'').toString();}
@@ -4942,10 +4987,12 @@ function bankPostingCell(r){
 }
 function bankControlCell(r,dupCount=1){
   const bh=bankQueueStatusTR(r._queue,r), bhColor=bankQueueTone(bh), qid=r._queue?.id||r._queue?.queue_id||'';
+  const result=bankQueueResultText(r._queue);
   return `<div class="bank-control">
     <span style="color:${bhColor};border-color:${bhColor}55;background:${bhColor}14">${escHtml(bh)}</span>
     <small>ID ${escHtml(shortId(r.id))}</small>
     <small>${qid?`Kuyruk ${escHtml(shortId(qid))}`:'Kuyruk yok'}</small>
+    <small>${escHtml(result)}</small>
     <small>${dupCount>1?'Mükerrer kontrol gerekli':'Mükerrer temiz'}</small>
   </div>`;
 }
@@ -4956,7 +5003,7 @@ function bankPostingAuditLine(r){
   const qid=q?.id||q?.queue_id||'';
   const definite=status.includes('işlendi')?'BizimHesap kayıt var':status.includes('hata')?'BizimHesap hata':qid?'Kuyrukta, worker bekliyor':'BizimHesap kayıt yok';
   return `<div class="morning-approval-audit" style="border-color:${tone}55;background:${tone}10;color:${tone}">
-    <b>${escHtml(status)}</b><span>${qid?`Kuyruk ${escHtml(shortId(qid))}`:'Kuyruk yok'}</span><span>${escHtml(definite)}</span>
+    <b>${escHtml(status)}</b><span>${qid?`Kuyruk ${escHtml(shortId(qid))}`:'Kuyruk yok'}</span><span>${escHtml(definite)}</span><span>${escHtml(bankQueueResultText(q))}</span>
   </div>`;
 }
 function bankMorningCardHtml(r){
@@ -5049,16 +5096,35 @@ function bankQueueStatusTR(q,r=null){
   }
   if(s==='ready_for_bizimhesap')return 'BizimHesap kuyruğunda';
   if(s==='processed')return 'BizimHesap işlendi';
+  if(s==='posted')return 'BizimHesap işlendi';
+  if(s==='pending')return 'BizimHesap posting kuyruğunda';
   if(s==='failed')return 'BizimHesap hata';
+  if(s==='skipped')return 'BizimHesap atlandı';
+  if(s==='cancelled')return 'BizimHesap iptal';
   return s;
 }
 function bankQueueTone(label){if(label.includes('işlendi'))return '#059669';if(label.includes('kuyruğunda')||label.includes('Onaylandı'))return '#2563eb';if(label.includes('hata')||label.includes('gönderilmeyecek'))return '#dc2626';if(label.includes('Onay bekliyor'))return '#d97706';return '#64748b';}
+function bankQueueResultText(q){
+  if(!q)return 'Sonuç yok';
+  const payload=q.payload||{};
+  const result=payload.aperion_posting_result||{};
+  const message=result.message||q.error_message||q.bizimhesap_mesaj||'Sonuç bekleniyor';
+  const at=result.at||q.processed_at||q.posted_at||q.updated_at||q.created_at||'';
+  return `${message}${at?` · ${String(at).substring(0,16).replace('T',' ')}`:''}`;
+}
 function bankDestination(r,q=null){
   if(r._source==='banka_raw'){
     const d=r.durum||'onay_bekliyor';
     if(d==='islendi')return 'İşlendi';
     if(d==='islenecek')return 'İşlenecek listesi';
     if(d==='islenmeyecek')return 'Reddedildi';
+    return 'Telegram/Görsel Onay Merkezi';
+  }
+  if(r._source==='bank_transactions'){
+    if(r.onay_durumu==='reddedildi')return 'Reddedildi';
+    if(q)return bankQueueStatusTR(q,r);
+    if(r.bizimhesap_durumu)return `BizimHesap ${r.bizimhesap_durumu}`;
+    if(r.onay_durumu==='onaylandi')return 'Onaylandı, posting kuyruğu kontrol';
     return 'Telegram/Görsel Onay Merkezi';
   }
   const s=String(r.status||'pending');
@@ -5097,6 +5163,25 @@ async function bankaKarar(id,durum,source='banka_raw',btn=null){
         bankRowFeedback(btn,'err','Kuyruk ID oluşmadı.');
         return;
       }
+    }else if(source==='bank_transactions'){
+      const rpc=durum==='islenecek'?'approve_bank_transaction_v58':'reject_bank_transaction_v58';
+      const params=durum==='islenecek'?{p_bank_transaction_id:Number(id),p_approved_by:'AperiON Onay Merkezi'}:{p_bank_transaction_id:Number(id),p_rejected_by:'AperiON Onay Merkezi'};
+      const res=await db.rpc(rpc,params);
+      error=res.error;
+      const ok=res.data?.ok!==false;
+      queueId=res.data?.queue_id||null;
+      if(error&&String(error.message||'').toLowerCase().includes('function')){
+        bankNotice('err','SQL/RPC eksik','approve_bank_transaction_v58 / reject_bank_transaction_v58 fonksiyonu Supabase içinde yok. Kayıt yarım onaylanmadı.');
+        bankButtonSet(btn,durum==='islenecek'?approveLabel:'Ret',false,'err');
+        bankRowFeedback(btn,'err','SQL/RPC eksik.');
+        return;
+      }
+      if(!ok){
+        bankNotice('err','Onaylanamadı',res.data?.message||'RPC sonucu olumsuz döndü.');
+        bankButtonSet(btn,durum==='islenecek'?approveLabel:'Ret',false,'err');
+        bankRowFeedback(btn,'err',res.data?.message||'RPC olumsuz.');
+        return;
+      }
     }else{
       const patch={durum,updated_at:new Date().toISOString()};
       const res=await db.from('banka_raw').update(patch).eq('id',id);
@@ -5124,8 +5209,8 @@ async function rBankaOnay(){
   const el=document.getElementById('bankaOnayRows');
   if(!el)return;
   const onay=rows.filter(r=>r.durum==='onay_bekliyor').length;
-  const queueReady=queueRows.filter(q=>String(q.status||'')==='ready_for_bizimhesap').length;
-  const queueProcessed=queueRows.filter(q=>String(q.status||'')==='processed').length;
+  const queueReady=queueRows.filter(q=>['ready_for_bizimhesap','pending'].includes(String(q.status||''))).length;
+  const queueProcessed=queueRows.filter(q=>['processed','posted'].includes(String(q.status||''))).length;
   const latest=rows.map(bankRowUpdatedAt).filter(Boolean).sort().at(-1)||'';
   document.getElementById('bTop').textContent=fmt(rows.length);
   document.getElementById('bLastUpdate').textContent=latest?latest.substring(0,16).replace('T',' '):'bekleniyor';
