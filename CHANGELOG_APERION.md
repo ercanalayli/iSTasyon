@@ -8,6 +8,10 @@
 - `PROJECT_STATUS.md`, `NEXT_TASK.md`, `QA_CHECKLIST.md`, `DECISIONS.md` ve `CHANGELOG_APERION.md` tek-kaynak dosyalari olusturuldu.
 - Mevcut proje durumu son teknik denetim bulgularina gore belgelendi.
 
+### Yayin
+
+- Koordineli calisma protokolu commit'i GitHub `main` branch'e pushlandi.
+
 ### Denetlendi
 
 - `npm run preflight`
@@ -30,4 +34,3 @@
 - Canli BizimHesap kaydi yapilmadi.
 - Yeni tasarim veya refactor yapilmadi.
 - Firma verisi tasinmadi veya silinmedi.
-

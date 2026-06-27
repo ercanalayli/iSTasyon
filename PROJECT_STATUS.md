@@ -16,6 +16,8 @@ AperiON gelistirmesinde koordineli calisma protokolu gecerlidir.
 
 Genel durum: Sistem calisan bir omurgaya sahip, ancak tum moduller gunluk guvenilir kullanim icin production-ready degil.
 
+Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonraki turlarda durum, karar, sonraki is ve kalite kontrol bu dosyalardan surdurulecektir.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -73,4 +75,3 @@ Bu yuzdeler kesin metrik degil; son denetimde calisan testler, eksik kaynaklar v
 3. Banka onay kuyrugu
 4. Firma izolasyonu
 5. Gunluk kullanilabilir surum
-

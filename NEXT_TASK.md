@@ -8,6 +8,8 @@ Veri guveni temelini kilitlemek.
 
 Bu turdan sonraki ilk teknik hedef: dry-run, hata yakalama ve senkron saglik durumunu guvenilir hale getirmek.
 
+Durum: Koordineli calisma protokolu dosyalari canli `main` branch'e gecirildi. Siradaki tur yeni ozellik degil, veri guveni duzeltme turu olmalidir.
+
 ## Neden Bu Hedef?
 
 Son denetimde ana testler gecti, fakat iki kritik guven sorunu bulundu:
@@ -40,4 +42,3 @@ Bu iki konu cozulmeden Finans Komuta Merkezi ve banka onay ekrani gunluk karar m
 - Firma izolasyonu: Alayli verisi baska firmalara karismayacak garanti.
 - Urun karti ve cari karti icin gercek kaynak eksiklerini kapatma.
 - Telegram evrak/gorsel akisini Onay Merkezi'ne baglama.
-
