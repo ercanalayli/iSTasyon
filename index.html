@@ -561,6 +561,13 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .bank-control{min-width:160px;display:grid;gap:5px}
 .bank-control span{display:inline-flex;width:max-content;font-family:var(--mono);font-size:9px;font-weight:950;border:1px solid;border-radius:999px;padding:4px 7px}
 .bank-control small{font-family:var(--mono);font-size:9px;color:#667085}
+.bank-action-box{min-width:170px;display:grid;gap:6px}
+.bank-action-box .empty-btn{width:100%;justify-content:center}
+.bank-action-reason{font-size:10px;font-weight:800;line-height:1.35;color:#667085;background:#F8FAFC;border:1px solid #E4E7EC;border-radius:9px;padding:7px}
+.bank-action-reason.ready{color:#047857;background:#ECFDF5;border-color:#ABEFC6}
+.bank-action-reason.blocked{color:#B42318;background:#FEF3F2;border-color:#FECDCA}
+.bank-posting-proof{margin-top:5px;border:1px solid #E4E7EC;background:#F8FAFC;border-radius:9px;padding:7px;font-size:10px;font-weight:850;color:#475467;line-height:1.4}
+.bank-posting-proof b{color:#101828}
 .income-card{border:1px solid #CFE0F5;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 28px rgba(15,23,42,.055)}
 .income-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
 .income-title{font-size:20px;font-weight:950;color:#071327;letter-spacing:-.02em}
@@ -4990,6 +4997,31 @@ function bankPostingPlan(r){
   if(!reasons.length)reasons.push('açıklama/tutar yönü');
   return {type,target,account,cari,category,confidence:Math.min(99,Math.round(confidence||65)),reasons:[...new Set(reasons)].slice(0,3)};
 }
+function bankCariIsAmbiguous(cari){
+  const c=String(cari||'').toLocaleLowerCase('tr-TR');
+  return !c||c==='-'||c.includes('eşleştirme')||c.includes('onayda');
+}
+function bankQueueIsFinal(q){
+  return ['processed','posted','failed','skipped','cancelled'].includes(String(q?.status||''));
+}
+function bankActionState(r,dupCount=1){
+  const p=bankPostingPlan(r), q=r._queue||null;
+  const label=r._source==='pending_bank_movements'?'Kuyruğa Al':"BizimHesap'a Kaydet";
+  if(q&&bankQueueIsFinal(q)){
+    const st=bankQueueStatusTR(q,r);
+    return {ready:false,label:st,reason:st.includes('işlendi')?'Bu kayıt için BizimHesap işlem sonucu var.':bankQueueResultText(q),tone:st.includes('işlendi')?'ready':'blocked'};
+  }
+  if(q)return {ready:false,label:'Kuyrukta',reason:`BizimHesap worker bekleniyor. Kuyruk: ${shortId(q.id||q.queue_id)}`,tone:'ready'};
+  if(r.durum==='islenmeyecek')return {ready:false,label:'Reddedildi',reason:'Bu hareket BizimHesap’a gönderilmeyecek olarak işaretli.',tone:'blocked'};
+  if(r.durum==='islendi')return {ready:false,label:'İşlendi',reason:'Bu hareket işlenmiş görünüyor.',tone:'ready'};
+  if(r.durum!=='onay_bekliyor')return {ready:false,label:'Hazır değil',reason:`Durum: ${r.durum||'belirsiz'}. Önce onay bekleyen kayıt olmalı.`,tone:'blocked'};
+  if(dupCount>1)return {ready:false,label:'Mükerrer kontrol',reason:`Aynı anahtarda ${fmt(dupCount)} aday var. Önce mükerrer kontrol edilmeli.`,tone:'blocked'};
+  if(p.confidence<70)return {ready:false,label:'Güven düşük',reason:`Güven ${fmt(p.confidence)}%. Cari/kategori netleşmeden BizimHesap kaydı açılmamalı.`,tone:'blocked'};
+  if(bankCariIsAmbiguous(p.cari)&&!['Banka masrafı','Banka virmanı','Kredi kartı ödemesi','Vergi/SGK ödemesi','Fatura ödemesi'].includes(p.type)){
+    return {ready:false,label:'Cari eksik',reason:'Cari eşleştirme net değil. Önce cari seçimi/onayı gerekir.',tone:'blocked'};
+  }
+  return {ready:true,label,reason:`Hazır: ${p.type} · ${p.account} · ${p.cari}`,tone:'ready'};
+}
 function bankPlanHtml(r){
   const p=bankPostingPlan(r);
   const c=p.confidence>=85?'var(--green)':p.confidence>=70?'var(--orange)':'var(--red)';
@@ -5039,11 +5071,14 @@ function bankDecisionCell(r,dupCount=1){
 }
 function bankPostingCell(r){
   const p=bankPostingPlan(r);
+  const q=r._queue||null;
+  const proof=q?`${bankQueueStatusTR(q,r)} · ${bankQueueResultText(q)}`:'Onay verilirse BizimHesap banka/kasa kaydı kuyruğuna alınır.';
   return `<div class="bank-posting">
     <div class="bank-posting-target">${escHtml(p.target)}</div>
     <div><span>Hesap</span><b>${escHtml(p.account)}</b></div>
     <div><span>Cari</span><b>${escHtml(p.cari)}</b></div>
     <div><span>Kayıt türü</span><b>${escHtml(p.type)}</b></div>
+    <div class="bank-posting-proof"><b>Kanıt:</b> ${escHtml(proof)}</div>
   </div>`;
 }
 function bankControlCell(r,dupCount=1){
@@ -5056,6 +5091,18 @@ function bankControlCell(r,dupCount=1){
     <small>${escHtml(result)}</small>
     <small>${dupCount>1?'Mükerrer kontrol gerekli':'Mükerrer temiz'}</small>
   </div>`;
+}
+function bankActionCell(r,dupCount=1){
+  const st=bankActionState(r,dupCount);
+  const idArg=JSON.stringify(String(r.id));
+  const srcArg=JSON.stringify(r._source||'banka_raw');
+  const approve=st.ready
+    ? `<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)">${escHtml(st.label)}</button>`
+    : `<button class="empty-btn" disabled>${escHtml(st.label)}</button>`;
+  const reject=r.durum==='onay_bekliyor'
+    ? `<button class="empty-btn" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg},this)">Ret</button>`
+    : '';
+  return `<div class="bank-action-box">${approve}${reject}<div class="bank-action-reason ${st.tone==='ready'?'ready':'blocked'}">${escHtml(st.reason)}</div></div>`;
 }
 function bankPostingAuditLine(r){
   const q=r?._queue||null;
@@ -5074,6 +5121,7 @@ function bankMorningCardHtml(r){
   const signed=credit?dynMoney(amount):`-${dynMoney(amount)}`;
   const idArg=JSON.stringify(String(r.id));
   const srcArg=JSON.stringify(r._source||'banka_raw');
+  const st=bankActionState(r,1);
   const source=escHtml(r._source_label||'Mail Ekstre');
   const date=escHtml(`${(r.tarih||'').substring(0,10)} ${bankRowTime(r)||''}`.trim());
   return `<div class="morning-approval-card">
@@ -5089,9 +5137,10 @@ function bankMorningCardHtml(r){
     </div>
     ${bankPostingAuditLine(r)}
     <div class="morning-approval-actions">
-      <button class="ok" onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)">ONAYLA</button>
+      <button class="ok" ${st.ready?`onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)"`:'disabled'}>${st.ready?'ONAYLA':'HAZIR DEĞİL'}</button>
       <button class="reject" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg},this)">SİL</button>
     </div>
+    <div class="bank-action-reason ${st.tone==='ready'?'ready':'blocked'}" style="margin-top:8px">${escHtml(st.reason)}</div>
   </div>`;
 }
 function renderBankMorningCards(rows){
@@ -5284,9 +5333,6 @@ async function rBankaOnay(){
   renderBankMorningCards(rows);
   const duplicateCounts=rows.reduce((m,r)=>{const k=bankDuplicateKey(r);m[k]=(m[k]||0)+1;return m;},{});
   el.innerHTML=rows.length?rows.slice(0,120).map(r=>{
-    const onayBtn=r.durum==='onay_bekliyor';
-    const idArg=JSON.stringify(String(r.id));
-    const srcArg=JSON.stringify(r._source||'banka_raw');
     const dupCount=duplicateCounts[bankDuplicateKey(r)]||1;
     return `<tr>
       <td>${bankMovementCell(r)}</td>
@@ -5294,7 +5340,7 @@ async function rBankaOnay(){
       <td>${bankDecisionCell(r,dupCount)}</td>
       <td>${bankPostingCell(r)}</td>
       <td>${bankControlCell(r,dupCount)}</td>
-      <td>${onayBtn?`<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)">${r._source==='pending_bank_movements'?'Kuyruğa Al':"BizimHesap'a Kaydet"}</button> <button class="empty-btn" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg},this)">Ret</button>`:'-'}</td>
+      <td>${bankActionCell(r,dupCount)}</td>
     </tr>`;
   }).join(''):'<tr><td colspan="6" style="padding:18px;color:var(--t3)">Banka hareketi yok</td></tr>';
 }

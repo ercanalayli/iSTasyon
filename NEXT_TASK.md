@@ -4,27 +4,27 @@ Son guncelleme: 2026-06-27 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Finans Komuta Merkezi karar akisini gunluk kullanima hazirlamak.
+Canli GitHub yayin / push kilidini temizlemek.
 
-Durum: Ana veri denetimi kartina gunluk kullanim paneli eklendi. Kullanici artik hangi ana modullerin gunluk kullanilabilir, hangilerinin kismen hazir veya blokajli oldugunu ana ekranda gorebilir. Siradaki tur yeni buyuk tasarim degil; Finans Komuta Merkezi'nde banka onayindan BizimHesap kayit kanitina kadar karar akisini daha net ve daha az karisik hale getirmelidir.
+Durum: Ana veri denetimi kartina gunluk kullanim paneli eklendi. Banka Canli / Onay Akisi satirlarinda hedef hesap, cari, kayit turu, kuyruk/worker kaniti ve hazir degil sebebi gorunur hale getirildi. Yerel commitler hazir; ancak GitHub HTTPS push, credential/transport katmaninda timeout ile takiliyor.
 
 ## Neden Bu Hedef?
 
-Veri guveni, banka onay zinciri, firma izolasyonu ve gunluk kullanim durumu gorunur hale geldi. Simdi en buyuk pratik ihtiyac, banka hareketi onaylandiginda hangi cariye/hangi hesaba/ne olarak gideceginin ve BizimHesap'a islenip islenmediginin tek bakista anlasilmasidir.
+Kullanici canlida gormek istiyor. Kod yerelde test edilmis olsa bile GitHub Pages canli yayin almadan gunluk kullanima gecis eksik kalir.
 
 ## Siradaki Is Paketi
 
-1. Banka Canli ve Onay Akisi ekraninda her satirin hedefini netlestir: hesap, cari, kayit turu, guven, kuyruk id, worker sonucu, BizimHesap kaniti.
-2. `BizimHesap'a Kaydet` butonunun sadece hazir kayitlarda gorunmesini, digerlerinde neden hazir olmadigini acikca gostermesini sagla.
-3. Onay sonrasi `bizimhesap_queue` ve varsa islenmis kayit durumunu tek satirda kanitla.
-4. Yeni buyuk tasarim yapmadan mevcut ekrani kullanilabilir hale getir.
-5. `npm run verify:daily-readiness`, `npm run verify:firm-isolation`, `npm run finance-smoke`, `npm run verify:main-finance-flow-v55` calistir.
+1. GitHub push kilidini temizle: credential manager, HTTPS transport veya alternatif GitHub API yolu.
+2. Yerel commitleri `main` branch'e yayinla.
+3. GitHub Pages URL'sinde yeni build'in geldigini kontrol et.
+4. Canlida Banka Canli ve Gunluk Kullanim Durumu panellerini gozle kontrol et.
+5. `npm run verify:bank-approval-action`, `npm run verify:daily-readiness`, `npm run preflight` tekrar calistir.
 
 ## Kabul Kriteri
 
-- Banka hareketinde "ne olarak kaydedilecek" sorusu tek bakista cevaplanmalidir.
-- BizimHesap'a islenmis / kuyrukta / hazir degil durumu gorunmelidir.
-- Hazir olmayan hareketlerde buton davranisi belirsiz kalmamalidir.
+- GitHub `main` son yerel commitlere ilerlemis olmalidir.
+- Canli Pages ekrani yeni panel ve banka aksiyon kilidini gostermelidir.
+- Push yapilamiyorsa sebep net ve kullanicinin yapacagi tek adimla yazilmalidir.
 - Test sonucu tur sonunda raporlanmalidir.
 
 ## Bekleyen Sonraki Hedefler

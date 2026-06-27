@@ -26,6 +26,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-27 gunluk kullanilabilir surum turu sonucu: Ana veri denetimi kartina `Gunluk Kullanim Durumu` paneli eklendi. Panel, ana modulleri gunluk kullanilabilir / kismen hazir / blokajli olarak ayirir ve ilk 5 blokaji ekranda gosterir. `verify:daily-readiness` komutu eklendi.
 
+2026-06-27 banka onay aksiyonu turu sonucu: Banka Canli / Onay Akisi satirlarinda BizimHesap hedefi, hesap, cari, kayit turu, kuyruk/worker kaniti ve hazir degil sebebi gorunur hale getirildi. Hazir olmayan, dusuk guvenli, mukerrer adayli veya zaten kuyrukta/islenmis kayitlarda `BizimHesap'a Kaydet` butonu pasif hale gelir. `verify:bank-approval-action` komutu eklendi.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -37,6 +39,7 @@ Son denetimde calisan komutlar:
 - `npm run verify:bizimhesap:queue`: gecti.
 - `npm run verify:daily-readiness`: gecti.
 - `npm run verify:firm-isolation`: gecti.
+- `npm run verify:bank-approval-action`: gecti.
 
 ## Production'a En Yakin Parcalar
 
@@ -52,7 +55,7 @@ Son denetimde calisan komutlar:
 
 - Finans Komuta Merkezi: ana urune gomulu, karar ekrani var; olgunluk orta.
 - Gelir tablosu plan/tahakkuk/gerceklesen: veri modeli var, karar ekrani tam degil.
-- Banka onay merkezi: analiz var, guven puani ve kuyruk var; tum canli kayit akisi kanitli degil.
+- Banka onay merkezi: analiz, guven puani, hedef hesap/cari/kayit turu ve kuyruk/worker kaniti gorunur. Dusuk guven/mukerrer/cari belirsiz kayitlar kilitlenir.
 - Cari kartlari: satis/tahakkuk analizi var; gercek tahsilat, acik bakiye ve odeme disiplini eksik.
 - Urun kartlari: satis ve kar analizi var; tam stok hareketi, alis maliyeti ve dinamik urun karti olgun degil.
 - Telegram/evrak: token ve bazi altyapi var; uctan uca akisin bittigi kanitlanmadi.
@@ -68,9 +71,9 @@ Son denetimde calisan komutlar:
 
 ## Olgunluk Tahmini
 
-- Gunluk kullanilabilirlik: %68
-- Teknik olgunluk: %62
-- Finans Komuta Merkezi: %67
+- Gunluk kullanilabilirlik: %70
+- Teknik olgunluk: %63
+- Finans Komuta Merkezi: %69
 - Urun karti: %45
 - Cari karti: %50
 

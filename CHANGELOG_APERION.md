@@ -92,6 +92,26 @@
 - `npm run finance-smoke`
 - `npm run verify:main-finance-flow-v55`
 
+### Banka Onay Aksiyonu
+
+- Banka Canli / Onay Akisi satirlarinda hazirlik kontrolu eklendi.
+- `BizimHesap'a Kaydet` / `Kuyruğa Al` aksiyonu yalnizca hazir kayitlarda aktif kalir.
+- Dusuk guvenli, mukerrer adayli, cari belirsiz veya zaten kuyrukta/islenmis kayitlarda buton pasif hale gelir.
+- Her satirda hedef hesap, cari, kayit turu ve BizimHesap kanit metni netlestirildi.
+- Sabah onay kartlari da ayni hazirlik kontrolunu kullanir.
+- `tools/verify_bank_approval_action_v68.cjs` eklendi.
+- `npm run verify:bank-approval-action` komutu eklendi.
+
+### Banka Onay Aksiyonu Dogrulamasi
+
+- `node --check tools/verify_bank_approval_action_v68.cjs`
+- `npm run verify:bank-approval-action`
+- `npm run verify:daily-readiness`
+- `npm run verify:firm-isolation`
+- `npm run finance-smoke`
+- `npm run preflight`
+- `npm run bank:approval:preview`
+
 ### Degismedi
 
 - Canli BizimHesap kaydi yapilmadi.
