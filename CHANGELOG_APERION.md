@@ -75,6 +75,23 @@
 - `npm run finance-smoke`
 - `npm run verify:main-finance-flow-v55`
 
+### Gunluk Kullanim Durumu
+
+- Ana veri denetimi kartina `Gunluk Kullanim Durumu` paneli eklendi.
+- Ana moduller gunluk kullanilabilir / kismen hazir / blokajli olarak ayrildi.
+- Ilk 5 blokaj ana ekranda gorunur hale getirildi.
+- `tools/verify_daily_readiness_v67.cjs` eklendi.
+- `npm run verify:daily-readiness` komutu eklendi.
+
+### Gunluk Kullanim Dogrulamasi
+
+- `node --check tools/verify_daily_readiness_v67.cjs`
+- `npm run verify:daily-readiness`
+- `npm run verify:firm-isolation`
+- `npm run preflight`
+- `npm run finance-smoke`
+- `npm run verify:main-finance-flow-v55`
+
 ### Degismedi
 
 - Canli BizimHesap kaydi yapilmadi.

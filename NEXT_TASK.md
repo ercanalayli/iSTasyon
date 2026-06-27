@@ -4,27 +4,27 @@ Son guncelleme: 2026-06-27 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Gunluk kullanilabilir surum kontrolu.
+Finans Komuta Merkezi karar akisini gunluk kullanima hazirlamak.
 
-Durum: Firma izolasyonu icin kritik ALAYLI filtreleri ve `verify:firm-isolation` kontrolu eklendi. Siradaki tur yeni tasarim degil, gunluk kullanimda acilacak ekranlarin hangisinin karar verilebilir seviyede oldugunu netlestirmek ve kalan blokajlari siralamak olmalidir.
+Durum: Ana veri denetimi kartina gunluk kullanim paneli eklendi. Kullanici artik hangi ana modullerin gunluk kullanilabilir, hangilerinin kismen hazir veya blokajli oldugunu ana ekranda gorebilir. Siradaki tur yeni buyuk tasarim degil; Finans Komuta Merkezi'nde banka onayindan BizimHesap kayit kanitina kadar karar akisini daha net ve daha az karisik hale getirmelidir.
 
 ## Neden Bu Hedef?
 
-Veri guveni, banka onay zinciri ve firma izolasyonu temel duzeltmeleri yapildi. Simdi kullanici sabah programi actiginda hangi ekranlara guvenebilecegini net gormelidir.
+Veri guveni, banka onay zinciri, firma izolasyonu ve gunluk kullanim durumu gorunur hale geldi. Simdi en buyuk pratik ihtiyac, banka hareketi onaylandiginda hangi cariye/hangi hesaba/ne olarak gideceginin ve BizimHesap'a islenip islenmediginin tek bakista anlasilmasidir.
 
 ## Siradaki Is Paketi
 
-1. Ana ekran, Banka Canli, Gelir Tablosu, Satis/Tahsilat, Urun Karliligi ve Cari Risk ekranlarini tek tek kontrol et.
-2. Her ekran icin production-ready / kismen / eksik durumunu dosyaya yaz.
-3. Gunluk kullanilabilir surum icin ilk 5 blokaji belirle.
-4. Gerekirse sadece durum/uyari metni duzelt; yeni buyuk tasarim yapma.
-5. `npm run preflight`, `npm run verify:firm-isolation`, `npm run finance-smoke` calistir.
+1. Banka Canli ve Onay Akisi ekraninda her satirin hedefini netlestir: hesap, cari, kayit turu, guven, kuyruk id, worker sonucu, BizimHesap kaniti.
+2. `BizimHesap'a Kaydet` butonunun sadece hazir kayitlarda gorunmesini, digerlerinde neden hazir olmadigini acikca gostermesini sagla.
+3. Onay sonrasi `bizimhesap_queue` ve varsa islenmis kayit durumunu tek satirda kanitla.
+4. Yeni buyuk tasarim yapmadan mevcut ekrani kullanilabilir hale getir.
+5. `npm run verify:daily-readiness`, `npm run verify:firm-isolation`, `npm run finance-smoke`, `npm run verify:main-finance-flow-v55` calistir.
 
 ## Kabul Kriteri
 
-- Kullanici hangi ekrani gunluk kullanabilecegini acikca bilmelidir.
-- Production-ready olmayan ekranlar demo gibi degil, eksik kaynak notuyla gorunmelidir.
-- Ilk 5 blokaj net ve sirali olmalidir.
+- Banka hareketinde "ne olarak kaydedilecek" sorusu tek bakista cevaplanmalidir.
+- BizimHesap'a islenmis / kuyrukta / hazir degil durumu gorunmelidir.
+- Hazir olmayan hareketlerde buton davranisi belirsiz kalmamalidir.
 - Test sonucu tur sonunda raporlanmalidir.
 
 ## Bekleyen Sonraki Hedefler

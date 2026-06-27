@@ -24,6 +24,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-27 firma izolasyonu turu sonucu: ALAYLI karar ekranlarinda kritik queue ve log sorgulari firma filtresiyle kilitlendi. `verify:firm-isolation` komutu eklendi ve ALAYLI disi verinin ana karar ekranlarina karismamasi icin statik kontrol baslatildi.
 
+2026-06-27 gunluk kullanilabilir surum turu sonucu: Ana veri denetimi kartina `Gunluk Kullanim Durumu` paneli eklendi. Panel, ana modulleri gunluk kullanilabilir / kismen hazir / blokajli olarak ayirir ve ilk 5 blokaji ekranda gosterir. `verify:daily-readiness` komutu eklendi.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -33,6 +35,8 @@ Son denetimde calisan komutlar:
 - `npm run verify:main-finance-flow-v55`: gecti.
 - `npm run bank:approval:preview`: gecti.
 - `npm run verify:bizimhesap:queue`: gecti.
+- `npm run verify:daily-readiness`: gecti.
+- `npm run verify:firm-isolation`: gecti.
 
 ## Production'a En Yakin Parcalar
 
@@ -64,8 +68,8 @@ Son denetimde calisan komutlar:
 
 ## Olgunluk Tahmini
 
-- Gunluk kullanilabilirlik: %64
-- Teknik olgunluk: %61
+- Gunluk kullanilabilirlik: %68
+- Teknik olgunluk: %62
 - Finans Komuta Merkezi: %67
 - Urun karti: %45
 - Cari karti: %50

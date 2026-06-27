@@ -378,6 +378,25 @@ body::after{background:linear-gradient(180deg,rgba(15,118,110,.045),transparent 
 .audit-v{font-family:var(--mono);font-size:20px;font-weight:950;color:#101828;margin-top:8px}
 .audit-v.ok{color:#047857}.audit-v.warn{color:#B45309}.audit-v.bad{color:#B91C1C}
 .audit-note{font-size:11px;color:#667085;font-weight:700;margin-top:6px;line-height:1.35}
+.daily-ready{margin-top:12px;border:1px solid #E4E7EC;border-radius:14px;background:#FFFFFF;overflow:hidden}
+.daily-ready-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px 14px;border-bottom:1px solid #EAECF0;background:#F8FAFC}
+.daily-ready-title{font-size:12px;font-weight:950;color:#101828}
+.daily-ready-sub{font-size:11px;font-weight:750;color:#667085;margin-top:3px}
+.daily-ready-score{font-family:var(--mono);font-size:22px;font-weight:950;color:#047857;white-space:nowrap}
+.daily-ready-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;padding:12px}
+.daily-ready-item{border:1px solid #E4E7EC;border-radius:11px;padding:10px;background:#FFFFFF}
+.daily-ready-item.ready{border-left:4px solid #12B76A;background:#F6FEF9}
+.daily-ready-item.partial{border-left:4px solid #F79009;background:#FFFCF5}
+.daily-ready-item.blocked{border-left:4px solid #F04438;background:#FFFBFA}
+.daily-ready-name{font-size:12px;font-weight:950;color:#101828}
+.daily-ready-note{font-size:10.5px;font-weight:750;color:#667085;line-height:1.35;margin-top:5px}
+.daily-ready-badge{display:inline-flex;border:1px solid #D0D5DD;border-radius:999px;padding:3px 7px;font-size:9px;font-weight:950;margin-top:8px;background:#FFFFFF;color:#475467}
+.daily-ready-badge.ready{color:#047857;border-color:#ABEFC6;background:#ECFDF3}
+.daily-ready-badge.partial{color:#B45309;border-color:#FEDF89;background:#FFFAEB}
+.daily-ready-badge.blocked{color:#B42318;border-color:#FECDCA;background:#FEF3F2}
+.daily-blockers{display:grid;gap:6px;padding:0 12px 12px}
+.daily-blocker{display:flex;gap:8px;align-items:flex-start;border:1px dashed #D0D5DD;border-radius:10px;padding:8px 10px;background:#FCFCFD;font-size:10.5px;font-weight:800;color:#475467}
+.daily-blocker b{font-family:var(--mono);color:#1D4ED8}
 .recon-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;align-items:end;margin-top:12px}
 .recon-actions{display:flex;gap:8px;flex-wrap:wrap}
 .recon-status{border:1px solid #E4E7EC;border-radius:12px;background:#F8FAFC;padding:12px;margin-top:10px;font-size:12px;color:#475467;font-weight:750;line-height:1.45}
@@ -2843,6 +2862,48 @@ function auditSalesRows(rows){
   return {count:(rows||[]).length,issueTotal,issues,duplicate,first:dates[0]||'veri yok',last:dates.at(-1)||'veri yok',status};
 }
 function auditBox(k,v,note,cls=''){return `<div class="audit-box"><div class="audit-k">${k}</div><div class="audit-v ${cls}">${v}</div><div class="audit-note">${note}</div></div>`;}
+function readinessBadge(level,label){
+  return `<span class="daily-ready-badge ${level}">${escHtml(label)}</span>`;
+}
+function moduleReadinessRows(a){
+  const salesReady=proofOk({status:a.status})&&a.issueTotal===0&&a.count>0;
+  return [
+    {name:'Üst Akıl Paneli',level:'partial',label:'Kısmen hazır',note:'Satış, banka, plan ve uyarı aynı ekranda. Eksik kaynak varsa kesin karar gibi gösterilmez.'},
+    {name:'Banka Canlı / Onay',level:'partial',label:'Günlük kontrol hazır',note:'Mail ekstre ve görsel/Telegram onay hatları görünür. Canlı BizimHesap kaydı kullanıcı onayı ve işlem kanıtı ister.'},
+    {name:'Gelir Tablosu',level:'partial',label:'Karar ön izlemesi',note:'Planlanan, tahakkuk ve gerçekleşen mantığı var. Alış, ödeme ve tahsilat kaynak eksikleri kapatılmadan kesin finansal tablo sayılmaz.'},
+    {name:'Satış Akışı',level:salesReady?'ready':'partial',label:salesReady?'Günlük kullanılabilir':'Kontrol şart',note:salesReady?'sales_raw firma ve tarih denetiminden geçti.':'Satış verisi var ama veri güveni bulgusu veya kaynak eksikliği bulunuyor.'},
+    {name:'Ürün Karlılığı',level:'partial',label:'Analiz var, kesin değil',note:'Kategori kâr katsayıları ve satış analizi var. Gerçek alış/stok hareketi bağlanınca tam kâr motoru olur.'},
+    {name:'Cari Risk',level:'partial',label:'Kısmen hazır',note:'Satış/tahakkuk tarafı okunuyor. Tahsilat, açık bakiye ve vade disiplini kaynakları tam bağlanmalı.'},
+    {name:'Telegram Evrak',level:'blocked',label:'Blokajlı',note:'Bot ve bazı altyapı var; görsel evrak -> analiz -> onay -> BizimHesap hattı uçtan uca bitmiş kabul edilmez.'},
+    {name:'Veri Güveni',level:'ready',label:'Temel kilitler aktif',note:'Dry-run yazım koruması, firma izolasyonu ve ana finans akışı doğrulama komutları mevcut.'}
+  ];
+}
+function dailyReadinessScore(rows){
+  const weights={ready:1,partial:.55,blocked:.15};
+  return Math.round((rows.reduce((s,r)=>s+(weights[r.level]||0),0)/Math.max(rows.length,1))*100);
+}
+function dailyReadinessHtml(a){
+  const rows=moduleReadinessRows(a), score=dailyReadinessScore(rows);
+  const blockers=[
+    'Canlı BizimHesap kayıt sonucunu her onaylı banka hareketinde kanıtla.',
+    'Cari tahsilat, açık bakiye ve vade kaynaklarını ana karar ekranına bağla.',
+    'Ürün alış ve stok hareketlerini satış kâr motoruna gerçek kaynak olarak ekle.',
+    'Telegram görsel/evrak akışını Onay Merkezi ve BizimHesap kuyruğuna uçtan uca bağla.',
+    'Gelir tablosunda planlanan, tahakkuk ve gerçekleşen farklarını kaynak bazlı kilitle.'
+  ];
+  return `<div class="daily-ready">
+    <div class="daily-ready-head">
+      <div><div class="daily-ready-title">Günlük Kullanım Durumu</div><div class="daily-ready-sub">Bu panel demo rakamı değil; hangi ekranın karar için kullanılabileceğini gösterir.</div></div>
+      <div class="daily-ready-score">%${score}</div>
+    </div>
+    <div class="daily-ready-grid">
+      ${rows.map(r=>`<div class="daily-ready-item ${r.level}"><div class="daily-ready-name">${escHtml(r.name)}</div><div class="daily-ready-note">${escHtml(r.note)}</div>${readinessBadge(r.level,r.label)}</div>`).join('')}
+    </div>
+    <div class="daily-blockers">
+      ${blockers.map((b,i)=>`<div class="daily-blocker"><b>${String(i+1).padStart(2,'0')}</b><span>${escHtml(b)}</span></div>`).join('')}
+    </div>
+  </div>`;
+}
 function renderDataAudit(){
   const el=document.getElementById('dataAudit');if(!el)return;
   const a=auditSalesRows(RAW), cls=a.issueTotal?'bad':proofOk({status:a.status})?'ok':a.count?'warn':'bad';
@@ -2855,7 +2916,7 @@ function renderDataAudit(){
     ${auditBox('Firma Kaçağı',fmt(a.issues.firmLeak),'Alaylı dışı kayıt',a.issues.firmLeak?'bad':'ok')}
     ${auditBox('Tekrar Bilgisi',fmt(a.duplicate),'satışta doğal tekrar olabilir',a.duplicate?'':'ok')}
     ${auditBox('Tutar Sorunu',fmt(a.issues.badAmount),'negatif/geçersiz ciro',a.issues.badAmount?'bad':'ok')}
-  </div>`;
+  </div>${dailyReadinessHtml(a)}`;
 }
 const financeNum=v=>Number.isFinite(+v)?+v:0;
 const financeTL=v=>`TL ${Math.round(financeNum(v)).toLocaleString('tr-TR')}`;

@@ -57,6 +57,7 @@
     "apply:personal-finance-actions-v54": "npm run verify:personal-finance-actions-v54 && npm run telegram:personal-finance-v54:test",
     "verify:main-finance-flow-v55": "node tools/verify_main_finance_flow_v55.cjs",
     "verify:firm-isolation": "node tools/verify_firm_isolation_v66.cjs",
+    "verify:daily-readiness": "node tools/verify_daily_readiness_v67.cjs",
     "finance-calendar:preflight": "node tools/aperion_finance_calendar_preflight.cjs",
     "finance-calendar:build-install": "node tools/build_finance_calendar_install_v58.cjs",
     "finance-calendar:build-june-accruals": "node tools/build_june_2026_accrual_sql.cjs",
