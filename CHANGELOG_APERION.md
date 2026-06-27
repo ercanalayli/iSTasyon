@@ -61,6 +61,20 @@
 - `npm run finance-smoke`
 - `npm run verify:main-finance-flow-v55`
 
+### Firma Izolasyonu
+
+- Ana karar ekranindaki `bizimhesap_queue` sorgulari `company_id = alayli` filtresiyle kilitlendi.
+- Bot loglari `firma_id = alayli` filtresiyle sinirlandi.
+- `tools/verify_firm_isolation_v66.cjs` eklendi.
+- `npm run verify:firm-isolation` komutu eklendi.
+
+### Firma Izolasyonu Dogrulamasi
+
+- `npm run verify:firm-isolation`
+- `npm run preflight`
+- `npm run finance-smoke`
+- `npm run verify:main-finance-flow-v55`
+
 ### Degismedi
 
 - Canli BizimHesap kaydi yapilmadi.

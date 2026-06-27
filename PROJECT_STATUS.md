@@ -22,6 +22,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-27 banka onay zinciri turu sonucu: Banka Canli ekrani artik iki onay hattini birlikte okur: mail ekstre icin `pending_bank_movements -> bizimhesap_queue`, Telegram/gorsel eski hat icin `bank_transactions -> bizimhesap_posting_queue`. Her kayitta kuyruk id, worker sonucu ve BizimHesap kayit var/yok bilgisi ekranda gosterilir.
 
+2026-06-27 firma izolasyonu turu sonucu: ALAYLI karar ekranlarinda kritik queue ve log sorgulari firma filtresiyle kilitlendi. `verify:firm-isolation` komutu eklendi ve ALAYLI disi verinin ana karar ekranlarina karismamasi icin statik kontrol baslatildi.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -62,9 +64,9 @@ Son denetimde calisan komutlar:
 
 ## Olgunluk Tahmini
 
-- Gunluk kullanilabilirlik: %62
-- Teknik olgunluk: %58
-- Finans Komuta Merkezi: %65
+- Gunluk kullanilabilirlik: %64
+- Teknik olgunluk: %61
+- Finans Komuta Merkezi: %67
 - Urun karti: %45
 - Cari karti: %50
 

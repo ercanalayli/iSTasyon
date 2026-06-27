@@ -4,27 +4,27 @@ Son guncelleme: 2026-06-27 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Firma izolasyonu ve veri karisma riskini kilitlemek.
+Gunluk kullanilabilir surum kontrolu.
 
-Durum: Banka onay ekrani iki onay/kuyruk hattini birlikte okuyacak sekilde guncellendi. Siradaki tur yeni tasarim degil, ALAYLI verisinin diger firmalara karismadigini kaynak, sorgu ve ekran seviyesinde garantiye almak olmalidir.
+Durum: Firma izolasyonu icin kritik ALAYLI filtreleri ve `verify:firm-isolation` kontrolu eklendi. Siradaki tur yeni tasarim degil, gunluk kullanimda acilacak ekranlarin hangisinin karar verilebilir seviyede oldugunu netlestirmek ve kalan blokajlari siralamak olmalidir.
 
 ## Neden Bu Hedef?
 
-Tek dashboard coklu firma mimarisine hazirlaniyor. Bu nedenle her sorguda `firma_id`, `company_id` veya `company` filtresi net olmali; ALAYLI disi veri ana karar ekranina karismamalidir.
+Veri guveni, banka onay zinciri ve firma izolasyonu temel duzeltmeleri yapildi. Simdi kullanici sabah programi actiginda hangi ekranlara guvenebilecegini net gormelidir.
 
 ## Siradaki Is Paketi
 
-1. `index.html` icindeki Supabase sorgularinda firma filtresi olmayan kritik sorgulari bul.
-2. Banka, satis, cari, urun, finans ve takvim sorgularini firma izolasyonu acisindan siniflandir.
-3. Eksik firma filtresi varsa dar kapsamli duzelt.
-4. Veri Guveni ekraninda firma izolasyonu durumunu gorunur hale getir.
-5. `npm run preflight`, `npm run finance-smoke`, `npm run verify:main-finance-flow-v55` calistir.
+1. Ana ekran, Banka Canli, Gelir Tablosu, Satis/Tahsilat, Urun Karliligi ve Cari Risk ekranlarini tek tek kontrol et.
+2. Her ekran icin production-ready / kismen / eksik durumunu dosyaya yaz.
+3. Gunluk kullanilabilir surum icin ilk 5 blokaji belirle.
+4. Gerekirse sadece durum/uyari metni duzelt; yeni buyuk tasarim yapma.
+5. `npm run preflight`, `npm run verify:firm-isolation`, `npm run finance-smoke` calistir.
 
 ## Kabul Kriteri
 
-- ALAYLI seciliyken baska firma kaydi ana karar ekranina girmemelidir.
-- Firma filtresi olmayan kritik sorgular belgelenmeli veya duzeltilmelidir.
-- Coklu firma mimarisine uygun kaynak alanlari korunmalidir.
+- Kullanici hangi ekrani gunluk kullanabilecegini acikca bilmelidir.
+- Production-ready olmayan ekranlar demo gibi degil, eksik kaynak notuyla gorunmelidir.
+- Ilk 5 blokaj net ve sirali olmalidir.
 - Test sonucu tur sonunda raporlanmalidir.
 
 ## Bekleyen Sonraki Hedefler

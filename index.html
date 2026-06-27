@@ -2967,7 +2967,7 @@ async function renderExecutiveBrief(){
     pendingRows=await fetchPendingBankMovements(5000);
   }catch(e){issues.push('mail ekstre hareketleri okunamadı');}
   try{
-    const {data,error}=await db.from('bizimhesap_queue').select('*').order('created_at',{ascending:false}).limit(500);
+    const {data,error}=await db.from('bizimhesap_queue').select('*').eq('company_id',PILOT_FIRMA).order('created_at',{ascending:false}).limit(500);
     if(error)throw error;queueRows=data||[];
   }catch(e){issues.push('BizimHesap kuyruğu okunamadı');}
   actionHealth=await fetchAutomationHealth();
@@ -3099,7 +3099,7 @@ async function loadFinanceHome(){
     if(!error)bankBalanceRows.push(...(data||[]));
   }catch(e){}
   try{
-    const {data,error}=await db.from('bizimhesap_queue').select('*').order('created_at',{ascending:false}).limit(8);
+    const {data,error}=await db.from('bizimhesap_queue').select('*').eq('company_id',PILOT_FIRMA).order('created_at',{ascending:false}).limit(8);
     if(error)setupIssues.push('BizimHesap kuyruğu yok'); else queueRows=data||[];
   }catch(e){setupIssues.push('BizimHesap kuyruğu yok');}
   const todayIn=financeNum(summary?.today_receivable||summary?.bugun_tahsilat||summary?.tahsilat_bugun);
@@ -5686,7 +5686,7 @@ async function loadGorevler() {
   }).join('');
 
   // Bot log geçmişi
-  const {data: logs} = await db.from('bot_logs').select('*').order('created_at',{ascending:false}).limit(20);
+  const {data: logs} = await db.from('bot_logs').select('*').eq('firma_id',PILOT_FIRMA).order('created_at',{ascending:false}).limit(20);
   const logGrid = document.getElementById('gorevLogGrid');
   if(!logs?.length) {
     logGrid.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--t3);padding:10px">Log tablosu bulunamadi. Supabase SQL Editor - bot_log_tablo.sql calistirin.</div>';
