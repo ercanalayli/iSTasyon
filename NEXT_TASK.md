@@ -6,7 +6,7 @@ Son guncelleme: 2026-06-29 Europe/Istanbul
 
 Banka hareketinin BizimHesap kaydi sonrasi kuyruk kapanis kanitini tamamlamak.
 
-Durum: Kullanici `BizimHesap'a kaydetmeyi onayliyorum` dedi. Sadece queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` icin worker save modu calisti ve BizimHesap kaydet butonuna basildigi loglandi. Kullanici BizimHesap listesinde kaydin olustugunu gosterdi. Ancak Supabase `mark_bizimhesap_queue_processed` RPC kurulu olmadigi icin AperiON kuyrugu kapanmadi; `bank:approval:candidate:proof` hala `ready_for_bizimhesap` gosteriyor. Yerelden SQL kurulum denemesi DB sifresi hatasi nedeniyle basarisiz. Mukerrer kaydi engellemek icin manuel kanit dosyasi eklendi ve worker ayni queue id icin tekrar save yapmadan atliyor. SQL dosyasina workflow tetikleyici yorum eklendi; `main` branch'e gidince `supabase-sql-install.yml` otomatik calismali.
+Durum: Kullanici `BizimHesap'a kaydetmeyi onayliyorum` dedi. Sadece queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` icin worker save modu calisti ve BizimHesap kaydet butonuna basildigi loglandi. Kullanici BizimHesap listesinde kaydin olustugunu gosterdi. SQL kurulumu GitHub Actions ile basarili oldu; son kanitta queue status `processed`, hazir BizimHesap kuyrugu `0`.
 
 ## Neden Bu Hedef?
 
@@ -14,10 +14,10 @@ Kullanici bankadan gelen hareketlerin BizimHesap tarafinda gercekten olusup olus
 
 ## Siradaki Is Paketi
 
-1. `automation/sql/006_mark_bizimhesap_queue_processed.sql` Supabase'e uygulanmali.
-2. SQL tetikleyici commit'i `main` branch'e alinmali ve `supabase-sql-install.yml` sonucu kontrol edilmeli.
-3. Ayni kaydi tekrar BizimHesap'a kaydetmeden queue statusu kapatilabilir mi kontrol edilmeli.
-4. SQL kurulduktan sonra `bank:approval:candidate:proof` ile queue statusunun `processed` oldugu dogrulanmali.
+1. Yeni gelen banka ekstreleri icin mail pipeline ve Onay Merkezi sayimi kontrol edilmeli.
+2. Onaylanan yeni hareketlerde BizimHesap hedef hesap/cari/kayit turu ekranda net gorunmeli.
+3. Bir sonraki canli kayit, yine tek kayit ve acik kullanici onayi ile denenmeli.
+4. B2B API icin BizimHesap'tan yetkili token/endpoint teyidi beklenmeli.
 
 ## Kabul Kriteri
 
@@ -26,10 +26,10 @@ Kullanici bankadan gelen hareketlerin BizimHesap tarafinda gercekten olusup olus
 - Worker dry-run planinda hesap/cari/kayit turu okunmalidir: tamamlandi.
 - BizimHesap formu kaydetmeden doldurulmalidir: tamamlandi.
 - Kesin canli kayit kullanici onayi olmadan yapilmamalidir: tamamlandi, kullanici onayi sonrasi tek id icin save calisti.
-- Kuyruk kapanis fonksiyonu kurulu olmalidir: eksik.
+- Kuyruk kapanis fonksiyonu kurulu olmalidir: tamamlandi.
 - Kayit olustu kaniti BizimHesap ekranindan alinmalidir: kullanici tarafindan dogrulandi.
 - Mukerrer kayit engeli olmalidir: tamamlandi, manuel kanitli queue tekrar save yapmadan atlanir.
-- Test sonucu tur sonunda raporlanmalidir.
+- Test sonucu tur sonunda raporlanmalidir: tamamlandi.
 
 ## Bekleyen Sonraki Hedefler
 
