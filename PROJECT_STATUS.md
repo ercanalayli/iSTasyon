@@ -38,6 +38,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-29 banka aday kanit okuma turu sonucu: `bank:approval:candidate:proof` komutu eklendi ve calisti. Secilen VakifBank -8,37 TL adayinin `pending_bank_movements.status=pending` oldugu, `bizimhesap_queue` icinde henuz kayit olmadigi dogrulandi. Komut salt-okunur calisir; canli onay/RPC calistirmadi.
 
+2026-06-29 kullanici onayli banka kuyruk turu sonucu: Kullanici `onayliyorum` dedi. Sadece secili VakifBank 2026-06-10, -8,37 TL banka masraf adayi icin `approve_pending_bank_movement` RPC calisti. Pending id `9b91f984-c94b-4005-92ab-7fb334aa31e7` status `approved` oldu ve `bizimhesap_queue` icinde queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa`, status `ready_for_bizimhesap` kaydi olustu. `bizimhesap:queue:dry` 1 hazir kayit buldu ve planin BizimHesap gider/masraf kaydi oldugunu gosterdi. BizimHesap'a kesin kaydetme / save islemi yapilmadi.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -57,6 +59,9 @@ Son denetimde calisan komutlar:
 - `npm run verify:bank-candidate-guard`: gecti.
 - `npm run bank:approval:candidate:dry`: gecti, RPC calistirilmadi.
 - `npm run bank:approval:candidate:proof`: gecti, pending durum ve queue yok kanitlandi.
+- `node tools/approve_bank_candidate_v70.cjs --id 9b91f984-c94b-4005-92ab-7fb334aa31e7 --confirm ONAYLIYORUM`: kullanici onayi sonrasi gecti, queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` olustu.
+- `npm run bank:approval:candidate:proof`: gecti, pending `approved`, queue `ready_for_bizimhesap`.
+- `npm run bizimhesap:queue:dry`: gecti, 1 hazir kuyruk icin dry-run plan yazildi.
 
 ## Production'a En Yakin Parcalar
 

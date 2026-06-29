@@ -59,6 +59,16 @@
 - Aday icin `bizimhesap_queue` kaydi olmadigi dogrulandi.
 - Komut salt-okunur calisti; canli onay/RPC calistirilmadi.
 
+### Kullanici Onayli Banka Kuyruga Alma
+
+- Kullanici yalnizca secili VakifBank 2026-06-10, -8,37 TL banka masraf adayi icin `onayliyorum` dedi.
+- `node tools/approve_bank_candidate_v70.cjs --id 9b91f984-c94b-4005-92ab-7fb334aa31e7 --confirm ONAYLIYORUM` calisti.
+- Pending id `9b91f984-c94b-4005-92ab-7fb334aa31e7` status `approved` oldu.
+- BizimHesap queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa`, status `ready_for_bizimhesap` olustu.
+- `npm run bank:approval:candidate:proof` pending ve queue kanitini dogruladi.
+- `npm run bizimhesap:queue:dry` 1 hazir BizimHesap kuyruk kaydi buldu.
+- BizimHesap'a kesin kaydetme/save islemi yapilmadi.
+
 ## 2026-06-27
 
 ### Eklendi
