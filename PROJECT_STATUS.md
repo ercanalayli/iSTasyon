@@ -50,6 +50,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-29 BizimHesap B2B canli GET turu sonucu: Kullanici uyelik ekranindaki `Api Key(FirmID)` ve `Zirve Express Aktarim Api Key` degerlerini gosterdi. Bu degerler sadece komut ortaminda kullanildi, dosyaya yazilmadi. `token-header`, `bearer` ve `query-token` auth modlariyla `products`, `customers`, `warehouses` GET denendi. Uc modda da BizimHesap `401 Authorization has been denied for this request` dondurdu. Sonuc: Bu anahtar B2B GET icin yetkili degil veya API erisimi BizimHesap tarafinda acilmamis.
 
+2026-06-29 SQL queue kapanis tetikleme turu sonucu: `mark_bizimhesap_queue_processed` kurulum dosyasina islevsiz tetikleyici yorum eklendi; bu dosya `main` branch'e gittiginde `supabase-sql-install.yml` workflow'u otomatik calismalidir. `tools/mail_ekstre_actions_check.cjs` icin `mail:ekstre:actions:check` npm komutu eklendi. Ama `gh` CLI bu bilgisayarda yok; GitHub Actions durum okuma/tetikleme terminalden yapilamadi.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -80,6 +82,8 @@ Son denetimde calisan komutlar:
 - `BIZIMHESAP_POSTING_LIVE=1 BIZIMHESAP_POSTING_SAVE=1 node bizimhesap_queue_worker.cjs --firma alayli --id 3b30e1a0-0f02-4b0d-b03c-ae2779d448fa --limit 1 --commit --save`: manuel kanit kilidiyle tekrar kaydetme atlandi.
 - `npm run verify:bizimhesap:b2b-api`: calisti; `BIZIMHESAP_B2B_TOKEN` ve `BIZIMHESAP_FIRM_ID` eksik oldugu icin blokaj verdi.
 - `npm run verify:bizimhesap:b2b-api:live`: token-header, bearer ve query-token modlarinda calisti; ucunde de 401 alindi, canli yazma yapilmadi.
+- `node --check tools/mail_ekstre_actions_check.cjs`: gecti.
+- `npm run mail:ekstre:actions:check`: komut eklendi; gercek calisma icin Supabase/Google secret ortam degiskenleri gerekir.
 
 ## Production'a En Yakin Parcalar
 
