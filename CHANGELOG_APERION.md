@@ -104,6 +104,13 @@
 - Kullanici BizimHesap uyelik ekraninda `Api Key(FirmID)` ve `Zirve Express Aktarim Api Key` alanlarini gosterdi; bunlar secret eslesmesi olarak not edildi.
 - Zirve Express anahtariyla `token-header`, `bearer` ve `query-token` modlarinda canli GET denendi; hepsi 401 verdi, canli yazma yapilmadi.
 
+### Supabase Queue Kapanis SQL Tetikleme
+
+- `automation/sql/006_mark_bizimhesap_queue_processed.sql` dosyasina islevsiz workflow tetikleyici yorum eklendi.
+- Bu degisiklik `main` branch'e gittiginde `supabase-sql-install.yml` otomatik calismalidir.
+- `tools/mail_ekstre_actions_check.cjs` icin `mail:ekstre:actions:check` npm komutu eklendi.
+- Bu bilgisayarda `gh` CLI olmadigi icin workflow terminalden tetiklenemedi veya okunamadi.
+
 ## 2026-06-27
 
 ### Eklendi
