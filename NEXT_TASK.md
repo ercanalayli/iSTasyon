@@ -6,7 +6,7 @@ Son guncelleme: 2026-06-29 Europe/Istanbul
 
 Banka hareketinin BizimHesap kaydi sonrasi kuyruk kapanis kanitini tamamlamak.
 
-Durum: Kullanici `BizimHesap'a kaydetmeyi onayliyorum` dedi. Sadece queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` icin worker save modu calisti ve BizimHesap kaydet butonuna basildigi loglandi. Kullanici BizimHesap listesinde kaydin olustugunu gosterdi. Ancak Supabase `mark_bizimhesap_queue_processed` RPC kurulu olmadigi icin AperiON kuyrugu kapanmadi; `bank:approval:candidate:proof` hala `ready_for_bizimhesap` gosteriyor. Yerelden SQL kurulum denemesi DB sifresi hatasi nedeniyle basarisiz. Mukerrer kaydi engellemek icin manuel kanit dosyasi eklendi ve worker ayni queue id icin tekrar save yapmadan atliyor.
+Durum: Kullanici `BizimHesap'a kaydetmeyi onayliyorum` dedi. Sadece queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` icin worker save modu calisti ve BizimHesap kaydet butonuna basildigi loglandi. Kullanici BizimHesap listesinde kaydin olustugunu gosterdi. Ancak Supabase `mark_bizimhesap_queue_processed` RPC kurulu olmadigi icin AperiON kuyrugu kapanmadi; `bank:approval:candidate:proof` hala `ready_for_bizimhesap` gosteriyor. Yerelden SQL kurulum denemesi DB sifresi hatasi nedeniyle basarisiz. Mukerrer kaydi engellemek icin manuel kanit dosyasi eklendi ve worker ayni queue id icin tekrar save yapmadan atliyor. SQL dosyasina workflow tetikleyici yorum eklendi; `main` branch'e gidince `supabase-sql-install.yml` otomatik calismali.
 
 ## Neden Bu Hedef?
 
@@ -15,7 +15,7 @@ Kullanici bankadan gelen hareketlerin BizimHesap tarafinda gercekten olusup olus
 ## Siradaki Is Paketi
 
 1. `automation/sql/006_mark_bizimhesap_queue_processed.sql` Supabase'e uygulanmali.
-2. Dogru `SUPABASE_DB_URL` GitHub secret veya yerel env ile workflow/psql calistirilmali.
+2. SQL tetikleyici commit'i `main` branch'e alinmali ve `supabase-sql-install.yml` sonucu kontrol edilmeli.
 3. Ayni kaydi tekrar BizimHesap'a kaydetmeden queue statusu kapatilabilir mi kontrol edilmeli.
 4. SQL kurulduktan sonra `bank:approval:candidate:proof` ile queue statusunun `processed` oldugu dogrulanmali.
 
