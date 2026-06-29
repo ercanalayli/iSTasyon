@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALAYLI Hasta Bezi Analiz Dashboard</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--line:#dbe3ef;--text:#0f172a;--muted:#64748b;--blue:#2563eb;--green:#16a34a;--yellow:#ca8a04;--red:#dc2626;--dark:#111827;--soft:#f8fafc;--shadow:0 16px 42px rgba(15,23,42,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}.wrap{max-width:1480px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}h1{font-size:28px;margin:0;letter-spacing:-.7px}.sub{color:var(--muted);font-size:12px;margin-top:6px}.btn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 13px;font-weight:900;cursor:pointer;text-decoration:none;color:var(--text)}.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}.metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:14px 0}.metric{background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);padding:13px}.metric small{display:block;color:var(--muted);font-size:10px;font-weight:900;text-transform:uppercase}.metric b{display:block;margin-top:5px;font-size:21px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.tabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;font-weight:900;cursor:pointer}.tabs button.on{background:#111827;color:#fff}.panel{display:none}.panel.on{display:block}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:12px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:14px}.card h2{margin:0 0 7px;font-size:15px}.card p{margin:4px 0;color:var(--muted);font-size:12px;line-height:1.35}.tag{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:900}.ok{background:#dcfce7;color:#166534}.warn{background:#fef3c7;color:#92400e}.bad{background:#fee2e2;color:#991b1b}.info{background:#dbeafe;color:#1d4ed8}.dual{background:#ede9fe;color:#6d28d9}.tablebox{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}.head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);gap:10px}.head b{font-size:14px}.head input,.head select{border:1px solid var(--line);border-radius:10px;padding:8px;font-weight:800;min-width:150px}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #edf2f7;padding:9px 10px;text-align:left;font-size:12px;vertical-align:top}th{background:#f8fafc;color:#475569;text-transform:uppercase;font-size:10px;letter-spacing:.4px}.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.nowrap{white-space:nowrap}.bar{height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:#2563eb}.note{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:14px;padding:10px 12px;font-size:12px;font-weight:800;margin-bottom:12px}.kpirow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.mini{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px}.mini small{display:block;color:#64748b;font-weight:900;text-transform:uppercase;font-size:9px}.mini b{font-size:16px}.src{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:#334155}.red{color:var(--red);font-weight:900}.green{color:var(--green);font-weight:900}.yellow{color:var(--yellow);font-weight:900}@media(max-width:1100px){.metrics,.cards,.grid,.kpirow{grid-template-columns:1fr}.top{flex-direction:column}.head{flex-direction:column;align-items:stretch}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><h1>ALAYLI Hasta Bezi Müşteri & Ürün Analiz Dashboard</h1><div class="sub">Müşteri, ürün, cari, fatura, tahsilat ve kontrol ekranı. Liste karıştırmaz; her kayıt kendi kaynağıyla izlenir.</div></div>
+    <div><a class="btn" href="./alayli.html">ALAYLI Merkez</a> <button class="btn" onclick="exportJSON()">JSON Aktar</button> <button class="btn primary" onclick="refreshAll()">Yenile</button></div>
+  </div>
+  <div class="note">Kural: Satış faturası müşteri cari kaydıdır. Alış faturası maliyet kaydıdır. Aynı cari hem müşteri hem tedarikçi olabilir; yönler karıştırılmaz.</div>
+  <div class="metrics" id="metrics"></div>
+  <div class="tabs">
+    <button class="on" data-panel="pOverview">Özet</button><button data-panel="pCustomers">Müşteri Analizi</button><button data-panel="pProducts">Ürün Analizi</button><button data-panel="pInvoices">Faturalar</button><button data-panel="pControl">Kontrol Merkezi</button><button data-panel="pData">Veri Modeli</button>
+  </div>
+
+  <section id="pOverview" class="panel on">
+    <div class="grid">
+      <div class="tablebox"><div class="head"><b>En yüksek açık bakiyeler</b><span class="src">cari ekstre + fatura</span></div><table id="balanceTable"></table></div>
+      <div class="tablebox"><div class="head"><b>Kontrol uyarıları</b><span class="src">otomatik sınıflandırma</span></div><table id="warningTable"></table></div>
+    </div>
+    <br>
+    <div class="cards" id="segmentCards"></div>
+  </section>
+
+  <section id="pCustomers" class="panel">
+    <div class="tablebox"><div class="head"><b>Müşteri performansı</b><input id="customerSearch" placeholder="müşteri ara" oninput="renderCustomers()"></div><table id="customerTable"></table></div>
+  </section>
+
+  <section id="pProducts" class="panel">
+    <div class="tablebox"><div class="head"><b>Ürün performansı</b><select id="categoryFilter" onchange="renderProducts()"><option value="">Tüm kategoriler</option><option>Bel Bantlı</option><option>Külotlu</option><option>Serme</option><option>Mesane Pedi</option><option>Diğer</option></select></div><table id="productTable"></table></div>
+  </section>
+
+  <section id="pInvoices" class="panel">
+    <div class="tablebox"><div class="head"><b>Satış faturaları ve ekstre hareketleri</b><input id="invoiceSearch" placeholder="fatura/cari ara" oninput="renderInvoices()"></div><table id="invoiceTable"></table></div>
+  </section>
+
+  <section id="pControl" class="panel">
+    <div class="grid">
+      <div class="tablebox"><div class="head"><b>Durum listesi</b><span class="src">yeşil / sarı / kırmızı</span></div><table id="controlTable"></table></div>
+      <div class="tablebox"><div class="head"><b>Çift yönlü cariler</b><span class="src">müşteri + tedarikçi</span></div><table id="dualTable"></table></div>
+    </div>
+  </section>
+
+  <section id="pData" class="panel">
+    <div class="tablebox"><div class="head"><b>Veri standardı</b><span class="src">dashboard bu yapıya göre büyüyecek</span></div><table id="modelTable"></table></div>
+  </section>
+</div>
+<script>
+const fmt=n=>(Number(n)||0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' TL';
+const pct=n=>(Number(n)||0).toLocaleString('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
+const tag=(t,c)=>'<span class="tag '+c+'">'+t+'</span>';
+const rows=(id,head,body)=>{document.getElementById(id).innerHTML='<thead><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+body+'</tbody>'};
+const DATA={
+customers:[
+{name:'Kent Medikal / Orhangazi',type:'Müşteri',sales:156306.76,paid:85000,balance:71306.76,lastSale:'29.06.2026',lastPay:'23.06.2026',invoiceCount:2,status:'Açık bakiye'},
+{name:'Ada Tıp / Murat Çoban',type:'Müşteri',sales:110906.45,paid:0,balance:110906.45,lastSale:'29.06.2026',lastPay:'-',invoiceCount:1,status:'Fatura tamam'},
+{name:'Görsa Medikal',type:'Müşteri',sales:10233.72,paid:10233.72,balance:0,lastSale:'29.06.2026',lastPay:'29.06.2026',invoiceCount:2,status:'Kapandı'},
+{name:'Feyza Medikal',type:'Müşteri',sales:34895.70,paid:12630.38,balance:22265.32,lastSale:'29.06.2026',lastPay:'05.05.2026',invoiceCount:3,status:'Açık bakiye'},
+{name:'Şifam Medikal',type:'Müşteri',sales:10669.90,paid:0,balance:10669.90,lastSale:'29.06.2026',lastPay:'-',invoiceCount:2,status:'Açık bakiye'},
+{name:'Işık Medikal / Mudanya',type:'Müşteri',sales:12093.41,paid:4249.44,balance:7843.97,lastSale:'29.06.2026',lastPay:'18.05.2026',invoiceCount:2,status:'Açık bakiye'},
+{name:'Laboral Tıbbi Ürünler',type:'Müşteri + Tedarikçi',sales:63294.00,paid:0,balance:63294.00,lastSale:'09.04.2026',lastPay:'-',invoiceCount:3,status:'Cari açılacak'},
+{name:'Akın Medikal',type:'Müşteri',sales:74890.34,paid:74890.34,balance:0,lastSale:'09.06.2026',lastPay:'10.06.2026',invoiceCount:5,status:'Kapandı'},
+{name:'Sercan Grup',type:'Müşteri',sales:43906.18,paid:47500,balance:-3593.82,lastSale:'09.06.2026',lastPay:'17.06.2026',invoiceCount:2,status:'Alacaklı'},
+{name:'Hakan Atasert Medikal',type:'Müşteri',sales:64052.28,paid:64052.28,balance:0,lastSale:'13.05.2026',lastPay:'19.05.2026',invoiceCount:3,status:'Kapandı'},
+{name:'Gamze Eczanesi',type:'Müşteri',sales:7739.92,paid:0,balance:7739.92,lastSale:'16.05.2026',lastPay:'-',invoiceCount:2,status:'Açık bakiye'},
+{name:'Kaan Yatılı Bakım Evi',type:'Müşteri',sales:132700.99,paid:70000,balance:62700.99,lastSale:'29.06.2026',lastPay:'05.06.2026',invoiceCount:16,status:'Açık bakiye'},
+{name:'Uludağ Özel Sağlık',type:'Müşteri',sales:58831.56,paid:52791.56,balance:6040,lastSale:'22.06.2026',lastPay:'15.06.2026',invoiceCount:17,status:'Açık bakiye'}
+],
+invoices:[
+{no:'M012026000000140',customer:'Kent Medikal / Orhangazi',date:'29.06.2026',type:'Satış',net:60852,kdv:6085.20,total:66937.20,status:'Tuttu',source:'Fatura'},
+{no:'M012026000000138',customer:'Ada Tıp / Murat Çoban',date:'29.06.2026',type:'Satış',net:100824.05,kdv:10082.40,total:110906.45,status:'Tuttu',source:'Ekstre/Fatura'},
+{no:'M012026000000139',customer:'Görsa Medikal',date:'29.06.2026',type:'Satış',net:4743.38,kdv:474.34,total:5217.72,status:'+0,02 kabul',source:'Fatura'},
+{no:'M012026000000141',customer:'Feyza Medikal',date:'29.06.2026',type:'Satış',net:4411.31,kdv:441.13,total:4852.44,status:'-0,02 kabul',source:'Fatura'},
+{no:'N012026000000154',customer:'Şifam Medikal',date:'29.06.2026',type:'Satış',net:4411.33,kdv:441.13,total:4852.46,status:'Tuttu',source:'Fatura'},
+{no:'M012026000000142',customer:'Işık Medikal / Mudanya',date:'29.06.2026',type:'Satış',net:7130.88,kdv:713.09,total:7843.97,status:'Tuttu',source:'Fatura'},
+{no:'M012026000000013',customer:'Laboral Tıbbi Ürünler',date:'14.01.2026',type:'Satış',net:22368,kdv:2236.80,total:24604.80,status:'Cari açılacak',source:'Fatura'},
+{no:'M012026000000016',customer:'Laboral Tıbbi Ürünler',date:'16.01.2026',type:'Satış',net:29100,kdv:2910,total:32010,status:'Cari açılacak',source:'Fatura'},
+{no:'M012026000000082',customer:'Laboral Tıbbi Ürünler',date:'09.04.2026',type:'Satış',net:6072,kdv:607.20,total:6679.20,status:'Cari açılacak',source:'Fatura'}
+],
+lines:[
+{customer:'Kent',product:'Lorina mesane pedi 30lu x6',category:'Mesane Pedi',brand:'Lorina',qty:12,total:5217.70,price:434.8083},
+{customer:'Kent',product:'Lorina bel bantlı L 30lu',category:'Bel Bantlı',brand:'Lorina',qty:20,total:11331.98,price:566.599},
+{customer:'Kent',product:'Lorina bel bantlı XL 30lu',category:'Bel Bantlı',brand:'Lorina',qty:20,total:11832.92,price:591.646},
+{customer:'Kent',product:'Lorina külot M 30lu',category:'Külotlu',brand:'Lorina',qty:8,total:4267.30,price:533.4125},
+{customer:'Kent',product:'Lorina külot L 30lu',category:'Külotlu',brand:'Lorina',qty:20,total:11582.34,price:579.117},
+{customer:'Kent',product:'Jender külot M 30lu',category:'Külotlu',brand:'Jender',qty:8,total:3497.65,price:437.2062},
+{customer:'Kent',product:'Jender külot L 30lu',category:'Külotlu',brand:'Jender',qty:20,total:9650.52,price:482.526},
+{customer:'Kent',product:'Jender 60x90 serme 30lu',category:'Serme',brand:'Jender',qty:60,total:9556.80,price:159.28},
+{customer:'Ada',product:'Jender külot XL 30lu',category:'Külotlu',brand:'Jender',qty:120,total:66145.94,price:551.2162},
+{customer:'Ada',product:'Jender külot L 30lu',category:'Külotlu',brand:'Jender',qty:80,total:39908.05,price:498.8506},
+{customer:'Ada',product:'Lorina mesane pedi 30lu x6',category:'Mesane Pedi',brand:'Lorina',qty:12,total:4852.46,price:404.3717},
+{customer:'Görsa',product:'Lorina mesane pedi 30lu x6',category:'Mesane Pedi',brand:'Lorina',qty:12,total:5217.72,price:434.81},
+{customer:'Feyza',product:'Lorina mesane pedi 30lu x6',category:'Mesane Pedi',brand:'Lorina',qty:12,total:4852.44,price:404.37},
+{customer:'Şifam',product:'Lorina mesane pedi 30lu x6',category:'Mesane Pedi',brand:'Lorina',qty:12,total:4852.46,price:404.3717},
+{customer:'Işık',product:'Jender bel bantlı L 30lu',category:'Bel Bantlı',brand:'Jender',qty:8,total:3594.54,price:449.3175},
+{customer:'Işık',product:'Jender XXL 20li',category:'Bel Bantlı',brand:'Jender',qty:8,total:4249.43,price:531.1788},
+{customer:'Laboral',product:'Cover Dry 60x90 serme 30lu',category:'Serme',brand:'Coverdry',qty:480,total:49470,price:97},
+{customer:'Laboral',product:'Jender XXL 20li',category:'Bel Bantlı',brand:'Jender',qty:12,total:4908,price:409},
+{customer:'Laboral',product:'Moly 60x90 serme 30lu',category:'Serme',brand:'Moly',qty:66,total:6679.20,price:101.20}
+]
+};
+function statusClass(s){if((s||'').includes('Tuttu')||s==='Kapandı')return 'ok'; if((s||'').includes('açılacak')||s.includes('bakiye')||s.includes('kabul'))return 'warn'; return 'info'}
+function refreshAll(){renderMetrics();renderOverview();renderCustomers();renderProducts();renderInvoices();renderControl();renderModel()}
+function renderMetrics(){const sales=DATA.customers.reduce((a,b)=>a+b.sales,0), paid=DATA.customers.reduce((a,b)=>a+b.paid,0), bal=DATA.customers.reduce((a,b)=>a+b.balance,0), inv=DATA.invoices.length, prod=[...new Set(DATA.lines.map(x=>x.product))].length, cust=DATA.customers.length;document.getElementById('metrics').innerHTML=[['Toplam satış',fmt(sales)],['Toplam tahsilat',fmt(paid)],['Açık bakiye',fmt(bal)],['Cari sayısı',cust],['Fatura sayısı',inv],['Ürün çeşidi',prod]].map(m=>'<div class="metric"><small>'+m[0]+'</small><b>'+m[1]+'</b></div>').join('')}
+function renderOverview(){const open=[...DATA.customers].sort((a,b)=>b.balance-a.balance).slice(0,8);rows('balanceTable',['Cari','Tip','Satış','Tahsilat','Bakiye','Durum'],open.map(c=>'<tr><td><b>'+c.name+'</b></td><td>'+tag(c.type,c.type.includes('+')?'dual':'info')+'</td><td class="num">'+fmt(c.sales)+'</td><td class="num">'+fmt(c.paid)+'</td><td class="num">'+fmt(c.balance)+'</td><td>'+tag(c.status,statusClass(c.status))+'</td></tr>').join(''));
+const warnings=[];DATA.customers.filter(c=>c.balance>0).forEach(c=>warnings.push(['Açık bakiye',c.name,fmt(c.balance),'warn']));DATA.customers.filter(c=>c.type.includes('+')).forEach(c=>warnings.push(['Çift yönlü cari',c.name,'Müşteri + tedarikçi','dual']));warnings.push(['Maliyet kontrol','Ürün analizleri','Alış faturası eşleşince kâr hesaplanacak','warn']);rows('warningTable',['Konu','Kayıt','Açıklama','Durum'],warnings.slice(0,10).map(w=>'<tr><td>'+w[0]+'</td><td><b>'+w[1]+'</b></td><td>'+w[2]+'</td><td>'+tag(w[3]==='dual'?'Çift yönlü':'Kontrol',w[3])+'</td></tr>').join(''));
+const segs=[['Düzenli kapanan',DATA.customers.filter(c=>c.balance===0).length,'ok'],['Açık bakiyeli',DATA.customers.filter(c=>c.balance>0).length,'warn'],['Alacaklı',DATA.customers.filter(c=>c.balance<0).length,'info'],['Çift yönlü cari',DATA.customers.filter(c=>c.type.includes('+')).length,'dual'],['Cari açılacak',DATA.customers.filter(c=>c.status.includes('açılacak')).length,'warn'],['Maliyet bekleyen ürün',DATA.lines.length,'warn']];document.getElementById('segmentCards').innerHTML=segs.map(s=>'<div class="card"><h2>'+s[0]+'</h2><p class="num"><b style="font-size:26px">'+s[1]+'</b></p>'+tag(s[0],s[2])+'</div>').join('')}
+function renderCustomers(){const q=(document.getElementById('customerSearch')?.value||'').toLowerCase();let max=Math.max(...DATA.customers.map(c=>c.sales));let arr=DATA.customers.filter(c=>c.name.toLowerCase().includes(q));rows('customerTable',['Cari','Tip','Satış','Tahsilat','Bakiye','Fatura','Son satış','Son tahsilat','Satış payı','Durum'],arr.map(c=>'<tr><td><b>'+c.name+'</b></td><td>'+tag(c.type,c.type.includes('+')?'dual':'info')+'</td><td class="num">'+fmt(c.sales)+'</td><td class="num">'+fmt(c.paid)+'</td><td class="num">'+fmt(c.balance)+'</td><td class="num">'+c.invoiceCount+'</td><td>'+c.lastSale+'</td><td>'+c.lastPay+'</td><td><div class="bar"><i style="width:'+Math.max(2,c.sales/max*100)+'%"></i></div></td><td>'+tag(c.status,statusClass(c.status))+'</td></tr>').join(''))}
+function productAgg(){let m={};DATA.lines.forEach(l=>{let k=l.product;if(!m[k])m[k]={product:k,category:l.category,brand:l.brand,qty:0,total:0,customers:new Set(),lastPrice:0};m[k].qty+=l.qty;m[k].total+=l.total;m[k].customers.add(l.customer);m[k].lastPrice=l.price});return Object.values(m).map(x=>({...x,customers:[...x.customers].join(', '),avg:x.qty?x.total/x.qty:0}))}
+function renderProducts(){const f=document.getElementById('categoryFilter')?.value||'';let arr=productAgg().filter(x=>!f||x.category===f).sort((a,b)=>b.total-a.total);rows('productTable',['Ürün','Marka','Kategori','Satılan adet/paket','Satış','Ortalama dahil fiyat','Müşteriler','Kâr durumu'],arr.map(p=>'<tr><td><b>'+p.product+'</b></td><td>'+p.brand+'</td><td>'+tag(p.category,'info')+'</td><td class="num">'+p.qty+'</td><td class="num">'+fmt(p.total)+'</td><td class="num">'+fmt(p.avg)+'</td><td>'+p.customers+'</td><td>'+tag('Maliyet eşleşmesi bekliyor','warn')+'</td></tr>').join(''))}
+function renderInvoices(){const q=(document.getElementById('invoiceSearch')?.value||'').toLowerCase();let arr=DATA.invoices.filter(i=>(i.no+i.customer).toLowerCase().includes(q));rows('invoiceTable',['Fatura','Tarih','Cari','Tip','Net','KDV','Toplam','Kaynak','Kontrol'],arr.map(i=>'<tr><td><b>'+i.no+'</b></td><td>'+i.date+'</td><td>'+i.customer+'</td><td>'+i.type+'</td><td class="num">'+fmt(i.net)+'</td><td class="num">'+fmt(i.kdv)+'</td><td class="num"><b>'+fmt(i.total)+'</b></td><td>'+i.source+'</td><td>'+tag(i.status,statusClass(i.status))+'</td></tr>').join(''))}
+function renderControl(){let arr=DATA.customers.map(c=>({name:c.name, durum:c.balance===0?'Tamamlandı':c.balance<0?'Alacaklı':'Açık bakiye', fatura:'Okundu', sevkiyat:c.status==='Kapandı'?'Kapandı':'Takipte', kontrol:c.status}));rows('controlTable',['Cari','Durum','Fatura','Sevkiyat','Kontrol'],arr.map(x=>'<tr><td><b>'+x.name+'</b></td><td>'+tag(x.durum,x.durum==='Tamamlandı'?'ok':x.durum==='Alacaklı'?'info':'warn')+'</td><td>'+tag(x.fatura,'ok')+'</td><td>'+tag(x.sevkiyat,x.sevkiyat==='Kapandı'?'ok':'warn')+'</td><td>'+tag(x.kontrol,statusClass(x.kontrol))+'</td></tr>').join(''));
+let dual=DATA.customers.filter(c=>c.type.includes('+'));rows('dualTable',['Cari','Cari tipi','Satış','Not'],dual.map(c=>'<tr><td><b>'+c.name+'</b></td><td>'+tag(c.type,'dual')+'</td><td class="num">'+fmt(c.sales)+'</td><td>Tedarikçi carisi ayrı, müşteri carisi ayrı izlenecek.</td></tr>').join(''))}
+function renderModel(){let m=[['Cari_Master','Cari adı, tip, VKN, adres, segment, risk'],['Satış_Faturaları','Fatura başlığı, cari, tarih, toplam, durum'],['Satış_Satırları','Ürün, miktar, fiyat, iskonto, KDV, kaynak'],['Alış_Faturaları','Tedarikçi, maliyet, fiyat farkı, iade'],['Ürün_Master','Marka, kategori, paket içi, koli içi, barkod'],['Tahsilatlar','Banka/nakit, tarih, cari, belge eşleşmesi'],['Kontrol_Log','Mükerrer, fark, eksik maliyet, kabul edilen fark']];rows('modelTable',['Tablo','Görev'],m.map(x=>'<tr><td><b>'+x[0]+'</b></td><td>'+x[1]+'</td></tr>').join(''))}
+function exportJSON(){const blob=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='alayli_hasta_bezi_analiz_veri.json';a.click();URL.revokeObjectURL(a.href)}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.getElementById(b.dataset.panel).classList.add('on')});
+refreshAll();
+</script>
+</body>
+</html>
