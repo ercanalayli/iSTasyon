@@ -46,6 +46,10 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-29 manuel BizimHesap kanit kilidi sonucu: Kullanici BizimHesap listesinde `APERION QUEUE:3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` aciklamali 8,37 TL banka masraf kaydinin olustugunu bildirdi. Bu kanit `data/bizimhesap_manual_posting_proofs.json` dosyasina islendi. Worker save modunda bu queue id icin BizimHesap'a tekrar login/form/save yapmadan `tekrar kaydetme atlandi` sonucunu verir; boylece SQL kapanisi eksik olsa bile mukerrer BizimHesap kaydi engellenir.
 
+2026-06-29 BizimHesap B2B API dokuman turu sonucu: Kullanici Entegrasyon API dokumanini paylasti. Repo icinde `bizimhesap_api_client.cjs` zaten `addinvoice`, `cancelinvoice`, `products`, `warehouses`, `inventory`, `customers`, `abstract`, `addcustomer`, `addproduct` metodlarini destekliyor. `npm run verify:bizimhesap:b2b-api` calisti ancak `BIZIMHESAP_B2B_TOKEN` ve `BIZIMHESAP_FIRM_ID` eksik oldugu icin preflight basarisiz oldu. Dokumanda banka/kasa hareketi, banka masrafi, tahsilat/odeme fisi veya virman endpointi gorunmedigi icin banka onay -> BizimHesap kaydi hattinda Puppeteer worker simdilik gerekli.
+
+2026-06-29 BizimHesap B2B canli GET turu sonucu: Kullanici uyelik ekranindaki `Api Key(FirmID)` ve `Zirve Express Aktarim Api Key` degerlerini gosterdi. Bu degerler sadece komut ortaminda kullanildi, dosyaya yazilmadi. `token-header`, `bearer` ve `query-token` auth modlariyla `products`, `customers`, `warehouses` GET denendi. Uc modda da BizimHesap `401 Authorization has been denied for this request` dondurdu. Sonuc: Bu anahtar B2B GET icin yetkili degil veya API erisimi BizimHesap tarafinda acilmamis.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -74,6 +78,8 @@ Son denetimde calisan komutlar:
 - `npm run bank:approval:candidate:proof`: queue statusunun hala `ready_for_bizimhesap` oldugunu dogruladi.
 - `npm run verify:bizimhesap:queue`: gecti; worker save sonrasi diagnostik ve queue status dogrulama kontrolu eklendi.
 - `BIZIMHESAP_POSTING_LIVE=1 BIZIMHESAP_POSTING_SAVE=1 node bizimhesap_queue_worker.cjs --firma alayli --id 3b30e1a0-0f02-4b0d-b03c-ae2779d448fa --limit 1 --commit --save`: manuel kanit kilidiyle tekrar kaydetme atlandi.
+- `npm run verify:bizimhesap:b2b-api`: calisti; `BIZIMHESAP_B2B_TOKEN` ve `BIZIMHESAP_FIRM_ID` eksik oldugu icin blokaj verdi.
+- `npm run verify:bizimhesap:b2b-api:live`: token-header, bearer ve query-token modlarinda calisti; ucunde de 401 alindi, canli yazma yapilmadi.
 
 ## Production'a En Yakin Parcalar
 
