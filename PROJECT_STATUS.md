@@ -36,6 +36,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-29 guvenlik kilitli kuyruga alma turu sonucu: `tools/approve_bank_candidate_v70.cjs` eklendi. Komut `--id` ve `--confirm ONAYLIYORUM` olmadan `approve_pending_bank_movement` RPC'sine gitmez. `bank:approval:candidate:dry` calisti, ayni VakifBank adayini dogruladi ve RPC calistirmadan `data/banka_onay_kuyruk_kaniti.json` dry-check raporu uretti.
 
+2026-06-29 banka aday kanit okuma turu sonucu: `bank:approval:candidate:proof` komutu eklendi ve calisti. Secilen VakifBank -8,37 TL adayinin `pending_bank_movements.status=pending` oldugu, `bizimhesap_queue` icinde henuz kayit olmadigi dogrulandi. Komut salt-okunur calisir; canli onay/RPC calistirmadi.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -54,6 +56,7 @@ Son denetimde calisan komutlar:
 - `npm run bank:approval:candidates`: gecti, ilk aday secildi.
 - `npm run verify:bank-candidate-guard`: gecti.
 - `npm run bank:approval:candidate:dry`: gecti, RPC calistirilmadi.
+- `npm run bank:approval:candidate:proof`: gecti, pending durum ve queue yok kanitlandi.
 
 ## Production'a En Yakin Parcalar
 

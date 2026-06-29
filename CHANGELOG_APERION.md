@@ -51,6 +51,14 @@
 - `npm run verify:bank-candidate-guard` komutu eklendi.
 - Dry-check calisti ve RPC calistirilmadigi dogrulandi.
 
+### Banka Aday Kanit Okuma
+
+- `tools/check_bank_candidate_queue_proof_v71.cjs` eklendi.
+- `npm run bank:approval:candidate:proof` komutu eklendi.
+- Secilen VakifBank -8,37 TL adayinin `pending` durumda oldugu dogrulandi.
+- Aday icin `bizimhesap_queue` kaydi olmadigi dogrulandi.
+- Komut salt-okunur calisti; canli onay/RPC calistirilmadi.
+
 ## 2026-06-27
 
 ### Eklendi

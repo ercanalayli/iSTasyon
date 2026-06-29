@@ -6,7 +6,7 @@ Son guncelleme: 2026-06-29 Europe/Istanbul
 
 Banka hareketi secimi ve kullanici onayli kuyruga alma.
 
-Durum: GitHub push kilidi cozuldu ve canli Pages yeni kodu donduruyor. Banka onay plani 25 hareket okudu; 19 yuksek guvenli, 6 inceleme istiyor. BizimHesap worker dry-run 0 hazir kuyruk buldu. `bank:approval:candidates` ilk dusuk risk adayini secti: VakifBank 2026-06-10, -8,37 TL, Banka/POS masrafi, guven %90, pending id `9b91f984-c94b-4005-92ab-7fb334aa31e7`. Kuyruga alma komutu hazir ama `--confirm ONAYLIYORUM` olmadan RPC calistirmaz.
+Durum: GitHub push kilidi cozuldu ve canli Pages yeni kodu donduruyor. Banka onay plani 25 hareket okudu; 19 yuksek guvenli, 6 inceleme istiyor. BizimHesap worker dry-run 0 hazir kuyruk buldu. `bank:approval:candidates` ilk dusuk risk adayini secti: VakifBank 2026-06-10, -8,37 TL, Banka/POS masrafi, guven %90, pending id `9b91f984-c94b-4005-92ab-7fb334aa31e7`. `bank:approval:candidate:proof` bu adayin status=pending ve queue_count=0 oldugunu dogruladi. Kuyruga alma komutu hazir ama `--confirm ONAYLIYORUM` olmadan RPC calistirmaz.
 
 ## Neden Bu Hedef?
 
