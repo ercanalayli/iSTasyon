@@ -42,6 +42,10 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-29 BizimHesap form kontrol turu sonucu: `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form` calisti. BizimHesap kalici oturum acildi, ALAYLI firma portalina girildi, queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` icin masraf formu dolduruldu ve kaydet tusuna basilmadi. Diagnostik gorsel `diagnostics/bizimhesap_queue_3b30e1a0-0f02-4b0d-b03c-ae2779d448fa_form.png` icinde tarih `10.06.2026`, tutar `8,37`, odeme durumu `Odendi` ve aciklama alaninda queue id goruldu. Kuyruk statusu `ready_for_bizimhesap` kaldi; kesin BizimHesap kaydi icin ayri onay gerekir.
 
+2026-06-29 BizimHesap canli kaydetme turu sonucu: Kullanici `BizimHesap'a kaydetmeyi onayliyorum` dedi. Sadece queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` icin `BIZIMHESAP_POSTING_LIVE=1` ve `BIZIMHESAP_POSTING_SAVE=1` ile worker calisti. Worker BizimHesap kaydet butonuna bastigini logladi. Ancak `mark_bizimhesap_queue_processed` RPC Supabase schema cache icinde bulunmadigi icin queue kapanmadi ve `ready_for_bizimhesap` kaldigi dogrulandi. DB password ile yerel SQL kurulum denemesi `password authentication failed for user "postgres"` hatasi verdi. Worker sonraki calismalar icin save sonrasi diagnostik ve queue status dogrulama logu uretecek sekilde guclendirildi.
+
+2026-06-29 manuel BizimHesap kanit kilidi sonucu: Kullanici BizimHesap listesinde `APERION QUEUE:3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` aciklamali 8,37 TL banka masraf kaydinin olustugunu bildirdi. Bu kanit `data/bizimhesap_manual_posting_proofs.json` dosyasina islendi. Worker save modunda bu queue id icin BizimHesap'a tekrar login/form/save yapmadan `tekrar kaydetme atlandi` sonucunu verir; boylece SQL kapanisi eksik olsa bile mukerrer BizimHesap kaydi engellenir.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -66,6 +70,10 @@ Son denetimde calisan komutlar:
 - `npm run bizimhesap:queue:dry`: gecti, 1 hazir kuyruk icin dry-run plan yazildi.
 - `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form`: gecti, form dolduruldu, kaydet tusuna basilmadi.
 - `diagnostics/bizimhesap_queue_3b30e1a0-0f02-4b0d-b03c-ae2779d448fa_form.png`: form gorsel kaniti incelendi.
+- `BIZIMHESAP_POSTING_LIVE=1 BIZIMHESAP_POSTING_SAVE=1 node bizimhesap_queue_worker.cjs --firma alayli --id 3b30e1a0-0f02-4b0d-b03c-ae2779d448fa --limit 1 --commit --save`: kullanici onayi sonrasi calisti, BizimHesap kaydet butonuna basildi.
+- `npm run bank:approval:candidate:proof`: queue statusunun hala `ready_for_bizimhesap` oldugunu dogruladi.
+- `npm run verify:bizimhesap:queue`: gecti; worker save sonrasi diagnostik ve queue status dogrulama kontrolu eklendi.
+- `BIZIMHESAP_POSTING_LIVE=1 BIZIMHESAP_POSTING_SAVE=1 node bizimhesap_queue_worker.cjs --firma alayli --id 3b30e1a0-0f02-4b0d-b03c-ae2779d448fa --limit 1 --commit --save`: manuel kanit kilidiyle tekrar kaydetme atlandi.
 
 ## Production'a En Yakin Parcalar
 

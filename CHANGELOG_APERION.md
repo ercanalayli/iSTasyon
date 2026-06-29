@@ -78,6 +78,22 @@
 - Diagnostik gorsel: `diagnostics/bizimhesap_queue_3b30e1a0-0f02-4b0d-b03c-ae2779d448fa_form.png`.
 - Kaydet tusuna basilmadi; kuyruk `ready_for_bizimhesap` durumunda kaldi.
 
+### Kullanici Onayli BizimHesap Save Denemesi
+
+- Kullanici `BizimHesap'a kaydetmeyi onayliyorum` dedi.
+- Sadece queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` icin `BIZIMHESAP_POSTING_LIVE=1` ve `BIZIMHESAP_POSTING_SAVE=1` ile save modu calisti.
+- Worker BizimHesap kaydet butonuna basildigini logladi.
+- Supabase `mark_bizimhesap_queue_processed` RPC kurulu olmadigi icin queue kapanmadi.
+- Yerelden SQL kurulum denemesi `password authentication failed for user "postgres"` hatasi verdi.
+- Worker save sonrasi diagnostik ve queue status dogrulama logu uretecek sekilde guclendirildi.
+
+### Manuel BizimHesap Kanit Kilidi
+
+- Kullanici BizimHesap listesinde queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` iceren 8,37 TL banka masraf kaydinin olustugunu bildirdi.
+- `data/bizimhesap_manual_posting_proofs.json` eklendi.
+- Worker save modunda manuel kanitli queue id icin BizimHesap'a tekrar kaydetme yapmadan atlar.
+- Testte ayni queue id tekrar calistirildi ve `tekrar kaydetme atlandi` sonucu alindi.
+
 ## 2026-06-27
 
 ### Eklendi

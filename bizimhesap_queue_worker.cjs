@@ -14,6 +14,7 @@ const SAVE = args.includes('--save');
 const LIVE_UNLOCKED = process.env.BIZIMHESAP_POSTING_LIVE === '1';
 const SAVE_UNLOCKED = process.env.BIZIMHESAP_POSTING_SAVE === '1';
 const DRY_OUT = valueArg('--dry-out', 'data/bizimhesap_queue_dryrun.json');
+const MANUAL_PROOF_FILE = path.join(__dirname, 'data', 'bizimhesap_manual_posting_proofs.json');
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://iilfwosoroflzubkaryj.supabase.co';
 const SUPABASE_KEY =
@@ -234,6 +235,18 @@ function dryRunPlan(row) {
   return { ...plan, safeToAutoSave, stopReason, steps };
 }
 
+function manualPostingProof(rowId) {
+  if (!rowId || !fs.existsSync(MANUAL_PROOF_FILE)) return null;
+  try {
+    const parsed = JSON.parse(fs.readFileSync(MANUAL_PROOF_FILE, 'utf8'));
+    const rows = Array.isArray(parsed?.proofs) ? parsed.proofs : [];
+    return rows.find(x => x.queue_id === rowId && x.bizimhesap_record_seen === true) || null;
+  } catch (error) {
+    log(`Manual BizimHesap proof okunamadı: ${error.message}`);
+    return null;
+  }
+}
+
 async function fetchQueueRows() {
   let q = db.from('bizimhesap_queue')
     .select('*')
@@ -275,6 +288,16 @@ async function markQueue(row, status, message, extra = {}) {
   if (status === 'processed') patch.processed_at = new Date().toISOString();
   const { error } = await db.from('bizimhesap_queue').update(patch).eq('id', row.id);
   if (error) log(`Queue durum yazılamadı ${row.id}: ${error.message}`);
+  const { data: verifyRows, error: verifyError } = await db
+    .from('bizimhesap_queue')
+    .select('id,status,processed_at,error_message')
+    .eq('id', row.id)
+    .limit(1);
+  if (verifyError) {
+    log(`Queue durum doğrulaması okunamadı ${row.id}: ${verifyError.message}`);
+  } else if (verifyRows?.[0]?.status !== status) {
+    log(`Queue durum doğrulaması başarısız ${row.id}: beklenen=${status}, görünen=${verifyRows?.[0]?.status || 'yok'}`);
+  }
 }
 
 async function startBrowser() {
@@ -450,6 +473,16 @@ async function clickSave(page) {
 
 async function processLiveRow(page, row) {
   const plan = dryRunPlan(row);
+  const manualProof = manualPostingProof(row.id);
+  if (SAVE && manualProof) {
+    return {
+      status: 'processed',
+      message: `BizimHesap kaydı kullanıcı tarafından görüldü; tekrar kaydetme atlandı (${manualProof.record_date || 'tarih yok'}).`,
+      plan,
+      fill: {},
+      manualProof,
+    };
+  }
   if (!plan.safeToAutoSave && SAVE) {
     throw new Error(plan.stopReason);
   }
@@ -462,7 +495,8 @@ async function processLiveRow(page, row) {
   }
   if (!SAVE_UNLOCKED) throw new Error('Canlı kaydetme kilitli: BIZIMHESAP_POSTING_SAVE=1 gerekli.');
   await clickSave(page);
-  return { status: 'processed', message: 'BizimHesap kaydet butonuna basıldı.', plan, fill };
+  await savePageDiagnostics(page, `bizimhesap_queue_${row.id}_after_save`).catch(() => {});
+  return { status: 'processed', message: 'BizimHesap kaydet butonuna basıldı; kayıt sonrası ekran kanıtı alındı.', plan, fill };
 }
 
 async function writeDryRun(rows) {
@@ -485,7 +519,7 @@ async function main() {
     throw new Error('Canlı form modu kilitli: BIZIMHESAP_POSTING_LIVE=1 gerekli.');
   }
   if (SAVE && !COMMIT) throw new Error('--save yalnızca --commit ile kullanılabilir.');
-  const rows = await fetchQueueRows();
+  let rows = await fetchQueueRows();
   log(`${rows.length} hazır BizimHesap kuyruk kaydı bulundu.`);
   if (!rows.length) {
     await writeDryRun([]);
@@ -494,6 +528,25 @@ async function main() {
   if (!COMMIT) {
     await writeDryRun(rows);
     return;
+  }
+
+  if (SAVE) {
+    const manualRows = rows
+      .map(row => ({ row, proof: manualPostingProof(row.id) }))
+      .filter(x => x.proof);
+    for (const { row, proof } of manualRows) {
+      const result = {
+        status: 'processed',
+        message: `BizimHesap kaydı kullanıcı tarafından görüldü; tekrar kaydetme atlandı (${proof.record_date || 'tarih yok'}).`,
+        plan: dryRunPlan(row),
+        fill: {},
+        manualProof: proof,
+      };
+      await markQueue(row, 'processed', result.message, result);
+      log(`${row.id} ${result.message}`);
+    }
+    rows = rows.filter(row => !manualPostingProof(row.id));
+    if (!rows.length) return;
   }
 
   const { browser, page } = await startBrowser();
