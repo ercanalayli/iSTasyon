@@ -27,6 +27,7 @@ async function main() {
   const config = getBizimHesapApiConfig();
   console.log('BizimHesap B2B API preflight');
   console.log(`base_url=${config.baseUrl}`);
+  console.log(`auth_mode=${config.authMode}`);
 
   if (config.token) ok('token', maskSecret(config.token));
   else fail('token', 'GitHub secret BIZIMHESAP_B2B_TOKEN gerekli');
@@ -35,13 +36,13 @@ async function main() {
   else fail('firm_id', 'GitHub secret BIZIMHESAP_FIRM_ID gerekli');
 
   if (!liveGet) {
-    console.log('LIVE_GET=0 - ağ testi yapılmadı. Canlı okuma için: npm run verify:bizimhesap:b2b-api:live');
+    console.log('LIVE_GET=0 - aÄŸ testi yapÄ±lmadÄ±. CanlÄ± okuma iÃ§in: npm run verify:bizimhesap:b2b-api:live');
     if (!config.token || !config.firmId) process.exitCode = 1;
     return;
   }
 
   if (process.env.BIZIMHESAP_B2B_API_LIVE !== '1') {
-    throw new Error('Canlı API okuma kilitli: BIZIMHESAP_B2B_API_LIVE=1 gerekli.');
+    throw new Error('CanlÄ± API okuma kilitli: BIZIMHESAP_B2B_API_LIVE=1 gerekli.');
   }
   if (!config.token) throw new Error('BIZIMHESAP_B2B_TOKEN yok.');
 
@@ -55,14 +56,14 @@ async function main() {
   for (const [name, fn] of checks) {
     try {
       const result = await fn();
-      ok(`GET ${name}`, `${countOf(result)} kayıt/alan`);
+      ok(`GET ${name}`, `${countOf(result)} kayÄ±t/alan`);
     } catch (e) {
       fail(`GET ${name}`, e.message);
       process.exitCode = 1;
     }
   }
 
-  console.log('Canlı yazma yapılmadı. AddInvoice/AddCustomer/AddProduct ayrı kilit olmadan çağrılmaz.');
+  console.log('CanlÄ± yazma yapÄ±lmadÄ±. AddInvoice/AddCustomer/AddProduct ayrÄ± kilit olmadan Ã§aÄŸrÄ±lmaz.');
 }
 
 main().catch((e) => {
