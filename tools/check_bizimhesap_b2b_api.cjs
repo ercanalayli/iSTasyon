@@ -27,6 +27,7 @@ async function main() {
   const config = getBizimHesapApiConfig();
   console.log('BizimHesap B2B API preflight');
   console.log(`base_url=${config.baseUrl}`);
+  console.log(`auth_mode=${config.authMode}`);
 
   if (config.token) ok('token', maskSecret(config.token));
   else fail('token', 'GitHub secret BIZIMHESAP_B2B_TOKEN gerekli');
