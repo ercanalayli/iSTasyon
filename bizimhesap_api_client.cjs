@@ -8,7 +8,8 @@ function getBizimHesapApiConfig() {
   const token = env('BIZIMHESAP_B2B_TOKEN') || env('BIZIMHESAP_API_TOKEN') || env('BIZIMHESAP_ZIRVE_API_KEY');
   const firmId = env('BIZIMHESAP_FIRM_ID') || env('BIZIMHESAP_B2B_FIRM_ID');
   const baseUrl = env('BIZIMHESAP_B2B_BASE_URL', DEFAULT_BASE_URL).replace(/\/+$/, '');
-  return { token, firmId, baseUrl };
+  const authMode = env('BIZIMHESAP_B2B_AUTH_MODE', 'token-header').toLowerCase();
+  return { token, firmId, baseUrl, authMode };
 }
 
 function maskSecret(value) {
@@ -68,12 +69,17 @@ class BizimHesapB2BClient {
 
   headers(extra = {}) {
     const h = { Accept: 'application/json', ...extra };
-    if (this.config.token) h.token = this.config.token;
+    if (this.config.token && this.config.authMode !== 'bearer' && this.config.authMode !== 'query-token') h.token = this.config.token;
+    if (this.config.token && this.config.authMode === 'bearer') h.Authorization = `Bearer ${this.config.token}`;
     return h;
   }
 
   async request(method, endpoint, body) {
-    const url = `${this.config.baseUrl}/${String(endpoint).replace(/^\/+/, '')}`;
+    let url = `${this.config.baseUrl}/${String(endpoint).replace(/^\/+/, '')}`;
+    if (this.config.token && this.config.authMode === 'query-token') {
+      const sep = url.includes('?') ? '&' : '?';
+      url = `${url}${sep}token=${encodeURIComponent(this.config.token)}`;
+    }
     const options = { method, headers: this.headers() };
     if (body !== undefined) {
       options.headers['Content-Type'] = 'application/json';
