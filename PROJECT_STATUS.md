@@ -40,6 +40,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-29 kullanici onayli banka kuyruk turu sonucu: Kullanici `onayliyorum` dedi. Sadece secili VakifBank 2026-06-10, -8,37 TL banka masraf adayi icin `approve_pending_bank_movement` RPC calisti. Pending id `9b91f984-c94b-4005-92ab-7fb334aa31e7` status `approved` oldu ve `bizimhesap_queue` icinde queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa`, status `ready_for_bizimhesap` kaydi olustu. `bizimhesap:queue:dry` 1 hazir kayit buldu ve planin BizimHesap gider/masraf kaydi oldugunu gosterdi. BizimHesap'a kesin kaydetme / save islemi yapilmadi.
 
+2026-06-29 BizimHesap form kontrol turu sonucu: `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form` calisti. BizimHesap kalici oturum acildi, ALAYLI firma portalina girildi, queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` icin masraf formu dolduruldu ve kaydet tusuna basilmadi. Diagnostik gorsel `diagnostics/bizimhesap_queue_3b30e1a0-0f02-4b0d-b03c-ae2779d448fa_form.png` icinde tarih `10.06.2026`, tutar `8,37`, odeme durumu `Odendi` ve aciklama alaninda queue id goruldu. Kuyruk statusu `ready_for_bizimhesap` kaldi; kesin BizimHesap kaydi icin ayri onay gerekir.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -62,6 +64,8 @@ Son denetimde calisan komutlar:
 - `node tools/approve_bank_candidate_v70.cjs --id 9b91f984-c94b-4005-92ab-7fb334aa31e7 --confirm ONAYLIYORUM`: kullanici onayi sonrasi gecti, queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` olustu.
 - `npm run bank:approval:candidate:proof`: gecti, pending `approved`, queue `ready_for_bizimhesap`.
 - `npm run bizimhesap:queue:dry`: gecti, 1 hazir kuyruk icin dry-run plan yazildi.
+- `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form`: gecti, form dolduruldu, kaydet tusuna basilmadi.
+- `diagnostics/bizimhesap_queue_3b30e1a0-0f02-4b0d-b03c-ae2779d448fa_form.png`: form gorsel kaniti incelendi.
 
 ## Production'a En Yakin Parcalar
 

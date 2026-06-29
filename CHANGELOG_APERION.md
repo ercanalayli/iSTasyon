@@ -69,6 +69,15 @@
 - `npm run bizimhesap:queue:dry` 1 hazir BizimHesap kuyruk kaydi buldu.
 - BizimHesap'a kesin kaydetme/save islemi yapilmadi.
 
+### BizimHesap Form Kontrolu
+
+- `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form` calisti.
+- BizimHesap kalici oturumla acildi ve ALAYLI firma portalina girildi.
+- Queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` icin masraf formu dolduruldu.
+- Formda tarih `10.06.2026`, tutar `8,37`, odeme durumu `Odendi`, aciklama alaninda queue id goruldu.
+- Diagnostik gorsel: `diagnostics/bizimhesap_queue_3b30e1a0-0f02-4b0d-b03c-ae2779d448fa_form.png`.
+- Kaydet tusuna basilmadi; kuyruk `ready_for_bizimhesap` durumunda kaldi.
+
 ## 2026-06-27
 
 ### Eklendi
