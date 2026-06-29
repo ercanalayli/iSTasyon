@@ -39,3 +39,5 @@ $$;
 
 grant execute on function mark_bizimhesap_queue_processed(uuid, text, jsonb) to anon, authenticated, service_role;
 notify pgrst, 'reload schema';
+
+-- AperiON SQL install trigger: 2026-06-29 queue close RPC refresh.
