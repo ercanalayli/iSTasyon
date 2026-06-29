@@ -17,6 +17,21 @@
 - `Invoke-WebRequest https://ercanalayli.github.io/iSTasyon/?v=5370338`
 - `npm run verify:bank-approval-action`
 
+### Banka -> BizimHesap Kanit Denetimi
+
+- `npm run bank:approval:preview` calisti.
+- 25 onay bekleyen banka hareketi okundu.
+- 19 hareket yuksek guvenli, 6 hareket inceleme istiyor.
+- `npm run bizimhesap:queue:dry` calisti.
+- BizimHesap worker kuyrugunda 0 hazir kayit oldugu dogrulandi.
+- Canli BizimHesap kaydi yapilmadi.
+
+### Banka -> BizimHesap Sonuc
+
+- Hat teknik olarak bagli: banka onayi -> `bizimhesap_queue` -> worker -> processed/failed.
+- Su anda islenecek kuyruk bos.
+- Sonraki adim kullanici onayli bir banka hareketini kuyruga almak.
+
 ## 2026-06-27
 
 ### Eklendi

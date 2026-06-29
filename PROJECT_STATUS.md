@@ -30,6 +30,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-29 canli yayin turu sonucu: GitHub push kilidi hesap secimiyle cozuldu. `GCM_ACCOUNT=ercanalayli` ile iki yerel commit `main` branch'e pushlandi. GitHub raw ve GitHub Pages URL'sinde `Gunluk Kullanim Durumu`, `bankActionState` ve `bank-posting-proof` metinleri dogrulandi. Canli commit: `5370338`.
 
+2026-06-29 banka -> BizimHesap kanit turu sonucu: `bank:approval:preview` 25 onay bekleyen banka hareketi buldu; 19'u yuksek guvenli, 6'si inceleme istiyor. `bizimhesap:queue:dry` calisti ve `bizimhesap_queue` icinde 0 hazir kayit oldugunu dogruladi. Yani worker hatti bagli, fakat islenecek kayit yok; canli islem icin once kullanici onayli bir banka hareketi kuyruga alinmali.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -44,6 +46,7 @@ Son denetimde calisan komutlar:
 - `npm run verify:bank-approval-action`: gecti.
 - GitHub raw `index.html`: yeni kod var.
 - GitHub Pages `?v=5370338`: yeni kod var.
+- `npm run bizimhesap:queue:dry`: gecti, hazir kuyruk 0.
 
 ## Production'a En Yakin Parcalar
 
