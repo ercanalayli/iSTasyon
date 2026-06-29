@@ -107,9 +107,11 @@
 ### Supabase Queue Kapanis SQL Tetikleme
 
 - `automation/sql/006_mark_bizimhesap_queue_processed.sql` dosyasina islevsiz workflow tetikleyici yorum eklendi.
-- Bu degisiklik `main` branch'e gittiginde `supabase-sql-install.yml` otomatik calismalidir.
+- Bu degisiklik `main` branch'e gitti ve `supabase-sql-install.yml` otomatik calisti.
+- GitHub Actions run `28374635626` sonucu `success`.
 - `tools/mail_ekstre_actions_check.cjs` icin `mail:ekstre:actions:check` npm komutu eklendi.
-- Bu bilgisayarda `gh` CLI olmadigi icin workflow terminalden tetiklenemedi veya okunamadi.
+- Queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` son kontrolde `processed` gorundu.
+- `npm run bizimhesap:queue:dry` 0 hazir kuyruk gosterdi.
 
 ## 2026-06-27
 
