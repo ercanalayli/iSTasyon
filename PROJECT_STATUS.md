@@ -52,6 +52,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-29 SQL queue kapanis tetikleme turu sonucu: `mark_bizimhesap_queue_processed` kurulum dosyasina islevsiz tetikleyici yorum eklendi ve `main` branch'e alindi. `supabase-sql-install.yml` workflow'u push ile calisti ve GitHub API kontrolunde `success` sonucu verdi. `tools/mail_ekstre_actions_check.cjs` icin `mail:ekstre:actions:check` npm komutu eklendi. Son kanitta queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` status `processed`; `bizimhesap:queue:dry` 0 hazir kayit gosteriyor.
 
+2026-06-29 mail/banka onay kontrol turu sonucu: GitHub Actions tarafinda `mail-ekstre-pipeline.yml`, `bizimhesap-queue-worker.yml` ve `hourly-bizimhesap-sync.yml` son runlari `success`. Yerel `mail:ekstre:preflight` beklenen sekilde secret eksigi nedeniyle blokaj verdi; yerel `.env` kullanilmiyor. `bank:approval:preview` 25 bekleyen banka hareketi buldu: 19 yuksek guven, 6 inceleme istiyor. `bizimhesap:queue:dry` 0 hazir BizimHesap kuyrugu gosterdi. Sonraki guvenli aday: Akbank 2026-06-09, -15,96 TL, Banka/POS masrafi, id `4f32c173-c773-4801-93e1-ce3bae757a1b`.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -87,6 +89,13 @@ Son denetimde calisan komutlar:
 - GitHub Actions `supabase-sql-install.yml`: run `28374635626`, conclusion `success`.
 - `npm run bank:approval:candidate:proof`: queue status `processed`.
 - `npm run bizimhesap:queue:dry`: 0 hazir kuyruk.
+- GitHub Actions `mail-ekstre-pipeline.yml`: son run `success`.
+- GitHub Actions `bizimhesap-queue-worker.yml`: son run `success`.
+- GitHub Actions `hourly-bizimhesap-sync.yml`: son run `success`.
+- `npm run bank:approval:preview`: 25 bekleyen, 19 yuksek guven, 6 inceleme.
+- `npm run bank:approval:candidates`: sonraki aday `4f32c173-c773-4801-93e1-ce3bae757a1b`.
+- `npm run verify:bank-candidate-guard`: gecti.
+- `npm run verify:bank-approval-action`: gecti.
 
 ## Production'a En Yakin Parcalar
 
