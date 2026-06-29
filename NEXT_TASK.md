@@ -1,30 +1,31 @@
 # AperiON Next Task
 
-Son guncelleme: 2026-06-27 Europe/Istanbul
+Son guncelleme: 2026-06-29 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Canli GitHub yayin / push kilidini temizlemek.
+Banka onayindan BizimHesap kayit kanitina uctan uca dogrulama.
 
-Durum: Ana veri denetimi kartina gunluk kullanim paneli eklendi. Banka Canli / Onay Akisi satirlarinda hedef hesap, cari, kayit turu, kuyruk/worker kaniti ve hazir degil sebebi gorunur hale getirildi. Yerel commitler hazir; ancak GitHub HTTPS push, credential/transport katmaninda timeout ile takiliyor.
+Durum: GitHub push kilidi `ercanalayli` hesabi secilerek cozuldu. `main` branch `5370338` commit'ine ilerledi ve GitHub Pages yeni kodu donduruyor. Banka Canli / Onay Akisi artik hedef hesap, cari, kayit turu, kuyruk/worker kaniti ve hazir degil sebebini gosteriyor.
 
 ## Neden Bu Hedef?
 
-Kullanici canlida gormek istiyor. Kod yerelde test edilmis olsa bile GitHub Pages canli yayin almadan gunluk kullanima gecis eksik kalir.
+Kullanici bankadan gelen hareketi onayladiginda kaydin BizimHesap tarafinda gercekten olusup olusmadigini gormek istiyor. Siradaki risk butonun calismasi degil; worker sonucunun ve BizimHesap kayit kanitinin her satirda izlenebilir olmasi.
 
 ## Siradaki Is Paketi
 
-1. GitHub push kilidini temizle: credential manager, HTTPS transport veya alternatif GitHub API yolu.
-2. Yerel commitleri `main` branch'e yayinla.
-3. GitHub Pages URL'sinde yeni build'in geldigini kontrol et.
-4. Canlida Banka Canli ve Gunluk Kullanim Durumu panellerini gozle kontrol et.
-5. `npm run verify:bank-approval-action`, `npm run verify:daily-readiness`, `npm run preflight` tekrar calistir.
+1. Canli ekranda 1 adet hazir banka hareketi sec.
+2. Onayla / kuyruga al aksiyonunun Supabase durumunu kontrol et.
+3. BizimHesap queue worker dry-run veya kontrollu modda sonuc uretsin.
+4. Satirda kuyruk id, worker sonucu ve BizimHesap kayit var/yok kaniti gorunsun.
+5. Canli BizimHesap'a kesin kayit gerekiyorsa kullanici onayi almadan yapma.
 
 ## Kabul Kriteri
 
-- GitHub `main` son yerel commitlere ilerlemis olmalidir.
-- Canli Pages ekrani yeni panel ve banka aksiyon kilidini gostermelidir.
-- Push yapilamiyorsa sebep net ve kullanicinin yapacagi tek adimla yazilmalidir.
+- Secilen hareketin onay/kuyruk durumu Supabase'de gorulmelidir.
+- Worker sonucu satirda okunmalidir.
+- BizimHesap'a kesin kayit yapildiysa kanit tarihi/id/sonuc gorunmelidir.
+- Kesin canli kayit kullanici onayi olmadan yapilmamalidir.
 - Test sonucu tur sonunda raporlanmalidir.
 
 ## Bekleyen Sonraki Hedefler

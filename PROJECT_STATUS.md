@@ -1,6 +1,6 @@
 # AperiON Project Status
 
-Son guncelleme: 2026-06-27 Europe/Istanbul
+Son guncelleme: 2026-06-29 Europe/Istanbul
 
 ## Calisma Protokolu
 
@@ -28,6 +28,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-27 banka onay aksiyonu turu sonucu: Banka Canli / Onay Akisi satirlarinda BizimHesap hedefi, hesap, cari, kayit turu, kuyruk/worker kaniti ve hazir degil sebebi gorunur hale getirildi. Hazir olmayan, dusuk guvenli, mukerrer adayli veya zaten kuyrukta/islenmis kayitlarda `BizimHesap'a Kaydet` butonu pasif hale gelir. `verify:bank-approval-action` komutu eklendi.
 
+2026-06-29 canli yayin turu sonucu: GitHub push kilidi hesap secimiyle cozuldu. `GCM_ACCOUNT=ercanalayli` ile iki yerel commit `main` branch'e pushlandi. GitHub raw ve GitHub Pages URL'sinde `Gunluk Kullanim Durumu`, `bankActionState` ve `bank-posting-proof` metinleri dogrulandi. Canli commit: `5370338`.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -40,6 +42,8 @@ Son denetimde calisan komutlar:
 - `npm run verify:daily-readiness`: gecti.
 - `npm run verify:firm-isolation`: gecti.
 - `npm run verify:bank-approval-action`: gecti.
+- GitHub raw `index.html`: yeni kod var.
+- GitHub Pages `?v=5370338`: yeni kod var.
 
 ## Production'a En Yakin Parcalar
 

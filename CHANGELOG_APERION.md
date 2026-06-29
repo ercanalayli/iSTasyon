@@ -1,5 +1,22 @@
 # AperiON Changelog
 
+## 2026-06-29
+
+### Canli Yayin
+
+- GitHub push kilidi cozuldu.
+- `GCM_ACCOUNT=ercanalayli` ile dogru GitHub hesabi secildi.
+- `5370338 Clarify bank approval posting actions` commit'i GitHub `main` branch'e pushlandi.
+- GitHub raw `index.html` icinde `Gunluk Kullanim Durumu`, `bankActionState` ve `bank-posting-proof` dogrulandi.
+- GitHub Pages `https://ercanalayli.github.io/iSTasyon/?v=5370338` yeni kodu dondurdu.
+
+### Canli Yayin Dogrulamasi
+
+- `git ls-remote origin refs/heads/main`
+- `Invoke-WebRequest https://raw.githubusercontent.com/ercanalayli/iSTasyon/main/index.html`
+- `Invoke-WebRequest https://ercanalayli.github.io/iSTasyon/?v=5370338`
+- `npm run verify:bank-approval-action`
+
 ## 2026-06-27
 
 ### Eklendi
