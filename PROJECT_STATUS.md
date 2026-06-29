@@ -34,6 +34,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-29 banka onay adayi turu sonucu: `bank:approval:candidates` komutu eklendi ve calisti. Komut once banka onay preview uretir, sonra dusuk riskli ilk onay adayini secer. Ilk onerilen aday: VakifBank 2026-06-10, -8,37 TL, Banka/POS masrafi, guven %90, pending id `9b91f984-c94b-4005-92ab-7fb334aa31e7`. Canli onay/RPC calistirilmadi.
 
+2026-06-29 guvenlik kilitli kuyruga alma turu sonucu: `tools/approve_bank_candidate_v70.cjs` eklendi. Komut `--id` ve `--confirm ONAYLIYORUM` olmadan `approve_pending_bank_movement` RPC'sine gitmez. `bank:approval:candidate:dry` calisti, ayni VakifBank adayini dogruladi ve RPC calistirmadan `data/banka_onay_kuyruk_kaniti.json` dry-check raporu uretti.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -50,6 +52,8 @@ Son denetimde calisan komutlar:
 - GitHub Pages `?v=5370338`: yeni kod var.
 - `npm run bizimhesap:queue:dry`: gecti, hazir kuyruk 0.
 - `npm run bank:approval:candidates`: gecti, ilk aday secildi.
+- `npm run verify:bank-candidate-guard`: gecti.
+- `npm run bank:approval:candidate:dry`: gecti, RPC calistirilmadi.
 
 ## Production'a En Yakin Parcalar
 

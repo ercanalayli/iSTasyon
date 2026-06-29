@@ -41,6 +41,16 @@
 - Pending id: `9b91f984-c94b-4005-92ab-7fb334aa31e7`.
 - Canli onay veya BizimHesap kaydi yapilmadi.
 
+### Guvenlik Kilitli Kuyruga Alma
+
+- `tools/approve_bank_candidate_v70.cjs` eklendi.
+- `npm run bank:approval:candidate:dry` komutu eklendi.
+- `npm run bank:approval:approve-selected` komutu eklendi.
+- Canli RPC icin `--id` ve `--confirm ONAYLIYORUM` zorunlu hale getirildi.
+- `tools/verify_bank_candidate_approval_guard_v70.cjs` eklendi.
+- `npm run verify:bank-candidate-guard` komutu eklendi.
+- Dry-check calisti ve RPC calistirilmadigi dogrulandi.
+
 ## 2026-06-27
 
 ### Eklendi
