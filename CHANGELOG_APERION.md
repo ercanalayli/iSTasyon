@@ -94,6 +94,16 @@
 - Worker save modunda manuel kanitli queue id icin BizimHesap'a tekrar kaydetme yapmadan atlar.
 - Testte ayni queue id tekrar calistirildi ve `tekrar kaydetme atlandi` sonucu alindi.
 
+### BizimHesap B2B API Dokumani
+
+- Kullanici yeni Entegrasyon API dokumanini paylasti.
+- Mevcut `bizimhesap_api_client.cjs` dokumandaki fatura, cari, urun, depo, stok ve cari ekstre endpointleriyle karsilastirildi.
+- `docs/bizimhesap_b2b_api_notlari.md` guncellendi.
+- `npm run verify:bizimhesap:b2b-api` calisti; token ve firm id eksik oldugu icin canli okuma yapilmadi.
+- Banka/kasa hareketi icin dokumanda endpoint gorunmedigi not edildi.
+- Kullanici BizimHesap uyelik ekraninda `Api Key(FirmID)` ve `Zirve Express Aktarim Api Key` alanlarini gosterdi; bunlar secret eslesmesi olarak not edildi.
+- Zirve Express anahtariyla `token-header`, `bearer` ve `query-token` modlarinda canli GET denendi; hepsi 401 verdi, canli yazma yapilmadi.
+
 ## 2026-06-27
 
 ### Eklendi
@@ -189,7 +199,7 @@
 ### Banka Onay Aksiyonu
 
 - Banka Canli / Onay Akisi satirlarinda hazirlik kontrolu eklendi.
-- `BizimHesap'a Kaydet` / `Kuyruğa Al` aksiyonu yalnizca hazir kayitlarda aktif kalir.
+- `BizimHesap'a Kaydet` / `KuyruÄŸa Al` aksiyonu yalnizca hazir kayitlarda aktif kalir.
 - Dusuk guvenli, mukerrer adayli, cari belirsiz veya zaten kuyrukta/islenmis kayitlarda buton pasif hale gelir.
 - Her satirda hedef hesap, cari, kayit turu ve BizimHesap kanit metni netlestirildi.
 - Sabah onay kartlari da ayni hazirlik kontrolunu kullanir.
