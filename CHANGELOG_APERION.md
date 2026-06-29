@@ -32,6 +32,15 @@
 - Su anda islenecek kuyruk bos.
 - Sonraki adim kullanici onayli bir banka hareketini kuyruga almak.
 
+### Banka Onay Aday Secimi
+
+- `tools/select_bank_approval_candidate_v69.cjs` eklendi.
+- `npm run bank:approval:candidates` komutu eklendi.
+- Komut preview raporundan dusuk riskli ilk onay adayini secer.
+- Ilk onerilen aday: VakifBank 2026-06-10, -8,37 TL, Banka/POS masrafi, guven %90.
+- Pending id: `9b91f984-c94b-4005-92ab-7fb334aa31e7`.
+- Canli onay veya BizimHesap kaydi yapilmadi.
+
 ## 2026-06-27
 
 ### Eklendi
