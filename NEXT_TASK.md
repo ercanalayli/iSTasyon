@@ -33,6 +33,10 @@ Kullanici bankadan gelen hareketlerin BizimHesap tarafinda gercekten olusup olus
 
 ## Bekleyen Sonraki Hedefler
 
+- BizimHesap B2B API secretlarini ekle: `BIZIMHESAP_B2B_TOKEN`, `BIZIMHESAP_FIRM_ID`.
+- BizimHesap uyelik ekraninda `Api Key(FirmID)` ve `Zirve Express Aktarim Api Key` bulundu; degerler koda yazilmadan GitHub secret/env olarak kullanilacak.
+- BizimHesap'tan B2B token/API yetkisinin aktif olup olmadigi teyit edilmeli; Zirve Express anahtari GET endpointlerinde 401 verdi.
+- Fatura/cari/urun/stok hattini B2B API'ye tasima planini cikar.
 - Banka onay hareketlerinde her kaydin BizimHesap'a islenip islenmedigini kanitlayan durum kolonu.
 - Finans Komuta Merkezi tek ekran karar akisi.
 - Firma izolasyonu: Alayli verisi baska firmalara karismayacak garanti.
