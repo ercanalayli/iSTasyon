@@ -113,6 +113,16 @@
 - Queue id `3b30e1a0-0f02-4b0d-b03c-ae2779d448fa` son kontrolde `processed` gorundu.
 - `npm run bizimhesap:queue:dry` 0 hazir kuyruk gosterdi.
 
+### Mail/Banka Onay Kontrolu
+
+- GitHub Actions son durumlari kontrol edildi.
+- `mail-ekstre-pipeline.yml`, `bizimhesap-queue-worker.yml`, `hourly-bizimhesap-sync.yml` son runlari `success`.
+- `bank:approval:preview` 25 bekleyen hareket buldu.
+- 19 hareket yuksek guvenli, 6 hareket inceleme istiyor.
+- `bizimhesap:queue:dry` 0 hazir kuyruk gosterdi.
+- Sonraki dusuk riskli aday: Akbank 2026-06-09, -15,96 TL, Banka/POS masrafi, id `4f32c173-c773-4801-93e1-ce3bae757a1b`.
+- Canli onay/RPC veya BizimHesap save yapilmadi.
+
 ## 2026-06-27
 
 ### Eklendi
