@@ -56,6 +56,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-30 ana ekran main entegrasyon turu sonucu: `origin/main` uzerindeki guncel analiz board calismasi korunarak `codex/b2b-api-delta` branch'indeki ana ekran toparlama commitleri cherry-pick ile main tabanina alindi. Main artik `Polish executive command dashboard`, `Add dashboard income command matrix` ve `Polish morning approval cards` degisikliklerini icerir: banka/onay/gelir tek ekran kurgusu, gelir tablosu komuta matrisi, `gg.aa.yyyy · ss:dd` tarihli sabah onay kartlari ve BizimHesap/cari/kategori/guven plan kutulari main'e hazirlandi.
 
+2026-06-30 ana ekran netlik katmani turu sonucu: Dashboard uzerine son baskin tasarim katmani eklendi. Banka, gelir, sabah onay ve is programi kartlari daha net ayrildi; hover cerceveleri, renkli sol seritler, beyaz operasyon kartlari ve kompakt grid olculeri eklendi. Banka Komuta Merkezi artik dis karta tasmaz; `#bankCommandCenter` flex kapsayiciya alindi ve banka grid'i kart sinirinda kalacak sekilde kilitlendi. Roadmap/ana is programi eski gizleme kuralindan kurtarildi. 1920x1080 yerel kontrolde ana kartlar tek ekranda gorundu, banka paneli sinir icinde kaldi ve gelir matrisi async yukleme sonrasi render oldu. JS syntax, `finance-smoke`, `verify:bank-approval-action` ve `verify:bizimhesap:queue` gecti.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.

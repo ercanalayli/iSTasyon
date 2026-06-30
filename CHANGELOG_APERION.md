@@ -2,6 +2,14 @@
 
 ## 2026-06-30
 
+### Ana Ekran Netlik Katmani
+
+- Dashboard icin baskin son tasarim katmani eklendi.
+- Ust karar, banka, gelir matrisi, sabah onay ve is programi kartlari renkli seritler ve hover cerceveleriyle ayrildi.
+- Banka Komuta Merkezi kart disina tasmayacak sekilde flex/grid sinirina alindi.
+- Roadmap/ana is programi eski gizleme kuralindan kurtarildi.
+- 1920x1080 yerel kontrolde ana kartlar tek ekranda ve sinir icinde dogrulandi.
+
 ### Main Entegrasyon
 
 - `origin/main` uzerindeki guncel analiz board calismasi korunarak ana ekran toparlama commitleri main tabanina alindi.
