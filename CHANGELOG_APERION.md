@@ -279,6 +279,21 @@
 - `npm run bank:approval:preview`
 - `npm run bizimhesap:queue:dry`
 
+### VakifBank Banka Masrafi Kuyruk/Form Kaniti
+
+- Kullanici devam onayi ile VakifBank 2026-05-13, -33,03 TL Banka/POS masrafi kuyruga alindi.
+- Pending id: `d0d40e73-7ce6-4317-b99e-2b0ac59a00f4`.
+- BizimHesap queue id: `9eb2c038-8eec-4d28-82f8-0078285ae902`.
+- Dry-run planinda hedef `BizimHesap gider/masraf kaydi`, hesap `VakifBank banka hesabi`, cari `VakifBank`, kategori `Banka masrafi`.
+- `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form` ile form dolduruldu, kaydet tusuna basilmadi.
+- Form kanit dosyalari `diagnostics/bizimhesap_queue_9eb2c038-8eec-4d28-82f8-0078285ae902_form.png` ve `.txt`.
+
+### VakifBank Banka Masrafi Dogrulamasi
+
+- `node tools/approve_bank_candidate_v70.cjs --id d0d40e73-7ce6-4317-b99e-2b0ac59a00f4 --confirm ONAYLIYORUM`
+- `npm run bizimhesap:queue:dry`
+- `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form`
+
 ### Degismedi
 
 - Yeni tasarim veya refactor yapilmadi.

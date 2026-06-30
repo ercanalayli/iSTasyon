@@ -60,6 +60,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-30 sonraki banka aday kontrol turu sonucu: `bank:approval:candidates` ve `bank:approval:preview` tekrar calisti. Onay Merkezi ornegi 25 bekleyen hareket, 19 yuksek guvenli ve 6 inceleme isteyen kayit gosteriyor. `bizimhesap:queue:dry` sonucu `queue_count: 0`; hazir kuyruk yok. Siradaki dusuk riskli aday: VakifBank 2026-05-13, -33,03 TL, Banka/POS masrafi, hedef `BizimHesap gider/masraf kaydi`, hesap `VakifBank banka hesabi`, cari `VakifBank`, kategori `Banka masrafi`, pending id `d0d40e73-7ce6-4317-b99e-2b0ac59a00f4`. Kullanici onayi olmadan RPC veya BizimHesap save calistirilmadi.
 
+2026-06-30 VakifBank banka masrafi kuyruk/form turu sonucu: Kullanici `DEVAM ET` dedi. Sadece VakifBank 2026-05-13, -33,03 TL Banka/POS masrafi adayi icin `approve_pending_bank_movement` calisti. Pending id `d0d40e73-7ce6-4317-b99e-2b0ac59a00f4` BizimHesap queue id `9eb2c038-8eec-4d28-82f8-0078285ae902` olarak `ready_for_bizimhesap` durumuna alindi. Dry-run planinda hedef `BizimHesap gider/masraf kaydi`, hesap `VakifBank banka hesabi`, cari `VakifBank`, kategori `Banka masrafi` goruldu. `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form` ile form dolduruldu ve kaydet tusuna basilmadi. Form kaniti `diagnostics/bizimhesap_queue_9eb2c038-8eec-4d28-82f8-0078285ae902_form.png` ve `.txt` olarak olustu. Canli BizimHesap kaydi icin ikinci acik onay bekleniyor.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -102,6 +104,9 @@ Son denetimde calisan komutlar:
 - `npm run bank:approval:candidates`: gecti, siradaki dusuk riskli aday `d0d40e73-7ce6-4317-b99e-2b0ac59a00f4`.
 - `npm run bank:approval:preview`: gecti, 25 bekleyen / 19 yuksek guven / 6 inceleme.
 - `npm run bizimhesap:queue:dry`: gecti, yeni hazir kuyruk 0.
+- `node tools/approve_bank_candidate_v70.cjs --id d0d40e73-7ce6-4317-b99e-2b0ac59a00f4 --confirm ONAYLIYORUM`: kullanici devam onayi sonrasi gecti, queue id `9eb2c038-8eec-4d28-82f8-0078285ae902` olustu.
+- `npm run bizimhesap:queue:dry`: gecti, 1 hazir kuyruk icin dry-run plan yazildi.
+- `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form`: gecti, form dolduruldu, kaydet tusuna basilmadi.
 - `npm run bizimhesap:queue:dry`: 0 hazir kuyruk.
 - GitHub Actions `mail-ekstre-pipeline.yml`: son run `success`.
 - GitHub Actions `bizimhesap-queue-worker.yml`: son run `success`.
