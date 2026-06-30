@@ -58,6 +58,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-30 Akbank banka masrafi canli kayit turu sonucu: Kullanici `BizimHesap'a kaydetmeyi onayliyorum` dedi. Sadece queue id `d65f907a-1255-442c-9db4-ed639820c1c9` icin `BIZIMHESAP_POSTING_LIVE=1` ve `BIZIMHESAP_POSTING_SAVE=1` ile worker calisti. BizimHesap kaydet butonuna basildi ve kayit sonrasi ekran kaniti `diagnostics/bizimhesap_queue_d65f907a-1255-442c-9db4-ed639820c1c9_after_save.png` / `.txt` olarak alindi. Sonraki `npm run bizimhesap:queue:dry` sonucu `queue_count: 0`; hazir BizimHesap kuyrugu kalmadi.
 
+2026-06-30 sonraki banka aday kontrol turu sonucu: `bank:approval:candidates` ve `bank:approval:preview` tekrar calisti. Onay Merkezi ornegi 25 bekleyen hareket, 19 yuksek guvenli ve 6 inceleme isteyen kayit gosteriyor. `bizimhesap:queue:dry` sonucu `queue_count: 0`; hazir kuyruk yok. Siradaki dusuk riskli aday: VakifBank 2026-05-13, -33,03 TL, Banka/POS masrafi, hedef `BizimHesap gider/masraf kaydi`, hesap `VakifBank banka hesabi`, cari `VakifBank`, kategori `Banka masrafi`, pending id `d0d40e73-7ce6-4317-b99e-2b0ac59a00f4`. Kullanici onayi olmadan RPC veya BizimHesap save calistirilmadi.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -97,6 +99,9 @@ Son denetimde calisan komutlar:
 - `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form`: gecti, form dolduruldu, kaydet tusuna basilmadi.
 - `BIZIMHESAP_POSTING_LIVE=1 BIZIMHESAP_POSTING_SAVE=1 node bizimhesap_queue_worker.cjs --firma alayli --id d65f907a-1255-442c-9db4-ed639820c1c9 --limit 1 --commit --save`: kullanici ikinci onayi sonrasi gecti, BizimHesap kaydet butonuna basildi.
 - `npm run bizimhesap:queue:dry`: gecti, `queue_count: 0`.
+- `npm run bank:approval:candidates`: gecti, siradaki dusuk riskli aday `d0d40e73-7ce6-4317-b99e-2b0ac59a00f4`.
+- `npm run bank:approval:preview`: gecti, 25 bekleyen / 19 yuksek guven / 6 inceleme.
+- `npm run bizimhesap:queue:dry`: gecti, yeni hazir kuyruk 0.
 - `npm run bizimhesap:queue:dry`: 0 hazir kuyruk.
 - GitHub Actions `mail-ekstre-pipeline.yml`: son run `success`.
 - GitHub Actions `bizimhesap-queue-worker.yml`: son run `success`.

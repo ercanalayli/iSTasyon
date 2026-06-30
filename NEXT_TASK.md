@@ -6,7 +6,7 @@ Son guncelleme: 2026-06-29 Europe/Istanbul
 
 Yeni banka ekstrelerini Onay Merkezi'nden kontrollu sekilde BizimHesap kuyruğuna almak.
 
-Durum: Ilk BizimHesap kayit kaniti ve queue kapanisi tamamlandi. Akbank 2026-06-09, -15,96 TL Banka/POS masrafi kullanici ikinci onayi ile BizimHesap'a kaydedildi. Queue id `d65f907a-1255-442c-9db4-ed639820c1c9` icin save sonrasi kanit alindi ve `npm run bizimhesap:queue:dry` artik `queue_count: 0` gosteriyor.
+Durum: Ilk BizimHesap kayit kaniti ve queue kapanisi tamamlandi. Akbank 2026-06-09, -15,96 TL Banka/POS masrafi kullanici ikinci onayi ile BizimHesap'a kaydedildi. Queue id `d65f907a-1255-442c-9db4-ed639820c1c9` icin save sonrasi kanit alindi ve `npm run bizimhesap:queue:dry` artik `queue_count: 0` gosteriyor. Yeni aday kontrolunde siradaki dusuk riskli kayit VakifBank 2026-05-13, -33,03 TL Banka/POS masrafi, id `d0d40e73-7ce6-4317-b99e-2b0ac59a00f4`.
 
 ## Neden Bu Hedef?
 
@@ -14,10 +14,10 @@ Kullanici bankadan gelen hareketlerin analiz edilmis sekilde Onay Merkezi'ne dus
 
 ## Siradaki Is Paketi
 
-1. Yeni bekleyen banka hareketleri tekrar `bank:approval:candidates` ile okunacak.
-2. Dusuk riskli sonraki aday varsa kullaniciya hedef hesap/cari/kategori ile sunulacak.
-3. Kullanici onayi olmadan yeni RPC veya BizimHesap save calismayacak.
-4. Dusuk guvenli veya cari belirsiz kayitlar inceleme listesinde kalacak.
+1. Kullanici onay verirse sadece `d0d40e73-7ce6-4317-b99e-2b0ac59a00f4` icin `approve_pending_bank_movement` calistirilacak.
+2. Olusan BizimHesap queue dry-run ile okunacak.
+3. BizimHesap formu once kaydetmeden doldurulup kanit alinacak.
+4. Kullanici ikinci kez acikca `BizimHesap'a kaydetmeyi onayliyorum` derse canli save calistirilacak.
 5. Her canli kayit sonrasi dry-run `queue_count: 0` kontrolu yapilacak.
 
 ## Kabul Kriteri

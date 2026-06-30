@@ -263,6 +263,22 @@
 - `npm run bizimhesap:queue:dry`
 - `npm run verify:bizimhesap:queue`
 
+### Sonraki Banka Aday Kontrolu
+
+- `bank:approval:candidates` tekrar calisti.
+- Onay Merkezi ornegi: 25 bekleyen hareket, 19 yuksek guven, 6 inceleme isteyen kayit.
+- Hazir BizimHesap kuyrugu: 0.
+- Siradaki dusuk riskli aday: VakifBank 2026-05-13, -33,03 TL, Banka/POS masrafi.
+- Pending id: `d0d40e73-7ce6-4317-b99e-2b0ac59a00f4`.
+- Hedef: `BizimHesap gider/masraf kaydi`, hesap `VakifBank banka hesabi`, cari `VakifBank`, kategori `Banka masrafi`.
+- Kullanici onayi olmadan RPC veya canli save calistirilmadi.
+
+### Sonraki Aday Kontrol Komutlari
+
+- `npm run bank:approval:candidates`
+- `npm run bank:approval:preview`
+- `npm run bizimhesap:queue:dry`
+
 ### Degismedi
 
 - Yeni tasarim veya refactor yapilmadi.
