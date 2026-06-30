@@ -308,6 +308,19 @@
 - `npm run bizimhesap:queue:dry`
 - `npm run verify:bizimhesap:queue`
 
+### Onay Merkezi Urun Akisi
+
+- Banka Onay ekraninda pending hareket butonu `AperiON’da Onayla` olarak netlestirildi.
+- Queue olusan hareketlerde `BizimHesap’a Islenecek` ve `Worker sirada` durumu gorunur hale getirildi.
+- Sabah Onay Kartlari metni, BizimHesap kaydinin tarayicidan degil gizli oturumlu worker ile arka planda islenecegini anlatacak sekilde guncellendi.
+- `verify_bank_approval_action_v68.cjs` testi bu urun dilini ve secret-safe worker modelini kontrol edecek sekilde genisletildi.
+
+### Onay Merkezi Urun Akisi Dogrulamasi
+
+- `npm run verify:bank-approval-action`
+- `npm run verify:bizimhesap:queue`
+- `npm run bizimhesap:queue:dry`
+
 ### Degismedi
 
 - Yeni tasarim veya refactor yapilmadi.

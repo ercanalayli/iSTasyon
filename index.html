@@ -1931,7 +1931,7 @@ body.dashboard-mode .morning-approval-actions{
           <div id="bankCommandCenter"><div class="finance-empty">Banka komuta merkezi hazırlanıyor...</div></div>
         </div>
         <div class="card" id="homeMorningApprovalCard">
-          <div class="card-hd"><div><div class="card-l">Sabah Onay Kartları</div><div style="font-size:11px;color:var(--t3);font-weight:800;margin-top:3px">Mailden gelen banka hareketleri analiz edilir; tek tıkla BizimHesap kuyruğuna alınır.</div></div><button class="empty-btn" onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Tümünü Aç</button></div>
+          <div class="card-hd"><div><div class="card-l">Sabah Onay Kartları</div><div style="font-size:11px;color:var(--t3);font-weight:800;margin-top:3px">Tek tık AperiON onayı verir; BizimHesap kaydı gizli oturumlu worker tarafından arka planda işlenir.</div></div><button class="empty-btn" onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Tümünü Aç</button></div>
           <div id="homeMorningApprovalCards"><div class="finance-empty">Sabah onay kartları hazırlanıyor...</div></div>
         </div>
         <div id="incomeStatementCard" class="income-card">
@@ -2185,7 +2185,7 @@ body.dashboard-mode .morning-approval-actions{
           <div class="kpi r"><div class="kpi-l">BizimHesap Kuyruğu</div><div class="kpi-v" id="bQueue">—</div></div>
         </div>
         <div class="card" style="margin-bottom:14px"><div class="card-hd"><div class="card-l">Banka → BizimHesap Akış Haritası</div><span style="font-family:var(--mono);font-size:9px;color:var(--t3)">Mail/Telegram → AperiON onayı → BizimHesap banka/kasa kaydı → işlendi</span></div><div id="bankaOnaySummary"></div></div>
-        <div class="card" style="margin-bottom:14px"><div class="card-hd"><div><div class="card-l">Sabah Onay Kartları</div><div style="font-size:11px;color:var(--t3);font-weight:800;margin-top:3px">Analiz edilmiş banka hareketleri; tek tık onay BizimHesap kuyruğuna alır.</div></div><a class="empty-btn" href="finans-onay-merkezi-final.html?v=2" target="_blank">Mobil Onay Merkezi</a></div><div id="bankaMorningCards"></div></div>
+        <div class="card" style="margin-bottom:14px"><div class="card-hd"><div><div class="card-l">Sabah Onay Kartları</div><div style="font-size:11px;color:var(--t3);font-weight:800;margin-top:3px">Tek tık AperiON onayı verir; BizimHesap kaydı gizli oturumlu worker tarafından arka planda işlenir.</div></div><a class="empty-btn" href="finans-onay-merkezi-final.html?v=2" target="_blank">Mobil Onay Merkezi</a></div><div id="bankaMorningCards"></div></div>
         <div class="card"><div class="card-hd"><div class="card-l">BizimHesap'a İşlenecek Banka Hareketleri</div><span id="bankaOnayStamp" style="font-family:var(--mono);font-size:9px;color:var(--t3)">—</span></div>
           <div id="bankaActionNotice" class="empty" style="display:none;margin-bottom:10px"></div>
           <table class="pt bank-approval-table"><thead><tr><th>Hareket</th><th>Tutar</th><th>AperiON Kararı</th><th>BizimHesap Kayıt Planı</th><th>Kontrol</th><th>İşlem</th></tr></thead><tbody id="bankaOnayRows"></tbody></table>
@@ -5006,12 +5006,12 @@ function bankQueueIsFinal(q){
 }
 function bankActionState(r,dupCount=1){
   const p=bankPostingPlan(r), q=r._queue||null;
-  const label=r._source==='pending_bank_movements'?'Kuyruğa Al':"BizimHesap'a Kaydet";
+  const label=r._source==='pending_bank_movements'?'AperiON’da Onayla':"AperiON’da Onayla";
   if(q&&bankQueueIsFinal(q)){
     const st=bankQueueStatusTR(q,r);
     return {ready:false,label:st,reason:st.includes('işlendi')?'Bu kayıt için BizimHesap işlem sonucu var.':bankQueueResultText(q),tone:st.includes('işlendi')?'ready':'blocked'};
   }
-  if(q)return {ready:false,label:'Kuyrukta',reason:`BizimHesap worker bekleniyor. Kuyruk: ${shortId(q.id||q.queue_id)}`,tone:'ready'};
+  if(q)return {ready:false,label:"BizimHesap’a İşlenecek",reason:`AperiON onayı tamam. Worker bu kaydı gizli oturumla BizimHesap’a işleyecek. Kuyruk: ${shortId(q.id||q.queue_id)}`,tone:'ready',queued:true};
   if(r.durum==='islenmeyecek')return {ready:false,label:'Reddedildi',reason:'Bu hareket BizimHesap’a gönderilmeyecek olarak işaretli.',tone:'blocked'};
   if(r.durum==='islendi')return {ready:false,label:'İşlendi',reason:'Bu hareket işlenmiş görünüyor.',tone:'ready'};
   if(r.durum!=='onay_bekliyor')return {ready:false,label:'Hazır değil',reason:`Durum: ${r.durum||'belirsiz'}. Önce onay bekleyen kayıt olmalı.`,tone:'blocked'};
@@ -5072,7 +5072,7 @@ function bankDecisionCell(r,dupCount=1){
 function bankPostingCell(r){
   const p=bankPostingPlan(r);
   const q=r._queue||null;
-  const proof=q?`${bankQueueStatusTR(q,r)} · ${bankQueueResultText(q)}`:'Onay verilirse BizimHesap banka/kasa kaydı kuyruğuna alınır.';
+  const proof=q?`${bankQueueStatusTR(q,r)} · ${bankQueueResultText(q)}`:'AperiON’da onay verilirse BizimHesap worker kuyruğuna alınır; gizli şifre/API tarayıcıya açılmaz.';
   return `<div class="bank-posting">
     <div class="bank-posting-target">${escHtml(p.target)}</div>
     <div><span>Hesap</span><b>${escHtml(p.account)}</b></div>
@@ -5099,10 +5099,16 @@ function bankActionCell(r,dupCount=1){
   const approve=st.ready
     ? `<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)">${escHtml(st.label)}</button>`
     : `<button class="empty-btn" disabled>${escHtml(st.label)}</button>`;
+  const q=r._queue||null;
+  const queueId=q?.id||q?.queue_id||'';
+  const processHint=q&&!bankQueueIsFinal(q)
+    ? `<button class="empty-btn" disabled title="BizimHesap işlemi tarayıcıdan değil, gizli oturumlu worker üzerinden yapılır.">Worker sırada</button>`
+    : '';
   const reject=r.durum==='onay_bekliyor'
     ? `<button class="empty-btn" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg},this)">Ret</button>`
     : '';
-  return `<div class="bank-action-box">${approve}${reject}<div class="bank-action-reason ${st.tone==='ready'?'ready':'blocked'}">${escHtml(st.reason)}</div></div>`;
+  const queueLine=queueId?`<div class="bank-action-reason ready">Kuyruk ID: ${escHtml(shortId(queueId))} · BizimHesap'a kayıt görevi worker tarafında.</div>`:'';
+  return `<div class="bank-action-box">${approve}${processHint}${reject}<div class="bank-action-reason ${st.tone==='ready'?'ready':'blocked'}">${escHtml(st.reason)}</div>${queueLine}</div>`;
 }
 function bankPostingAuditLine(r){
   const q=r?._queue||null;
@@ -5137,7 +5143,7 @@ function bankMorningCardHtml(r){
     </div>
     ${bankPostingAuditLine(r)}
     <div class="morning-approval-actions">
-      <button class="ok" ${st.ready?`onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)"`:'disabled'}>${st.ready?'ONAYLA':'HAZIR DEĞİL'}</button>
+      <button class="ok" ${st.ready?`onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)"`:'disabled'}>${st.ready?'APERİON’DA ONAYLA':'HAZIR DEĞİL'}</button>
       <button class="reject" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg},this)">SİL</button>
     </div>
     <div class="bank-action-reason ${st.tone==='ready'?'ready':'blocked'}" style="margin-top:8px">${escHtml(st.reason)}</div>

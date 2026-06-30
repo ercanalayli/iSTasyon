@@ -64,6 +64,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-30 VakifBank banka masrafi canli kayit turu sonucu: Kullanici mesajinda `BizimHesap'a kaydetmeyi onayliyorum` dedi ve onay modelini sordu. Sadece queue id `9eb2c038-8eec-4d28-82f8-0078285ae902` icin `BIZIMHESAP_POSTING_LIVE=1` ve `BIZIMHESAP_POSTING_SAVE=1` ile worker calisti. BizimHesap kaydet butonuna basildi, kayit sonrasi ekran kaniti `diagnostics/bizimhesap_queue_9eb2c038-8eec-4d28-82f8-0078285ae902_after_save.png` / `.txt` olarak alindi. Sonraki `npm run bizimhesap:queue:dry` sonucu `queue_count: 0`. Calisma prensibi netlestirildi: test asamasinda canli kayit onayi Codex sohbetinden aliniyor; urun hedefi AperiON Onay Merkezi'nde tek tik onay/tek tik BizimHesap'a isle akisi.
 
+2026-06-30 Onay Merkezi urun akisi netlestirme turu sonucu: Banka Onay ekraninda kullaniciya sohbetten onay gerekiyormus gibi gorunen metinler duzeltildi. Pending hareketlerde buton dili `AperiON’da Onayla` oldu; queue olusmus kayitlarda `BizimHesap’a Islenecek` ve `Worker sirada` durumu gorunur hale geldi. Sabah Onay Kartlari metni, BizimHesap kaydinin tarayicidan degil gizli oturumlu worker tarafindan arka planda islenecegini aciklar. Bu sayede urun hedefi net: kullanici AperiON ekranindan onay verir; BizimHesap kaydi secret acilmadan worker ile islenir.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -111,6 +113,9 @@ Son denetimde calisan komutlar:
 - `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form`: gecti, form dolduruldu, kaydet tusuna basilmadi.
 - `BIZIMHESAP_POSTING_LIVE=1 BIZIMHESAP_POSTING_SAVE=1 node bizimhesap_queue_worker.cjs --firma alayli --id 9eb2c038-8eec-4d28-82f8-0078285ae902 --limit 1 --commit --save`: kullanici ikinci onayi sonrasi gecti, BizimHesap kaydet butonuna basildi.
 - `npm run bizimhesap:queue:dry`: gecti, `queue_count: 0`.
+- `npm run verify:bank-approval-action`: gecti, urun ici onay/worker durumu ve secret-safe metin kilitlendi.
+- `npm run verify:bizimhesap:queue`: gecti.
+- `npm run bizimhesap:queue:dry`: gecti, hazir kuyruk 0.
 - `npm run bizimhesap:queue:dry`: 0 hazir kuyruk.
 - GitHub Actions `mail-ekstre-pipeline.yml`: son run `success`.
 - GitHub Actions `bizimhesap-queue-worker.yml`: son run `success`.
