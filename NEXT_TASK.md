@@ -6,7 +6,7 @@ Son guncelleme: 2026-06-29 Europe/Istanbul
 
 Yeni banka ekstrelerini Onay Merkezi'nden kontrollu sekilde BizimHesap kuyruğuna almak.
 
-Durum: Ilk BizimHesap kayit kaniti ve queue kapanisi tamamlandi. Yeni kontrolde Onay Merkezi'nde 25 bekleyen banka hareketi var; 19'u yuksek guvenli, 6'si inceleme istiyor. Hazir BizimHesap kuyrugu 0. Sonraki onerilen dusuk riskli aday: Akbank 2026-06-09, -15,96 TL, Banka/POS masrafi, id `4f32c173-c773-4801-93e1-ce3bae757a1b`.
+Durum: Ilk BizimHesap kayit kaniti ve queue kapanisi tamamlandi. Yeni kontrolde Onay Merkezi'nde 25 bekleyen banka hareketi var; 19'u yuksek guvenli, 6'si inceleme istiyor. Akbank 2026-06-09, -15,96 TL Banka/POS masrafi kullanici onayi ile queue id `d65f907a-1255-442c-9db4-ed639820c1c9` olarak `ready_for_bizimhesap` durumuna alindi. BizimHesap formu kaydetmeden dolduruldu; kesin kayit icin ikinci acik onay bekleniyor.
 
 ## Neden Bu Hedef?
 
@@ -14,11 +14,11 @@ Kullanici bankadan gelen hareketlerin analiz edilmis sekilde Onay Merkezi'ne dus
 
 ## Siradaki Is Paketi
 
-1. Kullanici secili adayi onaylarsa `approve_pending_bank_movement` sadece bu id icin calistirilacak.
-2. Olusan `bizimhesap_queue` dry-run ile okunacak.
-3. BizimHesap formu once kaydetmeden doldurulup kanit alinacak.
-4. Kullanici ikinci kez acikca onaylarsa canli save calistirilacak.
-5. Sonra queue `processed` kaniti alinacak.
+1. Kullanici `BizimHesap'a kaydetmeyi onayliyorum` derse sadece queue id `d65f907a-1255-442c-9db4-ed639820c1c9` icin canli save calistirilacak.
+2. Save sonrasi BizimHesap kayit kaniti ve diagnostik alinacak.
+3. Queue `processed` durumuna kapanacak mi kontrol edilecek.
+4. `bizimhesap:queue:dry` yeniden calistirilip hazir kuyruk 0'a indi mi bakilacak.
+5. Sonraki banka adayina gecilmeden durum dosyalari guncellenecek.
 
 ## Kabul Kriteri
 
@@ -26,7 +26,7 @@ Kullanici bankadan gelen hareketlerin analiz edilmis sekilde Onay Merkezi'ne dus
 - Onay sonrasi `bizimhesap_queue` icinde hazir kayit gorulmelidir: tamamlandi.
 - Worker dry-run planinda hesap/cari/kayit turu okunmalidir: tamamlandi.
 - BizimHesap formu kaydetmeden doldurulmalidir: tamamlandi.
-- Kesin canli kayit kullanici onayi olmadan yapilmamalidir: tamamlandi, kullanici onayi sonrasi tek id icin save calisti.
+- Kesin canli kayit kullanici onayi olmadan yapilmamalidir: devam ediyor, ikinci acik onay bekleniyor.
 - Kuyruk kapanis fonksiyonu kurulu olmalidir: tamamlandi.
 - Kayit olustu kaniti BizimHesap ekranindan alinmalidir: kullanici tarafindan dogrulandi.
 - Mukerrer kayit engeli olmalidir: tamamlandi, manuel kanitli queue tekrar save yapmadan atlanir.

@@ -235,6 +235,21 @@
 - `npm run preflight`
 - `npm run bank:approval:preview`
 
+### Akbank Banka Masrafi Kuyruk/Form Kaniti
+
+- Kullanici onayi ile Akbank 2026-06-09, -15,96 TL Banka/POS masrafi kuyruga alindi.
+- Pending id: `4f32c173-c773-4801-93e1-ce3bae757a1b`.
+- BizimHesap queue id: `d65f907a-1255-442c-9db4-ed639820c1c9`.
+- `npm run bizimhesap:queue:dry` 1 hazir kayit buldu.
+- `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form` ile form dolduruldu, kaydet tusuna basilmadi.
+- Form kanit dosyalari `diagnostics/bizimhesap_queue_d65f907a-1255-442c-9db4-ed639820c1c9_form.png` ve `.txt`.
+
+### Akbank Banka Masrafi Dogrulamasi
+
+- `node tools/approve_bank_candidate_v70.cjs --id 4f32c173-c773-4801-93e1-ce3bae757a1b --confirm ONAYLIYORUM`
+- `npm run bizimhesap:queue:dry`
+- `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form`
+
 ### Degismedi
 
 - Canli BizimHesap kaydi yapilmadi.

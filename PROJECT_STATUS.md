@@ -54,6 +54,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-29 mail/banka onay kontrol turu sonucu: GitHub Actions tarafinda `mail-ekstre-pipeline.yml`, `bizimhesap-queue-worker.yml` ve `hourly-bizimhesap-sync.yml` son runlari `success`. Yerel `mail:ekstre:preflight` beklenen sekilde secret eksigi nedeniyle blokaj verdi; yerel `.env` kullanilmiyor. `bank:approval:preview` 25 bekleyen banka hareketi buldu: 19 yuksek guven, 6 inceleme istiyor. `bizimhesap:queue:dry` 0 hazir BizimHesap kuyrugu gosterdi. Sonraki guvenli aday: Akbank 2026-06-09, -15,96 TL, Banka/POS masrafi, id `4f32c173-c773-4801-93e1-ce3bae757a1b`.
 
+2026-06-30 Akbank banka masrafi kuyruk/form turu sonucu: Kullanici `onay veriyorum` dedi. Sadece Akbank 2026-06-09, -15,96 TL Banka/POS masrafi adayi icin `approve_pending_bank_movement` calisti. Pending id `4f32c173-c773-4801-93e1-ce3bae757a1b` BizimHesap queue id `d65f907a-1255-442c-9db4-ed639820c1c9` olarak `ready_for_bizimhesap` durumuna alindi. `npm run bizimhesap:queue:dry` 1 hazir kayit buldu. `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form` ile BizimHesap formu dolduruldu ve kaydet tusuna basilmadi. Form kaniti `diagnostics/bizimhesap_queue_d65f907a-1255-442c-9db4-ed639820c1c9_form.png` ve `.txt` olarak olustu. Canli BizimHesap kaydi icin ikinci acik onay bekleniyor.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -88,6 +90,9 @@ Son denetimde calisan komutlar:
 - `npm run mail:ekstre:actions:check`: komut eklendi; yerelde secret ortam degiskenleri olmadigi icin beklenen blokaj verdi.
 - GitHub Actions `supabase-sql-install.yml`: run `28374635626`, conclusion `success`.
 - `npm run bank:approval:candidate:proof`: queue status `processed`.
+- `node tools/approve_bank_candidate_v70.cjs --id 4f32c173-c773-4801-93e1-ce3bae757a1b --confirm ONAYLIYORUM`: kullanici onayi sonrasi gecti, queue id `d65f907a-1255-442c-9db4-ed639820c1c9` olustu.
+- `npm run bizimhesap:queue:dry`: gecti, 1 hazir kuyruk icin dry-run plan yazildi.
+- `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form`: gecti, form dolduruldu, kaydet tusuna basilmadi.
 - `npm run bizimhesap:queue:dry`: 0 hazir kuyruk.
 - GitHub Actions `mail-ekstre-pipeline.yml`: son run `success`.
 - GitHub Actions `bizimhesap-queue-worker.yml`: son run `success`.
