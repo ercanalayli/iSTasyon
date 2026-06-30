@@ -1,5 +1,32 @@
 # AperiON Changelog
 
+## 2026-06-30
+
+### Ana Ekran Profesyonel Toparlama
+
+- Ust Akil ana ekranina v73/v75 tasarim kilidi eklendi.
+- Banka Komuta Merkezi koyu ve tasan bloktan daha sade beyaz operasyon kartina tasindi.
+- Banka, Gelir Tablosu, Sabah Onay Kartlari ve Yol Haritasi tek ekran gridine yerlestirildi.
+- 1380px altinda eski responsive kuralin kartlari ust uste bindirmesi engellendi.
+- Kartlarin kendi hucrelerinde kalmasi icin yukseklik ve tasma kilidi eklendi.
+- Yol haritasinda ana ekran ve BizimHesap tek tik kayit satirlari guncellendi.
+
+### Istek Listesi Kilidi
+
+- Veri guveni, Banka mail ekstre, Onay Merkezi, BizimHesap kaydi, Gelir Tablosu, Urun Karliligi, Hasta Bezi Raporu, Telegram/Mail evrak, sabit/sozlesmeli gelir-gider ve cache/isletme hafizasi istekleri `PROJECT_STATUS.md` icine urun yon haritasi olarak yazildi.
+
+### Dogrulandi
+
+- `npm run verify:bank-approval-action`
+- `npm run verify:bizimhesap:queue`
+- `npm run finance-smoke`
+- `npm run bizimhesap:queue:dry`
+
+### Not
+
+- Hazir BizimHesap kuyrugu 0.
+- Canli BizimHesap kaydi tetiklenmedi.
+
 ## 2026-06-29
 
 ### Canli Yayin

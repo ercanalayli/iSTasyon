@@ -1836,6 +1836,268 @@ body.dashboard-mode .morning-approval-actions{
   }
   body.dashboard-mode .content{overflow:auto}
 }
+/* AperiON Command Design Lock v73: executive screen cleanup */
+body.dashboard-mode{
+  --dash-card:#FFFFFF;
+  --dash-soft:#F6F8FB;
+  --dash-border:#DDE6F2;
+  --dash-shadow:0 16px 38px rgba(15,23,42,.085);
+}
+body.dashboard-mode .content{
+  padding:14px !important;
+  background:#EEF3F8 !important;
+}
+body.dashboard-mode #pg-dashboard{
+  padding:0 !important;
+  margin:0 !important;
+}
+body.dashboard-mode #pg-dashboard #kartsDiv{
+  grid-template-columns:minmax(520px,1.05fr) minmax(400px,.95fr) !important;
+  grid-template-rows:132px 244px minmax(178px,1fr) !important;
+  gap:12px !important;
+  height:calc(100vh - 94px) !important;
+  align-items:stretch !important;
+}
+body.dashboard-mode #pg-dashboard #kartsDiv>*{
+  height:100% !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  overflow:hidden !important;
+}
+body.dashboard-mode #pg-dashboard #kartsDiv>#executiveCommandCard{
+  grid-column:1 / -1 !important;
+  grid-row:1 !important;
+}
+body.dashboard-mode #pg-dashboard #kartsDiv>#bankCommandCard{
+  grid-column:1 !important;
+  grid-row:2 !important;
+}
+body.dashboard-mode #pg-dashboard #kartsDiv>#incomeStatementCard{
+  grid-column:2 !important;
+  grid-row:2 !important;
+}
+body.dashboard-mode #pg-dashboard #kartsDiv>#homeMorningApprovalCard{
+  grid-column:1 !important;
+  grid-row:3 !important;
+}
+body.dashboard-mode #pg-dashboard #kartsDiv>#roadmapCard{
+  grid-column:2 !important;
+  grid-row:3 !important;
+}
+body.dashboard-mode .command-hero,
+body.dashboard-mode .bank-command-card,
+body.dashboard-mode .income-card,
+body.dashboard-mode #homeMorningApprovalCard,
+body.dashboard-mode #roadmapCard{
+  background:var(--dash-card) !important;
+  border:1px solid var(--dash-border) !important;
+  border-radius:16px !important;
+  box-shadow:var(--dash-shadow) !important;
+}
+body.dashboard-mode .command-hero{
+  padding:14px 16px !important;
+}
+body.dashboard-mode #executiveBrief{
+  height:100% !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+}
+body.dashboard-mode .command-grid{
+  max-height:82px !important;
+  overflow:hidden !important;
+}
+body.dashboard-mode .command-hero::before{
+  height:4px !important;
+}
+body.dashboard-mode .command-hero-head{
+  margin-bottom:9px !important;
+}
+body.dashboard-mode .command-eyebrow,
+body.dashboard-mode .command-k,
+body.dashboard-mode .bank-command-k,
+body.dashboard-mode .income-op-title,
+body.dashboard-mode .card-l{
+  letter-spacing:.04em !important;
+}
+body.dashboard-mode .command-title{
+  font-size:22px !important;
+}
+body.dashboard-mode .command-sub{
+  font-size:12px !important;
+}
+body.dashboard-mode .command-grid{
+  grid-template-columns:1.32fr repeat(4,minmax(0,1fr)) !important;
+  gap:9px !important;
+}
+body.dashboard-mode .command-decision,
+body.dashboard-mode .command-metric{
+  min-height:76px !important;
+  padding:10px 11px !important;
+  border:1px solid #E3EAF4 !important;
+}
+body.dashboard-mode .command-v{
+  font-size:20px !important;
+  line-height:1.12 !important;
+}
+body.dashboard-mode .command-n{
+  font-size:10px !important;
+  line-height:1.35 !important;
+  margin-top:4px !important;
+}
+body.dashboard-mode .command-pipe{
+  margin-top:6px !important;
+}
+body.dashboard-mode .command-chip{
+  padding:3px 7px !important;
+  font-size:9px !important;
+}
+body.dashboard-mode .command-actions button{
+  height:32px !important;
+  padding:0 12px !important;
+}
+body.dashboard-mode .bank-command-card{
+  background:#FFFFFF !important;
+  color:#101828 !important;
+  padding:14px !important;
+}
+body.dashboard-mode .bank-command-card::before{
+  background:linear-gradient(90deg,#059669,#2563EB) !important;
+  height:4px !important;
+  inset:0 0 auto 0 !important;
+}
+body.dashboard-mode .bank-command-head{
+  margin-bottom:9px !important;
+}
+body.dashboard-mode .bank-command-title{
+  color:#101828 !important;
+  font-size:19px !important;
+  letter-spacing:-.01em;
+}
+body.dashboard-mode .bank-command-sub{
+  color:#475467 !important;
+  font-size:11px !important;
+  max-width:760px;
+}
+body.dashboard-mode .bank-command-actions button{
+  background:#F8FAFC !important;
+  border:1px solid #D0D5DD !important;
+  color:#344054 !important;
+  height:32px !important;
+}
+body.dashboard-mode .bank-command-actions button:hover{
+  background:#ECFDF5 !important;
+  color:#047857 !important;
+  border-color:#A7F3D0 !important;
+}
+body.dashboard-mode .bank-command-grid{
+  height:calc(100% - 55px) !important;
+  grid-template-columns:1.25fr 1fr 1fr !important;
+  gap:8px !important;
+  align-content:stretch;
+  overflow:hidden !important;
+}
+body.dashboard-mode .bank-command-total,
+body.dashboard-mode .bank-command-bank{
+  min-height:0 !important;
+  border:1px solid #E4EAF2 !important;
+  background:#F8FAFC !important;
+  border-radius:12px !important;
+  padding:10px 11px !important;
+  color:#101828 !important;
+}
+body.dashboard-mode .bank-command-total{
+  grid-row:span 2 !important;
+  grid-column:auto !important;
+  background:linear-gradient(180deg,#ECFDF5,#F8FFFC) !important;
+  border-color:#A7F3D0 !important;
+}
+body.dashboard-mode .bank-command-bank:nth-child(n+6){
+  display:none !important;
+}
+body.dashboard-mode .bank-command-k{
+  color:#047857 !important;
+  font-size:10px !important;
+}
+body.dashboard-mode .bank-command-v{
+  color:#101828 !important;
+  font-size:21px !important;
+  margin-top:6px !important;
+  white-space:nowrap;
+}
+body.dashboard-mode .bank-command-n{
+  color:#475467 !important;
+  font-size:10px !important;
+  margin-top:5px !important;
+  line-height:1.35 !important;
+}
+body.dashboard-mode .bank-command-id,
+body.dashboard-mode .bank-command-pill{
+  color:#344054 !important;
+  background:#FFFFFF !important;
+  border-color:#D0D5DD !important;
+  font-size:8px !important;
+}
+body.dashboard-mode .bank-command-pill.warn{
+  color:#B54708 !important;
+  background:#FFFAEB !important;
+  border-color:#FEDF89 !important;
+}
+body.dashboard-mode #pg-dashboard .income-card{
+  padding:14px !important;
+  overflow:hidden !important;
+}
+body.dashboard-mode #incomeStatementTop{
+  height:100% !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+}
+body.dashboard-mode #pg-dashboard .income-op-board{
+  height:100% !important;
+  min-height:0 !important;
+  border-radius:14px !important;
+  border:1px solid #E4EAF2 !important;
+  background:#FFFFFF !important;
+  box-shadow:none !important;
+}
+body.dashboard-mode #pg-dashboard .income-op-grid>div{
+  border-radius:11px !important;
+  background:#F8FAFC !important;
+  border:1px solid #E4EAF2 !important;
+  min-height:0 !important;
+}
+body.dashboard-mode #pg-dashboard .income-op-grid b{
+  font-size:18px !important;
+}
+body.dashboard-mode #pg-dashboard .income-pipeline{
+  gap:8px !important;
+}
+body.dashboard-mode #pg-dashboard .income-pipe-step{
+  border-radius:10px !important;
+  min-height:44px !important;
+}
+body.dashboard-mode #homeMorningApprovalCard,
+body.dashboard-mode #roadmapCard{
+  padding:12px !important;
+}
+body.dashboard-mode #homeMorningApprovalCards{
+  max-height:calc(100% - 42px) !important;
+  overflow:hidden !important;
+}
+body.dashboard-mode .morning-approval-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+}
+body.dashboard-mode .morning-approval-card{
+  border-radius:12px !important;
+  border-left-width:4px !important;
+  box-shadow:none !important;
+}
+body.dashboard-mode .roadmap-grid{
+  scrollbar-width:thin;
+}
+body.dashboard-mode .roadmap-item{
+  background:#F8FAFC !important;
+  border-color:#E4EAF2 !important;
+}
 </style>
 </head>
 <body class="dashboard-mode">
@@ -1980,12 +2242,12 @@ body.dashboard-mode .morning-approval-actions{
             <div class="roadmap-item"><div class="roadmap-no">02</div><div><div class="roadmap-t">Fatura detay okuma altyapısı</div><div class="roadmap-d">Kuyruk, fatura açma, ham detay JSON çıktısı</div></div><span class="roadmap-st done">bitti</span></div>
             <div class="roadmap-item"><div class="roadmap-no">03</div><div><div class="roadmap-t">Gider kartı + fatura detayı bağlama</div><div class="roadmap-d">Detaydan gider kartı eşleştirme ve onay ayırma</div></div><span class="roadmap-st done">bitti</span></div>
             <div class="roadmap-item"><div class="roadmap-no">04</div><div><div class="roadmap-t">Satış maliyet / kâr katsayı motoru</div><div class="roadmap-d">Kategori katsayısı ile maliyet, brüt kâr ve marj</div></div><span class="roadmap-st done">bitti</span></div>
-            <div class="roadmap-item"><div class="roadmap-no">05</div><div><div class="roadmap-t">Ana ekran tek sayfa üst akıl paneli</div><div class="roadmap-d">Kaydırmasız komuta ekranı, profesyonel operasyon görünümü</div></div><span class="roadmap-st wait">kısmen</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">05</div><div><div class="roadmap-t">Ana ekran tek sayfa üst akıl paneli</div><div class="roadmap-d">Kaydırmasız komuta ekranı, ayrışmış banka/gelir/onay operasyon görünümü</div></div><span class="roadmap-st wait">kısmen</span></div>
             <div class="roadmap-item"><div class="roadmap-no">06</div><div><div class="roadmap-t">Gelir tablosu: plan / tahakkuk / gerçekleşen</div><div class="roadmap-d">Bugün, dün, hafta, ay, yıl filtreli karar tablosu</div></div><span class="roadmap-st wait">kısmen</span></div>
             <div class="roadmap-item"><div class="roadmap-no">07</div><div><div class="roadmap-t">Satış ve ürün kârlılığı ekranı</div><div class="roadmap-d">Kategori aç/kapat, ürün kartı, arama, sıralama, drilldown</div></div><span class="roadmap-st wait">kısmen</span></div>
             <div class="roadmap-item"><div class="roadmap-no">08</div><div><div class="roadmap-t">Banka ekstre okuma</div><div class="roadmap-d">Çok bankalı parser, son kayıt takibi, canlı bakiye</div></div><span class="roadmap-st wait">kısmen</span></div>
             <div class="roadmap-item"><div class="roadmap-no">09</div><div><div class="roadmap-t">Onay Merkezi analiz ekranı</div><div class="roadmap-d">Cari, hesap, işlem türü, güven puanı, mükerrer kontrol</div></div><span class="roadmap-st wait">kısmen</span></div>
-            <div class="roadmap-item"><div class="roadmap-no">10</div><div><div class="roadmap-t">BizimHesap'a tek tık kayıt</div><div class="roadmap-d">Canlı test: Akbank 09.06.2026 banka masrafı 0,80 TL işlendi</div></div><span class="roadmap-st done">bitti</span></div>
+            <div class="roadmap-item"><div class="roadmap-no">10</div><div><div class="roadmap-t">BizimHesap'a tek tık kayıt</div><div class="roadmap-d">Canlı test: Akbank 15,96 TL ve VakıfBank 33,03 TL banka masrafı işlendi</div></div><span class="roadmap-st done">bitti</span></div>
             <div class="roadmap-item"><div class="roadmap-no">11</div><div><div class="roadmap-t">Telegram görsel / evrak akışı</div><div class="roadmap-d">Görüntü analizi, onay kuyruğu ve kayıt hazırlığı</div></div><span class="roadmap-st hot">kaldı</span></div>
             <div class="roadmap-item"><div class="roadmap-no">12</div><div><div class="roadmap-t">Sabit / sözleşmeli / öngörülen gelir-gider</div><div class="roadmap-d">İşletme kart seed'i, plan girişi ve gelir tablosu plan katmanı bağlı</div></div><span class="roadmap-st wait">kısmen</span></div>
             <div class="roadmap-item"><div class="roadmap-no">13</div><div><div class="roadmap-t">Kişisel ikinci beyin finans modülü</div><div class="roadmap-d">Kişisel kira, fatura, okul, maaş, kart, sigorta kart seed'i bağlı</div></div><span class="roadmap-st wait">kısmen</span></div>
