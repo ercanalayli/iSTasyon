@@ -6,7 +6,7 @@ Son guncelleme: 2026-06-29 Europe/Istanbul
 
 Yeni banka ekstrelerini Onay Merkezi'nden kontrollu sekilde BizimHesap kuyruğuna almak.
 
-Durum: Ilk BizimHesap kayit kaniti ve queue kapanisi tamamlandi. Akbank 2026-06-09, -15,96 TL Banka/POS masrafi kullanici ikinci onayi ile BizimHesap'a kaydedildi. VakifBank 2026-05-13, -33,03 TL Banka/POS masrafi kullanici devam onayi ile queue id `9eb2c038-8eec-4d28-82f8-0078285ae902` olarak `ready_for_bizimhesap` durumuna alindi. BizimHesap formu kaydetmeden dolduruldu; kesin kayit icin ikinci acik onay bekleniyor.
+Durum: Ilk BizimHesap kayit kaniti ve queue kapanisi tamamlandi. Akbank 2026-06-09, -15,96 TL Banka/POS masrafi ve VakifBank 2026-05-13, -33,03 TL Banka/POS masrafi kullanici ikinci onaylariyla BizimHesap'a kaydedildi. Queue id `9eb2c038-8eec-4d28-82f8-0078285ae902` icin save sonrasi kanit alindi ve `npm run bizimhesap:queue:dry` artik `queue_count: 0` gosteriyor. Kullanici onay modeli soruldu; hedef, test sohbet onayindan AperiON icinde tek tik onay ve tek tik BizimHesap'a isle akisina gecmek.
 
 ## Neden Bu Hedef?
 
@@ -14,11 +14,11 @@ Kullanici bankadan gelen hareketlerin analiz edilmis sekilde Onay Merkezi'ne dus
 
 ## Siradaki Is Paketi
 
-1. Kullanici ikinci kez acikca `BizimHesap'a kaydetmeyi onayliyorum` derse sadece queue id `9eb2c038-8eec-4d28-82f8-0078285ae902` icin canli save calistirilacak.
-2. Save sonrasi BizimHesap kayit kaniti ve diagnostik alinacak.
-3. `npm run bizimhesap:queue:dry` ile hazir kuyruk 0'a indi mi kontrol edilecek.
-4. Sonraki banka adayina gecilmeden durum dosyalari guncellenecek.
-5. Dusuk guvenli veya cari belirsiz kayitlar inceleme listesinde kalacak.
+1. AperiON Onay Merkezi'nde her satir icin iki asamali durum net gorunecek: `AperiON onayinda`, `BizimHesap'a islenecek`, `islenmis`.
+2. Sohbet onayi yerine urun icinde `Onayla` ve `BizimHesap'a Isle` aksiyonlari hedeflenecek.
+3. Sonraki banka adayi yine `bank:approval:candidates` ile secilecek.
+4. Dusuk guvenli veya cari belirsiz kayitlar inceleme listesinde kalacak.
+5. Her canli kayit sonrasi dry-run `queue_count: 0` kontrolu yapilacak.
 
 ## Kabul Kriteri
 

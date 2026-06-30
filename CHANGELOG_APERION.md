@@ -294,6 +294,20 @@
 - `npm run bizimhesap:queue:dry`
 - `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form`
 
+### VakifBank Banka Masrafi Canli Kayit
+
+- Kullanici ikinci acik onayi ile queue id `9eb2c038-8eec-4d28-82f8-0078285ae902` BizimHesap'a kaydedildi.
+- Worker BizimHesap kaydet butonuna basti ve kayit sonrasi ekran kaniti aldi.
+- Kanit dosyalari `diagnostics/bizimhesap_queue_9eb2c038-8eec-4d28-82f8-0078285ae902_after_save.png` ve `.txt`.
+- `npm run bizimhesap:queue:dry` sonucunda hazir kuyruk `0`.
+- Onay modeli netlestirildi: testte sohbet onayi, urun hedefinde AperiON Onay Merkezi uzerinden tek tik onay / tek tik BizimHesap'a isle.
+
+### VakifBank Canli Kayit Dogrulamasi
+
+- `BIZIMHESAP_POSTING_LIVE=1 BIZIMHESAP_POSTING_SAVE=1 node bizimhesap_queue_worker.cjs --firma alayli --id 9eb2c038-8eec-4d28-82f8-0078285ae902 --limit 1 --commit --save`
+- `npm run bizimhesap:queue:dry`
+- `npm run verify:bizimhesap:queue`
+
 ### Degismedi
 
 - Yeni tasarim veya refactor yapilmadi.
