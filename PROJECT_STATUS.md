@@ -68,6 +68,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-30 ana ekran profesyonel toparlama turu sonucu: Ust Akil ana ekraninda v73/v75 tasarim kilidi eklendi. Banka Komuta Merkezi koyu ve dev bloktan daha sakin beyaz operasyon kartina donusturuldu; banka, gelir tablosu, sabah onay kartlari ve yol haritasi tek ekran gridine yerlestirildi. Eski 1380px responsive kuralinin kartlari ust uste bindirmesi engellendi; kartlar kendi hucrelerinde kalacak sekilde yukseklik/tasma kilidi eklendi. `npm run verify:bank-approval-action`, `npm run verify:bizimhesap:queue`, `npm run finance-smoke` ve `npm run bizimhesap:queue:dry` gecti; hazir BizimHesap kuyrugu 0.
 
+2026-06-30 gelir tablosu komuta matrisi turu sonucu: Ana ekrana kullanicinin Excel ornegindeki mantiga uygun `Gelir Tablosu Komuta Matrisi` eklendi. Satirlar satis kategorileri, satilan malin maliyeti, brut kar, sabit gider, degisken gider, vergi/SGK ve net kar olarak kuruldu. Kolonlar bugun, dun, bu hafta, bu ay, gecen ay, bu yil, gecen yil olarak hesaplanir. Hucreler tiklanabilir; satis satirlarinda kategori -> urun -> hareket listesi, gider/maliyet/net satirlarinda kaynak kayit listesi modalda acilir. Kategori kar katsayilari maliyet ve brut kar hesabinda kullanilir. JS syntax, `finance-smoke`, `verify:bank-approval-action`, `verify:bizimhesap:queue` ve `bizimhesap:queue:dry` gecti.
+
 ## Kullanici Istek Listesi / Urun Yon Haritasi
 
 1. Veri guveni: firma izolasyonu, kaynak kaniti, dry-run/live ayrimi, mukerrer kayit engeli.

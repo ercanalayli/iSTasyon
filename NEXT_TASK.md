@@ -6,7 +6,7 @@ Son guncelleme: 2026-06-30 Europe/Istanbul
 
 Ana ekrani profesyonel tek ekran Ust Akil komuta paneline donusturmek.
 
-Durum: v73/v75 ana ekran temizligi basladi. Banka paneli, gelir tablosu, sabah onay kartlari ve yol haritasi tek ekran gridine alindi. Ust uste binme yapan eski responsive kural icin yerlestirme ve tasma kilidi eklendi. Akis testleri gecti; hazir BizimHesap kuyrugu 0.
+Durum: v73/v75 ana ekran temizligi basladi. Banka paneli, gelir tablosu, sabah onay kartlari ve yol haritasi tek ekran gridine alindi. Gelir Tablosu Komuta Matrisi eklendi: bugun/dun/hafta/ay/gecen ay/yil/gecen yil kolonlari; satis kategorileri, maliyet, brut kar, gider, vergi ve net kar satirlari tiklanabilir. Akis testleri gecti; hazir BizimHesap kuyrugu 0.
 
 ## Neden Bu Hedef?
 
@@ -14,10 +14,10 @@ Kullanici sistemi sabah actiginda bankayi, onayi, gelir tablosunu, riskleri ve a
 
 ## Siradaki Is Paketi
 
-1. Ana ekran bolum sirasi: Ust karar seridi, Banka/BizimHesap akisi, Gelir tablosu, Sabah onay kartlari.
-2. Banka kartlari: bakiye, son hareket, onay bekleyen, BizimHesap kuyrugu ve kayit kaniti tek yerde.
-3. Onay kartlari: cari, kategori, kayit turu, guven, mukerrer ve hedef BizimHesap hesabi gorunur.
-4. Gelir tablosu: planlanan / tahakkuk / gerceklesen sonucu tek karar panelinde netlestirilecek.
+1. Matrisin ana ekrandaki gorsel boyutu son kez cilalanacak.
+2. Banka kartlari: bakiye, son hareket, onay bekleyen, BizimHesap kuyrugu ve kayit kaniti tek yerde daha okunur hale gelecek.
+3. Onay kartlari: cari, kategori, kayit turu, guven, mukerrer ve hedef BizimHesap hesabi gorunur kalacak.
+4. Gelir tablosu detay modalinda kategori -> urun -> hareket akisi gorsel olarak zenginlestirilecek.
 5. Sonraki turda tasarim canliya alinmadan once ekran goruntusu ve smoke test tekrar edilecek.
 
 ## Kabul Kriteri

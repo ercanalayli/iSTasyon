@@ -2098,6 +2098,57 @@ body.dashboard-mode .roadmap-item{
   background:#F8FAFC !important;
   border-color:#E4EAF2 !important;
 }
+.command-matrix{
+  border:1px solid #DDE6F2;
+  border-radius:14px;
+  background:#FFFFFF;
+  overflow:hidden;
+  margin:0 0 12px;
+  box-shadow:0 14px 28px rgba(15,23,42,.06);
+}
+.cm-titlebar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 12px;
+  border-bottom:1px solid #E4EAF2;
+  background:linear-gradient(90deg,#F8FAFC,#EEF7FF);
+}
+.cm-titlebar b{display:block;font-size:14px;font-weight:950;color:#101828}
+.cm-titlebar span{display:block;font-size:10px;font-weight:800;color:#667085;margin-top:2px}
+.cm-titlebar button{
+  height:30px;border:1px solid #CBD5E1;border-radius:9px;background:#FFFFFF;color:#1D4ED8;font-size:10px;font-weight:950;cursor:pointer;padding:0 10px;
+}
+.cm-titlebar button:hover{border-color:#60A5FA;box-shadow:0 0 0 3px rgba(37,99,235,.10)}
+.cm-wrap{max-height:310px;overflow:auto}
+.cm-table{width:100%;border-collapse:separate;border-spacing:0;font-size:10px;min-width:980px}
+.cm-table th,.cm-table td{border-right:1px solid #E4EAF2;border-bottom:1px solid #E4EAF2;padding:6px 7px;vertical-align:middle}
+.cm-table thead th{position:sticky;top:0;z-index:3;background:#F8FAFC;color:#344054;text-align:right;font-weight:950}
+.cm-table thead th:first-child{text-align:left;left:0;z-index:4}
+.cm-table thead span{display:block;font-family:var(--mono);font-size:8px;color:#98A2B3;margin-top:2px;font-weight:800}
+.cm-table tbody th{position:sticky;left:0;z-index:2;background:#FFFFFF;text-align:left;color:#101828;font-size:10px;font-weight:950;min-width:158px}
+.cm-section td{background:#101828 !important;color:#FFFFFF !important;font-size:10px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
+.cm-cell{cursor:pointer;text-align:right;background:#FFFFFF;transition:background .12s,border-color .12s,box-shadow .12s}
+.cm-cell b{display:block;font-family:var(--mono);font-size:11px;color:#047857;white-space:nowrap}
+.cm-cell span{display:block;font-family:var(--mono);font-size:8px;color:#667085;margin-top:2px;white-space:nowrap}
+.cm-cell:hover{background:#EEF7FF;box-shadow:inset 0 0 0 2px rgba(37,99,235,.18)}
+.cm-cell.empty b{color:#98A2B3}
+.cm-cell.cost b,.cm-cell.expense b{color:#DC2626}
+.cm-cell.profit b,.cm-cell.net b{color:#1D4ED8}
+body.dashboard-mode .command-matrix{height:calc(100% - 0px);margin:0}
+body.dashboard-mode #incomeStatementTop>.income-head,
+body.dashboard-mode #incomeStatementTop>.report-grid,
+body.dashboard-mode #incomeStatementTop>.income-layout,
+body.dashboard-mode #incomeStatementTop>.income-table-wrap{
+  display:none !important;
+}
+body.dashboard-mode #incomeStatementTop .command-matrix{
+  height:100%;
+}
+body.dashboard-mode #incomeStatementTop .cm-wrap{
+  max-height:calc(100% - 49px);
+}
 </style>
 </head>
 <body class="dashboard-mode">
@@ -3837,6 +3888,115 @@ function incomeBar(label,value,max,cls='good'){
 function incomePipelineStep(label,count,state='ok'){
   return `<div class="income-pipe-step ${state}"><span>${escHtml(label)}</span><b>${escHtml(String(count))}</b></div>`;
 }
+const COMMAND_MATRIX_CATEGORIES=[
+  'MEDİKAL AKÜLÜ','MEDİKAL ELEKTRONİK','HASTA ALTI BEZİ','PERİNE VÜCUT TEMİZLEME','KİRALIK','KARYOLA','YÜRÜMEYE YARDIMCI','ORTOPEDİ TEKSTİL','SARF','SONDA','KOLOSTOMİ','AYAKKABI TERLİK','SGK','SOLUNUM'
+];
+function commandMatrixCategory(row){
+  const text=salesCostText(row);
+  if(/AKULU|AKÜLÜ|AKU|AKÜ/.test(text))return 'MEDİKAL AKÜLÜ';
+  if(/ELEKTRONIK|ELEKTRONİK|TANSIYON|ATES|ATEŞ|DERECE|OLCER|ÖLÇER/.test(text))return 'MEDİKAL ELEKTRONİK';
+  if(/HASTA BEZI|HASTA ALTI|KULOT|KÜLOT|BELBANT|BEL BANT|SERME/.test(text))return 'HASTA ALTI BEZİ';
+  if(/ISLAK MENDIL|ISLAK MENDİL|PERINE|PERİNE|VUCUT TEMIZLEME|VÜCUT TEMİZLEME|TEMIZLEME|TEMİZLEME/.test(text))return 'PERİNE VÜCUT TEMİZLEME';
+  if(/KIRALIK|KIRALAMA|KIRA/.test(text))return 'KİRALIK';
+  if(/KARYOLA/.test(text))return 'KARYOLA';
+  if(/YURUME|YÜRÜME|BASTON|WALKER|KOLTUK DEGNEGI|KOLTUK DEĞNEĞİ/.test(text))return 'YÜRÜMEYE YARDIMCI';
+  if(/ORTOPEDI TEKSTIL|ORTOPEDİ TEKSTİL|ORTEZ|KORSE|VARIS|TEKSTIL|TEKSTİL/.test(text))return 'ORTOPEDİ TEKSTİL';
+  if(/SARF|GAZLI BEZ|ENJEKTOR|ENJEKTÖR|ELDIVEN|ELDİVEN|MASKE|FLASTER|YARA BAKIM/.test(text))return 'SARF';
+  if(/SONDA|UROLOJ/.test(text))return 'SONDA';
+  if(/KOLOSTOMI|KOLOSTOMİ|OSTOMI|OSTOMİ|STOMA/.test(text))return 'KOLOSTOMİ';
+  if(/AYAKKABI|TERLIK|TERLİK/.test(text))return 'AYAKKABI TERLİK';
+  if(/SGK/.test(text))return 'SGK';
+  if(/SOLUNUM|OKSIJEN|OKSİJEN|CPAP|BIPAP|NEBUL|ASPIRATOR|ASPİRATÖR/.test(text))return 'SOLUNUM';
+  return nrmCat(row.kategori||'DİĞER').toLocaleUpperCase('tr-TR');
+}
+function commandMatrixPeriods(){
+  const pr=pRange();
+  return [
+    {key:'today',label:'BUGÜN',from:pr.todayS,to:pr.todayS},
+    {key:'yesterday',label:'DÜN',from:pr.yestS,to:pr.yestS},
+    {key:'week',label:'BU HAFTA',from:pr.weekS,to:pr.todayS},
+    {key:'month',label:'BU AY',from:pr.monthS,to:pr.todayS},
+    {key:'prevMonth',label:'GEÇEN AY',from:pr.prevMonthS,to:pr.prevMonthE},
+    {key:'year',label:'BU YIL',from:pr.yearS,to:pr.todayS},
+    {key:'prevYear',label:'GEÇEN YIL',from:pr.prevYearS,to:pr.prevYearE}
+  ];
+}
+function commandMatrixBlank(){return {plan:0,accrual:0,cash:0,count:0,qty:0,cogs:0,gross:0,rows:[]};}
+function commandMatrixAdd(bucket,row,kind){
+  const amount=kind==='expense'?Number(row.tutar||row.amount||0):Number(row.ciro||row.tutar||0);
+  if(!Number.isFinite(amount)||!amount)return;
+  bucket.accrual+=Math.abs(amount);
+  bucket.count+=1;
+  bucket.rows.push(row);
+  if(kind==='sales'){
+    bucket.qty+=Number(row.adet||0)||0;
+    const cost=row.__cost?.total||0;
+    bucket.cogs+=cost;
+    bucket.gross+=amount-cost;
+  }
+}
+function commandMatrixCell(label,rowKey,period,value,sub='',tone=''){
+  const empty=!value;
+  return `<td class="cm-cell ${tone} ${empty?'empty':''}" onclick='commandMatrixDrill(${jsArg(rowKey)},${jsArg(period.key)})'>
+    <b>${empty?'—':dynMoney(value)}</b>${sub?`<span>${escHtml(sub)}</span>`:''}
+  </td>`;
+}
+function commandMatrixRow(label,rowKey,periods,data,tone=''){
+  return `<tr><th>${escHtml(label)}</th>${periods.map(p=>{
+    const x=data[p.key]||commandMatrixBlank();
+    const sub=x.count?`${fmt(x.count)} işlem${x.qty?` · ${fmt(x.qty)} adet`:''}`:'';
+    return commandMatrixCell(label,rowKey,p,x.accrual,sub,tone);
+  }).join('')}</tr>`;
+}
+async function renderCommandIncomeMatrix(model){
+  const periods=commandMatrixPeriods(), from=periods.at(-1).from, to=periods[0].to;
+  const sales=(await salesRowsRange(from,to,PILOT_FIRMA)).map(r=>({...r,__cost:incomeCostForSale(r,new Map())}));
+  const expNow=await masrafData(new Date().getFullYear(),PILOT_FIRMA), expPrev=await masrafData(new Date().getFullYear()-1,PILOT_FIRMA);
+  const expenses=[...expNow,...expPrev].filter(r=>flowInRange(r,from,to));
+  const matrix={};
+  const ensure=(key,p)=>((matrix[key]||(matrix[key]={}))[p.key]||(matrix[key][p.key]=commandMatrixBlank()));
+  sales.forEach(r=>{
+    periods.forEach(p=>{
+      if(!flowInRange(r,p.from,p.to))return;
+      const cat=commandMatrixCategory(r);
+      commandMatrixAdd(ensure(`sales:${cat}`,p),r,'sales');
+      const cogs=ensure('cogs',p), gross=ensure('gross',p), salesTotal=ensure('sales:TOPLAM',p);
+      commandMatrixAdd(salesTotal,r,'sales');
+      cogs.accrual+=r.__cost?.total||0;cogs.count+=1;cogs.rows.push(r);
+      gross.accrual+=(Number(r.ciro||0)-(r.__cost?.total||0));gross.count+=1;gross.rows.push(r);
+    });
+  });
+  expenses.forEach(r=>{
+    periods.forEach(p=>{
+      if(!flowInRange(r,p.from,p.to))return;
+      const key=/sabit|kira|personel|maaş|maas|sgk|vergi|iletişim|iletisim|telefon|internet|elektrik|su|doğalgaz|dogalgaz/i.test(`${r.kategori||''} ${r.aciklama||''}`)?'expense:fixed':'expense:variable';
+      commandMatrixAdd(ensure(key,p),r,'expense');
+      commandMatrixAdd(ensure('expense:total',p),r,'expense');
+      if(/vergi|sgk|kdv|stopaj/i.test(`${r.kategori||''} ${r.aciklama||''}`))commandMatrixAdd(ensure('tax',p),r,'expense');
+    });
+  });
+  periods.forEach(p=>{
+    const net=ensure('net',p), gross=matrix.gross?.[p.key]?.accrual||0, exp=matrix['expense:total']?.[p.key]?.accrual||0, tax=matrix.tax?.[p.key]?.accrual||0;
+    net.accrual=gross-exp-tax;net.count=(matrix.gross?.[p.key]?.count||0)+(matrix['expense:total']?.[p.key]?.count||0);net.rows=[...(matrix.gross?.[p.key]?.rows||[]),...(matrix['expense:total']?.[p.key]?.rows||[])];
+  });
+  window.APERION_COMMAND_MATRIX={periods,matrix,sales,expenses};
+  const salesRows=COMMAND_MATRIX_CATEGORIES.map(c=>commandMatrixRow(c,`sales:${c}`,periods,matrix));
+  const head=`<tr><th class="cm-main">KALEM</th>${periods.map(p=>`<th>${escHtml(p.label)}<span>${p.from!==p.to?`${p.from} / ${p.to}`:p.from}</span></th>`).join('')}</tr>`;
+  return `<div class="command-matrix">
+    <div class="cm-titlebar"><div><b>Gelir Tablosu Komuta Matrisi</b><span>Satır ve tutarlara tıklayınca kategori, ürün, cari ve hareket listesi açılır.</span></div><button onclick="incomeDrill('revenue')">Kategoriye İn</button></div>
+    <div class="cm-wrap"><table class="cm-table"><thead>${head}</thead><tbody>
+      <tr class="cm-section"><td colspan="${periods.length+1}">SATIŞLAR</td></tr>
+      ${salesRows.join('')}
+      ${commandMatrixRow('SATILAN MALIN MALİYETİ','cogs',periods,matrix,'cost')}
+      ${commandMatrixRow('BRÜT KAR','gross',periods,matrix,'profit')}
+      <tr class="cm-section"><td colspan="${periods.length+1}">GİDERLER</td></tr>
+      ${commandMatrixRow('SABİT GİDER','expense:fixed',periods,matrix,'expense')}
+      ${commandMatrixRow('DEĞİŞKEN GİDER','expense:variable',periods,matrix,'expense')}
+      ${commandMatrixRow('VERGİ / SGK','tax',periods,matrix,'expense')}
+      ${commandMatrixRow('NET KAR','net',periods,matrix,'net')}
+    </tbody></table></div>
+  </div>`;
+}
 function incomeLine(label,planned,accrual,cash,type='revenue',planType=''){
   const ratio=accrual?cash/accrual*100:(cash?100:0);
   return incomeRow(label,planned,accrual,cash,ratio,type,planType);
@@ -3891,6 +4051,46 @@ function openIncomeDetail(title,cols,rows,sortKey='d',sortDir=-1,clickFn='',side
   renderIncomeDetailTable();
   document.getElementById('modal').classList.add('open');
 }
+function commandMatrixDrill(rowKey,periodKey){
+  const state=window.APERION_COMMAND_MATRIX;if(!state)return;
+  const p=state.periods.find(x=>x.key===periodKey), bucket=state.matrix?.[rowKey]?.[periodKey];
+  if(!p||!bucket)return;
+  const isSales=rowKey.startsWith('sales:'), isExpense=rowKey.startsWith('expense:')||rowKey==='tax', name=rowKey.split(':').slice(1).join(':')||rowKey;
+  if(isSales){
+    const byProduct={};
+    (bucket.rows||[]).forEach(r=>{const u=(r.urun||'Ürün Yok').trim()||'Ürün Yok';const x=byProduct[u]||(byProduct[u]={name:u,qty:0,d:0,gross:0,rows:[]});x.qty+=Number(r.adet||0)||0;x.d+=Number(r.ciro||0)||0;x.gross+=Number(r.ciro||0)-(r.__cost?.total||0);x.rows.push(r);});
+    const rows=Object.values(byProduct).map(x=>({name:x.name,qty:x.qty,d:x.d,gross:x.gross,count:x.rows.length,margin:x.d?x.gross/x.d*100:0,note:'Ürüne gir',clickArg:x.name}));
+    openIncomeDetail(`${name} · ${p.label}`,[
+      {key:'name',label:'Ürün',fmt:v=>`<b>${escHtml(v)}</b>`},
+      {key:'qty',label:'Adet',fmt:v=>fmt(v)},
+      {key:'d',label:'Tutar',fmt:v=>dynMoney(v)},
+      {key:'gross',label:'Brüt Kar',fmt:v=>dynMoney(v)},
+      {key:'margin',label:'Marj',fmt:v=>dynPct(v)},
+      {key:'count',label:'İşlem'}
+    ],rows,'d',-1,'incomeDrillProduct',incomeSide(name,`${p.from}${p.from!==p.to?' / '+p.to:''} dönemindeki ürün kırılımı. Başlıklardan sıralanır, arama yapılır.`,[
+      ['Satış',dynMoney(bucket.accrual)],['Maliyet',dynMoney(bucket.cogs)],['Brüt kar',dynMoney(bucket.gross)],['Adet',fmt(bucket.qty)]
+    ]),[{label:'Gelir Tablosu',action:"document.getElementById('modal').classList.remove('open')"}]);
+    return;
+  }
+  const rows=(bucket.rows||[]).map(r=>({
+    name:r.aciklama||r.urun||r.tedarikci||r.cari_unvan||r.unvan||'Kayıt',
+    date:r.tarih||r.transaction_date||'',
+    source:r.kaynak||r._kaynak||'kaynak',
+    qty:Number(r.adet||0)||'',
+    d:Math.abs(Number(r.tutar||r.amount||r.ciro||0)||0),
+    note:r.kategori||r.__cost?.note||''
+  }));
+  openIncomeDetail(`${name} · ${p.label}`,[
+    {key:'name',label:isExpense?'Gider / Açıklama':'Kayıt',fmt:v=>`<b>${escHtml(v)}</b>`},
+    {key:'date',label:'Tarih'},
+    {key:'source',label:'Kaynak'},
+    {key:'qty',label:'Adet',fmt:v=>v?fmt(v):'-'},
+    {key:'d',label:'Tutar',fmt:v=>dynMoney(v)},
+    {key:'note',label:'Not'}
+  ],rows,'d',-1,'',incomeSide(name,`${p.from}${p.from!==p.to?' / '+p.to:''} dönemindeki kayıt listesi.`,[
+    ['Tutar',dynMoney(bucket.accrual)],['Kayıt',fmt(bucket.count)]
+  ]),[{label:'Gelir Tablosu',action:"document.getElementById('modal').classList.remove('open')"}]);
+}
 async function renderIncomeStatementTop(){
   const el=document.getElementById('incomeStatementTop');if(!el)return;
   el.innerHTML='<div class="dashboard-income-fallback"><div class="income-op-title">Gelir Tablosu</div><div class="dash-income-big">hesaplanıyor</div><div class="dash-income-note">Planlanan / tahakkuk / gerçekleşen net sonuç hazırlanıyor.</div></div>';
@@ -3908,6 +4108,7 @@ async function renderIncomeStatementTop(){
   const commandState=accrualNet<0?'Tahakkuk zararı':cashNet<0?'Nakit negatif':cashGap>0?'Tahsilat takibi':'Kontrol altında';
   const commandClass=accrualNet<0||cashNet<0?'bad':cashGap>0?'warn':'good';
   const activeBtn=m=>INCOME_MODE===m?'on':'';
+  const matrixHtml=await renderCommandIncomeMatrix(model);
   el.innerHTML=`<div class="income-head">
     <div class="income-cockpit-main">
       <div class="income-eyebrow">AperiON Operational Finance App</div>
@@ -3959,6 +4160,7 @@ async function renderIncomeStatementTop(){
       </div>
     </div>
   </div>
+  ${matrixHtml}
   <div class="report-grid" style="margin-bottom:12px">
     ${incomeMetricCard('Planlanan Net',model.plannedNet,'sözleşmeli + sabit + öngörülen','report-cool')}
     ${incomeMetricCard('Tahakkuk Net',accrualNet,'fatura/satış ve oluşan gider','report-warm')}
@@ -4779,6 +4981,7 @@ function reportTable(rows,type){
 window.selectSalesCategory=selectSalesCategory;
 window.toggleSalesCategory=toggleSalesCategory;
 window.openProductProfitCard=openProductProfitCard;
+window.commandMatrixDrill=commandMatrixDrill;
 
 // -- CARİLER ---------------------------------------------------------------
 let seciliCari = null;
