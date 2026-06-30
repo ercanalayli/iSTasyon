@@ -54,6 +54,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-29 mail/banka onay kontrol turu sonucu: GitHub Actions tarafinda `mail-ekstre-pipeline.yml`, `bizimhesap-queue-worker.yml` ve `hourly-bizimhesap-sync.yml` son runlari `success`. Yerel `mail:ekstre:preflight` beklenen sekilde secret eksigi nedeniyle blokaj verdi; yerel `.env` kullanilmiyor. `bank:approval:preview` 25 bekleyen banka hareketi buldu: 19 yuksek guven, 6 inceleme istiyor. `bizimhesap:queue:dry` 0 hazir BizimHesap kuyrugu gosterdi. Sonraki guvenli aday: Akbank 2026-06-09, -15,96 TL, Banka/POS masrafi, id `4f32c173-c773-4801-93e1-ce3bae757a1b`.
 
+2026-06-30 ana ekran main entegrasyon turu sonucu: `origin/main` uzerindeki guncel analiz board calismasi korunarak `codex/b2b-api-delta` branch'indeki ana ekran toparlama commitleri cherry-pick ile main tabanina alindi. Main artik `Polish executive command dashboard`, `Add dashboard income command matrix` ve `Polish morning approval cards` degisikliklerini icerir: banka/onay/gelir tek ekran kurgusu, gelir tablosu komuta matrisi, `gg.aa.yyyy · ss:dd` tarihli sabah onay kartlari ve BizimHesap/cari/kategori/guven plan kutulari main'e hazirlandi.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.

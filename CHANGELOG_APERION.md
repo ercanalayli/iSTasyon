@@ -2,6 +2,12 @@
 
 ## 2026-06-30
 
+### Main Entegrasyon
+
+- `origin/main` uzerindeki guncel analiz board calismasi korunarak ana ekran toparlama commitleri main tabanina alindi.
+- Main artik banka/onay/gelir tek ekran kurgusunu, gelir tablosu komuta matrisini ve sabah onay karti tarih/karar duzeltmesini icerir.
+- Yerel stale `main` zorlanmadi; entegrasyon temiz `origin/main` worktree uzerinden yapildi.
+
 ### Sabah Onay Kartlari Tarih ve Karar Gorunumu
 
 - Banka onay kartlarinda tarih `yyyy-aa-gg` kirpilmis gorunumden `gg.aa.yyyy · ss:dd` formatina alindi.

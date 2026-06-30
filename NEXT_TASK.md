@@ -6,7 +6,7 @@ Son guncelleme: 2026-06-29 Europe/Istanbul
 
 Yeni banka ekstrelerini Onay Merkezi'nden kontrollu sekilde BizimHesap kuyruÄŸuna almak.
 
-Durum: Ilk BizimHesap kayit kaniti ve queue kapanisi tamamlandi. Yeni kontrolde Onay Merkezi'nde 25 bekleyen banka hareketi var; 19'u yuksek guvenli, 6'si inceleme istiyor. Hazir BizimHesap kuyrugu 0. Sonraki onerilen dusuk riskli aday: Akbank 2026-06-09, -15,96 TL, Banka/POS masrafi, id `4f32c173-c773-4801-93e1-ce3bae757a1b`.
+Durum: Ilk BizimHesap kayit kaniti ve queue kapanisi tamamlandi. Yeni kontrolde Onay Merkezi'nde 25 bekleyen banka hareketi var; 19'u yuksek guvenli, 6'si inceleme istiyor. Hazir BizimHesap kuyrugu 0. Ana ekran toparlama, gelir tablosu komuta matrisi ve sabah onay karti tarih/karar gorunumu main tabanina alindi. Sonraki onerilen dusuk riskli aday: Akbank 2026-06-09, -15,96 TL, Banka/POS masrafi, id `4f32c173-c773-4801-93e1-ce3bae757a1b`.
 
 ## Neden Bu Hedef?
 
@@ -19,6 +19,7 @@ Kullanici bankadan gelen hareketlerin analiz edilmis sekilde Onay Merkezi'ne dus
 3. BizimHesap formu once kaydetmeden doldurulup kanit alinacak.
 4. Kullanici ikinci kez acikca onaylarsa canli save calistirilacak.
 5. Sonra queue `processed` kaniti alinacak.
+6. Canli ana ekran acilip tarih/karar kartlari ve gelir matrisi kullanici ekraninda kontrol edilecek.
 
 ## Kabul Kriteri
 
