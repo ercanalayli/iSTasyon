@@ -1,12 +1,12 @@
 # AperiON Next Task
 
-Son guncelleme: 2026-06-29 Europe/Istanbul
+Son guncelleme: 2026-06-30 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
 Yeni banka ekstrelerini Onay Merkezi'nden kontrollu sekilde BizimHesap kuyruÄŸuna almak.
 
-Durum: Ilk BizimHesap kayit kaniti ve queue kapanisi tamamlandi. Yeni kontrolde Onay Merkezi'nde 25 bekleyen banka hareketi var; 19'u yuksek guvenli, 6'si inceleme istiyor. Hazir BizimHesap kuyrugu 0. Ana ekran toparlama, gelir tablosu komuta matrisi ve sabah onay karti tarih/karar gorunumu main tabanina alindi. Ek netlik katmaniyla banka/onay/gelir/is programi kartlari tek ekranda daha profesyonel ayrildi; 1920x1080 yerel kontrolde tasma giderildi. Sonraki onerilen dusuk riskli aday: Akbank 2026-06-09, -15,96 TL, Banka/POS masrafi, id `4f32c173-c773-4801-93e1-ce3bae757a1b`.
+Durum: Ilk BizimHesap kayit kaniti ve queue kapanisi tamamlandi. Yeni kontrolde Onay Merkezi'nde 25 bekleyen banka hareketi var; 18'i yuksek guvenli, 7'si inceleme istiyor. Hazir BizimHesap kuyrugu 0. Ana ekran toparlama, gelir tablosu komuta matrisi ve sabah onay karti tarih/karar gorunumu main tabanina alindi. Ek netlik katmaniyla banka/onay/gelir/is programi kartlari tek ekranda daha profesyonel ayrildi; 1920x1080 yerel kontrolde tasma giderildi. Sonraki onerilen dusuk riskli aday: VakifBank 2026-05-13, -34 TL, Banka/POS masrafi, guven %90, id `d4164166-5427-4f46-8f66-a84b43dddd0b`.
 
 ## Neden Bu Hedef?
 

@@ -2,6 +2,15 @@
 
 ## 2026-06-30
 
+### Banka Aday Kontrolu
+
+- Canli ana ekran `a5f3548-final` uzerinden 1920x1080 olculdu; ana kartlar sinir icinde kaldi.
+- Gelir Tablosu Komuta Matrisi ilk yuklemede bekledi, veri yukleme sonrasi render oldu; console hatasi gorulmedi.
+- `npm run bank:approval:candidates` salt-okunur calisti: 25 bekleyen hareket, 18 yuksek guven, 7 inceleme isteyen kayit var.
+- Onerilen ilk dusuk riskli aday: VakifBank 2026-05-13, -34 TL, Banka/POS masrafi, guven %90, pending id `d4164166-5427-4f46-8f66-a84b43dddd0b`.
+- `npm run bizimhesap:queue:dry` 0 hazir BizimHesap kuyrugu gosterdi.
+- Kullanici onayi olmadan RPC, queue approve veya BizimHesap save calistirilmadi.
+
 ### Ana Ekran Netlik Katmani
 
 - Dashboard icin baskin son tasarim katmani eklendi.
