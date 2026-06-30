@@ -520,12 +520,21 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .bank-command-pill{display:inline-flex;border-radius:999px;padding:4px 7px;margin:7px 5px 0 0;font-size:10px;font-weight:900;background:rgba(255,255,255,.12);color:#F8FAFC}
 .bank-command-pill.warn{background:rgba(245,158,11,.22);color:#FDE68A}
 .morning-approval-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
-.morning-approval-card{border:1px solid #E2E8F0;border-left:5px solid #F59E0B;border-radius:14px;background:#fff;padding:12px;box-shadow:0 10px 26px rgba(15,23,42,.06)}
-.morning-approval-head{display:flex;justify-content:space-between;gap:8px;color:#64748B;font-size:11px;font-weight:900}
-.morning-approval-desc{font-size:14px;font-weight:950;line-height:1.28;margin:8px 0;color:#0F172A}
+.morning-approval-card{border:1px solid #DDE6F2;border-left:5px solid #F59E0B;border-radius:16px;background:linear-gradient(180deg,#FFFFFF,#F8FAFC);padding:12px;box-shadow:0 12px 28px rgba(15,23,42,.07)}
+.morning-approval-card:hover{border-color:#93C5FD;box-shadow:0 0 0 3px rgba(37,99,235,.10),0 16px 34px rgba(15,23,42,.12)}
+.morning-approval-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;color:#64748B;font-size:11px;font-weight:900}
+.morning-approval-source{display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap}
+.morning-approval-chip{display:inline-flex;align-items:center;max-width:100%;min-height:22px;border:1px solid #E2E8F0;border-radius:999px;background:#FFFFFF;padding:3px 7px;font-family:var(--mono);font-size:9px;font-weight:950;color:#475569;white-space:nowrap}
+.morning-approval-chip.bank{color:#075985;background:#F0F9FF;border-color:#BAE6FD}
+.morning-approval-date{display:inline-flex;align-items:center;justify-content:flex-end;min-width:max-content;border:1px solid #FED7AA;border-radius:999px;background:#FFF7ED;padding:3px 7px;font-family:var(--mono);font-size:9px;font-weight:950;color:#9A3412;white-space:nowrap}
+.morning-approval-desc{font-size:14px;font-weight:950;line-height:1.28;margin:9px 0;color:#0F172A}
 .morning-approval-amt{font-family:var(--mono);font-size:22px;font-weight:950;margin:6px 0}
 .morning-approval-amt.in{color:#059669}.morning-approval-amt.out{color:#DC2626}
-.morning-approval-meta{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:8px;font-size:10px;line-height:1.55;color:#334155;font-weight:750}
+.morning-approval-meta{background:#FFFFFF;border:1px solid #DDE6F2;border-radius:12px;padding:8px;font-size:10px;line-height:1.55;color:#334155;font-weight:750}
+.morning-approval-plan{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:7px}
+.morning-approval-plan span{border:1px solid #E2E8F0;border-radius:9px;background:#F8FAFC;padding:5px 6px;min-width:0}
+.morning-approval-plan b{display:block;font-size:9px;color:#64748B;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.morning-approval-plan em{display:block;font-style:normal;font-weight:950;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .morning-approval-audit{display:flex;align-items:center;gap:6px;flex-wrap:wrap;border:1px solid;border-radius:10px;padding:7px 8px;margin-top:8px;font-size:10px;font-weight:950;line-height:1.25}
 .morning-approval-audit span{font-family:var(--mono);font-weight:900;color:inherit;opacity:.9}
 .morning-approval-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
@@ -1802,10 +1811,12 @@ body.dashboard-mode .morning-approval-amt{
 body.dashboard-mode .morning-approval-meta{
   font-size:10px !important;
   line-height:1.3 !important;
-  display:-webkit-box !important;
-  -webkit-line-clamp:2 !important;
-  -webkit-box-orient:vertical !important;
+  display:block !important;
   overflow:hidden !important;
+}
+body.dashboard-mode .morning-approval-plan{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:5px !important;
 }
 body.dashboard-mode .morning-approval-audit{
   margin-top:8px !important;
@@ -2089,7 +2100,16 @@ body.dashboard-mode .morning-approval-grid{
 body.dashboard-mode .morning-approval-card{
   border-radius:12px !important;
   border-left-width:4px !important;
-  box-shadow:none !important;
+  box-shadow:0 10px 22px rgba(15,23,42,.07) !important;
+}
+body.dashboard-mode .morning-approval-head{
+  align-items:flex-start !important;
+}
+body.dashboard-mode .morning-approval-date{
+  font-size:9px !important;
+}
+body.dashboard-mode .morning-approval-chip{
+  font-size:9px !important;
 }
 body.dashboard-mode .roadmap-grid{
   scrollbar-width:thin;
@@ -5397,6 +5417,14 @@ async function bankaRawData(){
 }
 function bankRowTime(r){return (r.transaction_time||r.saat||'').toString().substring(0,8);}
 function bankRowUpdatedAt(r){return (r.updated_at||r.approved_at||r.created_at||r.mail_date||r.tarih||r.transaction_date||'').toString();}
+function bankDateTR(v){
+  const s=(v||'').toString().trim();
+  const m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m)return `${m[3]}.${m[2]}.${m[1]}`;
+  const d=new Date(s);
+  if(Number.isNaN(d.getTime()))return s||'-';
+  return d.toLocaleDateString('tr-TR',{timeZone:'Europe/Istanbul',day:'2-digit',month:'2-digit',year:'numeric'});
+}
 function repairBankText(v){
   const s=(v??'').toString();
   if(!/[ÃÄÅÂ]/.test(s))return s;
@@ -5588,17 +5616,24 @@ function bankMorningCardHtml(r){
   const srcArg=JSON.stringify(r._source||'banka_raw');
   const st=bankActionState(r,1);
   const source=escHtml(r._source_label||'Mail Ekstre');
-  const date=escHtml(`${(r.tarih||'').substring(0,10)} ${bankRowTime(r)||''}`.trim());
+  const bank=escHtml(bankNameOf(r));
+  const date=escHtml(`${bankDateTR(r.tarih||r.transaction_date||r.mail_date||r.created_at)}${bankRowTime(r)?` · ${bankRowTime(r).substring(0,5)}`:''}`);
   return `<div class="morning-approval-card">
-    <div class="morning-approval-head"><span>${source}</span><span>${date}</span></div>
+    <div class="morning-approval-head">
+      <div class="morning-approval-source"><span class="morning-approval-chip">${source}</span><span class="morning-approval-chip bank">${bank}</span></div>
+      <span class="morning-approval-date">${date}</span>
+    </div>
     <div class="morning-approval-desc">${escHtml(r.aciklama||'')}</div>
     <div class="morning-approval-amt ${credit?'in':'out'}">${signed}</div>
     <div class="morning-approval-meta">
-      ID: ${escHtml(shortId(r.id))}<br>
-      Banka: <b>${escHtml(bankNameOf(r))}</b> · Bakiye: <b>${bankBalanceDisplay(r)}</b><br>
-      BizimHesap: <b>${escHtml(p.type)}</b> / ${escHtml(p.category)}<br>
-      Cari: <b>${escHtml(p.cari)}</b><br>
-      Güven: <b>${fmt(p.confidence)}%</b> · ${escHtml(p.reasons.join(' · '))}
+      <b>ID:</b> ${escHtml(shortId(r.id))} · <b>Bakiye:</b> ${bankBalanceDisplay(r)}
+      <div class="morning-approval-plan">
+        <span><b>BizimHesap</b><em>${escHtml(p.type)}</em></span>
+        <span><b>Cari</b><em>${escHtml(p.cari)}</em></span>
+        <span><b>Kategori</b><em>${escHtml(p.category)}</em></span>
+        <span><b>Güven</b><em>${fmt(p.confidence)}%</em></span>
+      </div>
+      <div style="margin-top:6px;color:#64748B">${escHtml(p.reasons.join(' · '))}</div>
     </div>
     ${bankPostingAuditLine(r)}
     <div class="morning-approval-actions">
