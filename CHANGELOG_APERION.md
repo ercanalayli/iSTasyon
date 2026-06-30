@@ -2,6 +2,21 @@
 
 ## 2026-06-30
 
+### Sabah Onay Kartlari Tarih ve Karar Gorunumu
+
+- Banka onay kartlarinda tarih `yyyy-aa-gg` kirpilmis gorunumden `gg.aa.yyyy · ss:dd` formatina alindi.
+- Kart basligi kaynak, banka ve tarih ciplerine ayrildi.
+- BizimHesap kayit plani kart icinde `BizimHesap`, `Cari`, `Kategori`, `Guven` kutulari olarak gosterildi.
+- Kart okunabilirligi icin hover, cerceve, mini plan grid ve tasma kontrolleri iyilestirildi.
+
+### Sabah Onay Kartlari Dogrulamasi
+
+- `2026-06-10` ornek tarihi `10.06.2026` olarak dogrulandi.
+- Inline JS syntax kontrolu gecti.
+- `npm run finance-smoke`
+- `npm run verify:bank-approval-action`
+- `npm run verify:bizimhesap:queue`
+
 ### Gelir Tablosu Komuta Matrisi
 
 - Ana ekrana kullanicinin Excel ornegindeki mantiga uygun kompakt gelir tablosu matrisi eklendi.

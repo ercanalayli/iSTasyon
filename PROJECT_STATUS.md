@@ -70,6 +70,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-30 gelir tablosu komuta matrisi turu sonucu: Ana ekrana kullanicinin Excel ornegindeki mantiga uygun `Gelir Tablosu Komuta Matrisi` eklendi. Satirlar satis kategorileri, satilan malin maliyeti, brut kar, sabit gider, degisken gider, vergi/SGK ve net kar olarak kuruldu. Kolonlar bugun, dun, bu hafta, bu ay, gecen ay, bu yil, gecen yil olarak hesaplanir. Hucreler tiklanabilir; satis satirlarinda kategori -> urun -> hareket listesi, gider/maliyet/net satirlarinda kaynak kayit listesi modalda acilir. Kategori kar katsayilari maliyet ve brut kar hesabinda kullanilir. JS syntax, `finance-smoke`, `verify:bank-approval-action`, `verify:bizimhesap:queue` ve `bizimhesap:queue:dry` gecti.
 
+2026-06-30 sabah onay karti tarih/okunabilirlik turu sonucu: Ana ekrandaki banka onay kartlarinda ISO tarih kirpilmasi yerine `gg.aa.yyyy · ss:dd` formati eklendi; `2026-06-10` gibi veriler artik `10.06.2026` olarak gosterilir. Kart basligi kaynak, banka ve tarih ciplerine ayrildi. BizimHesap kayit plani kart icinde `BizimHesap`, `Cari`, `Kategori`, `Guven` kutulari olarak gosterilir. Boylesi kullanici sabah onay kartina baktiginda hareketin nereye, hangi cariyle, hangi kategoriyle ve hangi guvenle gidecegini tek bakista gorur. `finance-smoke`, `verify:bank-approval-action`, `verify:bizimhesap:queue` ve inline JS syntax kontrolu gecti.
+
 ## Kullanici Istek Listesi / Urun Yon Haritasi
 
 1. Veri guveni: firma izolasyonu, kaynak kaniti, dry-run/live ayrimi, mukerrer kayit engeli.
