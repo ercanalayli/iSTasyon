@@ -72,6 +72,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-30 sabah onay karti tarih/okunabilirlik turu sonucu: Ana ekrandaki banka onay kartlarinda ISO tarih kirpilmasi yerine `gg.aa.yyyy · ss:dd` formati eklendi; `2026-06-10` gibi veriler artik `10.06.2026` olarak gosterilir. Kart basligi kaynak, banka ve tarih ciplerine ayrildi. BizimHesap kayit plani kart icinde `BizimHesap`, `Cari`, `Kategori`, `Guven` kutulari olarak gosterilir. Boylesi kullanici sabah onay kartina baktiginda hareketin nereye, hangi cariyle, hangi kategoriyle ve hangi guvenle gidecegini tek bakista gorur. `finance-smoke`, `verify:bank-approval-action`, `verify:bizimhesap:queue` ve inline JS syntax kontrolu gecti.
 
+2026-06-30 GitHub yayin turu sonucu: Komut satiri push kilidi `credential.helper=wincred` ile cozuldu. `codex/b2b-api-delta` branch'ine gelir tablosu komuta matrisi ve sabah onay karti tarih/karar gorunumu commitleri gonderildi. GitHub Pages canli yayin icin bu branch'teki degisikliklerin main'e alinmasi veya Pages kaynaginin bu branch'e bakmasi gerekir.
+
 ## Kullanici Istek Listesi / Urun Yon Haritasi
 
 1. Veri guveni: firma izolasyonu, kaynak kaniti, dry-run/live ayrimi, mukerrer kayit engeli.

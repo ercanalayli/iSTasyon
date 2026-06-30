@@ -2,6 +2,12 @@
 
 ## 2026-06-30
 
+### GitHub Branch Yayini
+
+- Komut satiri push kilidi `credential.helper=wincred` ile cozuldu.
+- `codex/b2b-api-delta` branch'ine ana ekran gelir tablosu matrisi ve sabah onay karti duzeltmeleri gonderildi.
+- Not: GitHub Pages canli yayin icin branch'in main'e alinmasi veya Pages kaynaginin bu branch'e bakmasi gerekir.
+
 ### Sabah Onay Kartlari Tarih ve Karar Gorunumu
 
 - Banka onay kartlarinda tarih `yyyy-aa-gg` kirpilmis gorunumden `gg.aa.yyyy · ss:dd` formatina alindi.

@@ -6,7 +6,7 @@ Son guncelleme: 2026-06-30 Europe/Istanbul
 
 Ana ekrani profesyonel tek ekran Ust Akil komuta paneline donusturmek.
 
-Durum: v73/v75 ana ekran temizligi basladi. Banka paneli, gelir tablosu, sabah onay kartlari ve yol haritasi tek ekran gridine alindi. Gelir Tablosu Komuta Matrisi eklendi: bugun/dun/hafta/ay/gecen ay/yil/gecen yil kolonlari; satis kategorileri, maliyet, brut kar, gider, vergi ve net kar satirlari tiklanabilir. Sabah onay kartlarinda tarih `gg.aa.yyyy · ss:dd` formatina alindi; kaynak, banka, BizimHesap, cari, kategori ve guven bilgileri ayrildi. Akis testleri gecti; hazir BizimHesap kuyrugu 0.
+Durum: v73/v75 ana ekran temizligi basladi. Banka paneli, gelir tablosu, sabah onay kartlari ve yol haritasi tek ekran gridine alindi. Gelir Tablosu Komuta Matrisi eklendi: bugun/dun/hafta/ay/gecen ay/yil/gecen yil kolonlari; satis kategorileri, maliyet, brut kar, gider, vergi ve net kar satirlari tiklanabilir. Sabah onay kartlarinda tarih `gg.aa.yyyy · ss:dd` formatina alindi; kaynak, banka, BizimHesap, cari, kategori ve guven bilgileri ayrildi. Degisiklikler `codex/b2b-api-delta` branch'ine push edildi. Akis testleri gecti; hazir BizimHesap kuyrugu 0.
 
 ## Neden Bu Hedef?
 
@@ -19,6 +19,7 @@ Kullanici sistemi sabah actiginda bankayi, onayi, gelir tablosunu, riskleri ve a
 3. Onay kartlari: canli veride tarih, banka, cari, kategori ve guven alanlari ekran goruntusuyle tekrar kontrol edilecek.
 4. Gelir tablosu detay modalinda kategori -> urun -> hareket akisi gorsel olarak zenginlestirilecek.
 5. Sonraki turda tasarim canliya alinmadan once ekran goruntusu ve smoke test tekrar edilecek.
+6. Branch main'e alinacak veya GitHub Pages kaynagi guncellenecek; sonra kullanici canli ekranda kontrol edecek.
 
 ## Kabul Kriteri
 
