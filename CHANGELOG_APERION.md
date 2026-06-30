@@ -2,6 +2,16 @@
 
 ## 2026-06-30
 
+### DealerStatement Gelecek Tahsilat Plani
+
+- `tools/build_dealer_statement_receivables_v72.cjs` eklendi.
+- `finance-calendar:dealer-statement` npm komutu eklendi.
+- `.xls` uzantili HTML DealerStatement raporu okunur hale geldi.
+- `Bayi Ekstre ID` kaynak anahtari olarak kullanildi; tekrar gelen raporlarda mukerrer insert engeli icin SQL preview `not exists` uretir.
+- `DealerStatement (3).xls` kuru calisti: 705 satir, 83 gelecek tahsilat, TL 681.416,43.
+- Cikti `finance_calendar_items` modeline `receivable / in / forecast` olarak hazirlandi.
+- Canli Supabase insert yapilmadi.
+
 ### Banka Aday Kontrolu
 
 - Canli ana ekran `a5f3548-final` uzerinden 1920x1080 olculdu; ana kartlar sinir icinde kaldi.

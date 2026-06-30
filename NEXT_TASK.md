@@ -4,35 +4,29 @@ Son guncelleme: 2026-06-30 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Yeni banka ekstrelerini Onay Merkezi'nden kontrollu sekilde BizimHesap kuyruÄŸuna almak.
+DealerStatement raporundan gelecek tahsilatlari Finans Takvimi / butce hattina guvenli baglamak.
 
-Durum: Ilk BizimHesap kayit kaniti ve queue kapanisi tamamlandi. Yeni kontrolde Onay Merkezi'nde 25 bekleyen banka hareketi var; 18'i yuksek guvenli, 7'si inceleme istiyor. Hazir BizimHesap kuyrugu 0. Ana ekran toparlama, gelir tablosu komuta matrisi ve sabah onay karti tarih/karar gorunumu main tabanina alindi. Ek netlik katmaniyla banka/onay/gelir/is programi kartlari tek ekranda daha profesyonel ayrildi; 1920x1080 yerel kontrolde tasma giderildi. Sonraki onerilen dusuk riskli aday: VakifBank 2026-05-13, -34 TL, Banka/POS masrafi, guven %90, id `d4164166-5427-4f46-8f66-a84b43dddd0b`.
+Durum: `DealerStatement (3).xls` dosyasi okundu. Dosya `.xls` uzantili HTML tablo formatinda. Yeni `finance-calendar:dealer-statement` komutu 705 satirdan 83 gelecek tahsilat cikardi ve toplam TL 681.416,43 plan uretti. Kaynak anahtar `Bayi Ekstre ID`; hedef finans takvimi modeli `receivable / in / forecast`. Canli Supabase insert yapilmadi.
 
 ## Neden Bu Hedef?
 
-Kullanici bankadan gelen hareketlerin analiz edilmis sekilde Onay Merkezi'ne dusmesini, tek tek onaylanmasini ve BizimHesap'a kontrollu islenmesini istiyor. Bir onceki kayit kanitlandi; siradaki hedef ayni guvenli akisi yeni kayitlarda tekrar etmek.
+Kullanici bu sistem raporunu duzenli gondererek gelecek donem tahsilatlarini butceye eklemek istiyor. Bu veri nakit akisi, planlanan gelir, tahsil edilecekler ve ay bazli karar ekranlarini besleyecek.
 
 ## Siradaki Is Paketi
 
-1. Kullanici secili adayi onaylarsa `approve_pending_bank_movement` sadece bu id icin calistirilacak.
-2. Olusan `bizimhesap_queue` dry-run ile okunacak.
-3. BizimHesap formu once kaydetmeden doldurulup kanit alinacak.
-4. Kullanici ikinci kez acikca onaylarsa canli save calistirilacak.
-5. Sonra queue `processed` kaniti alinacak.
-6. Canli ana ekran acilip tarih/karar kartlari ve gelir matrisi kullanici ekraninda kontrol edilecek.
-7. Kullanici ekran onayi sonrasi siradaki banka adayi icin ayni guvenli Onay Merkezi -> BizimHesap kuyrugu akisi devam edecek.
+1. Uretilen `data/dealer_statement_finance_calendar_plan.json` plan dosyasi incelenecek.
+2. `sql_preview` icindeki `not exists` mukerrer kilidi Supabase `finance_calendar_items` icin canliya alinacak.
+3. Finans Takvimi ve ana ekran Planlanan/Gerceklesen tahsilat kartlarinda bu kayitlar gorunecek.
+4. Ayni rapor tekrar geldiyse `Bayi Ekstre ID` ile mukerrer kayit olusmayacak.
+5. Mail/Drive otomasyonunda DealerStatement eki gelince bu parser calisacak.
 
 ## Kabul Kriteri
 
-- Secilen hareketin kullanici tarafindan onaylandigi net: tamamlandi.
-- Onay sonrasi `bizimhesap_queue` icinde hazir kayit gorulmelidir: tamamlandi.
-- Worker dry-run planinda hesap/cari/kayit turu okunmalidir: tamamlandi.
-- BizimHesap formu kaydetmeden doldurulmalidir: tamamlandi.
-- Kesin canli kayit kullanici onayi olmadan yapilmamalidir: tamamlandi, kullanici onayi sonrasi tek id icin save calisti.
-- Kuyruk kapanis fonksiyonu kurulu olmalidir: tamamlandi.
-- Kayit olustu kaniti BizimHesap ekranindan alinmalidir: kullanici tarafindan dogrulandi.
-- Mukerrer kayit engeli olmalidir: tamamlandi, manuel kanitli queue tekrar save yapmadan atlanir.
-- Test sonucu tur sonunda raporlanmalidir: tamamlandi.
+- Parser raporu bozmadan okumali: tamamlandi.
+- Gelecek tahsilatlar tarih ve tutarla ayrilmali: tamamlandi.
+- Cikti Finans Takvimi modeline uygun olmali: tamamlandi.
+- Canli insert onaysiz yapilmamali: tamamlandi.
+- Supabase insert sonrasi ana ekranda gorunurluk: bekliyor.
 
 Yeni aday kabul kriteri:
 

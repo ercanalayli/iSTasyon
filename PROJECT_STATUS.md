@@ -1,6 +1,6 @@
 # AperiON Project Status
 
-Son guncelleme: 2026-06-29 Europe/Istanbul
+Son guncelleme: 2026-06-30 Europe/Istanbul
 
 ## Calisma Protokolu
 
@@ -59,6 +59,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 2026-06-30 ana ekran netlik katmani turu sonucu: Dashboard uzerine son baskin tasarim katmani eklendi. Banka, gelir, sabah onay ve is programi kartlari daha net ayrildi; hover cerceveleri, renkli sol seritler, beyaz operasyon kartlari ve kompakt grid olculeri eklendi. Banka Komuta Merkezi artik dis karta tasmaz; `#bankCommandCenter` flex kapsayiciya alindi ve banka grid'i kart sinirinda kalacak sekilde kilitlendi. Roadmap/ana is programi eski gizleme kuralindan kurtarildi. 1920x1080 yerel kontrolde ana kartlar tek ekranda gorundu, banka paneli sinir icinde kaldi ve gelir matrisi async yukleme sonrasi render oldu. JS syntax, `finance-smoke`, `verify:bank-approval-action` ve `verify:bizimhesap:queue` gecti.
 
 2026-06-30 banka aday kontrol turu sonucu: Canli ana ekran `a5f3548-final` uzerinden 1920x1080 olculdu; ana kartlar sinir icinde, gelir matrisi veri yukleme sonrasi render oldu. `npm run bank:approval:candidates` salt-okunur calisti: 25 bekleyen hareket, 18 yuksek guven, 7 inceleme isteyen kayit var. Onerilen ilk dusuk riskli aday: VakifBank 2026-05-13, -34 TL, Banka/POS masrafi, hedef cari `VakifBank`, guven %90, pending id `d4164166-5427-4f46-8f66-a84b43dddd0b`. `npm run bizimhesap:queue:dry` 0 hazir BizimHesap kuyrugu gosterdi. Kullanici onayi olmadan RPC, queue approve veya BizimHesap save calistirilmadi.
+
+2026-06-30 DealerStatement gelecek tahsilat turu sonucu: Kullanici `DealerStatement (3).xls` sistem raporunu paylasti. Dosyanin `.xls` uzantili HTML tablo oldugu goruldu. `tools/build_dealer_statement_receivables_v72.cjs` eklendi; rapor `Bayi Ekstre ID` anahtariyla okunur, `Odeme Tarihi >= as-of` ve `Durum=Aktif` kayitlari `finance_calendar_items` icin `receivable/in/forecast` planina cevirir. `npm run finance-calendar:dealer-statement -- --file="C:\Users\HP\Downloads\DealerStatement (3).xls" --as-of=2026-06-30 --company=ALAYLI` calisti: 705 satir, 83 gelecek tahsilat, TL 681.416,43 toplam plan uretti. Canli Supabase insert yapilmadi.
 
 Son denetimde calisan komutlar:
 
