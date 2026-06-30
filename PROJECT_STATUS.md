@@ -1,6 +1,6 @@
 # AperiON Project Status
 
-Son guncelleme: 2026-06-29 Europe/Istanbul
+Son guncelleme: 2026-06-30 Europe/Istanbul
 
 ## Calisma Protokolu
 
@@ -65,6 +65,25 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 2026-06-30 VakifBank banka masrafi canli kayit turu sonucu: Kullanici mesajinda `BizimHesap'a kaydetmeyi onayliyorum` dedi ve onay modelini sordu. Sadece queue id `9eb2c038-8eec-4d28-82f8-0078285ae902` icin `BIZIMHESAP_POSTING_LIVE=1` ve `BIZIMHESAP_POSTING_SAVE=1` ile worker calisti. BizimHesap kaydet butonuna basildi, kayit sonrasi ekran kaniti `diagnostics/bizimhesap_queue_9eb2c038-8eec-4d28-82f8-0078285ae902_after_save.png` / `.txt` olarak alindi. Sonraki `npm run bizimhesap:queue:dry` sonucu `queue_count: 0`. Calisma prensibi netlestirildi: test asamasinda canli kayit onayi Codex sohbetinden aliniyor; urun hedefi AperiON Onay Merkezi'nde tek tik onay/tek tik BizimHesap'a isle akisi.
 
 2026-06-30 Onay Merkezi urun akisi netlestirme turu sonucu: Banka Onay ekraninda kullaniciya sohbetten onay gerekiyormus gibi gorunen metinler duzeltildi. Pending hareketlerde buton dili `AperiON’da Onayla` oldu; queue olusmus kayitlarda `BizimHesap’a Islenecek` ve `Worker sirada` durumu gorunur hale geldi. Sabah Onay Kartlari metni, BizimHesap kaydinin tarayicidan degil gizli oturumlu worker tarafindan arka planda islenecegini aciklar. Bu sayede urun hedefi net: kullanici AperiON ekranindan onay verir; BizimHesap kaydi secret acilmadan worker ile islenir.
+
+2026-06-30 ana ekran profesyonel toparlama turu sonucu: Ust Akil ana ekraninda v73/v75 tasarim kilidi eklendi. Banka Komuta Merkezi koyu ve dev bloktan daha sakin beyaz operasyon kartina donusturuldu; banka, gelir tablosu, sabah onay kartlari ve yol haritasi tek ekran gridine yerlestirildi. Eski 1380px responsive kuralinin kartlari ust uste bindirmesi engellendi; kartlar kendi hucrelerinde kalacak sekilde yukseklik/tasma kilidi eklendi. `npm run verify:bank-approval-action`, `npm run verify:bizimhesap:queue`, `npm run finance-smoke` ve `npm run bizimhesap:queue:dry` gecti; hazir BizimHesap kuyrugu 0.
+
+## Kullanici Istek Listesi / Urun Yon Haritasi
+
+1. Veri guveni: firma izolasyonu, kaynak kaniti, dry-run/live ayrimi, mukerrer kayit engeli.
+2. BizimHesap kalici oturum: yeni giris sistemi, ALAYLI MEDIKAL secimi, saatlik veri cekimi.
+3. Banka mail ekstre sistemi: Akbank, Garanti BBVA, Is Bankasi, VakifBank, Yapi Kredi; farkli formatlari okuma, eski kayitlari suzme, son hareket id takibi.
+4. Onay Merkezi: banka hareketini cari/hesap/kategori/kayit turu/guven/mukerrer analiziyle gostermek.
+5. BizimHesap kaydi: AperiON icinde tek tik onay, gizli worker ile BizimHesap banka/kasa/gider/tahsilat kaydi, kayit sonrasi kanit.
+6. Gelir tablosu: planlanan, tahakkuk, gerceklesen/nakit mantiklari; bugun, dun, bu hafta, bu ay, gecen ay, bu yil, gecen yil filtreleri.
+7. Ana karar oranlari: satis/tahsilat, satis/alis, tahsilat/(urun alis odemeleri + gider odemeleri).
+8. Finans hesaplari: banka, kasa, cek, senet, kredi karti kurgusu ve BizimHesap ile birebir koordinasyon.
+9. Telegram/mail evrak akisi: gorsel/PDF/ekstre alip Onay Merkezi'ne dusurme.
+10. Urun karliligi: kategori kar katsayilari, dinamik urun karti, stok omru, kacirma stok, fiyat listesi ve internet fiyat analizi.
+11. Hasta bezi raporu: ana ekranda kompakt ozet; tiklayinca kategori/urun drilldown, isi haritasi, stok sonrasi kalan gun ve alarm.
+12. Sabit/sozlesmeli/ongorulen gelir-gider: isletme ve kisisel ikinci beyin icin kart sistemi.
+13. Cache/isletme hafizasi: agir sorgulari surekli sorgulamak yerine hazir ozet dosya/tablo uzerinden okutma.
+14. Profesyonel tek ekran ana panel: kaydirmadan bakinca banka, onay, gelir, risk, aksiyon ve senkron durumu anlasilmali.
 
 Son denetimde calisan komutlar:
 
