@@ -56,6 +56,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-30 Akbank banka masrafi kuyruk/form turu sonucu: Kullanici `onay veriyorum` dedi. Sadece Akbank 2026-06-09, -15,96 TL Banka/POS masrafi adayi icin `approve_pending_bank_movement` calisti. Pending id `4f32c173-c773-4801-93e1-ce3bae757a1b` BizimHesap queue id `d65f907a-1255-442c-9db4-ed639820c1c9` olarak `ready_for_bizimhesap` durumuna alindi. `npm run bizimhesap:queue:dry` 1 hazir kayit buldu. `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form` ile BizimHesap formu dolduruldu ve kaydet tusuna basilmadi. Form kaniti `diagnostics/bizimhesap_queue_d65f907a-1255-442c-9db4-ed639820c1c9_form.png` ve `.txt` olarak olustu. Canli BizimHesap kaydi icin ikinci acik onay bekleniyor.
 
+2026-06-30 Akbank banka masrafi canli kayit turu sonucu: Kullanici `BizimHesap'a kaydetmeyi onayliyorum` dedi. Sadece queue id `d65f907a-1255-442c-9db4-ed639820c1c9` icin `BIZIMHESAP_POSTING_LIVE=1` ve `BIZIMHESAP_POSTING_SAVE=1` ile worker calisti. BizimHesap kaydet butonuna basildi ve kayit sonrasi ekran kaniti `diagnostics/bizimhesap_queue_d65f907a-1255-442c-9db4-ed639820c1c9_after_save.png` / `.txt` olarak alindi. Sonraki `npm run bizimhesap:queue:dry` sonucu `queue_count: 0`; hazir BizimHesap kuyrugu kalmadi.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -93,6 +95,8 @@ Son denetimde calisan komutlar:
 - `node tools/approve_bank_candidate_v70.cjs --id 4f32c173-c773-4801-93e1-ce3bae757a1b --confirm ONAYLIYORUM`: kullanici onayi sonrasi gecti, queue id `d65f907a-1255-442c-9db4-ed639820c1c9` olustu.
 - `npm run bizimhesap:queue:dry`: gecti, 1 hazir kuyruk icin dry-run plan yazildi.
 - `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form`: gecti, form dolduruldu, kaydet tusuna basilmadi.
+- `BIZIMHESAP_POSTING_LIVE=1 BIZIMHESAP_POSTING_SAVE=1 node bizimhesap_queue_worker.cjs --firma alayli --id d65f907a-1255-442c-9db4-ed639820c1c9 --limit 1 --commit --save`: kullanici ikinci onayi sonrasi gecti, BizimHesap kaydet butonuna basildi.
+- `npm run bizimhesap:queue:dry`: gecti, `queue_count: 0`.
 - `npm run bizimhesap:queue:dry`: 0 hazir kuyruk.
 - GitHub Actions `mail-ekstre-pipeline.yml`: son run `success`.
 - GitHub Actions `bizimhesap-queue-worker.yml`: son run `success`.

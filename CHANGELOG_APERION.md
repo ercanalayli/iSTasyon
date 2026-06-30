@@ -250,8 +250,20 @@
 - `npm run bizimhesap:queue:dry`
 - `BIZIMHESAP_POSTING_LIVE=1 npm run bizimhesap:queue:form`
 
+### Akbank Banka Masrafi Canli Kayit
+
+- Kullanici ikinci acik onayi ile queue id `d65f907a-1255-442c-9db4-ed639820c1c9` BizimHesap'a kaydedildi.
+- Worker BizimHesap kaydet butonuna basti ve kayit sonrasi ekran kaniti aldi.
+- Kanit dosyalari `diagnostics/bizimhesap_queue_d65f907a-1255-442c-9db4-ed639820c1c9_after_save.png` ve `.txt`.
+- `npm run bizimhesap:queue:dry` sonucunda hazir kuyruk `0`.
+
+### Akbank Canli Kayit Dogrulamasi
+
+- `BIZIMHESAP_POSTING_LIVE=1 BIZIMHESAP_POSTING_SAVE=1 node bizimhesap_queue_worker.cjs --firma alayli --id d65f907a-1255-442c-9db4-ed639820c1c9 --limit 1 --commit --save`
+- `npm run bizimhesap:queue:dry`
+- `npm run verify:bizimhesap:queue`
+
 ### Degismedi
 
-- Canli BizimHesap kaydi yapilmadi.
 - Yeni tasarim veya refactor yapilmadi.
 - Firma verisi tasinmadi veya silinmedi.
