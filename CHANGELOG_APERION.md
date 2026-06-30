@@ -2,6 +2,23 @@
 
 ## 2026-06-30
 
+### Gelir Tablosu Komuta Matrisi
+
+- Ana ekrana kullanicinin Excel ornegindeki mantiga uygun kompakt gelir tablosu matrisi eklendi.
+- Kolonlar: Bugun, Dun, Bu Hafta, Bu Ay, Gecen Ay, Bu Yil, Gecen Yil.
+- Satis satirlari kategori bazli kuruldu: medikal akulu, medikal elektronik, hasta alti bezi, perine/vucut temizleme, kiralik, karyola, yurume yardimci, ortopedi tekstil, sarf, sonda, kolostomi, ayakkabi/terlik, SGK, solunum.
+- Satilan malin maliyeti, brut kar, sabit gider, degisken gider, vergi/SGK ve net kar satirlari eklendi.
+- Hucreler tiklanabilir hale getirildi; modalda arama, siralama ve kaynak listeleme mevcut detay altyapisina baglandi.
+- Kategori kar katsayilari maliyet ve brut kar hesabinda kullaniliyor.
+
+### Gelir Tablosu Komuta Matrisi Dogrulamasi
+
+- Inline JS syntax kontrolu gecti.
+- `npm run finance-smoke`
+- `npm run verify:bank-approval-action`
+- `npm run verify:bizimhesap:queue`
+- `npm run bizimhesap:queue:dry`
+
 ### Ana Ekran Profesyonel Toparlama
 
 - Ust Akil ana ekranina v73/v75 tasarim kilidi eklendi.
