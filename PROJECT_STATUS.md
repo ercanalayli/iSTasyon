@@ -76,6 +76,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-07-01 DealerStatement Gmail retry turu sonucu: Artifact raporlari okundu. Run `28506469160` attempt 1 ve attempt 2 ayni hatayi verdi: `Invalid response body while trying to fetch https://oauth2.googleapis.com/token: Premature close`. Bu Google OAuth token isteginde gecici baglanti kopmasi olarak siniflandi. Worker'a Gmail arama, mesaj okuma ve ek indirme icin `withRetry` eklendi; `Premature close`, socket/network ve timeout hatalarinda 3 deneme yapacak.
 
+2026-07-01 Gmail OAuth saglik kontrol turu sonucu: Mail-ekstre workflow artifact'i incelendi ve pipeline'in `success` donmesine ragmen tum banka sorgularinda `invalid_grant` verdigi goruldu. Bu Google refresh token'in gecersiz/iptal oldugunu gosterir. `automation/gmail-oauth-check.cjs` ve `gmail:oauth:check` komutu eklendi. DealerStatement ve mail-ekstre workflow'lari artik Gmail OAuth token bozuksa erken kirmizi donecek; hatayi yesil raporlamayacak.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -94,6 +96,7 @@ Son denetimde calisan komutlar:
 - GitHub Actions `AperiON DealerStatement Receivables` run `28502969360`: success; artifact var. Sonuc gate'i eklendi.
 - GitHub Actions `AperiON DealerStatement Receivables` run `28506469160`: failure; artifact var; gate hatayi saklamadi.
 - Artifact raporu: `gmail_failed`, hata `oauth2.googleapis.com/token: Premature close`; retry eklendi.
+- Mail-ekstre artifact raporu: tum banka sorgulari `invalid_grant`; Gmail refresh token yenilenmeli.
 - GitHub raw `index.html`: yeni kod var.
 - GitHub Pages `?v=5370338`: yeni kod var.
 - `npm run bizimhesap:queue:dry`: gecti, hazir kuyruk 0.

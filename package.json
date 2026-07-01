@@ -76,6 +76,7 @@
     "telegram:hatirlat:due": "node telegram_hatirlatma_bot.js --remind-only",
     "telegram:bank-image": "node telegram/aperion_bank_image_bot.cjs",
     "mail:ekstre:preflight": "node automation/mail-ekstre-preflight.cjs",
+    "gmail:oauth:check": "node automation/gmail-oauth-check.cjs",
     "mail:ekstre:actions:check": "node tools/mail_ekstre_actions_check.cjs",
     "mail:ekstre:dry": "cd automation && set DRY_RUN=1&& node mail-ekstre-worker-lite.js",
     "mail:ekstre:run": "cd automation && node mail-ekstre-worker-lite.js",

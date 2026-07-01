@@ -81,6 +81,9 @@ jobs:
           set -o pipefail
           npm run mail:ekstre:preflight | tee mail-ekstre-preflight.txt
 
+      - name: Gmail OAuth token check
+        run: npm run gmail:oauth:check
+
       - name: Ekstre dry-run
         id: dryrun
         continue-on-error: true

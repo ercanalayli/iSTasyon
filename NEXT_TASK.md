@@ -6,7 +6,7 @@ Son guncelleme: 2026-07-01 Europe/Istanbul
 
 DealerStatement raporundan gelecek tahsilatlari Finans Takvimi / butce hattina guvenli baglamak.
 
-Durum: `DealerStatement (3).xls` dosyasi okundu. Dosya `.xls` uzantili HTML tablo formatinda. `finance-calendar:dealer-statement` komutu 2026-07-01 itibariyla 705 satirdan 80 gelecek tahsilat cikardi ve toplam TL 657.666,43 plan uretti. 1 sifir satis tutarli kayit incelemeye ayrildi. `finance-calendar:dealer-statement:import:dry` calisti; canli Supabase insert yapilmadi. Ana Finans Takvimi paneli canli import sonrasi `Gelecek Tahsilat Butcesi` kartinda bu kayitlari gosterecek sekilde hazirlandi. Gmail otomasyonu `dealer-statement-receivables.yml` ile 10:20 ve 17:20 TR dry-run olarak hazirlandi. Gate'li run `28506469160` failure dondu ve artifact olusturdu; artifact hatasi Google OAuth token endpointinde `Premature close`. Worker'a gecici OAuth/network kopmalari icin retry eklendi. Canli insert icin `--commit --confirm ONAYLIYORUM` kilidi hazir.
+Durum: `DealerStatement (3).xls` dosyasi okundu. Dosya `.xls` uzantili HTML tablo formatinda. `finance-calendar:dealer-statement` komutu 2026-07-01 itibariyla 705 satirdan 80 gelecek tahsilat cikardi ve toplam TL 657.666,43 plan uretti. 1 sifir satis tutarli kayit incelemeye ayrildi. `finance-calendar:dealer-statement:import:dry` calisti; canli Supabase insert yapilmadi. Ana Finans Takvimi paneli canli import sonrasi `Gelecek Tahsilat Butcesi` kartinda bu kayitlari gosterecek sekilde hazirlandi. Gmail otomasyonu `dealer-statement-receivables.yml` ile 10:20 ve 17:20 TR dry-run olarak hazirlandi. Mail-ekstre artifact'i tum banka sorgularinda `invalid_grant` verdi; Gmail refresh token gecersiz. `gmail:oauth:check` eklendi ve workflow'lar artik Gmail OAuth bozuksa erken kirmizi donecek. Canli insert icin `--commit --confirm ONAYLIYORUM` kilidi hazir.
 
 ## Neden Bu Hedef?
 
@@ -14,8 +14,8 @@ Kullanici bu sistem raporunu duzenli gondererek gelecek donem tahsilatlarini but
 
 ## Siradaki Is Paketi
 
-1. Retry eklenen workflow run sonucu kontrol edilecek.
-2. Hala `gmail_failed` olursa Google refresh token/secret yenileme gerekecek; `no_attachment` olursa mail arama query'si DealerStatement mailine gore daraltilacak.
+1. Kullanici `alaylimedikal@gmail.com` icin yeni Google refresh token uretecek ve GitHub secret `GOOGLE_REFRESH_TOKEN` olarak guncelleyecek.
+2. `gmail:oauth:check`, mail-ekstre ve DealerStatement workflow run'lari tekrar kontrol edilecek.
 3. Kullanici acik onay verirse `finance-calendar:dealer-statement:import -- --confirm ONAYLIYORUM` calistirilacak.
 4. Ana ekranda `Gelecek Tahsilat Butcesi` kartinda toplam, siradaki tarih ve ay kirilimi gorulecek.
 5. Ayni rapor tekrar geldiyse `Bayi Ekstre ID` ile mukerrer kayit olusmayacak.

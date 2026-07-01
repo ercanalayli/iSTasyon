@@ -53,6 +53,9 @@ jobs:
       - name: Verify automation guard
         run: npm run verify:dealer-statement-automation
 
+      - name: Check Gmail OAuth token
+        run: npm run gmail:oauth:check
+
       - name: DealerStatement Gmail dry-run
         id: dealer_dryrun
         continue-on-error: true

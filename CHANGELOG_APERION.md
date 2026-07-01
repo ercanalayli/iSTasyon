@@ -19,6 +19,9 @@
 - Gate'li GitHub Actions run `28506469160` beklenen sekilde failure verdi ve artifact olusturdu; hata artik yesil gorunmuyor.
 - Artifact raporu `oauth2.googleapis.com/token: Premature close` hatasini gosterdi.
 - DealerStatement Gmail worker'a gecici OAuth/network kopmalari icin 3 denemeli retry eklendi.
+- Mail-ekstre artifact'i incelendi; pipeline success olmasina ragmen Gmail sorgularinin `invalid_grant` verdigi tespit edildi.
+- `automation/gmail-oauth-check.cjs` ve `gmail:oauth:check` eklendi.
+- DealerStatement ve mail-ekstre workflow'lari Gmail OAuth bozuksa erken kirmizi donecek sekilde guncellendi.
 
 ### DealerStatement Finans Takvimi Import Kilidi
 
