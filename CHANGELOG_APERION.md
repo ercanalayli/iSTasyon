@@ -15,6 +15,7 @@
 - Ilk GitHub run `28500494014` Gmail dry-run step'inde failure verdi.
 - Worker Gmail/OAuth hatasinda da `dealer_statement_gmail_worker_report.json` yazacak sekilde guclendirildi.
 - Workflow dry-run step'i `continue-on-error` ve ayrica sonuc raporu adimiyla artifact yuklemeye devam eder hale getirildi.
+- Workflow'a artifact yukleme sonrasinda `Gate DealerStatement result` eklendi; rapor yoksa veya `result` `_failed` ise workflow artik basarisiz donecek.
 
 ### DealerStatement Finans Takvimi Import Kilidi
 

@@ -26,6 +26,8 @@ try {
   must(workflowText.includes('dealer-statement:gmail:dry'), 'workflow dry worker komutunu calistirmiyor');
   must(workflowText.includes('continue-on-error: true'), 'workflow dry-run hatasinda artifact raporu birakacak sekilde devam etmeli');
   must(workflowText.includes('Report DealerStatement dry-run'), 'workflow dry-run sonucunu raporlamali');
+  must(workflowText.includes('Gate DealerStatement result'), 'workflow artifact sonrasi gercek sonucu gate etmeli');
+  must(workflowText.includes("result.endsWith('_failed')"), 'workflow failed sonucu yesil birakmamali');
   must(!workflowText.includes('finance-calendar:dealer-statement:import --'), 'workflow canli import komutu icermemeli');
   must(!workflowText.includes('--commit'), 'workflow icinde --commit bulunmamali');
   must(workflowText.includes('upload-artifact'), 'workflow plan/kanit artifact yuklemeli');
