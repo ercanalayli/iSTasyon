@@ -82,40 +82,49 @@ async function main() {
     throw new Error(`Yanlis mailbox: ${mailbox}. Bu projede yalnizca ${REQUIRED_MAILBOX} kullanilir.`);
   }
 
-  const gmail = makeGmail();
-  const query = mailboxQuery(
-    mailbox,
-    `(filename:xls OR filename:xlsx OR filename:csv OR "DealerStatement" OR "Dealer Statement" OR "Bayi Ekstre") newer_than:${lookbackDays}d`
-  );
-  const found = await searchMessages(gmail, query, maxMessages);
+  try {
+    const gmail = makeGmail();
+    const query = mailboxQuery(
+      mailbox,
+      `(filename:xls OR filename:xlsx OR filename:csv OR "DealerStatement" OR "Dealer Statement" OR "Bayi Ekstre") newer_than:${lookbackDays}d`
+    );
+    report.gmail_query = query;
+    const found = await searchMessages(gmail, query, maxMessages);
 
-  for (const item of found) {
-    const msg = await readMessageSummary(gmail, item.id);
-    const attachments = (msg.attachments || []).filter(isDealerStatementAttachment);
-    report.matched_messages.push({
-      id: msg.id,
-      from: msg.from,
-      subject: msg.subject,
-      date: msg.date,
-      attachment_count: attachments.length,
-      attachments: attachments.map((file) => ({ filename: file.filename, size: file.size, mimeType: file.mimeType })),
-    });
-    if (!attachments.length || report.found_attachment) continue;
+    for (const item of found) {
+      const msg = await readMessageSummary(gmail, item.id);
+      const attachments = (msg.attachments || []).filter(isDealerStatementAttachment);
+      report.matched_messages.push({
+        id: msg.id,
+        from: msg.from,
+        subject: msg.subject,
+        date: msg.date,
+        attachment_count: attachments.length,
+        attachments: attachments.map((file) => ({ filename: file.filename, size: file.size, mimeType: file.mimeType })),
+      });
+      if (!attachments.length || report.found_attachment) continue;
 
-    const attachment = attachments[0];
-    const raw = await readAttachmentBuffer(gmail, msg.id, attachment.attachmentId);
-    ensureDir(artifactDir);
-    const savedFile = path.join(artifactDir, `${Date.now()}_${safeName(attachment.filename)}`);
-    fs.writeFileSync(savedFile, raw);
-    report.found_attachment = true;
-    report.downloaded_file = savedFile;
-    report.selected_message = {
-      id: msg.id,
-      from: msg.from,
-      subject: msg.subject,
-      date: msg.date,
-      attachment: attachment.filename,
-    };
+      const attachment = attachments[0];
+      const raw = await readAttachmentBuffer(gmail, msg.id, attachment.attachmentId);
+      ensureDir(artifactDir);
+      const savedFile = path.join(artifactDir, `${Date.now()}_${safeName(attachment.filename)}`);
+      fs.writeFileSync(savedFile, raw);
+      report.found_attachment = true;
+      report.downloaded_file = savedFile;
+      report.selected_message = {
+        id: msg.id,
+        from: msg.from,
+        subject: msg.subject,
+        date: msg.date,
+        attachment: attachment.filename,
+      };
+    }
+  } catch (error) {
+    report.result = 'gmail_failed';
+    report.error = error.message || String(error);
+    report.note = 'Gmail DealerStatement taramasi basarisiz oldu; canli veri yazilmadi.';
+    writeJson(reportFile, report);
+    throw error;
   }
 
   if (!report.found_attachment) {

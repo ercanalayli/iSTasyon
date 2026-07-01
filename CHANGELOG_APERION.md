@@ -12,6 +12,9 @@
 - Worker DealerStatement ekini indirir, Finans Takvimi planini uretir ve yalnizca dry-run import kaniti yazar.
 - Workflow ve worker icinde `--commit` kullanimi yok; canli Supabase insert yapilmaz.
 - `tools/verify_dealer_statement_automation_v74.cjs` ve `verify:dealer-statement-automation` eklendi.
+- Ilk GitHub run `28500494014` Gmail dry-run step'inde failure verdi.
+- Worker Gmail/OAuth hatasinda da `dealer_statement_gmail_worker_report.json` yazacak sekilde guclendirildi.
+- Workflow dry-run step'i `continue-on-error` ve ayrica sonuc raporu adimiyla artifact yuklemeye devam eder hale getirildi.
 
 ### DealerStatement Finans Takvimi Import Kilidi
 

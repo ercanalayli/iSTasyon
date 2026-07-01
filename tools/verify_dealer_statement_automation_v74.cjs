@@ -24,12 +24,15 @@ try {
 
   must(workflowText.includes('GMAIL_MAILBOX: alaylimedikal@gmail.com'), 'workflow dogru mailbox ile kilitli degil');
   must(workflowText.includes('dealer-statement:gmail:dry'), 'workflow dry worker komutunu calistirmiyor');
+  must(workflowText.includes('continue-on-error: true'), 'workflow dry-run hatasinda artifact raporu birakacak sekilde devam etmeli');
+  must(workflowText.includes('Report DealerStatement dry-run'), 'workflow dry-run sonucunu raporlamali');
   must(!workflowText.includes('finance-calendar:dealer-statement:import --'), 'workflow canli import komutu icermemeli');
   must(!workflowText.includes('--commit'), 'workflow icinde --commit bulunmamali');
   must(workflowText.includes('upload-artifact'), 'workflow plan/kanit artifact yuklemeli');
 
   must(workerText.includes("REQUIRED_MAILBOX = 'alaylimedikal@gmail.com'"), 'worker mailbox guard eksik');
   must(workerText.includes('import_dealer_statement_receivables_v73.cjs'), 'worker dry import baglantisi eksik');
+  must(workerText.includes("report.result = 'gmail_failed'"), 'worker Gmail hatasini rapora yazmali');
   must(!workerText.includes('--commit'), 'worker canli commit argumani icermemeli');
 
   must(packageJson.scripts['dealer-statement:gmail:dry'], 'package script dealer-statement:gmail:dry eksik');

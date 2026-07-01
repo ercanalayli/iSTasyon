@@ -54,6 +54,8 @@ jobs:
         run: npm run verify:dealer-statement-automation
 
       - name: DealerStatement Gmail dry-run
+        id: dealer_dryrun
+        continue-on-error: true
         env:
           DEALER_LOOKBACK_DAYS: ${{ inputs.lookback_days || '45' }}
         run: |
@@ -62,6 +64,24 @@ jobs:
           else
             npm run dealer-statement:gmail:dry
           fi
+
+      - name: Report DealerStatement dry-run
+        if: always()
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const file = 'data/dealer_statement_gmail_worker_report.json';
+          if (!fs.existsSync(file)) {
+            console.log('DEALER_STATEMENT_REPORT=missing');
+            process.exit(0);
+          }
+          const report = JSON.parse(fs.readFileSync(file, 'utf8'));
+          console.log('DEALER_STATEMENT_RESULT=' + report.result);
+          console.log('DEALER_STATEMENT_MAILBOX=' + report.mailbox);
+          console.log('DEALER_STATEMENT_ATTACHMENT=' + Boolean(report.found_attachment));
+          if (report.error) console.log('DEALER_STATEMENT_ERROR=' + report.error);
+          if (report.downloaded_file) console.log('DEALER_STATEMENT_FILE=' + report.downloaded_file);
+          NODE
 
       - name: Upload DealerStatement artifacts
         if: always()

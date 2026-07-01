@@ -68,6 +68,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-07-01 DealerStatement mail otomasyon turu sonucu: `tools/dealer_statement_gmail_worker_v74.mjs` ve `dealer-statement-receivables.yml` eklendi. Workflow yalnizca `alaylimedikal@gmail.com` posta kutusunu tarar, DealerStatement ekini indirir, Finans Takvimi planini uretir ve sadece dry-run import kaniti yazar. Schedule 10:20 ve 17:20 Turkiye saati olarak kuruldu. `--commit` workflow ve worker icinde yasaklandi; canli Supabase insert yine kullanici onayi ve ayri komut olmadan yapilmaz.
 
+2026-07-01 DealerStatement workflow ilk run kontrolu sonucu: GitHub Actions run `28500494014` DealerStatement Gmail dry-run step'inde failure verdi; ayni committe mail-ekstre pipeline `success` dondu. Worker Gmail/OAuth hatasi olursa artik `data/dealer_statement_gmail_worker_report.json` raporu yazacak, workflow dry-run step'i `continue-on-error` ile artifact yukleme ve sonuc raporu adimina devam edecek. Canli insert yine yok.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -82,6 +84,7 @@ Son denetimde calisan komutlar:
 - `npm run verify:bank-approval-action`: gecti.
 - `npm run verify:dealer-statement-automation`: gecti.
 - `npm run dealer-statement:gmail:dry -- --as-of=2026-07-01`: yerel ortamda Gmail secret/yetki yoksa beklenen sekilde blokaj verir; GitHub secrets ile workflow calisacak.
+- GitHub Actions `AperiON DealerStatement Receivables` run `28500494014`: ilk run failure; hata raporu/artifact dayanimi eklendi.
 - GitHub raw `index.html`: yeni kod var.
 - GitHub Pages `?v=5370338`: yeni kod var.
 - `npm run bizimhesap:queue:dry`: gecti, hazir kuyruk 0.
