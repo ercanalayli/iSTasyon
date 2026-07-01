@@ -64,6 +64,8 @@
     "finance-calendar:build-install": "node tools/build_finance_calendar_install_v58.cjs",
     "finance-calendar:build-june-accruals": "node tools/build_june_2026_accrual_sql.cjs",
     "finance-calendar:dealer-statement": "node tools/build_dealer_statement_receivables_v72.cjs",
+    "finance-calendar:dealer-statement:import:dry": "node tools/import_dealer_statement_receivables_v73.cjs",
+    "finance-calendar:dealer-statement:import": "node tools/import_dealer_statement_receivables_v73.cjs --commit",
     "live-install:build": "node tools/build_live_install_v58.cjs",
     "preflight": "node tools/aperion_system_preflight.cjs",
     "telegram:hatirlat": "node telegram_hatirlatma_bot.js --once",

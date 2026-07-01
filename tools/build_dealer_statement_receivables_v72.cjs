@@ -106,8 +106,20 @@ function main() {
     return item;
   });
 
-  const candidates = normalized
-    .filter((row) => row.payment_date && row.payment_date >= asOf && /^aktif$/i.test(row.status) && !row.duplicate_in_file)
+  const futureActive = normalized
+    .filter((row) => row.payment_date && row.payment_date >= asOf && /^aktif$/i.test(row.status) && !row.duplicate_in_file);
+  const needsReview = futureActive
+    .filter((row) => !(row.expected_amount > 0))
+    .map((row) => ({
+      source_id: row.source_id,
+      payment_date: row.payment_date,
+      sales_amount: row.sales_amount,
+      paid_amount: row.paid_amount,
+      reason: 'Gelecek tarihli aktif kayit ama satis/expected tutari 0; otomatik butce tahsilati yapilmaz.',
+    }));
+
+  const candidates = futureActive
+    .filter((row) => row.expected_amount > 0)
     .map((row) => ({
       company,
       item_date: row.statement_end_date || row.statement_start_date || row.payment_date,
@@ -147,12 +159,14 @@ function main() {
       future_receivable_count: candidates.length,
       future_receivable_total: Number(candidates.reduce((sum, row) => sum + row.expected_amount, 0).toFixed(2)),
       duplicate_rows_in_file: normalized.filter((row) => row.duplicate_in_file).length,
+      needs_review_count: needsReview.length,
       months: Object.fromEntries(Object.entries(byMonth).map(([key, value]) => [key, {
         count: value.count,
         expected_amount: Number(value.expected_amount.toFixed(2)),
       }])),
     },
     finance_calendar_items: candidates,
+    needs_review: needsReview,
     sql_preview: candidates.length ? buildInsertSql(candidates) : '',
   };
 

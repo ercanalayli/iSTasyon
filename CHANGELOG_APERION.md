@@ -1,5 +1,16 @@
 # AperiON Changelog
 
+## 2026-07-01
+
+### DealerStatement Finans Takvimi Import Kilidi
+
+- `tools/import_dealer_statement_receivables_v73.cjs` eklendi.
+- `finance-calendar:dealer-statement:import:dry` ve `finance-calendar:dealer-statement:import` npm komutlari eklendi.
+- Canli Supabase insert `--commit --confirm ONAYLIYORUM` olmadan calismaz.
+- 2026-07-01 as-of ile rapor tekrar okundu: 80 gelecek tahsilat, TL 657.666,43.
+- Satis tutari 0 olup yatirilan tutari olan 1 kayit otomatik butceye alinmadi, `needs_review` listesine ayrildi.
+- Import dry-run basarili; canli insert yapilmadi.
+
 ## 2026-06-30
 
 ### DealerStatement Gelecek Tahsilat Plani

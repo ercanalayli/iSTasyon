@@ -62,6 +62,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-06-30 DealerStatement gelecek tahsilat turu sonucu: Kullanici `DealerStatement (3).xls` sistem raporunu paylasti. Dosyanin `.xls` uzantili HTML tablo oldugu goruldu. `tools/build_dealer_statement_receivables_v72.cjs` eklendi; rapor `Bayi Ekstre ID` anahtariyla okunur, `Odeme Tarihi >= as-of` ve `Durum=Aktif` kayitlari `finance_calendar_items` icin `receivable/in/forecast` planina cevirir. `npm run finance-calendar:dealer-statement -- --file="C:\Users\HP\Downloads\DealerStatement (3).xls" --as-of=2026-06-30 --company=ALAYLI` calisti: 705 satir, 83 gelecek tahsilat, TL 681.416,43 toplam plan uretti. Canli Supabase insert yapilmadi.
 
+2026-07-01 DealerStatement guvenli import turu sonucu: `tools/import_dealer_statement_receivables_v73.cjs` eklendi. Komut `--commit --confirm ONAYLIYORUM` olmadan Supabase'e yazmaz. `npm run finance-calendar:dealer-statement -- --file="C:\Users\HP\Downloads\DealerStatement (3).xls" --as-of=2026-07-01 --company=ALAYLI` calisti: 705 satirdan 80 gelecek tahsilat, TL 657.666,43 plan uretti. 1 sifir satis tutarli ama yatirilan tutari olan kayit `needs_review` listesine ayrildi. `npm run finance-calendar:dealer-statement:import:dry` calisti; canli insert yapilmadi.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
