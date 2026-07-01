@@ -2,6 +2,17 @@
 
 ## 2026-07-01
 
+### Gmail OAuth Yenileme Yardimcisi
+
+- Yerel PowerShell'in GitHub repository secrets degerlerini okuyamadigi icin `gmail-oauth-start.js` hata verdigi netlestirildi.
+- `.github/workflows/gmail-oauth-refresh.yml` eklendi.
+- `automation/gmail-oauth-refresh-helper.cjs` eklendi.
+- Workflow `mode=start` ile GitHub secrets uzerinden Gmail izin linki uretir.
+- Workflow `mode=finish` ile Google code degerini yeni `GOOGLE_REFRESH_TOKEN` degerine cevirir.
+- Akis `alaylimedikal@gmail.com` disinda mailbox ile calismaz.
+- `tools/verify_gmail_oauth_refresh_helper_v75.cjs` ve `verify:gmail-oauth-refresh` komutu eklendi.
+- Canli mail okuma, Supabase yazma veya BizimHesap kaydi yapilmadi.
+
 ### Banka Mail Guncelligi ve Eski Bekleyen Ayrimi
 
 - Ramiz Yigit tahsilatinin yeni Temmuz kaydi degil, `2026-06-10` tarihli eski bekleyen banka hareketi oldugu dogrulandi.

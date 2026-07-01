@@ -80,6 +80,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-07-01 banka mail guncellik turu sonucu: Temmuz ekraninda gorunen Ramiz Yigit tahsilatinin yeni Temmuz maili degil, `2026-06-10` tarihli eski bekleyen Akbank/Yapi Kredi tahsilat adayi oldugu dogrulandi. Banka hareket ekranlari ve preview sirasinda `created_at` yerine `transaction_date` esas alindi. Sabah onay kartlari yalnizca son 7 gunluk yeni hareketleri ana ekranda gosterir; eski bekleyenler `eski bekleyen` etiketiyle Banka Canli ekraninda kalir. Ust akil ozeti mail-ekstre workflow hatasini Gmail OAuth/refresh token kontrolu olarak gosterir.
 
+2026-07-01 Gmail OAuth yenileme yardimcisi turu sonucu: Kullanici Google client bilgilerini daha once GitHub secrets'a verdigi halde yerel PowerShell'in bu secretlari okuyamadigi netlestirildi. `gmail-oauth-refresh.yml` workflow'u ve `automation/gmail-oauth-refresh-helper.cjs` eklendi. Artik `GOOGLE_CLIENT_ID` ve `GOOGLE_CLIENT_SECRET` yerelde tekrar yazilmadan GitHub Actions uzerinden izin linki uretilebilir; finish modunda Google code refresh token'a cevrilir ve kullanici bunu `GOOGLE_REFRESH_TOKEN` secret'ina yazar. Akis sadece `alaylimedikal@gmail.com` icin kilitlidir.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -93,6 +95,7 @@ Son denetimde calisan komutlar:
 - `npm run verify:firm-isolation`: gecti.
 - `npm run verify:bank-approval-action`: gecti.
 - `npm run verify:dealer-statement-automation`: gecti.
+- `npm run verify:gmail-oauth-refresh`: gecti.
 - `npm run dealer-statement:gmail:dry -- --as-of=2026-07-01`: yerel ortamda Gmail secret/yetki yoksa beklenen sekilde blokaj verir; GitHub secrets ile workflow calisacak.
 - GitHub Actions `AperiON DealerStatement Receivables` run `28500494014`: ilk run failure; hata raporu/artifact dayanimi eklendi.
 - GitHub Actions `AperiON DealerStatement Receivables` run `28502969360`: success; artifact var. Sonuc gate'i eklendi.

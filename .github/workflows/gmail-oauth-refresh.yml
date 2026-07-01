@@ -1,0 +1,42 @@
+name: AperiON Gmail OAuth Refresh Helper
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "start: izin linki uretir, finish: Google code ile refresh token uretir"
+        required: true
+        default: "start"
+        type: choice
+        options:
+          - start
+          - finish
+      google_oauth_code:
+        description: "Sadece finish modunda Google'in verdigi code"
+        required: false
+        type: string
+
+jobs:
+  gmail-oauth-refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GMAIL_MAILBOX: alaylimedikal@gmail.com
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REDIRECT_URI: urn:ietf:wg:oauth:2.0:oob
+      GOOGLE_OAUTH_CODE: ${{ inputs.google_oauth_code }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Gmail OAuth helper
+        run: node automation/gmail-oauth-refresh-helper.cjs "${{ inputs.mode }}"
