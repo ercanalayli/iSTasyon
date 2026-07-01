@@ -24,7 +24,7 @@ jobs:
       GMAIL_MAILBOX: alaylimedikal@gmail.com
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      GOOGLE_REDIRECT_URI: urn:ietf:wg:oauth:2.0:oob
+      GOOGLE_REDIRECT_URI: http://localhost
       GOOGLE_OAUTH_CODE: ${{ inputs.google_oauth_code }}
     steps:
       - name: Checkout

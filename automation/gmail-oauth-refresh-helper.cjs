@@ -6,7 +6,7 @@ const mode = (process.argv[2] || process.env.OAUTH_MODE || 'start').toLowerCase(
 const code = process.argv[3] || process.env.GOOGLE_OAUTH_CODE || '';
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'urn:ietf:wg:oauth:2.0:oob';
+const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost';
 const mailbox = process.env.GMAIL_MAILBOX || 'alaylimedikal@gmail.com';
 
 function fail(message) {

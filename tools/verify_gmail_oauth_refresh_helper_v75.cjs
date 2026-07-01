@@ -14,6 +14,7 @@ ok('manual dispatch', workflow.includes('workflow_dispatch'));
 ok('start finish modes', workflow.includes('start') && workflow.includes('finish'));
 ok('correct mailbox locked', workflow.includes('GMAIL_MAILBOX: alaylimedikal@gmail.com') && helper.includes("mailbox !== 'alaylimedikal@gmail.com'"));
 ok('uses GitHub secrets', workflow.includes('secrets.GOOGLE_CLIENT_ID') && workflow.includes('secrets.GOOGLE_CLIENT_SECRET'));
+ok('localhost redirect for web client', workflow.includes('GOOGLE_REDIRECT_URI: http://localhost') && helper.includes("'http://localhost'"));
 ok('does not need local env', !workflow.includes('notepad') && !workflow.includes('.env'));
 ok('prints auth url markers', helper.includes('GMAIL_OAUTH_URL_BEGIN') && helper.includes('GMAIL_OAUTH_URL_END'));
 ok('prints refresh token markers', helper.includes('GOOGLE_REFRESH_TOKEN_BEGIN') && helper.includes('GOOGLE_REFRESH_TOKEN_END'));
