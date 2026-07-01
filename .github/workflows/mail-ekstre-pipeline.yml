@@ -20,6 +20,7 @@ on:
     # 17:00 Europe/Istanbul: fixed evening bank statement check.
     - cron: "0 14 * * *"
     # 09:00-20:45 Europe/Istanbul: intraday follow-up while bank mails keep arriving.
+    # 2026-07-01: trigger after Gmail OAuth refresh secret renewal.
     - cron: "*/15 5-17 * * *"
   push:
     branches:

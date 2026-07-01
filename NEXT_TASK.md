@@ -4,9 +4,9 @@ Son guncelleme: 2026-07-01 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Gmail OAuth yenilemesini GitHub Secrets uzerinden tamamlamak.
+Gmail OAuth yenilemesini GitHub Secrets uzerinden dogrulamak ve mail ekstre pipeline'ini yeniden calistirmak.
 
-Durum: Yerel PowerShell GitHub repository secrets degerlerini okuyamadigi icin `gmail-oauth-start.js` yerelde `GOOGLE_CLIENT_ID ve GOOGLE_CLIENT_SECRET gerekli` hatasi verdi. Yeni `AperiON Gmail OAuth Refresh Helper` workflow'u bu sorunu asar: start modu GitHub secrets ile izin linki uretir, finish modu Google code ile yeni refresh token uretir. Kullanici sadece uretilen token'i `GOOGLE_REFRESH_TOKEN` secret'ina guncelleyecek.
+Durum: Yerel PowerShell GitHub repository secrets degerlerini okuyamadigi icin `gmail-oauth-start.js` yerelde `GOOGLE_CLIENT_ID ve GOOGLE_CLIENT_SECRET gerekli` hatasi verdi. `AperiON Gmail OAuth Refresh Helper` workflow'u kullanildi: start modu izin linki uretti, finish modu Google code ile yeni refresh token uretti. `GOOGLE_REFRESH_TOKEN` repository secret'i guncellendi. Siradaki net is: yenilenmis tokenla mail-ekstre workflow run sonucunu kontrol etmek.
 
 ## Neden Bu Hedef?
 
@@ -14,11 +14,11 @@ Kullanici bu sistem raporunu duzenli gondererek gelecek donem tahsilatlarini but
 
 ## Siradaki Is Paketi
 
-1. GitHub Actions icinde `AperiON Gmail OAuth Refresh Helper` workflow'u `mode=start` ile calistirilacak.
-2. Logdaki `GMAIL_OAUTH_URL_BEGIN/END` arasindaki link acilacak ve sadece `alaylimedikal@gmail.com` ile izin verilecek.
-3. Google'in verdigi code ile ayni workflow `mode=finish` calistirilacak.
-4. Logdaki `GOOGLE_REFRESH_TOKEN_BEGIN/END` arasindaki token GitHub repository secret `GOOGLE_REFRESH_TOKEN` olarak guncellenecek.
-5. `gmail:oauth:check`, mail-ekstre ve DealerStatement workflow run'lari tekrar kontrol edilecek.
+1. Yenilenmis `GOOGLE_REFRESH_TOKEN` ile `AperiON Mail Ekstre Pipeline` yeniden calistirilacak.
+2. `Gmail OAuth token check` adiminin success dondugu dogrulanacak.
+3. Dry-run sonucunda kac mail/ek/hesap hareketi okundugu raporlanacak.
+4. SQL hazirsa ve dry-run rows > 0 ise live adiminin `pending_bank_movements` onay kuyruguna yazip yazmadigi kontrol edilecek.
+5. DealerStatement workflow'u da ayni yenilenmis Gmail token ile tekrar kontrol edilecek.
 
 ## Kabul Kriteri
 

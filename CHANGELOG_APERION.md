@@ -12,6 +12,9 @@
 - Akis `alaylimedikal@gmail.com` disinda mailbox ile calismaz.
 - `tools/verify_gmail_oauth_refresh_helper_v75.cjs` ve `verify:gmail-oauth-refresh` komutu eklendi.
 - Canli mail okuma, Supabase yazma veya BizimHesap kaydi yapilmadi.
+- Google izin akisinda `alaylimedikal@gmail.com` hesabi secildi ve yeni Gmail refresh token helper artifact'i uretildi.
+- `GOOGLE_REFRESH_TOKEN` GitHub repository secret'i guncellendi; token degeri repo dosyalarina yazilmadi.
+- Yenilenmis secret sonrasi mail-ekstre pipeline'in tekrar calismasi icin davranis degistirmeyen workflow tetikleme notu eklendi.
 
 ### Banka Mail Guncelligi ve Eski Bekleyen Ayrimi
 
