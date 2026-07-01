@@ -35,6 +35,8 @@ try {
   must(workerText.includes("REQUIRED_MAILBOX = 'alaylimedikal@gmail.com'"), 'worker mailbox guard eksik');
   must(workerText.includes('import_dealer_statement_receivables_v73.cjs'), 'worker dry import baglantisi eksik');
   must(workerText.includes("report.result = 'gmail_failed'"), 'worker Gmail hatasini rapora yazmali');
+  must(workerText.includes('withRetry'), 'worker gecici Gmail/OAuth kopmalarinda retry yapmali');
+  must(workerText.includes('premature close'), 'worker Premature close hatasini gecici kabul etmeli');
   must(!workerText.includes('--commit'), 'worker canli commit argumani icermemeli');
 
   must(packageJson.scripts['dealer-statement:gmail:dry'], 'package script dealer-statement:gmail:dry eksik');

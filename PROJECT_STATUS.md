@@ -74,6 +74,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-07-01 DealerStatement gate canli kontrol sonucu: Run `28506469160` beklenen sekilde `failure` dondu. Kiran step `Gate DealerStatement result`; onceki adimlarda `dealer-statement-receivables` artifact'i olustu. Bu sonuc workflow'un artik hatayi yesil gostermedigini ve kanit dosyasini yine de sakladigini dogrular. Siradaki teknik kontrol artifact icindeki `dealer_statement_gmail_worker_report.json` sonucunun Gmail/OAuth mu yoksa ek bulunamama mi oldugunu okumaktir.
 
+2026-07-01 DealerStatement Gmail retry turu sonucu: Artifact raporlari okundu. Run `28506469160` attempt 1 ve attempt 2 ayni hatayi verdi: `Invalid response body while trying to fetch https://oauth2.googleapis.com/token: Premature close`. Bu Google OAuth token isteginde gecici baglanti kopmasi olarak siniflandi. Worker'a Gmail arama, mesaj okuma ve ek indirme icin `withRetry` eklendi; `Premature close`, socket/network ve timeout hatalarinda 3 deneme yapacak.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -91,6 +93,7 @@ Son denetimde calisan komutlar:
 - GitHub Actions `AperiON DealerStatement Receivables` run `28500494014`: ilk run failure; hata raporu/artifact dayanimi eklendi.
 - GitHub Actions `AperiON DealerStatement Receivables` run `28502969360`: success; artifact var. Sonuc gate'i eklendi.
 - GitHub Actions `AperiON DealerStatement Receivables` run `28506469160`: failure; artifact var; gate hatayi saklamadi.
+- Artifact raporu: `gmail_failed`, hata `oauth2.googleapis.com/token: Premature close`; retry eklendi.
 - GitHub raw `index.html`: yeni kod var.
 - GitHub Pages `?v=5370338`: yeni kod var.
 - `npm run bizimhesap:queue:dry`: gecti, hazir kuyruk 0.

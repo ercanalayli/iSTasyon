@@ -47,6 +47,27 @@ function runNode(args, env = {}) {
   };
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function withRetry(label, fn, retries = 3) {
+  let lastError;
+  for (let attempt = 1; attempt <= retries; attempt += 1) {
+    try {
+      return await fn(attempt);
+    } catch (error) {
+      lastError = error;
+      const message = error.message || String(error);
+      const transient = /premature close|econnreset|etimedout|socket|network|fetch failed/i.test(message);
+      if (!transient || attempt === retries) break;
+      console.log(`${label} gecici hata, tekrar deneniyor (${attempt}/${retries}): ${message}`);
+      await sleep(1500 * attempt);
+    }
+  }
+  throw lastError;
+}
+
 function writeJson(file, body) {
   ensureDir(path.dirname(file));
   fs.writeFileSync(file, `${JSON.stringify(body, null, 2)}\n`, 'utf8');
@@ -89,10 +110,10 @@ async function main() {
       `(filename:xls OR filename:xlsx OR filename:csv OR "DealerStatement" OR "Dealer Statement" OR "Bayi Ekstre") newer_than:${lookbackDays}d`
     );
     report.gmail_query = query;
-    const found = await searchMessages(gmail, query, maxMessages);
+    const found = await withRetry('Gmail arama', () => searchMessages(gmail, query, maxMessages));
 
     for (const item of found) {
-      const msg = await readMessageSummary(gmail, item.id);
+      const msg = await withRetry(`Gmail mesaj ${item.id}`, () => readMessageSummary(gmail, item.id));
       const attachments = (msg.attachments || []).filter(isDealerStatementAttachment);
       report.matched_messages.push({
         id: msg.id,
@@ -105,7 +126,7 @@ async function main() {
       if (!attachments.length || report.found_attachment) continue;
 
       const attachment = attachments[0];
-      const raw = await readAttachmentBuffer(gmail, msg.id, attachment.attachmentId);
+      const raw = await withRetry(`Gmail ek ${attachment.filename}`, () => readAttachmentBuffer(gmail, msg.id, attachment.attachmentId));
       ensureDir(artifactDir);
       const savedFile = path.join(artifactDir, `${Date.now()}_${safeName(attachment.filename)}`);
       fs.writeFileSync(savedFile, raw);

@@ -6,7 +6,7 @@ Son guncelleme: 2026-07-01 Europe/Istanbul
 
 DealerStatement raporundan gelecek tahsilatlari Finans Takvimi / butce hattina guvenli baglamak.
 
-Durum: `DealerStatement (3).xls` dosyasi okundu. Dosya `.xls` uzantili HTML tablo formatinda. `finance-calendar:dealer-statement` komutu 2026-07-01 itibariyla 705 satirdan 80 gelecek tahsilat cikardi ve toplam TL 657.666,43 plan uretti. 1 sifir satis tutarli kayit incelemeye ayrildi. `finance-calendar:dealer-statement:import:dry` calisti; canli Supabase insert yapilmadi. Ana Finans Takvimi paneli canli import sonrasi `Gelecek Tahsilat Butcesi` kartinda bu kayitlari gosterecek sekilde hazirlandi. Gmail otomasyonu `dealer-statement-receivables.yml` ile 10:20 ve 17:20 TR dry-run olarak hazirlandi. Ilk GitHub run Gmail dry-run step'inde failure verdi; hata/artifact raporlama dayanimi eklendi. Sonraki success run'da hata saklanma riski goruldugu icin artifact sonrasi sonuc gate'i eklendi. Gate'li run `28506469160` failure dondu ve artifact olusturdu; hata artik saklanmiyor. Canli insert icin `--commit --confirm ONAYLIYORUM` kilidi hazir.
+Durum: `DealerStatement (3).xls` dosyasi okundu. Dosya `.xls` uzantili HTML tablo formatinda. `finance-calendar:dealer-statement` komutu 2026-07-01 itibariyla 705 satirdan 80 gelecek tahsilat cikardi ve toplam TL 657.666,43 plan uretti. 1 sifir satis tutarli kayit incelemeye ayrildi. `finance-calendar:dealer-statement:import:dry` calisti; canli Supabase insert yapilmadi. Ana Finans Takvimi paneli canli import sonrasi `Gelecek Tahsilat Butcesi` kartinda bu kayitlari gosterecek sekilde hazirlandi. Gmail otomasyonu `dealer-statement-receivables.yml` ile 10:20 ve 17:20 TR dry-run olarak hazirlandi. Gate'li run `28506469160` failure dondu ve artifact olusturdu; artifact hatasi Google OAuth token endpointinde `Premature close`. Worker'a gecici OAuth/network kopmalari icin retry eklendi. Canli insert icin `--commit --confirm ONAYLIYORUM` kilidi hazir.
 
 ## Neden Bu Hedef?
 
@@ -14,8 +14,8 @@ Kullanici bu sistem raporunu duzenli gondererek gelecek donem tahsilatlarini but
 
 ## Siradaki Is Paketi
 
-1. Artifact icindeki `dealer_statement_gmail_worker_report.json`, varsa `dealer_statement_finance_calendar_plan.json` ve `dealer_statement_finance_calendar_import_proof.json` incelenecek.
-2. Gmail/OAuth hatasiysa Google refresh token veya secretlari dogrulanacak; ek bulunamadiysa mail arama query'si DealerStatement mailine gore daraltilacak.
+1. Retry eklenen workflow run sonucu kontrol edilecek.
+2. Hala `gmail_failed` olursa Google refresh token/secret yenileme gerekecek; `no_attachment` olursa mail arama query'si DealerStatement mailine gore daraltilacak.
 3. Kullanici acik onay verirse `finance-calendar:dealer-statement:import -- --confirm ONAYLIYORUM` calistirilacak.
 4. Ana ekranda `Gelecek Tahsilat Butcesi` kartinda toplam, siradaki tarih ve ay kirilimi gorulecek.
 5. Ayni rapor tekrar geldiyse `Bayi Ekstre ID` ile mukerrer kayit olusmayacak.
