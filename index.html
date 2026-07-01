@@ -3558,7 +3558,7 @@ function mailEkstreScheduleText(){
 async function fetchPendingBankMovements(maxRows=5000){
   const rows=[];
   for(let from=0;from<maxRows;from+=1000){
-    const {data,error}=await db.from('pending_bank_movements').select('*').eq('company_id',PILOT_FIRMA).order('created_at',{ascending:false}).range(from,from+999);
+    const {data,error}=await db.from('pending_bank_movements').select('*').eq('company_id',PILOT_FIRMA).order('transaction_date',{ascending:false}).order('created_at',{ascending:false}).range(from,from+999);
     if(error)throw error;
     rows.push(...(data||[]));
     if(!data||data.length<1000)break;
@@ -3598,6 +3598,7 @@ async function renderExecutiveBrief(){
     if(error)throw error;queueRows=data||[];
   }catch(e){issues.push('BizimHesap kuyruğu okunamadı');}
   actionHealth=await fetchAutomationHealth();
+  if(actionHealth?.mail&&actionHealth.mail.conclusion!=='success')issues.push('Mail ekstre otomasyonu hata: Gmail OAuth/refresh token kontrol');
   if(actionHealth?.bizimhesap&&actionHealth.bizimhesap.conclusion!=='success')issues.push('Saatlik BizimHesap Sync hata: GitHub BIZIMHESAP_EMAIL/PASSWORD secret kontrol');
   const accrualNet=model?model.revenue-model.expenseTotal:0;
   const cashNet=model?model.cashIn-model.cashOut:0;
@@ -3717,7 +3718,7 @@ async function loadFinanceHome(){
     if(error)setupIssues.push('Telegram evrak tablosu yok'); else inboxRows=data||[];
   }catch(e){setupIssues.push('Telegram evrak tablosu yok');}
   try{
-    const {data,error}=await db.from('pending_bank_movements').select('*').eq('company_id',PILOT_FIRMA).order('created_at',{ascending:false}).limit(8);
+    const {data,error}=await db.from('pending_bank_movements').select('*').eq('company_id',PILOT_FIRMA).order('transaction_date',{ascending:false}).order('created_at',{ascending:false}).limit(12);
     if(error)setupIssues.push('mail ekstre kuyruğu yok'); else mailRows=data||[];
   }catch(e){setupIssues.push('mail ekstre kuyruğu yok');}
   try{
@@ -5627,7 +5628,7 @@ async function bankaRawData(){
     }));
   }catch(e){errors.push(e.message||String(e));}
   try{
-    let q=db.from('pending_bank_movements').select('*').order('created_at',{ascending:false}).limit(500);
+    let q=db.from('pending_bank_movements').select('*').order('transaction_date',{ascending:false}).order('created_at',{ascending:false}).limit(500);
     if(fi)q=q.eq('company_id',fi);
     if(durum&&statusMap[durum])q=q.eq('status',statusMap[durum]);
     const {data,error}=await q;
@@ -5655,7 +5656,7 @@ async function bankaRawData(){
       };
     }));
   }catch(e){errors.push(e.message||String(e));}
-  rows.sort((a,b)=>String(b.created_at||b.tarih||'').localeCompare(String(a.created_at||a.tarih||'')));
+  rows.sort((a,b)=>String(b.transaction_date||b.tarih||b.created_at||'').localeCompare(String(a.transaction_date||a.tarih||a.created_at||''))||String(b.created_at||'').localeCompare(String(a.created_at||'')));
   return {rows,queueRows:[...queueRows,...postingQueueRows],error:errors.length?errors.join(' · '):null};
 }
 function bankRowTime(r){return (r.transaction_time||r.saat||'').toString().substring(0,8);}
@@ -5667,6 +5668,26 @@ function bankDateTR(v){
   const d=new Date(s);
   if(Number.isNaN(d.getTime()))return s||'-';
   return d.toLocaleDateString('tr-TR',{timeZone:'Europe/Istanbul',day:'2-digit',month:'2-digit',year:'numeric'});
+}
+function bankMovementISO(r){
+  return String(r?.transaction_date||r?.tarih||r?.mail_date||r?.created_at||'').slice(0,10);
+}
+function bankMovementAgeDays(r){
+  const iso=bankMovementISO(r);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(iso))return null;
+  const base=new Date(`${iso}T00:00:00+03:00`).getTime();
+  const now=new Date();
+  const today=new Date(now.toLocaleString('en-US',{timeZone:'Europe/Istanbul'}));
+  today.setHours(0,0,0,0);
+  if(Number.isNaN(base))return null;
+  return Math.floor((today.getTime()-base)/(24*60*60*1000));
+}
+function bankMovementFreshness(r){
+  const age=bankMovementAgeDays(r);
+  if(age===null)return {fresh:false,label:'tarih belirsiz',tone:'warn'};
+  if(age<=1)return {fresh:true,label:age===0?'bugün':'dün',tone:'good'};
+  if(age<=7)return {fresh:true,label:`${fmt(age)} günlük`,tone:'ok'};
+  return {fresh:false,label:`eski bekleyen · ${fmt(age)} gün`,tone:'warn'};
 }
 function repairBankText(v){
   const s=(v??'').toString();
@@ -5860,10 +5881,11 @@ function bankMorningCardHtml(r){
   const st=bankActionState(r,1);
   const source=escHtml(r._source_label||'Mail Ekstre');
   const bank=escHtml(bankNameOf(r));
+  const fresh=bankMovementFreshness(r);
   const date=escHtml(`${bankDateTR(r.tarih||r.transaction_date||r.mail_date||r.created_at)}${bankRowTime(r)?` · ${bankRowTime(r).substring(0,5)}`:''}`);
   return `<div class="morning-approval-card">
     <div class="morning-approval-head">
-      <div class="morning-approval-source"><span class="morning-approval-chip">${source}</span><span class="morning-approval-chip bank">${bank}</span></div>
+      <div class="morning-approval-source"><span class="morning-approval-chip">${source}</span><span class="morning-approval-chip bank">${bank}</span><span class="morning-approval-chip ${fresh.fresh?'bank':''}">${escHtml(fresh.label)}</span></div>
       <span class="morning-approval-date">${date}</span>
     </div>
     <div class="morning-approval-desc">${escHtml(r.aciklama||'')}</div>
@@ -5888,12 +5910,15 @@ function bankMorningCardHtml(r){
 }
 function renderBankMorningCards(rows){
   const el=document.getElementById('bankaMorningCards');if(!el)return;
-  const pending=rows.filter(r=>r.durum==='onay_bekliyor').slice(0,12);
-  el.innerHTML=pending.length?`<div class="morning-approval-grid">${pending.map(bankMorningCardHtml).join('')}</div>`:'<div class="empty"><div class="empty-t">Sabah onay kartı yok</div><div class="empty-d">Mail/Drive ekstre gelince analizli kartlar burada görünecek.</div></div>';
+  const allPending=rows.filter(r=>r.durum==='onay_bekliyor');
+  const fresh=allPending.filter(r=>bankMovementFreshness(r).fresh).slice(0,12);
+  const staleCount=allPending.length-fresh.length;
+  el.innerHTML=fresh.length?`<div class="morning-approval-grid">${fresh.map(bankMorningCardHtml).join('')}</div>${staleCount?`<div class="finance-empty" style="margin-top:8px">${fmt(staleCount)} eski bekleyen kayıt Banka Canlı ekranında duruyor; yeni mail gibi gösterilmiyor.</div>`:''}`:'<div class="empty"><div class="empty-t">Yeni mail onay kartı yok</div><div class="empty-d">Son 7 güne ait yeni banka hareketi yok. Eski bekleyen kayıtlar Banka Canlı ekranında ayrıca kontrol edilir.</div></div>';
 }
 function renderHomeMorningApprovalCards(rows){
   const el=document.getElementById('homeMorningApprovalCards');if(!el)return;
-  const mapped=(rows||[]).slice(0,6).map(r=>{
+  const freshRows=(rows||[]).filter(r=>bankMovementFreshness(r).fresh);
+  const mapped=freshRows.slice(0,6).map(r=>{
     const amountIn=Number(r.amount_in||0), amountOut=Number(r.amount_out||0), incoming=amountIn>0;
     return {
       ...r,
@@ -5908,7 +5933,8 @@ function renderHomeMorningApprovalCards(rows){
       _destination:'AperiON onayında, hedef BizimHesap banka kaydı'
     };
   });
-  el.innerHTML=mapped.length?`<div class="morning-approval-grid">${mapped.map(bankMorningCardHtml).join('')}</div>`:'<div class="finance-empty">Bu sabah onay bekleyen banka hareketi yok.</div>';
+  const staleCount=(rows||[]).length-freshRows.length;
+  el.innerHTML=mapped.length?`<div class="morning-approval-grid">${mapped.map(bankMorningCardHtml).join('')}</div>${staleCount?`<div class="finance-empty" style="margin-top:8px">${fmt(staleCount)} eski bekleyen kayıt gizlendi; Banka Canlı ekranından onay/ret bekliyor.</div>`:''}`:`<div class="finance-empty">Bu sabah yeni banka hareketi yok. ${staleCount?`${fmt(staleCount)} eski bekleyen kayıt Banka Canlı ekranında.`:'Mail/Drive ekstre gelince analizli kartlar burada görünür.'}</div>`;
 }
 function bankNotice(kind,title,msg){
   const el=document.getElementById('bankaActionNotice');if(!el)return;

@@ -78,6 +78,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-07-01 Gmail OAuth saglik kontrol turu sonucu: Mail-ekstre workflow artifact'i incelendi ve pipeline'in `success` donmesine ragmen tum banka sorgularinda `invalid_grant` verdigi goruldu. Bu Google refresh token'in gecersiz/iptal oldugunu gosterir. `automation/gmail-oauth-check.cjs` ve `gmail:oauth:check` komutu eklendi. DealerStatement ve mail-ekstre workflow'lari artik Gmail OAuth token bozuksa erken kirmizi donecek; hatayi yesil raporlamayacak.
 
+2026-07-01 banka mail guncellik turu sonucu: Temmuz ekraninda gorunen Ramiz Yigit tahsilatinin yeni Temmuz maili degil, `2026-06-10` tarihli eski bekleyen Akbank/Yapi Kredi tahsilat adayi oldugu dogrulandi. Banka hareket ekranlari ve preview sirasinda `created_at` yerine `transaction_date` esas alindi. Sabah onay kartlari yalnizca son 7 gunluk yeni hareketleri ana ekranda gosterir; eski bekleyenler `eski bekleyen` etiketiyle Banka Canli ekraninda kalir. Ust akil ozeti mail-ekstre workflow hatasini Gmail OAuth/refresh token kontrolu olarak gosterir.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.

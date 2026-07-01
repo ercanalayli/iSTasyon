@@ -83,6 +83,7 @@ async function main() {
     .select('*')
     .eq('company_id', company)
     .in('status', ['pending', 'needs_review'])
+    .order('transaction_date', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(limit);
   if (error) throw new Error(error.message);

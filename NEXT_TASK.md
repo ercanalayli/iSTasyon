@@ -4,9 +4,9 @@ Son guncelleme: 2026-07-01 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-DealerStatement raporundan gelecek tahsilatlari Finans Takvimi / butce hattina guvenli baglamak.
+Banka mail guncelligi ve eski bekleyen onay kartlarini net ayirmak.
 
-Durum: `DealerStatement (3).xls` dosyasi okundu. Dosya `.xls` uzantili HTML tablo formatinda. `finance-calendar:dealer-statement` komutu 2026-07-01 itibariyla 705 satirdan 80 gelecek tahsilat cikardi ve toplam TL 657.666,43 plan uretti. 1 sifir satis tutarli kayit incelemeye ayrildi. `finance-calendar:dealer-statement:import:dry` calisti; canli Supabase insert yapilmadi. Ana Finans Takvimi paneli canli import sonrasi `Gelecek Tahsilat Butcesi` kartinda bu kayitlari gosterecek sekilde hazirlandi. Gmail otomasyonu `dealer-statement-receivables.yml` ile 10:20 ve 17:20 TR dry-run olarak hazirlandi. Mail-ekstre artifact'i tum banka sorgularinda `invalid_grant` verdi; Gmail refresh token gecersiz. `gmail:oauth:check` eklendi ve workflow'lar artik Gmail OAuth bozuksa erken kirmizi donecek. Canli insert icin `--commit --confirm ONAYLIYORUM` kilidi hazir.
+Durum: Ramiz Yigit tahsilat kartinin yeni Temmuz maili degil, `2026-06-10` tarihli eski bekleyen banka hareketi oldugu dogrulandi. Ekran ve preview siralamasi `transaction_date` esasina alindi. Ana sayfadaki sabah onay kartlari son 7 gunluk hareketlerle sinirlandi; eski bekleyenler Banka Canli ekraninda `eski bekleyen` olarak kalacak. Mail ekstre workflow blokaji Gmail OAuth/refresh token kontrolu olarak Ust Akil ozetinde gorunecek.
 
 ## Neden Bu Hedef?
 
@@ -16,9 +16,9 @@ Kullanici bu sistem raporunu duzenli gondererek gelecek donem tahsilatlarini but
 
 1. Kullanici `alaylimedikal@gmail.com` icin yeni Google refresh token uretecek ve GitHub secret `GOOGLE_REFRESH_TOKEN` olarak guncelleyecek.
 2. `gmail:oauth:check`, mail-ekstre ve DealerStatement workflow run'lari tekrar kontrol edilecek.
-3. Kullanici acik onay verirse `finance-calendar:dealer-statement:import -- --confirm ONAYLIYORUM` calistirilacak.
-4. Ana ekranda `Gelecek Tahsilat Butcesi` kartinda toplam, siradaki tarih ve ay kirilimi gorulecek.
-5. Ayni rapor tekrar geldiyse `Bayi Ekstre ID` ile mukerrer kayit olusmayacak.
+3. Temmuz banka mailleri `pending_bank_movements` icine dustugunde ana sayfada yalnizca yeni hareketler gorunecek.
+4. Eski Ramiz Yigit gibi kayitlar Banka Canli ekraninda onay/ret ile temizlenecek; dusuk guvenli cari tahsilat otomatik BizimHesap'a islenmeyecek.
+5. Sonraki turda kullanici isterse DealerStatement canli import kilidi ayrica calistirilacak.
 
 ## Kabul Kriteri
 

@@ -2,6 +2,16 @@
 
 ## 2026-07-01
 
+### Banka Mail Guncelligi ve Eski Bekleyen Ayrimi
+
+- Ramiz Yigit tahsilatinin yeni Temmuz kaydi degil, `2026-06-10` tarihli eski bekleyen banka hareketi oldugu dogrulandi.
+- Ana ekran mail ekstre sorgusu ve `fetchPendingBankMovements` siralamasi `transaction_date` esasina alindi.
+- Banka Onay preview komutu `created_at` yerine `transaction_date` ile siralanacak sekilde duzeltildi.
+- Sabah onay kartlari yalnizca son 7 gunluk hareketleri ana ekranda gosterir hale getirildi.
+- Eski bekleyen banka kayitlari artik ana ekranda yeni mail gibi gorunmez; Banka Canli ekraninda `eski bekleyen` etiketiyle kontrol edilir.
+- Ust Akil ozeti mail-ekstre workflow hatasini Gmail OAuth/refresh token kontrolu olarak gorunur hale getirir.
+- Canli BizimHesap kaydi veya Supabase onay/RPC calistirilmadi.
+
 ### DealerStatement Mail Otomasyonu
 
 - `tools/dealer_statement_gmail_worker_v74.mjs` eklendi.
