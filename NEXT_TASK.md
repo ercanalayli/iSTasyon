@@ -4,9 +4,9 @@ Son guncelleme: 2026-07-01 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Gmail OAuth yenilemesini GitHub Secrets uzerinden dogrulamak ve mail ekstre pipeline'ini yeniden calistirmak.
+Mail ekstre ve DealerStatement Gmail otomasyonlarini dogru rapor tipleriyle kullanilir hale getirmek.
 
-Durum: Yerel PowerShell GitHub repository secrets degerlerini okuyamadigi icin `gmail-oauth-start.js` yerelde `GOOGLE_CLIENT_ID ve GOOGLE_CLIENT_SECRET gerekli` hatasi verdi. `AperiON Gmail OAuth Refresh Helper` workflow'u kullanildi: start modu izin linki uretti, finish modu Google code ile yeni refresh token uretti. `GOOGLE_REFRESH_TOKEN` repository secret'i guncellendi. Siradaki net is: yenilenmis tokenla mail-ekstre workflow run sonucunu kontrol etmek.
+Durum: Gmail OAuth yenilendi ve GitHub Actions tarafinda dogrulandi. Mail ekstre pipeline run `28525249930` basarili; 214 yeni banka hareketi `pending_bank_movements` onay kuyruguna yazildi. DealerStatement workflow'unda Gmail OAuth basarili ama bulunan ek beklenen gelecek tahsilat raporu degil; kolon eslesmesi `build_failed` verdi.
 
 ## Neden Bu Hedef?
 
@@ -14,11 +14,11 @@ Kullanici bu sistem raporunu duzenli gondererek gelecek donem tahsilatlarini but
 
 ## Siradaki Is Paketi
 
-1. Yenilenmis `GOOGLE_REFRESH_TOKEN` ile `AperiON Mail Ekstre Pipeline` yeniden calistirilacak.
-2. `Gmail OAuth token check` adiminin success dondugu dogrulanacak.
-3. Dry-run sonucunda kac mail/ek/hesap hareketi okundugu raporlanacak.
-4. SQL hazirsa ve dry-run rows > 0 ise live adiminin `pending_bank_movements` onay kuyruguna yazip yazmadigi kontrol edilecek.
-5. DealerStatement workflow'u da ayni yenilenmis Gmail token ile tekrar kontrol edilecek.
+1. Onay Merkezi ekraninda yeni gelen 214 banka hareketinin gorunurlugu kontrol edilecek.
+2. Banka hareketleri icin BizimHesap hedef analizi ve tek tik kuyruga alma akisi tekrar dogrulanacak.
+3. DealerStatement icin sadece dogru gelecek tahsilat raporunu ayiran mail/ek filtresi guclendirilecek.
+4. Yanlis tibbi cihaz durum raporu gelirse workflow `wrong_attachment_type` gibi net sebep yazacak.
+5. Dogru DealerStatement raporu gelince Finans Takvimi dry-run planinin uretildigi dogrulanacak.
 
 ## Kabul Kriteri
 

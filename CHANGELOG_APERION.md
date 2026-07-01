@@ -15,6 +15,9 @@
 - Google izin akisinda `alaylimedikal@gmail.com` hesabi secildi ve yeni Gmail refresh token helper artifact'i uretildi.
 - `GOOGLE_REFRESH_TOKEN` GitHub repository secret'i guncellendi; token degeri repo dosyalarina yazilmadi.
 - Yenilenmis secret sonrasi mail-ekstre pipeline'in tekrar calismasi icin davranis degistirmeyen workflow tetikleme notu eklendi.
+- `GOOGLE_REFRESH_TOKEN` GitHub API uzerinden yeniden yazildi ve `AperiON Mail Ekstre Pipeline` workflow_dispatch ile calistirildi.
+- Mail ekstre run `28525249930` success: OAuth success, dry-run 326 satir, live ingest 214 yeni `pending_bank_movements`, 82 mukerrer.
+- DealerStatement run `28525566041` OAuth success; failure sebebi yanlis/uyumsuz ek kolonlari. Ekte gelecek tahsilat DealerStatement kolonlari bulunmadi.
 
 ### Banka Mail Guncelligi ve Eski Bekleyen Ayrimi
 
