@@ -72,6 +72,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-07-01 DealerStatement workflow gate turu sonucu: Run `28502969360` success dondu ve artifact olustu; ancak dry-run step'i `continue-on-error` oldugu icin Gmail/parser hatasinin yesil kalma riski tespit edildi. Workflow'a artifact yukleme sonrasinda `Gate DealerStatement result` eklendi. Rapor yoksa veya `result` degeri `_failed` ile bitiyorsa workflow artik kirmizi donecek; boylece hata saklanmayacak ama kanit artifact'i yine yukunmus olacak.
 
+2026-07-01 DealerStatement gate canli kontrol sonucu: Run `28506469160` beklenen sekilde `failure` dondu. Kiran step `Gate DealerStatement result`; onceki adimlarda `dealer-statement-receivables` artifact'i olustu. Bu sonuc workflow'un artik hatayi yesil gostermedigini ve kanit dosyasini yine de sakladigini dogrular. Siradaki teknik kontrol artifact icindeki `dealer_statement_gmail_worker_report.json` sonucunun Gmail/OAuth mu yoksa ek bulunamama mi oldugunu okumaktir.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -88,6 +90,7 @@ Son denetimde calisan komutlar:
 - `npm run dealer-statement:gmail:dry -- --as-of=2026-07-01`: yerel ortamda Gmail secret/yetki yoksa beklenen sekilde blokaj verir; GitHub secrets ile workflow calisacak.
 - GitHub Actions `AperiON DealerStatement Receivables` run `28500494014`: ilk run failure; hata raporu/artifact dayanimi eklendi.
 - GitHub Actions `AperiON DealerStatement Receivables` run `28502969360`: success; artifact var. Sonuc gate'i eklendi.
+- GitHub Actions `AperiON DealerStatement Receivables` run `28506469160`: failure; artifact var; gate hatayi saklamadi.
 - GitHub raw `index.html`: yeni kod var.
 - GitHub Pages `?v=5370338`: yeni kod var.
 - `npm run bizimhesap:queue:dry`: gecti, hazir kuyruk 0.
