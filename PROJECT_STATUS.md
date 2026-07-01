@@ -64,6 +64,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-07-01 DealerStatement guvenli import turu sonucu: `tools/import_dealer_statement_receivables_v73.cjs` eklendi. Komut `--commit --confirm ONAYLIYORUM` olmadan Supabase'e yazmaz. `npm run finance-calendar:dealer-statement -- --file="C:\Users\HP\Downloads\DealerStatement (3).xls" --as-of=2026-07-01 --company=ALAYLI` calisti: 705 satirdan 80 gelecek tahsilat, TL 657.666,43 plan uretti. 1 sifir satis tutarli ama yatirilan tutari olan kayit `needs_review` listesine ayrildi. `npm run finance-calendar:dealer-statement:import:dry` calisti; canli insert yapilmadi.
 
+2026-07-01 DealerStatement ana ekran gorunurluk turu sonucu: Ana Finans Takvimi paneli `finance_calendar_items` icinden `source_table='dealer_statement'` gelecek tahsilatlarini ayrica okur hale getirildi. Boylesiyle Eylul/Ekim/Kasim gibi `finance_calendar_drawer_view` yakin donem filtresine girmeyen gelecek tahsilatlar da `Gelecek Tahsilat Butcesi` kartinda gorunur. `verify:dealer-statement-dashboard`, `finance-calendar:dealer-statement:import:dry`, `finance-smoke` ve `verify:main-finance-flow-v55` gecti. Canli insert yapilmadi.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.

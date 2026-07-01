@@ -11,6 +11,14 @@
 - Satis tutari 0 olup yatirilan tutari olan 1 kayit otomatik butceye alinmadi, `needs_review` listesine ayrildi.
 - Import dry-run basarili; canli insert yapilmadi.
 
+### DealerStatement Ana Ekran Gorunurlugu
+
+- Ana Finans Takvimi paneli `finance_calendar_items` icinden `source_table='dealer_statement'` kayitlarini ayrica okur hale getirildi.
+- `Gelecek Tahsilat Butcesi` KPI karti eklendi.
+- Ilk 8 gelecek tahsilat ve ay kirilimi ana panelde gosterilecek sekilde hazirlandi.
+- `verify:dealer-statement-dashboard` komutu eklendi ve gecti.
+- Canli Supabase insert yapilmadi.
+
 ## 2026-06-30
 
 ### DealerStatement Gelecek Tahsilat Plani
