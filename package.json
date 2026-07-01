@@ -67,6 +67,8 @@
     "finance-calendar:dealer-statement:import:dry": "node tools/import_dealer_statement_receivables_v73.cjs",
     "finance-calendar:dealer-statement:import": "node tools/import_dealer_statement_receivables_v73.cjs --commit",
     "verify:dealer-statement-dashboard": "node tools/verify_dealer_statement_dashboard_v73.cjs",
+    "dealer-statement:gmail:dry": "node tools/dealer_statement_gmail_worker_v74.mjs",
+    "verify:dealer-statement-automation": "node tools/verify_dealer_statement_automation_v74.cjs",
     "live-install:build": "node tools/build_live_install_v58.cjs",
     "preflight": "node tools/aperion_system_preflight.cjs",
     "telegram:hatirlat": "node telegram_hatirlatma_bot.js --once",

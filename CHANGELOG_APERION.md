@@ -2,6 +2,17 @@
 
 ## 2026-07-01
 
+### DealerStatement Mail Otomasyonu
+
+- `tools/dealer_statement_gmail_worker_v74.mjs` eklendi.
+- `dealer-statement:gmail:dry` npm komutu eklendi.
+- `.github/workflows/dealer-statement-receivables.yml` eklendi.
+- Workflow 10:20 ve 17:20 Turkiye saatiyle DealerStatement mail eklerini kontrol edecek sekilde kuruldu.
+- Dogru posta kutusu `alaylimedikal@gmail.com` olarak kilitlendi.
+- Worker DealerStatement ekini indirir, Finans Takvimi planini uretir ve yalnizca dry-run import kaniti yazar.
+- Workflow ve worker icinde `--commit` kullanimi yok; canli Supabase insert yapilmaz.
+- `tools/verify_dealer_statement_automation_v74.cjs` ve `verify:dealer-statement-automation` eklendi.
+
 ### DealerStatement Finans Takvimi Import Kilidi
 
 - `tools/import_dealer_statement_receivables_v73.cjs` eklendi.

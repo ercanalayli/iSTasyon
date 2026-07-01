@@ -6,7 +6,7 @@ Son guncelleme: 2026-07-01 Europe/Istanbul
 
 DealerStatement raporundan gelecek tahsilatlari Finans Takvimi / butce hattina guvenli baglamak.
 
-Durum: `DealerStatement (3).xls` dosyasi okundu. Dosya `.xls` uzantili HTML tablo formatinda. `finance-calendar:dealer-statement` komutu 2026-07-01 itibariyla 705 satirdan 80 gelecek tahsilat cikardi ve toplam TL 657.666,43 plan uretti. 1 sifir satis tutarli kayit incelemeye ayrildi. `finance-calendar:dealer-statement:import:dry` calisti; canli Supabase insert yapilmadi. Ana Finans Takvimi paneli canli import sonrasi `Gelecek Tahsilat Butcesi` kartinda bu kayitlari gosterecek sekilde hazirlandi. Canli insert icin `--commit --confirm ONAYLIYORUM` kilidi hazir.
+Durum: `DealerStatement (3).xls` dosyasi okundu. Dosya `.xls` uzantili HTML tablo formatinda. `finance-calendar:dealer-statement` komutu 2026-07-01 itibariyla 705 satirdan 80 gelecek tahsilat cikardi ve toplam TL 657.666,43 plan uretti. 1 sifir satis tutarli kayit incelemeye ayrildi. `finance-calendar:dealer-statement:import:dry` calisti; canli Supabase insert yapilmadi. Ana Finans Takvimi paneli canli import sonrasi `Gelecek Tahsilat Butcesi` kartinda bu kayitlari gosterecek sekilde hazirlandi. Gmail otomasyonu `dealer-statement-receivables.yml` ile 10:20 ve 17:20 TR dry-run olarak hazirlandi. Canli insert icin `--commit --confirm ONAYLIYORUM` kilidi hazir.
 
 ## Neden Bu Hedef?
 
@@ -14,11 +14,11 @@ Kullanici bu sistem raporunu duzenli gondererek gelecek donem tahsilatlarini but
 
 ## Siradaki Is Paketi
 
-1. Uretilen `data/dealer_statement_finance_calendar_plan.json` plan dosyasi incelenecek.
-2. Kullanici acik onay verirse `finance-calendar:dealer-statement:import -- --confirm ONAYLIYORUM` calistirilacak.
-3. Ana ekranda `Gelecek Tahsilat Butcesi` kartinda toplam, siradaki tarih ve ay kirilimi gorulecek.
-4. Ayni rapor tekrar geldiyse `Bayi Ekstre ID` ile mukerrer kayit olusmayacak.
-5. Mail/Drive otomasyonunda DealerStatement eki gelince bu parser calisacak.
+1. GitHub Actions `AperiON DealerStatement Receivables` workflow ilk run sonucu kontrol edilecek.
+2. Uretilen artifact icindeki `dealer_statement_finance_calendar_plan.json` ve `dealer_statement_finance_calendar_import_proof.json` incelenecek.
+3. Kullanici acik onay verirse `finance-calendar:dealer-statement:import -- --confirm ONAYLIYORUM` calistirilacak.
+4. Ana ekranda `Gelecek Tahsilat Butcesi` kartinda toplam, siradaki tarih ve ay kirilimi gorulecek.
+5. Ayni rapor tekrar geldiyse `Bayi Ekstre ID` ile mukerrer kayit olusmayacak.
 
 ## Kabul Kriteri
 
@@ -27,6 +27,7 @@ Kullanici bu sistem raporunu duzenli gondererek gelecek donem tahsilatlarini but
 - Cikti Finans Takvimi modeline uygun olmali: tamamlandi.
 - Canli insert onaysiz yapilmamali: tamamlandi.
 - Supabase insert sonrasi ana ekranda gorunurluk: UI hazir, canli insert onayi gerekli.
+- Gmail otomasyonu canli insert yapmadan plan/dry-run kaniti uretmeli: tamamlandi.
 
 Yeni aday kabul kriteri:
 

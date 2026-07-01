@@ -66,6 +66,8 @@ Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonrak
 
 2026-07-01 DealerStatement ana ekran gorunurluk turu sonucu: Ana Finans Takvimi paneli `finance_calendar_items` icinden `source_table='dealer_statement'` gelecek tahsilatlarini ayrica okur hale getirildi. Boylesiyle Eylul/Ekim/Kasim gibi `finance_calendar_drawer_view` yakin donem filtresine girmeyen gelecek tahsilatlar da `Gelecek Tahsilat Butcesi` kartinda gorunur. `verify:dealer-statement-dashboard`, `finance-calendar:dealer-statement:import:dry`, `finance-smoke` ve `verify:main-finance-flow-v55` gecti. Canli insert yapilmadi.
 
+2026-07-01 DealerStatement mail otomasyon turu sonucu: `tools/dealer_statement_gmail_worker_v74.mjs` ve `dealer-statement-receivables.yml` eklendi. Workflow yalnizca `alaylimedikal@gmail.com` posta kutusunu tarar, DealerStatement ekini indirir, Finans Takvimi planini uretir ve sadece dry-run import kaniti yazar. Schedule 10:20 ve 17:20 Turkiye saati olarak kuruldu. `--commit` workflow ve worker icinde yasaklandi; canli Supabase insert yine kullanici onayi ve ayri komut olmadan yapilmaz.
+
 Son denetimde calisan komutlar:
 
 - `npm run preflight`: gecti.
@@ -78,6 +80,8 @@ Son denetimde calisan komutlar:
 - `npm run verify:daily-readiness`: gecti.
 - `npm run verify:firm-isolation`: gecti.
 - `npm run verify:bank-approval-action`: gecti.
+- `npm run verify:dealer-statement-automation`: gecti.
+- `npm run dealer-statement:gmail:dry -- --as-of=2026-07-01`: yerel ortamda Gmail secret/yetki yoksa beklenen sekilde blokaj verir; GitHub secrets ile workflow calisacak.
 - GitHub raw `index.html`: yeni kod var.
 - GitHub Pages `?v=5370338`: yeni kod var.
 - `npm run bizimhesap:queue:dry`: gecti, hazir kuyruk 0.

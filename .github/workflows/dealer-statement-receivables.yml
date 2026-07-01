@@ -1,0 +1,76 @@
+name: AperiON DealerStatement Receivables
+
+on:
+  workflow_dispatch:
+    inputs:
+      lookback_days:
+        description: "DealerStatement mail arama gun sayisi"
+        required: false
+        default: "45"
+      as_of:
+        description: "Plan baslangic tarihi; bos ise bugun"
+        required: false
+        default: ""
+  schedule:
+    # 10:20 Europe/Istanbul: morning statement follow-up after fixed bank check.
+    - cron: "20 7 * * *"
+    # 17:20 Europe/Istanbul: evening statement follow-up after fixed bank check.
+    - cron: "20 14 * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/dealer-statement-receivables.yml"
+      - "tools/dealer_statement_gmail_worker_v74.mjs"
+      - "tools/build_dealer_statement_receivables_v72.cjs"
+      - "tools/import_dealer_statement_receivables_v73.cjs"
+      - "tools/verify_dealer_statement_automation_v74.cjs"
+      - "package.json"
+
+jobs:
+  dealer-statement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      GMAIL_MAILBOX: alaylimedikal@gmail.com
+      DEALER_LOOKBACK_DAYS: ${{ inputs.lookback_days || '45' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify automation guard
+        run: npm run verify:dealer-statement-automation
+
+      - name: DealerStatement Gmail dry-run
+        env:
+          DEALER_LOOKBACK_DAYS: ${{ inputs.lookback_days || '45' }}
+        run: |
+          if [ -n "${{ inputs.as_of }}" ]; then
+            npm run dealer-statement:gmail:dry -- --as-of=${{ inputs.as_of }}
+          else
+            npm run dealer-statement:gmail:dry
+          fi
+
+      - name: Upload DealerStatement artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dealer-statement-receivables
+          if-no-files-found: ignore
+          path: |
+            data/dealer_statement_gmail_worker_report.json
+            data/dealer_statement_finance_calendar_plan.json
+            data/dealer_statement_finance_calendar_import_proof.json
+            artifacts/dealer-statement/**
