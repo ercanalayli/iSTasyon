@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const { google } = require('googleapis');
 
 const mode = (process.argv[2] || process.env.OAUTH_MODE || 'start').toLowerCase();
@@ -18,6 +20,8 @@ if (mailbox !== 'alaylimedikal@gmail.com') fail(`Yanlis Gmail hesabi: ${mailbox}
 
 const oauth2 = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 const scopes = ['https://www.googleapis.com/auth/gmail.readonly'];
+const outDir = path.join(__dirname, 'logs');
+fs.mkdirSync(outDir, { recursive: true });
 
 async function start() {
   const url = oauth2.generateAuthUrl({
@@ -29,6 +33,7 @@ async function start() {
   console.log('GMAIL_OAUTH_URL_BEGIN');
   console.log(url);
   console.log('GMAIL_OAUTH_URL_END');
+  fs.writeFileSync(path.join(outDir, 'gmail-oauth-url.txt'), `${url}\n`, 'utf8');
   console.log('Bu linki ac, sadece alaylimedikal@gmail.com ile izin ver, Google code degerini kopyala.');
   console.log('Sonra workflowu mode=finish ve google_oauth_code=CODE ile tekrar calistir.');
 }
@@ -42,6 +47,7 @@ async function finish() {
   console.log('GOOGLE_REFRESH_TOKEN_BEGIN');
   console.log(tokens.refresh_token);
   console.log('GOOGLE_REFRESH_TOKEN_END');
+  fs.writeFileSync(path.join(outDir, 'gmail-refresh-token.txt'), `${tokens.refresh_token}\n`, 'utf8');
   console.log('Bu refresh token degerini GitHub Repository Secret GOOGLE_REFRESH_TOKEN olarak guncelle.');
 }
 

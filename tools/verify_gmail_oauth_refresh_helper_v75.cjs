@@ -17,6 +17,7 @@ ok('uses GitHub secrets', workflow.includes('secrets.GOOGLE_CLIENT_ID') && workf
 ok('does not need local env', !workflow.includes('notepad') && !workflow.includes('.env'));
 ok('prints auth url markers', helper.includes('GMAIL_OAUTH_URL_BEGIN') && helper.includes('GMAIL_OAUTH_URL_END'));
 ok('prints refresh token markers', helper.includes('GOOGLE_REFRESH_TOKEN_BEGIN') && helper.includes('GOOGLE_REFRESH_TOKEN_END'));
+ok('writes OAuth artifacts', helper.includes('gmail-oauth-url.txt') && helper.includes('gmail-refresh-token.txt') && workflow.includes('upload-artifact@v4'));
 ok('readonly Gmail scope', helper.includes('https://www.googleapis.com/auth/gmail.readonly'));
 
 if (failed) {
