@@ -24,6 +24,9 @@ const checks = [
   ['home bank approval status card exists', index.includes('bankApprovalStatusCard') && /function\s+bankApprovalStatusHtml\s*\(/.test(index)],
   ['home bank approval status fetch exists', /function\s+fetchBankApprovalStatusReport\s*\(/.test(index) && index.includes('data/aperion_bank_approval_status.json')],
   ['home bank approval status raw fallback exists', index.includes('raw.githubusercontent.com/ercanalayli/iSTasyon/main/data/aperion_bank_approval_status.json')],
+  ['home bank approval candidate focus action exists', /function\s+openBankApprovalFocus\s*\(/.test(index) && index.includes('Adayı Aç')],
+  ['bank approval row focus helper exists', /function\s+focusBankApprovalRow\s*\(/.test(index) && index.includes('bank-focus-row')],
+  ['bank approval rows expose pending id', index.includes('data-bank-pending-id') && index.includes('data-bank-row-id')],
   ['package script registered', pkg.scripts && pkg.scripts['verify:bank-approval-action'] === 'node tools/verify_bank_approval_action_v68.cjs']
 ];
 

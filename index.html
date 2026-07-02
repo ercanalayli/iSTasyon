@@ -527,6 +527,11 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .bank-command-status-amount{font-family:var(--mono);font-size:18px;font-weight:950;color:#FFFFFF;text-align:right;white-space:nowrap}
 .bank-command-status-meta{margin-top:8px;font-size:10px;font-weight:850;color:#D1FAE5;line-height:1.45}
 .bank-command-status-code{display:block;margin-top:7px;font-family:var(--mono);font-size:9px;color:#E0F2FE;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bank-command-status-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.bank-command-status-actions button{height:28px;border:1px solid rgba(255,255,255,.30);background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:0 11px;font-size:10px;font-weight:950;cursor:pointer}
+.bank-command-status-actions button:hover{background:#fff;color:#0F172A;box-shadow:0 0 0 3px rgba(255,255,255,.20)}
+.bank-focus-row{outline:3px solid rgba(245,158,11,.70);outline-offset:-3px;background:#FFF7ED!important}
+.bank-focus-row td{background:#FFF7ED!important}
 .morning-approval-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
 .morning-approval-card{border:1px solid #DDE6F2;border-left:5px solid #F59E0B;border-radius:16px;background:linear-gradient(180deg,#FFFFFF,#F8FAFC);padding:12px;box-shadow:0 12px 28px rgba(15,23,42,.07)}
 .morning-approval-card:hover{border-color:#93C5FD;box-shadow:0 0 0 3px rgba(37,99,235,.10),0 16px 34px rgba(15,23,42,.12)}
@@ -3670,6 +3675,22 @@ async function fetchBankApprovalStatusReport(){
   }
   return null;
 }
+function focusBankApprovalRow(id){
+  const target=String(id||'');
+  if(!target)return;
+  const rows=[...document.querySelectorAll('[data-bank-pending-id],[data-bank-row-id]')];
+  const row=rows.find(x=>x.dataset.bankPendingId===target||x.dataset.bankRowId===target);
+  document.querySelectorAll('.bank-focus-row').forEach(x=>x.classList.remove('bank-focus-row'));
+  if(!row)return;
+  row.classList.add('bank-focus-row');
+  try{row.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){row.scrollIntoView();}
+}
+function openBankApprovalFocus(id){
+  window.APERION_BANK_FOCUS_ID=String(id||'');
+  gP('finans',null);
+  setTimeout(()=>document.querySelector(".ft-tab[onclick*='banka']")?.click(),60);
+  setTimeout(()=>focusBankApprovalRow(window.APERION_BANK_FOCUS_ID),900);
+}
 function bankApprovalStatusHtml(status){
   const c=status?.selected_candidate;
   if(!c)return '';
@@ -3690,6 +3711,9 @@ function bankApprovalStatusHtml(status){
     <div class="bank-command-status-meta">Cari/Kategori: ${escHtml(c.counterparty||'-')} / ${escHtml(c.category||'-')} · Güven ${fmt(c.confidence||0)}% · Kuyruk: ${escHtml(queue)} · Canlı kayıt kapalı</div>
     <span class="bank-command-status-code">ID ${escHtml(shortId(c.pending_bank_movement_id))} · Onay metni: ${escHtml(status.required_user_approval_text||'tekil onay gerekli')}</span>
     <div class="bank-command-status-meta">${escHtml(next)}</div>
+    <div class="bank-command-status-actions">
+      <button onclick='openBankApprovalFocus(${JSON.stringify(String(c.pending_bank_movement_id||''))})'>Adayı Aç</button>
+    </div>
   </div>`;
 }
 async function loadBankCommandCenter(){
@@ -6219,7 +6243,8 @@ async function rBankaOnay(){
   const duplicateCounts=rows.reduce((m,r)=>{const k=bankDuplicateKey(r);m[k]=(m[k]||0)+1;return m;},{});
   el.innerHTML=rows.length?rows.slice(0,120).map(r=>{
     const dupCount=duplicateCounts[bankDuplicateKey(r)]||1;
-    return `<tr>
+    const rowId=escHtml(String(r.id||''));
+    return `<tr data-bank-row-id="${rowId}" data-bank-pending-id="${rowId}">
       <td>${bankMovementCell(r)}</td>
       <td>${bankAmountCell(r)}</td>
       <td>${bankDecisionCell(r,dupCount)}</td>
@@ -6228,6 +6253,7 @@ async function rBankaOnay(){
       <td>${bankActionCell(r,dupCount)}</td>
     </tr>`;
   }).join(''):'<tr><td colspan="6" style="padding:18px;color:var(--t3)">Banka hareketi yok</td></tr>';
+  setTimeout(()=>focusBankApprovalRow(window.APERION_BANK_FOCUS_ID),50);
 }
 function planTypeTR(v){return {contract:'Sözleşmeli',standard:'Standart',fixed:'Sabit',forecast:'Öngörülen',variable:'Değişken'}[v]||v||'-';}
 function planScopeTR(v){return v==='personal'?'Kişisel':'İşletme';}
