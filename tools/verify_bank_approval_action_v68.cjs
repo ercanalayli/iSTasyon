@@ -27,6 +27,8 @@ const checks = [
   ['home bank approval candidate focus action exists', /function\s+openBankApprovalFocus\s*\(/.test(index) && index.includes('Adayı Aç')],
   ['bank approval row focus helper exists', /function\s+focusBankApprovalRow\s*\(/.test(index) && index.includes('bank-focus-row')],
   ['bank approval rows expose pending id', index.includes('data-bank-pending-id') && index.includes('data-bank-row-id')],
+  ['home bank approval decision fields are visible', index.includes('BizimHesap hedefi') && index.includes('Banka hesabı') && index.includes('Cari / karşı taraf') && index.includes('Kategori')],
+  ['home bank approval card explains approval location', index.includes('Onay ekrandaki ilgili satırdan verilecek')],
   ['package script registered', pkg.scripts && pkg.scripts['verify:bank-approval-action'] === 'node tools/verify_bank_approval_action_v68.cjs']
 ];
 

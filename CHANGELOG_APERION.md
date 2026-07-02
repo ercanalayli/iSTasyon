@@ -6,6 +6,8 @@
 
 - Banka Komuta Merkezi `Siradaki BizimHesap adayi` bandina `Adayi Ac` eylemi eklendi.
 - Eylem canli kayit yapmaz; Finans > Banka Canli ekranini acar ve secili pending id satirini sari cerceveyle odaklar.
+- Kartta BizimHesap hedefi, banka hesabi, cari/karsi taraf, kategori, risk ve guven alani ayrica gosterilir.
+- Kart onayin ekrandaki ilgili satirdan verilecegini acik yazar.
 - Banka onay tablo satirlarina `data-bank-pending-id` ve `data-bank-row-id` isaretleri eklendi.
 - `verify:bank-approval-action` icine aday odaklama helper, satir id ve focus CSS kontrolleri eklendi.
 - Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.

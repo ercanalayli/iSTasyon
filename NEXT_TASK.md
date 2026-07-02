@@ -4,7 +4,7 @@ Son guncelleme: 2026-07-02 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Guncel tur notu: Banka Komuta Merkezi'ndeki `Siradaki BizimHesap adayi` bandina `Adayi Ac` eylemi eklendi. Bu eylem canli kayit yapmaz; Finans > Banka Canli ekranini acar, secili pending id satirina gider ve satiri sari cerceveyle odaklar. Siradaki canli adim hala ayni kilitte: kullanici tekil kayit icin acik onay verirse queue olusumu ve BizimHesap worker kaniti dogrulanacak.
+Guncel tur notu: Banka Komuta Merkezi'ndeki `Siradaki BizimHesap adayi` bandina `Adayi Ac` eylemi eklendi. Bu eylem canli kayit yapmaz; Finans > Banka Canli ekranini acar, secili pending id satirina gider ve satiri sari cerceveyle odaklar. Kart artik BizimHesap hedefi, banka hesabi, cari/karsi taraf ve kategori alanlarini acik gosterir; onayin ilgili satirdan verilecegini yazar. Siradaki canli adim hala ayni kilitte: kullanici tekil kayit icin acik onay verirse queue olusumu ve BizimHesap worker kaniti dogrulanacak.
 
 Onay Merkezi analiz guvenini production seviyesine tasimak.
 

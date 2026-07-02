@@ -527,6 +527,11 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .bank-command-status-amount{font-family:var(--mono);font-size:18px;font-weight:950;color:#FFFFFF;text-align:right;white-space:nowrap}
 .bank-command-status-meta{margin-top:8px;font-size:10px;font-weight:850;color:#D1FAE5;line-height:1.45}
 .bank-command-status-code{display:block;margin-top:7px;font-family:var(--mono);font-size:9px;color:#E0F2FE;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bank-command-status-plan{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:9px}
+.bank-command-status-plan span{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.10);border-radius:10px;padding:7px 8px;min-width:0}
+.bank-command-status-plan b{display:block;font-size:8px;font-weight:950;text-transform:uppercase;color:#BFDBFE;margin-bottom:3px}
+.bank-command-status-plan em{display:block;font-style:normal;font-size:10px;font-weight:950;color:#FFFFFF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bank-command-status-next{margin-top:8px;border:1px solid rgba(16,185,129,.25);background:rgba(6,78,59,.28);border-radius:10px;padding:7px 8px;font-size:10px;font-weight:900;color:#D1FAE5;line-height:1.4}
 .bank-command-status-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
 .bank-command-status-actions button{height:28px;border:1px solid rgba(255,255,255,.30);background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:0 11px;font-size:10px;font-weight:950;cursor:pointer}
 .bank-command-status-actions button:hover{background:#fff;color:#0F172A;box-shadow:0 0 0 3px rgba(255,255,255,.20)}
@@ -3708,9 +3713,15 @@ function bankApprovalStatusHtml(status){
       </div>
       <div class="bank-command-status-amount">${escHtml(amount)}</div>
     </div>
-    <div class="bank-command-status-meta">Cari/Kategori: ${escHtml(c.counterparty||'-')} / ${escHtml(c.category||'-')} · Güven ${fmt(c.confidence||0)}% · Kuyruk: ${escHtml(queue)} · Canlı kayıt kapalı</div>
+    <div class="bank-command-status-plan">
+      <span><b>BizimHesap hedefi</b><em>${escHtml(c.target||'-')}</em></span>
+      <span><b>Banka hesabı</b><em>${escHtml(c.account||'-')}</em></span>
+      <span><b>Cari / karşı taraf</b><em>${escHtml(c.counterparty||'-')}</em></span>
+      <span><b>Kategori</b><em>${escHtml(c.category||'-')}</em></span>
+    </div>
+    <div class="bank-command-status-meta">Güven ${fmt(c.confidence||0)}% · Risk ${escHtml(c.risk_class||'-')} · Kuyruk: ${escHtml(queue)} · Canlı kayıt kapalı</div>
     <span class="bank-command-status-code">ID ${escHtml(shortId(c.pending_bank_movement_id))} · Onay metni: ${escHtml(status.required_user_approval_text||'tekil onay gerekli')}</span>
-    <div class="bank-command-status-meta">${escHtml(next)}</div>
+    <div class="bank-command-status-next">${escHtml(next)} Onay ekrandaki ilgili satırdan verilecek; bu kart sadece doğru satıra götürür.</div>
     <div class="bank-command-status-actions">
       <button onclick='openBankApprovalFocus(${JSON.stringify(String(c.pending_bank_movement_id||''))})'>Adayı Aç</button>
     </div>
