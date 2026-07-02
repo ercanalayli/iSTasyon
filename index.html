@@ -3658,11 +3658,17 @@ async function renderExecutiveBrief(){
   ${issues.length?`<div class="finance-empty" style="margin-top:10px">Eksik kaynak: ${escHtml([...new Set(issues)].join(' · '))}</div>`:''}`;
 }
 async function fetchBankApprovalStatusReport(){
-  try{
-    const res=await fetch(`data/aperion_bank_approval_status.json?v=${Date.now()}`,{cache:'no-store'});
-    if(!res.ok)return null;
-    return await res.json();
-  }catch(e){return null;}
+  const urls=[
+    `data/aperion_bank_approval_status.json?v=${Date.now()}`,
+    `https://raw.githubusercontent.com/ercanalayli/iSTasyon/main/data/aperion_bank_approval_status.json?v=${Date.now()}`
+  ];
+  for(const url of urls){
+    try{
+      const res=await fetch(url,{cache:'no-store'});
+      if(res.ok)return await res.json();
+    }catch(e){}
+  }
+  return null;
 }
 function bankApprovalStatusHtml(status){
   const c=status?.selected_candidate;

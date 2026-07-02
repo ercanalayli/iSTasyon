@@ -2,6 +2,15 @@
 
 ## 2026-07-02
 
+### Banka Status Pages Fallback
+
+- GitHub raw status JSON dosyasinin mevcut oldugu dogrulandi.
+- GitHub Pages deploy `in_progress` iken `data/aperion_bank_approval_status.json` gecici 404 donebildigi goruldu.
+- `fetchBankApprovalStatusReport()` once Pages/local JSON'u, olmazsa GitHub raw JSON'u dener hale getirildi.
+- `verify:bank-approval-action` icine raw fallback kontrolu eklendi.
+- `verify:bank-approval-action`, HTML script parse ve `finance-smoke` gecti.
+- Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
+
 ### Banka Onay Status Otomasyonu
 
 - `.github/workflows/bank-approval-status.yml` eklendi.
