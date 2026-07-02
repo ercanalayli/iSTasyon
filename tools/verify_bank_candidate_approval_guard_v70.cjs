@@ -16,6 +16,7 @@ function ok(label, condition) {
 const body = read('tools/approve_bank_candidate_v70.cjs');
 const proofBody = read('tools/check_bank_candidate_queue_proof_v71.cjs');
 const statusBody = read('tools/build_bank_approval_status_v76.cjs');
+const workflowBody = read('.github/workflows/bank-approval-status.yml');
 const pkg = JSON.parse(read('package.json'));
 
 ok('approval tool exists', body.includes('approve_pending_bank_movement'));
@@ -34,6 +35,9 @@ ok('proof npm command refreshes candidates first', pkg.scripts['bank:approval:ca
 ok('status npm command exists', pkg.scripts['bank:approval:status'] === 'npm run bank:approval:candidate:dry && npm run bank:approval:candidate:proof && npm run bizimhesap:queue:dry && node tools/build_bank_approval_status_v76.cjs');
 ok('status report stays dry', statusBody.includes('live_rpc_called: false') && statusBody.includes('live_bizimhesap_save_called: false'));
 ok('status report names exact approval text', statusBody.includes('required_user_approval_text'));
+ok('status workflow exists', workflowBody.includes('AperiON Bank Approval Status'));
+ok('status workflow is read-only build', workflowBody.includes('npm run bank:approval:status') && !workflowBody.includes('approve_pending_bank_movement'));
+ok('status workflow commits only status snapshot', workflowBody.includes('git add data/aperion_bank_approval_status.json'));
 
 if (process.exitCode) {
   console.error('Bank candidate approval guard verification failed.');

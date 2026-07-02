@@ -1,0 +1,85 @@
+name: AperiON Bank Approval Status
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "AperiON Mail Ekstre Pipeline"
+      - "AperiON BizimHesap Queue Worker"
+    types: [completed]
+  schedule:
+    # 10:12 and 17:12 Europe/Istanbul, after fixed mail ekstre checks.
+    - cron: "12 7,14 * * *"
+    # Daytime read-only refresh for the live command center.
+    - cron: "*/30 8-17 * * *"
+  push:
+    branches: [ main ]
+    paths:
+      - ".github/workflows/bank-approval-status.yml"
+      - "tools/build_bank_approval_status_v76.cjs"
+      - "tools/approve_bank_candidate_v70.cjs"
+      - "tools/check_bank_candidate_queue_proof_v71.cjs"
+      - "tools/select_bank_approval_candidate_v69.cjs"
+      - "tools/preview_pending_bank_to_bizimhesap_plan.cjs"
+      - "bizimhesap_queue_worker.cjs"
+      - "package.json"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aperion-bank-approval-status
+  cancel-in-progress: true
+
+jobs:
+  bank-approval-status:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      COMPANY_ID: alayli
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify bank approval guards
+        run: |
+          npm run verify:bank-candidate-guard
+          npm run verify:bank-approval-action
+
+      - name: Build read-only bank approval status
+        run: npm run bank:approval:status
+
+      - name: Commit status snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/aperion_bank_approval_status.json
+          if git diff --cached --quiet; then
+            echo "No bank approval status change"
+          else
+            git commit -m "Update bank approval status snapshot"
+            git push
+          fi
+
+      - name: Upload status diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bank-approval-status
+          if-no-files-found: ignore
+          path: |
+            data/aperion_bank_approval_status.json
+            data/banka_onay_aday_kanit_durumu.json
+            data/banka_onay_guvenli_adaylar.json
+            data/banka_onay_kuyruk_kaniti.json
+            data/bizimhesap_queue_dryrun.json

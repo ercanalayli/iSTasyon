@@ -2,6 +2,17 @@
 
 ## 2026-07-02
 
+### Banka Onay Status Otomasyonu
+
+- `.github/workflows/bank-approval-status.yml` eklendi.
+- Workflow manuel, mail ekstre pipeline sonrasi, BizimHesap queue worker sonrasi ve zamanli olarak calisir.
+- Workflow canli RPC veya BizimHesap save yapmaz; sadece `npm run bank:approval:status` ile okuma/dry-run raporu uretir.
+- Degisiklik varsa yalnizca `data/aperion_bank_approval_status.json` snapshot dosyasini commitler.
+- Canli ana ekran workflow beklemeden status bandi gosterebilsin diye guvenli ilk snapshot repo icine alindi.
+- `verify:bank-candidate-guard` workflow'un canli RPC icermedigini ve sadece status snapshot commitledigini kontrol eder.
+- `verify:bank-candidate-guard`, `verify:bank-approval-action`, `bank:approval:status`, `verify:bizimhesap:queue`, `finance-smoke` ve syntax kontrolu gecti.
+- Canli BizimHesap kaydi yapilmadi.
+
 ### Ana Ekranda Banka Onay Durumu
 
 - Banka Komuta Merkezi icine `Sıradaki BizimHesap adayı` durum bandi eklendi.
