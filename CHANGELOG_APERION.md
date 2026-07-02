@@ -30,6 +30,15 @@
 - `npm run bank:approval:candidates` tekrar calisti; ilk dusuk riskli aday `2026-06-30 Yapi Kredi -3.56 TL Vergi/SGK odemesi`.
 - `npm run bizimhesap:queue:dry` 0 hazir kuyruk gosterdi; canli onay veya BizimHesap kaydi yapilmadi.
 
+### Banka Bildirimlerinde Karsi Taraf Yakalama
+
+- Gmail banka bildirim parser'i `Gonderen / Aciklama`, `Alici`, `Karsi Taraf`, `Cari` ve `Gelen/Giden FAST/EFT/Havale` kaliplarindan karsi taraf ipucu cikarir hale getirildi.
+- Cikarilan karsi taraf `suggested_counterparty` alanina yaziliyor.
+- `FAST`, `EFT`, `HAVALE`, IBAN, hesap, sube, bakiye, tutar ve kart teknik parcalari cari adi olarak kabul edilmiyor.
+- Sentetik gelen EFT testinde karsi taraf `RAMIZ YIGIT` olarak temiz yakalandi.
+- BizimHesap gunluk finans ozet parser testi 0 banka hareketi dondurdu.
+- `npm run verify:bank-approval-action`, `npm run bank:approval:candidates`, `npm run bizimhesap:queue:dry` ve `npm run finance-smoke` gecti.
+
 ## 2026-07-01
 
 ### Gmail OAuth Yenileme Yardimcisi

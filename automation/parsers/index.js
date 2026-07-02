@@ -56,6 +56,7 @@ export function parseBankNotification(text, meta = {}) {
     amount_out: signedAmount < 0 ? abs : 0,
     balance_after: findNotificationBalance(joined),
     detected_type: typeOf(desc, signedAmount),
+    suggested_counterparty: findNotificationCounterparty(joined),
     confidence_score: dateInfo.fromMailDate ? 72 : 84
   });
   tx.duplicate_key = duplicate(bankName, tx);
@@ -229,6 +230,30 @@ function findNotificationBalance(text) {
   return m ? money(m[1]) : null;
 }
 
+function findNotificationCounterparty(text) {
+  const src = clean(text);
+  const labeled = src.match(/(?:G[oö]nderen|GONDEREN|Al[iı]c[iı]|ALICI|Kar[sş][iı]\s*Taraf|KARSI\s*TARAF|Cari|CARI)\s*(?:\/\s*(?:A[cç][iı]klama|ACIKLAMA))?\s*[:\-]\s*([^|]+?)(?=\s+(?:Bakiye|BAKIYE|Tutar|TUTAR|Hesap|HESAP|IBAN|TR\d{2}|$))/i);
+  const transfer = src.match(/(?:Gelen|GELEN|Giden|GIDEN)\s+(?:FAST|EFT|Havale|HAVALE)\s*[-:]?\s*(.+?)(?=\s+(?:tarafindan|tarafından|den\b|dan\b|Bakiye|BAKIYE|Tutar|TUTAR|$))/i);
+  return cleanCounterparty((labeled && labeled[1]) || (transfer && transfer[1]) || '');
+}
+
+function cleanCounterparty(value) {
+  let v = clean(value)
+    .replace(/\bTR\d{2}[A-Z0-9]{8,}\b/ig, '')
+    .replace(/\b\d{8,}\b/g, '')
+    .replace(/\s+\*+\S*/g, '')
+    .replace(/\s*[-:]\s*(?:FAST|EFT|HAVALE)\b.*$/i, '')
+    .replace(/\s+(?:Bakiye|BAKIYE|Tutar|TUTAR|Hesap|HESAP|IBAN|Sube|SUBE).*$/i, '')
+    .replace(/\s+(?:yapi kredi|akbank|is bankasi|vakifbank|garanti|bbva|halkbank|ziraat).*/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  v = v.replace(/^[\s:;,\-.]+|[\s:;,\-.]+$/g, '');
+  const k = key(v).replace(/_/g, ' ');
+  if (!v || v.length < 3) return '';
+  if (/ACIKL|HESAP|SUBE|IBAN|BAKIYE|TUTAR|KART|ATM|AKILLI ASISTAN|ANLIK ODEME|BILGI FISI|GUNLUK/.test(k)) return '';
+  return v.slice(0, 120);
+}
+
 function notificationDescription(text, meta = {}) {
   const parts = [
     meta.mail_subject || '',
@@ -238,7 +263,7 @@ function notificationDescription(text, meta = {}) {
     .replace(/\s+/g, ' ')
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/ig, 'mail@masked')
     .replace(/\bTR\d{2}[A-Z0-9]{8,}\b/ig, 'TR##MASKED')
-    .slice(0, 320);
+    .slice(0, 700);
 }
 
 function qualityGate(rows) {
@@ -320,7 +345,7 @@ function baseTx(meta, bankName, sid, fields) {
     amount_out: Number(fields.amount_out || 0),
     balance_after: fields.balance_after ?? null,
     detected_type: fields.detected_type || '',
-    suggested_counterparty: '',
+    suggested_counterparty: fields.suggested_counterparty || '',
     confidence_score: Number(fields.confidence_score || 0),
     status: 'pending',
     duplicate_key: '',
