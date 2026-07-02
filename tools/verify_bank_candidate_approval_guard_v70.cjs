@@ -15,6 +15,7 @@ function ok(label, condition) {
 
 const body = read('tools/approve_bank_candidate_v70.cjs');
 const proofBody = read('tools/check_bank_candidate_queue_proof_v71.cjs');
+const statusBody = read('tools/build_bank_approval_status_v76.cjs');
 const pkg = JSON.parse(read('package.json'));
 
 ok('approval tool exists', body.includes('approve_pending_bank_movement'));
@@ -30,6 +31,9 @@ ok('queue proof has no hardcoded pending id fallback', !proofBody.includes("9b91
 ok('dry npm command exists', pkg.scripts['bank:approval:candidate:dry'] === 'npm run bank:approval:candidates && node tools/approve_bank_candidate_v70.cjs --dry-check');
 ok('live npm command exists', pkg.scripts['bank:approval:approve-selected'] === 'node tools/approve_bank_candidate_v70.cjs');
 ok('proof npm command refreshes candidates first', pkg.scripts['bank:approval:candidate:proof'] === 'npm run bank:approval:candidates && node tools/check_bank_candidate_queue_proof_v71.cjs');
+ok('status npm command exists', pkg.scripts['bank:approval:status'] === 'npm run bank:approval:candidate:dry && npm run bank:approval:candidate:proof && npm run bizimhesap:queue:dry && node tools/build_bank_approval_status_v76.cjs');
+ok('status report stays dry', statusBody.includes('live_rpc_called: false') && statusBody.includes('live_bizimhesap_save_called: false'));
+ok('status report names exact approval text', statusBody.includes('required_user_approval_text'));
 
 if (process.exitCode) {
   console.error('Bank candidate approval guard verification failed.');

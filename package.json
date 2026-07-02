@@ -86,6 +86,7 @@
     "bank:approval:candidate:dry": "npm run bank:approval:candidates && node tools/approve_bank_candidate_v70.cjs --dry-check",
     "bank:approval:approve-selected": "node tools/approve_bank_candidate_v70.cjs",
     "bank:approval:candidate:proof": "npm run bank:approval:candidates && node tools/check_bank_candidate_queue_proof_v71.cjs",
+    "bank:approval:status": "npm run bank:approval:candidate:dry && npm run bank:approval:candidate:proof && npm run bizimhesap:queue:dry && node tools/build_bank_approval_status_v76.cjs",
     "bizimhesap:queue:dry": "node bizimhesap_queue_worker.cjs --firma alayli --limit 25",
     "bizimhesap:queue:form": "node bizimhesap_queue_worker.cjs --firma alayli --limit 1 --commit",
     "bizimhesap:queue:save": "node bizimhesap_queue_worker.cjs --firma alayli --limit 1 --commit --save",

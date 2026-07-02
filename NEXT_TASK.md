@@ -6,7 +6,7 @@ Son guncelleme: 2026-07-02 Europe/Istanbul
 
 Onay Merkezi analiz guvenini production seviyesine tasimak.
 
-Durum: Ana is programi kullanicinin tum isteklerine gore 20 maddelik siraya indirildi. 04 numarali Onay Merkezi analiz guveni ilk katmani tamamlandi: risk etiketleri, kanit kutusu, 84 guven esigi, tazelik/mukerrer/kuyruk/cari kanit gosterimi eklendi. 05 numarali BizimHesap tek tik kayit kanitinin ilk katmani da eklendi: queue worker dry-run raporu artik evidence ve summary uretir; ana ust akil karti onay bekleyen/kuyrukta/islenmis/hata ayrimini gosterir. `bank:approval:candidate:proof` eski sabit aday yerine her calismada guncel guvenli adayi secer. Son kanit: `2026-06-30 Yapi Kredi -3.56 TL Vergi/SGK odemesi`, pending id `d1455265-abaf-4ea1-a6d4-386bf16b93c1`, status `pending`, queue `0`. Siradaki is, kullanicinin bu tekil ID icin acik onay vermesi halinde kaydi kuyruga alip worker kanitini gercek kayit uzerinde dogrulamak.
+Durum: Ana is programi kullanicinin tum isteklerine gore 20 maddelik siraya indirildi. 04 numarali Onay Merkezi analiz guveni ilk katmani tamamlandi: risk etiketleri, kanit kutusu, 84 guven esigi, tazelik/mukerrer/kuyruk/cari kanit gosterimi eklendi. 05 numarali BizimHesap tek tik kayit kanitinin ilk katmani da eklendi: queue worker dry-run raporu artik evidence ve summary uretir; ana ust akil karti onay bekleyen/kuyrukta/islenmis/hata ayrimini gosterir. `bank:approval:status` tek komutla guncel aday, dry-check, kuyruk kaniti ve BizimHesap worker dry-run sonucunu toplar. Son kanit: `2026-06-30 Yapi Kredi -3.56 TL Vergi/SGK odemesi`, pending id `d1455265-abaf-4ea1-a6d4-386bf16b93c1`, status `pending`, queue `0`. Siradaki is, kullanicinin bu tekil ID icin acik onay vermesi halinde kaydi kuyruga alip worker kanitini gercek kayit uzerinde dogrulamak.
 
 ## Neden Bu Hedef?
 
@@ -38,7 +38,7 @@ Kullanici sabah banka maillerinden gelen hareketleri analiz edilmis sekilde gorm
 ## Siradaki Is Paketi
 
 1. Secili bir guvenli banka adayi icin Onay Merkezi -> `approve_pending_bank_movement` -> `bizimhesap_queue` olusum kaniti tekrar uretilecek.
-2. Kuyrukta kayit varsa `bizimhesap:queue:dry` evidence alaniyla plan/guven/blokaj/sonraki adimi kanitlayacak.
+2. Once `npm run bank:approval:status` ile aday, pending ve queue durumu tek raporda kontrol edilecek.
 3. Kullanici acik onay verirse sadece secili kayit icin BizimHesap form/save calisir; toplu canli kayit yok.
 4. Save sonrasi queue status, `aperion_posting_result`, diagnostik ekran ve tekrar kayit kilidi birlikte dogrulanacak.
 5. `bizimhesap:queue:dry`, `verify:bizimhesap:queue`, `verify:bank-approval-action` tekrar calistirilacak.

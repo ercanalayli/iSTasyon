@@ -2,6 +2,16 @@
 
 ## 2026-07-02
 
+### Banka Onay Tek Durum Raporu
+
+- `tools/build_bank_approval_status_v76.cjs` eklendi.
+- `bank:approval:status` komutu eklendi.
+- Komut guncel banka aday secimi, dry-check, kuyruk kaniti ve BizimHesap worker dry-run adimlarini salt-okunur sekilde calistirir.
+- Cikti `data/aperion_bank_approval_status.json` icine yazilir.
+- Rapor secili aday, hedef hesap/cari/kategori, guven, risk, pending status, queue status, blokajlar, gerekli kullanici onay metni ve sonraki komutu tek yerde gosterir.
+- Son durum: `2026-06-30 Yapi Kredi -3.56 TL Vergi/SGK odemesi`, pending id `d1455265-abaf-4ea1-a6d4-386bf16b93c1`, queue `0`.
+- Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
+
 ### Banka Aday Kanitinda Guncel Secim
 
 - `bank:approval:candidate:proof` komutu artik once `bank:approval:candidates` calistirir.
