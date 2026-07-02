@@ -609,6 +609,8 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .bank-posting-flow strong{display:block;font-size:8px;font-weight:950;color:#667085;text-transform:uppercase;margin-bottom:3px}
 .bank-posting-flow em{display:block;font-style:normal;font-family:var(--mono);font-size:9px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bank-posting-flow .ok{border-color:#ABEFC6;background:#ECFDF3;color:#047857}.bank-posting-flow .wait{border-color:#FEDF89;background:#FFFAEB;color:#854A0E}.bank-posting-flow .bad{border-color:#FECDCA;background:#FEF3F2;color:#B42318}
+.morning-approval-card>.bank-posting-flow{margin-top:8px!important}
+.morning-approval-card>.bank-posting-flow span{padding:7px!important}
 .income-card{border:1px solid #CFE0F5;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 28px rgba(15,23,42,.055)}
 .income-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
 .income-title{font-size:20px;font-weight:950;color:#071327;letter-spacing:-.02em}
@@ -6076,6 +6078,7 @@ function bankMorningCardHtml(r){
       ${bankRisksHtml(r,1)}
       <div style="margin-top:6px;color:#64748B">${escHtml(p.reasons.join(' · '))}</div>
     </div>
+    ${bankPostingFlowHtml(r)}
     ${bankPostingAuditLine(r)}
     <div class="morning-approval-actions">
       <button class="ok" ${st.ready?`onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)"`:'disabled'}>${st.ready?'ONAYLA':'HAZIR DEĞİL'}</button>

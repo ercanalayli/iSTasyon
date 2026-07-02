@@ -14,6 +14,7 @@ const checks = [
   ['low confidence guard blocks approval', /if\(p\.confidence<84\)return\s*\{ready:false/.test(index)],
   ['queue/final state guard exists', /function\s+bankQueueIsFinal\s*\(/.test(index)],
   ['posting proof is visible', index.includes('bank-posting-proof')],
+  ['morning approval cards show posting flow', /function\s+bankMorningCardHtml\s*\([\s\S]*bankPostingFlowHtml\(r\)/.test(index)],
   ['posting flow status is visible', /function\s+bankPostingFlowHtml\s*\(/.test(index) && index.includes('AperiON onayı') && index.includes('BizimHesap kuyruğu') && index.includes('Kayıt sonucu')],
   ['decision evidence is visible', index.includes('bank-evidence') && /function\s+bankEvidenceHtml\s*\(/.test(index)],
   ['risk chips are visible', index.includes('bank-risk-list') && /function\s+bankPlanRisks\s*\(/.test(index)],

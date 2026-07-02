@@ -19,6 +19,13 @@
 - `verify:bank-approval-action` icine satir kayit kaniti kontrolu eklendi.
 - Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
 
+### Sabah Onay Kartlarinda Kayit Kaniti
+
+- Sabah onay kartlari da `AperiON onayi -> BizimHesap kuyrugu -> Kayit sonucu` seridini kullanir hale getirildi.
+- Ana ekran karti ve Banka Canli tablosu ayni kayit durum dilini paylasir.
+- `verify:bank-approval-action` sabah karti helper baglantisini kontrol eder.
+- Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
+
 ### Banka Status Pages Fallback
 
 - GitHub raw status JSON dosyasinin mevcut oldugu dogrulandi.
