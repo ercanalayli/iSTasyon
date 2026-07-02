@@ -18,6 +18,7 @@ export function detectBank(text, meta = {}) {
 }
 
 export function parseBankStatement(text, meta = {}) {
+  if (isNonBankMail(text, meta)) return [];
   const bank = detectBank(text, meta);
   const isNotification = meta.source === 'gmail_bank_notification' || meta.attachment_name === 'mail_body';
   if (isNotification) {
@@ -32,6 +33,7 @@ export function parseBankStatement(text, meta = {}) {
 export function parseBankNotification(text, meta = {}) {
   const src = clean(text);
   if (!src) return [];
+  if (isNonBankMail(src, meta)) return [];
   const joined = clean(src.replace(/\n+/g, ' '));
   const bank = detectBank(src, meta);
   const bankName = bankLabel(meta, bank);
@@ -116,6 +118,11 @@ function parseDateLine(line) {
 
 function key(v) {
   return trUpper(v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 180);
+}
+
+function isNonBankMail(text, meta = {}) {
+  const source = key(`${meta.mail_from || ''} ${meta.mail_subject || ''} ${meta.attachment_name || ''} ${text || ''}`).replace(/_/g, ' ');
+  return /BIZIMHESAP GUNLUK FINANSAL BILGILERINIZ|BIZIMHESAP GUNLUK HESAP HAREKETLERINIZ|GUNLUK NAKIT AKISINIZ|KASA VE BANKA BAKIYELERINIZ/.test(source);
 }
 
 function typeOf(desc, amount) {

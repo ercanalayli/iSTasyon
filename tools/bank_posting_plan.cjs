@@ -101,10 +101,23 @@ function isInvalidCounterparty(value) {
   const text = normalize(value);
   if (!text) return true;
   if (/^(AKBANK|GARANTI|GARANTI BBVA|YAPI|YAPI KREDI|VAKIF|VAKIFBANK|IS BANK|TURKIYE IS BANKASI|BANKA|MAIL EKSTRE)$/.test(text)) return true;
-  if (/^(ACIKL|ACIKLA|ACIKLAMA|GONDEREN|ALICI|MUSTERI|ISLEM|TARIH|SAAT|TUTAR|HESAP|SUBE|IBAN|KART|PARA)$/.test(text)) return true;
+  if (/^(ACIKL|ACIKLA|ACIKLAMA|GONDEREN|ALICI|MUSTERI|ISLEM|TARIH|SAAT|TUTAR|HESAP|SUBE|IBAN|KART|PARA|AKILLI ASISTAN|AKILLI ASISTAN GELEN FAST|ANLIK ODEME BILGILENDIRMESI)$/.test(text)) return true;
   if (/\b(HESAP|SUBE|IBAN|YATIRILAN TUTAR|KART NO|ATM NO|TR MASKED|NO LU HESABINIZA PARA GELDI)\b/.test(text)) return true;
+  if (/\b(AKILLI ASISTAN|ANLIK ODEME BILGILENDIRMESI|BILGI FISI|GUNLUK HESAP HAREKETLERINIZ|GUNLUK FINANSAL BILGILERINIZ)\b/.test(text)) return true;
   if (text.length < 5) return true;
   return false;
+}
+
+function isNonBankSummary(row, text) {
+  const source = normalize([
+    row.description,
+    row.aciklama,
+    row.raw_text,
+    row.mail_subject,
+    row.mail_from,
+    row.attachment_name,
+  ].filter(Boolean).join(' '));
+  return /BIZIMHESAP GUNLUK FINANSAL BILGILERINIZ|BIZIMHESAP GUNLUK HESAP HAREKETLERINIZ|GUNLUK NAKIT AKISINIZ|KASA VE BANKA BAKIYELERINIZ/.test(source || text);
 }
 
 function classifyBankMovement(row = {}) {
@@ -135,7 +148,17 @@ function classifyBankMovement(row = {}) {
   if (incoming) reasons.push('banka alacak/giris');
   if (amountOut(row) > 0) reasons.push('banka borc/cikis');
 
-  if (incoming && /POS|NET SATIS|KREDI KART|BATCH YATAN|UYE ISYERI/.test(text)) {
+  if (isNonBankSummary(row, text)) {
+    kind = 'non_bank_summary_review';
+    type = 'Banka disi ozet mail';
+    target = 'Onay Merkezi inceleme';
+    category = 'Kaynak kontrol';
+    counterparty = 'Banka hareketi degil';
+    confidence = 20;
+    reasons.push('banka disi ozet mail');
+  }
+
+  if (kind !== 'non_bank_summary_review' && incoming && /POS|NET SATIS|KREDI KART|BATCH YATAN|UYE ISYERI/.test(text)) {
     kind = 'pos_collection';
     type = 'POS tahsilati';
     target = 'BizimHesap banka tahsilati';
@@ -144,7 +167,7 @@ function classifyBankMovement(row = {}) {
     confidence = Math.max(confidence, 88);
     reasons.push('POS aciklamasi');
   }
-  if (/KOMISYON|BSMV|UCRET|MASRAF|KATKI PAYI/.test(text) || (amountOut(row) > 0 && /POS|KREDI KART|UYE ISYERI/.test(text))) {
+  if (kind !== 'non_bank_summary_review' && (/KOMISYON|BSMV|UCRET|MASRAF|KATKI PAYI/.test(text) || (amountOut(row) > 0 && /POS|KREDI KART|UYE ISYERI/.test(text)))) {
     kind = 'bank_fee_expense';
     type = 'Banka/POS masrafi';
     target = 'BizimHesap gider/masraf kaydi';
@@ -153,7 +176,7 @@ function classifyBankMovement(row = {}) {
     confidence = Math.max(confidence, 90);
     reasons.push('komisyon/masraf');
   }
-  if (/VIRMAN|HESAPLAR ARASI/.test(text)) {
+  if (kind !== 'non_bank_summary_review' && /VIRMAN|HESAPLAR ARASI/.test(text)) {
     kind = 'bank_transfer';
     type = 'Banka virmani';
     target = 'BizimHesap banka virmani';
@@ -162,7 +185,7 @@ function classifyBankMovement(row = {}) {
     confidence = Math.max(confidence, 84);
     reasons.push('virman');
   }
-  if (/KREDI KART BORC|KART BORC/.test(text)) {
+  if (kind !== 'non_bank_summary_review' && /KREDI KART BORC|KART BORC/.test(text)) {
     kind = 'credit_card_payment';
     type = 'Kredi karti odemesi';
     target = 'BizimHesap banka/kredi karti virmani';
@@ -171,7 +194,7 @@ function classifyBankMovement(row = {}) {
     confidence = Math.max(confidence, 86);
     reasons.push('kart borcu');
   }
-  if (/SGK|VERGI|KDV|STOPAJ/.test(text)) {
+  if (kind !== 'non_bank_summary_review' && /SGK|VERGI|KDV|STOPAJ/.test(text)) {
     kind = 'tax_or_sgk_payment';
     type = 'Vergi/SGK odemesi';
     target = 'BizimHesap gider/odeme kaydi';
@@ -180,7 +203,7 @@ function classifyBankMovement(row = {}) {
     confidence = Math.max(confidence, 84);
     reasons.push('vergi/sgk');
   }
-  if (/ELEKTRIK|ULUDAG|SU |DOGALGAZ|TELEKOM|TURKCELL|VODAFONE|TURKNET/.test(text)) {
+  if (kind !== 'non_bank_summary_review' && /ELEKTRIK|ULUDAG|SU |DOGALGAZ|TELEKOM|TURKCELL|VODAFONE|TURKNET/.test(text)) {
     kind = 'utility_bill_payment';
     type = 'Fatura odemesi';
     target = 'BizimHesap gider/odeme kaydi';
@@ -190,7 +213,7 @@ function classifyBankMovement(row = {}) {
   }
 
   const amount = amountIn(row) > 0 ? amountIn(row) : Math.abs(amountOut(row));
-  const requiresReview = confidence < 84 || isInvalidCounterparty(counterparty) || counterparty === 'Cari eslestirme onayda';
+  const requiresReview = kind === 'non_bank_summary_review' || confidence < 84 || isInvalidCounterparty(counterparty) || counterparty === 'Cari eslestirme onayda';
   return {
     pending_bank_movement_id: row.id || row.pending_bank_movement_id || '',
     bank_name: bankName(row),

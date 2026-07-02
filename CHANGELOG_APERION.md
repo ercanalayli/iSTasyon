@@ -15,11 +15,20 @@
 
 ### Banka Cari Guvenlik Kilidi
 
-- Banka hareketi analizinde `ACIKL`, `ACIKLAMA`, `HESAP SUBE`, `IBAN`, `YATIRILAN TUTAR`, `KART NO`, `ATM NO` gibi banka teknik parcalari cari/karşı taraf kabul edilmiyor.
+- Banka hareketi analizinde `ACIKL`, `ACIKLAMA`, `HESAP SUBE`, `IBAN`, `YATIRILAN TUTAR`, `KART NO`, `ATM NO` gibi banka teknik parcalari cari/karsi taraf kabul edilmiyor.
 - Ayni kural ana ekran `index.html` anlik banka planina da eklendi.
 - `npm run bank:approval:preview` tekrar calisti: 25 ornek hareket, 7 guvenli aday, 18 inceleme isteyen kayit.
 - `npm run bank:approval:candidates` tekrar calisti; ilk dusuk riskli aday `2026-07-02 Akbank 57 TL POS tahsilati`.
 - `npm run finance-smoke`, `npm run verify:bank-approval-action` ve `npm run bizimhesap:queue:dry` gecti.
+
+### Banka Disi Mail Filtresi
+
+- BizimHesap gunluk finans/hareket ozetleri mail ekstre parser'inda banka hareketi olarak kabul edilmiyor.
+- Mevcut bekleyenlerde bu tip kayitlar `Banka disi ozet mail` ve `Onay Merkezi inceleme` olarak siniflandirilir.
+- `Akilli Asistan`, `Anlik Odeme Bilgilendirmesi`, `Bilgi Fisi` gibi bildirim basliklari cari kabul edilmiyor.
+- `npm run bank:approval:preview` tekrar calisti: 25 ornek hareket, 2 guvenli aday, 23 inceleme isteyen kayit.
+- `npm run bank:approval:candidates` tekrar calisti; ilk dusuk riskli aday `2026-06-30 Yapi Kredi -3.56 TL Vergi/SGK odemesi`.
+- `npm run bizimhesap:queue:dry` 0 hazir kuyruk gosterdi; canli onay veya BizimHesap kaydi yapilmadi.
 
 ## 2026-07-01
 
