@@ -1,5 +1,18 @@
 # AperiON Changelog
 
+## 2026-07-02
+
+### Banka Mail Metin Temizleme ve Onay Kontrolu
+
+- `tools/bank_posting_plan.cjs` icindeki bozuk karakter temizleme mantigi guclendirildi.
+- `automation/lib/pending-normalize.js` yeni gelen banka hareketlerinde banka adi, mail konusu, ek adi, aciklama, raw text, tip ve cari ipucunu kayda girmeden once temizler hale getirildi.
+- Gmail/HTML kaynakli `AkÄ±llÄ±`, `AnlÄ±k Ã–deme`, `Ãœye Ä°şyeri`, `â‚º` gibi diziler icin ozel onarim eklendi.
+- `npm run bank:approval:preview` calisti: 25 ornek hareket, 14 yuksek guven, 11 inceleme isteyen kayit.
+- `npm run bank:approval:candidates` calisti: 14 aday, 12 dusuk risk, 11 inceleme isteyen kayit; ilk dusuk riskli aday `2026-06-30 Yapi Kredi -0.62 TL`.
+- `npm run verify:bank-approval-action` gecti.
+- `npm run bizimhesap:queue:dry` calisti ve 0 hazir BizimHesap kuyrugu oldugunu dogruladi.
+- Kullanici onayi olmadan Supabase RPC, kuyruga alma veya BizimHesap kaydetme calistirilmadi.
+
 ## 2026-07-01
 
 ### Gmail OAuth Yenileme Yardimcisi

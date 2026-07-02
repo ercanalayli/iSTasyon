@@ -1,12 +1,12 @@
 # AperiON Next Task
 
-Son guncelleme: 2026-07-01 Europe/Istanbul
+Son guncelleme: 2026-07-02 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Mail ekstre ve DealerStatement Gmail otomasyonlarini dogru rapor tipleriyle kullanilir hale getirmek.
+Mail ekstre Onay Merkezi kayitlarini temiz metin, guvenli analiz ve BizimHesap kuyrugu kanitiyla kullanilir hale getirmek.
 
-Durum: Gmail OAuth yenilendi ve GitHub Actions tarafinda dogrulandi. Mail ekstre pipeline run `28525249930` basarili; 214 yeni banka hareketi `pending_bank_movements` onay kuyruguna yazildi. DealerStatement workflow'unda Gmail OAuth basarili ama bulunan ek beklenen gelecek tahsilat raporu degil; kolon eslesmesi `build_failed` verdi.
+Durum: Gmail OAuth yenilendi ve GitHub Actions tarafinda dogrulandi. Mail ekstre pipeline run `28525249930` basarili; 214 yeni banka hareketi `pending_bank_movements` onay kuyruguna yazildi. 2026-07-02 kontrolunde `bank:approval:preview` 25 ornek kayit icinde 14 yuksek guvenli, 11 inceleme isteyen hareket gosterdi. Bozuk karakterli banka aciklamalari icin yeni normalize katmani eklendi. `bizimhesap:queue:dry` 0 hazir kuyruk gosteriyor; yani kayitlar kullanici onayi verilene kadar BizimHesap'a gitmiyor.
 
 ## Neden Bu Hedef?
 
@@ -14,11 +14,11 @@ Kullanici bu sistem raporunu duzenli gondererek gelecek donem tahsilatlarini but
 
 ## Siradaki Is Paketi
 
-1. Onay Merkezi ekraninda yeni gelen 214 banka hareketinin gorunurlugu kontrol edilecek.
-2. Banka hareketleri icin BizimHesap hedef analizi ve tek tik kuyruga alma akisi tekrar dogrulanacak.
-3. DealerStatement icin sadece dogru gelecek tahsilat raporunu ayiran mail/ek filtresi guclendirilecek.
-4. Yanlis tibbi cihaz durum raporu gelirse workflow `wrong_attachment_type` gibi net sebep yazacak.
-5. Dogru DealerStatement raporu gelince Finans Takvimi dry-run planinin uretildigi dogrulanacak.
+1. Onay Merkezi ekraninda yuksek guvenli 14 banka hareketinin hedef hesap/cari/kategori kutulari kontrol edilecek.
+2. Kullanici secimli tek bir guvenli banka hareketi `approve_pending_bank_movement` ile kuyruga alinacak.
+3. `bizimhesap:queue:dry` ile kuyruk plani kanitlanacak.
+4. Kullanici ayrica onay verirse `bizimhesap:queue:form` veya `bizimhesap:queue:save` calistirilacak.
+5. DealerStatement icin sadece dogru gelecek tahsilat raporunu ayiran mail/ek filtresi sonraki turda guclendirilecek.
 
 ## Kabul Kriteri
 

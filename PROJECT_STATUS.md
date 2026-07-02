@@ -1,6 +1,6 @@
 # AperiON Project Status
 
-Son guncelleme: 2026-06-30 Europe/Istanbul
+Son guncelleme: 2026-07-02 Europe/Istanbul
 
 ## Calisma Protokolu
 
@@ -17,6 +17,8 @@ AperiON gelistirmesinde koordineli calisma protokolu gecerlidir.
 Genel durum: Sistem calisan bir omurgaya sahip, ancak tum moduller gunluk guvenilir kullanim icin production-ready degil.
 
 Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonraki turlarda durum, karar, sonraki is ve kalite kontrol bu dosyalardan surdurulecektir.
+
+2026-07-02 banka mail metin temizleme turu sonucu: Gmail ekstre pipeline'i calisir durumda; son dogrulanmis run 214 yeni banka hareketini `pending_bank_movements` onay kuyruguna yazdi. Temmuz kayitlari `bank:approval:preview` icinde gorundu. Bozuk karakterli banka aciklamalari ve cari ipuclari icin `fixMojibake` katmani guclendirildi; yeni gelen kayitlar `automation/lib/pending-normalize.js` icinde temizlenir, mevcut bekleyen kayitlar `tools/bank_posting_plan.cjs` ile planlanirken temiz okunur. `bank:approval:preview` sonucu: 25 ornek kayit, 14 yuksek guven, 11 inceleme isteyen kayit. `bizimhesap:queue:dry` sonucu: 0 hazir kuyruk; yani kullanici onayi olmadan BizimHesap'a kayit yok.
 
 2026-06-27 veri guveni turu sonucu: BizimHesap dry-run satis akisi artik satis tablosuna delete/insert yapmadan `[DRY-RUN] ... yazilmayacak` logu ile cikiyor. Son islemler botu dry-run modunda Supabase/state yazimini atliyor; Supabase hatasi olursa artik sadece loglanmayip hata olarak yukari tasiniyor.
 
