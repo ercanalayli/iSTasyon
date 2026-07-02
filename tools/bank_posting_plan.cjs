@@ -77,7 +77,7 @@ function description(row) {
 
 function counterpartyGuess(row) {
   const explicit = fixMojibake(row.target_counterparty || row.suggested_counterparty || row.aday_cari || '').trim();
-  if (explicit && !/^(AKBANK|GARANTI|YAPI|VAKIF|IS BANK|BANKA|MAIL EKSTRE)$/i.test(explicit)) return explicit;
+  if (explicit && !isInvalidCounterparty(explicit)) return explicit;
   const text = normalize(description(row));
   const patterns = [
     /(?:GELEN EFT|GIDEN EFT|GIDEN FAST|GELEN FAST|FAST|HAVALE|EFT)\s+([A-Z0-9 .&'-]{5,90})/,
@@ -86,12 +86,25 @@ function counterpartyGuess(row) {
   ];
   for (const p of patterns) {
     const m = text.match(p);
-    if (m?.[1]) return m[1].replace(/\s+/g, ' ').trim().slice(0, 90);
+    if (m?.[1]) {
+      const candidate = m[1].replace(/\s+/g, ' ').trim().slice(0, 90);
+      if (!isInvalidCounterparty(candidate)) return candidate;
+    }
   }
   if (/POS|NET SATIS|KREDI KART|BATCH YATAN/.test(text)) return 'POS / Kart musterileri';
   if (/KOMISYON|BSMV|UCRET|MASRAF/.test(text)) return bankName(row);
   if (/VIRMAN/.test(text)) return 'Banka ici virman';
   return 'Cari eslestirme onayda';
+}
+
+function isInvalidCounterparty(value) {
+  const text = normalize(value);
+  if (!text) return true;
+  if (/^(AKBANK|GARANTI|GARANTI BBVA|YAPI|YAPI KREDI|VAKIF|VAKIFBANK|IS BANK|TURKIYE IS BANKASI|BANKA|MAIL EKSTRE)$/.test(text)) return true;
+  if (/^(ACIKL|ACIKLA|ACIKLAMA|GONDEREN|ALICI|MUSTERI|ISLEM|TARIH|SAAT|TUTAR|HESAP|SUBE|IBAN|KART|PARA)$/.test(text)) return true;
+  if (/\b(HESAP|SUBE|IBAN|YATIRILAN TUTAR|KART NO|ATM NO|TR MASKED|NO LU HESABINIZA PARA GELDI)\b/.test(text)) return true;
+  if (text.length < 5) return true;
+  return false;
 }
 
 function classifyBankMovement(row = {}) {
@@ -177,7 +190,7 @@ function classifyBankMovement(row = {}) {
   }
 
   const amount = amountIn(row) > 0 ? amountIn(row) : Math.abs(amountOut(row));
-  const requiresReview = confidence < 84 || counterparty === 'Cari eslestirme onayda';
+  const requiresReview = confidence < 84 || isInvalidCounterparty(counterparty) || counterparty === 'Cari eslestirme onayda';
   return {
     pending_bank_movement_id: row.id || row.pending_bank_movement_id || '',
     bank_name: bankName(row),

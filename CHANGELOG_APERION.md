@@ -13,6 +13,14 @@
 - `npm run bizimhesap:queue:dry` calisti ve 0 hazir BizimHesap kuyrugu oldugunu dogruladi.
 - Kullanici onayi olmadan Supabase RPC, kuyruga alma veya BizimHesap kaydetme calistirilmadi.
 
+### Banka Cari Guvenlik Kilidi
+
+- Banka hareketi analizinde `ACIKL`, `ACIKLAMA`, `HESAP SUBE`, `IBAN`, `YATIRILAN TUTAR`, `KART NO`, `ATM NO` gibi banka teknik parcalari cari/karşı taraf kabul edilmiyor.
+- Ayni kural ana ekran `index.html` anlik banka planina da eklendi.
+- `npm run bank:approval:preview` tekrar calisti: 25 ornek hareket, 7 guvenli aday, 18 inceleme isteyen kayit.
+- `npm run bank:approval:candidates` tekrar calisti; ilk dusuk riskli aday `2026-07-02 Akbank 57 TL POS tahsilati`.
+- `npm run finance-smoke`, `npm run verify:bank-approval-action` ve `npm run bizimhesap:queue:dry` gecti.
+
 ## 2026-07-01
 
 ### Gmail OAuth Yenileme Yardimcisi

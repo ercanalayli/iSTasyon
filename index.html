@@ -5690,7 +5690,14 @@ function bankMovementFreshness(r){
   return {fresh:false,label:`eski bekleyen · ${fmt(age)} gün`,tone:'warn'};
 }
 function repairBankText(v){
-  const s=(v??'').toString();
+  let s=(v??'').toString();
+  const pairs=[
+    ['\u00c4\u00b1','\u0131'],['\u00c4\u00b0','\u0130'],['\u00c4\u0178','\u011f'],['\u00c4\u017e','\u011e'],
+    ['\u00c5\u0178','\u015f'],['\u00c5\u017e','\u015e'],['\u00c3\u2021','\u00c7'],['\u00c3\u00a7','\u00e7'],
+    ['\u00c3\u2013','\u00d6'],['\u00c3\u00b6','\u00f6'],['\u00c3\u0153','\u00dc'],['\u00c3\u00bc','\u00fc'],
+    ['\u00e2\u201a\u00ba','TL']
+  ];
+  pairs.forEach(([bad,good])=>{s=s.split(bad).join(good);});
   if(!/[ÃÄÅÂ]/.test(s))return s;
   try{return decodeURIComponent(escape(s));}catch(_){return s;}
 }
@@ -5704,7 +5711,7 @@ function bankTextForAnalysis(r){
 }
 function bankCounterpartyGuess(r){
   const explicit=repairBankText(r.suggested_counterparty||r.aday_cari||'').trim();
-  if(explicit&&explicit!=='-'&&!/^(AKBANK|GARANTI|YAPI|VAKIF|IS BANK|İŞ BANK|BANKA|MAIL EKSTRE)$/i.test(explicit))return explicit;
+  if(explicit&&explicit!=='-'&&!bankCariIsInvalid(explicit))return explicit;
   const text=repairBankText(r.description||r.aciklama||'');
   const patterns=[
     /(?:GELEN EFT|GIDEN EFT|GİDEN EFT|FAST|HAVALE|EFT)\s*[-:]?\s*([A-ZÇĞİÖŞÜ0-9 .&'-]{5,80})/i,
@@ -5713,7 +5720,10 @@ function bankCounterpartyGuess(r){
   ];
   for(const p of patterns){
     const m=text.match(p);
-    if(m&&m[1])return m[1].replace(/\s+/g,' ').trim().slice(0,80);
+    if(m&&m[1]){
+      const candidate=m[1].replace(/\s+/g,' ').trim().slice(0,80);
+      if(!bankCariIsInvalid(candidate))return candidate;
+    }
   }
   if(/POS|NET SATI[ŞS]|KREDI KART|KREDİ KART/.test(bankTextForAnalysis(r)))return 'POS / Kredi kartı tahsilatı';
   if(/KOMISYON|KOMİSYON|BSMV|ÜCRET|UCRET|MASRAF/.test(bankTextForAnalysis(r)))return bankNameOf(r);
@@ -5756,7 +5766,15 @@ function bankPostingPlan(r){
 }
 function bankCariIsAmbiguous(cari){
   const c=String(cari||'').toLocaleLowerCase('tr-TR');
-  return !c||c==='-'||c.includes('eşleştirme')||c.includes('onayda');
+  return !c||c==='-'||c.includes('eşleştirme')||c.includes('onayda')||bankCariIsInvalid(cari);
+}
+function bankCariIsInvalid(cari){
+  const c=repairBankText(cari).toLocaleUpperCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9]+/g,' ').trim();
+  if(!c||c.length<5)return true;
+  if(/^(AKBANK|GARANTI|GARANTI BBVA|YAPI|YAPI KREDI|VAKIF|VAKIFBANK|IS BANK|TURKIYE IS BANKASI|BANKA|MAIL EKSTRE)$/.test(c))return true;
+  if(/^(ACIKL|ACIKLA|ACIKLAMA|GONDEREN|ALICI|MUSTERI|ISLEM|TARIH|SAAT|TUTAR|HESAP|SUBE|IBAN|KART|PARA)$/.test(c))return true;
+  if(/\b(HESAP|SUBE|IBAN|YATIRILAN TUTAR|KART NO|ATM NO|TR MASKED|NO LU HESABINIZA PARA GELDI)\b/.test(c))return true;
+  return false;
 }
 function bankQueueIsFinal(q){
   return ['processed','posted','failed','skipped','cancelled'].includes(String(q?.status||''));

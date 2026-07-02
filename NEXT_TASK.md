@@ -6,7 +6,7 @@ Son guncelleme: 2026-07-02 Europe/Istanbul
 
 Mail ekstre Onay Merkezi kayitlarini temiz metin, guvenli analiz ve BizimHesap kuyrugu kanitiyla kullanilir hale getirmek.
 
-Durum: Gmail OAuth yenilendi ve GitHub Actions tarafinda dogrulandi. Mail ekstre pipeline run `28525249930` basarili; 214 yeni banka hareketi `pending_bank_movements` onay kuyruguna yazildi. 2026-07-02 kontrolunde `bank:approval:preview` 25 ornek kayit icinde 14 yuksek guvenli, 11 inceleme isteyen hareket gosterdi. Bozuk karakterli banka aciklamalari icin yeni normalize katmani eklendi. `bizimhesap:queue:dry` 0 hazir kuyruk gosteriyor; yani kayitlar kullanici onayi verilene kadar BizimHesap'a gitmiyor.
+Durum: Gmail OAuth yenilendi ve GitHub Actions tarafinda dogrulandi. Mail ekstre pipeline run `28525249930` basarili; 214 yeni banka hareketi `pending_bank_movements` onay kuyruguna yazildi. 2026-07-02 kontrolunde `bank:approval:preview` 25 ornek kayit icinde 7 guvenli aday, 18 inceleme isteyen hareket gosterdi. Bozuk karakterli banka aciklamalari temizlendi; `ACIKL`, `HESAP SUBE`, `IBAN`, `KART NO`, `ATM NO` gibi teknik parcalar cari kabul edilmiyor. `bizimhesap:queue:dry` 0 hazir kuyruk gosteriyor; yani kayitlar kullanici onayi verilene kadar BizimHesap'a gitmiyor.
 
 ## Neden Bu Hedef?
 
@@ -14,7 +14,7 @@ Kullanici bu sistem raporunu duzenli gondererek gelecek donem tahsilatlarini but
 
 ## Siradaki Is Paketi
 
-1. Onay Merkezi ekraninda yuksek guvenli 14 banka hareketinin hedef hesap/cari/kategori kutulari kontrol edilecek.
+1. Onay Merkezi ekraninda yuksek guvenli 7 banka hareketinin hedef hesap/cari/kategori kutulari kontrol edilecek.
 2. Kullanici secimli tek bir guvenli banka hareketi `approve_pending_bank_movement` ile kuyruga alinacak.
 3. `bizimhesap:queue:dry` ile kuyruk plani kanitlanacak.
 4. Kullanici ayrica onay verirse `bizimhesap:queue:form` veya `bizimhesap:queue:save` calistirilacak.
