@@ -12,6 +12,13 @@
 - `verify:bank-approval-action` icine aday odaklama helper, satir id ve focus CSS kontrolleri eklendi.
 - Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
 
+### Banka Satir Kayit Kaniti
+
+- Banka Canli satirlarina `AperiON onayi`, `BizimHesap kuyrugu`, `Kayit sonucu` seridi eklendi.
+- Her hareketin onay bekliyor, kuyruk yok/kuyrukta, bekliyor/islendi/hata durumlari satir uzerinde okunur hale getirildi.
+- `verify:bank-approval-action` icine satir kayit kaniti kontrolu eklendi.
+- Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
+
 ### Banka Status Pages Fallback
 
 - GitHub raw status JSON dosyasinin mevcut oldugu dogrulandi.

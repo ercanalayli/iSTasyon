@@ -604,6 +604,11 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .bank-action-reason.blocked{color:#B42318;background:#FEF3F2;border-color:#FECDCA}
 .bank-posting-proof{margin-top:5px;border:1px solid #E4E7EC;background:#F8FAFC;border-radius:9px;padding:7px;font-size:10px;font-weight:850;color:#475467;line-height:1.4}
 .bank-posting-proof b{color:#101828}
+.bank-posting-flow{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important;margin-top:6px}
+.bank-posting-flow span{display:block!important;border:1px solid #E4E7EC;border-radius:9px;background:#fff;padding:6px!important;min-width:0}
+.bank-posting-flow strong{display:block;font-size:8px;font-weight:950;color:#667085;text-transform:uppercase;margin-bottom:3px}
+.bank-posting-flow em{display:block;font-style:normal;font-family:var(--mono);font-size:9px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bank-posting-flow .ok{border-color:#ABEFC6;background:#ECFDF3;color:#047857}.bank-posting-flow .wait{border-color:#FEDF89;background:#FFFAEB;color:#854A0E}.bank-posting-flow .bad{border-color:#FECDCA;background:#FEF3F2;color:#B42318}
 .income-card{border:1px solid #CFE0F5;background:#fff;border-radius:14px;padding:14px;box-shadow:0 12px 28px rgba(15,23,42,.055)}
 .income-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
 .income-title{font-size:20px;font-weight:950;color:#071327;letter-spacing:-.02em}
@@ -5976,6 +5981,25 @@ function bankDecisionCell(r,dupCount=1){
     ${bankEvidenceHtml(r,dupCount)}
   </div>`;
 }
+function bankPostingFlowHtml(r){
+  const q=r._queue||null;
+  const status=bankQueueStatusTR(q,r);
+  const approved=['islenecek','approved','processed','islendi'].includes(String(r.durum||r.status||''));
+  const rejected=['islenmeyecek','rejected'].includes(String(r.durum||r.status||''));
+  const approvalCls=rejected?'bad':approved?'ok':'wait';
+  const approvalText=rejected?'reddedildi':approved?'onaylandı':'onay bekliyor';
+  const queueCls=q?'ok':'wait';
+  const queueText=q?shortId(q.id||q.queue_id):'kuyruk yok';
+  const posted=status.includes('işlendi')||String(q?.status||'')==='posted'||String(q?.status||'')==='processed';
+  const failed=status.includes('hata')||String(q?.status||'')==='failed';
+  const resultCls=failed?'bad':posted?'ok':'wait';
+  const resultText=failed?'hata':posted?'işlendi':'bekliyor';
+  return `<div class="bank-posting-flow">
+    <span class="${approvalCls}"><strong>AperiON onayı</strong><em>${escHtml(approvalText)}</em></span>
+    <span class="${queueCls}"><strong>BizimHesap kuyruğu</strong><em>${escHtml(queueText)}</em></span>
+    <span class="${resultCls}"><strong>Kayıt sonucu</strong><em>${escHtml(resultText)}</em></span>
+  </div>`;
+}
 function bankPostingCell(r){
   const p=bankPostingPlan(r);
   const q=r._queue||null;
@@ -5985,6 +6009,7 @@ function bankPostingCell(r){
     <div><span>Hesap</span><b>${escHtml(p.account)}</b></div>
     <div><span>Cari</span><b>${escHtml(p.cari)}</b></div>
     <div><span>Kayıt türü</span><b>${escHtml(p.type)}</b></div>
+    ${bankPostingFlowHtml(r)}
     <div class="bank-posting-proof"><b>Kanıt:</b> ${escHtml(proof)}</div>
   </div>`;
 }
