@@ -49,7 +49,7 @@ function assertCandidateSafe(candidate) {
   if (candidate.risk_class !== 'low') throw new Error(`Aday dusuk riskli degil: ${candidate.risk_class}`);
   if (candidate.requires_user_review) throw new Error('Aday kullanici incelemesi istiyor; otomatik kuyruga alinmaz.');
   if (Number(candidate.confidence || 0) < 84) throw new Error(`Aday guveni dusuk: ${candidate.confidence}`);
-  if (!/masraf|POS|virman|tahsilat/i.test(`${candidate.type} ${candidate.category}`)) {
+  if (!/masraf|POS|virman|tahsilat|odeme|ödeme|vergi|SGK/i.test(`${candidate.type} ${candidate.category}`)) {
     throw new Error(`Aday kayit turu beklenen grupta degil: ${candidate.type}`);
   }
 }

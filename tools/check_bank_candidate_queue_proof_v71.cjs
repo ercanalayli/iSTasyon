@@ -5,7 +5,8 @@ const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
 const args = process.argv.slice(2);
-const ID = valueArg('--id', '9b91f984-c94b-4005-92ab-7fb334aa31e7');
+const explicitId = valueArg('--id', '');
+const candidateFile = valueArg('--candidates', 'data/banka_onay_guvenli_adaylar.json');
 const out = valueArg('--out', 'data/banka_onay_aday_kanit_durumu.json');
 const company = valueArg('--firma', 'alayli');
 
@@ -26,6 +27,17 @@ function writeJson(file, body) {
   fs.writeFileSync(file, JSON.stringify(body, null, 2), 'utf8');
 }
 
+function readJsonIfExists(file) {
+  if (!fs.existsSync(file)) return null;
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function readRecommendedCandidate(file) {
+  const report = readJsonIfExists(file);
+  if (!report) return null;
+  return report.recommended_first_approval || (Array.isArray(report.candidates) ? report.candidates[0] : null);
+}
+
 function amount(row) {
   const amountIn = Number(row?.amount_in || 0);
   const amountOut = Number(row?.amount_out || 0);
@@ -38,7 +50,9 @@ function queueStatus(queue) {
 }
 
 async function main() {
-  if (!ID) throw new Error('--id zorunlu');
+  const selectedCandidate = explicitId ? null : readRecommendedCandidate(candidateFile);
+  const ID = explicitId || selectedCandidate?.pending_bank_movement_id || '';
+  if (!ID) throw new Error('--id zorunlu veya once npm run bank:approval:candidates calismali');
   const db = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
 
   const { data: pendingRows, error: pendingError } = await db
@@ -64,6 +78,8 @@ async function main() {
     created_at: new Date().toISOString(),
     safe_mode: true,
     mutation: false,
+    selection_source: explicitId ? 'explicit_id' : candidateFile,
+    selected_candidate: selectedCandidate,
     company_id: company,
     pending_bank_movement_id: ID,
     pending_found: !!pending,

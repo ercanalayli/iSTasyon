@@ -2,6 +2,16 @@
 
 ## 2026-07-02
 
+### Banka Aday Kanitinda Guncel Secim
+
+- `bank:approval:candidate:proof` komutu artik once `bank:approval:candidates` calistirir.
+- `tools/check_bank_candidate_queue_proof_v71.cjs` eski sabit pending id yerine `data/banka_onay_guvenli_adaylar.json` icindeki guncel `recommended_first_approval` kaydini kullanir.
+- `tools/approve_bank_candidate_v70.cjs` guvenli odeme/vergi/SGK adaylarini dry-check icinde taniyacak sekilde genisletildi.
+- Dusuk risk, %84 guven, kullanici incelemesi istememe ve canli islem icin `--id` + `--confirm ONAYLIYORUM` kilitleri korunuyor.
+- Son dry-check adayi: `2026-06-30 Yapi Kredi -3.56 TL Vergi/SGK odemesi`, pending id `d1455265-abaf-4ea1-a6d4-386bf16b93c1`.
+- Kanit sonucu: pending bulundu, status `pending`, queue count `0`, queue status `queue_yok`.
+- Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
+
 ### Banka Mail Metin Temizleme ve Onay Kontrolu
 
 - `tools/bank_posting_plan.cjs` icindeki bozuk karakter temizleme mantigi guclendirildi.
