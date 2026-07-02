@@ -6,7 +6,7 @@ Son guncelleme: 2026-07-02 Europe/Istanbul
 
 Onay Merkezi analiz guvenini production seviyesine tasimak.
 
-Durum: Ana is programi kullanicinin tum isteklerine gore 20 maddelik siraya indirildi. 04 numarali Onay Merkezi analiz guveni ilk katmani tamamlandi: risk etiketleri, kanit kutusu, 84 guven esigi, tazelik/mukerrer/kuyruk/cari kanit gosterimi eklendi. Gmail OAuth calisiyor; mail ekstre pipeline banka hareketlerini `pending_bank_movements` onay kuyruguna yaziyor. Banka disi BizimHesap ozetleri artik hareket sayilmiyor; teknik alanlar cari kabul edilmiyor; yeni banka bildirimlerinde `Gonderen/Alici/Karsi Taraf` alanlari `suggested_counterparty` olarak yakalaniyor. Siradaki is, bu guvenli Onay Merkezi uzerinden BizimHesap'a tek tik kayit kanitini her onayli hareket icin tam kapatmaktir.
+Durum: Ana is programi kullanicinin tum isteklerine gore 20 maddelik siraya indirildi. 04 numarali Onay Merkezi analiz guveni ilk katmani tamamlandi: risk etiketleri, kanit kutusu, 84 guven esigi, tazelik/mukerrer/kuyruk/cari kanit gosterimi eklendi. 05 numarali BizimHesap tek tik kayit kanitinin ilk katmani da eklendi: queue worker dry-run raporu artik evidence ve summary uretir; ana ust akil karti onay bekleyen/kuyrukta/islenmis/hata ayrimini gosterir. Kuyruk su an 0 hazir kayit. Siradaki is, secili bir guvenli banka hareketini kullanici onayi ile kuyruga alip worker kanitini gercek kayit uzerinde dogrulamak.
 
 ## Neden Bu Hedef?
 
@@ -18,7 +18,7 @@ Kullanici sabah banka maillerinden gelen hareketleri analiz edilmis sekilde gorm
 2. BizimHesap giris / kalici oturum - bitti.
 3. Mail ekstre ve cok bankali okuma - kismen.
 4. Onay Merkezi analiz guveni - kismen/birinci katman bitti.
-5. BizimHesap'a tek tik kayit kaniti - siradaki.
+5. BizimHesap'a tek tik kayit kaniti - kismen/siradaki kanit testi.
 6. Banka / kasa / cari birebir esgudum - kaldi.
 7. Ana ekran profesyonel ust akil - kismen.
 8. Gelir tablosu karar matrisi - kismen.
@@ -38,9 +38,9 @@ Kullanici sabah banka maillerinden gelen hareketleri analiz edilmis sekilde gorm
 ## Siradaki Is Paketi
 
 1. Secili bir guvenli banka adayi icin Onay Merkezi -> `approve_pending_bank_movement` -> `bizimhesap_queue` olusum kaniti tekrar uretilecek.
-2. `bizimhesap_queue_worker` her kayit icin BizimHesap kayit var/yok, kuyruk id, worker sonucu ve tekrar kayit kilidini daha acik raporlayacak.
-3. Ana ekranda `BizimHesap'a gidecek banka kaydi` kutusu hazir/kuyrukta/islenmis ayrimini net gosterecek.
-4. Kullanici acik onay verirse sadece secili kayit icin BizimHesap form/save calisir; toplu canli kayit yok.
+2. Kuyrukta kayit varsa `bizimhesap:queue:dry` evidence alaniyla plan/guven/blokaj/sonraki adimi kanitlayacak.
+3. Kullanici acik onay verirse sadece secili kayit icin BizimHesap form/save calisir; toplu canli kayit yok.
+4. Save sonrasi queue status, `aperion_posting_result`, diagnostik ekran ve tekrar kayit kilidi birlikte dogrulanacak.
 5. `bizimhesap:queue:dry`, `verify:bizimhesap:queue`, `verify:bank-approval-action` tekrar calistirilacak.
 
 ## Kabul Kriteri

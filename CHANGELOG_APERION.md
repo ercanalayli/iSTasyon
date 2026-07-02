@@ -55,6 +55,14 @@
 - `verify:bank-approval-action`, `bank:approval:candidates`, `bizimhesap:queue:dry` ve `finance-smoke` gecti.
 - Canli BizimHesap kaydi veya Supabase onay/RPC calistirilmadi.
 
+### BizimHesap Tek Tik Kayit Kaniti
+
+- `bizimhesap_queue_worker.cjs` dry-run raporuna `summary` ve her kayit icin `evidence` alani eklendi.
+- Evidence artik queue id, pending id, kuyruk statusu, hedef, hesap, cari, kategori, guven, otomatik kayit guvenli mi, blokajlar, manuel kanit/tekrar kayit kilidi ve sonraki adimi gosterir.
+- Ana ust akil kartinda BizimHesap'a gidecek banka kaydi sayaci onay bekleyen/kuyrukta/islenmis/hata ayrimina cevrildi.
+- `verify:bizimhesap:queue`, `bizimhesap:queue:dry`, `verify:bank-approval-action` ve `finance-smoke` gecti.
+- Kuyrukta hazir kayit 0 oldugu icin canli BizimHesap kaydi yapilmadi.
+
 ## 2026-07-01
 
 ### Gmail OAuth Yenileme Yardimcisi

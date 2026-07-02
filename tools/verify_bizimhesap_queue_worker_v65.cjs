@@ -30,6 +30,10 @@ assertHas('bizimhesap_queue_worker.cjs', "markQueue(row, 'failed'", 'marks faile
 assertHas('bizimhesap_queue_worker.cjs', 'aperion_posting_result', 'writes posting result back');
 assertHas('bizimhesap_queue_worker.cjs', '_after_save', 'captures after-save diagnostics');
 assertHas('bizimhesap_queue_worker.cjs', 'manualPostingProof', 'skips manually verified postings');
+assertHas('bizimhesap_queue_worker.cjs', 'postingEvidence', 'builds queue posting evidence');
+assertHas('bizimhesap_queue_worker.cjs', 'safe_to_auto_save', 'reports safe auto-save decision');
+assertHas('bizimhesap_queue_worker.cjs', 'duplicate_guard', 'reports duplicate/manual proof guard');
+assertHas('bizimhesap_queue_worker.cjs', 'manual_proof_locked', 'summarizes manual proof locks');
 assertHas('data/bizimhesap_manual_posting_proofs.json', '3b30e1a0-0f02-4b0d-b03c-ae2779d448fa', 'manual posting proof file');
 assertHas('package.json', 'bizimhesap:queue:dry', 'npm dry command');
 assertHas('package.json', 'bizimhesap:queue:form', 'npm form command');

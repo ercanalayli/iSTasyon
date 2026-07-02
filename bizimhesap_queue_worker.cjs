@@ -216,6 +216,33 @@ function cleanPlan(plan) {
   };
 }
 
+function postingEvidence(row, plan) {
+  const manualProof = manualPostingProof(row.id);
+  const queueStatus = row.status || 'ready_for_bizimhesap';
+  const safeToAutoSave = plan.confidence >= 84 && !plan.requires_user_review && !['supplier_or_expense_payment'].includes(plan.kind);
+  const blockers = [];
+  if (plan.confidence < 84) blockers.push(`guven ${plan.confidence}%`);
+  if (plan.requires_user_review) blockers.push('kullanici/cari incelemesi gerekli');
+  if (plan.kind === 'supplier_or_expense_payment') blockers.push('genel odeme tipi otomatik kayda kapali');
+  if (!plan.counterparty || /eslestirme|eşleştirme|onayda/i.test(plan.counterparty)) blockers.push('cari net degil');
+  return {
+    queue_id: row.id,
+    pending_bank_movement_id: row.pending_bank_movement_id || '',
+    queue_status: queueStatus,
+    target: plan.target,
+    account: plan.account,
+    counterparty: plan.counterparty,
+    category: plan.category,
+    confidence: plan.confidence,
+    safe_to_auto_save: safeToAutoSave,
+    blockers,
+    duplicate_guard: manualProof ? 'manuel BizimHesap kaniti var, tekrar kayit atlanir' : 'manuel kanit yok',
+    next_step: safeToAutoSave
+      ? 'BIZIMHESAP_POSTING_LIVE=1 ve kullanici onayi ile form/save calisabilir'
+      : 'Onay Merkezi incelemesi ve cari/kategori netlestirme gerekli',
+  };
+}
+
 function dryRunPlan(row) {
   const plan = cleanPlan(classifyQueueRow(row));
   const safeToAutoSave = plan.confidence >= 84 && !['supplier_or_expense_payment'].includes(plan.kind);
@@ -232,7 +259,7 @@ function dryRunPlan(row) {
     `Açıklama: APERION QUEUE ${row.id}`,
     SAVE ? 'Kaydet butonuna basılacak' : 'Kaydetme yok: form kontrol/dry-run',
   ];
-  return { ...plan, safeToAutoSave, stopReason, steps };
+  return { ...plan, safeToAutoSave, stopReason, evidence: postingEvidence(row, plan), steps };
 }
 
 function manualPostingProof(rowId) {
@@ -501,6 +528,12 @@ async function processLiveRow(page, row) {
 
 async function writeDryRun(rows) {
   const plans = rows.map(r => dryRunPlan(r));
+  const summary = {
+    queue_count: rows.length,
+    safe_to_auto_save: plans.filter(p => p.evidence.safe_to_auto_save).length,
+    needs_review: plans.filter(p => !p.evidence.safe_to_auto_save).length,
+    manual_proof_locked: plans.filter(p => String(p.evidence.duplicate_guard || '').includes('manuel BizimHesap')).length,
+  };
   fs.mkdirSync(path.dirname(DRY_OUT), { recursive: true });
   fs.writeFileSync(DRY_OUT, JSON.stringify({
     created_at: new Date().toISOString(),
@@ -508,6 +541,7 @@ async function writeDryRun(rows) {
     company_id: COMPANY,
     live_mode: false,
     queue_count: rows.length,
+    summary,
     plans,
   }, null, 2), 'utf8');
   log(`Dry-run raporu yazıldı: ${DRY_OUT}`);

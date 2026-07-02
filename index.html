@@ -3621,6 +3621,8 @@ async function renderExecutiveBrief(){
   const approved=pendingRows.filter(r=>String(r.status||'')==='approved').length;
   const ready=queueRows.filter(r=>String(r.status||'')==='ready_for_bizimhesap').length;
   const processed=queueRows.filter(r=>String(r.status||'')==='processed').length;
+  const failed=queueRows.filter(r=>String(r.status||'')==='failed').length;
+  const skipped=queueRows.filter(r=>['skipped','cancelled'].includes(String(r.status||''))).length;
   const latest=pendingRows.map(r=>r.created_at||r.transaction_date||'').filter(Boolean).sort().at(-1)||'';
   const stateClass=(!model||issues.length)?'state-warn':(cashNet<0||accrualNet<0?'state-bad':(pending||cashGap?'state-warn':'state-good'));
   const stateText=pending?'BizimHesap onayı bekliyor':!model?'Kurulum kontrolü':cashNet<0?'Nakit negatif':accrualNet<0?'Tahakkuk zararı':cashGap?'Tahsilat takibi':'Kontrol altında';
@@ -3639,7 +3641,7 @@ async function renderExecutiveBrief(){
     <div class="command-metric ${metricCls(plannedNet)}"><div class="command-k">Planlanan Net</div><div class="command-v">${model?dynMoney(plannedNet):'kurulum'}</div><div class="command-n">sözleşmeli + sabit + öngörülen</div></div>
     <div class="command-metric ${metricCls(accrualNet)}"><div class="command-k">Tahakkuk Net</div><div class="command-v">${model?dynMoney(accrualNet):'kurulum'}</div><div class="command-n">fatura/satış ve oluşan gider</div></div>
     <div class="command-metric ${metricCls(cashNet)}"><div class="command-k">Gerçekleşen Net</div><div class="command-v">${model?dynMoney(cashNet):'kurulum'}</div><div class="command-n">tahsil edilen - ödenen</div></div>
-    <div class="command-metric ${pending?'warn':'good'}"><div class="command-k">BizimHesap'a gidecek banka kaydı</div><div class="command-v">${fmt(Math.abs(pendingRows.length))}</div><div class="command-n">${latest?`son içeri alma ${escHtml(latest.substring(0,16).replace('T',' '))}`:'ekstre bekleniyor'} · ${fmt(approved)} onaylanmış</div></div>
+    <div class="command-metric ${ready||failed?'warn':pending?'warn':'good'}"><div class="command-k">BizimHesap'a gidecek banka kaydı</div><div class="command-v">${fmt(ready)}</div><div class="command-n">onay bekleyen ${fmt(pending)} · kuyrukta ${fmt(ready)} · işlendi ${fmt(processed)} · hata ${fmt(failed)}${skipped?` · iptal ${fmt(skipped)}`:''}</div></div>
   </div>
   ${issues.length?`<div class="finance-empty" style="margin-top:10px">Eksik kaynak: ${escHtml([...new Set(issues)].join(' · '))}</div>`:''}`;
 }
