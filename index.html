@@ -532,6 +532,9 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .bank-command-status-plan b{display:block;font-size:8px;font-weight:950;text-transform:uppercase;color:#BFDBFE;margin-bottom:3px}
 .bank-command-status-plan em{display:block;font-style:normal;font-size:10px;font-weight:950;color:#FFFFFF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bank-command-status-next{margin-top:8px;border:1px solid rgba(16,185,129,.25);background:rgba(6,78,59,.28);border-radius:10px;padding:7px 8px;font-size:10px;font-weight:900;color:#D1FAE5;line-height:1.4}
+.bank-command-status-stats{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.bank-command-status-stats span{display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.10);border-radius:999px;padding:4px 7px;font-family:var(--mono);font-size:9px;font-weight:950;color:#E0F2FE}
+.bank-command-status-stats b{color:#FFFFFF}
 .bank-command-status-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
 .bank-command-status-actions button{height:28px;border:1px solid rgba(255,255,255,.30);background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:0 11px;font-size:10px;font-weight:950;cursor:pointer}
 .bank-command-status-actions button:hover{background:#fff;color:#0F172A;box-shadow:0 0 0 3px rgba(255,255,255,.20)}
@@ -3712,6 +3715,7 @@ function bankApprovalStatusHtml(status){
   const tone=ready>0?'good':blockers.length?'warn':'warn';
   const amount=typeof c.amount_label==='string'?c.amount_label:financeTL(Number(c.amount||0));
   const next=ready>0?'BizimHesap worker dry-run planı kontrol edilecek.':(status?.next_action||'Onay bekliyor.');
+  const summary=status?.summary||{};
   return `<div class="bank-command-status ${tone}" id="bankApprovalStatusCard">
     <div class="bank-command-status-line">
       <div>
@@ -3727,6 +3731,12 @@ function bankApprovalStatusHtml(status){
       <span><b>Kategori</b><em>${escHtml(c.category||'-')}</em></span>
     </div>
     <div class="bank-command-status-meta">Güven ${fmt(c.confidence||0)}% · Risk ${escHtml(c.risk_class||'-')} · Kuyruk: ${escHtml(queue)} · Canlı kayıt kapalı</div>
+    <div class="bank-command-status-stats">
+      <span>Taranan <b>${fmt(summary.preview_count||0)}</b></span>
+      <span>Güvenli aday <b>${fmt(summary.candidate_count||0)}</b></span>
+      <span>İnceleme <b>${fmt(summary.review_count||0)}</b></span>
+      <span>Kuyruk <b>${fmt(summary.ready_queue_count||0)}</b></span>
+    </div>
     <span class="bank-command-status-code">ID ${escHtml(shortId(c.pending_bank_movement_id))} · Onay metni: ${escHtml(status.required_user_approval_text||'tekil onay gerekli')}</span>
     <div class="bank-command-status-next">${escHtml(next)} Onay ekrandaki ilgili satırdan verilecek; bu kart sadece doğru satıra götürür.</div>
     <div class="bank-command-status-actions">
