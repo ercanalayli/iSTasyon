@@ -39,6 +39,13 @@
 - BizimHesap gunluk finans ozet parser testi 0 banka hareketi dondurdu.
 - `npm run verify:bank-approval-action`, `npm run bank:approval:candidates`, `npm run bizimhesap:queue:dry` ve `npm run finance-smoke` gecti.
 
+### Ana Is Programi Sira Kilidi
+
+- Ana ekrandaki `AperiON Ana Is Programi` kullanicinin tum isteklerini kapsayan 20 maddelik siraya cevrildi.
+- Bitmis, kismen bitmis, kalmis ve siradaki isler ayni listede ayrildi.
+- Bundan sonraki aktif hedef `Onay Merkezi analiz guveni` olarak belirlendi.
+- Yeni sira `NEXT_TASK.md` icine de yazildi; her tur bu siraya gore ilerleyecek.
+
 ## 2026-07-01
 
 ### Gmail OAuth Yenileme Yardimcisi

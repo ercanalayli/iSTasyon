@@ -4,22 +4,44 @@ Son guncelleme: 2026-07-02 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Mail ekstre Onay Merkezi kayitlarini temiz metin, guvenli analiz ve BizimHesap kuyrugu kanitiyla kullanilir hale getirmek.
+Onay Merkezi analiz guvenini production seviyesine tasimak.
 
-Durum: Gmail OAuth yenilendi ve GitHub Actions tarafinda dogrulandi. Mail ekstre pipeline run `28525249930` basarili; 214 yeni banka hareketi `pending_bank_movements` onay kuyruguna yazildi. 2026-07-02 kontrolunde `bank:approval:preview` 25 ornek kayit icinde 2 guvenli aday, 23 inceleme isteyen hareket gosterdi. Bozuk karakterli banka aciklamalari temizlendi; `ACIKL`, `HESAP SUBE`, `IBAN`, `KART NO`, `ATM NO`, `Akilli Asistan` ve `Anlik Odeme Bilgilendirmesi` gibi teknik basliklar cari kabul edilmiyor. BizimHesap gunluk finans/hareket ozetleri banka hareketi gibi parser'dan gecmiyor. Yeni banka bildirimlerinde `Gonderen/Alici/Karsi Taraf` alanlari `suggested_counterparty` olarak yakalaniyor. `bizimhesap:queue:dry` 0 hazir kuyruk gosteriyor; yani kayitlar kullanici onayi verilene kadar BizimHesap'a gitmiyor.
+Durum: Ana is programi kullanicinin tum isteklerine gore 20 maddelik siraya indirildi. Siradaki tek hedef 04 numarali Onay Merkezi analiz guvenidir. Gmail OAuth calisiyor; mail ekstre pipeline banka hareketlerini `pending_bank_movements` onay kuyruguna yaziyor. Banka disi BizimHesap ozetleri artik hareket sayilmiyor; teknik alanlar cari kabul edilmiyor; yeni banka bildirimlerinde `Gonderen/Alici/Karsi Taraf` alanlari `suggested_counterparty` olarak yakalaniyor. Ancak mevcut bekleyen kayitlarda hedef cari/hareket turu/kategori kaniti her satirda yeterince guclu degil. Bu nedenle bir sonraki uygulama hedefi Onay Merkezi satirlarini daha acik, kanitli ve guvenli yapmak.
 
 ## Neden Bu Hedef?
 
-Kullanici bu sistem raporunu duzenli gondererek gelecek donem tahsilatlarini butceye eklemek istiyor. Bu veri nakit akisi, planlanan gelir, tahsil edilecekler ve ay bazli karar ekranlarini besleyecek.
+Kullanici sabah banka maillerinden gelen hareketleri analiz edilmis sekilde gormek ve tek tikla BizimHesap'a gondermek istiyor. Bu akista hata olursa finansal kayit, cari, banka/kasa ve raporlar zincirleme bozulur. Bu yuzden once Onay Merkezi'nin neyi neden onerdiğini acik kanitlamasi gerekiyor.
+
+## Tum Isteklerin Uygulama Sirasi
+
+1. Veri guveni ve firma izolasyonu - bitti.
+2. BizimHesap giris / kalici oturum - bitti.
+3. Mail ekstre ve cok bankali okuma - kismen.
+4. Onay Merkezi analiz guveni - siradaki.
+5. BizimHesap'a tek tik kayit kaniti - kismen.
+6. Banka / kasa / cari birebir esgudum - kaldi.
+7. Ana ekran profesyonel ust akil - kismen.
+8. Gelir tablosu karar matrisi - kismen.
+9. Sabit / sozlesmeli / ongorulen kartlar - kismen.
+10. Satis ve urun karliligi - kismen.
+11. Hasta bezi karar ekrani - kismen.
+12. Satilan malin maliyeti ve marj motoru - kismen.
+13. Fatura detay okuma - kismen.
+14. Gider karti + fatura detayi baglama - kismen.
+15. Telegram / gorsel evrak akisi - kaldi.
+16. Banka ekran goruntusu isleme - kaldi.
+17. Fiyat listesi ve internet piyasa botu - kaldi.
+18. Kisisel ikinci beyin finans - kismen.
+19. Kalici cache / isletme hafizasi - kismen.
+20. Gunluk kullanilabilir canli surum - kismen.
 
 ## Siradaki Is Paketi
 
-1. Yeni mail-ekstre pipeline run'i sonrasi `suggested_counterparty` alaninin gercek banka maillerinde doldugu kontrol edilecek.
-2. Onay Merkezi ekraninda yuksek guvenli banka hareketlerinin hedef hesap/cari/kategori kutulari kontrol edilecek.
-3. Kullanici secimli tek bir guvenli banka hareketi `approve_pending_bank_movement` ile kuyruga alinacak.
-4. `bizimhesap:queue:dry` ile kuyruk plani kanitlanacak.
-5. Kullanici ayrica onay verirse `bizimhesap:queue:form` veya `bizimhesap:queue:save` calistirilacak.
-6. DealerStatement icin sadece dogru gelecek tahsilat raporunu ayiran mail/ek filtresi sonraki turda guclendirilecek.
+1. Onay Merkezi satirlarinda `ne olarak kaydedilecek`, `hangi cariye`, `hangi banka/kasa hesabina`, `hangi kategoriye`, `hangi kanita gore` alanlari tek kutuda gosterilecek.
+2. Guven puani 84 alti, cari belirsiz, teknik alan, banka disi ozet, mukerrer veya eski bekleyen hareketlerde buton pasif ve sebep acik olacak.
+3. Guvenli aday listesi sadece islem tipi + cari + hesap + kategori net olan kayitlari alacak.
+4. `bank:approval:preview`, `bank:approval:candidates`, `verify:bank-approval-action`, `bizimhesap:queue:dry` tekrar calistirilacak.
+5. Canli BizimHesap kaydi bu turda yapilmayacak; sadece analiz ve onay guveni bitirilecek.
 
 ## Kabul Kriteri
 
