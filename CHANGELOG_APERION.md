@@ -46,6 +46,15 @@
 - Bundan sonraki aktif hedef `Onay Merkezi analiz guveni` olarak belirlendi.
 - Yeni sira `NEXT_TASK.md` icine de yazildi; her tur bu siraya gore ilerleyecek.
 
+### Onay Merkezi Analiz Guveni
+
+- Banka onay satirlarina risk etiketleri eklendi: analiz net, cari net degil, guven dusuk, mukerrer, eski bekleyen, kuyruk/sonuc var.
+- Banka karar kutusuna kanit alani eklendi: yon, cari kanit kaynagi, hareket tazeligi, kuyruk, karar nedeni ve mukerrer bilgisi.
+- Sabah onay kartlari ayni risk etiketlerini gosterir hale geldi.
+- BizimHesap'a gonderilebilir banka hareketi guven esigi 70'ten 84'e cikarildi.
+- `verify:bank-approval-action`, `bank:approval:candidates`, `bizimhesap:queue:dry` ve `finance-smoke` gecti.
+- Canli BizimHesap kaydi veya Supabase onay/RPC calistirilmadi.
+
 ## 2026-07-01
 
 ### Gmail OAuth Yenileme Yardimcisi
