@@ -2,6 +2,15 @@
 
 ## 2026-07-02
 
+### Ana Ekranda Banka Onay Durumu
+
+- Banka Komuta Merkezi icine `Sıradaki BizimHesap adayı` durum bandi eklendi.
+- Ekran `data/aperion_bank_approval_status.json` varsa secili aday, tutar, karar tipi, cari/kategori, guven, queue status ve gerekli tekil onay metnini gosterir.
+- Status dosyasi yoksa ana banka kartlari bozulmadan calismaya devam eder.
+- Dashboard modunda durum bandinin tek ekran duzenini bozmasini engelleyen kompakt CSS eklendi.
+- `verify:bank-approval-action`, `verify:bank-candidate-guard`, `finance-smoke`, `bank:approval:status`, `verify:bizimhesap:queue` ve HTML script parse kontrolu gecti.
+- Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
+
 ### Banka Onay Tek Durum Raporu
 
 - `tools/build_bank_approval_status_v76.cjs` eklendi.

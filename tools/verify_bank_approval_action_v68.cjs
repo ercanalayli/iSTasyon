@@ -21,6 +21,8 @@ const checks = [
   ['invalid bank counterparty guard exists', /function\s+bankCariIsInvalid\s*\(/.test(index)],
   ['bank technical fields are not accepted as cari', index.includes('YATIRILAN TUTAR') && index.includes('KART NO') && index.includes('ATM NO')],
   ['assistant notification titles are not accepted as cari', index.includes('AKILLI ASISTAN') && index.includes('ANLIK ODEME BILGILENDIRMESI')],
+  ['home bank approval status card exists', index.includes('bankApprovalStatusCard') && /function\s+bankApprovalStatusHtml\s*\(/.test(index)],
+  ['home bank approval status fetch exists', /function\s+fetchBankApprovalStatusReport\s*\(/.test(index) && index.includes('data/aperion_bank_approval_status.json')],
   ['package script registered', pkg.scripts && pkg.scripts['verify:bank-approval-action'] === 'node tools/verify_bank_approval_action_v68.cjs']
 ];
 
