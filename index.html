@@ -3716,6 +3716,7 @@ function bankApprovalStatusHtml(status){
   const amount=typeof c.amount_label==='string'?c.amount_label:financeTL(Number(c.amount||0));
   const next=ready>0?'BizimHesap worker dry-run planı kontrol edilecek.':(status?.next_action||'Onay bekliyor.');
   const summary=status?.summary||{};
+  const reportAt=status?.created_at?trDateTime(status.created_at):'rapor saati yok';
   return `<div class="bank-command-status ${tone}" id="bankApprovalStatusCard">
     <div class="bank-command-status-line">
       <div>
@@ -3736,6 +3737,7 @@ function bankApprovalStatusHtml(status){
       <span>Güvenli aday <b>${fmt(summary.candidate_count||0)}</b></span>
       <span>İnceleme <b>${fmt(summary.review_count||0)}</b></span>
       <span>Kuyruk <b>${fmt(summary.ready_queue_count||0)}</b></span>
+      <span>Rapor <b>${escHtml(reportAt)}</b></span>
     </div>
     <span class="bank-command-status-code">ID ${escHtml(shortId(c.pending_bank_movement_id))} · Onay metni: ${escHtml(status.required_user_approval_text||'tekil onay gerekli')}</span>
     <div class="bank-command-status-next">${escHtml(next)} Onay ekrandaki ilgili satırdan verilecek; bu kart sadece doğru satıra götürür.</div>
