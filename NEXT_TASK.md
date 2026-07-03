@@ -4,7 +4,7 @@ Son guncelleme: 2026-07-03 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Guncel tur notu: Kullanici ana ekranin sol sekmelerden kurtulup 6-8 tiklanabilir ana bolgeye ayrilmasini istedi. Masaustu gorunumde sidebar kapatildi ve ana sayfaya 8 bolgeli 4x2 komuta haritasi eklendi. Bu bolgeler Banka Canli, Onay Merkezi, Gelir Tablosu, Satis & Tahsilat, Urun & Stok, Cari Risk, Veri Guveni ve Bildirim Merkezi ekranlarina gider. Siradaki tek hedef, bu komuta haritasinin canli GitHub Pages uzerinde gorundugunu teyit etmek ve kullanicinin sonraki onceligine gore sadece bir bolgenin icini production seviyesinde bitirmektir.
+Guncel tur notu: Kullanici ana ekranin sol sekmelerden kurtulup 6-8 tiklanabilir ana bolgeye ayrilmasini istedi. Masaustu gorunumde sidebar kapatildi ve ana sayfaya 8 bolgeli 4x2 komuta haritasi eklendi. Bu bolgeler Banka Canli, Onay Merkezi, Gelir Tablosu, Satis & Tahsilat, Urun & Stok, Cari Risk, Veri Guveni ve Bildirim Merkezi ekranlarina gider. GitHub Pages uzerinde sol menusuz 8 bolgeli canli HTML ve tarayici olcumu dogrulandi. Siradaki tek hedef, Banka Canli / Onay Merkezi bolgesinde her kaydin nereye gittigini ve BizimHesap'a islenip islenmedigini tek ekranda kanitlamaktir.
 
 Onceki guvenlik notu: Claude'un canli Supabase tarafinda yaptigi cookie/API guvenlik isinin uzerine repo tarafinda `supabase_security_hardening_v77.sql` ve `verify:supabase-security-hardening` eklendi. SQL canliya otomatik uygulanmadi. Bu is sonraki guvenlik turunda ayrica ele alinacak.
 
@@ -63,10 +63,10 @@ Kullanici sabah banka maillerinden gelen hareketleri analiz edilmis sekilde gorm
 
 ## Siradaki Is Paketi
 
-1. Tek ekran komuta haritasi canliya push edilecek.
-2. GitHub Pages deploy ve canli URL icerik kontrolu yapilacak.
-3. Sonraki turda yalnizca bir bolge secilecek: once Banka Canli / Onay Merkezi onerilir.
-4. Secilen bolgede kayit nereye gitti, BizimHesap'a islendi mi, kuyruk/sonuc ne durumda tek ekranda kanitlanacak.
+1. Banka Canli / Onay Merkezi bolgesinde kayit akis kaniti netlestirilecek.
+2. Her banka hareketi icin `AperiON onayi`, `BizimHesap kuyrugu`, `BizimHesap kayit sonucu`, `mukerrer kontrol` ayni satirda kesin okunacak.
+3. Kullanici `Onayla` dediginde hangi cari, hangi banka/kasa hesabi, hangi kategori ve hangi BizimHesap kayit turu olacagi ekranda acik gorunecek.
+4. BizimHesap'a islenmis kayit tekrar onaya dusmeyecek; sonuc kaniti ekranda kalacak.
 5. Kullanici acik onay vermeden toplu canli kayit veya DB hardening uygulanmayacak.
 
 ## Kabul Kriteri

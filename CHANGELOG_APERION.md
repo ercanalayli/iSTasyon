@@ -12,6 +12,7 @@
 - `tools/verify_single_screen_command_map_v78.cjs` eklendi.
 - `verify:single-screen-command-map` komutu eklendi.
 - Tarayici kontrolde sol menusuz gorunum, 8 bolge, iki satir, yatay tasma olmamasi ve kutularin cakismamasi dogrulandi.
+- GitHub Pages deploy sonrasi canli URL'de `aperionCommandMap`, 8 komuta bolgesi ve sol menusuz gorunum dogrulandi.
 
 ### Kullanici Istekleri ve Gorsel Referans Dosyasi
 
