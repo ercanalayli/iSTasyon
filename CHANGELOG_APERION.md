@@ -34,6 +34,7 @@
 - Ana aday karti ve sabah onay kartlarina onay, kuyruk, bot kaydi ve sonuc kontrolu islem yolu eklendi.
 - `verify:bank-approval-action` bu sayaclarin varligini kontrol eder.
 - `dbbd736` icin CI basarili, Pages deploy hata verdigi icin durum notu ile yeniden deploy tetiklenir.
+- Canli yayin teyidi GitHub Pages olarak netlestirildi; Netlify PR preview bilgisi production kaniti sayilmaz.
 - Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
 
 ### Banka Status Pages Fallback

@@ -67,3 +67,15 @@ Gerekce: Finansal karar ekrani yalnizca kaynagi belli ve izlenebilir veriyle guv
 Karar: ALAYLI MEDIKAL aktif firma kabul edilir; diger firmalar coklu firma mimarisinde ayri veri katmani olarak ele alinacaktir.
 
 Gerekce: Farkli firmalarin satis, banka, cari, stok ve muhasebe kayitlari karismamalidir.
+
+## D-007 Canli Yayin Kaynagi
+
+Karar: AperiON iSTasyon icin canli dogrulama kaynagi `ercanalayli/iSTasyon` `main` branch, GitHub Actions ve GitHub Pages yayini kabul edilir. Netlify e-postalari veya PR preview linkleri yardimci bilgi olabilir; canli production teyidi yerine gecmez.
+
+Gerekce: Kullanici Netlify ve GitHub Pages hatlarinin karismasindan dolayi hangi ekranin gercek oldugunu sorguladi. Tek kaynak belirlenmeden finans/onay akisi guvenilir sekilde takip edilemez.
+
+Sonuc:
+
+- Canli URL kontrolu GitHub Pages uzerinden yapilir.
+- Netlify preview varsa sadece taslak/PR kaniti sayilir.
+- Commit sonrasi kabul kriteri: GitHub CI, Pages deploy ve canli URL icerik kontrolu.
