@@ -31,6 +31,7 @@
 - `Siradaki BizimHesap adayi` kartina taranan hareket, guvenli aday, inceleme isteyen kayit ve hazir kuyruk sayaclari eklendi.
 - Ana ekran tek adayin yaninda aday secim raporunun ozetini de gosterir.
 - Status raporunun olusturulma zamani Turkiye saatiyle ayni sayac satirinda gorunur.
+- Ana aday karti ve sabah onay kartlarina onay, kuyruk, bot kaydi ve sonuc kontrolu islem yolu eklendi.
 - `verify:bank-approval-action` bu sayaclarin varligini kontrol eder.
 - Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
 

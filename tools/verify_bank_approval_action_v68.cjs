@@ -6,6 +6,7 @@ const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 
 const checks = [
+  ['approval path guide is visible', /function\s+bankApprovalPathHtml\s*\(/.test(index) && index.includes('bank-approval-path') && index.includes('1. Onay') && index.includes('4. Kontrol')],
   ['bankActionState helper exists', /function\s+bankActionState\s*\(/.test(index)],
   ['bankActionCell helper exists', /function\s+bankActionCell\s*\(/.test(index)],
   ['action cell is rendered in bank rows', /bankActionCell\(r,dupCount\)/.test(index)],
