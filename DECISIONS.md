@@ -68,14 +68,16 @@ Karar: ALAYLI MEDIKAL aktif firma kabul edilir; diger firmalar coklu firma mimar
 
 Gerekce: Farkli firmalarin satis, banka, cari, stok ve muhasebe kayitlari karismamalidir.
 
-## D-007 Canli Yayin Kaynagi
+## D-007 Canli Yayin ve Preview Kaynaklari
 
-Karar: AperiON iSTasyon icin canli dogrulama kaynagi `ercanalayli/iSTasyon` `main` branch, GitHub Actions ve GitHub Pages yayini kabul edilir. Netlify e-postalari veya PR preview linkleri yardimci bilgi olabilir; canli production teyidi yerine gecmez.
+Karar: AperiON iSTasyon icin kaynak kod tek merkezi `ercanalayli/iSTasyon` `main` branch'tir. Bu turda dogrulanabilen production yayin GitHub Pages `https://ercanalayli.github.io/iSTasyon/` adresidir. Netlify e-postalari veya PR preview linkleri yardimci bilgi olabilir; production teyidi yerine gecmez. Repo icinde Cloudflare Pages `https://aperion-istasyon.pages.dev/` eski/alternatif canli hedef olarak kayitlidir, fakat bu ortamdan erisim basarisiz oldugu icin bu turda production kaniti sayilmadi.
 
-Gerekce: Kullanici Netlify ve GitHub Pages hatlarinin karismasindan dolayi hangi ekranin gercek oldugunu sorguladi. Tek kaynak belirlenmeden finans/onay akisi guvenilir sekilde takip edilemez.
+Gerekce: Kullanici Netlify, GitHub Pages ve Cloudflare hatlarinin karismasindan dolayi hangi ekranin gercek oldugunu sorguladi. Tek kaynak ve dogrulanmis yayin ayri yazilmazsa finans/onay akisi guvenilir sekilde takip edilemez.
 
 Sonuc:
 
-- Canli URL kontrolu GitHub Pages uzerinden yapilir.
+- Kaynak kod dogrulamasi `main` branch uzerinden yapilir.
+- Bu turdaki canli URL kontrolu GitHub Pages uzerinden yapildi.
 - Netlify preview varsa sadece taslak/PR kaniti sayilir.
+- Cloudflare Pages yeniden erisilebilir hale gelirse ayrica test edilmeden production kaniti sayilmaz.
 - Commit sonrasi kabul kriteri: GitHub CI, Pages deploy ve canli URL icerik kontrolu.
