@@ -4,7 +4,9 @@ Son guncelleme: 2026-07-03 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Guncel tur notu: Claude'un canli Supabase tarafinda yaptigi cookie/API guvenlik isinin uzerine repo tarafinda `supabase_security_hardening_v77.sql` ve `verify:supabase-security-hardening` eklendi. SQL canliya otomatik uygulanmadi. Siradaki tek hedef, bu hardening dosyasini once staging/dry denetim mantigiyla gozden gecirip sonra kullanici onayi ile Supabase SQL Editor/GitHub SQL install hattina almak ve ardindan Onay Merkezi ile BizimHesap queue akisini tekrar test etmektir.
+Guncel tur notu: Kullanici ana ekranin sol sekmelerden kurtulup 6-8 tiklanabilir ana bolgeye ayrilmasini istedi. Masaustu gorunumde sidebar kapatildi ve ana sayfaya 8 bolgeli 4x2 komuta haritasi eklendi. Bu bolgeler Banka Canli, Onay Merkezi, Gelir Tablosu, Satis & Tahsilat, Urun & Stok, Cari Risk, Veri Guveni ve Bildirim Merkezi ekranlarina gider. Siradaki tek hedef, bu komuta haritasinin canli GitHub Pages uzerinde gorundugunu teyit etmek ve kullanicinin sonraki onceligine gore sadece bir bolgenin icini production seviyesinde bitirmektir.
+
+Onceki guvenlik notu: Claude'un canli Supabase tarafinda yaptigi cookie/API guvenlik isinin uzerine repo tarafinda `supabase_security_hardening_v77.sql` ve `verify:supabase-security-hardening` eklendi. SQL canliya otomatik uygulanmadi. Bu is sonraki guvenlik turunda ayrica ele alinacak.
 
 Onceki tur notu: Banka Komuta Merkezi'ndeki `Siradaki BizimHesap adayi` bandina `Adayi Ac` eylemi eklendi. Bu eylem canli kayit yapmaz; Finans > Banka Canli ekranini acar, secili pending id satirina gider ve satiri sari cerceveyle odaklar. Kart artik BizimHesap hedefi, banka hesabi, cari/karsi taraf ve kategori alanlarini acik gosterir; onayin ilgili satirdan verilecegini yazar. Siradaki canli adim hala ayni kilitte: kullanici tekil kayit icin acik onay verirse queue olusumu ve BizimHesap worker kaniti dogrulanacak.
 
@@ -61,11 +63,11 @@ Kullanici sabah banka maillerinden gelen hareketleri analiz edilmis sekilde gorm
 
 ## Siradaki Is Paketi
 
-1. `supabase_security_hardening_v77.sql` once statik kontrol ve etki listesiyle denetlenecek.
-2. Kullanici onayi olmadan canli Supabase SQL uygulanmayacak.
-3. Hardening canliya alinirsa hemen `mail:ekstre:actions:check`, `bank:approval:preview`, `bank:approval:status`, `verify:bizimhesap:queue` ile kirdigi bir akim var mi bakilacak.
-4. Secili guvenli banka adayi icin Onay Merkezi -> `approve_pending_bank_movement` -> `bizimhesap_queue` olusum kaniti tekrar uretilecek.
-5. Kullanici acik onay verirse sadece secili kayit icin BizimHesap form/save calisir; toplu canli kayit yok.
+1. Tek ekran komuta haritasi canliya push edilecek.
+2. GitHub Pages deploy ve canli URL icerik kontrolu yapilacak.
+3. Sonraki turda yalnizca bir bolge secilecek: once Banka Canli / Onay Merkezi onerilir.
+4. Secilen bolgede kayit nereye gitti, BizimHesap'a islendi mi, kuyruk/sonuc ne durumda tek ekranda kanitlanacak.
+5. Kullanici acik onay vermeden toplu canli kayit veya DB hardening uygulanmayacak.
 
 ## Kabul Kriteri
 

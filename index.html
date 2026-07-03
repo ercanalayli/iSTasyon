@@ -2442,6 +2442,39 @@ body.dashboard-mode .cm-cell b{
     grid-template-rows:auto !important;
   }
 }
+
+/* v78 single-screen command map: left tabs removed, 8 clickable zones */
+@media(min-width:769px){
+  body{display:block}
+  .sb,.sb-tog{display:none!important}
+  .main{width:100vw;height:100vh}
+  .tb{height:62px}
+  .content{height:calc(100vh - 62px);padding:14px 18px;overflow:hidden}
+  body.dashboard-mode .content{padding:14px 18px;overflow:hidden}
+  body.dashboard-mode #pg-dashboard{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);gap:12px}
+  body.dashboard-mode #kartsDiv{height:100%;min-height:0;grid-template-columns:minmax(520px,1.05fr) minmax(420px,.95fr);grid-template-rows:auto minmax(210px,1fr);gap:12px;overflow:hidden}
+  body.dashboard-mode #executiveCommandCard{grid-column:1/-1;grid-row:1}
+  body.dashboard-mode #bankCommandCard{grid-column:1;grid-row:2}
+  body.dashboard-mode #incomeStatementCard{grid-column:2;grid-row:2}
+  body.dashboard-mode #homeMorningApprovalCard,
+  body.dashboard-mode #roadmapCard,
+  body.dashboard-mode #reportHubCard,
+  body.dashboard-mode #financeCalendarCard{display:none!important}
+}
+.command-map{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.command-zone{position:relative;border:1px solid #DCE6F3;background:linear-gradient(180deg,#FFFFFF,#F7FAFE);border-radius:14px;min-height:98px;padding:13px 13px 12px;cursor:pointer;overflow:hidden;text-align:left;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background .16s ease}
+.command-zone::before{content:'';position:absolute;inset:0 auto 0 0;width:5px;background:var(--zone,#2563EB)}
+.command-zone::after{content:'';position:absolute;right:-36px;bottom:-44px;width:110px;height:110px;border-radius:50%;background:var(--zone,#2563EB);opacity:.08}
+.command-zone:hover{transform:translateY(-2px);border-color:var(--zone,#2563EB);box-shadow:0 16px 32px rgba(15,23,42,.12);background:#FFFFFF}
+.command-zone:focus-visible{outline:3px solid color-mix(in srgb,var(--zone,#2563EB) 35%,transparent);outline-offset:2px}
+.zone-code{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;width:30px;height:24px;border-radius:8px;background:color-mix(in srgb,var(--zone,#2563EB) 12%,#FFFFFF);border:1px solid color-mix(in srgb,var(--zone,#2563EB) 32%,#DCE6F3);font-family:var(--mono);font-size:10px;font-weight:950;color:var(--zone,#2563EB);margin-bottom:9px}
+.zone-title{position:relative;z-index:1;font-size:13px;font-weight:950;color:#101828;line-height:1.1}
+.zone-sub{position:relative;z-index:1;font-size:10.5px;font-weight:750;color:#667085;line-height:1.3;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.zone-foot{position:relative;z-index:1;display:flex;align-items:center;gap:5px;margin-top:9px;font-family:var(--mono);font-size:8.5px;font-weight:900;color:#667085;text-transform:uppercase;letter-spacing:.35px}
+.zone-foot span{width:6px;height:6px;border-radius:50%;background:var(--zone,#2563EB);box-shadow:0 0 0 3px color-mix(in srgb,var(--zone,#2563EB) 12%,transparent)}
+.command-zone.bank{--zone:#0F766E}.command-zone.approval{--zone:#D97706}.command-zone.income{--zone:#2563EB}.command-zone.sales{--zone:#7C3AED}.command-zone.product{--zone:#059669}.command-zone.customer{--zone:#0284C7}.command-zone.data{--zone:#DC2626}.command-zone.notify{--zone:#475467}
+@media(max-width:1280px){.command-zone{min-height:86px}}
+@media(max-width:768px){.command-map{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}.command-zone{min-height:88px;padding:10px}.zone-title{font-size:12px}.zone-sub{font-size:10px}}
 </style>
 </head>
 <body class="dashboard-mode">
@@ -2529,6 +2562,56 @@ body.dashboard-mode .cm-cell b{
   </div>
   <div class="content">
     <div id="pg-dashboard" class="page on">
+      <section class="command-map" id="aperionCommandMap" aria-label="AperiON ana komuta bolgeleri">
+        <button class="command-zone bank" onclick="gP('finans',null);setTimeout(()=>fT('banka'),80)">
+          <span class="zone-code">BK</span>
+          <div class="zone-title">Banka Canlı</div>
+          <div class="zone-sub">Ekstre, bakiye, onay ve BizimHesap kuyrugu.</div>
+          <div class="zone-foot"><span></span>Bankaya girince ayni hareket akisi</div>
+        </button>
+        <button class="command-zone approval" onclick="gP('gorevler',null)">
+          <span class="zone-code">ON</span>
+          <div class="zone-title">Onay Merkezi</div>
+          <div class="zone-sub">Mail, Telegram ve banka hareketi tek tik karar.</div>
+          <div class="zone-foot"><span></span>Kullanici onayi olmadan kayit yok</div>
+        </button>
+        <button class="command-zone income" onclick="gP('finans',null)">
+          <span class="zone-code">GT</span>
+          <div class="zone-title">Gelir Tablosu</div>
+          <div class="zone-sub">Planlanan, tahakkuk ve gerceklesen net sonuc.</div>
+          <div class="zone-foot"><span></span>Bugun · dun · hafta · ay · yil</div>
+        </button>
+        <button class="command-zone sales" onclick="gP('satis',null)">
+          <span class="zone-code">SA</span>
+          <div class="zone-title">Satış & Tahsilat</div>
+          <div class="zone-sub">Kategori, urun, musteri ve tahsilat analizi.</div>
+          <div class="zone-foot"><span></span>Hangi urun neden satiyor</div>
+        </button>
+        <button class="command-zone product" onclick="gP('stok',null)">
+          <span class="zone-code">ÜR</span>
+          <div class="zone-title">Ürün & Stok</div>
+          <div class="zone-sub">Karlilik, stok omru, fiyat ve siparis onerisi.</div>
+          <div class="zone-foot"><span></span>Hasta bezi ve dinamik urun karti</div>
+        </button>
+        <button class="command-zone customer" onclick="gP('cariler',null)">
+          <span class="zone-code">CR</span>
+          <div class="zone-title">Cari Risk</div>
+          <div class="zone-sub">Musteri, tedarikci, bakiye ve tahsilat skoru.</div>
+          <div class="zone-foot"><span></span>Cari karttan tum hareketler</div>
+        </button>
+        <button class="command-zone data" onclick="gP('veri',null)">
+          <span class="zone-code">VG</span>
+          <div class="zone-title">Veri Güveni</div>
+          <div class="zone-sub">Kaynak, senkron, firma izolasyonu ve RLS kontrol.</div>
+          <div class="zone-foot"><span></span>Guven yoksa karar yok</div>
+        </button>
+        <button class="command-zone notify" onclick="gP('bildirim',null)">
+          <span class="zone-code">BL</span>
+          <div class="zone-title">Bildirim Merkezi</div>
+          <div class="zone-sub">Telegram, Gmail, sabah/aksam ozet ve evrak akisi.</div>
+          <div class="zone-foot"><span></span>Mail ve Telegram tek merkez</div>
+        </button>
+      </section>
       <div id="kartsDiv">
         <div class="command-hero" id="executiveCommandCard">
           <div id="executiveBrief"><div class="finance-empty">Üst akıl özeti hazırlanıyor...</div></div>

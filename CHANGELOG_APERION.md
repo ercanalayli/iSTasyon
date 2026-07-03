@@ -2,6 +2,17 @@
 
 ## 2026-07-03
 
+### Tek Ekran Komuta Haritasi
+
+- Masaustu gorunumde sol sidebar ve sidebar toggle gizlendi.
+- Ana ekran tam genislige alindi; dashboard tek ekran karar yuzeyi olarak duzenlendi.
+- 8 tiklanabilir ana bolge eklendi: Banka Canli, Onay Merkezi, Gelir Tablosu, Satis & Tahsilat, Urun & Stok, Cari Risk, Veri Guveni, Bildirim Merkezi.
+- Bolgeler 4x2 komuta haritasi seklinde, renkli kenar, hover ve focus cercevesiyle ayrildi.
+- Dashboard altinda eski kritik kartlar korunarak Banka Komuta Merkezi ve Gelir Tablosu matrisi tek ekran icinde tutuldu.
+- `tools/verify_single_screen_command_map_v78.cjs` eklendi.
+- `verify:single-screen-command-map` komutu eklendi.
+- Tarayici kontrolde sol menusuz gorunum, 8 bolge, iki satir, yatay tasma olmamasi ve kutularin cakismamasi dogrulandi.
+
 ### Kullanici Istekleri ve Gorsel Referans Dosyasi
 
 - `APERION_ISTEKLER_VE_GORSELLER.md` eklendi.
