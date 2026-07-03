@@ -6,6 +6,8 @@ Son guncelleme: 2026-07-03 Europe/Istanbul
 
 Guncel tur notu: Banka Canli / Onay Merkezi satirlarina kayit rotasi eklendi. Her hareket artik Kaynak -> AperiON karari -> BizimHesap hedefi -> Sonuc olarak okunur; `Onay anlami` kutusu hangi hesap, cari, kategori ve kayit turuyle kuyruga alinacagini anlatir. Siradaki tek hedef, kullanici bir kaydi onayladiktan sonra bu rotanin gercek queue id ve BizimHesap sonucuyla otomatik kapanmasini canli ekranda kanitlamaktir.
 
+Yeni referans notu: Kullanici CFO egitimi gorseliyle AperiON'un finans direktoru gibi calisan bir CFO modu olmasini istedi. `APERION_CFO_MODUL_PLANI.md` olusturuldu. Bu mod gecerli aktif hedefi degistirmez; Banka/Onay para hareketi kaniti bitince CFO modu ana ekran ve Gelir Tablosu uzerine insa edilecek.
+
 Onceki guvenlik notu: Claude'un canli Supabase tarafinda yaptigi cookie/API guvenlik isinin uzerine repo tarafinda `supabase_security_hardening_v77.sql` ve `verify:supabase-security-hardening` eklendi. SQL canliya otomatik uygulanmadi. Bu is sonraki guvenlik turunda ayrica ele alinacak.
 
 Onceki tur notu: Banka Komuta Merkezi'ndeki `Siradaki BizimHesap adayi` bandina `Adayi Ac` eylemi eklendi. Bu eylem canli kayit yapmaz; Finans > Banka Canli ekranini acar, secili pending id satirina gider ve satiri sari cerceveyle odaklar. Kart artik BizimHesap hedefi, banka hesabi, cari/karsi taraf ve kategori alanlarini acik gosterir; onayin ilgili satirdan verilecegini yazar. Siradaki canli adim hala ayni kilitte: kullanici tekil kayit icin acik onay verirse queue olusumu ve BizimHesap worker kaniti dogrulanacak.

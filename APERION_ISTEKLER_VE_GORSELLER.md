@@ -12,6 +12,7 @@ AperiON kullanicinin isletmesi ve kisisel hayati icin:
 
 - ust akil
 - ikinci beyin
+- CFO gibi dusunen finans direktoru modu
 - veri orkestra merkezi
 - onay ve karar sistemi
 - guvenli otomasyon altyapisi
@@ -53,6 +54,7 @@ Ana prensip:
 10. Hasta bezi karar ekrani
 11. Telegram / mail / gorsel evrak akisi
 12. Kisisel ikinci beyin finans modulu
+13. CFO modu: finansal tablo, butce, isletme sermayesi, risk ve stratejik karar ekrani
 
 ## Ana Ekran Isteği
 
@@ -72,6 +74,7 @@ Ana ekranda olmasi istenen ana bloklar:
 - Bugun ne yapmaliyim / aksiyon kuyrugu
 - Senkron ve veri guveni durumu
 - Mail ekstre ve Telegram evrak durumu
+- CFO modu: bugun finansal durum, karar bekleyenler, risk ve firsatlar
 
 Ana ekranda istenen tasarim:
 

@@ -22,6 +22,14 @@
 - `verify:bank-approval-action` testine rota ve insan dilinde onay anlami kontrolleri eklendi.
 - Canli BizimHesap kaydi veya toplu onay yapilmadi.
 
+### CFO Modu Referans Plani
+
+- Kullanici `Finans Direktoru (CFO) Egitimi` gorselini referans olarak verdi.
+- `APERION_CFO_MODUL_PLANI.md` eklendi.
+- CFO modu; finansal tablolar, butce, maliyet, isletme sermayesi, risk ve stratejik karar ekranini AperiON verilerine baglayacak sekilde planlandi.
+- `APERION_ISTEKLER_VE_GORSELLER.md` icine CFO gibi dusunen finans direktoru modu eklendi.
+- Aktif uygulama hedefi degismedi: once Banka Canli / Onay Merkezi kayit kaniti bitirilecek.
+
 ### Kullanici Istekleri ve Gorsel Referans Dosyasi
 
 - `APERION_ISTEKLER_VE_GORSELLER.md` eklendi.
