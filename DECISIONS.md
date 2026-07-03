@@ -80,4 +80,5 @@ Sonuc:
 - Bu turdaki canli URL kontrolu GitHub Pages uzerinden yapildi.
 - Netlify preview varsa sadece taslak/PR kaniti sayilir.
 - Cloudflare Pages yeniden erisilebilir hale gelirse ayrica test edilmeden production kaniti sayilmaz.
+- Canli kontrol botlari birden fazla yayin adayini deneyebilir; secilen URL rapora yazilmalidir.
 - Commit sonrasi kabul kriteri: GitHub CI, Pages deploy ve canli URL icerik kontrolu.

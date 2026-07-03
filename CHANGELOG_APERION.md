@@ -37,6 +37,7 @@
 - Canli yayin teyidi GitHub Pages olarak netlestirildi; Netlify PR preview bilgisi production kaniti sayilmaz.
 - HTML basina production-source marker eklendi; Netlify linklerinin preview-only oldugu dosya icinde de isaretlendi.
 - GitHub Pages deploy hatasi connector logu ile incelendi; gecici `try again later` hatasi oldugu goruldu ve failed deploy job retry sonrasi basarili oldu.
+- Canli kontrol botlari `APERION_LIVE_URLS` fallback listesine alindi; Cloudflare acilmazsa GitHub Pages denenir ve secilen URL rapora yazilir.
 - Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
 
 ### Banka Status Pages Fallback

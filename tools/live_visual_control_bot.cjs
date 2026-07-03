@@ -1,8 +1,19 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 
-const LIVE_URL = process.env.APERION_LIVE_URL || 'https://aperion-istasyon.pages.dev/';
 const OUT_DIR = 'artifacts/live-visual-control';
+const DEFAULT_LIVE_URLS = [
+  'https://aperion-istasyon.pages.dev/',
+  'https://ercanalayli.github.io/iSTasyon/'
+];
+
+function liveUrlCandidates() {
+  const raw = process.env.APERION_LIVE_URLS || process.env.APERION_LIVE_URL || '';
+  const urls = raw
+    ? raw.split(',').map(x => x.trim()).filter(Boolean)
+    : DEFAULT_LIVE_URLS;
+  return [...new Set(urls)];
+}
 
 function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
@@ -33,6 +44,20 @@ async function shot(page, name) {
   return file;
 }
 
+async function gotoFirstLiveUrl(page) {
+  let lastError = null;
+  for (const url of liveUrlCandidates()) {
+    try {
+      await page.goto(url, { waitUntil: 'networkidle2', timeout: 70000 });
+      return url;
+    } catch (error) {
+      lastError = error;
+      console.log(`WARN - Canli URL acilamadi: ${url} - ${error.message || error}`);
+    }
+  }
+  throw lastError || new Error('No live URL candidates configured.');
+}
+
 async function main() {
   ensureDir(OUT_DIR);
   const results = [];
@@ -41,8 +66,9 @@ async function main() {
   await page.setViewport({ width: 1440, height: 1200 });
 
   try {
-    await page.goto(LIVE_URL, { waitUntil: 'networkidle2', timeout: 70000 });
+    const liveUrl = await gotoFirstLiveUrl(page);
     await sleep(3000);
+    results.push([`Canli URL secildi: ${liveUrl}`, true]);
     results.push(['Canlı site açıldı', true]);
     await shot(page, '01-home');
 
@@ -63,7 +89,8 @@ async function main() {
 
     const failed = results.filter(x => !x[1]);
     const report = {
-      url: LIVE_URL,
+      url: liveUrl,
+      attempted_urls: liveUrlCandidates(),
       checked_at: new Date().toISOString(),
       results: results.map(([name, ok]) => ({ name, ok })),
       status: failed.length ? 'FAILED' : 'OK'
