@@ -20,6 +20,8 @@ Guncel ek not 6: `dbbd736` kod/CI olarak basarili, Pages deploy asamasi hata ver
 
 Guncel ek not 7: Canli yayin kaynagi GitHub Pages olarak kilitlendi. Netlify PR preview/e-posta bilgileri yardimci kanittir; production kabul kriteri GitHub CI + Pages deploy + canli URL icerik kontroludur.
 
+Guncel ek not 8: `d7ea3d7` dokuman commit'inde Pages deploy yeniden hata verdi; HTML production-source marker ile yeni deploy tetiklendi. Sonraki turda Pages sonucunu oku.
+
 Onay Merkezi analiz guvenini production seviyesine tasimak.
 
 Durum: Ana is programi kullanicinin tum isteklerine gore 20 maddelik siraya indirildi. 04 numarali Onay Merkezi analiz guveni ilk katmani tamamlandi: risk etiketleri, kanit kutusu, 84 guven esigi, tazelik/mukerrer/kuyruk/cari kanit gosterimi eklendi. 05 numarali BizimHesap tek tik kayit kanitinin ilk katmani da eklendi: queue worker dry-run raporu artik evidence ve summary uretir; ana ust akil karti onay bekleyen/kuyrukta/islenmis/hata ayrimini gosterir. `bank:approval:status` tek komutla guncel aday, dry-check, kuyruk kaniti ve BizimHesap worker dry-run sonucunu toplar; Banka Komuta Merkezi artik bu raporu `Sıradaki BizimHesap adayı` bandinda gosterir. `AperiON Bank Approval Status` workflow'u bu snapshot'i otomatik yeniler ve sadece `data/aperion_bank_approval_status.json` dosyasini commitler. Ana ekran Pages JSON gecikirse GitHub raw fallback ile ayni statusu okur. Son kanit: `2026-06-30 Yapi Kredi -3.56 TL Vergi/SGK odemesi`, pending id `d1455265-abaf-4ea1-a6d4-386bf16b93c1`, status `pending`, queue `0`. Siradaki is, kullanicinin bu tekil ID icin acik onay vermesi halinde kaydi kuyruga alip worker kanitini gercek kayit uzerinde dogrulamak.
