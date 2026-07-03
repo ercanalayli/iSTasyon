@@ -1,6 +1,6 @@
 # AperiON Project Status
 
-Son guncelleme: 2026-07-02 Europe/Istanbul
+Son guncelleme: 2026-07-03 Europe/Istanbul
 
 ## Calisma Protokolu
 
@@ -17,6 +17,8 @@ AperiON gelistirmesinde koordineli calisma protokolu gecerlidir.
 Genel durum: Sistem calisan bir omurgaya sahip, ancak tum moduller gunluk guvenilir kullanim icin production-ready degil.
 
 Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonraki turlarda durum, karar, sonraki is ve kalite kontrol bu dosyalardan surdurulecektir.
+
+2026-07-03 Supabase/BizimHesap guvenlik devami sonucu: Claude'un canli tarafta yaptigi cookie/API guvenlik notu repo durumuna alindi. Cookie'nin koddan cikarilip kilitli `integrations` tablosuna tasindigi, `bizimhesap-proxy` JWT dogrulamasina alindigi ve resmi BizimHesap API'nin gercek urun verisi dondurdugu not edildi. Repo tarafinda `supabase_security_hardening_v77.sql` eklendi; amaci anon kullanicinin banka/onay/finans RPC'lerini calistirmasini, `bank_transactions`, `banka_raw`, `bizimhesap_events`, `product_raw`, `audit_logs` gibi kritik tablolara yazmasini engellemek ve okumalari `aperion_users.firma_id` uzerinden authenticated role'e baglamaktir. Bu SQL canli DB'ye otomatik uygulanmadi; once denetim ve onay gerektirir. `verify:supabase-security-hardening` komutu eklendi ve 16/16 gecti.
 
 2026-07-02 banka aday odaklama turu sonucu: Banka Komuta Merkezi'ndeki `Siradaki BizimHesap adayi` bandina `Adayi Ac` aksiyonu eklendi. Bu aksiyon canli kayit yapmaz; Finans > Banka Canli ekranini acar, secili pending id satirini bulur, ekrana getirir ve sari cerceveyle isaretler. Kartta artik BizimHesap hedefi, banka hesabi, cari/karsi taraf ve kategori ayrica gorunur; onayin ilgili satirdan verilecegi acik yazilir. Banka onay satirlari artik `data-bank-pending-id` / `data-bank-row-id` tasir. `verify:bank-approval-action` icine focus helper, row id, karar alani ve buton kontrolleri eklendi. Canli RPC veya BizimHesap save calismadi.
 

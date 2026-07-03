@@ -1,10 +1,12 @@
 # AperiON Next Task
 
-Son guncelleme: 2026-07-02 Europe/Istanbul
+Son guncelleme: 2026-07-03 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Guncel tur notu: Banka Komuta Merkezi'ndeki `Siradaki BizimHesap adayi` bandina `Adayi Ac` eylemi eklendi. Bu eylem canli kayit yapmaz; Finans > Banka Canli ekranini acar, secili pending id satirina gider ve satiri sari cerceveyle odaklar. Kart artik BizimHesap hedefi, banka hesabi, cari/karsi taraf ve kategori alanlarini acik gosterir; onayin ilgili satirdan verilecegini yazar. Siradaki canli adim hala ayni kilitte: kullanici tekil kayit icin acik onay verirse queue olusumu ve BizimHesap worker kaniti dogrulanacak.
+Guncel tur notu: Claude'un canli Supabase tarafinda yaptigi cookie/API guvenlik isinin uzerine repo tarafinda `supabase_security_hardening_v77.sql` ve `verify:supabase-security-hardening` eklendi. SQL canliya otomatik uygulanmadi. Siradaki tek hedef, bu hardening dosyasini once staging/dry denetim mantigiyla gozden gecirip sonra kullanici onayi ile Supabase SQL Editor/GitHub SQL install hattina almak ve ardindan Onay Merkezi ile BizimHesap queue akisini tekrar test etmektir.
+
+Onceki tur notu: Banka Komuta Merkezi'ndeki `Siradaki BizimHesap adayi` bandina `Adayi Ac` eylemi eklendi. Bu eylem canli kayit yapmaz; Finans > Banka Canli ekranini acar, secili pending id satirina gider ve satiri sari cerceveyle odaklar. Kart artik BizimHesap hedefi, banka hesabi, cari/karsi taraf ve kategori alanlarini acik gosterir; onayin ilgili satirdan verilecegini yazar. Siradaki canli adim hala ayni kilitte: kullanici tekil kayit icin acik onay verirse queue olusumu ve BizimHesap worker kaniti dogrulanacak.
 
 Guncel ek not: Banka Canli satirlarinda artik `AperiON onayi -> BizimHesap kuyrugu -> Kayit sonucu` seridi gorunur. Siradaki is, bu seridi kullanarak tekil onay sonrasi queue ve BizimHesap worker sonucunu ekranda kanitlamak.
 
@@ -59,11 +61,11 @@ Kullanici sabah banka maillerinden gelen hareketleri analiz edilmis sekilde gorm
 
 ## Siradaki Is Paketi
 
-1. Secili bir guvenli banka adayi icin Onay Merkezi -> `approve_pending_bank_movement` -> `bizimhesap_queue` olusum kaniti tekrar uretilecek.
-2. Once `npm run bank:approval:status` ile aday, pending ve queue durumu tek raporda kontrol edilecek.
-3. Kullanici acik onay verirse sadece secili kayit icin BizimHesap form/save calisir; toplu canli kayit yok.
-4. Save sonrasi queue status, `aperion_posting_result`, diagnostik ekran ve tekrar kayit kilidi birlikte dogrulanacak.
-5. `bizimhesap:queue:dry`, `verify:bizimhesap:queue`, `verify:bank-approval-action` tekrar calistirilacak.
+1. `supabase_security_hardening_v77.sql` once statik kontrol ve etki listesiyle denetlenecek.
+2. Kullanici onayi olmadan canli Supabase SQL uygulanmayacak.
+3. Hardening canliya alinirsa hemen `mail:ekstre:actions:check`, `bank:approval:preview`, `bank:approval:status`, `verify:bizimhesap:queue` ile kirdigi bir akim var mi bakilacak.
+4. Secili guvenli banka adayi icin Onay Merkezi -> `approve_pending_bank_movement` -> `bizimhesap_queue` olusum kaniti tekrar uretilecek.
+5. Kullanici acik onay verirse sadece secili kayit icin BizimHesap form/save calisir; toplu canli kayit yok.
 
 ## Kabul Kriteri
 

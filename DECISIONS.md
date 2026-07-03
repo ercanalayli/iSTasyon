@@ -1,5 +1,18 @@
 # AperiON Decisions
 
+## 2026-07-03 - Supabase finansal yazma ve onay guvenligi
+
+Karar: AperiON production mimarisinde `anon` role banka/onay/finans RPC'lerini calistiramaz ve finansal tablolara yazamaz. Dashboard/frontend temel olarak okuma ve kullanici karar ekrani gorevi gorur; kesin yazma, kuyruk kapatma, BizimHesap isleme ve bot kaynakli veri cekimi service_role kullanan bot/Edge Function/GitHub Actions katmanindan gecmelidir.
+
+Gerekce: Claude'un canli denetiminde `approve_pending_bank_movement`, `approve_bank_transaction_v58`, `finance_calendar_mark_paid`, `finance_calendar_mark_collected`, `finance_calendar_approve` gibi SECURITY DEFINER fonksiyonlarin anon role'e acik olabildigi; `bank_transactions`, `banka_raw`, `bizimhesap_events`, `product_raw`, `audit_logs` gibi tablolarda eski prototip anon write politikalarinin kalabildigi goruldu. Bu durum kullanici onayi ve veri guveni prensibine aykiridir.
+
+Sonuc:
+
+- `supabase_security_hardening_v77.sql` repo icinde takip edilecek.
+- Bu SQL canliya otomatik uygulanmaz; once etki analizi ve kullanici onayi gerekir.
+- Hardening sonrasi Onay Merkezi, mail ekstre, BizimHesap queue ve Finans Takvimi aksiyonlari tekrar test edilir.
+- Kullanici onayi olmadan canli BizimHesap/Supabase mutation yapilmaz.
+
 ## 2026-06-29 - BizimHesap B2B API siniri
 
 Kullanici BizimHesap Entegrasyon API dokumanini paylasti. Dokumanda fatura, cari, urun, depo, stok ve cari ekstre endpointleri var.

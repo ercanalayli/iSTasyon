@@ -105,7 +105,8 @@
     "invoice:details:link": "node tools/link_invoice_details_to_expense_cards_v64.cjs",
     "expense:aperion:full": "npm run sync:bizimhesap && npm run expense:aperion:build && npm run invoice:details:read && npm run invoice:details:link",
     "test": "node finance_smoke_test.cjs && node scripts/verify_finance_manifest.cjs && npm run telegram:finance-v48:test && npm run telegram:risk-v49:test && npm run telegram:morning-digest-v50:test && npm run telegram:critical-risk-v51:test",
-    "verify:gmail-oauth-refresh": "node tools/verify_gmail_oauth_refresh_helper_v75.cjs"
+    "verify:gmail-oauth-refresh": "node tools/verify_gmail_oauth_refresh_helper_v75.cjs",
+    "verify:supabase-security-hardening": "node tools/verify_supabase_security_hardening_v77.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

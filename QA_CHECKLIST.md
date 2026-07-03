@@ -1,6 +1,6 @@
 # AperiON QA Checklist
 
-Son guncelleme: 2026-06-27 Europe/Istanbul
+Son guncelleme: 2026-07-03 Europe/Istanbul
 
 ## Her Tur Zorunlu Kontrol
 
@@ -24,6 +24,10 @@ Son guncelleme: 2026-06-27 Europe/Istanbul
 - [ ] Mukkerrer kayit kontrolu var.
 - [ ] Kaynak, firma, tarih ve kayit ID izlenebilir.
 - [ ] Duzeltme ve ret islemleri loglaniyor.
+- [ ] Anon role finansal onay RPC'lerini calistiramiyor.
+- [ ] Anon role finansal ham/queue/log tablolarina yazamiyor.
+- [ ] Authenticated okuma firma izolasyonu ile sinirli.
+- [ ] Service role yazma hattinin testleri hardening sonrasi tekrar kosuldu.
 
 ## BizimHesap Kontrolleri
 

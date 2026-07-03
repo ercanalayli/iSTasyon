@@ -1,5 +1,18 @@
 # AperiON Changelog
 
+## 2026-07-03
+
+### Supabase / BizimHesap Guvenlik Hardening
+
+- Claude'un canli tarafta yaptigi cookie/API guvenlik notu repo akisine alindi.
+- `supabase_security_hardening_v77.sql` eklendi.
+- Migration anon kullanicinin kritik banka/onay/finans RPC'lerini calistirmasini engelleyecek revoke adimlarini icerir.
+- `bank_transactions`, `banka_raw`, `bizimhesap_events`, `product_raw`, `audit_logs` icin eski anon write/read prototip politikalarini kaldiran kilitler eklendi.
+- Authenticated okuma politikasi `aperion_users.firma_id` ve `all` admin modeliyle yeniden tanimlandi.
+- `tools/verify_supabase_security_hardening_v77.cjs` ve `verify:supabase-security-hardening` komutu eklendi.
+- `verify:supabase-security-hardening` 16/16 gecti.
+- Canli Supabase SQL uygulanmadi; bu tur repo hazirligi ve denetim turudur.
+
 ## 2026-07-02
 
 ### Banka Onay Adayi Odaklama
