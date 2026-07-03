@@ -1,37 +1,36 @@
 {
-  "created_at": "2026-07-03T14:42:41.538Z",
+  "created_at": "2026-07-03T15:14:25.203Z",
   "safe_mode": true,
   "live_rpc_called": false,
   "live_bizimhesap_save_called": false,
   "company_id": "alayli",
   "summary": {
     "preview_count": 25,
-    "candidate_count": 2,
-    "low_risk_count": 1,
-    "review_count": 23,
+    "candidate_count": 4,
+    "low_risk_count": 2,
+    "review_count": 21,
     "ready_queue_count": 0,
     "proof_queue_status": "queue_yok",
     "pending_status": "pending"
   },
   "selected_candidate": {
-    "pending_bank_movement_id": "d1455265-abaf-4ea1-a6d4-386bf16b93c1",
+    "pending_bank_movement_id": "c7f757fa-939a-45e3-aa0b-145259234045",
     "bank_name": "Yapi Kredi",
-    "transaction_date": "2026-06-30",
+    "transaction_date": "2026-07-03",
     "transaction_time": "",
-    "amount": -3.56,
-    "amount_label": "-TL 3,56",
-    "target": "BizimHesap gider/odeme kaydi",
-    "type": "Vergi/SGK odemesi",
+    "amount": 4600,
+    "amount_label": "TL 4.600,00",
+    "target": "BizimHesap banka tahsilati",
+    "type": "POS tahsilati",
     "account": "Yapi Kredi banka hesabi",
-    "counterparty": "Vergi/SGK",
-    "category": "Vergi/SGK",
-    "confidence": 90,
+    "counterparty": "POS / Kart musterileri",
+    "category": "Satis tahsilati",
+    "confidence": 88,
     "risk_class": "low",
     "requires_user_review": false,
     "reasons": [
-      "banka borc/cikis",
-      "komisyon/masraf",
-      "vergi/sgk"
+      "banka alacak/giris",
+      "POS aciklamasi"
     ]
   },
   "proof": {
@@ -43,8 +42,8 @@
   },
   "blockers": [],
   "next_action": "Kullanici bu tekil kaydi onaylarsa Supabase approve RPC calisir ve kayit BizimHesap queue icine alinir.",
-  "required_user_approval_text": "Bu tek kaydi kuyruga almayi onayliyorum: d1455265-abaf-4ea1-a6d4-386bf16b93c1",
-  "required_live_command_after_user_approval": "node tools/approve_bank_candidate_v70.cjs --id d1455265-abaf-4ea1-a6d4-386bf16b93c1 --confirm ONAYLIYORUM",
+  "required_user_approval_text": "Bu tek kaydi kuyruga almayi onayliyorum: c7f757fa-939a-45e3-aa0b-145259234045",
+  "required_live_command_after_user_approval": "node tools/approve_bank_candidate_v70.cjs --id c7f757fa-939a-45e3-aa0b-145259234045 --confirm ONAYLIYORUM",
   "files": {
     "candidates": "data/banka_onay_guvenli_adaylar.json",
     "dry_check": "data/banka_onay_kuyruk_kaniti.json",
