@@ -2,6 +2,12 @@
 
 ## 2026-07-03
 
+### Kullanici Istekleri ve Gorsel Referans Dosyasi
+
+- `APERION_ISTEKLER_VE_GORSELLER.md` eklendi.
+- Ana vizyon, oncelik sirasi, banka/BizimHesap/mail/Telegram/gelir tablosu/urun/hasta bezi/kisisel finans istekleri tek dosyada toplandi.
+- Sohbette paylasilan gorsel referans dosya yollari ve ne anlattiklari listelendi.
+
 ### Supabase / BizimHesap Guvenlik Hardening
 
 - Claude'un canli tarafta yaptigi cookie/API guvenlik notu repo akisine alindi.
