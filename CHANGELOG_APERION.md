@@ -33,6 +33,7 @@
 - Status raporunun olusturulma zamani Turkiye saatiyle ayni sayac satirinda gorunur.
 - Ana aday karti ve sabah onay kartlarina onay, kuyruk, bot kaydi ve sonuc kontrolu islem yolu eklendi.
 - `verify:bank-approval-action` bu sayaclarin varligini kontrol eder.
+- `dbbd736` icin CI basarili, Pages deploy hata verdigi icin durum notu ile yeniden deploy tetiklenir.
 - Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
 
 ### Banka Status Pages Fallback
