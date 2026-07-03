@@ -608,6 +608,13 @@ select.sel{padding:6px 9px;font-size:10px;border-radius:8px}
 .bank-action-reason.blocked{color:#B42318;background:#FEF3F2;border-color:#FECDCA}
 .bank-posting-proof{margin-top:5px;border:1px solid #E4E7EC;background:#F8FAFC;border-radius:9px;padding:7px;font-size:10px;font-weight:850;color:#475467;line-height:1.4}
 .bank-posting-proof b{color:#101828}
+.bank-ledger-route{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important;margin-top:7px}
+.bank-ledger-route span{display:block!important;border:1px solid #D8E4F4;background:#F8FAFC;border-radius:10px;padding:7px!important;min-width:0}
+.bank-ledger-route strong{display:block;font-size:8px;font-weight:950;color:#667085;text-transform:uppercase;margin-bottom:4px}
+.bank-ledger-route em{display:block;font-style:normal;font-size:10px;font-weight:950;color:#101828;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bank-ledger-route .dest{border-color:#BFDBFE;background:#EFF6FF}.bank-ledger-route .ok{border-color:#ABEFC6;background:#ECFDF3}.bank-ledger-route .wait{border-color:#FEDF89;background:#FFFAEB}.bank-ledger-route .bad{border-color:#FECDCA;background:#FEF3F2}
+.bank-human-confirm{margin-top:7px;border:1px solid #D0D5DD;background:#FFFFFF;border-radius:10px;padding:8px;font-size:10px;line-height:1.45;color:#344054;font-weight:850}
+.bank-human-confirm b{color:#101828;font-weight:950}
 .bank-posting-flow{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important;margin-top:6px}
 .bank-posting-flow span{display:block!important;border:1px solid #E4E7EC;border-radius:9px;background:#fff;padding:6px!important;min-width:0}
 .bank-posting-flow strong{display:block;font-size:8px;font-weight:950;color:#667085;text-transform:uppercase;margin-bottom:3px}
@@ -6113,6 +6120,22 @@ function bankApprovalPathHtml(context='row'){
     <span><b>4. Kontrol</b>Sonuç ve kayıt izi görünür</span>
   </div>`;
 }
+function bankLedgerRouteHtml(r){
+  const p=bankPostingPlan(r);
+  const q=r._queue||null;
+  const status=bankQueueStatusTR(q,r);
+  const result=bankQueueResultText(q);
+  const resultCls=status.includes('işlendi')?'ok':status.includes('hata')?'bad':q?'wait':'wait';
+  return `<div class="bank-ledger-route">
+    <span><strong>Kaynak</strong><em>${escHtml(bankNameOf(r))}</em></span>
+    <span><strong>AperiON kararı</strong><em>${escHtml(p.type)}</em></span>
+    <span class="dest"><strong>BizimHesap hedefi</strong><em>${escHtml(p.account)} / ${escHtml(p.cari)}</em></span>
+    <span class="${resultCls}"><strong>Sonuç</strong><em>${escHtml(q?status:'Onay bekliyor')}</em></span>
+  </div>
+  <div class="bank-human-confirm">
+    <b>Onay anlamı:</b> Bu hareket ${escHtml(p.account)} hesabına, ${escHtml(p.cari)} carisiyle, ${escHtml(p.category)} kategorisinde ${escHtml(p.type)} olarak BizimHesap kuyruğuna alınır. ${escHtml(result)}
+  </div>`;
+}
 function bankPostingCell(r){
   const p=bankPostingPlan(r);
   const q=r._queue||null;
@@ -6122,6 +6145,7 @@ function bankPostingCell(r){
     <div><span>Hesap</span><b>${escHtml(p.account)}</b></div>
     <div><span>Cari</span><b>${escHtml(p.cari)}</b></div>
     <div><span>Kayıt türü</span><b>${escHtml(p.type)}</b></div>
+    ${bankLedgerRouteHtml(r)}
     ${bankPostingFlowHtml(r)}
     <div class="bank-posting-proof"><b>Kanıt:</b> ${escHtml(proof)}</div>
   </div>`;
@@ -6190,6 +6214,7 @@ function bankMorningCardHtml(r){
       <div style="margin-top:6px;color:#64748B">${escHtml(p.reasons.join(' · '))}</div>
     </div>
     ${bankApprovalPathHtml('row')}
+    ${bankLedgerRouteHtml(r)}
     ${bankPostingFlowHtml(r)}
     ${bankPostingAuditLine(r)}
     <div class="morning-approval-actions">

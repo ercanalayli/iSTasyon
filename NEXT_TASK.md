@@ -4,7 +4,7 @@ Son guncelleme: 2026-07-03 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Guncel tur notu: Kullanici ana ekranin sol sekmelerden kurtulup 6-8 tiklanabilir ana bolgeye ayrilmasini istedi. Masaustu gorunumde sidebar kapatildi ve ana sayfaya 8 bolgeli 4x2 komuta haritasi eklendi. Bu bolgeler Banka Canli, Onay Merkezi, Gelir Tablosu, Satis & Tahsilat, Urun & Stok, Cari Risk, Veri Guveni ve Bildirim Merkezi ekranlarina gider. GitHub Pages uzerinde sol menusuz 8 bolgeli canli HTML ve tarayici olcumu dogrulandi. Siradaki tek hedef, Banka Canli / Onay Merkezi bolgesinde her kaydin nereye gittigini ve BizimHesap'a islenip islenmedigini tek ekranda kanitlamaktir.
+Guncel tur notu: Banka Canli / Onay Merkezi satirlarina kayit rotasi eklendi. Her hareket artik Kaynak -> AperiON karari -> BizimHesap hedefi -> Sonuc olarak okunur; `Onay anlami` kutusu hangi hesap, cari, kategori ve kayit turuyle kuyruga alinacagini anlatir. Siradaki tek hedef, kullanici bir kaydi onayladiktan sonra bu rotanin gercek queue id ve BizimHesap sonucuyla otomatik kapanmasini canli ekranda kanitlamaktir.
 
 Onceki guvenlik notu: Claude'un canli Supabase tarafinda yaptigi cookie/API guvenlik isinin uzerine repo tarafinda `supabase_security_hardening_v77.sql` ve `verify:supabase-security-hardening` eklendi. SQL canliya otomatik uygulanmadi. Bu is sonraki guvenlik turunda ayrica ele alinacak.
 
@@ -63,9 +63,9 @@ Kullanici sabah banka maillerinden gelen hareketleri analiz edilmis sekilde gorm
 
 ## Siradaki Is Paketi
 
-1. Banka Canli / Onay Merkezi bolgesinde kayit akis kaniti netlestirilecek.
-2. Her banka hareketi icin `AperiON onayi`, `BizimHesap kuyrugu`, `BizimHesap kayit sonucu`, `mukerrer kontrol` ayni satirda kesin okunacak.
-3. Kullanici `Onayla` dediginde hangi cari, hangi banka/kasa hesabi, hangi kategori ve hangi BizimHesap kayit turu olacagi ekranda acik gorunecek.
+1. Canli pending banka hareketlerinden bir aday secilecek.
+2. Onay sonrasi `approve_pending_bank_movement` RPC sonucunda queue id ekranda gorunecek.
+3. BizimHesap worker dry/live sonucunun ayni satirda `Kayit sonucu` alanina yansidigi dogrulanacak.
 4. BizimHesap'a islenmis kayit tekrar onaya dusmeyecek; sonuc kaniti ekranda kalacak.
 5. Kullanici acik onay vermeden toplu canli kayit veya DB hardening uygulanmayacak.
 

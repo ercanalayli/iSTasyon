@@ -14,6 +14,14 @@
 - Tarayici kontrolde sol menusuz gorunum, 8 bolge, iki satir, yatay tasma olmamasi ve kutularin cakismamasi dogrulandi.
 - GitHub Pages deploy sonrasi canli URL'de `aperionCommandMap`, 8 komuta bolgesi ve sol menusuz gorunum dogrulandi.
 
+### Banka / BizimHesap Kayit Rotasi
+
+- Banka Canli satirlarina ve sabah onay kartlarina `bankLedgerRouteHtml` eklendi.
+- Her hareket Kaynak, AperiON karari, BizimHesap hedefi ve Sonuc bolumleriyle okunur hale geldi.
+- `Onay anlami` kutusu eklendi: hangi banka hesabi, hangi cari, hangi kategori ve hangi kayit turuyle kuyruga alinacagi kullanici dilinde yazilir.
+- `verify:bank-approval-action` testine rota ve insan dilinde onay anlami kontrolleri eklendi.
+- Canli BizimHesap kaydi veya toplu onay yapilmadi.
+
 ### Kullanici Istekleri ve Gorsel Referans Dosyasi
 
 - `APERION_ISTEKLER_VE_GORSELLER.md` eklendi.
