@@ -54,6 +54,26 @@ begin
     revoke execute on function public.finance_calendar_approve(bigint, text, text) from anon;
     grant execute on function public.finance_calendar_approve(bigint, text, text) to authenticated, service_role;
   end if;
+
+  if to_regprocedure('public.finance_calendar_mark_done(bigint,text,text)') is not null then
+    revoke execute on function public.finance_calendar_mark_done(bigint, text, text) from anon;
+    grant execute on function public.finance_calendar_mark_done(bigint, text, text) to authenticated, service_role;
+  end if;
+
+  if to_regprocedure('public.finance_calendar_postpone(bigint,date,text,text)') is not null then
+    revoke execute on function public.finance_calendar_postpone(bigint, date, text, text) from anon;
+    grant execute on function public.finance_calendar_postpone(bigint, date, text, text) to authenticated, service_role;
+  end if;
+
+  if to_regprocedure('public.finance_calendar_reject(bigint,text,text)') is not null then
+    revoke execute on function public.finance_calendar_reject(bigint, text, text) from anon;
+    grant execute on function public.finance_calendar_reject(bigint, text, text) to authenticated, service_role;
+  end if;
+
+  if to_regprocedure('public.finance_calendar_create_plan(text,text,text,text,text,text,text,text,text,numeric,date,date,text,text,text,text,text,text)') is not null then
+    revoke execute on function public.finance_calendar_create_plan(text, text, text, text, text, text, text, text, text, numeric, date, date, text, text, text, text, text, text) from anon;
+    grant execute on function public.finance_calendar_create_plan(text, text, text, text, text, text, text, text, text, numeric, date, date, text, text, text, text, text, text) to authenticated, service_role;
+  end if;
 end $$;
 
 -- Remove legacy broad anon write/read policies that were useful for early prototypes but unsafe for production.
@@ -64,6 +84,7 @@ begin
     drop policy if exists "bank_transactions anon approval read" on public.bank_transactions;
     drop policy if exists "bank_transactions anon approval update" on public.bank_transactions;
     drop policy if exists "bank_transactions authenticated write" on public.bank_transactions;
+    revoke select on public.bank_transactions from anon;
     revoke insert, update, delete on public.bank_transactions from anon;
     revoke insert, update, delete on public.bank_transactions from authenticated;
   end if;
@@ -71,6 +92,7 @@ begin
   if to_regclass('public.banka_raw') is not null then
     alter table public.banka_raw enable row level security;
     drop policy if exists "banka_raw anon all" on public.banka_raw;
+    revoke select on public.banka_raw from anon;
     revoke insert, update, delete on public.banka_raw from anon;
     revoke insert, update, delete on public.banka_raw from authenticated;
   end if;
@@ -79,6 +101,7 @@ begin
     alter table public.bizimhesap_events enable row level security;
     drop policy if exists "bizimhesap_events anon write" on public.bizimhesap_events;
     drop policy if exists "bizimhesap_events anon update" on public.bizimhesap_events;
+    revoke select on public.bizimhesap_events from anon;
     revoke insert, update, delete on public.bizimhesap_events from anon;
     revoke insert, update, delete on public.bizimhesap_events from authenticated;
   end if;
@@ -86,6 +109,7 @@ begin
   if to_regclass('public.product_raw') is not null then
     alter table public.product_raw enable row level security;
     drop policy if exists "product_raw anon write" on public.product_raw;
+    revoke select on public.product_raw from anon;
     revoke insert, update, delete on public.product_raw from anon;
     revoke insert, update, delete on public.product_raw from authenticated;
   end if;
@@ -94,9 +118,30 @@ begin
     alter table public.audit_logs enable row level security;
     drop policy if exists "audit_logs anon insert" on public.audit_logs;
     drop policy if exists "audit_logs anon read" on public.audit_logs;
+    revoke select on public.audit_logs from anon;
     revoke insert, update, delete on public.audit_logs from anon;
     revoke insert, update, delete on public.audit_logs from authenticated;
   end if;
+end $$;
+
+-- Remove anon sequence access on raw financial tables. Inserts stay backend/service_role-only.
+do $$
+declare
+  seq_name text;
+begin
+  foreach seq_name in array array[
+    'public.bank_transactions_id_seq',
+    'public.banka_raw_id_seq',
+    'public.bizimhesap_events_id_seq',
+    'public.product_raw_id_seq',
+    'public.audit_logs_id_seq'
+  ]
+  loop
+    if to_regclass(seq_name) is not null then
+      execute format('revoke usage, select on sequence %s from anon', seq_name);
+      execute format('revoke usage, select on sequence %s from authenticated', seq_name);
+    end if;
+  end loop;
 end $$;
 
 -- Recreate authenticated read policies from the AperiON user/firma map.

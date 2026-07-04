@@ -611,3 +611,14 @@
 - Canli BizimHesap kaydi yapilmadi.
 - Yeni tasarim veya refactor yapilmadi.
 - Firma verisi tasinmadi veya silinmedi.
+
+## 2026-07-04 - Supabase Guvenlik Hardening Plani
+
+- `AperiON_Supabase_Guvenlik_Raporu.docx` raporu incelendi.
+- `supabase_security_hardening_v77.sql` finans takvimi RPC'leri icin genisletildi.
+- Anon erisimden cikarilan ek RPC'ler: `finance_calendar_mark_done`, `finance_calendar_postpone`, `finance_calendar_reject`, `finance_calendar_create_plan`.
+- `bank_transactions`, `banka_raw`, `bizimhesap_events`, `product_raw`, `audit_logs` icin anon select yetkisi ve kritik sequence erisimi kapatildi.
+- `tools/verify_supabase_security_hardening_v77.cjs` 26 kontrol yapacak sekilde genisletildi.
+- `SUPABASE_GUVENLIK_RAPORU_DEGERLENDIRME.md` eklendi.
+- Test: `npm run verify:supabase-security-hardening` 26/26 gecti.
+- Canli Supabase SQL uygulanmadi.

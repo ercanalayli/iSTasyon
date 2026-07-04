@@ -100,3 +100,7 @@ Yeni aday kabul kriteri:
 - Firma izolasyonu: Alayli verisi baska firmalara karismayacak garanti.
 - Urun karti ve cari karti icin gercek kaynak eksiklerini kapatma.
 - Telegram evrak/gorsel akisini Onay Merkezi'ne baglama.
+
+## Guncel ek not 11
+
+Supabase guvenlik raporu incelendi. Repo tarafinda hardening plani guclendirildi ve `npm run verify:supabase-security-hardening` 26/26 gecti. Siradaki is, kullanici acik onay verirse `supabase_security_hardening_v77.sql` dosyasini Supabase SQL Editor'da calistirip ana ekran + banka onay + finans takvimi smoke testlerini tekrar almaktir. Onay olmadan canli SQL uygulanmayacak.

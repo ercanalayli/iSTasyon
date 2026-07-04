@@ -242,3 +242,13 @@ Bu yuzdeler kesin metrik degil; son denetimde calisan testler, eksik kaynaklar v
 3. Banka onay kuyrugu
 4. Firma izolasyonu
 5. Gunluk kullanilabilir surum
+
+## 2026-07-04 Supabase Guvenlik Raporu
+
+- `C:\Users\HP\Downloads\AperiON_Supabase_Guvenlik_Raporu.docx` incelendi.
+- Kritik rapor maddeleri `supabase_security_hardening_v77.sql` ile eslendi.
+- Eksik kalan finans takvimi RPC kilitleri eklendi: mark_done, postpone, reject, create_plan.
+- Kritik ham tablolarda anon select ve sequence erisimi kapatildi: bank_transactions, banka_raw, bizimhesap_events, product_raw, audit_logs.
+- `tools/verify_supabase_security_hardening_v77.cjs` testi genisletildi.
+- `npm run verify:supabase-security-hardening`: 26/26 gecti.
+- Canli Supabase SQL uygulanmadi; kullanici onayi olmadan uygulanmayacak.
