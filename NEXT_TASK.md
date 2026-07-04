@@ -108,3 +108,7 @@ Supabase guvenlik raporu incelendi. Repo tarafinda hardening plani guclendirildi
 ## Guncel ek not 12
 
 Ana ekran Executive Workspace v80 katmanina alindi. Sol sekmeler dashboard modunda gizlendi, 8 tiklanabilir karar bolgesi korunup tam genislik komuta yuzeyi yapildi. Hasta bezi Excel referansindaki donem/kategori/kanal mantigi ana ekrana mini karar karti ve detay modal raporu olarak eklendi. Siradaki tek hedef: bu yeni ana ekranin canli GitHub Pages uzerinde dogru render oldugunu dogrulamak ve ardindan Banka Onay -> BizimHesap kayit kanit akisini kaldigi yerden bitirmek.
+
+## Guncel ek not 13
+
+`aperion-ana-sayfa.html` referansi kullanici tarafindan begenildi ve v81 tasarim dili olarak ana ekrana uygulandi. Siradaki is: canli Pages deploy sonrasi koyu launcher gorunumunu dogrulamak, sonra ayni "kaleme tikla, icine gir" mantigini Gelir Tablosu ve Hasta Bezi detaylarinda gercek veriyle daha derinlestirmek.

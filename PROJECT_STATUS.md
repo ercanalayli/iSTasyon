@@ -264,3 +264,12 @@ Bu yuzdeler kesin metrik degil; son denetimde calisan testler, eksik kaynaklar v
 - Kart veri gecikmesinde sonsuz bos kalmasin diye mevcut RAW/cache verisini kullanir; satis genis sorgusu arkadan gelirse kendini yeniler.
 - Tarayici dogrulamada sol sidebar gizli, 8 komuta bolgesi gorunur ve viewport yuksekligi icinde yatay/dikey tasma yok olarak olculdu. Hasta bezi karti icin ek render korumasi eklendi.
 - Canli BizimHesap kaydi, Supabase SQL veya finansal veri mutasyonu yapilmadi.
+
+## 2026-07-04 Ana Sayfa v81 Tasarim Dili
+
+- Kullanici `C:\Users\HP\Downloads\aperion-ana-sayfa.html` dosyasini `bu super` diyerek yeni ana sayfa referansi olarak onayladi.
+- Referanstaki koyu zemin, brass vurgu, Fraunces basliklar, IBM Plex Mono kod/kucuk metin dili ve kart/kapidan gir mantigi mevcut ana ekrana tasindi.
+- 8 tiklanabilir karar bolgesi bozulmadi; 4x2 koyu launcher kartlari olarak gosteriliyor.
+- Sol sidebar dashboard modunda gizli kalmaya devam ediyor.
+- Yerel tarayici kontrolde arka plan `#0E1420`, kart zemini `#161D2C`, 8 kartin gorunur oldugu, sol menunun gizli oldugu ve 720px viewportta scroll tasmasi olmadigi dogrulandi.
+- `npm run verify:single-screen-command-map` ve `npm run finance-smoke` gecti.

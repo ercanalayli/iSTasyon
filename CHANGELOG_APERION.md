@@ -16,6 +16,15 @@
 - Veri gecikmesinde kartin sonsuz yukleme yazisinda kalmamasi icin RAW/cache fallback ve arka plan yenileme eklendi.
 - Canli BizimHesap kaydi, Supabase SQL veya finansal veri mutasyonu yapilmadi.
 
+### Ana Sayfa v81 Koyu Launcher Tasarimi
+
+- Kullanici `aperion-ana-sayfa.html` referansini begendigini belirtti.
+- Referanstaki koyu zemin, brass vurgu, Fraunces/IBM Plex Mono tipografi ve kart/kapidan gir tasarim dili ana dashboard'a uygulandi.
+- 8 tiklanabilir ana bolge korunarak 4x2 launcher karti haline getirildi.
+- Dashboard topbar, komuta kartlari, banka/gelir/hasta bezi/sabah onay yuzeyleri ayni koyu/brass tasarim diliyle hizalandi.
+- Yerel tarayici kontrolde sol sidebar gizli, 8 kart gorunur, koyu arka plan aktif ve 720px viewportta tasma yok olarak olculdu.
+- `npm run verify:single-screen-command-map` ve `npm run finance-smoke` gecti.
+
 ### Saatlik BizimHesap Sync RLS Duzeltmesi
 
 - GitHub Actions `Hourly BizimHesap Sync` basarisiz run logu incelendi.

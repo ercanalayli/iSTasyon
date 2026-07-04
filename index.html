@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AperiON - ErpaltH</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -2568,6 +2569,236 @@ body.dashboard-mode #pg-dashboard #kartsDiv>#fGrid{display:none!important}
   body.dashboard-mode .content{overflow:auto!important}
   body.dashboard-mode #pg-dashboard{height:auto}
   body.dashboard-mode #pg-dashboard #kartsDiv{height:auto!important;display:block!important}
+  body.dashboard-mode .command-map{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
+/* AperiON Ana Sayfa v81: user-approved dark launcher language from aperion-ana-sayfa.html. */
+body.dashboard-mode{
+  --home-bg:#0E1420;
+  --home-top:#0B0F19;
+  --home-surface:#161D2C;
+  --home-surface2:#1C2438;
+  --home-border:#2A3346;
+  --home-text:#EDEFF3;
+  --home-muted:#8B93A7;
+  --home-dim:#5C6478;
+  --home-brass:#C9A227;
+  --home-brass2:#8A731D;
+  --home-green:#3DD68C;
+  --home-red:#E5636A;
+  --home-amber:#E8A33D;
+}
+body.dashboard-mode .tb{
+  height:56px!important;
+  background:var(--home-top)!important;
+  border-bottom:1px solid var(--home-border)!important;
+  border-top:0!important;
+  box-shadow:none!important;
+  color:var(--home-text)!important;
+}
+body.dashboard-mode .tb-t{
+  color:var(--home-text)!important;
+  font-family:'Fraunces',serif!important;
+  font-weight:500!important;
+  font-size:20px!important;
+}
+body.dashboard-mode .tb-s,
+body.dashboard-mode .tb-clk{color:var(--home-muted)!important}
+body.dashboard-mode .tb-badge{
+  background:var(--home-surface2)!important;
+  border-color:var(--home-border)!important;
+  border-radius:7px!important;
+}
+body.dashboard-mode .tb-bn{
+  color:var(--home-text)!important;
+  font-family:'IBM Plex Mono',monospace!important;
+  letter-spacing:.03em!important;
+}
+body.dashboard-mode .tb-bd{background:var(--home-green)!important;box-shadow:0 0 0 3px rgba(61,214,140,.16)!important}
+body.dashboard-mode .tb-live{
+  background:transparent!important;
+  border:0!important;
+  color:var(--home-green)!important;
+}
+body.dashboard-mode .tb-ver,
+body.dashboard-mode .tb-btn{
+  background:var(--home-surface2)!important;
+  border:1px solid var(--home-border)!important;
+  color:var(--home-muted)!important;
+  border-radius:7px!important;
+  font-family:'IBM Plex Mono',monospace!important;
+}
+body.dashboard-mode .content{
+  height:calc(100vh - 56px)!important;
+  background:var(--home-bg)!important;
+  color:var(--home-text)!important;
+}
+body.dashboard-mode #pg-dashboard #kartsDiv{
+  grid-template-columns:minmax(460px,.95fr) minmax(360px,.75fr) minmax(360px,.75fr)!important;
+  grid-template-rows:auto minmax(220px,1fr) minmax(178px,.78fr)!important;
+  gap:14px!important;
+}
+body.dashboard-mode #executiveCommandCard{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  padding:0!important;
+}
+body.dashboard-mode .command-map{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  grid-auto-rows:148px!important;
+  gap:14px!important;
+}
+body.dashboard-mode .command-zone{
+  min-height:148px!important;
+  border-radius:10px!important;
+  border:1px solid var(--home-border)!important;
+  background:var(--home-surface)!important;
+  color:var(--home-text)!important;
+  padding:20px!important;
+  box-shadow:none!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:space-between!important;
+}
+body.dashboard-mode .command-zone::before{
+  width:0!important;
+}
+body.dashboard-mode .command-zone:hover,
+body.dashboard-mode .command-zone:focus-visible{
+  border-color:var(--home-brass2)!important;
+  transform:translateY(-1px)!important;
+  box-shadow:0 0 0 1px rgba(201,162,39,.16),0 18px 36px rgba(0,0,0,.18)!important;
+}
+body.dashboard-mode .command-zone.bank,
+body.dashboard-mode .command-zone.approval,
+body.dashboard-mode .command-zone.income,
+body.dashboard-mode .command-zone.sales,
+body.dashboard-mode .command-zone.product,
+body.dashboard-mode .command-zone.customer,
+body.dashboard-mode .command-zone.data,
+body.dashboard-mode .command-zone.notify{--zone:var(--home-brass)}
+body.dashboard-mode .zone-code{
+  width:34px!important;
+  height:34px!important;
+  border-radius:7px!important;
+  background:var(--home-surface2)!important;
+  border:1px solid var(--home-border)!important;
+  color:var(--home-muted)!important;
+  font-family:'IBM Plex Mono',monospace!important;
+  font-size:12px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin:0 0 12px!important;
+}
+body.dashboard-mode .zone-title{
+  font-family:'Fraunces',serif!important;
+  font-size:20px!important;
+  font-weight:500!important;
+  color:var(--home-text)!important;
+  letter-spacing:0!important;
+}
+body.dashboard-mode .zone-sub{
+  font-family:'Inter',sans-serif!important;
+  color:var(--home-muted)!important;
+  font-size:12px!important;
+  line-height:1.5!important;
+  margin-top:6px!important;
+  -webkit-line-clamp:3!important;
+}
+body.dashboard-mode .zone-foot{
+  display:block!important;
+  color:var(--home-brass)!important;
+  font-family:'IBM Plex Mono',monospace!important;
+  font-size:10px!important;
+  letter-spacing:.04em!important;
+  text-transform:uppercase!important;
+  margin-top:auto!important;
+}
+body.dashboard-mode .zone-foot::after{content:' ->'}
+body.dashboard-mode .bank-command-card,
+body.dashboard-mode .income-card,
+body.dashboard-mode #homeDiaperDecisionCard,
+body.dashboard-mode #homeMorningApprovalCard{
+  background:var(--home-surface)!important;
+  color:var(--home-text)!important;
+  border:1px solid var(--home-border)!important;
+  border-radius:10px!important;
+  box-shadow:none!important;
+}
+body.dashboard-mode .bank-command-card::before,
+body.dashboard-mode #homeDiaperDecisionCard::before,
+body.dashboard-mode #homeMorningApprovalCard::before{
+  background:var(--home-brass)!important;
+}
+body.dashboard-mode .bank-command-title,
+body.dashboard-mode .card-l,
+body.dashboard-mode .diaper-card-title,
+body.dashboard-mode .income-op-title{
+  color:var(--home-text)!important;
+}
+body.dashboard-mode .bank-command-sub,
+body.dashboard-mode .bank-command-n,
+body.dashboard-mode .diaper-card-sub,
+body.dashboard-mode .income-op-grid span{
+  color:var(--home-muted)!important;
+}
+body.dashboard-mode .bank-command-total,
+body.dashboard-mode .bank-command-bank,
+body.dashboard-mode .diaper-kpi,
+body.dashboard-mode .morning-approval-card,
+body.dashboard-mode #pg-dashboard .income-op-grid>div{
+  background:var(--home-surface2)!important;
+  border:1px solid var(--home-border)!important;
+  color:var(--home-text)!important;
+  border-radius:8px!important;
+}
+body.dashboard-mode .bank-command-total:hover,
+body.dashboard-mode .bank-command-bank:hover,
+body.dashboard-mode .diaper-kpi:hover,
+body.dashboard-mode .morning-approval-card:hover{
+  border-color:var(--home-brass2)!important;
+  box-shadow:0 0 0 1px rgba(201,162,39,.12)!important;
+}
+body.dashboard-mode .bank-command-k,
+body.dashboard-mode .diaper-kpi span,
+body.dashboard-mode .morning-approval-chip,
+body.dashboard-mode .diaper-mini-table th{
+  color:var(--home-dim)!important;
+}
+body.dashboard-mode .bank-command-v,
+body.dashboard-mode .diaper-kpi b,
+body.dashboard-mode #pg-dashboard .income-op-grid b{
+  color:var(--home-text)!important;
+}
+body.dashboard-mode .diaper-btn,
+body.dashboard-mode .bank-command-actions button,
+body.dashboard-mode .command-actions button,
+body.dashboard-mode .empty-btn{
+  background:var(--home-surface2)!important;
+  color:var(--home-brass)!important;
+  border:1px solid var(--home-border)!important;
+  border-radius:7px!important;
+}
+body.dashboard-mode .diaper-btn:hover,
+body.dashboard-mode .bank-command-actions button:hover,
+body.dashboard-mode .command-actions button:hover{
+  border-color:var(--home-brass)!important;
+  color:var(--home-text)!important;
+}
+body.dashboard-mode .diaper-mini-table td{
+  border-color:var(--home-border)!important;
+  color:var(--home-muted)!important;
+}
+body.dashboard-mode .diaper-mini-table tr:hover td{background:rgba(201,162,39,.06)!important;color:var(--home-text)!important}
+@media(max-width:1500px){
+  body.dashboard-mode .command-map{grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-rows:126px!important}
+  body.dashboard-mode .command-zone{min-height:126px!important;padding:16px!important}
+  body.dashboard-mode .zone-title{font-size:18px!important}
+}
+@media(max-width:1180px){
+  body.dashboard-mode #pg-dashboard #kartsDiv{display:block!important;height:auto!important}
   body.dashboard-mode .command-map{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
 </style>
