@@ -2,6 +2,20 @@
 
 ## 2026-07-04
 
+### Executive Workspace ve Hasta Bezi Karar Karti
+
+- `aperion-ust-akil-tasarim.html` referansi ana ekran yonu olarak okundu.
+- Dashboard modunda sol sidebar ve toggle gizlendi; ana ekran tam viewport genisliginde calisir.
+- 8 tiklanabilir komuta bolgesi tek ekran ana karar yuzeyi olarak kilitlendi.
+- `APERION HASTA BEZI EKRAN.xlsx` incelendi; donem sirasi, hasta bezi alt segmentleri, kanal ayrimi ve metrikleri cikarildi.
+- Ana ekrana `Hasta Bezi Karar Ekrani` karti eklendi.
+- Kart bu ay ciro, adet, brut kar, dun/hafta karsilastirma ve segment ozetlerini gosterir.
+- Karttaki `Tam Rapor` ve segment satirlari hasta bezi detay modalini acar.
+- Detay modalinda segment, kanal, donem, tutar, adet, kar ve ortalama TL alanlari yer alir.
+- Urun listesi mevcut dinamik urun kartina baglanir.
+- Veri gecikmesinde kartin sonsuz yukleme yazisinda kalmamasi icin RAW/cache fallback ve arka plan yenileme eklendi.
+- Canli BizimHesap kaydi, Supabase SQL veya finansal veri mutasyonu yapilmadi.
+
 ### Saatlik BizimHesap Sync RLS Duzeltmesi
 
 - GitHub Actions `Hourly BizimHesap Sync` basarisiz run logu incelendi.

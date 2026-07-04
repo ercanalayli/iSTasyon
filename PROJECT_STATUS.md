@@ -252,3 +252,15 @@ Bu yuzdeler kesin metrik degil; son denetimde calisan testler, eksik kaynaklar v
 - `tools/verify_supabase_security_hardening_v77.cjs` testi genisletildi.
 - `npm run verify:supabase-security-hardening`: 26/26 gecti.
 - Canli Supabase SQL uygulanmadi; kullanici onayi olmadan uygulanmayacak.
+
+## 2026-07-04 Executive Workspace v80
+
+- Kullanici `aperion-ust-akil-tasarim.html` ve `APERION HASTA BEZI EKRAN.xlsx` referanslarini verdi.
+- Ana ekran komuta gorunumu sol sekmesiz kullanima alindi; dashboard modunda sidebar ve ac/kapat dugmesi gizlenir.
+- Ana karar yuzeyi 8 tiklanabilir bolge olarak korunur: Banka Canli, Onay Merkezi, Gelir Tablosu, Satis & Tahsilat, Urun & Stok, Cari Risk, Veri Guveni, Bildirim Merkezi.
+- `APERION HASTA BEZI EKRAN.xlsx` icindeki donem sirasi ve rapor mantigi okundu: Bugun, Dun, Bu Hafta, Bu Ay, Onceki Ay, Bu Yil, Onceki Yil; Belbantli, Kulotlu, Serme/Yatak Koruyucu, Mesane; Perakende ve Distributor/Toptan.
+- Ana ekrana `Hasta Bezi Karar Ekrani` mini karti eklendi. Kart ay ciro/adet/brut kar, dun, hafta ve en guclu segmentleri gosterir.
+- Hasta bezi karti tiklaninca detay raporu acar; segment ve urun satirlari tiklanabilir, urunler mevcut dinamik urun kartina baglanir.
+- Kart veri gecikmesinde sonsuz bos kalmasin diye mevcut RAW/cache verisini kullanir; satis genis sorgusu arkadan gelirse kendini yeniler.
+- Tarayici dogrulamada sol sidebar gizli, 8 komuta bolgesi gorunur ve viewport yuksekligi icinde yatay/dikey tasma yok olarak olculdu. Hasta bezi karti icin ek render korumasi eklendi.
+- Canli BizimHesap kaydi, Supabase SQL veya finansal veri mutasyonu yapilmadi.

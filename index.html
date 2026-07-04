@@ -2482,6 +2482,94 @@ body.dashboard-mode .cm-cell b{
 .command-zone.bank{--zone:#0F766E}.command-zone.approval{--zone:#D97706}.command-zone.income{--zone:#2563EB}.command-zone.sales{--zone:#7C3AED}.command-zone.product{--zone:#059669}.command-zone.customer{--zone:#0284C7}.command-zone.data{--zone:#DC2626}.command-zone.notify{--zone:#475467}
 @media(max-width:1280px){.command-zone{min-height:86px}}
 @media(max-width:768px){.command-map{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}.command-zone{min-height:88px;padding:10px}.zone-title{font-size:12px}.zone-sub{font-size:10px}}
+
+/* AperiON Executive Workspace v80: no left tabs on the command screen, 8 clickable zones, compact decision panels. */
+body.dashboard-mode .sb,
+body.dashboard-mode .sb-tog{display:none!important}
+body.dashboard-mode .main{width:100vw;max-width:100vw}
+body.dashboard-mode .tb{height:54px;padding:0 18px}
+body.dashboard-mode .content{height:calc(100vh - 54px);padding:12px 16px!important;overflow:hidden!important;background:#EDF2F7!important}
+body.dashboard-mode #pg-dashboard{height:100%;display:grid!important;grid-template-rows:auto minmax(0,1fr);gap:12px;margin:0!important;padding:0!important}
+body.dashboard-mode .command-map{
+  display:grid!important;
+  grid-template-columns:repeat(8,minmax(0,1fr))!important;
+  gap:10px!important;
+  margin:0!important;
+}
+body.dashboard-mode .command-zone{
+  min-height:92px!important;
+  border-radius:12px!important;
+  padding:12px!important;
+  background:#FFFFFF!important;
+  border-color:#D7E0EC!important;
+  box-shadow:0 10px 24px rgba(15,23,42,.06)!important;
+}
+body.dashboard-mode .command-zone:hover{
+  transform:translateY(-2px)!important;
+  border-color:var(--zone,#2563EB)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--zone,#2563EB) 16%,transparent),0 18px 34px rgba(15,23,42,.12)!important;
+}
+body.dashboard-mode .zone-code{border-radius:7px;margin-bottom:7px}
+body.dashboard-mode .zone-title{font-size:12px}
+body.dashboard-mode .zone-sub{font-size:10px;-webkit-line-clamp:2}
+body.dashboard-mode .zone-foot{display:none}
+body.dashboard-mode #pg-dashboard #kartsDiv{
+  height:100%!important;
+  display:grid!important;
+  grid-template-columns:minmax(410px,1.15fr) minmax(380px,1fr) minmax(330px,.82fr)!important;
+  grid-template-rows:minmax(126px,.36fr) minmax(230px,.82fr) minmax(180px,.58fr)!important;
+  gap:12px!important;
+  overflow:hidden!important;
+}
+body.dashboard-mode #pg-dashboard #kartsDiv>*{min-width:0!important;margin:0!important}
+body.dashboard-mode #pg-dashboard #kartsDiv>#executiveCommandCard{grid-column:1 / -1!important;grid-row:1!important}
+body.dashboard-mode #pg-dashboard #kartsDiv>#bankCommandCard{grid-column:1!important;grid-row:2 / 4!important}
+body.dashboard-mode #pg-dashboard #kartsDiv>#incomeStatementCard{grid-column:2!important;grid-row:2!important}
+body.dashboard-mode #pg-dashboard #kartsDiv>#homeDiaperDecisionCard{grid-column:3!important;grid-row:2!important;display:block!important}
+body.dashboard-mode #pg-dashboard #kartsDiv>#homeMorningApprovalCard{grid-column:2 / 4!important;grid-row:3!important;display:block!important}
+body.dashboard-mode #pg-dashboard #kartsDiv>#roadmapCard,
+body.dashboard-mode #pg-dashboard #kartsDiv>#reportHubCard,
+body.dashboard-mode #pg-dashboard #kartsDiv>#financeCalendarCard,
+body.dashboard-mode #pg-dashboard #kartsDiv>#mainFinanceFlowCard,
+body.dashboard-mode #pg-dashboard #kartsDiv>#dataAuditCard,
+body.dashboard-mode #pg-dashboard #kartsDiv>#salesReconCard,
+body.dashboard-mode #pg-dashboard #kartsDiv>#homeSalesCard,
+body.dashboard-mode #pg-dashboard #kartsDiv>#lastDataCard,
+body.dashboard-mode #pg-dashboard #kartsDiv>#sourceMatrixCard,
+body.dashboard-mode #pg-dashboard #kartsDiv>#homeExpenseCard,
+body.dashboard-mode #pg-dashboard #kartsDiv>#fGrid{display:none!important}
+.diaper-card{position:relative;overflow:hidden;border-radius:18px!important;border:1px solid #D7E0EC!important;background:#FFFFFF!important;box-shadow:0 18px 42px rgba(15,23,42,.075)!important;padding:14px!important}
+.diaper-card::before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:#059669}
+.diaper-card-h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.diaper-card-title{font-size:18px;font-weight:950;color:#111827;letter-spacing:-.01em}
+.diaper-card-sub{font-size:11px;color:#64748B;font-weight:750;margin-top:3px;line-height:1.35}
+.diaper-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.diaper-metric{border:1px solid #E2E8F0;background:#F8FAFC;border-radius:12px;padding:10px;min-height:72px}
+.diaper-metric b{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#64748B;margin-bottom:6px}
+.diaper-metric strong{display:block;font-family:var(--mono);font-size:17px;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.diaper-metric span{display:block;font-size:10px;color:#64748B;font-weight:800;margin-top:5px}
+.diaper-mini-table{width:100%;border-collapse:collapse;font-size:11px}
+.diaper-mini-table th{font-size:9px;color:#64748B;text-align:right;background:#F8FAFC;border-bottom:1px solid #E2E8F0;padding:6px}
+.diaper-mini-table th:first-child,.diaper-mini-table td:first-child{text-align:left}
+.diaper-mini-table td{border-bottom:1px solid #EEF2F7;padding:7px 6px;text-align:right;font-weight:850;color:#111827}
+.diaper-mini-table tr:hover td{background:#ECFDF5}
+.diaper-btn{border:1px solid #059669;background:#ECFDF5;color:#047857;border-radius:10px;padding:8px 11px;font-size:11px;font-weight:950;cursor:pointer}
+.diaper-btn:hover{background:#059669;color:#FFFFFF;box-shadow:0 0 0 3px rgba(5,150,105,.16)}
+.diaper-heat-hot{color:#047857}.diaper-heat-mid{color:#B45309}.diaper-heat-low{color:#B91C1C}
+@media(max-width:1500px){
+  body.dashboard-mode .command-map{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  body.dashboard-mode #pg-dashboard #kartsDiv{grid-template-columns:minmax(420px,1fr) minmax(420px,1fr)!important;grid-template-rows:auto minmax(210px,1fr) minmax(178px,.72fr)!important}
+  body.dashboard-mode #pg-dashboard #kartsDiv>#bankCommandCard{grid-column:1!important;grid-row:2!important}
+  body.dashboard-mode #pg-dashboard #kartsDiv>#incomeStatementCard{grid-column:2!important;grid-row:2!important}
+  body.dashboard-mode #pg-dashboard #kartsDiv>#homeDiaperDecisionCard{grid-column:1!important;grid-row:3!important}
+  body.dashboard-mode #pg-dashboard #kartsDiv>#homeMorningApprovalCard{grid-column:2!important;grid-row:3!important}
+}
+@media(max-width:980px){
+  body.dashboard-mode .content{overflow:auto!important}
+  body.dashboard-mode #pg-dashboard{height:auto}
+  body.dashboard-mode #pg-dashboard #kartsDiv{height:auto!important;display:block!important}
+  body.dashboard-mode .command-map{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
 </style>
 </head>
 <body class="dashboard-mode">
@@ -2632,6 +2720,9 @@ body.dashboard-mode .cm-cell b{
         </div>
         <div id="incomeStatementCard" class="income-card">
           <div id="incomeStatementTop"><div class="dashboard-income-fallback"><div class="income-op-title">Gelir Tablosu</div><div class="dash-income-big">hesaplanıyor</div><div class="dash-income-note">Planlanan / tahakkuk / gerçekleşen net sonuç hazırlanıyor.</div></div></div>
+        </div>
+        <div class="card diaper-card" id="homeDiaperDecisionCard">
+          <div id="homeDiaperDecision"><div class="finance-empty">Hasta bezi karar ekranı hazırlanıyor...</div></div>
         </div>
         <div class="card report-hub" id="reportHubCard">
           <div class="report-head">
@@ -3284,7 +3375,7 @@ async function selF(id){
   showDetay();
   await refresh();
 }
-function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';renderExecutiveBrief();renderIncomeStatementTop();loadBankCommandCenter();renderReportHub();loadFinanceHome();renderMainFinanceFlow();renderHomeSales();renderKarts();loadLastDataStatus();renderSourceMatrix();renderHomeExpenses();}
+function showKarts(){document.getElementById('kartsDiv').style.display='block';document.getElementById('detayDiv').style.display='none';document.getElementById('gB')?.remove();const t5=document.getElementById('w-top5');if(t5)t5.style.display='none';renderExecutiveBrief();renderIncomeStatementTop();loadBankCommandCenter();renderHomeDiaperDecision();renderReportHub();loadFinanceHome();renderMainFinanceFlow();renderHomeSales();renderKarts();loadLastDataStatus();renderSourceMatrix();renderHomeExpenses();}
 function showDetay(){document.getElementById('kartsDiv').style.display='none';document.getElementById('detayDiv').style.display='block';applyW(PILOT_FIRMA);document.getElementById('gB')?.remove();}
 function toggleSb(){const s=document.getElementById('sb'),t=document.getElementById('sbTog');s.classList.toggle('mini');const m=s.classList.contains('mini');t.textContent=m?'▶':'◀';t.style.left=m?'52px':'calc(var(--sw) - 12px)';}
 const PT={dashboard:{t:'Üst Akıl Paneli',s:'Bugün, risk, banka, onay ve karar öncelikleri'},satis:{t:'Satış ve Tahsilat',s:'Kategori, ürün, müşteri ve tahsilat akışı'},cariler:{t:'Cari Risk',s:'Bakiye, tahsilat ve risk skoru'},finans:{t:'Finans Operasyonu',s:'Banka, gelir tablosu, gider kartları ve nakit kontrolü'},stok:{t:'Ürün Karlılığı',s:'Stok, fiyat ve marj takibi'},hedef:{t:'Hedef ve Bütçe',s:'Plan, hedef ve sapma kontrolü'},gorevler:{t:'Onay ve İş Akışı',s:'Bekleyen kararlar ve BizimHesap işleme kuyruğu'},veri:{t:'Veri Sağlığı',s:'Kaynak, çekim ve doğrulama'},bildirim:{t:'Bildirim Merkezi',s:'Telegram, mail ve rapor ayarları'}};
@@ -3308,7 +3399,7 @@ function gP(id,el){
 }
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="fT('${t}'"]`).forEach(x=>x.classList.add('on'));document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';const fp=document.getElementById('fplan');if(fp)fp.style.display=t==='plan'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();if(t==='plan')loadFinancePlans();}
 async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]).filter(isAlayliRow);}catch(e){return[];}}
-async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);await loadSyncHealth();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderExecutiveBrief();renderIncomeStatementTop();loadBankCommandCenter();renderReportHub();loadFinanceHome();renderMainFinanceFlow();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=buildLabel();const bc=document.getElementById('buildCode');if(bc)bc.textContent=buildLabel();genAI();}
+async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);await loadSyncHealth();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderExecutiveBrief();renderIncomeStatementTop();loadBankCommandCenter();renderHomeDiaperDecision();renderReportHub();loadFinanceHome();renderMainFinanceFlow();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=buildLabel();const bc=document.getElementById('buildCode');if(bc)bc.textContent=buildLabel();genAI();}
 function sM(m,btn,all){
   cM=m;
   if(btn){btn.closest('.fbar').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
@@ -4916,6 +5007,110 @@ async function renderHomeSales(){
     </div>
     <div style="display:flex;align-items:end;justify-content:space-between;gap:10px;margin-bottom:9px"><div><div style="font-size:13px;font-weight:950">Ana Ekran Kategori Performansı</div><div style="font-size:11px;color:var(--t3);font-weight:750;margin-top:3px">Dönem bazlı ciro, adet, pay ve ortalama satış fiyatı</div></div><button class="fb" onclick="gP('satis',null)">Satışlara Git</button></div>
     ${categoryPerformanceTable(catRows,'mo','',12)}`;
+}
+function diaperSegment(row){
+  const txt=`${row?.kategori||''} ${row?.urun||''}`.toLocaleUpperCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(/BELBANT|BEL\s*BANT/.test(txt))return 'Belbantlı';
+  if(/KULOT|KULOTLU|KÜLOT|KÜLOTLÜ/.test(txt))return 'Külotlu';
+  if(/SERME|YATAK|KORUYUCU/.test(txt))return 'Serme-Yatak Koruyucu';
+  if(/MESANE|PED|IDRAR/.test(txt))return 'Mesane';
+  return 'Diğer Hasta Bezi';
+}
+function diaperChannel(row){
+  const txt=`${row?.kanal||''} ${row?.satis_tipi||''} ${row?.kategori||''} ${row?.urun||''} ${row?.unvan||''}`.toLocaleUpperCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(/TOPTAN|DISTRIBUTOR|DISTRIBUTOR|DISTRIB|DIST/.test(txt))return 'Distribütör-Toptan';
+  return 'Perakende';
+}
+function diaperRows(rows,from,to){
+  const subset=rows.filter(r=>inR(r,from,to));
+  const adet=subset.reduce((s,r)=>s+(+r.adet||0),0);
+  const ciro=subset.reduce((s,r)=>s+(+r.ciro||0),0);
+  const cost=subset.reduce((s,r)=>s+(salesCostFromRule(r).total||0),0);
+  return {rows:subset.length,adet,ciro,cost,kar:ciro-cost,ort:adet?ciro/adet:0};
+}
+function diaperModel(rows){
+  const pr=pRange();
+  const all=rows.filter(r=>salesMainCategory(r)==='HASTA BEZİ');
+  const periods=[
+    ['Bugün',pr.todayS,pr.todayS],
+    ['Dün',pr.yestS,pr.yestS],
+    ['Bu Hafta',pr.weekS,pr.todayS],
+    [pr.monthName,pr.monthS,pr.todayS],
+    [pr.prevMonthName,pr.prevMonthS,pr.prevMonthE],
+    [String(pr.year),pr.yearS,pr.todayS],
+    [String(pr.prevYear),pr.prevYearS,pr.prevYearE]
+  ];
+  const totals=Object.fromEntries(periods.map(p=>[p[0],diaperRows(all,p[1],p[2])]));
+  const segments=['Belbantlı','Külotlu','Serme-Yatak Koruyucu','Mesane','Diğer Hasta Bezi'].map(name=>{
+    const segRows=all.filter(r=>diaperSegment(r)===name);
+    return {name,rows:segRows,totals:Object.fromEntries(periods.map(p=>[p[0],diaperRows(segRows,p[1],p[2])]))};
+  }).filter(x=>x.rows.length);
+  return {pr,all,periods,totals,segments};
+}
+function diaperHeatClass(v,max){
+  if(!max)return 'diaper-heat-low';
+  if(v>=max*.66)return 'diaper-heat-hot';
+  if(v>=max*.25)return 'diaper-heat-mid';
+  return 'diaper-heat-low';
+}
+async function renderHomeDiaperDecision(){
+  const el=document.getElementById('homeDiaperDecision');if(!el)return;
+  const quickRows=SALES_WIDE_CACHE.rows||RAW||[];
+  const rows=quickRows.length?quickRows:await Promise.race([
+    salesWide(PILOT_FIRMA),
+    new Promise(resolve=>setTimeout(()=>resolve([]),1800))
+  ]).catch(()=>[]);
+  const model=diaperModel(rows);
+  if(!model.total.adet&&!model.total.ciro){
+    el.innerHTML='<div class="finance-empty">Hasta bezi verisi bekleniyor. Satış verisi geldiğinde bu kart otomatik dolar.</div>';
+    salesWide(PILOT_FIRMA).then(()=>renderHomeDiaperDecision()).catch(()=>{});
+    return;
+  }
+  const month=model.totals[model.pr.monthName]||{};
+  const yday=model.totals['Dün']||{};
+  const week=model.totals['Bu Hafta']||{};
+  const max=Math.max(...model.segments.map(s=>s.totals[model.pr.monthName]?.ciro||0),1);
+  const segRows=model.segments.slice(0,4).map(s=>{
+    const m=s.totals[model.pr.monthName]||{};
+    return `<tr onclick='openDiaperDecisionReport(${jsArg(s.name)})'><td>${escHtml(s.name)}</td><td class="${diaperHeatClass(m.ciro,max)}">TL ${fmt(m.ciro)}</td><td>${fmt(m.adet)}</td><td>TL ${fmt(m.ort)}</td></tr>`;
+  }).join('');
+  el.innerHTML=`<div class="diaper-card-h">
+    <div><div class="diaper-card-title">Hasta Bezi Karar Ekranı</div><div class="diaper-card-sub">Excel şablonu: bugün, dün, hafta, ay, önceki ay, yıl ve geçen yıl. Tıklayınca tam tablo açılır.</div></div>
+    <button class="diaper-btn" onclick="openDiaperDecisionReport()">Tam Rapor</button>
+  </div>
+  <div class="diaper-grid">
+    <div class="diaper-metric"><b>${escHtml(model.pr.monthName)} ciro</b><strong>TL ${fmt(month.ciro||0)}</strong><span>${fmt(month.adet||0)} adet · brüt kar TL ${fmt(month.kar||0)}</span></div>
+    <div class="diaper-metric"><b>Dün</b><strong>TL ${fmt(yday.ciro||0)}</strong><span>${fmt(yday.adet||0)} adet · ort TL ${fmt(yday.ort||0)}</span></div>
+    <div class="diaper-metric"><b>Bu hafta</b><strong>TL ${fmt(week.ciro||0)}</strong><span>${fmt(week.adet||0)} adet · trend kontrol</span></div>
+    <div class="diaper-metric"><b>Kar oranı</b><strong>${month.ciro?dynPct((month.kar||0)/month.ciro*100):'veri yok'}</strong><span>1,35 / 1,16 maliyet kuralı</span></div>
+  </div>
+  <table class="diaper-mini-table"><thead><tr><th>Kalem</th><th>${escHtml(model.pr.monthName)} TL</th><th>Adet</th><th>Ort.</th></tr></thead><tbody>${segRows||'<tr><td colspan="4">Hasta bezi satışı yok</td></tr>'}</tbody></table>`;
+}
+async function openDiaperDecisionReport(segmentName=''){
+  const rows=await salesWide(PILOT_FIRMA);
+  const model=diaperModel(rows);
+  const segs=segmentName?model.segments.filter(s=>s.name===segmentName):model.segments;
+  const headers=model.periods.map(p=>`<th>${escHtml(p[0])}<small>Tutar · Adet · Kar</small></th>`).join('');
+  const body=segs.map(seg=>{
+    const channelRows=['Perakende','Distribütör-Toptan'].map(ch=>{
+      const chRows=seg.rows.filter(r=>diaperChannel(r)===ch);
+      const cells=model.periods.map(p=>{
+        const m=diaperRows(chRows,p[1],p[2]);
+        return `<td><b>TL ${fmt(m.ciro)}</b><span>${fmt(m.adet)} adet</span><em>Kar TL ${fmt(m.kar)} · Ort TL ${fmt(m.ort)}</em></td>`;
+      }).join('');
+      return `<tr class="income-section"><td>${escHtml(seg.name)} · ${escHtml(ch)}</td>${cells}</tr>`;
+    }).join('');
+    const topProducts=Object.values(seg.rows.reduce((acc,r)=>{
+      const k=(r.urun||'Ürün yok').toString();
+      const o=acc[k]||(acc[k]={name:k,ciro:0,adet:0});
+      o.ciro+=(+r.ciro||0);o.adet+=(+r.adet||0);return acc;
+    },{})).sort((a,b)=>b.ciro-a.ciro).slice(0,8).map(p=>`<button class="income-trail-btn" onclick='openProductProfitCard(${jsArg(p.name)})'>${escHtml(p.name.substring(0,28))} · TL ${fmt(p.ciro)}</button>`).join('');
+    return `<tr class="income-section"><td colspan="${model.periods.length+1}">${escHtml(seg.name)} ürünleri</td></tr>${channelRows}<tr><td colspan="${model.periods.length+1}"><div class="income-detail-trail">${topProducts||'Ürün yok'}</div></td></tr>`;
+  }).join('');
+  document.getElementById('mo-t').textContent=segmentName?`Hasta Bezi · ${segmentName}`:'Hasta Bezi Tam Karar Tablosu';
+  const box=document.querySelector('#modal .mo-box');if(box)box.classList.add('income-wide');
+  document.getElementById('mo-b').innerHTML=`<div class="income-detail-toolbar"><div class="income-side-note">Kalemler tıklanabilir; ürün düğmesine basınca dinamik ürün kartı açılır. Dönem sırası Excel şablonuyla aynıdır.</div><button class="diaper-btn" onclick="gP('stok',null);document.getElementById('modal').classList.remove('open')">Ürün & Stok'a Git</button></div><div class="income-table-wrap"><table class="income-table"><thead><tr><th>Kalem</th>${headers}</tr></thead><tbody>${body||'<tr><td>Hasta bezi verisi yok</td></tr>'}</tbody></table></div>`;
+  document.getElementById('modal').classList.add('open');
 }
 async function renderKarts(){
   const grid=document.getElementById('fGrid');if(!grid)return;
@@ -7052,6 +7247,9 @@ function pUp(){
 }
 // -- EKSİK FONKSIYONLAR SONU ------------------------------------------------
 
+setTimeout(()=>{try{renderHomeDiaperDecision();}catch(e){}},800);
+setTimeout(()=>{try{renderHomeDiaperDecision();}catch(e){}},4000);
+
 window.addEventListener('load',async()=>{
   const bc=document.getElementById('buildCode');if(bc)bc.textContent=buildLabel();
   try{
@@ -7062,6 +7260,8 @@ window.addEventListener('load',async()=>{
     setFC(PILOT_FIRMA);
     lWP();
     loadProdNotify();
+    setTimeout(()=>renderHomeDiaperDecision(),500);
+    setTimeout(()=>renderHomeDiaperDecision(),3500);
     await refresh();
     showKarts();
   }catch(e){

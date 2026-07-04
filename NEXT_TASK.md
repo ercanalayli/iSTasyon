@@ -104,3 +104,7 @@ Yeni aday kabul kriteri:
 ## Guncel ek not 11
 
 Supabase guvenlik raporu incelendi. Repo tarafinda hardening plani guclendirildi ve `npm run verify:supabase-security-hardening` 26/26 gecti. Siradaki is, kullanici acik onay verirse `supabase_security_hardening_v77.sql` dosyasini Supabase SQL Editor'da calistirip ana ekran + banka onay + finans takvimi smoke testlerini tekrar almaktir. Onay olmadan canli SQL uygulanmayacak.
+
+## Guncel ek not 12
+
+Ana ekran Executive Workspace v80 katmanina alindi. Sol sekmeler dashboard modunda gizlendi, 8 tiklanabilir karar bolgesi korunup tam genislik komuta yuzeyi yapildi. Hasta bezi Excel referansindaki donem/kategori/kanal mantigi ana ekrana mini karar karti ve detay modal raporu olarak eklendi. Siradaki tek hedef: bu yeni ana ekranin canli GitHub Pages uzerinde dogru render oldugunu dogrulamak ve ardindan Banka Onay -> BizimHesap kayit kanit akisini kaldigi yerden bitirmek.
