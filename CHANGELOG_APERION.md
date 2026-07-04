@@ -11,6 +11,8 @@
 - Supabase client'larinda auth session persist kapatildi.
 - `tools/verify_bizimhesap_supabase_service_key_v79.cjs` eklendi.
 - `verify:bizimhesap:supabase-service-key` komutu eklendi ve 12/12 gecti.
+- Fix sonrasi `Hourly BizimHesap Sync` run `28701917165` basarili tamamlandi.
+- Kanit logu: satis 963 kayit, urun/stok 3203 kayit, masraf 82 kayit, son islemler 3 yeni kayit.
 - Canli BizimHesap kaydi, toplu onay veya Supabase SQL hardening uygulanmadi.
 
 ## 2026-07-03
