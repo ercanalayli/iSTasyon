@@ -25,6 +25,15 @@
 - Yerel tarayici kontrolde sol sidebar gizli, 8 kart gorunur, koyu arka plan aktif ve 720px viewportta tasma yok olarak olculdu.
 - `npm run verify:single-screen-command-map` ve `npm run finance-smoke` gecti.
 
+### Canli v81 ve Banka Aday Snapshot Kontrolu
+
+- GitHub Pages `?v=cf81c26` icerigi uzaktan okundu; v81 koyu launcher, Fraunces fontu, koyu zemin, 8 komuta haritasi ve hasta bezi karti yayinda dogrulandi.
+- `npm run bank:approval:status` salt-okunur calisti ve `data/aperion_bank_approval_status.json` guncellendi.
+- Guncel secili aday: `2026-07-03 Yapi Kredi 4.600 TL POS tahsilati`, pending id `c7f757fa-939a-45e3-aa0b-145259234045`, guven `%88`.
+- `npm run bizimhesap:queue:dry` 0 hazir BizimHesap kuyrugu gosterdi.
+- `npm run verify:bank-approval-action` gecti.
+- Canli RPC, kuyruga alma veya BizimHesap save calismadi.
+
 ### Saatlik BizimHesap Sync RLS Duzeltmesi
 
 - GitHub Actions `Hourly BizimHesap Sync` basarisiz run logu incelendi.

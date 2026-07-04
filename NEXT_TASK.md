@@ -4,6 +4,8 @@ Son guncelleme: 2026-07-04 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
+Guncel tur notu 2026-07-04 v81 canli kontrol: GitHub Pages `?v=cf81c26` yeni koyu launcher ana sayfa kodunu donduruyor. `bank:approval:status` yenilendi ve canli ekranda kullanilan snapshot su adayi gosteriyor: `2026-07-03 Yapi Kredi 4.600 TL POS tahsilati`, pending id `c7f757fa-939a-45e3-aa0b-145259234045`, guven `%88`, queue `0`. Bu turda canli RPC, kuyruga alma veya BizimHesap save calismadi. Siradaki is: kullanici bu tekil kayit icin acik onay verirse sadece bu ID icin approve RPC calistirilacak, olusan queue id kanitlanacak ve ardindan BizimHesap worker sonucunun ayni satirda gorunmesi dogrulanacak.
+
 Guncel tur notu 2026-07-04: Saatlik BizimHesap sync hatasinin logu okundu. Login/firma secimi degil, Supabase RLS yazma hatasi vardi: `sales_raw` ve `masraf_raw` kayitlari publishable/anon key ile yazilmaya calisildigi icin reddediliyordu. Botlar `SUPABASE_SERVICE_ROLE_KEY` oncelikli olacak sekilde duzeltildi ve koruma testi eklendi. Fix sonrasi `Hourly BizimHesap Sync` run `28701917165` basarili tamamlandi; satis, urun/stok, masraf ve son islemler yazimi gecti. Siradaki adim, DealerStatement Receivables yan workflow hatasini ayirmak ve Banka/Onay/BizimHesap tekil kayit kanitini tamamlamaktir.
 
 Guncel tur notu: Banka Canli / Onay Merkezi satirlarina kayit rotasi eklendi. Her hareket artik Kaynak -> AperiON karari -> BizimHesap hedefi -> Sonuc olarak okunur; `Onay anlami` kutusu hangi hesap, cari, kategori ve kayit turuyle kuyruga alinacagini anlatir. Siradaki tek hedef, kullanici bir kaydi onayladiktan sonra bu rotanin gercek queue id ve BizimHesap sonucuyla otomatik kapanmasini canli ekranda kanitlamaktir.
@@ -67,7 +69,7 @@ Kullanici sabah banka maillerinden gelen hareketleri analiz edilmis sekilde gorm
 
 ## Siradaki Is Paketi
 
-1. Canli pending banka hareketlerinden bir aday secilecek.
+1. Secili canli pending aday: `c7f757fa-939a-45e3-aa0b-145259234045` / `2026-07-03 Yapi Kredi 4.600 TL POS tahsilati`.
 2. Onay sonrasi `approve_pending_bank_movement` RPC sonucunda queue id ekranda gorunecek.
 3. BizimHesap worker dry/live sonucunun ayni satirda `Kayit sonucu` alanina yansidigi dogrulanacak.
 4. BizimHesap'a islenmis kayit tekrar onaya dusmeyecek; sonuc kaniti ekranda kalacak.
