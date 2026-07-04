@@ -1,5 +1,5 @@
 window.HASTA_BEZI_DATA = {
-  updateNo: '1907260407',
+  updateNo: '1908260407',
   period: { year: '2026', month: 'Temmuz' },
   rules: [
     ['Kâr hesabı', 'KDV hariç'],
@@ -15,17 +15,19 @@ window.HASTA_BEZI_DATA = {
     ['Kar-Dağ %5 fark faturası', 'Varsa ürün maliyetinden düşülür']
   ],
   screenCards: [
+    { title: 'Excel Hasta Bezi Raporu', tag: 'Yeni ekran', desc: 'Ekrandaki Excel kurgusu: Belbantlı, Külotlu, Serme-Yatak Koruyucu ve Mesane; Perakende / Distribütör-Toptan; Bugün, Dün, Hafta, Ay, Yıl ve önceki yıl kolonları.', bullets: ['Kategori + kanal kırılımı', 'Tutar / adet / % ciroda', 'Kâr TL / ortalama TL'], target: 'rapor' },
     { title: 'Ürün / Cari Ara', tag: 'Hızlı arama', desc: 'Ürün adı, cari adı veya fatura numarası yaz; ilgili ürün, cari, alış, fark, kâr ve oran bilgileri tek ekranda listelensin.', bullets: ['Cari + ürün birlikte aranır', 'Alış fatura no görünür', 'Kâr, marj, oran görünür'], target: 'arama' },
     { title: 'Gelir Tablosu Ana Kalemler', tag: 'Finans merkezi', desc: 'Satışlar, satılan malın maliyeti, brüt kâr, giderler, VÖK, vergi ve net kâr tek ekrandan yönetilir.', bullets: ['Bugün / Dün / Bu Hafta', 'Bu Ay / Geçen Ay', 'Bu Yıl / Geçen Yıl'], target: 'genel' },
     { title: 'Hasta Bezi Ana Kalemler', tag: 'Operasyon kırılımı', desc: 'Belbantlı, külotlu, serme-yatak koruyucu ve mesane ürünleri perakende/toptan kırılımıyla izlenir.', bullets: ['Toplam TL', 'Toplam adet', 'Ortalama %, kâr TL, ortalama TL'], target: 'urun' },
     { title: 'Giderler', tag: 'Kontrol alanı', desc: 'Sabit ve değişken giderler kârlılığı ezmeden takip edilir; nakliye ayrı görünür.', bullets: ['Sabit gider', 'Değişken gider', 'Nakliye etkisi'], target: 'kontrol' },
     { title: 'Karlılık Raporları', tag: 'Üst akıl', desc: 'Cari, ürün, liste, iskonto ve FIFO bazında kâr marjı ile kâr oranı birlikte okunur.', bullets: ['Kâr marjı', 'Kâr oranı', 'Riskli satır analizi'], target: 'genel' }
   ],
+  reportColumns: ['BUGÜN TOPLAM', 'DÜN TOPLAM', 'BU HAFTA TOPLAM', 'BU AY TOPLAM', 'BİR ÖNCEKİ AY TOPLAM', 'BU YIL TOPLAM', 'ÖNCEKİ YIL TOPLAM'],
   categoryBlocks: [
-    { category: 'BELBANTLI', channels: ['Perakende', 'Distribütör-Toptan'], metrics: ['Toplam TL', 'Toplam Adet', 'Ortalama %', 'Toplam Kâr TL', 'Ortalama TL'] },
-    { category: 'KÜLOTLU', channels: ['Perakende', 'Distribütör-Toptan'], metrics: ['Toplam TL', 'Toplam Adet', 'Ortalama %', 'Toplam Kâr TL', 'Ortalama TL'] },
-    { category: 'SERME - YATAK KORUYUCU', channels: ['Perakende', 'Distribütör-Toptan'], metrics: ['Toplam TL', 'Toplam Adet', 'Ortalama %', 'Toplam Kâr TL', 'Ortalama TL'] },
-    { category: 'MESANE', channels: ['Perakende', 'Distribütör-Toptan'], metrics: ['Toplam TL', 'Toplam Adet', 'Ortalama %', 'Toplam Kâr TL', 'Ortalama TL'] }
+    { category: 'BELBANTLI', channels: ['PERAKENDE', 'DİSTRİBÜTÖR-TOPTAN'], metrics: ['TOPLAM TL', 'TOPLAM ADET', 'ORTALAMA %', 'TOPLAM KÂR TL', 'ORTALAMA TL'] },
+    { category: 'KÜLOTLU', channels: ['PERAKENDE', 'DİSTRİBÜTÖR-TOPTAN'], metrics: ['TOPLAM TL', 'TOPLAM ADET', 'ORTALAMA %', 'TOPLAM KÂR TL', 'ORTALAMA TL'] },
+    { category: 'SERME - YATAK KORUYUCU', channels: ['PERAKENDE', 'DİSTRİBÜTÖR-TOPTAN'], metrics: ['TOPLAM TL', 'TOPLAM ADET', 'ORTALAMA %', 'TOPLAM KÂR TL', 'ORTALAMA TL'] },
+    { category: 'MESANE', channels: ['PERAKENDE', 'DİSTRİBÜTÖR-TOPTAN'], metrics: ['TOPLAM TL', 'TOPLAM ADET', 'ORTALAMA %', 'TOPLAM KÂR TL', 'ORTALAMA TL'] }
   ],
   incomeLines: ['SATIŞLAR', 'MEDİKAL AKÜLÜ', 'MEDİKAL ELEKTRONİK', 'HASTA ALTI BEZİ', 'PERİNE VÜCUT TEMİZLEME', 'KİRALIK', 'KARYOLA', 'YÜRÜMEYE YARDIMCI', 'ORTOPEDİ TEKSTİL', 'SARF', 'SONDA', 'KOLOSTOMİ', 'AYAKKABI TERLİK', 'SGK', 'SOLUNUM', 'SATILAN MALIN MALİYETİ', 'BRÜT KÂR', 'GİDERLER', 'VÖK', 'VERGİ', 'NET KÂR'],
   orders: [
