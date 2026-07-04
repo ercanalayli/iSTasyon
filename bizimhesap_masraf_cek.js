@@ -21,7 +21,7 @@ const CONFIG = {
 
 const SUPABASE = {
   url: process.env.SUPABASE_URL || 'https://iilfwosoroflzubkaryj.supabase.co',
-  key: process.env.SUPABASE_KEY || 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
+  key: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
   table: process.env.MASRAF_TABLE || 'masraf_raw',
 };
 
@@ -31,7 +31,7 @@ const FIRMALAR = {
   odyoform: { id: 'odyoform', adi: 'ODYOFORM ISITME CIHAZLARI', arama: 'ODYOFORM' },
 };
 
-const db = createClient(SUPABASE.url, SUPABASE.key);
+const db = createClient(SUPABASE.url, SUPABASE.key, { auth: { persistSession: false } });
 
 function log(msg) {
   const line = `[${new Date().toLocaleString('tr-TR')}] ${msg}`;

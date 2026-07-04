@@ -107,7 +107,8 @@
     "test": "node finance_smoke_test.cjs && node scripts/verify_finance_manifest.cjs && npm run telegram:finance-v48:test && npm run telegram:risk-v49:test && npm run telegram:morning-digest-v50:test && npm run telegram:critical-risk-v51:test",
     "verify:gmail-oauth-refresh": "node tools/verify_gmail_oauth_refresh_helper_v75.cjs",
     "verify:supabase-security-hardening": "node tools/verify_supabase_security_hardening_v77.cjs",
-    "verify:single-screen-command-map": "node tools/verify_single_screen_command_map_v78.cjs"
+    "verify:single-screen-command-map": "node tools/verify_single_screen_command_map_v78.cjs",
+    "verify:bizimhesap:supabase-service-key": "node tools/verify_bizimhesap_supabase_service_key_v79.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

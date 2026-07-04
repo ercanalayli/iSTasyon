@@ -1,5 +1,18 @@
 # AperiON Changelog
 
+## 2026-07-04
+
+### Saatlik BizimHesap Sync RLS Duzeltmesi
+
+- GitHub Actions `Hourly BizimHesap Sync` basarisiz run logu incelendi.
+- BizimHesap login ve ALAYLI MEDIKAL firma seciminin calistigi, hatanin Supabase yaziminda oldugu dogrulandi.
+- `sales_raw` ve `masraf_raw` icin `new row violates row-level security policy` hatasi kok neden olarak belirlendi.
+- `bizimhesap_bot.js`, `bizimhesap_masraf_cek.js`, `bizimhesap_urun_stok_cek.js` ve `bizimhesap_son_islemler_izle.js` artik `SUPABASE_SERVICE_ROLE_KEY` degerini publishable/anon key'den once kullanir.
+- Supabase client'larinda auth session persist kapatildi.
+- `tools/verify_bizimhesap_supabase_service_key_v79.cjs` eklendi.
+- `verify:bizimhesap:supabase-service-key` komutu eklendi ve 12/12 gecti.
+- Canli BizimHesap kaydi, toplu onay veya Supabase SQL hardening uygulanmadi.
+
 ## 2026-07-03
 
 ### Tek Ekran Komuta Haritasi

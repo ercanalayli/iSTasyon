@@ -62,8 +62,8 @@ const CONFIG = {
 };
 
 const SUPABASE = {
-  url:   'https://iilfwosoroflzubkaryj.supabase.co',
-  key:   'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
+  url:   process.env.SUPABASE_URL || 'https://iilfwosoroflzubkaryj.supabase.co',
+  key:   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
   table: 'sales_raw',
 };
 
@@ -73,7 +73,7 @@ const WP = [
   { isim:'Muhasebe',  phone:'', apikey:'', alarm:0,     icerik:['ciro','adet'] },
 ];
 
-const db = createClient(SUPABASE.url, SUPABASE.key);
+const db = createClient(SUPABASE.url, SUPABASE.key, { auth: { persistSession: false } });
 
 // ── LOG ────────────────────────────────────────────────────────────────────
 function log(msg) {

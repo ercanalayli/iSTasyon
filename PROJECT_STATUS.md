@@ -1,6 +1,6 @@
 # AperiON Project Status
 
-Son guncelleme: 2026-07-03 Europe/Istanbul
+Son guncelleme: 2026-07-04 Europe/Istanbul
 
 ## Calisma Protokolu
 
@@ -17,6 +17,8 @@ AperiON gelistirmesinde koordineli calisma protokolu gecerlidir.
 Genel durum: Sistem calisan bir omurgaya sahip, ancak tum moduller gunluk guvenilir kullanim icin production-ready degil.
 
 Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonraki turlarda durum, karar, sonraki is ve kalite kontrol bu dosyalardan surdurulecektir.
+
+2026-07-04 saatlik BizimHesap sync RLS turu sonucu: GitHub Actions logu connector ile okundu. Basarisiz `Hourly BizimHesap Sync` run'inda BizimHesap login ve ALAYLI MEDIKAL firma secimi calismis; asil hata `sales_raw` ve `masraf_raw` yaziminda `new row violates row-level security policy` olarak gorulmustur. Kök neden, bazi BizimHesap yazici botlarinin GitHub secret olarak verilen `SUPABASE_SERVICE_ROLE_KEY` yerine gomulu publishable/anon key ile Supabase'e yazmaya calismasidir. `bizimhesap_bot.js`, `bizimhesap_masraf_cek.js`, `bizimhesap_urun_stok_cek.js` ve `bizimhesap_son_islemler_izle.js` servis rolunu onceliklendirecek ve Supabase auth session persist etmeyecek sekilde guncellendi. `verify:bizimhesap:supabase-service-key` testi eklendi; 12/12 gecti. Canli BizimHesap kaydi veya Supabase SQL hardening uygulanmadi.
 
 2026-07-03 tek ekran komuta haritasi turu sonucu: Kullanici sol taraftaki sekmelerin kaldirilmasini ve ana ekranin 6-8 tiklanabilir bolgeye ayrilmasini istedi. Masaustu gorunumde sol sidebar ve ac/kapat dugmesi gizlendi; ana ekran tam viewport genisligine alindi. Dashboard basina 8 tiklanabilir komuta bolgesi eklendi: Banka Canli, Onay Merkezi, Gelir Tablosu, Satis & Tahsilat, Urun & Stok, Cari Risk, Veri Guveni, Bildirim Merkezi. Bolgeler renkli, hover/focus cerceveli ve 4x2 karar haritasi olarak calisir. Tarayici kontrolde 8 bolge, 2 satir, sol menusuz gorunum, yatay tasma olmamasi ve bolge cakismamasi dogrulandi. `verify:single-screen-command-map` komutu eklendi. Commit `c9672fd` main'e pushlandi; otomasyon snapshot commitleri sonrasi en guncel `main` uzerinde de haritanin kaldigi ve GitHub Pages deploy'unun basarili oldugu dogrulandi.
 

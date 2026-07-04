@@ -31,7 +31,7 @@ const FIRMALAR = {
 
 const SUPABASE = {
   url: process.env.SUPABASE_URL || 'https://iilfwosoroflzubkaryj.supabase.co',
-  key: process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
+  key: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
   table: process.env.BIZIMHESAP_EVENTS_TABLE || 'bizimhesap_events',
 };
 
@@ -242,7 +242,7 @@ async function scrapeEvents() {
 async function saveSupabase(events) {
   if (DRY_RUN) return { saved: 0, skipped: true, dryRun: true };
   if (!events.length) return { saved: 0, skipped: true };
-  const db = createClient(SUPABASE.url, SUPABASE.key);
+  const db = createClient(SUPABASE.url, SUPABASE.key, { auth: { persistSession: false } });
   const { error } = await db.from(SUPABASE.table).upsert(events, { onConflict: 'hash' });
   if (error) return { saved: 0, skipped: true, error: error.message };
   return { saved: events.length, skipped: false };
