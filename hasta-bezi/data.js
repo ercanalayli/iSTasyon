@@ -1,5 +1,5 @@
 window.HASTA_BEZI_DATA = {
-  updateNo: '1114260607',
+  updateNo: 'GPT202607060838',
   period: { year: '2026', month: 'Temmuz' },
   rules: [
     ['Kâr hesabı', 'KDV hariç'],
@@ -64,5 +64,204 @@ window.HASTA_BEZI_DATA = {
     ['IST2025000001606','-','KONTROL','-','Coverdry bağlama ve eski Jender/Coverall FIFO kaynak kontrol satırı.'],
     ['PDE2025000001241','-','KONTROL','-','Lorina hijyen/mesane eşleşmesi kontrol panelinde tutulacak.']
   ],
+  liveBizimHesap: {
+    "source": "BizimHesap Chrome botu",
+    "syncedAt": "2026-07-06T08:38:45.157Z",
+    "date": "2026-07-06",
+    "firm": "ALAYLI MEDİKAL",
+    "summary": {
+      "rows": 17,
+      "qty": 31,
+      "amount": 9577.26
+    },
+    "byCategory": [
+      {
+        "category": "*ORTOPEDİ TEKSTİL",
+        "rows": 7,
+        "qty": 7,
+        "amount": 3454.5400000000004
+      },
+      {
+        "category": "*HASTA BEZİ KÜLOTLU",
+        "rows": 2,
+        "qty": 9,
+        "amount": 3090.9100000000003
+      },
+      {
+        "category": "*HASTA BEZİ BELBANTLI",
+        "rows": 1,
+        "qty": 4,
+        "amount": 1381.82
+      },
+      {
+        "category": "*HASTA BEZİ SERME YATAK KORUYUCU",
+        "rows": 3,
+        "qty": 6,
+        "amount": 1045.45
+      },
+      {
+        "category": "*SARF",
+        "rows": 1,
+        "qty": 1,
+        "amount": 318.18
+      },
+      {
+        "category": "*HASTA BEZİ MESANE",
+        "rows": 1,
+        "qty": 1,
+        "amount": 200
+      },
+      {
+        "category": "*ELEKTRONİK",
+        "rows": 1,
+        "qty": 1,
+        "amount": 50
+      },
+      {
+        "category": "*SONDA",
+        "rows": 1,
+        "qty": 2,
+        "amount": 36.36
+      }
+    ],
+    "rows": [
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "2026 DR COMFORT KÜLOTLU HASTA BEZİ 30'LU LARGE (1X4X30)",
+        "category": "*HASTA BEZİ KÜLOTLU",
+        "qty": 8,
+        "amount": 2909.09
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "2026 COVER DRY BEL BANTLI HASTA BEZİ LARGE 30'LU",
+        "category": "*HASTA BEZİ BELBANTLI",
+        "qty": 4,
+        "amount": 1381.82
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "2026 VİZOR ÖRME PATELLA VE FLEXİBLE LİGAMENT DESTEKLİ DİZLİK",
+        "category": "*ORTOPEDİ TEKSTİL",
+        "qty": 1,
+        "amount": 727.27
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "2026 MOLY YATAK KORUYUCU SERME ORTU 60X90 30LU",
+        "category": "*HASTA BEZİ SERME YATAK KORUYUCU",
+        "qty": 4,
+        "amount": 545.45
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "2026 BR0404 - VİZOR ÇALIŞMA KORSESİ STANDART",
+        "category": "*ORTOPEDİ TEKSTİL",
+        "qty": 1,
+        "amount": 545.45
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "2026 AYAK BİLEKLİĞİ PEDLİ PLUS STABİLİZASYON ORTEZİ AİRCAST",
+        "category": "*ORTOPEDİ TEKSTİL",
+        "qty": 1,
+        "amount": 500
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "2026 +DİZ ALTI DÜŞÜK BASINÇ VARİS ÇORABI CCL1",
+        "category": "*ORTOPEDİ TEKSTİL",
+        "qty": 1,
+        "amount": 454.55
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "2026 ELASTİK DİZLİK ÖRGÜ DESTEKSİZ ÖRME (S-M-L-XL-XXL)",
+        "category": "*ORTOPEDİ TEKSTİL",
+        "qty": 1,
+        "amount": 409.09
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "2026 ELASTİK DİZLİK ÖRGÜ DESTEKSİZ ÖRME (S-M-L-XL-XXL)",
+        "category": "*ORTOPEDİ TEKSTİL",
+        "qty": 1,
+        "amount": 409.09
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "2026 /+++ ABDOMİNAL KORSE 26CM STANDART SOLES",
+        "category": "*ORTOPEDİ TEKSTİL",
+        "qty": 1,
+        "amount": 409.09
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "2026 /*ALEZ 160*200 ÇİFT KİŞİLİK",
+        "category": "*HASTA BEZİ SERME YATAK KORUYUCU",
+        "qty": 1,
+        "amount": 345.45
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "2026 NİTRİL ELDİVEN SMALL-MEDIUM-LARGE PERAKENDE",
+        "category": "*SARF",
+        "qty": 1,
+        "amount": 318.18
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "***CANPED MESANE PEDİ LARGE 20'Lİ+++",
+        "category": "*HASTA BEZİ MESANE",
+        "qty": 1,
+        "amount": 200
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "+++MAVİ BEYAZ KÜLOTLU HASTA BEZİ MEDIUM 9 LU",
+        "category": "*HASTA BEZİ KÜLOTLU",
+        "qty": 1,
+        "amount": 181.82
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "MAHMUT KESKİN",
+        "product": "2026 COVER DRY YATAK KORUYUCU ÖRTÜ SERME 60X90 30'LU*6",
+        "category": "*HASTA BEZİ SERME YATAK KORUYUCU",
+        "qty": 1,
+        "amount": 154.55
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "2026 ŞEKER ÖLÇÜM PİLİ",
+        "category": "*ELEKTRONİK",
+        "qty": 1,
+        "amount": 50
+      },
+      {
+        "date": "2026-07-06",
+        "customer": "Perakende Satışlar",
+        "product": "/STERİL İDRAR TORBASI T MUSLUK",
+        "category": "*SONDA",
+        "qty": 2,
+        "amount": 36.36
+      }
+    ]
+  },
   closed: [['Laboral','M012026000000152',''],['Ada','M012026000000150','']]
 };
