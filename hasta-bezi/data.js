@@ -1,5 +1,5 @@
 window.HASTA_BEZI_DATA = {
-  updateNo: '1908260407',
+  updateNo: '1114260607',
   period: { year: '2026', month: 'Temmuz' },
   rules: [
     ['Kâr hesabı', 'KDV hariç'],
