@@ -15,6 +15,12 @@
     .row b{color:#5d6878;font-size:13px}
     .amount{font-size:28px;font-weight:800;color:#111;margin:14px 0}
     .desc{white-space:pre-wrap;line-height:1.45;background:#f7fafc;border:1px solid #e4ebf3;border-radius:6px;padding:12px;margin-top:12px}
+    .evidence{margin-top:14px;background:#eef7ff;border:1px solid #b8d9f4;border-radius:6px;padding:12px}
+    .evidence h3{margin:0 0 8px;font-size:15px}
+    .kv{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #d6e9f8;padding:8px 0;font-size:13px}
+    .kv b{color:#526275}
+    .kv span{text-align:right;word-break:break-word}
+    .raw{white-space:pre-wrap;font-family:Consolas,monospace;font-size:11px;max-height:160px;overflow:auto;background:#fff;border:1px solid #dce9f5;border-radius:5px;padding:8px;margin-top:8px}
     .learn{margin-top:14px;background:#fff8e8;border:1px solid #efd38b;border-radius:6px;padding:12px}
     .learn label{display:block;font-size:13px;font-weight:700;color:#5d6878;margin:10px 0 5px}
     .learn select,.learn input{width:100%;box-sizing:border-box;border:1px solid #cfd8e3;border-radius:6px;padding:12px;font-size:15px}
@@ -44,6 +50,37 @@
     const fmt = n => Number(n || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const esc = s => String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
+    function pick(raw, keys) {
+      for (const key of keys) {
+        const v = raw?.[key];
+        if (v !== undefined && v !== null && String(v).trim() !== '') return String(v);
+      }
+      return '';
+    }
+
+    function evidence(data) {
+      const raw = data.raw || {};
+      const pairs = [
+        ['Banka', data.banka || raw.kaynak_banka || raw.banka || raw.bank],
+        ['Ekstre tarihi/saat', pick(raw, ['saat', 'hareket_tarih', 'islem_saati', 'date_time', 'tarih']) || data.tarih],
+        ['Kaynak dosya', pick(raw, ['filename', 'kaynak_dosya', 'file_name', 'source_file'])],
+        ['İşlem/kanal', pick(raw, ['islem', 'islem_tipi', 'islem_alt_tipi', 'kanal', 'Kanal/Şube', 'KANAL'])],
+        ['İşlem no/ref', pick(raw, ['islem_no', 'referans', 'ref_no', 'reference', 'hash'])],
+        ['Bakiye', pick(raw, ['bakiye', 'BAKİYE', 'balance'])],
+        ['Kaynak hesap', pick(raw, ['kaynak_hesap']) || data.hesap],
+        ['Hedef hesap', pick(raw, ['hedef_hesap']) || data.karsi_taraf],
+      ].filter(x => x[1]);
+      const rows = pairs.map(([k, v]) => `<div class="kv"><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join('');
+      const rawText = JSON.stringify(raw, null, 2).slice(0, 2500);
+      return `
+        <div class="evidence">
+          <h3>Ekstre kaniti</h3>
+          ${rows || '<div class="muted">Ham ekstre detayi yok.</div>'}
+          <div class="raw">${esc(rawText)}</div>
+        </div>
+      `;
+    }
+
     async function load() {
       if (!id || !token) {
         app.innerHTML = '<div class="err">Eksik onay linki.</div>';
@@ -63,6 +100,7 @@
         <div class="row"><b>Cari/Karsi taraf</b><span>${esc(data.cari_unvan || data.karsi_taraf || '-')}</span></div>
         <div class="amount">${fmt(data.tutar)} TL</div>
         <div class="desc">${esc(data.aciklama || '')}</div>
+        ${evidence(data)}
         ${Number(data.sinif_guven || 0) === 100 ? '' : `
           <div class="learn">
             <b>Bu hareketi bilmiyorum. Ogretmeden kaydetmem.</b>
