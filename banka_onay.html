@@ -77,6 +77,8 @@
             </select>
             <label>Banka/Hesap</label>
             <input id="learnHesap" value="${esc(data.hesap || '')}" placeholder="*IS BANKASI">
+            <label>Hedef hesap (transfer icin)</label>
+            <input id="learnTarget" value="${esc(data.raw?.hedef_hesap || '')}" placeholder="Paranin yatacagi banka hesabi">
             <label>Cari / karsi taraf</label>
             <input id="learnCari" value="${esc(data.cari_unvan || data.karsi_taraf || '')}" placeholder="Cari adi">
           </div>
@@ -99,6 +101,7 @@
       app.querySelectorAll('button').forEach(b => b.disabled = true);
       const learnTur = document.getElementById('learnTur');
       const learnHesap = document.getElementById('learnHesap');
+      const learnTarget = document.getElementById('learnTarget');
       const learnCari = document.getElementById('learnCari');
       const patch = { onay_durumu: durum, updated_at: new Date().toISOString() };
       if (durum === 'onaylandi' && learnTur) {
@@ -107,15 +110,16 @@
           app.innerHTML += '<div class="muted err">Once islem tipini sec.</div>';
           return;
         }
-        if (learnTur.value === 'transfer' && !String(learnCari.value || '').trim()) {
-          app.querySelectorAll('button').forEach(b => b.disabled = false);
-          app.innerHTML += '<div class="muted err">Transfer icin karsi hesabi yaz.</div>';
-          return;
-        }
         patch.tur = learnTur.value;
         patch.hesap = learnHesap.value || row.hesap || null;
         patch.cari_unvan = learnCari.value || row.cari_unvan || null;
-        if (learnTur.value === 'transfer') patch.karsi_taraf = learnCari.value || row.karsi_taraf || null;
+        patch.raw = { ...(row.raw || {}) };
+        if (learnTur.value === 'transfer') {
+          patch.raw.kaynak_hesap = patch.hesap;
+          patch.raw.hedef_hesap = learnTarget.value || row.raw?.hedef_hesap || row.karsi_taraf || null;
+          patch.raw.aperion_transfer_tipi = patch.raw.aperion_transfer_tipi || 'manuel_transfer';
+          patch.karsi_taraf = patch.raw.hedef_hesap;
+        }
         patch.sinif_guven = 100;
         patch.sinif_kaynak = 'manuel_ogrenme';
         patch.ogrenme_durumu = 'ogrenildi';
