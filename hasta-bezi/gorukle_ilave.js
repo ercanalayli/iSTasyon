@@ -1,5 +1,5 @@
 window.HASTA_BEZI_GORUKLE_ILAVE = {
-  updateNo: '1358260707',
+  updateNo: '1440260707',
   customer: 'GÖRÜKLE MEDİKAL / BURSA',
   note: 'Görükle Medikal ilave: 10 balya Moly serme. Sermeler Nisan listesi, diğerleri Mayıs listesi.',
   replaceOrderName: 'GÖRÜKLE MEDİKAL / BURSA',
