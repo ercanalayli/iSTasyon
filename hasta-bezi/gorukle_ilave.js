@@ -1,5 +1,5 @@
 window.HASTA_BEZI_GORUKLE_ILAVE = {
-  updateNo: '1105260707',
+  updateNo: '1234260707',
   customer: 'GÖRÜKLE MEDİKAL / BURSA',
   note: 'Görükle Medikal ilave: 10 balya Moly serme. Sermeler Nisan listesi, diğerleri Mayıs listesi.',
   replaceOrderName: 'GÖRÜKLE MEDİKAL / BURSA',
@@ -14,7 +14,8 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
   ],
   invoiceUpdates: [
     { key: 'ZEYBEK MEDİKAL / KÜTAHYA', invoiceNo: 'M012026000000156', invoiceDate: '03.07.2026', net: 129228.74, gross: 142151.59, shipmentStatus: 'SEVK TARİHİ BEKLİYOR' },
-    { key: 'SERCAN MEDİKAL / ESKİŞEHİR', invoiceNo: 'M012026000000155', invoiceDate: '03.07.2026', net: 28770.79, gross: 31647.88, shipmentStatus: 'SEVK TARİHİ BEKLİYOR' }
+    { key: 'SERCAN MEDİKAL / ESKİŞEHİR', invoiceNo: 'M012026000000155', invoiceDate: '03.07.2026', net: 28770.79, gross: 31647.88, shipmentStatus: 'SEVK TARİHİ BEKLİYOR' },
+    { key: 'SETON BİYOMEDİKAL / ESKİŞEHİR', invoiceNo: 'M012026000000157', invoiceDate: '03.07.2026', net: 55020.43, gross: 60522.48, shipmentStatus: 'SEVK TARİHİ BEKLİYOR' }
   ]
 };
 (function(){
@@ -24,7 +25,7 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
   u.invoiceUpdates.forEach(function(x){
     d.orders.forEach(function(o){
       if(String(o[0]).indexOf(x.key) >= 0){
-        o[1] = (o[1] || '') + ' / Fatura: ' + x.invoiceDate;
+        o[1] = (o[1] || '').replace(/ \/ Fatura: .*$/,'') + ' / Fatura: ' + x.invoiceDate;
         o[2] = x.invoiceNo;
         o[3] = x.shipmentStatus || o[3];
         if(x.net) o[7] = x.net;
@@ -32,4 +33,8 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
       }
     });
   });
+  setTimeout(function(){
+    var s = document.getElementById('stamp');
+    if(s) s.textContent = 'Güncelleme No: ' + u.updateNo;
+  }, 0);
 })();
