@@ -1,5 +1,5 @@
 window.HASTA_BEZI_GORUKLE_ILAVE = {
-  updateNo: '1440260707',
+  updateNo: '1549260707',
   customer: 'GÖRÜKLE MEDİKAL / BURSA',
   note: 'Görükle Medikal ilave: 10 balya Moly serme. Sermeler Nisan listesi, diğerleri Mayıs listesi.',
   replaceOrderName: 'GÖRÜKLE MEDİKAL / BURSA',
@@ -44,6 +44,9 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
 
   function money(n, digits){
     return (+n || 0).toLocaleString('tr-TR',{minimumFractionDigits:digits == null ? 2 : digits, maximumFractionDigits:digits == null ? 2 : digits});
+  }
+  function strongDhl(label, value){
+    return '<span style="display:inline-block;background:#fff3b0;color:#06142a;border:1px solid #d6b900;border-radius:7px;padding:3px 7px;font-weight:900;font-size:15px">' + label + ': ' + money(value,4) + '</span>';
   }
   function keyOf(o){
     var x = String((o && o[0]) || '').toUpperCase();
@@ -113,8 +116,8 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
       + '<div style="margin-top:5px">Bly/Pkt: <b>' + packLine(p) + '</b> | Liste: <b>' + listMonth(p) + ' 2026 listesi</b> | İsk: <b>' + (p[4] === 'Yok' ? 'Yok / 0%' : p[4]) + '</b></div>'
       + '<div>Maliyet: <b>' + money(p[5]) + '</b> | Alış Tarihi: <b>' + p[6] + '</b> | Alış Fatura: <b>' + p[7] + '</b> | Fark Fatura: <b>' + p[8] + '</b></div>'
       + '<div>' + kontrol + '</div>'
-      + '<div>Liste Hariç: <b>' + money(listeHrc,4) + '</b> | İsk.Hrç: <b>' + money(iskHrc,4) + '</b> | İsk.Dhl: <b>' + money(iskDhl,4) + '</b></div>'
-      + '<div>Top.Hrç: <b>' + money(p[10]) + '</b> | Top.Dhl: <b>' + money(toplamDhl) + '</b> | Kâr: <b>' + money(kar) + '</b></div>'
+      + '<div style="margin-top:6px">Liste Hariç: <b>' + money(listeHrc,4) + '</b> | ' + strongDhl('Liste Dhl', listeDhl) + ' | İsk.Hrç: <b>' + money(iskHrc,4) + '</b> | ' + strongDhl('İsk.Dhl', iskDhl) + '</div>'
+      + '<div style="margin-top:6px">Top.Hrç: <b>' + money(p[10]) + '</b> | <span style="font-weight:900;font-size:15px;background:#fff3b0;border:1px solid #d6b900;border-radius:7px;padding:3px 7px">Top.Dhl: ' + money(toplamDhl) + '</span> | Kâr: <b>' + money(kar) + '</b></div>'
       + '<div>Kâr Marjı: <b>%' + money(margin(kar,p[10]),2) + '</b> | Kâr Oranı: <b>%' + money(rate(kar,maliyetToplam),2) + '</b></div>'
       + '</div>';
   }
