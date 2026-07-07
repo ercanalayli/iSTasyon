@@ -1,5 +1,5 @@
 window.HASTA_BEZI_GORUKLE_ILAVE = {
-  updateNo: '1549260707',
+  updateNo: '1554260707',
   customer: 'GÖRÜKLE MEDİKAL / BURSA',
   note: 'Görükle Medikal ilave: 10 balya Moly serme. Sermeler Nisan listesi, diğerleri Mayıs listesi.',
   replaceOrderName: 'GÖRÜKLE MEDİKAL / BURSA',
@@ -37,10 +37,12 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
     var s = document.getElementById('stamp');
     if(s) s.textContent = 'Güncelleme No: ' + u.updateNo;
     enhanceClassicDetails();
+    enhanceSalesIncludedTables();
   }
   setTimeout(runAfter, 0);
   setTimeout(runAfter, 250);
   setTimeout(runAfter, 1000);
+  setTimeout(runAfter, 2000);
 
   function money(n, digits){
     return (+n || 0).toLocaleString('tr-TR',{minimumFractionDigits:digits == null ? 2 : digits, maximumFractionDigits:digits == null ? 2 : digits});
@@ -100,6 +102,46 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
     if(u.replaceProductsFor && u.products) products = products.filter(function(p){return p[0] !== u.replaceProductsFor}).concat(u.products);
     return products;
   }
+  function productByName(name){
+    var n = String(name || '').trim().toLocaleLowerCase('tr-TR');
+    return allProducts().find(function(p){ return String(p[1] || '').trim().toLocaleLowerCase('tr-TR') === n; });
+  }
+  function salesIncl(p){ return (+p[10] || 0) * vatRate(p); }
+  function strongCell(value){
+    var td = document.createElement('td');
+    td.textContent = money(value);
+    td.style.fontWeight = '900';
+    td.style.fontSize = '14px';
+    td.style.background = '#fff3b0';
+    td.style.color = '#06142a';
+    td.style.border = '1px solid #d6b900';
+    return td;
+  }
+  function enhanceSalesIncludedTables(){
+    document.querySelectorAll('table').forEach(function(table){
+      var ths = Array.from(table.querySelectorAll('thead th'));
+      if(!ths.length) return;
+      var labels = ths.map(function(th){return th.textContent.trim();});
+      var urunIdx = labels.indexOf('Ürün');
+      var satisIdx = labels.indexOf('Satış Hrç');
+      if(urunIdx < 0 || satisIdx < 0 || labels.indexOf('Net Satış Dhl') >= 0) return;
+      var th = document.createElement('th');
+      th.textContent = 'Net Satış Dhl';
+      th.style.fontWeight = '900';
+      th.style.background = '#fff3b0';
+      th.style.color = '#06142a';
+      ths[satisIdx].after(th);
+      Array.from(table.querySelectorAll('tbody tr')).forEach(function(tr){
+        var cells = Array.from(tr.children);
+        var nameCell = cells[urunIdx];
+        if(!nameCell) return;
+        var p = productByName(nameCell.textContent);
+        if(!p) return;
+        var target = Array.from(tr.children)[satisIdx];
+        if(target) target.after(strongCell(salesIncl(p)));
+      });
+    });
+  }
   function classicProduct(p){
     var q = +p[2] || 0;
     var vat = vatRate(p);
@@ -117,7 +159,7 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
       + '<div>Maliyet: <b>' + money(p[5]) + '</b> | Alış Tarihi: <b>' + p[6] + '</b> | Alış Fatura: <b>' + p[7] + '</b> | Fark Fatura: <b>' + p[8] + '</b></div>'
       + '<div>' + kontrol + '</div>'
       + '<div style="margin-top:6px">Liste Hariç: <b>' + money(listeHrc,4) + '</b> | ' + strongDhl('Liste Dhl', listeDhl) + ' | İsk.Hrç: <b>' + money(iskHrc,4) + '</b> | ' + strongDhl('İsk.Dhl', iskDhl) + '</div>'
-      + '<div style="margin-top:6px">Top.Hrç: <b>' + money(p[10]) + '</b> | <span style="font-weight:900;font-size:15px;background:#fff3b0;border:1px solid #d6b900;border-radius:7px;padding:3px 7px">Top.Dhl: ' + money(toplamDhl) + '</span> | Kâr: <b>' + money(kar) + '</b></div>'
+      + '<div style="margin-top:6px">Top.Hrç: <b>' + money(p[10]) + '</b> | <span style="font-weight:900;font-size:15px;background:#fff3b0;border:1px solid #d6b900;border-radius:7px;padding:3px 7px">Net Satış Dhl: ' + money(toplamDhl) + '</span> | Kâr: <b>' + money(kar) + '</b></div>'
       + '<div>Kâr Marjı: <b>%' + money(margin(kar,p[10]),2) + '</b> | Kâr Oranı: <b>%' + money(rate(kar,maliyetToplam),2) + '</b></div>'
       + '</div>';
   }
