@@ -131,6 +131,42 @@ function testPosBankSettlementClassification() {
   console.log('OK POS bank settlement classification');
 }
 
+function testMokaBankSettlementClassification() {
+  const { classifyBankMovement } = require('./tools/bank_posting_plan.cjs');
+  const result = classifyBankMovement({
+    id: 'test-moka-1',
+    bank_name: 'Yapi Kredi',
+    transaction_date: '2026-07-02',
+    amount_in: 2740,
+    description: 'MokaUnited-Sanal Pos Ödemesi ///0501145298// ALAYLI MEDIKAL',
+    target_account: 'Yapi Kredi vadesiz hesap',
+  });
+  assert(result.plan.kind === 'bank_transfer', 'Moka banka yatışı transfer yoluna gitmeli');
+  assert(result.plan.type === 'Moka banka transferi', 'Moka tipi transfer olarak görünmeli');
+  assert(result.plan.target === 'BizimHesap hesaplar arasi transfer', 'Moka hedefi hesaplar arası transfer olmalı');
+  assert(result.plan.source_account === 'Moka United bekleyen tahsilatlar', 'Moka kaynak hesabı standart değil');
+  assert(result.plan.target_account === 'Yapi Kredi vadesiz hesap', 'Moka hedef banka hesabı korunmalı');
+  console.log('OK Moka bank settlement classification');
+}
+
+function testKmhPrincipalClassification() {
+  const { classifyBankMovement } = require('./tools/bank_posting_plan.cjs');
+  const result = classifyBankMovement({
+    id: 'test-kmh-1',
+    bank_name: 'Yapi Kredi',
+    transaction_date: '2026-07-02',
+    amount_out: 2740,
+    description: 'KMH-ANAPARA BORCU TAHSILATI',
+    target_account: 'Yapi Kredi vadesiz hesap',
+  });
+  assert(result.plan.kind === 'bank_transfer', 'KMH ana para kapama transfer/virman yoluna gitmeli');
+  assert(result.plan.type === 'KMH ana para kapama', 'KMH tipi ana para kapama olmalı');
+  assert(result.plan.target === 'BizimHesap banka/KMH virmani', 'KMH hedefi banka/KMH virmanı olmalı');
+  assert(result.plan.source_account === 'Yapi Kredi vadesiz hesap', 'KMH kaynak vadesiz hesap olmalı');
+  assert(result.plan.target_account === 'Yapi Kredi KMH / Ek Hesap', 'KMH hedef ek hesap olmalı');
+  console.log('OK KMH principal classification');
+}
+
 function main() {
   testSchemaFiles();
   testCommandCenterFiles();
@@ -139,6 +175,8 @@ function main() {
   testBusinessCalendarSource();
   testBankApprovalUnifiedStatusFiles();
   testPosBankSettlementClassification();
+  testMokaBankSettlementClassification();
+  testKmhPrincipalClassification();
   testPipeline();
   testMokaPipeline();
   console.log('AperiON Finans smoke test başarılı.');
