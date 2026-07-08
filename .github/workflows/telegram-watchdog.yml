@@ -1,0 +1,31 @@
+name: AperiON Telegram Watchdog
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
+
+permissions:
+  contents: read
+
+env:
+  TELEGRAM_EXPECTED_WEBHOOK_URL: https://aperion-istasyon.pages.dev/telegram/webhook
+  TELEGRAM_DROP_PENDING: 'false'
+
+jobs:
+  telegram-watchdog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Ensure Telegram webhook
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.TELEGRAM_WEBHOOK_SECRET_TOKEN }}
+        run: node tools/ensure_telegram_webhook.cjs
