@@ -79,6 +79,10 @@ function targetBankAccount(row) {
   return fixMojibake(row.target_account || `${bankName(row)} banka hesabi`);
 }
 
+function kmhAccount(row) {
+  return fixMojibake(row.kmh_account || `${bankName(row)} KMH / Ek Hesap`);
+}
+
 function counterpartyGuess(row) {
   const explicit = fixMojibake(row.target_counterparty || row.suggested_counterparty || row.aday_cari || '').trim();
   if (explicit && !isInvalidCounterparty(explicit)) return explicit;
@@ -95,7 +99,9 @@ function counterpartyGuess(row) {
       if (!isInvalidCounterparty(candidate)) return candidate;
     }
   }
+  if (/MOKA|MOKAUNITED|SANAL POS/.test(text)) return 'Moka United bekleyen tahsilatlar';
   if (/POS|NET SATIS|KREDI KART|BATCH YATAN/.test(text)) return 'POS POS POS KREDI KARTI';
+  if (/KMH|EK HESAP|ANAPARA BORCU TAHSILATI/.test(text)) return kmhAccount(row);
   if (/KOMISYON|BSMV|UCRET|MASRAF/.test(text)) return bankName(row);
   if (/VIRMAN/.test(text)) return 'Banka ici virman';
   return 'Cari eslestirme onayda';
@@ -166,6 +172,28 @@ function classifyBankMovement(row = {}) {
     reasons.push('banka disi ozet mail');
   }
 
+  if (kind !== 'non_bank_summary_review' && incoming && /MOKA|MOKAUNITED|SANAL POS/.test(text)) {
+    kind = 'bank_transfer';
+    type = 'Moka banka transferi';
+    target = 'BizimHesap hesaplar arasi transfer';
+    category = 'Moka banka aktarimi';
+    sourceAccount = 'Moka United bekleyen tahsilatlar';
+    targetAccount = targetBankAccount(row);
+    counterparty = `${sourceAccount} -> ${targetAccount}`;
+    confidence = Math.max(confidence, 88);
+    reasons.push('Moka banka aktarimi');
+  }
+  if (kind !== 'non_bank_summary_review' && amountOut(row) > 0 && /KMH|EK HESAP|ANAPARA BORCU TAHSILATI/.test(text)) {
+    kind = 'bank_transfer';
+    type = 'KMH ana para kapama';
+    target = 'BizimHesap banka/KMH virmani';
+    category = 'KMH ana para kapama';
+    sourceAccount = targetBankAccount(row);
+    targetAccount = kmhAccount(row);
+    counterparty = `${sourceAccount} -> ${targetAccount}`;
+    confidence = Math.max(confidence, 90);
+    reasons.push('KMH ana para kapama');
+  }
   if (kind !== 'non_bank_summary_review' && incoming && /POS|NET SATIS|KREDI KART|BATCH YATAN|UYE ISYERI/.test(text)) {
     kind = 'bank_transfer';
     type = 'POS banka transferi';
