@@ -1,5 +1,5 @@
 window.HASTA_BEZI_GORUKLE_ILAVE = {
-  updateNo: '1554260707',
+  updateNo: '1109260807',
   customer: 'GÖRÜKLE MEDİKAL / BURSA',
   note: 'Görükle Medikal ilave: 10 balya Moly serme. Sermeler Nisan listesi, diğerleri Mayıs listesi.',
   replaceOrderName: 'GÖRÜKLE MEDİKAL / BURSA',
@@ -18,34 +18,50 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
     { key: 'SETON BİYOMEDİKAL / ESKİŞEHİR', invoiceNo: 'M012026000000157', invoiceDate: '03.07.2026', net: 55020.43, gross: 60522.48, shipmentStatus: 'SEVK TARİHİ BEKLİYOR' }
   ]
 };
+
 (function(){
   var d = window.HASTA_BEZI_DATA;
   var u = window.HASTA_BEZI_GORUKLE_ILAVE;
-  if(!d || !Array.isArray(d.orders) || !u || !Array.isArray(u.invoiceUpdates)) return;
-  u.invoiceUpdates.forEach(function(x){
-    d.orders.forEach(function(o){
-      if(String(o[0]).indexOf(x.key) >= 0){
-        o[1] = (o[1] || '').replace(/ \/ Fatura: .*$/,'') + ' / Fatura: ' + x.invoiceDate;
-        o[2] = x.invoiceNo;
-        o[3] = x.shipmentStatus || o[3];
-        if(x.net) o[7] = x.net;
-        if(x.gross) o[8] = x.gross;
-      }
+  if(!d || !u) return;
+
+  if(Array.isArray(d.orders) && Array.isArray(u.invoiceUpdates)){
+    u.invoiceUpdates.forEach(function(x){
+      d.orders.forEach(function(o){
+        if(String(o[0]).indexOf(x.key) >= 0){
+          o[1] = (o[1] || '').replace(/ \/ Fatura: .*$/,'') + ' / Fatura: ' + x.invoiceDate;
+          o[2] = x.invoiceNo;
+          o[3] = x.shipmentStatus || o[3];
+          if(x.net) o[7] = x.net;
+          if(x.gross) o[8] = x.gross;
+        }
+      });
     });
-  });
-  function runAfter(){
-    var s = document.getElementById('stamp');
-    if(s) s.textContent = 'Güncelleme No: ' + u.updateNo;
-    enhanceClassicDetails();
-    enhanceSalesIncludedTables();
   }
-  setTimeout(runAfter, 0);
-  setTimeout(runAfter, 250);
-  setTimeout(runAfter, 1000);
-  setTimeout(runAfter, 2000);
 
   function money(n, digits){
     return (+n || 0).toLocaleString('tr-TR',{minimumFractionDigits:digits == null ? 2 : digits, maximumFractionDigits:digits == null ? 2 : digits});
+  }
+  function norm(x){
+    return String(x || '').toLocaleLowerCase('tr-TR').replace(/ı/g,'i').replace(/İ/g,'i').replace(/\s+/g,' ').trim();
+  }
+  function productKey(name){
+    var s = norm(name);
+    if(s.indexOf('coverdry')>=0 && (s.indexOf('60x90')>=0 || s.indexOf('serme')>=0 || s.indexOf('yatak koruyucu')>=0)) return 'COVERDRY_60X90';
+    if(s.indexOf('jender')>=0 && (s.indexOf('90x180')>=0 || s.indexOf('yatak koruyucu')>=0)) return 'JENDER_90X180';
+    if(s.indexOf('moly')>=0 && s.indexOf('serme')>=0) return 'MOLY_60X90';
+    if(s.indexOf('lorina')>=0 && s.indexOf('mesane')>=0) return 'LORINA_MESANE';
+    if(s.indexOf('lorina')>=0 && (s.indexOf('çinko')>=0 || s.indexOf('cinko')>=0 || s.indexOf('krem')>=0)) return 'LORINA_CINKO';
+    if(s.indexOf('jender')>=0 && (s.indexOf('small')>=0 || s.indexOf('/ s')>=0 || s.indexOf('30lu')>=0)) return 'JENDER_SMALL';
+    return s;
+  }
+  function vatRate(p){
+    return productKey(p && p[1]) === 'LORINA_CINKO' ? 1.20 : 1.10;
+  }
+  function listDhl(p){ return +p[9] || 0; }
+  function listHrc(p){ return listDhl(p) / vatRate(p); }
+  function salesDhl(p){ return (+p[10] || 0) * vatRate(p); }
+  function strong(value, digits){
+    return '<b style="display:block;background:#fff3b0;border:1px solid #d6b900;border-radius:7px;padding:3px 7px;font-weight:900;color:#06142a">' + money(value, digits == null ? 4 : digits) + '</b>';
   }
   function strongDhl(label, value){
     return '<span style="display:inline-block;background:#fff3b0;color:#06142a;border:1px solid #d6b900;border-radius:7px;padding:3px 7px;font-weight:900;font-size:15px">' + label + ': ' + money(value,4) + '</span>';
@@ -58,40 +74,6 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
     if(x.indexOf('SETON')>=0) return 'SETON';
     return x.split(' ')[0];
   }
-  function orderDate(o){
-    var text = String((o && o[1]) || '').replace(/\s*\/\s*Fatura:\s*[0-9.]+.*$/,'');
-    var dates = text.match(/\d{2}\.\d{2}\.\d{4}/g);
-    return dates && dates.length ? dates.join(' + ') : (text || '—');
-  }
-  function invDate(o){
-    var m = String((o && o[1]) || '').match(/Fatura:\s*([0-9.]+)/);
-    return m ? m[1] : '—';
-  }
-  function listMonth(p){
-    var t = String((p && p[3]) || '').toLocaleLowerCase('tr-TR');
-    if(t.indexOf('nisan')>=0) return 'Nisan';
-    if(t.indexOf('mayıs')>=0 || t.indexOf('mayis')>=0) return 'Mayıs';
-    return String((p && p[3]) || '—').split(/[\s/]+/)[0] || '—';
-  }
-  function packLine(p){
-    var q = +p[2] || 0;
-    var name = String(p[1] || '').toLocaleLowerCase('tr-TR');
-    if((name.indexOf('serme')>=0 || name.indexOf('90x180')>=0 || name.indexOf('60x90')>=0 || name.indexOf('mesane')>=0) && q % 6 === 0) return (q/6) + ' / ' + q;
-    if(name.indexOf('çinko')>=0 && q === 12) return '1 koli / 12';
-    return q + ' / ' + q;
-  }
-  function packNote(p){
-    var q = +p[2] || 0;
-    var name = String(p[1] || '').toLocaleLowerCase('tr-TR');
-    if((name.indexOf('serme')>=0 || name.indexOf('90x180')>=0 || name.indexOf('60x90')>=0 || name.indexOf('mesane')>=0) && q % 6 === 0) return (q/6) + ' balya × 6 = ' + q + ' paket';
-    if(name.indexOf('çinko')>=0 && q === 12) return '1 koli × 12 = 12 adet';
-    return q + ' paket/adet';
-  }
-  function vatRate(p){ return String(p[1]||'').toLocaleLowerCase('tr-TR').indexOf('çinko')>=0 ? 1.20 : 1.10; }
-  function isSerme(p){ var x=String(p[1]||'').toLocaleLowerCase('tr-TR'); return x.indexOf('serme')>=0 || x.indexOf('90x180')>=0 || x.indexOf('60x90')>=0; }
-  function margin(k,s){ return s ? ((+k||0)/(+s||0)*100) : 0; }
-  function rate(k,c){ return c ? ((+k||0)/(+c||0)*100) : 0; }
-  function netProfit(o){ return (+o[7]||0)-(+o[9]||0)-(+o[10]||0); }
   function allOrders(){
     var orders = (d.orders || []).slice();
     if(u.replaceOrderName && u.order) orders = orders.filter(function(o){return o[0] !== u.replaceOrderName}).concat([u.order]);
@@ -102,27 +84,71 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
     if(u.replaceProductsFor && u.products) products = products.filter(function(p){return p[0] !== u.replaceProductsFor}).concat(u.products);
     return products;
   }
-  function productByName(name){
-    var n = String(name || '').trim().toLocaleLowerCase('tr-TR');
-    return allProducts().find(function(p){ return String(p[1] || '').trim().toLocaleLowerCase('tr-TR') === n; });
+  function productByName(name, cari){
+    var k = productKey(name);
+    var ck = String(cari || '').toUpperCase();
+    var arr = allProducts();
+    return arr.find(function(p){ return productKey(p[1]) === k && (!ck || String(p[0]).toUpperCase() === ck); }) ||
+           arr.find(function(p){ return productKey(p[1]) === k; });
   }
-  function salesIncl(p){ return (+p[10] || 0) * vatRate(p); }
-  function strongCell(value){
-    var td = document.createElement('td');
-    td.textContent = money(value);
-    td.style.fontWeight = '900';
-    td.style.fontSize = '14px';
-    td.style.background = '#fff3b0';
-    td.style.color = '#06142a';
-    td.style.border = '1px solid #d6b900';
-    return td;
+  function listMonth(p){
+    var t = String((p && p[3]) || '').toLocaleLowerCase('tr-TR');
+    if(t.indexOf('nisan')>=0) return 'Nisan';
+    if(t.indexOf('mayıs')>=0 || t.indexOf('mayis')>=0) return 'Mayıs';
+    return String((p && p[3]) || '—').split(/[\s/]+/)[0] || '—';
   }
+  function packLine(p){
+    var q = +p[2] || 0;
+    var name = norm(p[1]);
+    if((name.indexOf('serme')>=0 || name.indexOf('90x180')>=0 || name.indexOf('60x90')>=0 || name.indexOf('mesane')>=0) && q % 6 === 0) return (q/6) + ' / ' + q;
+    if((name.indexOf('çinko')>=0 || name.indexOf('cinko')>=0) && q === 12) return '1 koli / 12';
+    return q + ' / ' + q;
+  }
+  function isSerme(p){ var x = norm(p[1]); return x.indexOf('serme')>=0 || x.indexOf('90x180')>=0 || x.indexOf('60x90')>=0; }
+  function margin(k,s){ return s ? ((+k||0)/(+s||0)*100) : 0; }
+  function rate(k,c){ return c ? ((+k||0)/(+c||0)*100) : 0; }
+  function netProfit(o){ return (+o[7]||0)-(+o[9]||0)-(+o[10]||0); }
+  function orderDate(o){
+    var text = String((o && o[1]) || '').replace(/\s*\/\s*Fatura:\s*[0-9.]+.*$/,'');
+    var dates = text.match(/\d{2}\.\d{2}\.\d{4}/g);
+    return dates && dates.length ? dates.join(' + ') : (text || '—');
+  }
+  function invDate(o){
+    var m = String((o && o[1]) || '').match(/Fatura:\s*([0-9.]+)/);
+    return m ? m[1] : '—';
+  }
+
+  function fixListeHaricTables(){
+    document.querySelectorAll('table').forEach(function(table){
+      var ths = Array.from(table.querySelectorAll('thead th'));
+      if(!ths.length) return;
+      var labels = ths.map(function(th){ return th.textContent.trim(); });
+      var urunIdx = labels.indexOf('Ürün');
+      var cariIdx = labels.indexOf('Cari');
+      var lhIdx = labels.indexOf('Liste Hrç');
+      var ldIdx = labels.indexOf('Liste Dhl');
+      if(urunIdx < 0 || lhIdx < 0) return;
+      Array.from(table.querySelectorAll('tbody tr')).forEach(function(tr){
+        var cells = Array.from(tr.children);
+        var name = cells[urunIdx] && cells[urunIdx].textContent;
+        var cari = cariIdx >= 0 && cells[cariIdx] ? cells[cariIdx].textContent : '';
+        var p = productByName(name, cari);
+        if(!p || !cells[lhIdx]) return;
+        cells[lhIdx].textContent = money(listHrc(p),4);
+        cells[lhIdx].style.fontWeight = '900';
+        cells[lhIdx].style.color = '#06142a';
+        if(ldIdx >= 0 && cells[ldIdx]) cells[ldIdx].innerHTML = strong(listDhl(p),4);
+      });
+    });
+  }
+
   function enhanceSalesIncludedTables(){
     document.querySelectorAll('table').forEach(function(table){
       var ths = Array.from(table.querySelectorAll('thead th'));
       if(!ths.length) return;
       var labels = ths.map(function(th){return th.textContent.trim();});
       var urunIdx = labels.indexOf('Ürün');
+      var cariIdx = labels.indexOf('Cari');
       var satisIdx = labels.indexOf('Satış Hrç');
       if(urunIdx < 0 || satisIdx < 0 || labels.indexOf('Net Satış Dhl') >= 0) return;
       var th = document.createElement('th');
@@ -133,20 +159,21 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
       ths[satisIdx].after(th);
       Array.from(table.querySelectorAll('tbody tr')).forEach(function(tr){
         var cells = Array.from(tr.children);
-        var nameCell = cells[urunIdx];
-        if(!nameCell) return;
-        var p = productByName(nameCell.textContent);
+        var p = productByName(cells[urunIdx] && cells[urunIdx].textContent, cariIdx >= 0 && cells[cariIdx] ? cells[cariIdx].textContent : '');
         if(!p) return;
+        var td = document.createElement('td');
+        td.innerHTML = strong(salesDhl(p),2);
         var target = Array.from(tr.children)[satisIdx];
-        if(target) target.after(strongCell(salesIncl(p)));
+        if(target) target.after(td);
       });
     });
   }
+
   function classicProduct(p){
     var q = +p[2] || 0;
     var vat = vatRate(p);
-    var listeDhl = +p[9] || 0;
-    var listeHrc = listeDhl / vat;
+    var listeDhl = listDhl(p);
+    var listeHrc = listHrc(p);
     var iskHrc = q ? ((+p[10] || 0) / q) : 0;
     var iskDhl = iskHrc * vat;
     var toplamDhl = (+p[10] || 0) * vat;
@@ -163,12 +190,14 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
       + '<div>Kâr Marjı: <b>%' + money(margin(kar,p[10]),2) + '</b> | Kâr Oranı: <b>%' + money(rate(kar,maliyetToplam),2) + '</b></div>'
       + '</div>';
   }
+
   function enhanceClassicDetails(){
     document.querySelectorAll('.head h3').forEach(function(h){ h.innerHTML = h.innerHTML.replace(/^focus1\s*—\s*/,''); });
     var orders = allOrders();
     var products = allProducts();
     document.querySelectorAll('.detail').forEach(function(el){
-      if(el.querySelector('.classic-info')) return;
+      var old = el.querySelector('.classic-info');
+      if(old) old.remove();
       var id = el.id || '';
       var order = null;
       if(id === 'dfocus') order = orders.find(function(o){return String(o[0]).indexOf('GÖRÜKLE')>=0}) || orders[orders.length-1];
@@ -196,4 +225,22 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
       el.insertAdjacentHTML('beforeend', html);
     });
   }
+
+  var busy = false;
+  function runAfter(){
+    if(busy) return;
+    busy = true;
+    setTimeout(function(){
+      var s = document.getElementById('stamp');
+      if(s) s.textContent = 'Güncelleme No: ' + u.updateNo;
+      enhanceClassicDetails();
+      enhanceSalesIncludedTables();
+      fixListeHaricTables();
+      busy = false;
+    }, 20);
+  }
+  [0,250,1000,2000,3500,5000].forEach(function(t){ setTimeout(runAfter, t); });
+  try{
+    new MutationObserver(function(){ runAfter(); }).observe(document.body,{childList:true,subtree:true});
+  }catch(e){}
 })();
