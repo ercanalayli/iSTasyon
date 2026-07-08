@@ -167,7 +167,7 @@ function classifyBankMovement(row = {}) {
   }
 
   if (kind !== 'non_bank_summary_review' && incoming && /POS|NET SATIS|KREDI KART|BATCH YATAN|UYE ISYERI/.test(text)) {
-    kind = 'pos_bank_transfer';
+    kind = 'bank_transfer';
     type = 'POS banka transferi';
     target = 'BizimHesap hesaplar arasi transfer';
     category = 'POS banka aktarimi';
