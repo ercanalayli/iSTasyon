@@ -60,6 +60,7 @@
     "verify:daily-readiness": "node tools/verify_daily_readiness_v67.cjs",
     "verify:bank-approval-action": "node tools/verify_bank_approval_action_v68.cjs",
     "verify:bank-candidate-guard": "node tools/verify_bank_candidate_approval_guard_v70.cjs",
+    "verify:bank-candidate-pilot-scope": "node tools/verify_bank_candidate_pilot_scope_v83.cjs",
     "finance-calendar:preflight": "node tools/aperion_finance_calendar_preflight.cjs",
     "finance-calendar:build-install": "node tools/build_finance_calendar_install_v58.cjs",
     "finance-calendar:build-june-accruals": "node tools/build_june_2026_accrual_sql.cjs",
