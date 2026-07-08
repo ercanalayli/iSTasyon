@@ -17,10 +17,12 @@ on:
     paths:
       - ".github/workflows/bank-approval-status.yml"
       - "tools/build_bank_approval_status_v76.cjs"
+      - "tools/merge_bank_approval_status_v82.cjs"
       - "tools/approve_bank_candidate_v70.cjs"
       - "tools/check_bank_candidate_queue_proof_v71.cjs"
       - "tools/select_bank_approval_candidate_v69.cjs"
       - "tools/preview_pending_bank_to_bizimhesap_plan.cjs"
+      - "tools/bank_posting_plan.cjs"
       - "bizimhesap_queue_worker.cjs"
       - "package.json"
 
@@ -59,15 +61,18 @@ jobs:
       - name: Build read-only bank approval status
         run: npm run bank:approval:status
 
-      - name: Commit status snapshot
+      - name: Build unified bank approval status
+        run: npm run bank:approval:unified-status
+
+      - name: Commit status snapshots
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/aperion_bank_approval_status.json
+          git add data/aperion_bank_approval_status.json data/aperion_bank_approval_unified_status.json
           if git diff --cached --quiet; then
             echo "No bank approval status change"
           else
-            git commit -m "Update bank approval status snapshot"
+            git commit -m "Update bank approval status snapshots"
             git push
           fi
 
@@ -79,7 +84,9 @@ jobs:
           if-no-files-found: ignore
           path: |
             data/aperion_bank_approval_status.json
+            data/aperion_bank_approval_unified_status.json
             data/banka_onay_aday_kanit_durumu.json
             data/banka_onay_guvenli_adaylar.json
             data/banka_onay_kuyruk_kaniti.json
             data/bizimhesap_queue_dryrun.json
+            data/banka_onay_bizimhesap_kayit_plani.json
