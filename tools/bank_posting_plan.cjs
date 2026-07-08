@@ -75,6 +75,10 @@ function description(row) {
   return fixMojibake(row.description || row.aciklama || '');
 }
 
+function targetBankAccount(row) {
+  return fixMojibake(row.target_account || `${bankName(row)} banka hesabi`);
+}
+
 function counterpartyGuess(row) {
   const explicit = fixMojibake(row.target_counterparty || row.suggested_counterparty || row.aday_cari || '').trim();
   if (explicit && !isInvalidCounterparty(explicit)) return explicit;
@@ -91,7 +95,7 @@ function counterpartyGuess(row) {
       if (!isInvalidCounterparty(candidate)) return candidate;
     }
   }
-  if (/POS|NET SATIS|KREDI KART|BATCH YATAN/.test(text)) return 'POS / Kart musterileri';
+  if (/POS|NET SATIS|KREDI KART|BATCH YATAN/.test(text)) return 'POS POS POS KREDI KARTI';
   if (/KOMISYON|BSMV|UCRET|MASRAF/.test(text)) return bankName(row);
   if (/VIRMAN/.test(text)) return 'Banka ici virman';
   return 'Cari eslestirme onayda';
@@ -138,6 +142,8 @@ function classifyBankMovement(row = {}) {
   let target = 'BizimHesap banka/kasa kaydi';
   let category = fixMojibake(row.suggested_category || row.category || (incoming ? 'Tahsilat' : 'Odeme'));
   let counterparty = counterpartyGuess(row);
+  let sourceAccount = '';
+  let targetAccount = targetBankAccount(row);
   let confidence = Number(row.confidence_score || row.confidence || row.guven || 0) || (incoming ? 72 : 70);
   const reasons = [];
 
@@ -154,18 +160,22 @@ function classifyBankMovement(row = {}) {
     target = 'Onay Merkezi inceleme';
     category = 'Kaynak kontrol';
     counterparty = 'Banka hareketi degil';
+    sourceAccount = '';
+    targetAccount = '';
     confidence = 20;
     reasons.push('banka disi ozet mail');
   }
 
   if (kind !== 'non_bank_summary_review' && incoming && /POS|NET SATIS|KREDI KART|BATCH YATAN|UYE ISYERI/.test(text)) {
-    kind = 'pos_collection';
-    type = 'POS tahsilati';
-    target = 'BizimHesap banka tahsilati';
-    category = 'Satis tahsilati';
-    counterparty = 'POS / Kart musterileri';
+    kind = 'pos_bank_transfer';
+    type = 'POS banka transferi';
+    target = 'BizimHesap hesaplar arasi transfer';
+    category = 'POS banka aktarimi';
+    sourceAccount = 'POS POS POS KREDI KARTI';
+    targetAccount = targetBankAccount(row);
+    counterparty = `${sourceAccount} -> ${targetAccount}`;
     confidence = Math.max(confidence, 88);
-    reasons.push('POS aciklamasi');
+    reasons.push('POS banka aktarimi');
   }
   if (kind !== 'non_bank_summary_review' && (/KOMISYON|BSMV|UCRET|MASRAF|KATKI PAYI/.test(text) || (amountOut(row) > 0 && /POS|KREDI KART|UYE ISYERI/.test(text)))) {
     kind = 'bank_fee_expense';
@@ -173,6 +183,8 @@ function classifyBankMovement(row = {}) {
     target = 'BizimHesap gider/masraf kaydi';
     category = 'Banka masrafi';
     counterparty = bankName(row);
+    sourceAccount = '';
+    targetAccount = targetBankAccount(row);
     confidence = Math.max(confidence, 90);
     reasons.push('komisyon/masraf');
   }
@@ -182,6 +194,8 @@ function classifyBankMovement(row = {}) {
     target = 'BizimHesap banka virmani';
     category = 'Bankalar arasi transfer';
     counterparty = 'Banka ici virman';
+    sourceAccount = fixMojibake(row.source_account || 'Kaynak banka hesabi');
+    targetAccount = targetBankAccount(row);
     confidence = Math.max(confidence, 84);
     reasons.push('virman');
   }
@@ -191,6 +205,8 @@ function classifyBankMovement(row = {}) {
     target = 'BizimHesap banka/kredi karti virmani';
     category = 'Kredi karti borc odemesi';
     counterparty = 'Kredi karti';
+    sourceAccount = targetBankAccount(row);
+    targetAccount = 'Kredi karti';
     confidence = Math.max(confidence, 86);
     reasons.push('kart borcu');
   }
@@ -200,6 +216,8 @@ function classifyBankMovement(row = {}) {
     target = 'BizimHesap gider/odeme kaydi';
     category = 'Vergi/SGK';
     counterparty = 'Vergi/SGK';
+    sourceAccount = targetBankAccount(row);
+    targetAccount = 'Vergi/SGK';
     confidence = Math.max(confidence, 84);
     reasons.push('vergi/sgk');
   }
@@ -208,6 +226,7 @@ function classifyBankMovement(row = {}) {
     type = 'Fatura odemesi';
     target = 'BizimHesap gider/odeme kaydi';
     category = 'Sabit gider faturasi';
+    sourceAccount = targetBankAccount(row);
     confidence = Math.max(confidence, 82);
     reasons.push('fatura anahtar kelimesi');
   }
@@ -228,7 +247,9 @@ function classifyBankMovement(row = {}) {
       kind,
       type,
       target,
-      account: fixMojibake(row.target_account || `${bankName(row)} banka hesabi`),
+      account: targetAccount || targetBankAccount(row),
+      source_account: sourceAccount,
+      target_account: targetAccount,
       counterparty,
       category,
       confidence: Math.min(99, Math.round(confidence)),
@@ -262,6 +283,8 @@ function classifyQueueRow(row = {}) {
     category: p.category,
     counterparty: p.counterparty,
     account: p.account,
+    source_account: p.source_account,
+    target_account: p.target_account,
     amount: p.amount,
     date: p.date,
     time: p.time,
