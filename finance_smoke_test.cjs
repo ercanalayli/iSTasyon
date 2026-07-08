@@ -123,7 +123,7 @@ function testPosBankSettlementClassification() {
     description: 'POS OTOMATIK NET SATIS TUTARI BATCH YATAN',
     target_account: '*IS BANKASI',
   });
-  assert(result.plan.kind === 'pos_bank_transfer', 'POS banka yatışı tahsilat değil transfer olmalı');
+  assert(result.plan.kind === 'bank_transfer', 'POS banka yatışı worker tarafında transfer yoluna gitmeli');
   assert(result.plan.type === 'POS banka transferi', 'POS tipi transfer olarak görünmeli');
   assert(result.plan.target === 'BizimHesap hesaplar arasi transfer', 'POS hedefi hesaplar arası transfer olmalı');
   assert(result.plan.source_account === 'POS POS POS KREDI KARTI', 'POS kaynak hesabı standart değil');
