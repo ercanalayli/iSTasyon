@@ -1,5 +1,5 @@
 window.HASTA_BEZI_GORUKLE_ILAVE = {
-  updateNo: '1114260807',
+  updateNo: '1134260807',
   customer: 'GÖRÜKLE MEDİKAL / BURSA',
   note: 'Görükle Medikal ilave: 10 balya Moly serme. Kural: Serme = yatak koruyucu örtü; bel bantlı = bağlama. Görükle sermeler Nisan, diğerleri Mayıs listesi.',
   replaceOrderName: 'GÖRÜKLE MEDİKAL / BURSA',
@@ -57,7 +57,7 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
   function vatRate(p){ return productKey(p && p[1]) === 'LORINA_CINKO' ? 1.20 : 1.10; }
   function discPct(p){ var x = parseFloat(String((p && p[4]) || '0').replace('%','').replace(',','.')); return isNaN(x) ? 0 : x; }
   function iskDhl(p){ return +p[9] || 0; }
-  function listDhl(p){ var d = discPct(p); var net = iskDhl(p); return d ? net / (1 - d/100) : net; }
+  function listDhl(p){ var dis = discPct(p); var net = iskDhl(p); return dis ? net / (1 - dis/100) : net; }
   function listHrc(p){ return listDhl(p) / vatRate(p); }
   function salesDhl(p){ return (+p[10] || 0) * vatRate(p); }
   function strong(value, digits){
@@ -174,12 +174,12 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
 
   function classicProduct(p){
     var q = +p[2] || 0;
-    var vat = vatRate(p);
-    var listeDhl = listDhl(p);
-    var listeHrc = listHrc(p);
-    var iskHrc = q ? ((+p[10] || 0) / q) : 0;
+    var vt = vatRate(p);
+    var listeD = listDhl(p);
+    var listeH = listHrc(p);
+    var iskH = q ? ((+p[10] || 0) / q) : 0;
     var iskD = iskDhl(p);
-    var toplamDhl = (+p[10] || 0) * vat;
+    var toplamD = (+p[10] || 0) * vt;
     var kar = +p[11] || 0;
     var maliyetToplam = (+p[5] || 0) * q;
     var kontrol = isSerme(p) ? 'Kar-Dağ %5: Uygulanmaz — serme / yatak koruyucu örtü ürünü' : 'Alış/Fark Kontrolü: Alış tutarı, fatura içi iskontolar ve Kar-Dağ %5 fark faturası kontrol edilecek';
@@ -188,8 +188,8 @@ window.HASTA_BEZI_GORUKLE_ILAVE = {
       + '<div style="margin-top:5px">Bly/Pkt: <b>' + packLine(p) + '</b> | Liste: <b>' + listMonth(p) + ' listesi</b> | İsk: <b>' + (p[4] === 'Yok' ? 'Yok / 0%' : p[4]) + '</b></div>'
       + '<div>Maliyet: <b>' + money(p[5]) + '</b> | Alış Tarihi: <b>' + p[6] + '</b> | Alış Fatura: <b>' + p[7] + '</b> | Fark Fatura: <b>' + p[8] + '</b></div>'
       + '<div>' + kontrol + '</div>'
-      + '<div style="margin-top:6px">Liste Hariç: <b>' + money(listeHrc,4) + '</b> | ' + strongDhl('Liste Dhl', listeDhl) + ' | İsk.Hrç: <b>' + money(iskHrc,4) + '</b> | ' + strongDhl('İsk.Dhl', iskD) + '</div>'
-      + '<div style="margin-top:6px">Top.Hrç: <b>' + money(p[10]) + '</b> | <span style="font-weight:900;font-size:15px;background:#fff3b0;border:1px solid #d6b900;border-radius:7px;padding:3px 7px">Net Satış Dhl: ' + money(toplamDhl) + '</span> | Kâr: <b>' + money(kar) + '</b></div>'
+      + '<div style="margin-top:6px">Liste Hariç: <b>' + money(listeH,4) + '</b> | ' + strongDhl('Liste Dhl', listeD) + ' | İsk.Hrç: <b>' + money(iskH,4) + '</b> | ' + strongDhl('İsk.Dhl', iskD) + '</div>'
+      + '<div style="margin-top:6px">Top.Hrç: <b>' + money(p[10]) + '</b> | <span style="font-weight:900;font-size:15px;background:#fff3b0;border:1px solid #d6b900;border-radius:7px;padding:3px 7px">Net Satış Dhl: ' + money(toplamD) + '</span> | Kâr: <b>' + money(kar) + '</b></div>'
       + '<div>Kâr Marjı: <b>%' + money(margin(kar,p[10]),2) + '</b> | Kâr Oranı: <b>%' + money(rate(kar,maliyetToplam),2) + '</b></div>'
       + '</div>';
   }
