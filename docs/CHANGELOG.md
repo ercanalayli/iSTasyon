@@ -20,6 +20,8 @@
 - POS banka aktarım planına `source_account` ve `target_account` alanları eklendi. Kaynak hesap standardı: `POS POS POS KREDI KARTI`; hedef hesap: paranın yattığı banka hesabı.
 - Banka onay aday seçim motoru pilot banka kuralına göre düzeltildi. İş Bankası pilot banka olarak önceliklendirilir; pilot aday varsa Yapı Kredi/Akbank/VakıfBank gibi farklı banka adayları ilk sıraya alınmaz.
 - Aday seçim skorunda eski `POS tahsilati` ödülü kaldırıldı; doğru `POS banka transferi / POS banka aktarimi` sınıfı pozitif kriter yapıldı.
+- `verify_bank_candidate_pilot_scope_v83.cjs` testi eklendi. Bu test, Yapı Kredi veya VakıfBank daha cazip görünse bile İş Bankası pilot adayı varsa ilk adayın İş Bankası olmasını zorunlu tutar.
+- `AperiON Bank Approval Status` workflow'u `BANK_APPROVAL_PILOT_BANK=IS BANKASI` ile çalışacak ve pilot kapsam testi geçmeden banka onay status raporu üretmeyecek şekilde güncellendi.
 
 ### Kararlar
 
