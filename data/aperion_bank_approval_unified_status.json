@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-07-08T10:26:43.863Z",
+  "created_at": "2026-07-08T10:36:02.785Z",
   "safe_mode": true,
   "live_rpc_called": false,
   "live_bizimhesap_save_called": false,
@@ -39,35 +39,34 @@
   },
   "summary": {
     "status_preview_count": 25,
-    "status_candidate_count": 6,
-    "status_low_risk_count": 3,
+    "status_candidate_count": 3,
+    "status_low_risk_count": 1,
     "status_review_count": 19,
     "status_ready_queue_count": 0,
-    "candidate_file_count": 7,
+    "candidate_file_count": 4,
     "posting_plan_count": 25,
     "queue_dry_run_count": 0,
     "missing_file_count": 0,
     "parse_error_count": 0
   },
   "selected_candidate": {
-    "pending_bank_movement_id": "d1455265-abaf-4ea1-a6d4-386bf16b93c1",
-    "bank_name": "Yapi Kredi",
-    "transaction_date": "2026-06-30",
+    "pending_bank_movement_id": "0cd1e230-2254-4908-a9a0-15a3d8678e38",
+    "bank_name": "Turkiye Is Bankasi",
+    "transaction_date": "2026-07-05",
     "transaction_time": "",
-    "amount": -3.56,
-    "type": "Vergi/SGK odemesi",
-    "target": "BizimHesap gider/odeme kaydi",
+    "amount": 2026,
+    "type": "POS banka transferi",
+    "target": "BizimHesap hesaplar arasi transfer",
     "source_account": "",
-    "target_account": "Vergi/SGK",
-    "counterparty": "Vergi/SGK",
-    "category": "Vergi/SGK",
-    "confidence": 90,
+    "target_account": "Turkiye Is Bankasi banka hesabi",
+    "counterparty": "POS POS POS KREDI KARTI -> Turkiye Is Bankasi banka hesabi",
+    "category": "POS banka aktarimi",
+    "confidence": 88,
     "risk_class": "low",
     "requires_user_review": false,
     "reasons": [
-      "banka borc/cikis",
-      "komisyon/masraf",
-      "vergi/sgk"
+      "banka alacak/giris",
+      "POS banka aktarimi"
     ]
   },
   "queues": {
@@ -78,8 +77,7 @@
   },
   "classifications": {
     "candidate_types": {
-      "Vergi/SGK odemesi": 2,
-      "POS banka transferi": 4,
+      "POS banka transferi": 3,
       "Cari odeme": 1
     },
     "posting_plan_types": {
