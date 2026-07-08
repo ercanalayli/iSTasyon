@@ -18,6 +18,8 @@
 - `REPO_AUDIT_2026-07-08.md` oluşturuldu.
 - Banka sınıflandırma motorunda POS banka yatışları düzeltildi: `POS tahsilati` yerine `POS banka transferi`, hedef olarak da `BizimHesap hesaplar arasi transfer` kullanılacak.
 - POS banka aktarım planına `source_account` ve `target_account` alanları eklendi. Kaynak hesap standardı: `POS POS POS KREDI KARTI`; hedef hesap: paranın yattığı banka hesabı.
+- Banka onay aday seçim motoru pilot banka kuralına göre düzeltildi. İş Bankası pilot banka olarak önceliklendirilir; pilot aday varsa Yapı Kredi/Akbank/VakıfBank gibi farklı banka adayları ilk sıraya alınmaz.
+- Aday seçim skorunda eski `POS tahsilati` ödülü kaldırıldı; doğru `POS banka transferi / POS banka aktarimi` sınıfı pozitif kriter yapıldı.
 
 ### Kararlar
 
@@ -36,4 +38,4 @@
 - Onaylı kayıtların BizimHesap'a işlenmeden önce dry-run planının üretilmesi.
 - İşlem sonrası BizimHesap doğrulamasının yapılması.
 - Operasyon Merkezi ana ekranının bu kurallara göre revize edilmesi.
-- `data/banka_onay_guvenli_adaylar.json`, `data/banka_onay_kuyruk_kaniti.json`, `data/banka_onay_aday_kanit_durumu.json` dosyalarının workflow çıktısı olarak gerçekten üretildiğinin kanıtlanması.
+- Yeni pilot banka aday seçimiyle `data/banka_onay_guvenli_adaylar.json` ve `data/aperion_bank_approval_unified_status.json` dosyalarının workflow tarafından yeniden üretilmesi.
