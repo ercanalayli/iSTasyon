@@ -11,6 +11,7 @@ function assert(condition, message) {
 }
 
 function plan({ id, bank, type, amountIn = 0, amountOut = 0, confidence = 90 }) {
+  const isPosTransfer = /POS/.test(type);
   return {
     pending_bank_movement_id: id,
     bank_name: bank,
@@ -21,21 +22,21 @@ function plan({ id, bank, type, amountIn = 0, amountOut = 0, confidence = 90 }) 
     balance_after: 0,
     description: type,
     plan: {
-      kind: /POS/.test(type) ? 'pos_bank_transfer' : 'tax_or_sgk_payment',
+      kind: isPosTransfer ? 'bank_transfer' : 'tax_or_sgk_payment',
       type,
-      target: /POS/.test(type) ? 'BizimHesap hesaplar arasi transfer' : 'BizimHesap gider/odeme kaydi',
+      target: isPosTransfer ? 'BizimHesap hesaplar arasi transfer' : 'BizimHesap gider/odeme kaydi',
       account: `${bank} banka hesabi`,
-      source_account: /POS/.test(type) ? 'POS POS POS KREDI KARTI' : `${bank} banka hesabi`,
-      target_account: /POS/.test(type) ? `${bank} banka hesabi` : 'Vergi/SGK',
-      counterparty: /POS/.test(type) ? `POS POS POS KREDI KARTI -> ${bank} banka hesabi` : 'Vergi/SGK',
-      category: /POS/.test(type) ? 'POS banka aktarimi' : 'Vergi/SGK',
+      source_account: isPosTransfer ? 'POS POS POS KREDI KARTI' : `${bank} banka hesabi`,
+      target_account: isPosTransfer ? `${bank} banka hesabi` : 'Vergi/SGK',
+      counterparty: isPosTransfer ? `POS POS POS KREDI KARTI -> ${bank} banka hesabi` : 'Vergi/SGK',
+      category: isPosTransfer ? 'POS banka aktarimi' : 'Vergi/SGK',
       confidence,
       amount: amountIn > 0 ? amountIn : Math.abs(amountOut),
       date: '2026-07-05',
       time: '',
       bank_name: bank,
       description: type,
-      reasons: /POS/.test(type) ? ['banka alacak/giris', 'POS banka aktarimi'] : ['banka borc/cikis', 'vergi/sgk'],
+      reasons: isPosTransfer ? ['banka alacak/giris', 'POS banka aktarimi'] : ['banka borc/cikis', 'vergi/sgk'],
       requires_user_review: false,
       next_step_after_user_approval: 'approve_pending_bank_movement RPC -> bizimhesap_queue.status=ready_for_bizimhesap',
     },
