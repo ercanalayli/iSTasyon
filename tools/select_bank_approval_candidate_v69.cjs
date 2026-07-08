@@ -7,9 +7,28 @@ const input = process.argv.includes('--input')
 const output = process.argv.includes('--out')
   ? process.argv[process.argv.indexOf('--out') + 1]
   : 'data/banka_onay_guvenli_adaylar.json';
+const pilotBank = process.env.BANK_APPROVAL_PILOT_BANK || 'IS BANKASI';
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function normalizeText(value) {
+  return String(value || '')
+    .toLocaleUpperCase('tr-TR')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Z0-9]+/g, ' ')
+    .trim();
+}
+
+function isPilotBank(item) {
+  const bank = normalizeText(item.bank_name || item.plan?.bank_name || '');
+  const pilot = normalizeText(pilotBank);
+  if (!pilot) return false;
+  if (bank.includes(pilot)) return true;
+  if (pilot.includes('IS BANKASI') && /\b(TURKIYE )?IS BANKASI\b/.test(bank)) return true;
+  return false;
 }
 
 function absAmount(item) {
@@ -26,7 +45,7 @@ function riskClass(item) {
   if (plan.requires_user_review) return 'review';
   if (plan.confidence < 84) return 'review';
   if (['Cari tahsilat', 'Cari odeme'].includes(plan.type) && /eslestirme|eşleştirme|onayda/i.test(plan.counterparty || '')) return 'review';
-  if (amount > 100000 && /virman/i.test(plan.type || '')) return 'medium';
+  if (amount > 100000 && /virman|transfer/i.test(plan.type || '')) return 'medium';
   if (amount > 10000 && !/masraf|komisyon/i.test(`${plan.type} ${plan.category}`)) return 'medium';
   return 'low';
 }
@@ -36,8 +55,10 @@ function score(item) {
   const amount = absAmount(item);
   let value = Number(plan.confidence || 0);
   if (riskClass(item) === 'low') value += 30;
+  if (isPilotBank(item)) value += 35;
   if (/masraf|komisyon/i.test(`${plan.type} ${plan.category}`)) value += 20;
-  if (/POS tahsilati/i.test(plan.type || '')) value += 10;
+  if (/POS banka transferi|POS banka aktarimi/i.test(`${plan.type} ${plan.category}`)) value += 12;
+  if (/POS tahsilati/i.test(plan.type || '')) value -= 25;
   if (/virman/i.test(plan.type || '')) value -= 8;
   value -= Math.min(40, amount / 5000);
   return value;
@@ -55,10 +76,13 @@ function simplify(item) {
     type: plan.type,
     target: plan.target,
     account: plan.account,
+    source_account: plan.source_account,
+    target_account: plan.target_account,
     counterparty: plan.counterparty,
     category: plan.category,
     confidence: plan.confidence,
     risk_class: riskClass(item),
+    is_pilot_bank: isPilotBank(item),
     requires_user_review: !!plan.requires_user_review,
     reasons: plan.reasons || [],
     description: item.description,
@@ -69,20 +93,26 @@ function simplify(item) {
 function main() {
   const report = readJson(input);
   const plans = Array.isArray(report.plans) ? report.plans : [];
-  const candidates = plans
+  const sortedCandidates = plans
     .filter(item => riskClass(item) !== 'review')
     .map(item => ({ item, score: score(item) }))
     .sort((a, b) => b.score - a.score)
     .map(({ item }) => simplify(item));
+  const pilotCandidates = sortedCandidates.filter(item => item.is_pilot_bank);
+  const candidates = pilotCandidates.length ? pilotCandidates : sortedCandidates;
   const lowRisk = candidates.filter(item => item.risk_class === 'low');
   const result = {
     created_at: new Date().toISOString(),
     source: input,
     company_id: report.company_id || 'alayli',
     safe_mode: true,
+    pilot_bank: pilotBank,
+    pilot_scope_applied: pilotCandidates.length > 0,
     summary: {
       preview_count: plans.length,
       candidate_count: candidates.length,
+      total_candidate_count_before_pilot_scope: sortedCandidates.length,
+      pilot_candidate_count: pilotCandidates.length,
       low_risk_count: lowRisk.length,
       review_count: plans.filter(item => riskClass(item) === 'review').length,
     },
@@ -94,6 +124,8 @@ function main() {
   fs.writeFileSync(output, JSON.stringify(result, null, 2), 'utf8');
 
   console.log('AperiON banka onay guvenli aday secimi');
+  console.log(`Pilot banka: ${pilotBank}`);
+  console.log(`Pilot filtresi uygulandi: ${result.pilot_scope_applied ? 'evet' : 'hayir'}`);
   console.log(`Preview: ${result.summary.preview_count}`);
   console.log(`Aday: ${result.summary.candidate_count}`);
   console.log(`Dusuk risk: ${result.summary.low_risk_count}`);
