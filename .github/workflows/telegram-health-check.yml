@@ -1,0 +1,38 @@
+name: AperiON Telegram Health Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
+
+permissions:
+  contents: read
+
+env:
+  TELEGRAM_EXPECTED_WEBHOOK_URL: https://aperion-istasyon.pages.dev/telegram/webhook
+  TELEGRAM_HEALTH_URL: https://aperion-istasyon.pages.dev/telegram/webhook
+
+jobs:
+  telegram-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check Telegram health
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: node tools/check_telegram_health.cjs
+
+      - name: Upload Telegram health status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: telegram-health-status
+          path: data/telegram_health_status.json
+          if-no-files-found: ignore
