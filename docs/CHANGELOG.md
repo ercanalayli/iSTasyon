@@ -15,6 +15,9 @@
 - `AUTOMATION_RULES.md` oluşturuldu.
 - `UI_STANDARDS.md` oluşturuldu.
 - `ROADMAP.md` oluşturuldu.
+- `REPO_AUDIT_2026-07-08.md` oluşturuldu.
+- Banka sınıflandırma motorunda POS banka yatışları düzeltildi: `POS tahsilati` yerine `POS banka transferi`, hedef olarak da `BizimHesap hesaplar arasi transfer` kullanılacak.
+- POS banka aktarım planına `source_account` ve `target_account` alanları eklendi. Kaynak hesap standardı: `POS POS POS KREDI KARTI`; hedef hesap: paranın yattığı banka hesabı.
 
 ### Kararlar
 
@@ -28,8 +31,9 @@
 
 ### Kalanlar
 
-- Yanlış isimlerin repo içinde taranması ve raporlanması.
-- İş Bankası ID 33-35 onay durumunun doğrulanması.
-- Onaylı kayıtların BizimHesap'a işlenmesi.
+- Yanlış isimlerin repo içinde kontrollü temizliği.
+- İş Bankası ID 33-35 onay durumunun gerçek sistem kanıtıyla doğrulanması.
+- Onaylı kayıtların BizimHesap'a işlenmeden önce dry-run planının üretilmesi.
 - İşlem sonrası BizimHesap doğrulamasının yapılması.
 - Operasyon Merkezi ana ekranının bu kurallara göre revize edilmesi.
+- `data/banka_onay_guvenli_adaylar.json`, `data/banka_onay_kuyruk_kaniti.json`, `data/banka_onay_aday_kanit_durumu.json` dosyalarının workflow çıktısı olarak gerçekten üretildiğinin kanıtlanması.
