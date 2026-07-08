@@ -22,6 +22,8 @@
 - Aday seçim skorunda eski `POS tahsilati` ödülü kaldırıldı; doğru `POS banka transferi / POS banka aktarimi` sınıfı pozitif kriter yapıldı.
 - `verify_bank_candidate_pilot_scope_v83.cjs` testi eklendi. Bu test, Yapı Kredi veya VakıfBank daha cazip görünse bile İş Bankası pilot adayı varsa ilk adayın İş Bankası olmasını zorunlu tutar.
 - `AperiON Bank Approval Status` workflow'u `BANK_APPROVAL_PILOT_BANK=IS BANKASI` ile çalışacak ve pilot kapsam testi geçmeden banka onay status raporu üretmeyecek şekilde güncellendi.
+- BizimHesap worker uyumu için POS banka transferi teknik `kind` değeri `bank_transfer` yoluna alındı. Kullanıcıya görünen `type` yine `POS banka transferi` olarak kalır. Böylece kayıt motoru tahsilat ekranına değil transfer/hesaplar arası işlem yoluna gider.
+- POS transfer smoke testi güncellendi: POS banka yatışı worker tarafında `bank_transfer` yoluna gitmeli, kaynak hesap `POS POS POS KREDI KARTI`, hedef hesap paranın yattığı banka hesabı olarak korunmalı.
 
 ### Kararlar
 
