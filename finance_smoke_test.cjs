@@ -103,12 +103,42 @@ function testBusinessCalendarSource() {
   console.log('OK business calendar source');
 }
 
+function testBankApprovalUnifiedStatusFiles() {
+  assert(fs.existsSync('tools/merge_bank_approval_status_v82.cjs'), 'Birleşik banka onay durum scripti yok');
+  const pkg = readJson('package.json');
+  assert(pkg.scripts['bank:approval:unified-status'], 'bank:approval:unified-status scripti yok');
+  const workflow = fs.readFileSync('.github/workflows/bank-approval-status.yml', 'utf8');
+  assert(workflow.includes('bank:approval:unified-status'), 'Workflow birleşik durum raporunu üretmiyor');
+  assert(workflow.includes('data/aperion_bank_approval_unified_status.json'), 'Workflow birleşik durum JSON dosyasını commit/artifact kapsamına almıyor');
+  console.log('OK bank approval unified status files');
+}
+
+function testPosBankSettlementClassification() {
+  const { classifyBankMovement } = require('./tools/bank_posting_plan.cjs');
+  const result = classifyBankMovement({
+    id: 'test-pos-1',
+    bank_name: 'Turkiye Is Bankasi',
+    transaction_date: '2026-07-05',
+    amount_in: 2026,
+    description: 'POS OTOMATIK NET SATIS TUTARI BATCH YATAN',
+    target_account: '*IS BANKASI',
+  });
+  assert(result.plan.kind === 'pos_bank_transfer', 'POS banka yatışı tahsilat değil transfer olmalı');
+  assert(result.plan.type === 'POS banka transferi', 'POS tipi transfer olarak görünmeli');
+  assert(result.plan.target === 'BizimHesap hesaplar arasi transfer', 'POS hedefi hesaplar arası transfer olmalı');
+  assert(result.plan.source_account === 'POS POS POS KREDI KARTI', 'POS kaynak hesabı standart değil');
+  assert(result.plan.target_account === '*IS BANKASI', 'POS hedef banka hesabı korunmalı');
+  console.log('OK POS bank settlement classification');
+}
+
 function main() {
   testSchemaFiles();
   testCommandCenterFiles();
   testSalesSummaryFile();
   testSalesDashboardAdapterSource();
   testBusinessCalendarSource();
+  testBankApprovalUnifiedStatusFiles();
+  testPosBankSettlementClassification();
   testPipeline();
   testMokaPipeline();
   console.log('AperiON Finans smoke test başarılı.');
