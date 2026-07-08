@@ -1,0 +1,29 @@
+{
+  "updated_at": "2026-07-08T17:34:00+03:00",
+  "notes": [
+    {
+      "id": "manual-20260708-sena-medikal-100000",
+      "created_at": "2026-07-08T17:34:00+03:00",
+      "source": "ChatGPT voice/text quick capture",
+      "company_class": "ALAYLI",
+      "counterparty": "Sena Medikal",
+      "type": "payment_promise",
+      "amount": 100000,
+      "currency": "TRY",
+      "due_date": "2026-07-10",
+      "status": "pending_payment",
+      "priority": "critical",
+      "description": "Sena Medikal için 10 Temmuz 2026 tarihinde 100.000 TL ödeme sözü/verilecek ödeme notu.",
+      "checks_required": [
+        "nakit kaynağı",
+        "banka hesabı",
+        "ödeme yöntemi",
+        "kullanıcı onayı",
+        "ödeme sonrası dekont/kanıt"
+      ],
+      "calendar_event_created": true,
+      "daily_payment_digest_updated": true,
+      "weekly_payment_plan_updated": true
+    }
+  ]
+}
