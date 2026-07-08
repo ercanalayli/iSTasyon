@@ -16,7 +16,7 @@ Bu dosya Ercan Alaylı şahsi banka, kredi kartı, KMH, abonelik ve şahsi trans
 
 Şahsi banka ekran görüntülerindeki tam IBAN, hesap numarası, müşteri no ve benzeri hassas bilgiler repo dosyalarına açık yazılmaz.
 
-Repo’da yalnızca banka adı, hesap türü, bakiye/risk sınıfı ve işlem sınıflandırma kuralı tutulur.
+Repo’da yalnızca banka adı, hesap türü, bakiye/risk sınıfı, kart son 4 hanesi ve işlem sınıflandırma kuralı tutulur.
 
 ## VakıfBank Ercan Alaylı şahsi hesap örneği
 
@@ -29,6 +29,27 @@ Kullanıcı tarafından VakıfBank Ercan Alaylı şahsi hesabı olarak bildirile
 - Kullanılabilir bakiye pozitif görünüyor
 
 Bu hesap şirket kaydı değildir.
+
+## VakıfBank Ercan Alaylı şahsi kredi kartları
+
+Kullanıcı tarafından VakıfBank Ercan Alaylı kredi kartları olarak bildirilen görselden çıkarılan kart listesi:
+
+- Platinum Kredi Kartı **6598
+  - Kullanılabilir limit: 250.000,00 TL
+  - Dönem içi toplam: 0,00 TL
+- Anında Platinum Troy **6595
+  - Kullanılabilir limit: 250.000,00 TL
+  - Dönem içi toplam: 0,00 TL
+- Business Kredi Kartı **6041
+  - Kullanılabilir limit: 50.000,00 TL
+  - Dönem içi toplam: 0,00 TL
+- Pro Card **4640
+  - Ek kart / Ercan Alaylı
+  - Kullanılabilir limit: 50.000,00 TL
+
+Bu kartlar kullanıcı tarafından Ercan Alaylı şahsi kredi kartları olarak bildirildiği için varsayılan sınıf **ŞAHSİ** olacaktır.
+
+“Business Kredi Kartı” ibaresi tek başına ALAYLI şirket kartı kabul edilmez. Şirketle ilişkisi kullanıcı tarafından açıkça belirtilmedikçe ALAYLI şirket BizimHesap kayıtlarına bağlanmaz.
 
 ## Şahsi işlem sınıflandırmaları
 
@@ -67,6 +88,19 @@ Varsayılan:
 - BizimHesap şirket kaydı: Hayır
 
 Detay açıklama veya ekstre olmadan otomatik sınıflandırılmaz.
+
+## Şahsi kredi kartı kuralları
+
+Şahsi kredi kartı hareketleri ALAYLI şirket gideri kabul edilmez.
+
+Varsayılan sınıflar:
+
+- Kredi kartı dönem içi harcama: Şahsi kredi kartı harcaması
+- Kredi kartı borç ödemesi: Şahsi banka → şahsi kredi kartı borç kapama
+- Kart aidatı / faiz / ücret: Şahsi finansman/banka gideri
+- Şirket harcaması olduğu kullanıcı tarafından belirtilirse: Onaylı ortak cari / şirket gideri incelemesi
+
+Şahsi kredi kartından yapılan bir harcama şirketle ilgiliyse kullanıcı ayrıca belirtmelidir. Kanıt olmadan ALAYLI BizimHesap gideri yapılmaz.
 
 ## Şirket/şahsi karışma kuralı
 
