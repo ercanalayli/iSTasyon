@@ -15,6 +15,7 @@ AperiON tarafında işler şu sırayla yürütülecek:
 5. Gmail / fatura / ekstre otomasyonu
 6. Kredi kartı / fatura / abonelik veri standardı
 7. Şahsi finans ayrımı
+8. Üst Akıl girdi işleme ve kalıcı kart mantığı
 
 ## P0 – Hemen bitmesi gerekenler
 
@@ -87,6 +88,25 @@ Eksik:
 - Kritik ödeme kartı gerçek veriye bağlama.
 - Kredi kartı/fatura veri JSON veya Supabase view bağlantısı.
 - Mobil görünüm tekrar test.
+
+### P0.4 Üst Akıl belge/görsel alma kuralı
+
+Amaç:
+
+- Kullanıcının gönderdiği görsel veya belge yalnızca sohbet cevabı sayılmayacak.
+- Bilgi önce geçmiş bağlamla eşleştirilecek, sonra uygun kalıcı kart adayı olarak sunulacak.
+- Eksik bilgi varsa yalnızca eksik alan sorulacak.
+
+Durum:
+
+- Kullanıcı ÜST AKIL TALİMATI verdi.
+- Bundan sonra cevap sonunda “Kalıcı kayıt önerisi” bölümü gösterilecek.
+
+Eksik:
+
+- Dashboardda kalıcı kart adayları bölümü.
+- Abonelik, ödeme talimatı, hesap, kart, fatura, cari/tedarikçi kartlarının ortak veri şeması.
+- Görselden çıkarılan bilgiyi Supabase master data tablolarına yazma akışı.
 
 ## P1 – Finans ve kayıt güvenliği
 
@@ -184,6 +204,12 @@ Yapılanlar:
 Kalanlar:
 Riskler:
 Sıradaki Adım:
+```
+
+Belge/görsel/ekran geldiğinde ayrıca şu bölüm eklenecek:
+
+```text
+Kalıcı kayıt önerisi:
 ```
 
 ## Bugünkü aktif bekleme
