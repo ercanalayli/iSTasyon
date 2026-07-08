@@ -21,6 +21,7 @@ on:
       - "tools/approve_bank_candidate_v70.cjs"
       - "tools/check_bank_candidate_queue_proof_v71.cjs"
       - "tools/select_bank_approval_candidate_v69.cjs"
+      - "tools/verify_bank_candidate_pilot_scope_v83.cjs"
       - "tools/preview_pending_bank_to_bizimhesap_plan.cjs"
       - "tools/bank_posting_plan.cjs"
       - "bizimhesap_queue_worker.cjs"
@@ -42,6 +43,7 @@ jobs:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       COMPANY_ID: alayli
+      BANK_APPROVAL_PILOT_BANK: IS BANKASI
     steps:
       - uses: actions/checkout@v4
 
@@ -57,6 +59,7 @@ jobs:
         run: |
           npm run verify:bank-candidate-guard
           npm run verify:bank-approval-action
+          npm run verify:bank-candidate-pilot-scope
 
       - name: Build read-only bank approval status
         run: npm run bank:approval:status
