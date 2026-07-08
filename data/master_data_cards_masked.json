@@ -1,0 +1,74 @@
+{
+  "updated_at": "2026-07-08T22:40:00+03:00",
+  "privacy_note": "Bu dosya public repo için maskeli envanterdir. Gerçek abone, hesap ve belge numaraları private veri alanında tutulmalıdır.",
+  "cards": [
+    {
+      "card_id": "alayli-bank-vakifbank-osb-vadesiz-tl",
+      "card_type": "bank_account",
+      "owner_class": "ALAYLI",
+      "status": "active",
+      "bank_name": "VakıfBank",
+      "branch_name": "Organize Sanayi Şube",
+      "account_type": "Vadesiz TL",
+      "iban_masked": "TR18 **** **** **** **** 1925 09",
+      "account_no_masked": "****192509",
+      "usage_scope": "ALAYLI şirket hesabı; otomatik ödeme ve banka hareket izleme",
+      "linked_auto_payments": [
+        "alayli-electric-uludag-kulak",
+        "alayli-electric-uludag-medikal-1",
+        "alayli-electric-uludag-medikal-2"
+      ]
+    },
+    {
+      "card_id": "alayli-electric-uludag-kulak",
+      "card_type": "subscription",
+      "owner_class": "ALAYLI",
+      "status": "active",
+      "subscription_group": "Elektrik",
+      "institution": "Uludağ Elektrik",
+      "location_label": "Kulak",
+      "subscriber_no_masked": "****8331",
+      "service_address_summary": "Süleymaniye Mah. Mimarsinan Bulvarı / İşyeri No:9",
+      "payment_source_ref": "alayli-bank-vakifbank-osb-vadesiz-tl",
+      "auto_payment_status": "active",
+      "last_invoice_period": "2026/06",
+      "last_invoice_amount": 799.0,
+      "last_due_date": "2026-06-11",
+      "currency": "TRY"
+    },
+    {
+      "card_id": "alayli-electric-uludag-medikal-1",
+      "card_type": "subscription",
+      "owner_class": "ALAYLI",
+      "status": "active",
+      "subscription_group": "Elektrik",
+      "institution": "Uludağ Elektrik",
+      "location_label": "Medikal 1",
+      "subscriber_no_masked": "****8506",
+      "service_address_summary": "Süleymaniye Mah. Mimarsinan Bulvarı / İşyeri No:1",
+      "payment_source_ref": "alayli-bank-vakifbank-osb-vadesiz-tl",
+      "auto_payment_status": "active",
+      "last_invoice_period": "2026/06",
+      "last_invoice_amount": 691.0,
+      "last_due_date": "2026-06-11",
+      "currency": "TRY"
+    },
+    {
+      "card_id": "alayli-electric-uludag-medikal-2",
+      "card_type": "subscription",
+      "owner_class": "ALAYLI",
+      "status": "active",
+      "subscription_group": "Elektrik",
+      "institution": "Uludağ Elektrik",
+      "location_label": "Medikal 2",
+      "subscriber_no_masked": "****5076",
+      "service_address_summary": "Süleymaniye Mah. Mimarsinan Bulvarı / İşyeri No:2",
+      "payment_source_ref": "alayli-bank-vakifbank-osb-vadesiz-tl",
+      "auto_payment_status": "active",
+      "last_invoice_period": "2026/06",
+      "last_invoice_amount": 565.0,
+      "last_due_date": "2026-06-11",
+      "currency": "TRY"
+    }
+  ]
+}
