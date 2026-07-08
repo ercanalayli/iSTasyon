@@ -12,6 +12,7 @@ create table if not exists public.quick_notes (
   amount numeric(14,2),
   currency text not null default 'TRY',
   due_date date,
+  payment_method text,
   priority text not null default 'normal',
   status text not null default 'captured',
   confidence integer not null default 50,
@@ -25,10 +26,13 @@ create table if not exists public.quick_notes (
   dashboard_visible boolean not null default true
 );
 
+alter table if exists public.quick_notes add column if not exists payment_method text;
+
 create index if not exists quick_notes_created_at_idx on public.quick_notes(created_at desc);
 create index if not exists quick_notes_due_date_idx on public.quick_notes(due_date);
 create index if not exists quick_notes_status_idx on public.quick_notes(status);
 create index if not exists quick_notes_priority_idx on public.quick_notes(priority);
+create index if not exists quick_notes_payment_method_idx on public.quick_notes(payment_method);
 
 create table if not exists public.payment_promises (
   id uuid primary key default gen_random_uuid(),
@@ -49,8 +53,11 @@ create table if not exists public.payment_promises (
   note text
 );
 
+alter table if exists public.payment_promises add column if not exists payment_method text;
+
 create index if not exists payment_promises_due_date_idx on public.payment_promises(due_date);
 create index if not exists payment_promises_paid_status_idx on public.payment_promises(paid_status);
+create index if not exists payment_promises_payment_method_idx on public.payment_promises(payment_method);
 
 create or replace view public.quick_capture_dashboard_view as
 select
@@ -64,6 +71,7 @@ select
   q.amount,
   q.currency,
   q.due_date,
+  coalesce(p.payment_method, q.payment_method) as payment_method,
   q.priority,
   q.status,
   q.confidence,
