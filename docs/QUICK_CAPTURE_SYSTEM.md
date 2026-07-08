@@ -9,10 +9,10 @@ ChatGPT uygulamasına girip proje seçmek, doğru sohbeti bulmak, uzun mesaj yaz
 Kullanıcı şu şekilde tek cümle söyleyebilmelidir:
 
 ```text
-Sena Medikal 10 Temmuz 100 bin ödeme
+Sena Medikal 10 Temmuz 100 bin ödeme havale
 ```
 
-Sistem bunu otomatik olarak ödeme notu, alarm, dashboard kaydı ve takip kalemine dönüştürmelidir.
+Sistem bunu otomatik olarak ödeme notu, ödeme yöntemi, alarm, dashboard kaydı ve takip kalemine dönüştürmelidir.
 
 ## Ana karar
 
@@ -32,7 +32,7 @@ Kullanım:
 
 ```text
 @ercanalayli_bot içine direkt yaz:
-Sena Medikal 10 Temmuz 100 bin ödeme
+Sena Medikal 10 Temmuz 100 bin ödeme havale
 ```
 
 Gereken teknik bağlantı:
@@ -49,6 +49,7 @@ Aldım.
 Cari: Sena Medikal
 Tarih: 10 Temmuz 2026
 Tutar: 100.000 TL
+Ödeme yöntemi: Havale/EFT/FAST
 Tip: ödeme
 Durum: kritik ödeme bekliyor
 Alarm: eklendi
@@ -65,7 +66,7 @@ Kullanım:
 
 ```text
 Hey Siri, AperiON not al
-Sena Medikal 10 Temmuz 100 bin ödeme
+Sena Medikal 10 Temmuz 100 bin ödeme kredi kartı
 ```
 
 Gereken teknik bağlantı:
@@ -100,7 +101,7 @@ Dashboard içinde `Hızlı Not` alanı olacak.
 Kullanım:
 
 ```text
-Sena Medikal 10 Temmuz 100 bin ödeme
+Sena Medikal 10 Temmuz 100 bin ödeme çek
 ```
 
 Bu alan masaüstü kullanım içindir; yolda birinci tercih değildir.
@@ -126,7 +127,7 @@ Quick Capture gelen metni şu sınıflardan birine ayırır:
 Örnek metin:
 
 ```text
-Sena Medikal 10 Temmuz 100 bin ödeme
+Sena Medikal 10 Temmuz 100 bin ödeme havale
 ```
 
 Çıkarılacak alanlar:
@@ -135,12 +136,40 @@ Sena Medikal 10 Temmuz 100 bin ödeme
 - due_date: 2026-07-10
 - amount: 100000
 - currency: TRY
+- payment_method: bank_transfer
 - type: payment_promise
 - class: ALAYLI
 - priority: critical
 - status: pending_payment
 - reminders: 1 gün önce, ödeme sabahı, ödeme öncesi
 - evidence_required: ödeme sonrası dekont
+
+## Ödeme yöntemi standardı
+
+Ödeme notlarında ödeme yöntemi ayrı alan olarak tutulacaktır.
+
+Desteklenen yöntemler:
+
+```text
+cash              → Nakit / elden
+bank_transfer     → Havale / EFT / FAST / banka transferi
+check             → Çek
+promissory_note   → Senet
+credit_card       → Kredi kartı
+unknown           → Belirsiz / sonradan sorulacak
+```
+
+Örnek hızlı notlar:
+
+```text
+Sena Medikal 10 Temmuz 100 bin ödeme havale
+Sena Medikal 10 Temmuz 100 bin ödeme nakit
+Sena Medikal 10 Temmuz 100 bin ödeme çek
+Sena Medikal 10 Temmuz 100 bin ödeme senet
+Sena Medikal 10 Temmuz 100 bin ödeme kredi kartı
+```
+
+Ödeme yöntemi belirtilmemişse kayıt yine alınır; fakat `payment_method = unknown` veya boş kalır ve onayda kullanıcıdan yöntem istenir.
 
 ## Alarm stratejisi
 
@@ -179,6 +208,7 @@ audit_log
 - amount
 - currency
 - due_date
+- payment_method
 - status
 - confidence
 - needs_review
@@ -203,7 +233,7 @@ audit_log
 
 İlk yapılacak sürüm:
 
-1. Cloudflare endpoint: `/api/quick-note`
+1. Cloudflare endpoint: `/api/quick-note` veya `/telegram/webhook`
 2. Supabase tablo: `quick_notes`
 3. Telegram webhook: `@ercanalayli_bot`
 4. iPhone Kestirme POST desteği
@@ -215,13 +245,13 @@ audit_log
 Kullanıcı şunu yazınca:
 
 ```text
-Sena Medikal 10 Temmuz 100 bin ödeme
+Sena Medikal 10 Temmuz 100 bin ödeme kredi kartı
 ```
 
 Sistem 5 saniye içinde şu cevabı vermelidir:
 
 ```text
-Aldım. Sena Medikal için 10 Temmuz 2026 100.000 TL ödeme notu açıldı. Kritik ödeme listesine ve hatırlatmalara eklendi.
+Aldım. Sena Medikal için 10 Temmuz 2026 100.000 TL ödeme notu açıldı. Ödeme yöntemi kredi kartı olarak işaretlendi. Kritik ödeme listesine ve hatırlatmalara eklendi.
 ```
 
 Dashboardda aynı kayıt görünmelidir.
