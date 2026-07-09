@@ -1,5 +1,16 @@
 # AperiON Changelog
 
+## 2026-07-09
+
+### Birlesik Ust Akil ve Hayat Asistani Linki
+
+- Kullanici iki hatti birlestirmek istedi: AperiON iSTasyon CFO/ust akil sistemi ve Hasta Bezi/FIFO urun-cari sistemi.
+- `aperion-ust-akil.html` eklendi.
+- Sayfa 8 tiklanabilir modulu tek linkte toplar: CFO Ust Akil, Hasta Bezi & FIFO, Mail & Ekstre, BizimHesap Onayi, Cari Hafiza, Urun Hafiza, Hayat Asistani, Veri Guveni.
+- `aperion.html` kisa giris kapisi olarak `aperion-ust-akil.html` sayfasina yonlendirir.
+- Sayfa mevcut calisan ekranlari silmeden ilgili modullere link verir.
+- Bu tur canli BizimHesap kaydi, Supabase yazimi veya banka onayi yapilmadi.
+
 ## 2026-07-04
 
 ### Executive Workspace ve Hasta Bezi Karar Karti
