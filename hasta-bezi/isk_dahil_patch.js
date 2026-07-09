@@ -1,5 +1,5 @@
 (function(){
-var NO='1139260807';
+var NO='0920260907';
 function n(x){return String(x||'').toLocaleLowerCase('tr-TR').replace(/ı/g,'i').replace(/İ/g,'i').replace(/\s+/g,' ').trim()}
 function money(x,d){return(+x||0).toLocaleString('tr-TR',{minimumFractionDigits:d==null?2:d,maximumFractionDigits:d==null?2:d})}
 function load(src,cb){var base=src.split('?')[0];if(document.querySelector('script[src^="'+base+'"]')){cb&&cb();return}var s=document.createElement('script');s.src=src;s.onload=function(){cb&&cb()};s.onerror=function(){console.warn('Yüklenemedi:',src);cb&&cb()};document.head.appendChild(s)}
