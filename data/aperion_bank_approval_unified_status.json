@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-07-10T06:00:19.015Z",
+  "created_at": "2026-07-10T06:27:12.506Z",
   "safe_mode": true,
   "live_rpc_called": false,
   "live_bizimhesap_save_called": false,
@@ -39,11 +39,11 @@
   },
   "summary": {
     "status_preview_count": 25,
-    "status_candidate_count": 3,
+    "status_candidate_count": 2,
     "status_low_risk_count": 1,
-    "status_review_count": 19,
+    "status_review_count": 21,
     "status_ready_queue_count": 0,
-    "candidate_file_count": 4,
+    "candidate_file_count": 3,
     "posting_plan_count": 25,
     "queue_dry_run_count": 0,
     "missing_file_count": 0,
@@ -77,8 +77,7 @@
   },
   "classifications": {
     "candidate_types": {
-      "POS banka transferi": 3,
-      "Cari odeme": 1
+      "POS banka transferi": 3
     },
     "posting_plan_types": {
       "Cari tahsilat": 13,

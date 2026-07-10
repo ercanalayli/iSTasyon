@@ -1,14 +1,14 @@
 {
-  "created_at": "2026-07-10T06:00:18.859Z",
+  "created_at": "2026-07-10T06:27:12.351Z",
   "safe_mode": true,
   "live_rpc_called": false,
   "live_bizimhesap_save_called": false,
   "company_id": "alayli",
   "summary": {
     "preview_count": 25,
-    "candidate_count": 3,
+    "candidate_count": 2,
     "low_risk_count": 1,
-    "review_count": 19,
+    "review_count": 21,
     "ready_queue_count": 0,
     "proof_queue_status": "queue_yok",
     "pending_status": "pending"
