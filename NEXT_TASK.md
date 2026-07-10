@@ -4,6 +4,8 @@ Son guncelleme: 2026-07-10 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
+Guncel tur notu 2026-07-10: Banka onay ekranindaki OCR/kodlama bozulmalari onarildi. Siradaki hedef, yenilenmis Gmail OAuth izninden sonra yeni ekstrelerin kaynak metninin bozulmadan Onay Merkezi'ne dustugunu canli veriyle dogrulamak; bu kontroller finansal kayit olusturmadan yapilacak.
+
 Guncel tur notu 2026-07-10: Kullanici acil hedefi netlestirdi: Banka/Gmail/Telegram hareketleri once AperiON tarafindan anlasilacak, cari/kapsam/gider tipi dogrulanacak, sonra kullanici onayi ile BizimHesap'a islenecek. `config/aperion_finance_rules.json` eklendi ve banka karar motoru bu hafizaya baglandi. Ercan Alayli gibi ilgili kisi/firma hareketleri otomatik kesin kayda gitmez; cari dogrulamasi ister. Okul/aile/bagis/zekat/sahsi gibi hareketler sirket gideri sayilmaz; kisisel/hayat asistani incelemesine duser. `Cari dogrula` ekran eylemi ve `confirm_pending_bank_counterparty` SQL/RPC katmani eklendi. Siradaki tek hedef: SQL kurulumunun canlida basarili oldugunu kontrol etmek, sonra tek bir Ercan Alayli tahsilatini kullanici onayiyla dogrula -> kuyruk -> BizimHesap sonucu zincirinde kapatmak.
 
 Canli blokaj 2026-07-10: SQL kurulumu basarili (`Supabase SQL Install` run `29082485210`). Mail ekstre hattinda tek blokaj `GOOGLE_REFRESH_TOKEN`: Gmail OAuth token check basarisiz oldugu icin yeni mail/ekstre okunmuyor ve yeni banka hareketi Onay Merkezi'ne dusmuyor. Token, `alaylimedikal@gmail.com` Google izin ekraninda yeniden onaylanmadan yenilenemez. Bu onaydan sonra tek hedef yine bir Ercan Alayli tahsilatini cari dogrula -> kuyruk -> BizimHesap sonucu zincirinde kapatmaktir.

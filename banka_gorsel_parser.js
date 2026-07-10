@@ -34,6 +34,8 @@ function fixText(s) {
     .replace(/Ä±/g, 'ı').replace(/Ä°/g, 'İ').replace(/ÅŸ/g, 'ş').replace(/Å/g, 'Ş')
     .replace(/ÄŸ/g, 'ğ').replace(/Ä/g, 'Ğ').replace(/Ã¼/g, 'ü').replace(/Ãœ/g, 'Ü')
     .replace(/Ã¶/g, 'ö').replace(/Ã–/g, 'Ö').replace(/Ã§/g, 'ç').replace(/Ã‡/g, 'Ç')
+    .replace(/\uFFFD\s*CRET\uFFFD/gi, '\u00dcCRET\u0130')
+    .replace(/\uFFFD\s*CRETI/gi, '\u00dcCRET\u0130')
     .replace(/\s+/g, ' ')
     .trim();
 }

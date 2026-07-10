@@ -2,6 +2,13 @@
 
 ## 2026-07-10
 
+### Banka Onay Karakter Onarimi
+
+- Mobil banka onay ekranina ham aciklama ve ekstre JSON'u icin kodlama onarimi eklendi.
+- `BAKIM ?CRET?` gibi OCR kaynakli bilinen bozulmalar ekranda `BAKIM UCRETI` olarak goruntulenir.
+- Gorsel ekstre parser'i ayni kalibi yeni kayit olusmadan duzeltir.
+- `verify:bank-approval-encoding` komutu eklendi.
+
 ### Cari Dogrulama -> BizimHesap Tahsilat Kaniti
 
 - Mail Ekstre Onay Merkezi'ne `Cari doğrula` eylemi eklendi.

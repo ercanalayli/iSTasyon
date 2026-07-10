@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>AperiON Banka Onayi</title>
+  <title>AperiON Banka Onayı</title>
   <style>
     :root{font-family:Arial,Helvetica,sans-serif;color:#172033;background:#f4f7fb}
     body{margin:0;padding:18px}
@@ -32,8 +32,8 @@
 <body>
   <main class="wrap">
     <section class="card">
-      <div class="head">AperiON Banka Onayi</div>
-      <div class="body" id="app">Yukleniyor...</div>
+      <div class="head">AperiON Banka Onayı</div>
+      <div class="body" id="app">Yükleniyor...</div>
     </section>
   </main>
   <script type="module">
@@ -48,18 +48,44 @@
     const app = document.getElementById('app');
 
     const fmt = n => Number(n || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const esc = s => String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+    // Banka/OCR kaynaklari bazen UTF-8 metni bozuk kodlamayla iletir.
+    // Bilinen bozulmalari goruntulemeden once onarir; bilinmeyen karakteri gizlemez.
+    function repairText(value) {
+      let text = String(value ?? '');
+      const replacements = [
+        ['\u00c3\u0084\u00c2\u00b1', 'ı'], ['\u00c3\u0084\u00c2\u00b0', 'İ'], ['\u00c3\u0084\u00c2\u009f', 'ğ'], ['\u00c3\u0084\u00c2\u009e', 'Ğ'],
+        ['\u00c3\u0085\u00c2\u009f', 'ş'], ['\u00c3\u0085\u00c2\u009e', 'Ş'], ['\u00c3\u0083\u00c2\u00a7', 'ç'], ['\u00c3\u0083\u00c2\u0087', 'Ç'],
+        ['\u00c3\u0083\u00c2\u00b6', 'ö'], ['\u00c3\u0083\u00c2\u0096', 'Ö'], ['\u00c3\u0083\u00c2\u00bc', 'ü'], ['\u00c3\u0083\u00c2\u009c', 'Ü'],
+        ['\u00c4\u00b1', 'ı'], ['\u00c4\u00b0', 'İ'], ['\u00c4\u009f', 'ğ'], ['\u00c4\u009e', 'Ğ'], ['\u00c5\u009f', 'ş'], ['\u00c5\u0178', 'ş'], ['\u00c5\u009e', 'Ş'],
+        ['\u00c3\u00a7', 'ç'], ['\u00c3\u0087', 'Ç'], ['\u00c3\u00b6', 'ö'], ['\u00c3\u0096', 'Ö'], ['\u00c3\u00bc', 'ü'], ['\u00c3\u009c', 'Ü'], ['\u00e2\u201a\u00ba', 'TL']
+      ];
+      for (const [from, to] of replacements) text = text.split(from).join(to);
+      return text
+        .replace(/\ufffd\s*cret\ufffd/gi, 'ÜCRETİ')
+        .replace(/\ufffd\s*creti/gi, 'ÜCRETİ')
+        .replace(/\ufffd\s*cret/gi, 'ÜCRET')
+        .replace(/\ufffd/g, '□');
+    }
+
+    function repairValue(value) {
+      if (Array.isArray(value)) return value.map(repairValue);
+      if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [repairText(key), repairValue(item)]));
+      return typeof value === 'string' ? repairText(value) : value;
+    }
+
+    const esc = s => repairText(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
     function pick(raw, keys) {
       for (const key of keys) {
         const v = raw?.[key];
-        if (v !== undefined && v !== null && String(v).trim() !== '') return String(v);
+        if (v !== undefined && v !== null && String(v).trim() !== '') return repairText(v);
       }
       return '';
     }
 
     function evidence(data) {
-      const raw = data.raw || {};
+      const raw = repairValue(data.raw || {});
       const pairs = [
         ['Banka', data.banka || raw.kaynak_banka || raw.banka || raw.bank],
         ['Ekstre tarihi/saat', pick(raw, ['saat', 'hareket_tarih', 'islem_saati', 'date_time', 'tarih']) || data.tarih],
@@ -74,7 +100,7 @@
       const rawText = JSON.stringify(raw, null, 2).slice(0, 2500);
       return `
         <div class="evidence">
-          <h3>Ekstre kaniti</h3>
+          <h3>Ekstre kanıtı</h3>
           ${rows || '<div class="muted">Ham ekstre detayi yok.</div>'}
           <div class="raw">${esc(rawText)}</div>
         </div>
