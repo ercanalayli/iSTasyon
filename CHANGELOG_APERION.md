@@ -12,6 +12,13 @@
 - SQL workflow bu yeni kurulum dosyasini takip eder.
 - Canli cari onayi, kuyruk veya BizimHesap kaydi bu turda calistirilmadi.
 
+### Canli Kurulum ve Gmail Durumu
+
+- `Supabase SQL Install` GitHub Actions run `29082485210` basariyla tamamlandi; cari dogrulama SQL'i canli kuruldu.
+- `AperiON Mail Ekstre Pipeline` Gmail OAuth token kontrolunde durdu. Mailbox, Supabase ve SQL kontrolleri basarili; sorun eski/iptal edilmis `GOOGLE_REFRESH_TOKEN`.
+- Yeni token kullanici tarafindan Google izin ekraninda yenilenmeden mailden yeni banka hareketi alma devam edemez.
+- `Live Visual Control` Telegram canli kutusunu bulamadigi icin basarisiz kaldi; bu durum finansal kayit veya Supabase SQL sonucunu etkilemez.
+
 ### ERP Ust Akil Kapsami
 
 - Kullanici AperiON'un sadece para hareketi degil; satis, alis, raporlama, analiz, anomali tespiti, CFO, CEO, ERP ve ust akil sistemi olmasi gerektigini netlestirdi.
