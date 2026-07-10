@@ -4,7 +4,7 @@ Son guncelleme: 2026-07-04 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
-Guncel tur notu 2026-07-09: AperiON artik tam ERP yerine tek linkten calisan CFO / ust akil / hayat asistani dashboard'u olarak kurgulaniyor. `aperion-ust-akil.html` yeni birlesik giris sayfasi oldu; `aperion.html` bu sayfaya yonlendiriyor. Siradaki is: bu kapidaki 8 modulden ilk gercek kullanilabilirlik akisini secmek. Onerilen ilk odak, Banka/Mail/Ekstre -> Onay Merkezi -> BizimHesap kayit kaniti zincirini tam kapatmak; paralel olarak Hasta Bezi/FIFO sayfasina bu yeni kapidan tutarli gecis korunacak.
+Guncel tur notu 2026-07-09: AperiON artik tam ERP yerine tek linkten calisan CFO / ust akil / hayat asistani dashboard'u olarak kurgulaniyor. `aperion-ust-akil.html` yeni birlesik giris sayfasi oldu; `aperion.html` bu sayfaya yonlendiriyor. Rebase sonrasi testte yakalanan Moka/POS siniflandirma ezilmesi de duzeltildi. Siradaki is: bu kapidaki 8 modulden ilk gercek kullanilabilirlik akisini secmek. Onerilen ilk odak, Banka/Mail/Ekstre -> Onay Merkezi -> BizimHesap kayit kaniti zincirini tam kapatmak; paralel olarak Hasta Bezi/FIFO sayfasina bu yeni kapidan tutarli gecis korunacak.
 
 Guncel tur notu 2026-07-04 v81 canli kontrol: GitHub Pages `?v=cf81c26` yeni koyu launcher ana sayfa kodunu donduruyor. `bank:approval:status` yenilendi ve canli ekranda kullanilan snapshot su adayi gosteriyor: `2026-07-03 Yapi Kredi 4.600 TL POS tahsilati`, pending id `c7f757fa-939a-45e3-aa0b-145259234045`, guven `%88`, queue `0`. Bu turda canli RPC, kuyruga alma veya BizimHesap save calismadi. Siradaki is: kullanici bu tekil kayit icin acik onay verirse sadece bu ID icin approve RPC calistirilacak, olusan queue id kanitlanacak ve ardindan BizimHesap worker sonucunun ayni satirda gorunmesi dogrulanacak.
 

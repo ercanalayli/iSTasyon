@@ -9,6 +9,7 @@
 - Sayfa 8 tiklanabilir modulu tek linkte toplar: CFO Ust Akil, Hasta Bezi & FIFO, Mail & Ekstre, BizimHesap Onayi, Cari Hafiza, Urun Hafiza, Hayat Asistani, Veri Guveni.
 - `aperion.html` kisa giris kapisi olarak `aperion-ust-akil.html` sayfasina yonlendirir.
 - Sayfa mevcut calisan ekranlari silmeden ilgili modullere link verir.
+- Moka banka yatirimi siniflandirmasinin genel POS kuralina ezilmesi engellendi; Moka hareketi `Moka banka transferi` olarak kalir.
 - Bu tur canli BizimHesap kaydi, Supabase yazimi veya banka onayi yapilmadi.
 
 ## 2026-07-04

@@ -194,7 +194,7 @@ function classifyBankMovement(row = {}) {
     confidence = Math.max(confidence, 90);
     reasons.push('KMH ana para kapama');
   }
-  if (kind !== 'non_bank_summary_review' && incoming && /POS|NET SATIS|KREDI KART|BATCH YATAN|UYE ISYERI/.test(text)) {
+  if (kind !== 'non_bank_summary_review' && kind !== 'bank_transfer' && incoming && /POS|NET SATIS|KREDI KART|BATCH YATAN|UYE ISYERI/.test(text)) {
     kind = 'bank_transfer';
     type = 'POS banka transferi';
     target = 'BizimHesap hesaplar arasi transfer';
