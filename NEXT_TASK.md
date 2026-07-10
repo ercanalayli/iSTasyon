@@ -10,6 +10,8 @@ Canli blokaj 2026-07-10: SQL kurulumu basarili (`Supabase SQL Install` run `2908
 
 Telegram/gorsel ekstre kural notu: Virman kayitlari otomatik reddedilmez. Sistem aciklamadan kaynak/hedef sirket bankalarini bulur; Telegram kartinda ham aciklamayi, hesaplari, onerilen kayit turunu ve net soruyu gosterir. Siradaki uygulama hedefi, ayni karar yapisini banka havale/EFT tahsilatinda cari dogrulama ve Telegram onayina da ayni okunurlukte tasimaktir.
 
+Dashboard notu: Ust cubuk sadece rapor snapshot zamanini gosterir; banka/satis/masraf verilerinin kaynak tarihi her karttaki kanit satirinda ayri gorunur. Siradaki hedef, Gmail OAuth bloke oldugu icin yeni mail gelmeyen durumda da hangi kaynagin ne zaman guncellendigini tek panelde acik gostermektir.
+
 Guncel kapsam notu 2026-07-10: AperiON sadece para hareketi otomasyonu degildir. `config/aperion_intelligence_scope.json` ve `docs/APERION_ERP_UST_AKIL_KAPSAM.md` ile kapsam CFO finans, CEO satis, alis/gider, stok/FIFO, cari/risk, anomali ve hayat asistani motorlari olarak kilitlendi. Siradaki is bankadan baslasa bile mimari satis/alis/raporlama/anomali akillarini ayni ust akil paneline baglayacak.
 
 Guncel tur notu 2026-07-09: AperiON artik tam ERP yerine tek linkten calisan CFO / ust akil / hayat asistani dashboard'u olarak kurgulaniyor. `aperion-ust-akil.html` yeni birlesik giris sayfasi oldu; `aperion.html` bu sayfaya yonlendiriyor. Rebase sonrasi testte yakalanan Moka/POS siniflandirma ezilmesi de duzeltildi. Siradaki is: bu kapidaki 8 modulden ilk gercek kullanilabilirlik akisini secmek. Onerilen ilk odak, Banka/Mail/Ekstre -> Onay Merkezi -> BizimHesap kayit kaniti zincirini tam kapatmak; paralel olarak Hasta Bezi/FIFO sayfasina bu yeni kapidan tutarli gecis korunacak.

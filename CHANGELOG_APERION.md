@@ -27,6 +27,12 @@
 - Telegram sorusu artik tutar ve hesaplari acik yazar; kullanici neye onay verdigini gorur.
 - `verify:telegram-bank-virman` komutu eklendi.
 
+### Dashboard Guncellik Damgasi
+
+- Ust cubuktaki eski sabit tarih kaldirildi.
+- `SON RAPOR` artik Banka Onay Status snapshot'inin gercek olusturulma zamanini kullanir.
+- Rapor zamani ile finansal kaynak tarihi ayrildi; kartlardaki kaynak/kanit satirlari veri tarihini gostermeye devam eder.
+
 ### ERP Ust Akil Kapsami
 
 - Kullanici AperiON'un sadece para hareketi degil; satis, alis, raporlama, analiz, anomali tespiti, CFO, CEO, ERP ve ust akil sistemi olmasi gerektigini netlestirdi.

@@ -20,6 +20,8 @@ AperiON gelistirmesinde koordineli calisma protokolu gecerlidir.
 
 2026-07-10 Telegram/gorsel ekstre virman karari turu sonucu: Gorsel ekstre parser'i `virman` gorunce hareketi otomatik `islenmeyecek` durumuna alma hatasi duzeltildi. Virman artik `onay_bekliyor` olarak kalir. Telegram onay karti ham aciklamayi `Aciklama kaniti` olarak, kaynak hesap, hedef hesap, BizimHesap hedefi, kategori, guven ve insan dilindeki soruyu birlikte gosterir. Ornek Is Bankasi -> VakifBank 17.300 TL hareketi `Sirket bankalari arasi virman` olarak siniflanir ve soru `Is Bankasi banka hesabindan VakifBank banka hesabina 17.300 TL sirket ici virman olarak BizimHesap'a isleyeyim mi?` olur. `verify:telegram-bank-virman` ve `verify:finance-decision-rules` basarili. Canli onay veya kayit yapilmadi.
 
+2026-07-10 dashboard zaman damgasi turu sonucu: Canli dashboard incelemesinde ust cubuktaki eski `25.05.2026` metninin kodda kalmis sabit build etiketi oldugu goruldu. `index.html` artik Banka Onay Status raporunun `created_at` degerini de guncellik hesabina alir ve ust cubukta `SON RAPOR <zaman> · CANLI` yazar. Bu zaman bir finansal kaynak tarihi degil, ekranda gorulen karar snapshot'inin olusturulma zamanidir. `verify:bank-approval-action` ve `finance-smoke` basarili.
+
 Genel durum: Sistem calisan bir omurgaya sahip, ancak tum moduller gunluk guvenilir kullanim icin production-ready degil.
 
 Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonraki turlarda durum, karar, sonraki is ve kalite kontrol bu dosyalardan surdurulecektir.

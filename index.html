@@ -3437,8 +3437,8 @@ const SU='https://iilfwosoroflzubkaryj.supabase.co',SK='sb_publishable_MmvLmFVED
 const db=supabase.createClient(SU,SK);
 const YU='https://vkyqbjddiayxpfeeqkjz.supabase.co',YK='sb_publishable_yyCmVDoUnMF6zz_aUBNCkw_fNWm2Nxe';
 const ydb=supabase.createClient(YU,YK);
-const BUILD_CODE='091858-050626';
-const BUILD_STAMP='05.06.2026 09:18:58';
+const BUILD_CODE='CANLI';
+const BUILD_STAMP='rapor bekleniyor';
 function trDateTime(v){
   if(!v)return '';
   const d=new Date(v);
@@ -3449,6 +3449,7 @@ function latestDataStamp(){
   const vals=[];
   if(LAST_SYNC_STATUS?.finishedAt)vals.push(LAST_SYNC_STATUS.finishedAt);
   if(LAST_CLONE_HEALTH?.generated_at)vals.push(LAST_CLONE_HEALTH.generated_at);
+  if(LAST_BANK_APPROVAL_STATUS?.created_at)vals.push(LAST_BANK_APPROVAL_STATUS.created_at);
   (RAW||[]).forEach(r=>{
     if(r?.kaynak_cekilme_tarihi)vals.push(r.kaynak_cekilme_tarihi);
     else if(r?.updated_at)vals.push(r.updated_at);
@@ -3457,7 +3458,7 @@ function latestDataStamp(){
   const dates=vals.map(v=>new Date(v)).filter(d=>!Number.isNaN(d.getTime())).sort((a,b)=>b-a);
   return dates[0]?trDateTime(dates[0].toISOString()):BUILD_STAMP;
 }
-const buildLabel=()=>`SON GUNCELLEME ${latestDataStamp()} - ${BUILD_CODE}`;
+const buildLabel=()=>`SON RAPOR ${latestDataStamp()} · ${BUILD_CODE}`;
 const F={all:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'},alayli:{n:'Alayli Medikal',c:'#059669',i:'ALY',src:'BizimHesap Bot'}};
 const PILOT_FIRMA='alayli';
 const VISIBLE_FIRMS=[PILOT_FIRMA];
@@ -3474,7 +3475,7 @@ const DATA_SOURCES={
     {id:'products',n:'Ürün ve Stok Kartları',t:'product_raw',kind:'table',date:'updated_at',mode:'eksik'}
   ]
 };
-let LAST_SYNC_STATUS=null,LAST_CLONE_HEALTH=null;
+let LAST_SYNC_STATUS=null,LAST_CLONE_HEALTH=null,LAST_BANK_APPROVAL_STATUS=null;
 const BUILD_CLONE_HEALTH={status:'saglikli',firma_id:'alayli',generated_at:'2026-05-21T06:51:12.700Z',checks:[
   {name:'sales_last_15_days',ok:true,detail:'841 kayit'},
   {name:'sales_dates_complete',ok:true,detail:'15 gun tamam'},
@@ -4103,10 +4104,20 @@ async function fetchBankApprovalStatusReport(){
   for(const url of urls){
     try{
       const res=await fetch(url,{cache:'no-store'});
-      if(res.ok)return await res.json();
+      if(res.ok){
+        const report=await res.json();
+        LAST_BANK_APPROVAL_STATUS=report;
+        return report;
+      }
     }catch(e){}
   }
   return null;
+}
+function refreshBuildStamp(){
+  const stamp=document.getElementById('buildCode');
+  if(stamp)stamp.textContent=buildLabel();
+  const detail=document.getElementById('lupd');
+  if(detail)detail.textContent=buildLabel();
 }
 function focusBankApprovalRow(id){
   const target=String(id||'');
@@ -4190,6 +4201,7 @@ async function loadBankCommandCenter(){
   }catch(e){}
   const balance=latestBankBalances([...pending,...processed,...bankRaw]);
   const approvalStatus=await fetchBankApprovalStatusReport();
+  refreshBuildStamp();
   const approvalStatusCard=bankApprovalStatusHtml(approvalStatus);
   const pendingNew=pending.filter(r=>['pending','needs_review'].includes(String(r.status||'pending')));
   const approved=pending.filter(r=>String(r.status||'')==='approved');

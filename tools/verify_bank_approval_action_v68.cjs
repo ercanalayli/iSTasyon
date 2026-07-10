@@ -30,6 +30,7 @@ const checks = [
   ['assistant notification titles are not accepted as cari', index.includes('AKILLI ASISTAN') && index.includes('ANLIK ODEME BILGILENDIRMESI')],
   ['home bank approval status card exists', index.includes('bankApprovalStatusCard') && /function\s+bankApprovalStatusHtml\s*\(/.test(index)],
   ['home bank approval status fetch exists', /function\s+fetchBankApprovalStatusReport\s*\(/.test(index) && index.includes('data/aperion_bank_approval_status.json')],
+  ['dashboard stamp uses live bank approval report', index.includes('LAST_BANK_APPROVAL_STATUS?.created_at') && /function\s+refreshBuildStamp\s*\(/.test(index) && index.includes('SON RAPOR ${latestDataStamp()} · ${BUILD_CODE}')],
   ['home bank approval status raw fallback exists', index.includes('raw.githubusercontent.com/ercanalayli/iSTasyon/main/data/aperion_bank_approval_status.json')],
   ['home bank approval candidate focus action exists', /function\s+openBankApprovalFocus\s*\(/.test(index) && index.includes('Adayı Aç')],
   ['bank approval row focus helper exists', /function\s+focusBankApprovalRow\s*\(/.test(index) && index.includes('bank-focus-row')],
