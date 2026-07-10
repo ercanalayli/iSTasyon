@@ -25,6 +25,9 @@ create table if not exists pending_bank_movements (
   raw_text text,
   detected_type text,
   suggested_counterparty text,
+  confirmed_counterparty text,
+  counterparty_confirmed boolean not null default false,
+  counterparty_confirmed_at timestamptz,
   confidence_score numeric,
   status text not null default 'pending',
   approval_note text,
@@ -152,6 +155,33 @@ begin
 end;
 $$;
 
+create or replace function confirm_pending_bank_counterparty(
+  p_id uuid,
+  p_counterparty text,
+  p_note text default null
+)
+returns boolean
+language plpgsql
+security definer
+as $$
+begin
+  if nullif(btrim(coalesce(p_counterparty,'')), '') is null then
+    raise exception 'counterparty is required';
+  end if;
+
+  update pending_bank_movements
+  set confirmed_counterparty = btrim(p_counterparty),
+      counterparty_confirmed = true,
+      counterparty_confirmed_at = now(),
+      approval_note = coalesce(p_note, approval_note),
+      updated_at = now()
+  where id = p_id
+    and status in ('pending', 'needs_review');
+
+  return found;
+end;
+$$;
+
 create or replace function approve_pending_bank_movement(p_id uuid, p_note text default null)
 returns uuid
 language plpgsql
@@ -188,7 +218,9 @@ begin
       'amount_out', v_row.amount_out,
       'confidence_score', v_row.confidence_score,
       'detected_type', v_row.detected_type,
-      'suggested_counterparty', v_row.suggested_counterparty,
+      'suggested_counterparty', coalesce(nullif(v_row.confirmed_counterparty,''), v_row.suggested_counterparty),
+      'confirmed_counterparty', v_row.confirmed_counterparty,
+      'counterparty_confirmed', v_row.counterparty_confirmed,
       'suggested_bizimhesap_action',
         case
           when upper(coalesce(v_row.description,'')) like '%KOMISYON%'
@@ -209,7 +241,7 @@ begin
           else 'supplier_or_expense_payment'
         end,
       'target_account', coalesce(v_row.bank_name,'Banka') || ' banka hesabı',
-      'target_counterparty', nullif(v_row.suggested_counterparty,''),
+      'target_counterparty', coalesce(nullif(v_row.confirmed_counterparty,''), nullif(v_row.suggested_counterparty,'')),
       'suggested_category',
         case
           when coalesce(v_row.amount_in,0) > 0 then 'Tahsilat'
@@ -245,6 +277,7 @@ end;
 $$;
 
 grant execute on function ingest_mail_bank_movements(jsonb) to anon, authenticated, service_role;
+grant execute on function confirm_pending_bank_counterparty(uuid, text, text) to anon, authenticated, service_role;
 grant execute on function approve_pending_bank_movement(uuid, text) to anon, authenticated, service_role;
 grant execute on function reject_pending_bank_movement(uuid, text) to anon, authenticated, service_role;
 

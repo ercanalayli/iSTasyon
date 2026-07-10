@@ -18,6 +18,7 @@ on:
       - "automation/sql/003_approve_pending_to_queue.sql"
       - "automation/sql/004_reject_pending_bank_movement.sql"
       - "automation/sql/006_mark_bizimhesap_queue_processed.sql"
+      - "automation/sql/007_confirm_pending_bank_counterparty.sql"
       - ".github/workflows/supabase-sql-install.yml"
 
 jobs:

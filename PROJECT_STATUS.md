@@ -14,6 +14,8 @@ AperiON gelistirmesinde koordineli calisma protokolu gecerlidir.
 
 ## Mevcut Teknik Durum
 
+2026-07-10 cari dogrulama ve kuyruk kaniti turu sonucu: Mail Ekstre Onay Merkezi'nde ilgili kisi/firma adiyla gelen tahsilatlar icin `Cari dogrula` eylemi eklendi. Kullanici, ornegin `ERCAN ALAYLI` hareketinde hedef BizimHesap carisini onaylar; ad, zaman ve not `pending_bank_movements` kaydina yazilir. Onaydan sonra olusan BizimHesap kuyrugu tahmini cari yerine dogrulanan cariyi `confirmed_counterparty`, `target_counterparty` ve kanit bayragiyla tasir. SQL paketi `automation/sql/007_confirm_pending_bank_counterparty.sql` ile idempotent hale getirildi; tam kurulum dosyasi da ayni alanlari icerir. Testler: `verify:finance-decision-rules` ve `verify:bank-approval-action` basarili. Bu tur canli cari dogrulamasi, kuyruga alma veya BizimHesap kaydi yapilmadi.
+
 Genel durum: Sistem calisan bir omurgaya sahip, ancak tum moduller gunluk guvenilir kullanim icin production-ready degil.
 
 Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonraki turlarda durum, karar, sonraki is ve kalite kontrol bu dosyalardan surdurulecektir.

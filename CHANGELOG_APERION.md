@@ -2,6 +2,16 @@
 
 ## 2026-07-10
 
+### Cari Dogrulama -> BizimHesap Tahsilat Kaniti
+
+- Mail Ekstre Onay Merkezi'ne `Cari doğrula` eylemi eklendi.
+- Ilgili kisi/firma hareketinde kullanici hedef BizimHesap carisini yazar ve ikinci bir onayla dogrular.
+- `confirmed_counterparty`, `counterparty_confirmed` ve `counterparty_confirmed_at` alanlari banka hareketinde karar kanitini saklar.
+- `automation/sql/007_confirm_pending_bank_counterparty.sql` eklendi; mevcut veritabanini bozmadan alanlari ve RPC'yi kurar.
+- BizimHesap kuyrugu artik dogrulanmis cari varsa onu `suggested_counterparty` ve `target_counterparty` olarak kullanir.
+- SQL workflow bu yeni kurulum dosyasini takip eder.
+- Canli cari onayi, kuyruk veya BizimHesap kaydi bu turda calistirilmadi.
+
 ### ERP Ust Akil Kapsami
 
 - Kullanici AperiON'un sadece para hareketi degil; satis, alis, raporlama, analiz, anomali tespiti, CFO, CEO, ERP ve ust akil sistemi olmasi gerektigini netlestirdi.

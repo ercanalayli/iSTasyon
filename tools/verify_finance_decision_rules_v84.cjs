@@ -63,9 +63,15 @@ assert.equal(bankFee.plan.fixed_variable, 'sabit');
 assert.equal(bankFee.plan.requires_user_review, false);
 
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const counterpartySql = fs.readFileSync(path.join(root, 'automation', 'sql', '007_confirm_pending_bank_counterparty.sql'), 'utf8');
 assert(index.includes('bankPersonalOrReviewScope'), 'home scope helper missing');
 assert(index.includes('bankFixedVariable'), 'home fixed/variable helper missing');
 assert(index.includes('bankNeedsCounterpartyConfirmation'), 'home counterparty confirmation helper missing');
 assert(index.includes('confirmationQuestion'), 'home confirmation question missing');
+assert(index.includes('bankCariDogrula'), 'home counterparty confirmation action missing');
+assert(index.includes('confirm_pending_bank_counterparty'), 'home counterparty confirmation RPC missing');
+assert(/confirmed_counterparty/i.test(counterpartySql), 'counterparty SQL does not persist confirmed counterparty');
+assert(/counterparty_confirmed/i.test(counterpartySql), 'counterparty SQL proof flag missing');
+assert(/target_counterparty.*confirmed_counterparty/is.test(counterpartySql), 'queue payload does not use confirmed counterparty');
 
 console.log('Finance decision rules v84 verification passed.');

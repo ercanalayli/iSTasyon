@@ -6352,7 +6352,7 @@ function bankTextForAnalysis(r){
     .filter(Boolean).map(repairBankText).join(' ').toLocaleUpperCase('tr-TR');
 }
 function bankCounterpartyGuess(r){
-  const explicit=repairBankText(r.suggested_counterparty||r.aday_cari||'').trim();
+  const explicit=repairBankText(r.user_confirmed_counterparty||r.confirmed_counterparty||r.target_counterparty||r.suggested_counterparty||r.aday_cari||'').trim();
   if(explicit&&explicit!=='-'&&!bankCariIsInvalid(explicit))return explicit;
   const text=repairBankText(r.description||r.aciklama||'');
   const patterns=[
@@ -6622,7 +6622,9 @@ function bankActionCell(r,dupCount=1){
   const st=bankActionState(r,dupCount);
   const idArg=JSON.stringify(String(r.id));
   const srcArg=JSON.stringify(r._source||'banka_raw');
-  const approve=st.ready
+  const approve=st.label==='Cari doğrula'
+    ? `<button class="empty-btn" onclick="bankCariDogrula(${idArg},${srcArg},this)">Cari doğrula</button>`
+    : st.ready
     ? `<button class="empty-btn" onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)">${escHtml(st.label)}</button>`
     : `<button class="empty-btn" disabled>${escHtml(st.label)}</button>`;
   const reject=r.durum==='onay_bekliyor'
@@ -6675,7 +6677,7 @@ function bankMorningCardHtml(r){
     ${bankPostingFlowHtml(r)}
     ${bankPostingAuditLine(r)}
     <div class="morning-approval-actions">
-      <button class="ok" ${st.ready?`onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)"`:'disabled'}>${st.ready?'ONAYLA':'HAZIR DEĞİL'}</button>
+      <button class="ok" ${st.label==='Cari doğrula'?`onclick="bankCariDogrula(${idArg},${srcArg},this)"`:st.ready?`onclick="bankaKarar(${idArg},'islenecek',${srcArg},this)"`:'disabled'}>${st.label==='Cari doğrula'?'CARİ DOĞRULA':st.ready?'ONAYLA':'HAZIR DEĞİL'}</button>
       <button class="reject" onclick="bankaKarar(${idArg},'islenmeyecek',${srcArg},this)">SİL</button>
     </div>
     <div class="bank-action-reason ${st.tone==='ready'?'ready':'blocked'}" style="margin-top:8px">${escHtml(st.reason)}</div>
@@ -6790,6 +6792,40 @@ function bankaBadge(r){
   const d=r.durum||'onay_bekliyor';
   const c=d==='islenecek'?'var(--green)':d==='islenmeyecek'?'var(--t3)':d==='islendi'?'var(--accent)':'var(--orange)';
   return `<span style="font-family:var(--mono);font-size:9px;font-weight:900;color:${c};border:1px solid ${c}44;background:${c}14;border-radius:999px;padding:4px 7px">${escHtml(d)}</span>`;
+}
+async function bankCariDogrula(id,source='pending_bank_movements',btn=null){
+  if(source!=='pending_bank_movements'){
+    bankNotice('warn','Cari doğrulama kaynağı','Bu hareket Mail Ekstre Onay Merkezi kaynaklı değil. Cari doğrulaması için Banka Canlı içindeki mail ekstre kaydını aç.');
+    return;
+  }
+  const rows=(await bankaRawData()).rows||[];
+  const row=rows.find(r=>String(r.id)===String(id));
+  if(!row){bankNotice('err','Kayıt bulunamadı','Cari doğrulama yapılacak banka hareketi yeniden okunamadı.');return;}
+  const p=bankPostingPlan(row);
+  const suggested=p.cari||'';
+  const selected=window.prompt(`Bu ${dynMoney(bankCredit(row)||bankDebit(row))} hareket hangi BizimHesap carisine işlenecek?`,suggested);
+  if(selected===null)return;
+  const counterparty=selected.trim();
+  if(!counterparty){bankNotice('warn','Cari gerekli','Tahsilat veya ödeme için BizimHesap cari adı zorunlu.');return;}
+  const question=bankCredit(row)>0
+    ? `${counterparty} carisine ${dynMoney(bankCredit(row))} TL tahsilat olarak hazırlanacak. Cari doğru mu?`
+    : `${counterparty} carisi için ${dynMoney(bankDebit(row))} TL ödeme olarak hazırlanacak. Cari doğru mu?`;
+  if(!window.confirm(question))return;
+  if(btn){bankButtonSet(btn,'Cari kaydediliyor...',true,'working');bankRowFeedback(btn,'warn','Cari doğrulaması kaydediliyor...');}
+  try{
+    const note=`AperiON kullanıcı cari doğrulaması: ${counterparty}`;
+    const res=await db.rpc('confirm_pending_bank_counterparty',{p_id:id,p_counterparty:counterparty,p_note:note});
+    if(res.error)throw res.error;
+    if(res.data===false)throw new Error('Cari doğrulaması kaydedilemedi. Kayıt onaylanmış veya kapatılmış olabilir.');
+    bankNotice('ok','Cari doğrulandı',`${counterparty} cari adı kaydedildi. Şimdi satırdaki Kuyruğa Al düğmesi ile yalnız bu kaydı BizimHesap kuyruğuna gönderebilirsin.`);
+    bankRowFeedback(btn,'ok',`Cari doğrulandı: ${counterparty}`);
+    await rBankaOnay();
+  }catch(e){
+    const msg=e?.message||String(e);
+    const sqlMissing=/function|confirm_pending_bank_counterparty/i.test(msg);
+    bankNotice('err',sqlMissing?'Cari doğrulama SQL kurulumu eksik':'Cari doğrulanamadı',sqlMissing?'Onay merkezi SQL güncellemesi henüz veritabanında yok. Kayıt veya kuyruk oluşturulmadı.':'Kayıt değişmedi: '+msg);
+    if(btn){bankButtonSet(btn,'Cari doğrula',false,'err');bankRowFeedback(btn,'err',sqlMissing?'Cari doğrulama SQL kurulumu eksik.':msg);}
+  }
 }
 async function bankaKarar(id,durum,source='banka_raw',btn=null){
   let error=null;

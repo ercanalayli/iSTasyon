@@ -31,6 +31,7 @@ on:
       - 'tools/bank_posting_plan.cjs'
       - 'automation/sql/002_bizimhesap_queue.sql'
       - 'automation/sql/003_approve_pending_to_queue.sql'
+      - 'automation/sql/007_confirm_pending_bank_counterparty.sql'
       - 'automation/sql/000_mail_ekstre_FULL_INSTALL.sql'
       - 'package.json'
       - '.github/workflows/bizimhesap-queue-worker.yml'
