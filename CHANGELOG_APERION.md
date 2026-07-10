@@ -1,5 +1,19 @@
 # AperiON Changelog
 
+## 2026-07-10
+
+### Finans Karar Hafizasi ve Cari Dogrulama
+
+- Banka/Gmail/Telegram'dan gelen para hareketleri icin kalici karar hafizasi eklendi: `config/aperion_finance_rules.json`.
+- Kural hafizasi sirket bankalari, POS hesaplari, ilgili kisi/firma dogrulama listesi, sirket sabit giderleri, kisisel sabit giderler ve inceleme isteyen anahtar kelimeleri tutar.
+- Banka karar motoru `tools/bank_posting_plan.cjs` bu kurallari okuyacak sekilde guncellendi.
+- Gelen havale/EFT/FAST aciklamalarinda `ERCAN ALAYLI tarafindan aktarilan` gibi kaliplardan cari/karsi taraf daha net yakalanir.
+- `ERCAN ALAYLI`, `ERHAN ALAYLI`, `ALAYLI MEDIKAL` gibi ilgili kisi/firma hareketleri otomatik kesin kayda gitmez; once cari dogrulamasi ister.
+- Kisisel/aile/okul/zekat/bagis gibi hareketler sirket gideri kabul edilmez; `kisisel_veya_sirket_disi_inceleme` olarak Onay Merkezi'nde kalir.
+- Ana ekran banka karar satirlari artik kapsam ve sabit/degisken bilgisini ve insan dilinde onay sorusunu gosterir.
+- `verify:finance-decision-rules` testi eklendi.
+- Bu tur canli BizimHesap kaydi, Supabase yazimi veya banka onayi yapilmadi.
+
 ## 2026-07-09
 
 ### Birlesik Ust Akil ve Hayat Asistani Linki

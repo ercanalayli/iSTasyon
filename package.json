@@ -110,7 +110,8 @@
     "verify:gmail-oauth-refresh": "node tools/verify_gmail_oauth_refresh_helper_v75.cjs",
     "verify:supabase-security-hardening": "node tools/verify_supabase_security_hardening_v77.cjs",
     "verify:single-screen-command-map": "node tools/verify_single_screen_command_map_v78.cjs",
-    "verify:bizimhesap:supabase-service-key": "node tools/verify_bizimhesap_supabase_service_key_v79.cjs"
+    "verify:bizimhesap:supabase-service-key": "node tools/verify_bizimhesap_supabase_service_key_v79.cjs",
+    "verify:finance-decision-rules": "node tools/verify_finance_decision_rules_v84.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

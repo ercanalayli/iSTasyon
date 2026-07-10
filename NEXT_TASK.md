@@ -1,8 +1,10 @@
 # AperiON Next Task
 
-Son guncelleme: 2026-07-04 Europe/Istanbul
+Son guncelleme: 2026-07-10 Europe/Istanbul
 
 ## Aktif Tek Hedef
+
+Guncel tur notu 2026-07-10: Kullanici acil hedefi netlestirdi: Banka/Gmail/Telegram hareketleri once AperiON tarafindan anlasilacak, cari/kapsam/gider tipi dogrulanacak, sonra kullanici onayi ile BizimHesap'a islenecek. `config/aperion_finance_rules.json` eklendi ve banka karar motoru bu hafizaya baglandi. Ercan Alayli gibi ilgili kisi/firma hareketleri otomatik kesin kayda gitmez; cari dogrulamasi ister. Okul/aile/bagis/zekat/sahsi gibi hareketler sirket gideri sayilmaz; kisisel/hayat asistani incelemesine duser. Siradaki tek hedef: Onay Merkezi'nde bir banka hareketi icin cari dogrulama alanini ve onay sonrasi BizimHesap queue/worker sonucunu tek satirda kapatmak.
 
 Guncel tur notu 2026-07-09: AperiON artik tam ERP yerine tek linkten calisan CFO / ust akil / hayat asistani dashboard'u olarak kurgulaniyor. `aperion-ust-akil.html` yeni birlesik giris sayfasi oldu; `aperion.html` bu sayfaya yonlendiriyor. Rebase sonrasi testte yakalanan Moka/POS siniflandirma ezilmesi de duzeltildi. Siradaki is: bu kapidaki 8 modulden ilk gercek kullanilabilirlik akisini secmek. Onerilen ilk odak, Banka/Mail/Ekstre -> Onay Merkezi -> BizimHesap kayit kaniti zincirini tam kapatmak; paralel olarak Hasta Bezi/FIFO sayfasina bu yeni kapidan tutarli gecis korunacak.
 

@@ -1,3 +1,22 @@
+const fs = require('fs');
+const path = require('path');
+
+const RULES = loadFinanceRules();
+
+function loadFinanceRules() {
+  const file = path.join(__dirname, '..', 'config', 'aperion_finance_rules.json');
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return {
+      related_parties_need_confirmation: [],
+      company_fixed_expenses: [],
+      personal_fixed_expenses: [],
+      review_only_keywords: [],
+    };
+  }
+}
+
 function fixMojibake(value) {
   const text = replaceMojibakeSequences(String(value || ''));
   if (!/[ÃÄÅÂâ�]/.test(text)) return text;
@@ -84,10 +103,12 @@ function kmhAccount(row) {
 }
 
 function counterpartyGuess(row) {
-  const explicit = fixMojibake(row.target_counterparty || row.suggested_counterparty || row.aday_cari || '').trim();
+  const explicit = fixMojibake(row.user_confirmed_counterparty || row.confirmed_counterparty || row.target_counterparty || row.suggested_counterparty || row.aday_cari || '').trim();
   if (explicit && !isInvalidCounterparty(explicit)) return explicit;
   const text = normalize(description(row));
   const patterns = [
+    /([A-Z0-9 .&'-]{5,90})\s+(?:TARAFINDAN|TARAFINDAN AKTARILAN|DAN|DEN)\s+(?:GELEN|HAVALE|EFT|FAST|PARA)/,
+    /(?:GELEN|GONDEREN|GONDERILEN|PARA GONDEREN)\s+(?:EFT|FAST|HAVALE)?\s*[-:]?\s*([A-Z0-9 .&'-]{5,90})/,
     /(?:GELEN EFT|GIDEN EFT|GIDEN FAST|GELEN FAST|FAST|HAVALE|EFT)\s+([A-Z0-9 .&'-]{5,90})/,
     /(?:ALICI|GONDEREN|MUSTERI)\s+([A-Z0-9 .&'-]{5,90})/,
     /(ALAYLI MEDIKAL[^*\/,;]*)/,
@@ -105,6 +126,50 @@ function counterpartyGuess(row) {
   if (/KOMISYON|BSMV|UCRET|MASRAF/.test(text)) return bankName(row);
   if (/VIRMAN/.test(text)) return 'Banka ici virman';
   return 'Cari eslestirme onayda';
+}
+
+function ruleList(name) {
+  return Array.isArray(RULES?.[name]) ? RULES[name] : [];
+}
+
+function containsRule(text, name) {
+  const normalized = normalize(text);
+  return ruleList(name).some(item => normalized.includes(normalize(item)));
+}
+
+function isConfirmedCounterparty(row) {
+  return Boolean(row.counterparty_confirmed || row.user_confirmed_counterparty || row.confirmed_counterparty);
+}
+
+function businessScope(row, text) {
+  if (containsRule(text, 'review_only_keywords')) return 'kisisel_veya_sirket_disi_inceleme';
+  if (containsRule(text, 'personal_fixed_expenses')) return 'kisisel_finans';
+  return row.scope || row.business_scope || 'sirket_finansi';
+}
+
+function fixedVariableClass(text, category) {
+  const combined = `${text} ${category || ''}`;
+  if (containsRule(combined, 'company_fixed_expenses') || containsRule(combined, 'personal_fixed_expenses')) return 'sabit';
+  if (/KOMISYON|BSMV|UCRET|MASRAF|FAIZ|KARGO|AKARYAKIT|MARKET/.test(normalize(combined))) return 'degisken';
+  return 'islem_bazli';
+}
+
+function needsRelatedPartyConfirmation(counterparty, row) {
+  if (isConfirmedCounterparty(row)) return false;
+  return containsRule(counterparty, 'related_parties_need_confirmation');
+}
+
+function buildConfirmationQuestion(plan, scope) {
+  if (scope !== 'sirket_finansi') {
+    return `Bu hareket sirket kaydi mi, kisisel/hayat asistani kaydi mi?`;
+  }
+  if (plan.kind === 'customer_collection') {
+    return `${plan.counterparty} carisine ${plan.amount.toLocaleString('tr-TR')} TL tahsilat olarak BizimHesap'a isleyeyim mi?`;
+  }
+  if (plan.kind === 'bank_fee_expense') {
+    return `${plan.bank_name} banka masrafini ${plan.category} gider kartina isleyeyim mi?`;
+  }
+  return `${plan.type} olarak BizimHesap kuyruğuna alinsin mi?`;
 }
 
 function isInvalidCounterparty(value) {
@@ -205,7 +270,7 @@ function classifyBankMovement(row = {}) {
     confidence = Math.max(confidence, 88);
     reasons.push('POS banka aktarimi');
   }
-  if (kind !== 'non_bank_summary_review' && (/KOMISYON|BSMV|UCRET|MASRAF|KATKI PAYI/.test(text) || (amountOut(row) > 0 && /POS|KREDI KART|UYE ISYERI/.test(text)))) {
+  if (kind !== 'non_bank_summary_review' && (/KOMISYON|BSMV|BANKA MASRAF|FON TRANSFERI.*UCRET|EFT.*UCRET|FAST.*UCRET|HAVALE.*UCRET|KATKI PAYI/.test(text) || (amountOut(row) > 0 && /POS|KREDI KART|UYE ISYERI/.test(text)))) {
     kind = 'bank_fee_expense';
     type = 'Banka/POS masrafi';
     target = 'BizimHesap gider/masraf kaydi';
@@ -260,7 +325,44 @@ function classifyBankMovement(row = {}) {
   }
 
   const amount = amountIn(row) > 0 ? amountIn(row) : Math.abs(amountOut(row));
-  const requiresReview = kind === 'non_bank_summary_review' || confidence < 84 || isInvalidCounterparty(counterparty) || counterparty === 'Cari eslestirme onayda';
+  const scope = businessScope(row, text);
+  const fixedVariable = fixedVariableClass(text, category);
+  const relatedPartyReview = needsRelatedPartyConfirmation(counterparty, row);
+  if (relatedPartyReview) reasons.push('ilgili kisi/cari kullanici dogrulamasi');
+  if (scope !== 'sirket_finansi') reasons.push(scope);
+  const counterpartyAllowedByKind = ['bank_fee_expense', 'bank_transfer', 'credit_card_payment', 'tax_or_sgk_payment', 'utility_bill_payment'].includes(kind);
+  const invalidCounterpartyForKind = isInvalidCounterparty(counterparty) && !counterpartyAllowedByKind;
+  const requiresReview = kind === 'non_bank_summary_review' ||
+    confidence < 84 ||
+    invalidCounterpartyForKind ||
+    counterparty === 'Cari eslestirme onayda' ||
+    relatedPartyReview ||
+    scope !== 'sirket_finansi';
+  const planBase = {
+    kind,
+    type,
+    target,
+    account: targetAccount || targetBankAccount(row),
+    source_account: sourceAccount,
+    target_account: targetAccount,
+    counterparty,
+    category,
+    confidence: Math.min(99, Math.round(confidence)),
+    amount,
+    date: transactionDate(row),
+    time: transactionTime(row),
+    bank_name: bankName(row),
+    description: description(row),
+    source: fixMojibake(row.source || ''),
+    business_scope: scope,
+    fixed_variable: fixedVariable,
+    requires_counterparty_confirmation: relatedPartyReview,
+    reasons: [...new Set(reasons)].slice(0, 7),
+    requires_user_review: requiresReview,
+    next_step_after_user_approval: 'approve_pending_bank_movement RPC -> bizimhesap_queue.status=ready_for_bizimhesap',
+  };
+  planBase.confirmation_question = buildConfirmationQuestion(planBase, scope);
+  planBase.decision_summary = `${planBase.type} | ${planBase.counterparty} | ${planBase.category} | ${planBase.business_scope} | ${planBase.fixed_variable}`;
   return {
     pending_bank_movement_id: row.id || row.pending_bank_movement_id || '',
     bank_name: bankName(row),
@@ -271,26 +373,7 @@ function classifyBankMovement(row = {}) {
     balance_after: Number(row.balance_after || row.bakiye || 0),
     description: description(row),
     duplicate_key: row.duplicate_key || '',
-    plan: {
-      kind,
-      type,
-      target,
-      account: targetAccount || targetBankAccount(row),
-      source_account: sourceAccount,
-      target_account: targetAccount,
-      counterparty,
-      category,
-      confidence: Math.min(99, Math.round(confidence)),
-      amount,
-      date: transactionDate(row),
-      time: transactionTime(row),
-      bank_name: bankName(row),
-      description: description(row),
-      source: fixMojibake(row.source || ''),
-      reasons: [...new Set(reasons)].slice(0, 5),
-      requires_user_review: requiresReview,
-      next_step_after_user_approval: 'approve_pending_bank_movement RPC -> bizimhesap_queue.status=ready_for_bizimhesap',
-    },
+    plan: planBase,
   };
 }
 
@@ -319,6 +402,11 @@ function classifyQueueRow(row = {}) {
     bank_name: p.bank_name,
     description: p.description,
     source: p.source,
+    business_scope: p.business_scope,
+    fixed_variable: p.fixed_variable,
+    confirmation_question: p.confirmation_question,
+    decision_summary: p.decision_summary,
+    requires_counterparty_confirmation: p.requires_counterparty_confirmation,
     confidence: p.confidence,
     reasons: p.reasons,
     requires_user_review: p.requires_user_review,

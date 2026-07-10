@@ -1,6 +1,6 @@
 # AperiON Project Status
 
-Son guncelleme: 2026-07-04 Europe/Istanbul
+Son guncelleme: 2026-07-10 Europe/Istanbul
 
 ## Calisma Protokolu
 
@@ -17,6 +17,8 @@ AperiON gelistirmesinde koordineli calisma protokolu gecerlidir.
 Genel durum: Sistem calisan bir omurgaya sahip, ancak tum moduller gunluk guvenilir kullanim icin production-ready degil.
 
 Koordineli calisma protokolu dosyalari `main` branch'e alinmistir. Bundan sonraki turlarda durum, karar, sonraki is ve kalite kontrol bu dosyalardan surdurulecektir.
+
+2026-07-10 finans karar hafizasi turu sonucu: Kullanici hayatini ve sirket CFO akislarini otomasyona cevirmek istedigini, bankaya gelen `Ercan Alayli` havalesinin cari dogrulamasi sonrasi BizimHesap'a tahsilat olarak islenmesini, ayrica sahsi/sirket giderlerinin sabit-degisken olarak takip edilmesini acil hedef olarak belirtti. `config/aperion_finance_rules.json` eklendi; sirket bankalari, POS hesaplari, ilgili kisi/firma dogrulama listesi, sirket sabit giderleri, kisisel sabit giderler ve inceleme isteyen anahtar kelimeler tek hafizada toplandi. `tools/bank_posting_plan.cjs` ve ana ekran banka karar metinleri bu hafizaya baglandi. Ilgili kisi/firma hareketleri ve kisisel/aile/okul/bagis gibi hareketler kullanici dogrulamasi olmadan kesin BizimHesap kaydina gitmez. Testler: `verify:finance-decision-rules`, `finance-smoke`, `verify:bank-approval-action` basarili. Bu tur canli BizimHesap kaydi, Supabase yazimi veya banka onayi yapilmadi.
 
 2026-07-09 birlesik ust akil link turu sonucu: Kullanici AperiON'u tam ERP gibi komplekslestirmek yerine tek linkten calisan CFO / ust akil / hayat asistani dashboard'u olarak kullanma fikrini onayladi ve Hasta Bezi/FIFO projesiyle AperiON iSTasyon projesinin birlestirilmesini istedi. `aperion-ust-akil.html` eklendi: isletme CFO paneli, Hasta Bezi & FIFO, Mail/Ekstre ust akil, BizimHesap onayi, Cari Hafiza, Urun Hafiza, Hayat Asistani ve Veri Guveni olmak uzere 8 tiklanabilir modul tek giriste toplandi. `aperion.html` kisa giris kapisi olarak `aperion-ust-akil.html` sayfasina yonlendirir. Rebase sonrasi `finance-smoke` icinde gorulen Moka/POS siniflandirma ezilmesi duzeltildi; Moka banka yatisi artik genel POS kuralina dusmeden `Moka banka transferi` olarak kalir. Bu tur canli BizimHesap kaydi, Supabase yazimi veya banka onayi yapilmadi.
 

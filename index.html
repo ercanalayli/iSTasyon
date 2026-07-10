@@ -6356,6 +6356,8 @@ function bankCounterpartyGuess(r){
   if(explicit&&explicit!=='-'&&!bankCariIsInvalid(explicit))return explicit;
   const text=repairBankText(r.description||r.aciklama||'');
   const patterns=[
+    /([A-ZÇĞİÖŞÜ0-9 .&'-]{5,80})\s+(?:TARAFINDAN|DAN|DEN)\s+(?:GELEN|HAVALE|EFT|FAST|PARA)/i,
+    /(?:GELEN|GÖNDEREN|GONDEREN|PARA GÖNDEREN|PARA GONDEREN)\s*(?:EFT|FAST|HAVALE)?\s*[-:]?\s*([A-ZÇĞİÖŞÜ0-9 .&'-]{5,80})/i,
     /(?:GELEN EFT|GIDEN EFT|GİDEN EFT|FAST|HAVALE|EFT)\s*[-:]?\s*([A-ZÇĞİÖŞÜ0-9 .&'-]{5,80})/i,
     /(?:ALICI|GONDEREN|GÖNDEREN|MUSTERI|MÜŞTERİ)\s*[:\-]\s*([A-ZÇĞİÖŞÜ0-9 .&'-]{5,80})/i,
     /(ALAYLI MED[İI]KAL[^*\/,;]*)/i
@@ -6370,6 +6372,22 @@ function bankCounterpartyGuess(r){
   if(/POS|NET SATI[ŞS]|KREDI KART|KREDİ KART/.test(bankTextForAnalysis(r)))return 'POS / Kredi kartı tahsilatı';
   if(/KOMISYON|KOMİSYON|BSMV|ÜCRET|UCRET|MASRAF/.test(bankTextForAnalysis(r)))return bankNameOf(r);
   return 'Cari eşleştirme onayda';
+}
+function bankPersonalOrReviewScope(text,cari){
+  const raw=`${text||''} ${cari||''}`.toLocaleUpperCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(/OKUL|BAGIS|BAĞIS|HAYIR|KURBAN|ZEKAT|AILE|AİLE|SAHSI|ŞAHSI|KISISEL|KİŞİSEL/.test(raw))return 'kişisel/şirket dışı inceleme';
+  if(/EV KIRA|COCUK|ÇOCUK|ARAC|ARAÇ|AIDAT|AİDAT|KREDI KARTI EKSTRESI|KREDİ KARTI EKSTRESİ/.test(raw))return 'kişisel finans';
+  return 'şirket finansı';
+}
+function bankFixedVariable(text,category){
+  const raw=`${text||''} ${category||''}`.toLocaleUpperCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(/KIRA|ELEKTRIK|ELEKTRİK|SU|DOGALGAZ|DOĞALGAZ|INTERNET|İNTERNET|TELEFON|MAAS|MAAŞ|SGK|VERGI|VERGİ/.test(raw))return 'sabit';
+  if(/KOMISYON|KOMİSYON|BSMV|UCRET|ÜCRET|MASRAF|FAIZ|FAİZ|KARGO|AKARYAKIT|MARKET/.test(raw))return 'değişken';
+  return 'işlem bazlı';
+}
+function bankNeedsCounterpartyConfirmation(cari){
+  const c=repairBankText(cari).toLocaleUpperCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  return /ERCAN ALAYLI|ERHAN ALAYLI|ALAYLI MEDIKAL|ALAYLI KULAK ISITME/.test(c);
 }
 function bankPostingPlan(r){
   const debit=bankDebit(r), credit=bankCredit(r), text=bankTextForAnalysis(r);
@@ -6387,7 +6405,7 @@ function bankPostingPlan(r){
   if(credit>0&&/POS|NET SATI[ŞS]|KREDI KART|KREDİ KART|BATCH YATAN/.test(text)){
     type='POS tahsilatı';category='Satış tahsilatı';cari='POS / Kart müşterileri';confidence=Math.max(confidence,88);reasons.push('POS açıklaması');
   }
-  if(/KOMISYON|KOMİSYON|BSMV|ÜCRET|UCRET|MASRAF|KATKI PAYI/.test(text)||(debit>0&&/POS|KREDI KART|KREDİ KART|ÜYE İŞYERİ|UYE ISYERI/.test(text))){
+  if(/KOMISYON|KOMİSYON|BSMV|BANKA MASRAF|FON TRANSFERI.*(ÜCRET|UCRET)|EFT.*(ÜCRET|UCRET)|FAST.*(ÜCRET|UCRET)|HAVALE.*(ÜCRET|UCRET)|KATKI PAYI/.test(text)||(debit>0&&/POS|KREDI KART|KREDİ KART|ÜYE İŞYERİ|UYE ISYERI/.test(text))){
     type='Banka masrafı';category='Banka masrafı';target='BizimHesap gider/banka masraf kaydı';confidence=Math.max(confidence,90);reasons.push('komisyon/masraf');
   }
   if(/KREDI KART BOR[ÇC]|KREDİ KART BOR[ÇC]|KART BOR[ÇC]/.test(text)){
@@ -6403,8 +6421,18 @@ function bankPostingPlan(r){
     type='Fatura ödemesi';category='Sabit gider faturası';target='BizimHesap gider/ödeme kaydı';confidence=Math.max(confidence,82);reasons.push('fatura anahtar kelimesi');
   }
   if(detected.includes('pos'))reasons.push(detected);
+  const scope=bankPersonalOrReviewScope(text,cari);
+  const fixedVariable=bankFixedVariable(text,category);
+  const counterpartyConfirm=bankNeedsCounterpartyConfirmation(cari);
+  if(counterpartyConfirm)reasons.push('cari doğrulaması');
+  if(scope!=='şirket finansı')reasons.push(scope);
   if(!reasons.length)reasons.push('açıklama/tutar yönü');
-  return {type,target,account,cari,category,confidence:Math.min(99,Math.round(confidence||65)),reasons:[...new Set(reasons)].slice(0,3)};
+  const confirmationQuestion=credit>0
+    ? `${cari} carisine ${dynMoney(credit)} tahsilat olarak işleyeyim mi?`
+    : scope!=='şirket finansı'
+      ? 'Bu hareket şirket kaydı mı, kişisel/hayat asistanı kaydı mı?'
+      : `${type} olarak BizimHesap kuyruğuna alınsın mı?`;
+  return {type,target,account,cari,category,confidence:Math.min(99,Math.round(confidence||65)),reasons:[...new Set(reasons)].slice(0,5),scope,fixedVariable,counterpartyConfirm,confirmationQuestion};
 }
 function bankCariIsAmbiguous(cari){
   const c=String(cari||'').toLocaleLowerCase('tr-TR');
@@ -6435,6 +6463,8 @@ function bankActionState(r,dupCount=1){
   if(r.durum!=='onay_bekliyor')return {ready:false,label:'Hazır değil',reason:`Durum: ${r.durum||'belirsiz'}. Önce onay bekleyen kayıt olmalı.`,tone:'blocked'};
   if(dupCount>1)return {ready:false,label:'Mükerrer kontrol',reason:`Aynı anahtarda ${fmt(dupCount)} aday var. Önce mükerrer kontrol edilmeli.`,tone:'blocked'};
   if(p.confidence<84)return {ready:false,label:'Güven düşük',reason:`Güven ${fmt(p.confidence)}%. 84 altı hareket önce Onay Merkezi incelemesi ister.`,tone:'blocked'};
+  if(p.scope&&p.scope!=='şirket finansı')return {ready:false,label:'Kişisel kontrol',reason:'Bu hareket kişisel/şirket dışı olabilir. Önce kapsam seçimi gerekir.',tone:'blocked'};
+  if(p.counterpartyConfirm)return {ready:false,label:'Cari doğrula',reason:'İlgili kişi/firma adı göründü. Tahsilat carisi kullanıcı tarafından doğrulanmalı.',tone:'blocked'};
   if(bankCariIsAmbiguous(p.cari)&&!['Banka masrafı','Banka virmanı','Kredi kartı ödemesi','Vergi/SGK ödemesi','Fatura ödemesi'].includes(p.type)){
     return {ready:false,label:'Cari eksik',reason:'Cari eşleştirme net değil. Önce cari seçimi/onayı gerekir.',tone:'blocked'};
   }
@@ -6556,10 +6586,11 @@ function bankLedgerRouteHtml(r){
     <span><strong>Kaynak</strong><em>${escHtml(bankNameOf(r))}</em></span>
     <span><strong>AperiON kararı</strong><em>${escHtml(p.type)}</em></span>
     <span class="dest"><strong>BizimHesap hedefi</strong><em>${escHtml(p.account)} / ${escHtml(p.cari)}</em></span>
+    <span><strong>Kapsam</strong><em>${escHtml(p.scope||'şirket finansı')} · ${escHtml(p.fixedVariable||'işlem bazlı')}</em></span>
     <span class="${resultCls}"><strong>Sonuç</strong><em>${escHtml(q?status:'Onay bekliyor')}</em></span>
   </div>
   <div class="bank-human-confirm">
-    <b>Onay anlamı:</b> Bu hareket ${escHtml(p.account)} hesabına, ${escHtml(p.cari)} carisiyle, ${escHtml(p.category)} kategorisinde ${escHtml(p.type)} olarak BizimHesap kuyruğuna alınır. ${escHtml(result)}
+    <b>Onay anlamı:</b> ${escHtml(p.confirmationQuestion||'Bu hareket BizimHesap kuyruğuna alınır.')} Hedef: ${escHtml(p.account)} / ${escHtml(p.cari)} / ${escHtml(p.category)}. ${escHtml(result)}
   </div>`;
 }
 function bankPostingCell(r){

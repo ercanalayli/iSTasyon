@@ -1,0 +1,53 @@
+{
+  "version": "2026-07-10",
+  "company_id": "alayli",
+  "principle": "AperiON classifies every money movement before posting. Ambiguous personal, owner, family, and mixed company transactions require user confirmation before BizimHesap posting.",
+  "business_accounts": {
+    "banks": ["Akbank", "Yapi Kredi", "Is Bankasi", "VakifBank", "Garanti BBVA", "Halkbank"],
+    "cash": ["TL Kasa"],
+    "pos": ["POS POS POS KREDI KARTI", "Moka United bekleyen tahsilatlar"]
+  },
+  "related_parties_need_confirmation": [
+    "ERCAN ALAYLI",
+    "ERHAN ALAYLI",
+    "ALAYLI MEDIKAL",
+    "ALAYLI KULAK ISITME"
+  ],
+  "company_fixed_expenses": [
+    "kira",
+    "elektrik",
+    "su",
+    "dogalgaz",
+    "internet",
+    "telefon",
+    "personel maas",
+    "personel yemek",
+    "sgk",
+    "vergi",
+    "banka masrafi",
+    "kargo",
+    "akaryakit"
+  ],
+  "personal_fixed_expenses": [
+    "ev kira",
+    "ev elektrik",
+    "ev su",
+    "telefon",
+    "internet",
+    "cocuk okul",
+    "arac sigorta",
+    "kredi karti ekstresi",
+    "aidat",
+    "saglik"
+  ],
+  "review_only_keywords": [
+    "okul",
+    "bagis",
+    "hayir",
+    "kurban",
+    "zekat",
+    "aile",
+    "sahsi",
+    "kisisel"
+  ]
+}
