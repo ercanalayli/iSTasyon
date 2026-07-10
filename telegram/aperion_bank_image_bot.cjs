@@ -4,6 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawnSync } = require('child_process');
 const { createClient } = require('@supabase/supabase-js');
+const { classifyBankMovement } = require('../tools/bank_posting_plan.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const ENV_PATH = path.join(ROOT, '.env');
@@ -107,13 +108,50 @@ function runParser(filePath) {
 
 async function listWaitingBankRows(limit = 8) {
   const { data, error } = await db.from('bank_transactions')
-    .select('id,tarih,tutar,tur,aciklama,onay_durumu,bizimhesap_durumu,sinif_guven')
+    .select('id,tarih,saat,tutar,tur,banka,hesap,aciklama,onay_durumu,bizimhesap_durumu,sinif_guven,raw')
     .eq('firma_id', COMPANY)
     .eq('onay_durumu', 'bekliyor')
     .order('id', { ascending: false })
     .limit(limit);
   if (error) throw error;
   return data || [];
+}
+
+function telegramBankPlan(row) {
+  const raw = row.raw || {};
+  const amount = Number(row.tutar || 0);
+  const outgoing = raw.yon === 'cikis' || raw.yon === 'out' || amount < 0;
+  return classifyBankMovement({
+    id: row.id,
+    bank_name: row.banka || row.hesap || raw.kaynak_banka || BANK_NAME,
+    transaction_date: row.tarih,
+    transaction_time: row.saat || raw.saat || '',
+    description: row.aciklama,
+    amount_in: outgoing ? 0 : Math.abs(amount),
+    amount_out: outgoing ? Math.abs(amount) : 0,
+    balance_after: raw.bakiye,
+    source_account: row.hesap || row.banka || raw.kaynak_banka || '',
+    target_account: raw.hedef_hesap || raw.target_account || '',
+    confidence_score: row.sinif_guven,
+  }).plan;
+}
+
+function waitingRowText(row) {
+  const plan = telegramBankPlan(row);
+  const explanation = escapeHtml((row.aciklama || '').slice(0, 900));
+  const amount = money(Math.abs(Number(row.tutar || 0)));
+  const source = escapeHtml(plan.source_account || `${row.banka || 'Banka'} banka hesabı`);
+  const target = escapeHtml(plan.target_account || 'Hedef hesap açıklamada net değil');
+  const question = escapeHtml(plan.confirmation_question || 'Bu hareketi önerilen kayıt türüyle işleyeyim mi?');
+  return `<b>Onay gerekli: ${escapeHtml(plan.type)}</b>\n` +
+    `Tarih: <b>${escapeHtml(row.tarih || '-')}</b> · Tutar: <b>${amount}</b>\n` +
+    `Kaynak hesap: <b>${source}</b>\n` +
+    `Hedef hesap: <b>${target}</b>\n` +
+    `BizimHesap kaydı: <b>${escapeHtml(plan.target)}</b>\n` +
+    `Kategori: <b>${escapeHtml(plan.category)}</b>\n` +
+    `Güven: <b>${plan.confidence}/100</b>\n\n` +
+    `<b>Açıklama kanıtı</b>\n<blockquote>${explanation}</blockquote>\n\n` +
+    `<b>Sorum:</b> ${question}`;
 }
 
 async function sendWaitingRows(chatId, header) {
@@ -128,6 +166,7 @@ async function sendWaitingRows(chatId, header) {
       chat_id: chatId,
       parse_mode: 'HTML',
       text: `<b>#${row.id} ${row.tur || '-'}</b>\n${row.tarih || '-'} · <b>${money(row.tutar)}</b>\n${escapeHtml((row.aciklama || '').slice(0, 700))}\nGüven: ${row.sinif_guven || 0}/100`,
+      text: waitingRowText(row),
       reply_markup: buttonRows(row.id),
     });
   }

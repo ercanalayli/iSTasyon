@@ -19,6 +19,14 @@
 - Yeni token kullanici tarafindan Google izin ekraninda yenilenmeden mailden yeni banka hareketi alma devam edemez.
 - `Live Visual Control` Telegram canli kutusunu bulamadigi icin basarisiz kaldi; bu durum finansal kayit veya Supabase SQL sonucunu etkilemez.
 
+### Telegram Gorsel Ekstre Virman Karari
+
+- Gorsel ekstre parser'inda virmanin otomatik reddedilmesi kaldirildi; virman artik kullanici onayina duser.
+- Telegram banka onay mesaji ham aciklamayi kanit olarak, kaynak hesap, hedef hesap, BizimHesap hedefi, kategori ve guven ile birlikte gosterir.
+- Sirket Is Bankasi -> Sirket VakifBank gibi aciklamalar `Sirket bankalari arasi virman` olarak taninir.
+- Telegram sorusu artik tutar ve hesaplari acik yazar; kullanici neye onay verdigini gorur.
+- `verify:telegram-bank-virman` komutu eklendi.
+
 ### ERP Ust Akil Kapsami
 
 - Kullanici AperiON'un sadece para hareketi degil; satis, alis, raporlama, analiz, anomali tespiti, CFO, CEO, ERP ve ust akil sistemi olmasi gerektigini netlestirdi.

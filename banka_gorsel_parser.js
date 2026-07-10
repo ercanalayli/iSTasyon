@@ -67,7 +67,7 @@ function hash(row) {
 
 function classify(row) {
   const t = key(row.aciklama);
-  if (t.includes('virman') || t.includes('hesaplar arasi')) return ['virman', 'ic_transfer', 'islenmeyecek', 100, 'ic_transfer'];
+  if (t.includes('virman') || t.includes('hesaplar arasi')) return ['virman', 'bankalar_arasi_transfer', 'onay_bekliyor', 90, 'sirket_ici_virman_onayi'];
   if (t.includes('sgk') || t.includes('sosyal guv')) return ['banka_gider', 'sgk', 'onay_bekliyor', 90, 'sgk_onay'];
   if (t.includes('eft') || t.includes('fast')) return [row.tutar > 0 ? 'cari_tahsilat' : 'banka_gider', row.tutar > 0 ? 'tahsilat' : 'banka_cikis', 'onay_bekliyor', 70, 'gorsel_onay'];
   if (t.includes('para yatirma') || t.includes('atm')) return ['ozel', 'nakit/atm', 'onay_bekliyor', 60, 'atm_onay'];

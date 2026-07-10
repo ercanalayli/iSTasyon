@@ -98,6 +98,23 @@ function targetBankAccount(row) {
   return fixMojibake(row.target_account || `${bankName(row)} banka hesabi`);
 }
 
+function companyBankAccountFromText(value, excludedBank = '') {
+  const text = normalize(value);
+  const excluded = normalize(excludedBank);
+  const banks = [
+    ['IS BANKASI', 'Is Bankasi banka hesabi'],
+    ['TURKIYE IS BANKASI', 'Is Bankasi banka hesabi'],
+    ['VAKIFBANK', 'VakifBank banka hesabi'],
+    ['AKBANK', 'Akbank banka hesabi'],
+    ['YAPI KREDI', 'Yapi Kredi banka hesabi'],
+    ['GARANTI BBVA', 'Garanti BBVA banka hesabi'],
+    ['GARANTI', 'Garanti BBVA banka hesabi'],
+    ['HALKBANK', 'Halkbank banka hesabi'],
+  ];
+  const found = banks.find(([needle]) => text.includes(needle) && !(excluded.includes(needle) || needle.includes(excluded)));
+  return found ? found[1] : '';
+}
+
 function kmhAccount(row) {
   return fixMojibake(row.kmh_account || `${bankName(row)} KMH / Ek Hesap`);
 }
@@ -168,6 +185,9 @@ function buildConfirmationQuestion(plan, scope) {
   }
   if (plan.kind === 'bank_fee_expense') {
     return `${plan.bank_name} banka masrafini ${plan.category} gider kartina isleyeyim mi?`;
+  }
+  if (plan.kind === 'bank_transfer') {
+    return `${plan.source_account} hesabindan ${plan.target_account} hesabina ${plan.amount.toLocaleString('tr-TR')} TL sirket ici virman olarak BizimHesap'a isleyeyim mi?`;
   }
   return `${plan.type} olarak BizimHesap kuyruğuna alinsin mi?`;
 }
@@ -283,14 +303,15 @@ function classifyBankMovement(row = {}) {
   }
   if (kind !== 'non_bank_summary_review' && /VIRMAN|HESAPLAR ARASI/.test(text)) {
     kind = 'bank_transfer';
-    type = 'Banka virmani';
+    const companyTarget = companyBankAccountFromText(text, bankName(row));
+    type = companyTarget ? 'Sirket bankalari arasi virman' : 'Banka virmani';
     target = 'BizimHesap banka virmani';
     category = 'Bankalar arasi transfer';
-    counterparty = 'Banka ici virman';
-    sourceAccount = fixMojibake(row.source_account || 'Kaynak banka hesabi');
-    targetAccount = targetBankAccount(row);
-    confidence = Math.max(confidence, 84);
-    reasons.push('virman');
+    sourceAccount = fixMojibake(row.source_account || `${bankName(row)} banka hesabi`);
+    targetAccount = fixMojibake(row.target_account || companyTarget || 'Hedef banka hesabi');
+    counterparty = `${sourceAccount} -> ${targetAccount}`;
+    confidence = Math.max(confidence, companyTarget ? 90 : 84);
+    reasons.push(companyTarget ? 'aciklamada iki sirket bankasi ve virman bulundu' : 'virman');
   }
   if (kind !== 'non_bank_summary_review' && /KREDI KART BORC|KART BORC/.test(text)) {
     kind = 'credit_card_payment';
