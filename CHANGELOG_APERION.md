@@ -2,6 +2,14 @@
 
 ## 2026-07-10
 
+### ERP Ust Akil Kapsami
+
+- Kullanici AperiON'un sadece para hareketi degil; satis, alis, raporlama, analiz, anomali tespiti, CFO, CEO, ERP ve ust akil sistemi olmasi gerektigini netlestirdi.
+- `config/aperion_intelligence_scope.json` eklendi.
+- `docs/APERION_ERP_UST_AKIL_KAPSAM.md` eklendi.
+- Kapsam CFO finans, CEO satis, alis/gider, stok/FIFO, anomali/risk ve hayat asistani motorlari olarak tanimlandi.
+- Bundan sonraki uygulama turlari banka onay akisina sikismayacak; satis/alis/stok/cari/anomali ayni ust akil mimarisine baglanacak.
+
 ### Finans Karar Hafizasi ve Cari Dogrulama
 
 - Banka/Gmail/Telegram'dan gelen para hareketleri icin kalici karar hafizasi eklendi: `config/aperion_finance_rules.json`.

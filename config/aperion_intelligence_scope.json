@@ -1,0 +1,90 @@
+{
+  "version": "2026-07-10",
+  "name": "AperiON ERP Ust Akil Kapsami",
+  "principle": "AperiON yalniz para hareketi isleyen bir bot degildir; BizimHesap ve dis kaynaklardan gelen veriyi okuyup CFO/CEO karar motoru gibi analiz eden, risk bulan, oneri ureten ve kullanici onayi ile isleten ust akildir.",
+  "source_layers": [
+    "BizimHesap satis, alis, stok, cari, banka, kasa ve fatura verileri",
+    "Gmail banka ekstresi, e-fatura, tedarikci faturasi ve cari mutabakat mailleri",
+    "Telegram belge, ekran goruntusu, hizli not, onay ve komutlari",
+    "Drive, Excel, PDF, bayi/dealer raporlari ve fiyat listeleri",
+    "Manuel sabit/sozlesmeli/ongorulen gelir-gider kartlari",
+    "Harici fiyat, piyasa, doviz, vergi ve resmi kaynaklar"
+  ],
+  "analysis_engines": [
+    {
+      "id": "finance_cfo",
+      "title": "CFO Finans Motoru",
+      "questions": [
+        "Para nerede?",
+        "Nakit mi tahakkuk mu karli gorunuyor?",
+        "Tahsilat gecikiyor mu?",
+        "Giderler sabit mi degisken mi?",
+        "Banka, kasa, cek, senet, kredi karti ve BizimHesap uyumlu mu?"
+      ]
+    },
+    {
+      "id": "sales_ceo",
+      "title": "CEO Satis ve Tahsilat Motoru",
+      "questions": [
+        "Bugun/dun/bu hafta/bu ay ne sattim?",
+        "Hangi kategori, urun, cari ve kanal buyuyor?",
+        "Hangi musteri cok aliyor ama tahsilati riskli?",
+        "Satis var ama nakit gelmiyor mu?"
+      ]
+    },
+    {
+      "id": "purchase_expense",
+      "title": "Alis ve Gider Motoru",
+      "questions": [
+        "Hangi tedarikciden ne aldim?",
+        "Alis fiyati ve fatura detayi dogru mu?",
+        "Gider karti dogru kategoriye baglandi mi?",
+        "Sabit, degisken, sozlesmeli ve kisisel giderler ayrildi mi?"
+      ]
+    },
+    {
+      "id": "stock_profit",
+      "title": "Stok, FIFO ve Karlilik Motoru",
+      "questions": [
+        "Stok kac gun yeter?",
+        "FIFO maliyete gore gercek kar nedir?",
+        "Hangi urunde fiyat/artis/zarar riski var?",
+        "Hasta bezi ve kritik kategorilerde siparis gerekir mi?"
+      ]
+    },
+    {
+      "id": "anomaly_risk",
+      "title": "Anomali ve Risk Motoru",
+      "questions": [
+        "Beklenmeyen tutar, tekrar kayit, eksik cari veya ters kayit var mi?",
+        "Ortalamanin ustu/altinda satis, alis, tahsilat veya gider var mi?",
+        "Bugun dikkat gerektiren ilk 10 konu nedir?",
+        "Firma verileri karisti mi?"
+      ]
+    },
+    {
+      "id": "life_assistant",
+      "title": "Hayat Asistani Motoru",
+      "questions": [
+        "Kisisel sabit giderler, faturalar, okul, arac, saglik ve aile yukumlulukleri ne durumda?",
+        "Sirket ve kisisel para hareketleri ayrildi mi?",
+        "Bugun bana ne hatirlatilmali?"
+      ]
+    }
+  ],
+  "decision_outputs": [
+    "Onay Merkezi karari",
+    "BizimHesap kayit onerisi",
+    "CFO/CEO gunluk komuta raporu",
+    "Anomali ve risk uyarisı",
+    "Satis, alis, stok, cari ve nakit aksiyon listesi",
+    "Telegram/Gmail bildirim ve onay mesaji"
+  ],
+  "non_negotiables": [
+    "Onaysiz kesin BizimHesap kaydi yok",
+    "Demo veri canli karar gibi gosterilmez",
+    "Firma verileri karistirilmaz",
+    "Para hareketi, satis, alis, stok ve cari ayni kayit kimligi ile izlenir",
+    "Her sonuc kaynak, kanit, guven puani ve sonraki adimla gosterilir"
+  ]
+}
