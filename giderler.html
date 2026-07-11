@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALAYLI Gider Kokpiti</title>
+<style>
+:root{--bg:#f6f7fb;--ink:#101828;--muted:#667085;--line:#e4e7ec;--card:#fff;--red:#b42318;--amber:#b54708;--green:#067647;--blue:#175cd3}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}.wrap{max-width:1180px;margin:auto;padding:18px}.hero{background:linear-gradient(135deg,#0b1220,#1d2939);color:#fff;border-radius:26px;padding:22px;box-shadow:0 20px 50px rgba(16,24,40,.16)}.hero h1{margin:0 0 8px;font-size:30px}.hero p{margin:0;color:#d0d5dd;font-weight:700}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:14px}.card{grid-column:span 4;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 12px 30px rgba(16,24,40,.06)}.wide{grid-column:span 8}.full{grid-column:span 12}.label{font-size:11px;color:var(--muted);font-weight:900;text-transform:uppercase}.metric{font-size:30px;font-weight:1000;margin-top:10px}.rows{margin-top:10px}.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #eef2f6}.row:first-child{border-top:0}.row span{color:#475467;font-weight:800}.row b{text-align:right}.pill{display:inline-block;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:900;background:#ecfdf3;color:var(--green)}.pill.warn{background:#fff7ed;color:var(--amber)}.back{display:inline-block;margin-top:14px;color:#fff;text-decoration:none;font-weight:900}@media(max-width:850px){.card,.wide,.full{grid-column:span 12}.wrap{padding:10px}.hero h1{font-size:25px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <div class="label" style="color:#98a2b3">AperiON iSTasyon</div>
+    <h1>ALAYLI Gider Kokpiti</h1>
+    <p>Masraf dosyasından öğrenilen gider hafızası, sabit gider adayları ve entegrasyon durumu.</p>
+    <a class="back" href="/aperion-home-v3.html">← Ana kokpite dön</a>
+  </section>
+  <section class="grid">
+    <div class="card"><div class="label">Toplam kayıt</div><div class="metric" id="records">--</div><div class="pill" id="status">Okunuyor</div></div>
+    <div class="card"><div class="label">Toplam gider</div><div class="metric" id="total">--</div></div>
+    <div class="card"><div class="label">Güncel aylık kira</div><div class="metric" id="rent">--</div><div class="pill warn">Gider</div></div>
+    <div class="card wide"><div class="label">Ana gider sınıfları</div><div class="rows" id="cats"></div></div>
+    <div class="card"><div class="label">Yıllara göre</div><div class="rows" id="years"></div></div>
+    <div class="card full"><div class="label">Entegrasyon durumu</div><div class="rows" id="integration"></div></div>
+  </section>
+</div>
+<script>
+const money=n=>Number(n||0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' TL';
+const row=(a,b)=>`<div class="row"><span>${a}</span><b>${b}</b></div>`;
+fetch('/data/aperion_expense_memory_status.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{
+ document.getElementById('records').textContent=Number(d.record_count||0).toLocaleString('tr-TR');
+ document.getElementById('total').textContent=money(d.total_expense_try);
+ document.getElementById('rent').textContent=money(d.current_rent_monthly_try);
+ document.getElementById('status').textContent='Gider hafızası hazır';
+ document.getElementById('cats').innerHTML=(d.main_categories||[]).map(x=>row(x.name,money(x.amount_try))).join('');
+ document.getElementById('years').innerHTML=Object.entries(d.year_totals||{}).map(([y,v])=>row(y,money(v))).join('');
+ const i=d.integration||{};
+ document.getElementById('integration').innerHTML=[
+  row('Dosya analizi',i.analysis_complete?'Tamamlandı':'Bekliyor'),
+  row('Sınıflandırma kuralları',i.classification_rules_ready?'Hazır':'Bekliyor'),
+  row('Dashboard veri kaynağı',i.dashboard_data_ready?'Hazır':'Bekliyor'),
+  row('Banka ekstresi eşleştirme',i.bank_statement_matching?'Canlı':'Henüz bağlı değil'),
+  row('Supabase canlı kayıt',i.live_supabase_records?'Canlı':'Henüz bağlı değil')
+ ].join('');
+}).catch(()=>{document.getElementById('status').textContent='Veri okunamadı';document.getElementById('status').className='pill warn'});
+</script>
+</body>
+</html>
