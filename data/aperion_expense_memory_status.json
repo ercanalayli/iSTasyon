@@ -1,0 +1,48 @@
+{
+  "company": "ALAYLI",
+  "status": "expense_memory_ready",
+  "source": "masraf.xlsx",
+  "period": {
+    "start": "2025-01-01",
+    "end": "2026-07-08"
+  },
+  "record_count": 1658,
+  "total_expense_try": 27560529.43,
+  "year_totals": {
+    "2025": 19986605.69,
+    "2026": 7573923.74
+  },
+  "main_categories": [
+    {"name": "Personel Giderleri", "amount_try": 12108700.72},
+    {"name": "Diğer / Kontrol Bekleyen", "amount_try": 5761256.98},
+    {"name": "Araç Giderleri", "amount_try": 5048581.27},
+    {"name": "İşletme Giderleri", "amount_try": 4008793.24},
+    {"name": "Mali Giderler", "amount_try": 633197.22}
+  ],
+  "fixed_expense_candidates": [
+    "Kira",
+    "Elektrik",
+    "Su",
+    "Telefon / İnternet",
+    "Aidat",
+    "Maaş",
+    "SGK / Vergi",
+    "Banka masrafı"
+  ],
+  "current_rent_monthly_try": 130000,
+  "rules": {
+    "all_records_company": "ALAYLI",
+    "rent_is_expense": true,
+    "ask_every_row": false,
+    "ask_only_unclear_risky_wrong": true,
+    "separate_expense_class_and_payment_source": true
+  },
+  "integration": {
+    "analysis_complete": true,
+    "classification_rules_ready": true,
+    "dashboard_data_ready": true,
+    "bank_statement_matching": false,
+    "live_supabase_records": false
+  },
+  "updated_at": "2026-07-11"
+}
