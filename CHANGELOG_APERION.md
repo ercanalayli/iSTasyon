@@ -4,6 +4,10 @@
 
 ### Odeme Takvimi, Bildirim ve Gezinme
 
+- `tools/build_payment_reminder_candidates_v88.cjs` eklendi; kaynakli odeme hafizasindan gecikme ve vade yaklasimi adaylari uretir.
+- `telegram/aperion_payment_reminder_digest_v88.cjs` eklendi; varsayilan olarak sadece onizleme yapar, `--send` olmadan Telegram'a mesaj gondermez.
+- `verify:payment-reminders` eklendi; Batikent Ercan Ev Aidati ve Sena Medikal kaynakli ornekleriyle tarih, bildirim ve guvenlik kuralini denetler.
+
 - `data/aperion_payment_obligation_registry.json` eklendi; sahsi/sirket yukumluluklari icin kaynakli hafiza baslatildi.
 - Batikent Ercan Ev Aidati aylik, ayin 16'si, tutar bekliyor olarak eklendi.
 - Finans Takvimi live ekraninda odeme hafizasi, vade, veri eksigi ve 7/3/1/0 gun bildirim politikasi gorunur hale getirildi.

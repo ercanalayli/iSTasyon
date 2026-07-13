@@ -1,8 +1,10 @@
 # AperiON Next Task
 
-Son guncelleme: 2026-07-10 Europe/Istanbul
+Son guncelleme: 2026-07-13 Europe/Istanbul
 
 ## Aktif Tek Hedef
+
+Odeme hatirlatma adaylarini Telegram workflow'una salt-okunur bildirim olarak baglamak; once mevcut Telegram secret/health durumunu dogrulamak, sonra manuel dry-run ve tek mesaj gonderim kanitini almak.
 
 Guncel tur notu 2026-07-13 ikinci asama: Finans Takvimi artik gercek tarihle filtrelenir ve Supabase kaydi yoksa odeme hafizasini gosterir. Siradaki tek hedef aynidir: her kredi karti/KMH/banka hesabini ad, son dort hane, kesim gunu, son odeme gunu, kapsam ve kaynak ekstre ile kesinlestirmek. Bu veriler gelmeden Telegram'a bildirim adayi olusur fakat otomatik kesin odeme/tahakkuk olusmaz.
 

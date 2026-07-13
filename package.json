@@ -114,7 +114,10 @@
     "verify:finance-decision-rules": "node tools/verify_finance_decision_rules_v84.cjs",
     "verify:telegram-bank-virman": "node tools/verify_telegram_bank_virman_v85.cjs",
     "verify:bank-approval-encoding": "node tools/verify_bank_approval_encoding_v86.cjs",
-    "verify:payment-calendar-navigation": "node tools/verify_payment_calendar_navigation_v87.cjs"
+    "verify:payment-calendar-navigation": "node tools/verify_payment_calendar_navigation_v87.cjs",
+    "payment:reminders:preview": "node telegram/aperion_payment_reminder_digest_v88.cjs",
+    "payment:reminders:send": "node telegram/aperion_payment_reminder_digest_v88.cjs --send",
+    "verify:payment-reminders": "node tools/verify_payment_reminder_candidates_v88.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

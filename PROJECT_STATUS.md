@@ -1,6 +1,6 @@
 # AperiON Project Status
 
-Son guncelleme: 2026-07-10 Europe/Istanbul
+Son guncelleme: 2026-07-13 Europe/Istanbul
 
 ## Calisma Protokolu
 
@@ -15,6 +15,8 @@ AperiON gelistirmesinde koordineli calisma protokolu gecerlidir.
 ## Mevcut Teknik Durum
 
 2026-07-13 Finans Takvimi gercek zaman/fallback turu sonucu: Takvimde kalan sabit Mayis 2026 filtre tarihi kaldirildi; sayfa acildiginda gercek gun kullanilir. Supabase tarafinda canli finans kaydi yoksa veya baglanti yoksa eski demo borclar yerine `aperion_payment_obligation_registry.json` icindeki kaynakli odeme hafizasi gosterilir. Bu sayede tutari veya hesap/vadesi eksik olan kartlar `tutar bekliyor`/`hesap ve vade bekliyor` olarak gorunur; demo tahsilat, kart borcu veya cek gercek karar gibi gorunmez.
+
+2026-07-13 odeme hatirlatma adayi v88: kaynakli odeme hafizasi, Istanbul tarihine gore geciken/bugun/7-3-1 gun kala adaylari uretir. Batikent Ercan Ev Aidati her ayin 16'si icin kayitli; tutar veya odeme hesabi kaynakta yoksa bildirim bunu acikca belirtir. Telegram komutu once dry-run calisir; `--send` olmadan mesaj gondermez ve hicbir odeme/BizimHesap kaydi yaratmaz.
 
 2026-07-13 odeme takvimi ve gezinme turu sonucu: Finans Takvimi icin ayri odeme yukumlulugu hafizasi eklendi. Sahsi `Batıkent Ercan Ev Aidati` her ayin 16'si icin kaydedildi; tutar verilmedigi icin sistem tutar uydurmaz ve `tutar bekliyor` durumunda kalir. Sahsi/sirket kredi kartlari, sirket KMH hesaplari ve onceki Sena Medikal odeme notu da kaynak/hesap/vade bilgisi eksikse kesin borc sayilmayan kontrol kartlari olarak kayda alindi. Bildirim politikasi dashboard ve Telegram icin 7/3/1/0 gun oncedir; gonderim kanali canli kanitlanmadan bildirim gonderildi iddia edilmez. AperiON ust akil girisindeki guncelleme etiketi artik `HHmmYYMMdd` formatinda dinamik uretilir. Finans Takvimi ekranlarina gorunur `AperiON Ana Ekran` baglantisi eklendi.
 
