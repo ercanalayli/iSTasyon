@@ -34,10 +34,14 @@ function formatDigest(report) {
   return lines.join('\n');
 }
 
+function resolveChatId(env = process.env) {
+  return env.TELEGRAM_CHAT_ID || env.TELEGRAM_ALLOWED_CHAT_ID || String(env.TELEGRAM_CHAT_IDS || '').split(',')[0].trim();
+}
+
 async function sendTelegram(message) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) throw new Error('TELEGRAM_BOT_TOKEN ve TELEGRAM_CHAT_ID gerekli.');
+  const chatId = resolveChatId();
+  if (!token || !chatId) throw new Error('TELEGRAM_BOT_TOKEN ve TELEGRAM_CHAT_ID/TELEGRAM_ALLOWED_CHAT_ID/TELEGRAM_CHAT_IDS gerekli.');
   const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST', headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML' })
@@ -62,4 +66,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.message || error); process.exitCode = 1; });
 
-module.exports = { formatDigest, formatMoney, levelLabel };
+module.exports = { formatDigest, formatMoney, levelLabel, resolveChatId };
