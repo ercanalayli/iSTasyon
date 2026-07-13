@@ -9,6 +9,7 @@
 - `verify:payment-reminders` eklendi; Batikent Ercan Ev Aidati ve Sena Medikal kaynakli ornekleriyle tarih, bildirim ve guvenlik kuralini denetler.
 - `payment-reminder-digest.yml` eklendi; 07:00 ve 17:00 Istanbul saatleri icin salt-okunur Telegram odeme ozeti planlandi. Eksik bilgi kartlari gunluk bildirim spaminden ayrildi.
 - Odeme hatirlatma gondericisi mevcut `TELEGRAM_CHAT_IDS` coklu hedef secret yapisini da destekler hale getirildi.
+- Finans Takvimi baslaticisi canli ekrana dogrudan yonlendirilir hale getirildi; mevcut bozuk metinler icin goruntuleme onarimi ve ay sonu vade hesap korumasi eklendi.
 
 - `data/aperion_payment_obligation_registry.json` eklendi; sahsi/sirket yukumluluklari icin kaynakli hafiza baslatildi.
 - Batikent Ercan Ev Aidati aylik, ayin 16'si, tutar bekliyor olarak eklendi.
