@@ -1,5 +1,16 @@
 # AperiON Changelog
 
+## 2026-07-13
+
+### Odeme Takvimi, Bildirim ve Gezinme
+
+- `data/aperion_payment_obligation_registry.json` eklendi; sahsi/sirket yukumluluklari icin kaynakli hafiza baslatildi.
+- Batikent Ercan Ev Aidati aylik, ayin 16'si, tutar bekliyor olarak eklendi.
+- Finans Takvimi live ekraninda odeme hafizasi, vade, veri eksigi ve 7/3/1/0 gun bildirim politikasi gorunur hale getirildi.
+- Finans Takvimi ekranlarina `AperiON Ana Ekran` geri donus baglantisi eklendi.
+- Ust Akil guncelleme etiketi `HHmmYYMMdd` formatinda dinamiklestirildi.
+- `verify:payment-calendar-navigation` eklendi.
+
 ## 2026-07-10
 
 ### Banka Onay Karakter Onarimi

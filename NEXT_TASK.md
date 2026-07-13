@@ -4,6 +4,8 @@ Son guncelleme: 2026-07-10 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
+Guncel tur notu 2026-07-13: Odeme yukumluluk hafizasi ve Finans Takvimi ana girise baglandi. Siradaki tek hedef: kullanicidan kredi karti/KMH/banka hesaplarinin adlari, son dort hanesi, kesim gunu, son odeme gunu ve varsa tutarlari geldikce kartlari kesinlestirmek; ardindan Telegram bildirim adaylarini kaynak kanitiyla gondermek. Tutarsiz veya eksik veri icin otomatik borc/kayit uretilmeyecek.
+
 Guncel tur notu 2026-07-10: Banka onay ekranindaki OCR/kodlama bozulmalari onarildi. Siradaki hedef, yenilenmis Gmail OAuth izninden sonra yeni ekstrelerin kaynak metninin bozulmadan Onay Merkezi'ne dustugunu canli veriyle dogrulamak; bu kontroller finansal kayit olusturmadan yapilacak.
 
 Guncel tur notu 2026-07-10: Kullanici acil hedefi netlestirdi: Banka/Gmail/Telegram hareketleri once AperiON tarafindan anlasilacak, cari/kapsam/gider tipi dogrulanacak, sonra kullanici onayi ile BizimHesap'a islenecek. `config/aperion_finance_rules.json` eklendi ve banka karar motoru bu hafizaya baglandi. Ercan Alayli gibi ilgili kisi/firma hareketleri otomatik kesin kayda gitmez; cari dogrulamasi ister. Okul/aile/bagis/zekat/sahsi gibi hareketler sirket gideri sayilmaz; kisisel/hayat asistani incelemesine duser. `Cari dogrula` ekran eylemi ve `confirm_pending_bank_counterparty` SQL/RPC katmani eklendi. Siradaki tek hedef: SQL kurulumunun canlida basarili oldugunu kontrol etmek, sonra tek bir Ercan Alayli tahsilatini kullanici onayiyla dogrula -> kuyruk -> BizimHesap sonucu zincirinde kapatmak.

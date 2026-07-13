@@ -113,7 +113,8 @@
     "verify:bizimhesap:supabase-service-key": "node tools/verify_bizimhesap_supabase_service_key_v79.cjs",
     "verify:finance-decision-rules": "node tools/verify_finance_decision_rules_v84.cjs",
     "verify:telegram-bank-virman": "node tools/verify_telegram_bank_virman_v85.cjs",
-    "verify:bank-approval-encoding": "node tools/verify_bank_approval_encoding_v86.cjs"
+    "verify:bank-approval-encoding": "node tools/verify_bank_approval_encoding_v86.cjs",
+    "verify:payment-calendar-navigation": "node tools/verify_payment_calendar_navigation_v87.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

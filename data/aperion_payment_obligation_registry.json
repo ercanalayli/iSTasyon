@@ -1,0 +1,89 @@
+{
+  "version": "2026-07-13",
+  "timezone": "Europe/Istanbul",
+  "principle": "No amount, counterparty, or due date is assumed. A payment becomes a posting candidate only after its source evidence and user approval are present.",
+  "notification_policy": {
+    "channels": ["dashboard", "telegram"],
+    "reminder_days_before": [7, 3, 1, 0],
+    "overdue_follow_up_days": [1, 3, 7]
+  },
+  "obligations": [
+    {
+      "id": "personal-batikent-ercan-ev-aidat",
+      "scope": "personal",
+      "kind": "fixed_payment",
+      "title": "Batıkent Ercan Ev Aidatı",
+      "category": "Ev / Aidat",
+      "counterparty": "Batıkent Ercan Ev Aidatı",
+      "frequency": "monthly",
+      "due_day": 16,
+      "amount": null,
+      "currency": "TRY",
+      "status": "amount_required",
+      "source": "user_instruction_2026-07-13",
+      "notification_enabled": true,
+      "note": "Her ayın 16'sı ödeme günü. Tutar, ödeme hesabı ve dekont eşleştirmesi henüz verilmedi."
+    },
+    {
+      "id": "personal-credit-card-review",
+      "scope": "personal",
+      "kind": "statement_review",
+      "title": "Şahsi Kredi Kartları",
+      "category": "Kredi Kartı",
+      "frequency": "monthly",
+      "due_day": null,
+      "amount": null,
+      "currency": "TRY",
+      "status": "account_and_due_date_required",
+      "source": "user_instruction",
+      "notification_enabled": true,
+      "note": "Her kart için banka, son dört hane, hesap kesim günü ve son ödeme günü gerektiğinde ekstre kaynağından öğrenilir."
+    },
+    {
+      "id": "business-credit-card-review",
+      "scope": "business",
+      "kind": "statement_review",
+      "title": "Şirket Kredi Kartları",
+      "category": "Kredi Kartı",
+      "frequency": "monthly",
+      "due_day": null,
+      "amount": null,
+      "currency": "TRY",
+      "status": "account_and_due_date_required",
+      "source": "user_instruction",
+      "notification_enabled": true,
+      "note": "Şirket kartı ekstresi, asgari ödeme, son ödeme ve faiz riski kaynağıyla doğrulanır."
+    },
+    {
+      "id": "business-kmh-review",
+      "scope": "business",
+      "kind": "credit_facility_review",
+      "title": "Şirket KMH Hesapları",
+      "category": "Banka / KMH",
+      "frequency": "monthly",
+      "due_day": null,
+      "amount": null,
+      "currency": "TRY",
+      "status": "account_and_due_date_required",
+      "source": "user_instruction",
+      "notification_enabled": true,
+      "note": "Limit, kullanılan anapara, faiz ve son ödeme bilgisi banka ekstresinden doğrulanır."
+    },
+    {
+      "id": "business-sena-medikal-promise-20260710",
+      "scope": "business",
+      "kind": "payment_promise",
+      "title": "Sena Medikal Ödeme Notu",
+      "category": "Tedarikçi Ödemesi",
+      "counterparty": "Sena Medikal",
+      "frequency": "one_time",
+      "due_date": "2026-07-10",
+      "amount": 100000,
+      "currency": "TRY",
+      "status": "payment_confirmation_required",
+      "source": "aperion_manual_payment_notes_2026-07-08",
+      "notification_enabled": true,
+      "note": "Ödendi bilgisi veya dekont gelmeden gecikmiş/ödenmiş kabul edilmez."
+    }
+  ]
+}
