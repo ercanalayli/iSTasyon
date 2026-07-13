@@ -2,6 +2,19 @@
 
 ## 2026-07-13
 
+### BizimHesap Uctan Uca Denetimi
+
+- Windows gorevleri, yerel senkron loglari, repo botlari, kuyruk dogrulamasi,
+  B2B on kontrolu ve GitHub saatlik workflow sonucu salt-okunur denetlendi.
+- Kök neden: Windows'un calistirdigi ayri `ErpaltH` kopyasinda masraf botu
+  `masraf_raw` tablosuna publishable anahtarla yazmaya calisiyor; RLS bu
+  yazimi reddediyor.
+- Giris ve firma secimi, satis/urun/stok/son-islemler adimlari kanitlandi;
+  masraf ve dolayisiyla tam finans guncelligi kanitlanmadi.
+- Denetimde canli BizimHesap kaydi, banka onayi veya Supabase veri yazimi
+  yapilmadi. Ayrintilar `docs/BIZIMHESAP_UCTAN_UCA_DENETIM_2026-07-13.md`
+  dosyasinda.
+
 ### Odeme Takvimi, Bildirim ve Gezinme
 
 - `tools/build_payment_reminder_candidates_v88.cjs` eklendi; kaynakli odeme hafizasindan gecikme ve vade yaklasimi adaylari uretir.

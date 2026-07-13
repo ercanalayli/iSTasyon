@@ -91,6 +91,18 @@ Kullanici sabah banka maillerinden gelen hareketleri analiz edilmis sekilde gorm
 
 ## Siradaki Is Paketi
 
+1. **BizimHesap saatlik klonunu tekil ve guvenli hale getir:** Windows
+   gorevini guncel proje kopyasina yonlendir veya ayni surum kontrolu altinda
+   tut; Supabase servis rolunu sadece guvenli gorev ortami/secret ile ver.
+   Masraf RLS yazim hatasi kapanmadan finans verisi "guncel" kabul edilmeyecek.
+2. Salt-okunur/deneme kontrolu ile masraf yaziminin gectigini, retry sonucunun
+   `BASARILI` oldugunu ve `aperion_last_sync.json` kaydinin tam oldugunu
+   kanitla.
+3. Bunun ardindan tekil onayli banka kaydinda kuyruk -> BizimHesap sonuc
+   kanitini kapat.
+
+## Onceki Is Paketi
+
 1. `aperion-ust-akil.html` canli linki dogrulanacak.
 2. Tek linkten mevcut ana CFO paneli, Hasta Bezi/FIFO, Mail/Ekstre ve Onay Merkezi sayfalarina gecis test edilecek.
 3. Sonra secili canli pending aday: `c7f757fa-939a-45e3-aa0b-145259234045` / `2026-07-03 Yapi Kredi 4.600 TL POS tahsilati` icin onay/kuyruk/BizimHesap kanit zinciri kapatilacak.

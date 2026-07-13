@@ -14,6 +14,17 @@ AperiON gelistirmesinde koordineli calisma protokolu gecerlidir.
 
 ## Mevcut Teknik Durum
 
+2026-07-13 BizimHesap uctan uca salt-okunur denetimi: Gercek Windows
+`AperiON_BizimHesap_Klon_Saatlik` gorevi repo calisma kopyasini degil,
+`C:\\Users\\HP\\Desktop\\ErpaltH` altindaki ayri eski kopyayi calistiriyor.
+Bu kopyada login ve ALAYLI MEDIKAL firma secimi basarili; satis, urun/stok ve
+son islemler cekiliyor. Masraf okunmasina ragmen `masraf_raw` insert'i
+`new row violates row-level security policy` ile reddediliyor. Gorev `.env`
+dosyasinda Supabase servis rol anahtari yok, eski masraf botu da servis rolunu
+okumuyor. Sonuc olarak retry runner basarisiz kapanmakta; gider/finans
+gorunumunun tamamen guncel oldugu iddia edilemez. Ayrintili kanit:
+`docs/BIZIMHESAP_UCTAN_UCA_DENETIM_2026-07-13.md`.
+
 2026-07-13 Finans Takvimi gercek zaman/fallback turu sonucu: Takvimde kalan sabit Mayis 2026 filtre tarihi kaldirildi; sayfa acildiginda gercek gun kullanilir. Supabase tarafinda canli finans kaydi yoksa veya baglanti yoksa eski demo borclar yerine `aperion_payment_obligation_registry.json` icindeki kaynakli odeme hafizasi gosterilir. Bu sayede tutari veya hesap/vadesi eksik olan kartlar `tutar bekliyor`/`hesap ve vade bekliyor` olarak gorunur; demo tahsilat, kart borcu veya cek gercek karar gibi gorunmez.
 
 2026-07-13 odeme hatirlatma adayi v88: kaynakli odeme hafizasi, Istanbul tarihine gore geciken/bugun/7-3-1 gun kala adaylari uretir. Batikent Ercan Ev Aidati her ayin 16'si icin kayitli; tutar veya odeme hesabi kaynakta yoksa bildirim bunu acikca belirtir. Telegram komutu once dry-run calisir; `--send` olmadan mesaj gondermez ve hicbir odeme/BizimHesap kaydi yaratmaz.
