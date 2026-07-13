@@ -4,6 +4,8 @@ Son guncelleme: 2026-07-10 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
+Guncel tur notu 2026-07-13 ikinci asama: Finans Takvimi artik gercek tarihle filtrelenir ve Supabase kaydi yoksa odeme hafizasini gosterir. Siradaki tek hedef aynidir: her kredi karti/KMH/banka hesabini ad, son dort hane, kesim gunu, son odeme gunu, kapsam ve kaynak ekstre ile kesinlestirmek. Bu veriler gelmeden Telegram'a bildirim adayi olusur fakat otomatik kesin odeme/tahakkuk olusmaz.
+
 Guncel tur notu 2026-07-13: Odeme yukumluluk hafizasi ve Finans Takvimi ana girise baglandi. Siradaki tek hedef: kullanicidan kredi karti/KMH/banka hesaplarinin adlari, son dort hanesi, kesim gunu, son odeme gunu ve varsa tutarlari geldikce kartlari kesinlestirmek; ardindan Telegram bildirim adaylarini kaynak kanitiyla gondermek. Tutarsiz veya eksik veri icin otomatik borc/kayit uretilmeyecek.
 
 Guncel tur notu 2026-07-10: Banka onay ekranindaki OCR/kodlama bozulmalari onarildi. Siradaki hedef, yenilenmis Gmail OAuth izninden sonra yeni ekstrelerin kaynak metninin bozulmadan Onay Merkezi'ne dustugunu canli veriyle dogrulamak; bu kontroller finansal kayit olusturmadan yapilacak.

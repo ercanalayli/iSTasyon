@@ -13,6 +13,8 @@ const checks = [
   ['Ana ekrandan finans takvimi', launcher.includes('./finans-takvimi.html')],
   ['Takvimde ana ekran dönüşü', calendar.includes('AperiON Ana Ekran') && calendar.includes('./aperion-ust-akil.html')],
   ['Takvim ödeme hafızasını okuyor', calendar.includes('loadObligationRegistry') && calendar.includes('aperion_payment_obligation_registry.json')],
+  ['Takvim gerçek güne göre filtreleniyor', calendar.includes('today.setTime(Date.now())')],
+  ['Eski demo yerine ödeme hafızası fallbacki', calendar.includes('reloadPaymentAwareData') && calendar.includes('localPaymentRecords') && calendar.includes('ÖDEME HAFIZASI')],
 ];
 
 let failed = 0;

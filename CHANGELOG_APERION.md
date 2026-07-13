@@ -10,6 +10,8 @@
 - Finans Takvimi ekranlarina `AperiON Ana Ekran` geri donus baglantisi eklendi.
 - Ust Akil guncelleme etiketi `HHmmYYMMdd` formatinda dinamiklestirildi.
 - `verify:payment-calendar-navigation` eklendi.
+- Takvimde kalan sabit Mayis 2026 tarihi kaldirildi; gercek gun ve ayla filtreleme yapilir.
+- Supabase kaydi yoksa eski demo borclari yerine kaynakli odeme hafizasi fallback olarak gosterilir.
 
 ## 2026-07-10
 
