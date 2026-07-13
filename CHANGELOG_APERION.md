@@ -14,6 +14,10 @@
 - Denetimde canli BizimHesap kaydi, banka onayi veya Supabase veri yazimi
   yapilmadi. Ayrintilar `docs/BIZIMHESAP_UCTAN_UCA_DENETIM_2026-07-13.md`
   dosyasinda.
+- Cift ve hatali yerel calismayi kesmek icin
+  `AperiON_BizimHesap_Klon_Saatlik` Windows gorevi devre disi birakildi.
+  Ayri yonetici sahipli sabah kontrol gorevi bu oturumdan kapatilamadi;
+  takip listesine eklendi.
 
 ### Odeme Takvimi, Bildirim ve Gezinme
 

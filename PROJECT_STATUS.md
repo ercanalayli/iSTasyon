@@ -25,6 +25,13 @@ okumuyor. Sonuc olarak retry runner basarisiz kapanmakta; gider/finans
 gorunumunun tamamen guncel oldugu iddia edilemez. Ayrintili kanit:
 `docs/BIZIMHESAP_UCTAN_UCA_DENETIM_2026-07-13.md`.
 
+2026-07-13 operasyon ayrisma karari: Basarili GitHub `Hourly BizimHesap Sync`
+ana yazici akisi olarak tutuldu. Hata ureten eski yerel saatlik gorev
+`AperiON_BizimHesap_Klon_Saatlik` devre disi birakildi. Eski sabah kontrol
+gorevi ayri yonetici yetkisi nedeniyle bu oturumdan kapatilamadi; durum
+`Erisim engellendi` olarak kayit altinda. Bu tek kalan yerel gorev kapatilana
+kadar eski klasorden ek basarisiz deneme riski vardir.
+
 2026-07-13 Finans Takvimi gercek zaman/fallback turu sonucu: Takvimde kalan sabit Mayis 2026 filtre tarihi kaldirildi; sayfa acildiginda gercek gun kullanilir. Supabase tarafinda canli finans kaydi yoksa veya baglanti yoksa eski demo borclar yerine `aperion_payment_obligation_registry.json` icindeki kaynakli odeme hafizasi gosterilir. Bu sayede tutari veya hesap/vadesi eksik olan kartlar `tutar bekliyor`/`hesap ve vade bekliyor` olarak gorunur; demo tahsilat, kart borcu veya cek gercek karar gibi gorunmez.
 
 2026-07-13 odeme hatirlatma adayi v88: kaynakli odeme hafizasi, Istanbul tarihine gore geciken/bugun/7-3-1 gun kala adaylari uretir. Batikent Ercan Ev Aidati her ayin 16'si icin kayitli; tutar veya odeme hesabi kaynakta yoksa bildirim bunu acikca belirtir. Telegram komutu once dry-run calisir; `--send` olmadan mesaj gondermez ve hicbir odeme/BizimHesap kaydi yaratmaz.

@@ -91,10 +91,10 @@ Kullanici sabah banka maillerinden gelen hareketleri analiz edilmis sekilde gorm
 
 ## Siradaki Is Paketi
 
-1. **BizimHesap saatlik klonunu tekil ve guvenli hale getir:** Windows
-   gorevini guncel proje kopyasina yonlendir veya ayni surum kontrolu altinda
-   tut; Supabase servis rolunu sadece guvenli gorev ortami/secret ile ver.
-   Masraf RLS yazim hatasi kapanmadan finans verisi "guncel" kabul edilmeyecek.
+1. **BizimHesap saatlik klonunu tekil ve guvenli hale getir:** Eski saatlik
+   gorev devre disi birakildi; yonetici sahipli eski sabah kontrol gorevini de
+   devre disi birak ve GitHub Actions'i tek kaynak yazici olarak izle.
+   Masraf RLS yazim hatasi kapanmadan eski yerel gorev tekrar acilmayacak.
 2. Salt-okunur/deneme kontrolu ile masraf yaziminin gectigini, retry sonucunun
    `BASARILI` oldugunu ve `aperion_last_sync.json` kaydinin tam oldugunu
    kanitla.

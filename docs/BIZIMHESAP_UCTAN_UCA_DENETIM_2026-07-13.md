@@ -59,3 +59,14 @@ eski kalabilmektedir.
    yazimi, `aperion_last_sync.json` ve retry sonucu birlikte dogrulanacak.
 5. Sonra bir onay kaydi icin kuyruk -> BizimHesap sonuc kaniti ayri ve
    kullanici onayli olarak kapatilacak.
+
+## Operasyon Karari - 2026-07-13
+
+- GitHub `Hourly BizimHesap Sync` son bes calismada basarili oldugu icin
+  tek kaynak senkron yazicisi olarak korunacaktir.
+- Eski yerel `AperiON_BizimHesap_Klon_Saatlik` gorevi durduruldu. Bu gorev
+  basarisiz RLS yazimlarini tekrarliyor ve ayri klasor calistiriyordu.
+- `AperiON_Ofis_Sabah_0805_Klon_Kontrol` gorevi ayri yonetici sahibiyle
+  olusturuldugu icin bu oturumdan devre disi birakilamadi (`Erisim engellendi`).
+  Bu gorev kaldigi surece sabah eski klasorde bir ek deneme yapabilir; yonetici
+  yetkili oturumda devre disi birakilmasi gerekir.
