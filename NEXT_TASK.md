@@ -13,6 +13,10 @@ tiklanarak acilacak. Ham cari/tarih/fatura detayi public Pages'e yazilmaz.
 Gmail OAuth ve banka onay akisi ayri bir blokaj olarak kalir; bu tur onun
 gercek zamanli veri iddiasini degistirmez.
 
+FIFO kalite kurali: 19.202 satis satirinda alis lotu bulunamadigi icin raporun
+alis fiyatina fallback yapildi. Bu fark kapatilana kadar bu satirlar kesin
+FIFO maliyeti degil, kontrol gerektiren maliyet olarak gosterilecek.
+
 ## Aktif Tek Hedef
 
 Gmail OAuth refresh tokenini `alaylimedikal@gmail.com` kullanici izniyle

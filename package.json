@@ -124,6 +124,7 @@
     "verify:payment-reminders": "node tools/verify_payment_reminder_candidates_v88.cjs"
     ,"hasta-bezi:source-audit": "node tools/audit_hasta_bezi_source_reports_v91.cjs"
     ,"verify:hasta-bezi:source-audit": "node tools/verify_hasta_bezi_source_reports_v91.cjs"
+    ,"hasta-bezi:fifo:build": "node tools/build_hasta_bezi_fifo_chunks_v92.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

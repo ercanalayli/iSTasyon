@@ -16,6 +16,15 @@ Detayli kaynak verisi yerelde kalir; public sayfa sadece kapsama ve satir
 sayisi kanitini gosterir. Sonraki ana hedef, bu kanitli paketi mevcut Hasta
 Bezi ekraninin tek ekranlik karar gorunumune baglamaktir.
 
+## Guncel Tur - FIFO Veri Paketi
+
+Bos kalan eski manifest sorunu kapatildi: `hasta-bezi/fifo_chunks` altinda
+gercek gzip parcalari yeniden uretildi. Paket 1.881 urun, 38.258 hareket ve
+34.869 satis satiri tasir. Ancak 19.202 satis satirinda alis raporundaki lot
+eslesmesi bulunamadigi icin satis raporundaki `Alis Fiyati` yedek maliyet
+olarak kullanilmistir. Bu satirlar kesin FIFO kabul edilmez; yeni karar
+ekraninda ayri maliyet kontrol uyarisi olarak gorunmelidir.
+
 ## Calisma Protokolu
 
 AperiON gelistirmesinde koordineli calisma protokolu gecerlidir.

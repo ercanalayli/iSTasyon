@@ -1,1 +1,14 @@
-{"type":"gz-base64","build":"0920260907","encoding":"gzip+base64","files":["fifo_b64_001.txt","fifo_b64_002.txt","fifo_b64_003.txt","fifo_b64_004.txt","fifo_b64_005.txt","fifo_b64_006.txt","fifo_b64_007.txt","fifo_b64_008.txt","fifo_b64_009.txt","fifo_b64_010.txt","fifo_b64_011.txt","fifo_b64_012.txt","fifo_b64_013.txt","fifo_b64_014.txt","fifo_b64_015.txt","fifo_b64_016.txt","fifo_b64_017.txt","fifo_b64_018.txt","fifo_b64_019.txt","fifo_b64_020.txt"],"summaryCount":1882,"moveCount":38258,"salesCount":34869,"warningCount":20250}
+{
+  "type": "gz-base64",
+  "build": "152908644",
+  "encoding": "gzip+base64",
+  "files": [
+    "fifo_b64_001.txt",
+    "fifo_b64_002.txt",
+    "fifo_b64_003.txt"
+  ],
+  "summaryCount": 1881,
+  "moveCount": 38258,
+  "salesCount": 34869,
+  "warningCount": 19202
+}

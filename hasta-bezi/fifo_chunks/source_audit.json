@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "created_at": "2026-07-13T15:16:35.409Z",
+  "created_at": "2026-07-13T15:29:18.328Z",
   "timezone": "Europe/Istanbul",
   "source_system": "BizimHesap exported reports",
   "reports": {
@@ -36,11 +36,11 @@
     }
   },
   "fifo_package_check": {
-    "build": "0920260907",
-    "summary_count": 1882,
+    "build": "152908644",
+    "summary_count": 1881,
     "movement_count": 38258,
     "sales_count": 34869,
-    "warning_count": 20250,
+    "warning_count": 19202,
     "sales_line_match": true,
     "expected_movement_count": 38258,
     "movement_line_match": true

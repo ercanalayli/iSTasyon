@@ -1,5 +1,14 @@
 # AperiON Changelog
 
+## 2026-07-13 - Hasta Bezi FIFO paket onarimi v92
+
+- Manifestin isaret ettigi ancak repoda bulunmayan FIFO gzip parcalari iki
+  kaynak rapordan yeniden uretildi.
+- Yeni paket: 1.881 urun, 38.258 hareket ve 34.869 satis satiri.
+- Alis lotu bulunamayan 19.202 satis satiri, satis raporundaki alis fiyatini
+  fallback maliyet olarak tasir; kesin FIFO sonucu gibi sunulmaz.
+- Komut: `npm run hasta-bezi:fifo:build`.
+
 ## 2026-07-13
 
 ### Gunluk Banka Onay Ekrani

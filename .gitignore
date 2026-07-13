@@ -23,6 +23,7 @@ luca_exports/
 logs/
 data/aperion_last_sync.json
 data/hasta_bezi_kaynak_denetimi.json
+data/hasta_bezi_fifo_build_proof.json
 .__runtime_*.cjs
 .bizimhesap-profile/
 diagnostics/
