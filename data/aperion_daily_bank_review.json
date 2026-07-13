@@ -1,0 +1,68 @@
+{
+  "created_at": "2026-07-13T14:30:33.897Z",
+  "source": "pending_bank_movements",
+  "company_id": "alayli",
+  "review_date": "2026-07-07",
+  "rule": "En yeni islem gunu once listelenir. Merrerler kaynak duplicate_key ile suzulur. Cari belirsizse kesin kayit yapilmaz.",
+  "summary": {
+    "total": 3,
+    "hazir": 0,
+    "cari_dogrulama": 0,
+    "inceleme": 3,
+    "total_absolute_amount": 868
+  },
+  "buckets": {
+    "hazir": [],
+    "cari_dogrulama": [],
+    "inceleme": [
+      {
+        "id": "0ce7ea56-3628-4c23-b067-3f41912fb0de",
+        "bank": "VakifBank",
+        "date": "2026-07-07",
+        "time": "16:40",
+        "amount": 100,
+        "description": "VAKIFBANK - FAST Anlık Ödeme Bilgilendirmesi - VAKIFBANK - FAST Anlık Ödeme Bilgilendirmesi",
+        "review_kind": "inceleme",
+        "proposed_type": "Cari tahsilat",
+        "proposed_counterparty": "Cari eslestirme onayda",
+        "proposed_account": "VakifBank banka hesabi",
+        "proposed_category": "Tahsilat",
+        "confidence": 84,
+        "question": "Cari eslestirme onayda carisine 100 TL tahsilat olarak BizimHesap'a isleyeyim mi?",
+        "duplicate_key": "VAKIFBANK|2026-07-07|16:40||100.00|0.00|61962.29|VAKIFBANK_FAST_ANLIK_ODEME_BILGILENDIRMESI_VAKIFBANK_FAST_ANLIK_ODEME_BILGILENDIRMESI"
+      },
+      {
+        "id": "151c24e4-c75e-42aa-a5e5-ea79e27b39ac",
+        "bank": "Yapi Kredi",
+        "date": "2026-07-07",
+        "time": "",
+        "amount": 56,
+        "description": "Bilgi: Saat & Saat Halka Arz Ediliyor - Bilgi: Saat & Saat Halka Arz Ediliyor Saat ve Saat Sanayi ve Ticaret A.Ş. Halka Arz Ediliyor!",
+        "review_kind": "inceleme",
+        "proposed_type": "Cari tahsilat",
+        "proposed_counterparty": "Cari eslestirme onayda",
+        "proposed_account": "Yapi Kredi banka hesabi",
+        "proposed_category": "Tahsilat",
+        "confidence": 72,
+        "question": "Cari eslestirme onayda carisine 56 TL tahsilat olarak BizimHesap'a isleyeyim mi?",
+        "duplicate_key": "YAPI_KREDI|2026-07-07|||56.00|0.00||BILGI_SAAT_SAAT_HALKA_ARZ_EDILIYOR_BILGI_SAAT_SAAT_HALKA_ARZ_EDILIYOR_SAAT_VE_SAAT_SANAYI_VE_TICARET_A_S_HALKA_ARZ_EDILIYOR"
+      },
+      {
+        "id": "a44269f1-e303-4463-aacc-1d0b8f92d59a",
+        "bank": "Turkiye Is Bankasi",
+        "date": "2026-07-07",
+        "time": "10:34",
+        "amount": 712,
+        "description": "VAKIFBANK - FAST Anlık Ödeme Bilgilendirmesi - VAKIFBANK - FAST Anlık Ödeme Bilgilendirmesi",
+        "review_kind": "inceleme",
+        "proposed_type": "Cari tahsilat",
+        "proposed_counterparty": "Cari eslestirme onayda",
+        "proposed_account": "Turkiye Is Bankasi banka hesabi",
+        "proposed_category": "Tahsilat",
+        "confidence": 84,
+        "question": "Cari eslestirme onayda carisine 712 TL tahsilat olarak BizimHesap'a isleyeyim mi?",
+        "duplicate_key": "TURKIYE_IS_BANKASI|2026-07-07|10:34||712.00|0.00|41862.29|VAKIFBANK_FAST_ANLIK_ODEME_BILGILENDIRMESI_VAKIFBANK_FAST_ANLIK_ODEME_BILGILENDIRMESI"
+      }
+    ]
+  }
+}
