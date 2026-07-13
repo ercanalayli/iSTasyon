@@ -4,6 +4,12 @@ Son guncelleme: 2026-07-13 Europe/Istanbul
 
 ## Aktif Tek Hedef
 
+Gmail OAuth refresh tokenini `alaylimedikal@gmail.com` kullanici izniyle
+yenilemek. Gunluk Banka Onay ekrani ve en yeni gun filtresi yayinlandi; ancak
+GitHub `AperiON Mail Ekstre Pipeline` tokenin `invalid_grant` donmesi nedeniyle
+yeni banka e-postasini okumuyor. Token yenilenmeden canli gunluk hareket,
+BizimHesap kuyrugu ve guncel rapor kaniti uretildigi iddia edilmeyecek.
+
 Telegram odeme bildirim workflow'u eklendi ve mevcut coklu chat kimligi yapisiyla uyumlandi. Siradaki tek hedef: GitHub repository secret'larinda `TELEGRAM_CHAT_IDS` varsa manuel `send=true` calistirmasiyla tek bir salt-okunur mesaj kaniti almak. Bu kanit alinincaya kadar gonderim basarili varsayilmaz.
 
 Finans Takvimi ana gecisi sadeleştirildi. Canli sayfada odeme kartlarinin vade aciliyeti gosterimi sonraki arayuz turunda kart bazli renk/etiketlerle tamamlanacak; veri kaynagi veya kesin borc kurali degismeyecek.

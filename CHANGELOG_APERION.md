@@ -2,6 +2,18 @@
 
 ## 2026-07-13
 
+### Gunluk Banka Onay Ekrani
+
+- `gunluk-banka-karar.html` eklendi. Ekran yalnizca en yeni islem gununu
+  gosterir; kayda hazir, cari dogrulama ve inceleme islerini ayri tutar.
+- Kayda hazir harekette kullanicinin tek tik onayi `approve_pending_bank_movement`
+  RPC'siyle BizimHesap kuyrugunu olusturur. Cari belirsizse kullanici adi yazar,
+  sistem once cari dogrulamasi sonra kuyruk islemi yapar.
+- `AperiON Bank Approval Status` workflow'u gunluk snapshot'i olusturup Pages
+  tarafindan okunabilir `data/aperion_daily_bank_review.json` dosyasina yazar.
+- Ust Akil girisindeki Onay modulu eski uzun onay sayfasi yerine Gunluk Banka
+  Onay ekranina baglandi.
+
 ### Gunluk Banka Karar Akisi
 
 - `tools/build_daily_bank_review_v89.cjs` eklendi. En yeni islem gununu secip

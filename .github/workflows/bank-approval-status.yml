@@ -24,6 +24,8 @@ on:
       - "tools/verify_bank_candidate_pilot_scope_v83.cjs"
       - "tools/preview_pending_bank_to_bizimhesap_plan.cjs"
       - "tools/bank_posting_plan.cjs"
+      - "tools/build_daily_bank_review_v89.cjs"
+      - "gunluk-banka-karar.html"
       - "bizimhesap_queue_worker.cjs"
       - "package.json"
 
@@ -67,11 +69,14 @@ jobs:
       - name: Build unified bank approval status
         run: npm run bank:approval:unified-status
 
+      - name: Build latest daily bank review
+        run: npm run bank:daily-review
+
       - name: Commit status snapshots
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/aperion_bank_approval_status.json data/aperion_bank_approval_unified_status.json
+          git add data/aperion_bank_approval_status.json data/aperion_bank_approval_unified_status.json data/aperion_daily_bank_review.json
           if git diff --cached --quiet; then
             echo "No bank approval status change"
           else
@@ -88,6 +93,7 @@ jobs:
           path: |
             data/aperion_bank_approval_status.json
             data/aperion_bank_approval_unified_status.json
+            data/aperion_daily_bank_review.json
             data/banka_onay_aday_kanit_durumu.json
             data/banka_onay_guvenli_adaylar.json
             data/banka_onay_kuyruk_kaniti.json
