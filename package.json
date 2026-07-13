@@ -122,6 +122,8 @@
     "payment:reminders:preview": "node telegram/aperion_payment_reminder_digest_v88.cjs",
     "payment:reminders:send": "node telegram/aperion_payment_reminder_digest_v88.cjs --send",
     "verify:payment-reminders": "node tools/verify_payment_reminder_candidates_v88.cjs"
+    ,"hasta-bezi:source-audit": "node tools/audit_hasta_bezi_source_reports_v91.cjs"
+    ,"verify:hasta-bezi:source-audit": "node tools/verify_hasta_bezi_source_reports_v91.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

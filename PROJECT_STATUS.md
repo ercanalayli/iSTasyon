@@ -2,6 +2,20 @@
 
 Son guncelleme: 2026-07-13 Europe/Istanbul
 
+## Guncel Tur - Hasta Bezi Kaynak Kaniti
+
+2026-07-13 tarihinde kullanicinin sagladigi BizimHesap disavurumlari ile Hasta
+Bezi/FIFO paketi yeniden denetlendi. Satis kaynagi 34.869 satir ile
+2025-01-01 - 2026-07-08 araligini; alis kaynagi 3.389 satir ile
+2025-01-02 - 2026-07-06 araligini kapsar. Mevcut FIFO paketindeki 38.258
+hareket tam olarak bu iki satir sayisinin toplamina, 34.869 satis satiri da
+satis raporuna esittir. Dashboard artik bu kaniti gorunur okur.
+
+Ham cari, tedarikci ve fatura satirlari public GitHub Pages'e eklenmedi.
+Detayli kaynak verisi yerelde kalir; public sayfa sadece kapsama ve satir
+sayisi kanitini gosterir. Sonraki ana hedef, bu kanitli paketi mevcut Hasta
+Bezi ekraninin tek ekranlik karar gorunumune baglamaktir.
+
 ## Calisma Protokolu
 
 AperiON gelistirmesinde koordineli calisma protokolu gecerlidir.

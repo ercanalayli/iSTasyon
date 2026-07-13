@@ -22,6 +22,7 @@ moka_exports/
 luca_exports/
 logs/
 data/aperion_last_sync.json
+data/hasta_bezi_kaynak_denetimi.json
 .__runtime_*.cjs
 .bizimhesap-profile/
 diagnostics/

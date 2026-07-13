@@ -789,3 +789,16 @@
 - `SUPABASE_GUVENLIK_RAPORU_DEGERLENDIRME.md` eklendi.
 - Test: `npm run verify:supabase-security-hardening` 26/26 gecti.
 - Canli Supabase SQL uygulanmadi.
+## 2026-07-13 - Hasta Bezi kaynak denetimi v91
+
+- `SATIS RAPORU (24)` ve `ALIS RAPORU (5)` yerel BizimHesap exportlari icin
+  yeniden calistirilabilir denetim eklendi.
+- Kanit: 34.869 satis satiri, 3.389 alis satiri, toplam 38.258 FIFO hareketi.
+- Tarih kapsami: satis 2025-01-01 - 2026-07-08; alis 2025-01-02 - 2026-07-06.
+- Public dashboard icin sadece guvenli aggregate kanit dosyasi
+  `hasta-bezi/fifo_chunks/source_audit.json` yazilir; ham cari, tedarikci ve
+  fatura satirlari yerelde kalir.
+- `hasta-bezi/index.html` kaynak denetimi basariliysa kapsami ust bantta
+  gorunur hale getirir.
+- Komutlar: `npm run hasta-bezi:source-audit` ve
+  `npm run verify:hasta-bezi:source-audit`.
