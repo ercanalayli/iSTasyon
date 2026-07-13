@@ -14,6 +14,16 @@ AperiON gelistirmesinde koordineli calisma protokolu gecerlidir.
 
 ## Mevcut Teknik Durum
 
+2026-07-13 gunluk banka karar akisi v89: Mail/ekstreden gelen kayitlar icin
+ham Telegram dump'i yerine `pending_bank_movements` kaynagindan en yeni islem
+gununu secen gunluk inceleme raporu eklendi. Rapor kayda hazir, cari
+dogrulama isteyen ve inceleme isteyen hareketleri ayirir; ham JSON, tekrarli
+baglanti ve gereksiz ayrinti gondermez. Mail pipeline'i 10:00 ve 17:00 Istanbul
+kontrollerinden sonra bu kisa ozeti Telegram'a gonderecek sekilde baglandi.
+Iki gunluk Gmail taramasi yeni mailleri yakalar; kaynak `duplicate_key` filtresi
+gecmis tarihli ekstreyi tekrar kayda sokmaz. Bu tur onaysiz BizimHesap kaydi
+olusturmaz.
+
 2026-07-13 BizimHesap uctan uca salt-okunur denetimi: Gercek Windows
 `AperiON_BizimHesap_Klon_Saatlik` gorevi repo calisma kopyasini degil,
 `C:\\Users\\HP\\Desktop\\ErpaltH` altindaki ayri eski kopyayi calistiriyor.

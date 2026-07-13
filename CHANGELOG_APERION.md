@@ -2,6 +2,20 @@
 
 ## 2026-07-13
 
+### Gunluk Banka Karar Akisi
+
+- `tools/build_daily_bank_review_v89.cjs` eklendi. En yeni islem gununu secip
+  bekleyen banka hareketlerini `hazir`, `cari_dogrulama` ve `inceleme`
+  olarak ayirir.
+- `telegram/aperion_daily_bank_review_digest_v89.cjs` eklendi. Ham JSON ve
+  tekrarli link yerine kisa gunluk karar ozeti uretir; varsayilan mod sadece
+  onizlemedir, `--send` olmadikca Telegram mesaji gondermez.
+- Mail ekstre workflow'u 10:00 ve 17:00 Istanbul zamanli kontrollerinde bu
+  ozeti gonderecek sekilde baglandi. Yeni mail akisi iki gun penceresiyle
+  calisir; `duplicate_key` gecmis tarihli ekstrelerin tekrar kayda girmesini
+  engeller.
+- `verify:bank:daily-review` eklendi ve gecti.
+
 ### BizimHesap Uctan Uca Denetimi
 
 - Windows gorevleri, yerel senkron loglari, repo botlari, kuyruk dogrulamasi,

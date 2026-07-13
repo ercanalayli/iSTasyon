@@ -44,7 +44,9 @@ jobs:
       GDRIVE_EKSTRE_FOLDER_ID: ${{ secrets.GDRIVE_EKSTRE_FOLDER_ID }}
       EKSTRE_SOURCE: ${{ inputs.source || 'gmail' }}
       GMAIL_MAILBOX: alaylimedikal@gmail.com
-      LOOKBACK_DAYS: "45"
+      # Yeni mailleri gunluk akista oku; duplicate_key gecmis tarihli ekstreleri
+      # tekrar kayda sokmaz. Tarih geriden geldiyse kaynak mail tarihiyle yine yakalanir.
+      LOOKBACK_DAYS: "2"
     steps:
       - uses: actions/checkout@v4
 
@@ -143,6 +145,20 @@ jobs:
           })().catch(e=>{console.error(e.message); process.exitCode=1});
           NODE
 
+      - name: Build latest daily bank review
+        if: always()
+        continue-on-error: true
+        run: npm run bank:daily-review
+
+      - name: Send concise daily bank review
+        if: ${{ github.event_name == 'schedule' && (github.event.schedule == '0 7 * * *' || github.event.schedule == '0 14 * * *') }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_ALLOWED_CHAT_ID: ${{ secrets.TELEGRAM_ALLOWED_CHAT_ID }}
+          TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
+        run: npm run telegram:bank:daily-review:send
+
       - name: Upload mail ekstre reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -153,4 +169,5 @@ jobs:
             mail-ekstre-*.json
             automation/logs/*.json
             automation/logs/*.txt
+            data/aperion_daily_bank_review.json
           if-no-files-found: ignore

@@ -100,6 +100,9 @@ Kullanici sabah banka maillerinden gelen hareketleri analiz edilmis sekilde gorm
    kanitla.
 3. Bunun ardindan tekil onayli banka kaydinda kuyruk -> BizimHesap sonuc
    kanitini kapat.
+4. Gunluk banka ozetinden gelen cari dogrulama sorularini temiz tek ekran
+   karar kutusuna bagla; kesin kayda uygun hareketleri kullanici onayiyla
+   BizimHesap kuyruguna al ve sonuc kanitini rapora yaz.
 
 ## Onceki Is Paketi
 
