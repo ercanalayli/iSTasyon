@@ -1,5 +1,18 @@
 # AperiON Changelog
 
+## 2026-07-13 - Hasta Bezi Karar Ekrani v93
+
+- `hasta-bezi/karar-ekrani.html` eklendi; sol menusuz, tek ekran karar
+  gorunumu gercek FIFO veri paketini tarayicida acar.
+- Bugun, Dun, Bu hafta, Bu ay, Gecen ay, Bu yil ve Gecen yil donemleri;
+  satis, adet, maliyet, brut kar ve maliyet kontrol sayaclariyla calisir.
+- Kategori kartlari tiklanabilir hale getirildi. Urun penceresi satis,
+  maliyet, kar, marj, kalan stok ve kontrol etiketlerini listeler.
+- Kaynak maliyetinin eksi isaretle gelmesi durumunda karar gorunumu mutlak
+  maliyeti kullanir; brut kar satis eksi maliyet olarak hesaplanir.
+- Alis lotu bulunamayan satirlar `MALIYET KONTROL` etiketiyle ayrilir;
+  fallback maliyet kesin FIFO gibi gosterilmez.
+
 ## 2026-07-13 - Hasta Bezi FIFO paket onarimi v92
 
 - Manifestin isaret ettigi ancak repoda bulunmayan FIFO gzip parcalari iki

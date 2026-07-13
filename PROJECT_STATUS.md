@@ -2,6 +2,21 @@
 
 Son guncelleme: 2026-07-13 Europe/Istanbul
 
+## Guncel Tur - Hasta Bezi Karar Ekrani v93
+
+`hasta-bezi/karar-ekrani.html` eklendi ve mevcut Hasta Bezi/FIFO veri paketiyle
+baglandi. Ekran, sistem saatine degil paketin en son kaynak tarihine gore
+Bugun, Dun, Bu hafta, Bu ay, Gecen ay, Bu yil ve Gecen yil donemlerini
+hesaplar. Kategori kartina tiklaninca ayni ekranda urun performans penceresi
+acilir; satis, adet, maliyet, brut kar, marj, kalan stok ve kontrol durumu
+gosterilir.
+
+Maliyet alanlari kaynakta eksi isaretli gelebilecegi icin karar gorunumunde
+mutlak maliyet kullanilir ve brut kar `satis - maliyet` olarak hesaplanir.
+19.202 fallback maliyet satiri kesin FIFO olarak sunulmaz; ekranda
+`Maliyet kontrol` olarak ayri gorunur. Tarayici testi: 12 kategori karti,
+49 urunlu detay penceresi ve kaynak kapsami basariyla yuklendi.
+
 ## Guncel Tur - Hasta Bezi Kaynak Kaniti
 
 2026-07-13 tarihinde kullanicinin sagladigi BizimHesap disavurumlari ile Hasta

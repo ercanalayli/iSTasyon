@@ -2,13 +2,13 @@
 
 Son guncelleme: 2026-07-13 Europe/Istanbul
 
-## Aktif Tek Hedef - Hasta Bezi Karar Ekrani
+## Aktif Tek Hedef - Hasta Bezi Maliyet Eslesmesi
 
-Kaniti alinmis BizimHesap satis/alis paketiyle Hasta Bezi/FIFO ekranini
-tek-ekran karar gorunumune donusturmek. Ana ekranda donem, toplam hasta bezi,
-belbantli/kulotlu/serme alt gruplari, perakende/dagitim ayrimi, satis sonrasi
-stok gunu, FIFO kar ve alarm ozeti gorunecek; kategori ve urun detaylari
-tiklanarak acilacak. Ham cari/tarih/fatura detayi public Pages'e yazilmaz.
+Tek ekran Hasta Bezi karar gorunumu tamamlandi. Simdi 19.202 fallback maliyet
+satirini barkod, urun kodu ve normalize urun adi ile alis lotlarina yeniden
+eslestirerek azaltmak. Eslesmeyen satirlar kaynak kanitiyla maliyet kontrol
+listesinde kalacak; hicbir fallback tutar kesin FIFO veya kesin kar olarak
+sunulmayacak. Ham cari/tarih/fatura detayi public Pages'e yazilmaz.
 
 Gmail OAuth ve banka onay akisi ayri bir blokaj olarak kalir; bu tur onun
 gercek zamanli veri iddiasini degistirmez.
