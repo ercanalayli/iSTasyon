@@ -19,7 +19,7 @@ function levelLabel(candidate) {
 }
 
 function formatDigest(report) {
-  const actionable = report.candidates.filter((candidate) => candidate.notify || candidate.level === 'needs_details');
+  const actionable = report.candidates.filter((candidate) => candidate.notify);
   const lines = ['<b>AperiON Ödeme Takibi</b>', `Tarih: <b>${report.as_of}</b>`];
   if (!actionable.length) return `${lines.join('\n')}\n\nBugün için bildirim gerektiren doğrulanmış ödeme yok.`;
   for (const candidate of actionable) {

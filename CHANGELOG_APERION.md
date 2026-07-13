@@ -7,6 +7,7 @@
 - `tools/build_payment_reminder_candidates_v88.cjs` eklendi; kaynakli odeme hafizasindan gecikme ve vade yaklasimi adaylari uretir.
 - `telegram/aperion_payment_reminder_digest_v88.cjs` eklendi; varsayilan olarak sadece onizleme yapar, `--send` olmadan Telegram'a mesaj gondermez.
 - `verify:payment-reminders` eklendi; Batikent Ercan Ev Aidati ve Sena Medikal kaynakli ornekleriyle tarih, bildirim ve guvenlik kuralini denetler.
+- `payment-reminder-digest.yml` eklendi; 07:00 ve 17:00 Istanbul saatleri icin salt-okunur Telegram odeme ozeti planlandi. Eksik bilgi kartlari gunluk bildirim spaminden ayrildi.
 
 - `data/aperion_payment_obligation_registry.json` eklendi; sahsi/sirket yukumluluklari icin kaynakli hafiza baslatildi.
 - Batikent Ercan Ev Aidati aylik, ayin 16'si, tutar bekliyor olarak eklendi.

@@ -1,0 +1,54 @@
+name: AperiON Payment Reminder Digest
+
+on:
+  workflow_dispatch:
+    inputs:
+      send:
+        description: Send the read-only Telegram digest
+        required: true
+        default: false
+        type: boolean
+  schedule:
+    # 07:00 and 17:00 Europe/Istanbul (UTC+3). GitHub cron can be delayed.
+    - cron: '0 4,14 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  payment-reminder:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify candidate logic
+        run: npm run verify:payment-reminders
+
+      - name: Build read-only candidate artifact
+        run: node tools/build_payment_reminder_candidates_v88.cjs --out artifacts/payment-reminder-candidates.json
+
+      - name: Send scheduled digest
+        if: github.event_name == 'schedule' || inputs.send == true
+        run: npm run payment:reminders:send
+
+      - name: Preview manual digest
+        if: github.event_name == 'workflow_dispatch' && inputs.send != true
+        run: npm run payment:reminders:preview
+
+      - name: Upload reminder artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: payment-reminder-candidates
+          path: artifacts/payment-reminder-candidates.json
+          if-no-files-found: ignore
