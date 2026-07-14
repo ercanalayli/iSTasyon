@@ -2,6 +2,14 @@
 
 Son guncelleme: 2026-07-14 Europe/Istanbul
 
+## Guncel Tur - Hasta Bezi Giris Rotasi
+
+Ust Akil ekranindaki `Hasta Bezi / FIFO` butonu ve modul karti eski
+`hasta-bezi/` gorunumune gidiyordu. Iki giris de
+`hasta-bezi/karar-ekrani.html` karar ekranina yonlendirildi. Bu degisiklik
+veri veya FIFO sonucu degistirmez; kullanicinin yeni kaynakli ekrana tek
+tikla ulasmasini saglar.
+
 ## Guncel Tur - Tarihsel FIFO Kaynak Girisi v95
 
 Tarihsel satis, alis ve devir stok raporlarini ana FIFO paketinden ayri tutan

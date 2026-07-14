@@ -2,6 +2,8 @@
 
 Son guncelleme: 2026-07-14 Europe/Istanbul
 
+Not: Ust Akil > Hasta Bezi / FIFO girisi artik yeni karar ekranina baglidir.
+
 ## Aktif Tek Hedef - Tarihsel FIFO Kaynak Girisi
 
 Tek ekran Hasta Bezi karar gorunumu tamamlandi. Kaynak denetimi, fallback

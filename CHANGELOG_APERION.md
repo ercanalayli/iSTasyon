@@ -1,5 +1,10 @@
 # AperiON Changelog
 
+## 2026-07-14 - Hasta Bezi Giris Rotasi
+
+- Ust Akil ana butonu ve Hasta Bezi modul karti eski gorunum yerine
+  `hasta-bezi/karar-ekrani.html` sayfasina baglandi.
+
 ## 2026-07-14 - Tarihsel FIFO Kaynak Girisi v95
 
 - `tools/preflight_historical_fifo_sources_v95.cjs` eklendi.
