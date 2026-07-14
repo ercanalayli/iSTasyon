@@ -126,7 +126,8 @@
         const bytes = Uint8Array.from(atob(encoded.replace(/\s/g,'')),char => char.charCodeAt(0));
         const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
         state.pack = JSON.parse(await new Response(stream).text());
-        document.getElementById('source').textContent = 'KAYNAK DOGRULANDI: '+state.pack.meta.salesCount+' satis, '+state.pack.meta.moveCount+' hareket | '+state.pack.meta.dateRange.from+' - '+state.pack.meta.dateRange.to+' | '+state.pack.meta.warningCount+' maliyet kontrol satiri.';
+        const warning = state.pack.meta.warningBreakdown || {};
+        document.getElementById('source').textContent = 'KAYNAK DOGRULANDI: '+state.pack.meta.salesCount+' satis, '+state.pack.meta.moveCount+' hareket | '+state.pack.meta.dateRange.from+' - '+state.pack.meta.dateRange.to+' | '+state.pack.meta.warningCount+' maliyet kontrol satiri: '+(warning.UYARI_ACILIS_STOKU || 0)+' donem basi stok, '+(warning.UYARI_ALIS_KAYDI_YOK || 0)+' alis kaydi yok, '+(warning.UYARI_YETERSIZ_ALIS_LOTU || 0)+' yetersiz lot.';
         document.getElementById('filters').innerHTML = Object.keys(labels).map(key => `<button class="${key===state.period?'active':''}" data-period="${key}">${labels[key]}</button>`).join('');
         document.querySelectorAll('#filters button').forEach(button => button.addEventListener('click', () => { state.period=button.dataset.period; document.querySelectorAll('#filters button').forEach(value=>value.classList.toggle('active',value===button)); render(); }));
         render();

@@ -1,5 +1,15 @@
 # AperiON Changelog
 
+## 2026-07-14 - FIFO Maliyet Kaniti v94
+
+- FIFO paketindeki fallback maliyet satirlari nedenlerine ayrildi:
+  donem basi stok/gecmis alis eksigi, alis kaydi yok, yetersiz alis lotu.
+- Kaynak disavurumunda 5.813 donem basi stok, 11.442 alis kaydi yok ve
+  1.947 yetersiz alis lotu satiri kanitlandi.
+- `hasta-bezi/karar-ekrani.html` kaynak satiri bu ayrimi gorunur gosterir.
+- Bu tur eski alis verisi uydurmadi ve fallback maliyeti kesin FIFO olarak
+  isaretlemedi.
+
 ## 2026-07-13 - Hasta Bezi Karar Ekrani v93
 
 - `hasta-bezi/karar-ekrani.html` eklendi; sol menusuz, tek ekran karar

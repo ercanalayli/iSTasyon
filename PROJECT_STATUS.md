@@ -1,6 +1,16 @@
 # AperiON Project Status
 
-Son guncelleme: 2026-07-13 Europe/Istanbul
+Son guncelleme: 2026-07-14 Europe/Istanbul
+
+## Guncel Tur - FIFO Maliyet Kaniti v94
+
+Hasta Bezi satis/alis disavurumlarinin yeniden denetiminde 19.202 fallback
+maliyet satirinin barkod veya urun kodu ayrismasindan degil, kaynak donemde
+alis lotunun bulunmamasindan kaynaklandigi goruldu. Paket artik bu satirlari
+ayri nedenlerle isaretler: 5.813 donem basi stok/gecmis alis eksigi, 11.442
+alis kaydi yok ve 1.947 yetersiz alis lotu. Bu ayrim kesin FIFO maliyetini
+yanlislikla gostermeyi engeller; karar ekraninin kaynak kaniti satirinda da
+gorunur.
 
 ## Guncel Tur - Hasta Bezi Karar Ekrani v93
 

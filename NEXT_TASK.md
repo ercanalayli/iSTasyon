@@ -1,13 +1,15 @@
 # AperiON Next Task
 
-Son guncelleme: 2026-07-13 Europe/Istanbul
+Son guncelleme: 2026-07-14 Europe/Istanbul
 
 ## Aktif Tek Hedef - Hasta Bezi Maliyet Eslesmesi
 
-Tek ekran Hasta Bezi karar gorunumu tamamlandi. Simdi 19.202 fallback maliyet
-satirini barkod, urun kodu ve normalize urun adi ile alis lotlarina yeniden
-eslestirerek azaltmak. Eslesmeyen satirlar kaynak kanitiyla maliyet kontrol
-listesinde kalacak; hicbir fallback tutar kesin FIFO veya kesin kar olarak
+Tek ekran Hasta Bezi karar gorunumu tamamlandi. Kaynak denetimi, fallback
+satirlarinin kod ayrismasindan degil donem basi stok/gecmis alis eksigi,
+alis kaydi yok ve yetersiz lot durumundan kaynaklandigini kanitladi. Siradaki
+hedef, BizimHesap'tan 2025 oncesi devir stok ve alis gecmisi alinabiliyorsa
+onu ayri bir kaynak olarak eklemek; alinmiyorsa bu satirlari maliyet kontrol
+listesinde birakmaktir. Hicbir fallback tutar kesin FIFO veya kesin kar olarak
 sunulmayacak. Ham cari/tarih/fatura detayi public Pages'e yazilmaz.
 
 Gmail OAuth ve banka onay akisi ayri bir blokaj olarak kalir; bu tur onun

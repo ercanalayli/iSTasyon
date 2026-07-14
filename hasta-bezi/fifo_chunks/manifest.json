@@ -1,6 +1,6 @@
 {
   "type": "gz-base64",
-  "build": "152908644",
+  "build": "062006159",
   "encoding": "gzip+base64",
   "files": [
     "fifo_b64_001.txt",
@@ -10,5 +10,10 @@
   "summaryCount": 1881,
   "moveCount": 38258,
   "salesCount": 34869,
-  "warningCount": 19202
+  "warningCount": 19202,
+  "warningBreakdown": {
+    "UYARI_ACILIS_STOKU": 5813,
+    "UYARI_ALIS_KAYDI_YOK": 11442,
+    "UYARI_YETERSIZ_ALIS_LOTU": 1947
+  }
 }

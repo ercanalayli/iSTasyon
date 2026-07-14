@@ -30,6 +30,11 @@ function key(row) { return row.barcode ? `B:${norm(row.barcode)}` : row.code ? `
 function round(v) { return Math.round((v || 0) * 10000) / 10000; }
 function main() {
   const purchases = read('purchase'); const sales = read('sales');
+  const firstPurchaseDate = new Map();
+  for (const row of purchases) {
+    const k = key(row); const current = firstPurchaseDate.get(k);
+    if (!current || row.date < current) firstPurchaseDate.set(k, row.date);
+  }
   const all = purchases.map(r => ({...r, type:'purchase'})).concat(sales.map(r => ({...r, type:'sale'}))).sort((a,b) => a.date - b.date || (a.type === 'purchase' ? -1 : 1));
   const lots = new Map(), product = new Map(), moves = {}, warnings = [];
   for (const row of all) {
@@ -43,17 +48,25 @@ function main() {
     }
     let needed = row.qty, cost = 0, used = 0; const queue = lots.get(k);
     while (needed > 0.000001 && queue.length) { const lot = queue[0], take = Math.min(needed, lot.qty); cost += take * lot.unit; used += take; lot.qty -= take; needed -= take; if (lot.qty < 0.000001) queue.shift(); }
-    if (needed > 0.000001) { const fallback = row.sourceCost || (row.qty ? row.net / row.qty : 0); cost += needed * fallback; p.missing += needed; warnings.push({ key:k, product:p.product, date:iso(row.date), missing:round(needed) }); }
+    let warningType = 'OK';
+    if (needed > 0.000001) {
+      const firstBuy = firstPurchaseDate.get(k);
+      warningType = !firstBuy ? 'UYARI_ALIS_KAYDI_YOK' : firstBuy > row.date ? 'UYARI_ACILIS_STOKU' : 'UYARI_YETERSIZ_ALIS_LOTU';
+      const fallback = row.sourceCost || (row.qty ? row.net / row.qty : 0);
+      cost += needed * fallback; p.missing += needed;
+      warnings.push({ key:k, product:p.product, date:iso(row.date), missing:round(needed), reason:warningType });
+    }
     const unitSale = row.qty ? row.net / row.qty : 0; const profit = row.net - cost; p.saleQty += row.qty; p.stock -= row.qty; p.salesNet += row.net; p.fifo += cost; p.profit += profit; p.saleRows += 1;
-    moves[k].push([iso(row.date),'SATIS','GIZLI KAYNAK','',0,row.qty,0,round(unitSale),round(row.qty ? cost / row.qty : 0),round(row.net),round(cost),round(profit),round(row.net ? profit / row.net * 100 : 0),round(p.stock),needed > 0.000001 ? 'UYARI_EKSIK_ALIS' : 'OK',needed > 0.000001 ? 'SATIS_ALIS_FIYATI_FALLBACK' : 'FIFO']);
+    moves[k].push([iso(row.date),'SATIS','GIZLI KAYNAK','',0,row.qty,0,round(unitSale),round(row.qty ? cost / row.qty : 0),round(row.net),round(cost),round(profit),round(row.net ? profit / row.net * 100 : 0),round(p.stock),warningType,needed > 0.000001 ? 'SATIS_ALIS_FIYATI_FALLBACK' : 'FIFO']);
   }
   const summary = [...product.values()].map(p => [p.key,p.product,p.brand,p.category,'',p.barcode,p.code,round(p.buyQty),round(p.saleQty),round(p.stock),round(p.missing),round(p.buyNet),round(p.salesNet),round(p.fifo),round(p.profit),round(p.salesNet ? p.profit / p.salesNet * 100 : 0),round(p.fifo ? p.profit / p.fifo * 100 : 0),p.buyRows,p.saleRows]).sort((a,b) => b[12]-a[12]);
-  const pack = { meta:{ updateNo:new Date().toISOString().replace(/[-:TZ.]/g,'').slice(8,18), source:'BizimHesap purchase/sales reports', summaryCount:summary.length, moveCount:all.length, salesCount:sales.length, warningCount:warnings.length, dateRange:{from:iso(all[0].date),to:iso(all[all.length-1].date)} }, summary, moves };
+  const warningBreakdown = warnings.reduce((out, warning) => { out[warning.reason] = (out[warning.reason] || 0) + 1; return out; }, {});
+  const pack = { meta:{ updateNo:new Date().toISOString().replace(/[-:TZ.]/g,'').slice(8,18), source:'BizimHesap purchase/sales reports', summaryCount:summary.length, moveCount:all.length, salesCount:sales.length, warningCount:warnings.length, warningBreakdown, dateRange:{from:iso(all[0].date),to:iso(all[all.length-1].date)} }, summary, moves };
   const encoded = zlib.gzipSync(Buffer.from(JSON.stringify(pack))).toString('base64');
   fs.mkdirSync(OUT,{recursive:true});
   for (const file of fs.readdirSync(OUT)) if (/^fifo_b64_\d+\.txt$/i.test(file)) fs.unlinkSync(path.join(OUT,file));
   const files=[]; for(let i=0;i<encoded.length;i+=CHUNK_SIZE){const name=`fifo_b64_${String(files.length+1).padStart(3,'0')}.txt`;fs.writeFileSync(path.join(OUT,name),encoded.slice(i,i+CHUNK_SIZE),'utf8');files.push(name);}
-  fs.writeFileSync(path.join(OUT,'manifest.json'),JSON.stringify({type:'gz-base64',build:pack.meta.updateNo,encoding:'gzip+base64',files,summaryCount:summary.length,moveCount:all.length,salesCount:sales.length,warningCount:warnings.length},null,2)+'\n','utf8');
+  fs.writeFileSync(path.join(OUT,'manifest.json'),JSON.stringify({type:'gz-base64',build:pack.meta.updateNo,encoding:'gzip+base64',files,summaryCount:summary.length,moveCount:all.length,salesCount:sales.length,warningCount:warnings.length,warningBreakdown},null,2)+'\n','utf8');
   fs.writeFileSync(path.join(ROOT,'data','hasta_bezi_fifo_build_proof.json'),JSON.stringify({created_at:new Date().toISOString(),meta:pack.meta,warnings:warnings.slice(0,100)},null,2)+'\n','utf8');
   console.log(`RESULT: OK - ${summary.length} products, ${all.length} movements, ${sales.length} sales, ${warnings.length} FIFO fallback warnings, ${files.length} public chunks.`);
 }
