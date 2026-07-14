@@ -16,6 +16,14 @@ Bezi/FIFO, Cari/Tahsilat, Mail/Ekstre, Urun/Stok, Finans Takvimi ve Veri
 Sagligi. Sol menu yoktur; kartlar ilgili is ekranina gider. Tarayici denetimi
 8 kart, 3 oncelik karti, kaynak veri yuklenmesi ve yatay tasma olmadan gecti.
 
+Koruma notu: Kullanici fonksiyonu koruma kurali `DECISIONS.md` D-008 olarak
+kilitlendi. Yeni Komuta Masasi eski Hasta Bezi, banka veya finans ekranlarinin
+yerine gecmez; her birine gorunur giris verir. Eski Hasta Bezi ana sayfasinda
+karakter kodlama ve karar ekrani gorunurlugu ayri arayuz turunda duzeltilecek.
+Hasta Bezi eski operasyon ana sayfasi ile yeni karar ekrani arasina cift
+yonlu gorunur gecis eklendi; siparis, sevkiyat, urun/cari arama ve kontrol
+araclari korunur.
+
 ## Guncel Tur - Hasta Bezi Giris Rotasi
 
 Ust Akil ekranindaki `Hasta Bezi / FIFO` butonu ve modul karti eski

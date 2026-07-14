@@ -1,5 +1,28 @@
 # AperiON Decisions
 
+## D-008 Kullanici Fonksiyonu Koruma Kurali
+
+Karar: Kullanici tarafindan tarif edilen, ekranda ornegi verilen veya daha
+once calisir durumda bulunan hicbir AperiON fonksiyonu kullanicinin acik
+talimati olmadan kaldirilmaz, gizlenmez veya daha dar bir akisa indirgenmez.
+Yeni tasarimlar mevcut fonksiyonun yerine gecmek yerine onu gorunur,
+erisebilir ve daha iyi anlasilir hale getirir.
+
+Uygulama kurali:
+
+- Her tasarim turunda mevcut ekranlar ve baglantilar fonksiyon envanteriyle
+  kontrol edilir.
+- Bir fonksiyon yeni sayfaya tasiniyorsa eski giris noktasi yonlendirme veya
+  gorunur baglanti ile korunur.
+- Eksik, demo veya kaynak bekleyen alanlar "yok" gibi gizlenmez; durumuyla
+  birlikte gorunur tutulur.
+- Bir fonksiyonu kaldirmak ancak kullanicinin acik "kaldir" veya "yerine
+  bunu koy" emriyle mumkundur.
+
+Gerekce: AperiON'un tasarim hedefi sadece sade gorunmek degil; kullanicinin
+isletme, CFO ve hayat asistani icin tarif ettigi tum karar araclarini
+guvenilir bicimde bir arada sunmaktir.
+
 ## 2026-07-03 - Supabase finansal yazma ve onay guvenligi
 
 Karar: AperiON production mimarisinde `anon` role banka/onay/finans RPC'lerini calistiramaz ve finansal tablolara yazamaz. Dashboard/frontend temel olarak okuma ve kullanici karar ekrani gorevi gorur; kesin yazma, kuyruk kapatma, BizimHesap isleme ve bot kaynakli veri cekimi service_role kullanan bot/Edge Function/GitHub Actions katmanindan gecmelidir.

@@ -10,6 +10,16 @@
 - Yerel tarayici testi 8 modul karti, 3 oncelik karti ve yatay tasma olmadan
   basariyla tamamlandi.
 
+## 2026-07-14 - Kullanici Fonksiyonu Koruma Kurali
+
+- `DECISIONS.md` icine D-008 eklendi.
+- Kullanici tarafindan tarif edilen veya mevcutta bulunan fonksiyonlar acik
+  emir olmadan kaldirilmaz, gizlenmez ya da daraltilmaz.
+- Yeni tasarimlar eski ekranlari silmek yerine gorunur giris ve gecisle
+  tamamlar.
+- Hasta Bezi eski operasyon sayfasi ile yeni karar ekrani arasina cift yonlu
+  gecis eklendi; mevcut siparis, sevkiyat, arama ve kontrol araclari korunur.
+
 ## 2026-07-14 - Hasta Bezi Giris Rotasi
 
 - Ust Akil ana butonu ve Hasta Bezi modul karti eski gorunum yerine

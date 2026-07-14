@@ -11,6 +11,12 @@ veri uydurmaz. Sonraki is, Gmail OAuth blokaji kalktiginda gunluk yeni banka
 mailinin bu snapshotta gorundugunu ve onay ekranina ayni kayit kimligiyle
 gectigini kanitlamaktir.
 
+Arayuz koruma notu: Kullanici tarafindan verilen fonksiyonlar azaltılmaz.
+Hasta Bezi eski ana sayfasi, yeni karar ekrani, siparis, sevkiyat, urun/cari
+arama, fiyat ve kontrol alanlarinin tek tek gorunur girislerini koruyacak
+sekilde ele alinacaktir. Ilk cift yonlu gecis tamamlandi. Bu turda fonksiyon
+silinmez.
+
 Not: Ust Akil > Hasta Bezi / FIFO girisi artik yeni karar ekranina baglidir.
 
 ## Aktif Tek Hedef - Tarihsel FIFO Kaynak Girisi
