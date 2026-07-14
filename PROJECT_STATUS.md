@@ -6,7 +6,7 @@ Son guncelleme: 2026-07-14 Europe/Istanbul
 
 14 Temmuz 2026 tarihinde yerel Windows kullanicisi icin sifreli Supabase servis
 anahtari ve BizimHesap parolasi kasasi kuruldu. `AperiON_BizimHesap_Klon_Saatlik`
-gorevi guncel kod kokunden etkinlestirildi; 10:00 ve 17:00 yerel saatlerinde
+gorevi guncel kod kokunden etkinlestirildi; her saat `:05` yerel saatinde
 calisacak. Manuel canli gorev denetimi basarili bitti: `LastTaskResult=0` ve
 runner logunda `SONUC: BASARILI` goruldu.
 

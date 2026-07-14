@@ -12,6 +12,7 @@
   Manuel canli denetim: task sonucu `0`, runner sonucu `SONUC: BASARILI`.
 - Saglik kaniti: son 15 gun 957 satis, bugun 66, dun 86, 343 masraf,
   5.667 urun/stok ve 3 son hareket; tum denetimler saglikli.
+- Zamanlama kullanici karariyla her saat `:05` olarak guncellendi.
 
 ## 2026-07-14 - BizimHesap Guvenli Yerel Klon v97
 
