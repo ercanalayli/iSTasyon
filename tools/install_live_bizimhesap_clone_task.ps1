@@ -11,7 +11,7 @@ $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfil
 $hourlyTriggers = foreach ($hour in 0..23) {
   New-ScheduledTaskTrigger -Daily -At ('{0:D2}:05' -f $hour)
 }
-$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2)
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Hours 2)
 $user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
 

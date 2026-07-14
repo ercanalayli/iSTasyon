@@ -56,6 +56,34 @@ const jobs = [
     required: false,
     timeoutMs: 120000,
   },
+  {
+    label: 'AperiON gider kartlari kaynak yenileme',
+    file: 'tools/build_expense_cards_from_masraf_v59.cjs',
+    args: [],
+    required: true,
+    timeoutMs: 120000,
+  },
+  {
+    label: 'BizimHesap fatura detay kuyrugu yenileme',
+    file: 'tools/build_invoice_detail_tasks_v60.cjs',
+    args: [],
+    required: true,
+    timeoutMs: 120000,
+  },
+  {
+    label: 'BizimHesap acilabilir fatura detaylari',
+    file: 'bizimhesap_fatura_detay_oku.js',
+    args: ['--firma', firma, '--resume', '--limit', process.env.INVOICE_DETAIL_LIMIT || '4'],
+    required: false,
+    timeoutMs: 180000,
+  },
+  {
+    label: 'Fatura detaylarini gider kartlarina baglama',
+    file: 'tools/link_invoice_details_to_expense_cards_v64.cjs',
+    args: [],
+    required: true,
+    timeoutMs: 120000,
+  },
 ];
 
 const nowIso = () => new Date().toISOString();
@@ -163,6 +191,8 @@ function runtimeFile(file) {
   if (!file.endsWith('.js')) return path.join(__dirname, file);
   const sourcePath = path.join(__dirname, file);
   const source = readFileSync(sourcePath, 'utf8');
+  // ES modules may use createRequire and __dirname; do not misclassify them as CJS.
+  if (/^\s*import\s/m.test(source) || /^\s*export\s/m.test(source)) return sourcePath;
   const isCommonJs = source.includes('require(') || source.includes('module.exports') || source.includes('__dirname');
   if (!isCommonJs) return sourcePath;
   const runtimePath = path.join(__dirname, `.__runtime_${path.basename(file, '.js')}.cjs`);
@@ -173,6 +203,7 @@ function runtimeFile(file) {
 function runtimeScript(sourcePath) {
   if (!sourcePath.endsWith('.js')) return sourcePath;
   const source = readFileSync(sourcePath, 'utf8');
+  if (/^\s*import\s/m.test(source) || /^\s*export\s/m.test(source)) return sourcePath;
   const isCommonJs = source.includes('require(') || source.includes('module.exports') || source.includes('__dirname');
   if (!isCommonJs) return sourcePath;
   const runtimePath = path.join(__dirname, `.__runtime_${path.basename(sourcePath, '.js')}.cjs`);

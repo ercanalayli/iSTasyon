@@ -2,6 +2,21 @@
 
 Son guncelleme: 2026-07-14 Europe/Istanbul
 
+## Aktif Tek Hedef - Saatlik Tam Kaynak Yenileme
+
+Her saat `:05` calisan yerel guvenli klon; satis, urun/stok, masraf, son
+islemler, gider karti, fatura detay kuyrugu, okunabilen fatura detaylari ve
+fatura-gider karti eslesmesini AperiON'a yeniler. Calisma kesisirse ikinci
+ornek baslatilmaz. Banka/Gmail/Telegram hareketinin BizimHesap'ta kesin
+tahsilat, odeme veya gider kaydina donusmesi bu saatlik yenilemenin disindadir:
+ilgili hareket kullanici onayindan sonra ayri kayit akisi ile islenir.
+
+Canli kanit 2026-07-14: tam saatlik tur `SONUC: BASARILI` ile bitti. Fatura
+ayrinti okuyucusu kuyrukta kalici ilerler; sonraki turda okunmamis/teknik hata
+alan en fazla dort adayi yeniden dener. Siradaki dogrulama, bu ayrintilardan
+uygun olan gider karti/onay adayinin Onay Merkezi'nde kaynak kaniti ile
+gorundugunu kontrol etmektir.
+
 ## Aktif Tek Hedef - Banka Onayindan BizimHesap Kayit Kanitina
 
 BizimHesap kaynak klonu canli olarak dogrulandi; zamanlanmis gorev kullanici

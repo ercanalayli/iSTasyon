@@ -2,6 +2,22 @@
 
 Son guncelleme: 2026-07-14 Europe/Istanbul
 
+## Guncel Tur - Saatlik Tam Kaynak Yenileme v99
+
+Saatlik guvenli klon, her saat `:05` tetiklenecek ve cakisan ikinci ornegi
+baslatmayacak sekilde kuruldu. Yenileme sirasi satis, urun/stok, masraf, son
+islemler, gider kartlari, fatura acma kuyrugu, fatura ayrintilari ve
+fatura-gider karti eslesmesidir. Fatura ayrintilari kalici sonuc dosyasindan
+devam eder; her saat en fazla dort yeni aday okunur ki uzun bir ekran aramasi
+temel satis/stok/masraf yenilemesini geciktirmesin.
+
+14 Temmuz 2026 saatlik tam akis canli denetimde `SONUC: BASARILI` ile kapandi.
+Son saglik kaniti: son 15 gun 962 satis, bugun 71, dun 86, 343 masraf, 5.667
+urun/stok ve 3 son hareket. Gider karti uretimi 100 kaynak satirindan 34 kart
+olusturdu; fatura ayrintisi sonucunda 7 dogrulanmis, 17 inceleme, 8 bulunamayan
+aday vardir. Bu sayilar kaynak/fatura arama sonucudur; kesin muhasebe kaydi
+degildir.
+
 ## Guncel Tur - BizimHesap Canli Klon Dogrulamasi v98
 
 14 Temmuz 2026 tarihinde yerel Windows kullanicisi icin sifreli Supabase servis
@@ -14,6 +30,11 @@ Kaynak dogrulama: son 15 gun icin 957 satis, bugun 66, dun 86, 2026 icin 343
 masraf, 5.667 urun/stok ve 3 son hareket okunabildi. Saglik kontrolu tum
 denetimlerde `saglikli`. Bu klon BizimHesap'a yeni muhasebe kaydi olusturmaz;
 sadece kaynak verisini AperiON/Supabase'e yeniler.
+
+Saatlik kapsam: satis, urun/stok, masraf, son islemler, gider kartlari, fatura
+detay kuyrugu, okunabilir fatura detaylari ve fatura-gider karti eslesmesi.
+Banka kaydi ayri onay akisi olarak kalir; saatlik klon kullanici onayi olmadan
+BizimHesap'a tahsilat, odeme veya gider kaydi olusturmaz.
 
 ## Guncel Tur - BizimHesap Canli Klon Guvenli Calisma Koku v97
 

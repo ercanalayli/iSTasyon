@@ -22,7 +22,9 @@ const val = (flag, fallback) => has(flag) ? args[args.indexOf(flag) + 1] : fallb
 const FIRMA_ARG = val('--firma', 'alayli');
 const SHOW = has('--show');
 const RESUME = has('--resume');
-const LIMIT = Number(val('--limit', process.env.INVOICE_DETAIL_LIMIT || 200));
+// A detail search can open several BizimHesap screens. Keep hourly runs bounded
+// and let --resume continue from the persisted result on the following hour.
+const LIMIT = Number(val('--limit', process.env.INVOICE_DETAIL_LIMIT || 4));
 const QUEUE_PATH = val('--queue', path.join(__dirname, 'data', 'bizimhesap_fatura_acma_kuyrugu.json'));
 const OUT_PATH = val('--out', path.join(__dirname, 'data', 'bizimhesap_fatura_detaylari_raw.json'));
 const MEMORY = loadAperionMemory();
@@ -68,7 +70,7 @@ function readJson(filePath, fallback) {
 
 function tasksFromQueue(queue) {
   const rows = Array.isArray(queue) ? queue : queue?.tasks || queue?.details || [];
-  return rows.slice(0, LIMIT || rows.length).map((task, index) => ({
+  return rows.map((task, index) => ({
     ...task,
     task_id: task.task_id || task.id || `invoice-task-${index + 1}`,
     firma_id: task.firma_id || FIRMA_ARG || 'alayli',
@@ -528,15 +530,20 @@ function extractLineItems(tables) {
 
 async function main() {
   const queue = readJson(QUEUE_PATH, { tasks: [] });
-  const tasks = tasksFromQueue(queue);
+  const allTasks = tasksFromQueue(queue);
   const existingDetails = RESUME ? readJson(OUT_PATH, { details: [] }).details || [] : [];
-  const taskIds = new Set(tasks.map(task => task.task_id));
+  const taskIds = new Set(allTasks.map(task => task.task_id));
   const details = existingDetails.filter(detail => taskIds.has(detail.task_id));
-  const doneIds = new Set(details.map(detail => detail.task_id));
-  writeReport(tasks, details);
+  // Failed technical attempts are retried; completed reads and clear review/not-found
+  // outcomes stay persisted, so each hourly run moves forward instead of restarting.
+  const doneIds = new Set(details
+    .filter(detail => ['ok', 'needs_review', 'not_found'].includes(detail.read_status))
+    .map(detail => detail.task_id));
+  const tasks = allTasks.filter(task => !doneIds.has(task.task_id)).slice(0, LIMIT || allTasks.length);
+  writeReport(allTasks, details);
 
-  if (!tasks.length) {
-    const report = writeReport(tasks, details);
+  if (!allTasks.length || !tasks.length) {
+    const report = writeReport(allTasks, details);
     console.log(JSON.stringify(report.summary, null, 2));
     console.log(OUT_PATH);
     return;
@@ -569,14 +576,14 @@ async function main() {
         details.push(emptyDetail(task, 'failed', error.message));
       }
       doneIds.add(task.task_id);
-      writeReport(tasks, details);
+      writeReport(allTasks, details);
     }
   } finally {
     if (!SHOW) await browser.close();
   }
 
-  const report = writeReport(tasks, details);
-  appendTransactionLog(`${new Date().toISOString().slice(0, 10)} | ALAYLI | bizimhesap | fatura_detay_okuma | ${tasks.length} kuyruk | ${report.summary.read_success} ok | 0.00 | ${report.summary.read_failed ? 'kontrol' : 'ok'}`);
+  const report = writeReport(allTasks, details);
+  appendTransactionLog(`${new Date().toISOString().slice(0, 10)} | ALAYLI | bizimhesap | fatura_detay_okuma | ${allTasks.length} kuyruk | ${report.summary.read_success} ok | 0.00 | ${report.summary.read_failed ? 'kontrol' : 'ok'}`);
   console.log(JSON.stringify(report.summary, null, 2));
   console.log(OUT_PATH);
 }

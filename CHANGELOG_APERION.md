@@ -1,5 +1,19 @@
 # AperiON Changelog
 
+## 2026-07-14 - Saatlik Tam Kaynak Yenileme v99
+
+- Saatlik BizimHesap klonu satis, urun/stok, masraf, son islemler, gider
+  kartlari, fatura kuyrugu ve fatura-gider karti eslesmesini birlikte yeniler.
+- Eksik `tools/aperion_memory.cjs` katmani eklendi; gider karti/fatura
+  otomasyonunun isletme hafizasi ve yerel islem gunlugu calisir duruma geldi.
+- ESM fatura okuyucusunun CJS gibi calistirilmasina neden olan runtime ayrimi
+  duzeltildi.
+- Fatura ayrintisi okumasi kalici sonuc dosyasindan devam eden, saatlik en fazla
+  dort yeni adaylik partiye alindi; uzun arama temel kaynak yenilemesini
+  engellemez.
+- Canli denetim `SONUC: BASARILI`: 962 son-15-gun satis, 71 bugun, 86 dun,
+  343 masraf, 5.667 urun/stok ve 3 son hareket saglik kontrolunden gecti.
+
 ## 2026-07-14 - BizimHesap Canli Klon Kaniti v98
 
 - Windows DPAPI ile sifreli yerel BizimHesap parola kasasi eklendi; parola
@@ -13,6 +27,9 @@
 - Saglik kaniti: son 15 gun 957 satis, bugun 66, dun 86, 343 masraf,
   5.667 urun/stok ve 3 son hareket; tum denetimler saglikli.
 - Zamanlama kullanici karariyla her saat `:05` olarak guncellendi.
+- Saatlik kapsama gider karti, fatura detay kuyrugu, fatura detayi okuma ve
+  fatura-gider karti eslestirme katmanlari eklendi. Cakisan uzun calismalar
+  yeni bir gorev baslatmak yerine atlanir.
 
 ## 2026-07-14 - BizimHesap Guvenli Yerel Klon v97
 
