@@ -2,6 +2,20 @@
 
 Son guncelleme: 2026-07-14 Europe/Istanbul
 
+## Guncel Tur - Komuta Masasi v96
+
+`aperion-ust-akil.html` tanitim/launcher gorunumu olmaktan cikarildi ve
+operasyonel Komuta Masasi olarak yeniden kuruldu. Buyuk slogan ve anlamsiz
+ozet kutulari kaldirildi. Yeni ekran; banka onay durumunu
+`data/aperion_bank_approval_status.json` dosyasindan, urun/FIFO kapsamini ise
+`hasta-bezi/fifo_chunks/manifest.json` dosyasindan salt-okunur olarak okur.
+Kaynak okunamazsa rakam uretmez ve bunu acikca belirtir.
+
+Ekranda sekiz is alani vardir: CFO/Gelir Tablosu, Gunluk Banka Onayi, Hasta
+Bezi/FIFO, Cari/Tahsilat, Mail/Ekstre, Urun/Stok, Finans Takvimi ve Veri
+Sagligi. Sol menu yoktur; kartlar ilgili is ekranina gider. Tarayici denetimi
+8 kart, 3 oncelik karti, kaynak veri yuklenmesi ve yatay tasma olmadan gecti.
+
 ## Guncel Tur - Hasta Bezi Giris Rotasi
 
 Ust Akil ekranindaki `Hasta Bezi / FIFO` butonu ve modul karti eski

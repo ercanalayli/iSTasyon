@@ -2,6 +2,15 @@
 
 Son guncelleme: 2026-07-14 Europe/Istanbul
 
+## Aktif Tek Hedef - Komuta Masasi Canli Kaynak Denetimi
+
+Komuta Masasi v96 tamamlandi: ana giris tek ekranda banka onayi, cari,
+FIFO/stok, mail/ekstre, finans takvimi ve veri sagligina yonlenir. Ekran
+banka onay snapshoti ile FIFO manifestini salt-okunur okur; kaynak yoksa
+veri uydurmaz. Sonraki is, Gmail OAuth blokaji kalktiginda gunluk yeni banka
+mailinin bu snapshotta gorundugunu ve onay ekranina ayni kayit kimligiyle
+gectigini kanitlamaktir.
+
 Not: Ust Akil > Hasta Bezi / FIFO girisi artik yeni karar ekranina baglidir.
 
 ## Aktif Tek Hedef - Tarihsel FIFO Kaynak Girisi

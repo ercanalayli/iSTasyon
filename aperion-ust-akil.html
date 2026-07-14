@@ -1,234 +1,135 @@
 <!doctype html>
 <html lang="tr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AperiON Üst Akıl | CFO ve Hayat Asistanı</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,800&family=Inter:wght@500;650;750;850;950&family=IBM+Plex+Mono:wght@600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#0e1420;
-  --panel:#151d2c;
-  --panel2:#101827;
-  --ink:#edf2f7;
-  --muted:#9aa8ba;
-  --line:rgba(226,232,240,.14);
-  --brass:#c9a227;
-  --green:#21c27a;
-  --blue:#5aa7ff;
-  --red:#ff5b6b;
-  --violet:#a78bfa;
-  --cyan:#2dd4bf;
-  --shadow:0 24px 80px rgba(0,0,0,.32);
-}
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
-body{overflow-x:hidden}
-a{color:inherit;text-decoration:none}
-.shell{min-height:100vh;padding:18px}
-.topbar{height:58px;display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid var(--line);border-radius:18px;background:rgba(16,24,39,.82);backdrop-filter:blur(18px);padding:0 16px;box-shadow:var(--shadow)}
-.brand{display:flex;align-items:center;gap:12px}
-.mark{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#16223a,#245f4b);border:1px solid rgba(255,255,255,.16);display:grid;place-items:center;font-weight:950;color:#fff}
-.brand b{font-size:15px;letter-spacing:.02em}
-.brand small{display:block;color:var(--muted);font-family:"IBM Plex Mono",monospace;font-size:10px;margin-top:2px}
-.status{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.chip{border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:#dbe7f6;font-family:"IBM Plex Mono",monospace;font-size:10px;background:rgba(255,255,255,.04)}
-.chip.ok{border-color:rgba(33,194,122,.45);color:#9ff3c8;background:rgba(33,194,122,.08)}
-.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:18px}
-.heroMain,.heroSide,.module,.railCard{border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(21,29,44,.96),rgba(16,24,39,.96));box-shadow:var(--shadow)}
-.heroMain{padding:28px;min-height:278px;position:relative;overflow:hidden}
-.heroMain:before{content:"";position:absolute;inset:0 0 auto;height:5px;background:linear-gradient(90deg,var(--green),var(--blue),var(--violet),var(--brass))}
-.eyebrow{font-family:"IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.14em;color:#83f2c0;font-size:11px;font-weight:700}
-h1{font-family:Fraunces,serif;font-size:clamp(34px,4.8vw,68px);line-height:.96;margin:14px 0 14px;letter-spacing:0}
-.heroMain p{max-width:860px;color:#c6d2e1;line-height:1.58;font-size:15px;margin:0}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.06);padding:12px 14px;font-weight:900;transition:.16s ease;min-height:44px}
-.btn:hover{transform:translateY(-2px);border-color:var(--brass);box-shadow:0 0 0 4px rgba(201,162,39,.12)}
-.btn.primary{background:var(--brass);border-color:var(--brass);color:#111827}
-.heroSide{padding:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.metric{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.035);padding:14px;min-height:116px}
-.metric small{font-family:"IBM Plex Mono",monospace;color:#94a3b8;text-transform:uppercase;font-weight:700;font-size:10px}
-.metric b{display:block;font-size:24px;margin:9px 0 5px}
-.metric span{color:#b8c4d5;font-size:12px;font-weight:750}
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:18px}
-.module{padding:18px;min-height:210px;position:relative;overflow:hidden;cursor:pointer;transition:.16s ease}
-.module:before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:var(--accent,var(--brass))}
-.module:hover{transform:translateY(-3px);border-color:var(--accent,var(--brass));box-shadow:0 0 0 4px color-mix(in srgb,var(--accent,var(--brass)) 18%,transparent),var(--shadow)}
-.module .code{font-family:"IBM Plex Mono",monospace;color:var(--accent,var(--brass));font-size:11px;text-transform:uppercase;letter-spacing:.12em}
-.module h2{font-family:Fraunces,serif;margin:12px 0 8px;font-size:25px;line-height:1}
-.module p{color:#b9c6d7;line-height:1.45;margin:0;font-size:13px}
-.module ul{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:7px}
-.module li{font-size:12px;color:#d8e3ef;border:1px solid var(--line);border-radius:999px;padding:6px 9px;background:rgba(255,255,255,.035)}
-.lower{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
-.railCard{padding:18px}
-.railCard h2{font-family:Fraunces,serif;margin:0 0 12px;font-size:28px}
-.flow{display:grid;gap:10px}
-.step{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:10px;border:1px solid var(--line);border-radius:16px;padding:10px;background:rgba(255,255,255,.035)}
-.no{width:34px;height:34px;border-radius:12px;background:rgba(201,162,39,.14);color:#f4d574;display:grid;place-items:center;font-family:"IBM Plex Mono",monospace;font-weight:800}
-.step b{display:block;font-size:13px}
-.step small{display:block;color:#96a5b8;margin-top:2px}
-.tag{border:1px solid var(--line);border-radius:999px;padding:6px 9px;font-family:"IBM Plex Mono",monospace;font-size:10px;color:#d6e2ef}
-.tag.done{border-color:rgba(33,194,122,.42);color:#a8f4cd}
-.tag.todo{border-color:rgba(255,91,107,.38);color:#ffb5bd}
-.assistantBox{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.life{border:1px solid var(--line);border-radius:16px;padding:13px;background:rgba(255,255,255,.035);min-height:126px}
-.life b{display:block;color:#fff;margin-bottom:8px}
-.life p{margin:0;color:#b8c5d6;font-size:12px;line-height:1.45}
-.footer{margin-top:18px;color:#718096;font-size:11px;text-align:center;font-family:"IBM Plex Mono",monospace}
-@media(max-width:1180px){.hero,.lower{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:720px){.shell{padding:10px}.topbar{height:auto;align-items:flex-start;flex-direction:column;padding:12px}.heroMain{padding:22px}.heroSide,.grid,.assistantBox{grid-template-columns:1fr}.module{min-height:170px}.step{grid-template-columns:34px 1fr}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AperiON iSTasyon | Komuta Masasi</title>
+  <style>
+    :root { --bg:#0a1220; --surface:#101b2d; --surface-2:#142238; --line:#2a3a52; --text:#edf3fb; --muted:#9fb0c7; --green:#22c58b; --blue:#5b8cff; --gold:#efbc2c; --coral:#fa6478; --violet:#a78bfa; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-width:320px; color:var(--text); background:var(--bg); font-family:Inter,Segoe UI,Arial,sans-serif; letter-spacing:0; }
+    a { color:inherit; text-decoration:none; }
+    .shell { width:min(1540px,calc(100% - 32px)); margin:0 auto; padding:18px 0 34px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:13px 16px; border:1px solid var(--line); background:#0e1929; border-radius:10px; }
+    .brand { display:flex; align-items:center; gap:11px; min-width:0; }
+    .mark { width:34px; height:34px; display:grid; place-items:center; flex:0 0 auto; color:#08121c; font-weight:800; background:var(--green); border-radius:8px; }
+    .brand strong { display:block; font-size:15px; } .brand small { display:block; margin-top:2px; color:var(--muted); font-size:11px; }
+    .meta { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:8px; font-size:11px; color:var(--muted); }
+    .pill { border:1px solid var(--line); border-radius:99px; padding:6px 9px; white-space:nowrap; } .pill.live { color:#a8f5d4; border-color:#25775c; background:#103528; }
+    .intro { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(360px,.9fr); gap:16px; margin-top:16px; }
+    .hero, .source-panel, .priority, .module-card { border:1px solid var(--line); background:var(--surface); border-radius:10px; }
+    .hero { position:relative; overflow:hidden; padding:28px; border-top:3px solid var(--green); }
+    .eyebrow { color:#7de5ba; font-size:11px; font-weight:800; letter-spacing:1.1px; }
+    h1 { margin:9px 0 9px; font-size:clamp(28px,3vw,43px); line-height:1.05; letter-spacing:0; }
+    .hero p { max-width:720px; margin:0; color:var(--muted); font-size:15px; line-height:1.55; }
+    .actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:21px; }
+    .button { display:inline-flex; align-items:center; justify-content:center; min-height:38px; padding:9px 13px; color:#eaf1fb; border:1px solid #3b4d66; border-radius:7px; background:#17263b; font-size:13px; font-weight:700; transition:transform .16s ease, border-color .16s ease, background .16s ease; }
+    .button:hover, .button:focus-visible { outline:none; transform:translateY(-2px); border-color:var(--blue); background:#203450; }
+    .button.primary { color:#142010; border-color:#e0b426; background:var(--gold); }
+    .source-panel { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:14px; }
+    .source { min-height:118px; padding:15px; border:1px solid #31435c; border-radius:8px; background:var(--surface-2); }
+    .source label { display:block; color:#7ea8e9; font-size:10px; font-weight:800; letter-spacing:.8px; }
+    .source strong { display:block; margin-top:10px; font-size:19px; letter-spacing:0; }
+    .source p { min-height:30px; margin:7px 0 0; color:var(--muted); font-size:12px; line-height:1.4; }
+    .source .state { display:inline-block; margin-top:8px; color:#a8f5d4; font-size:11px; }
+    .section-head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin:27px 0 11px; }
+    .section-head h2 { margin:0; font-size:20px; letter-spacing:0; } .section-head p { margin:4px 0 0; color:var(--muted); font-size:13px; }
+    .priority-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .priority { padding:16px; border-left:4px solid var(--blue); }
+    .priority[data-tone="green"] { border-left-color:var(--green); } .priority[data-tone="gold"] { border-left-color:var(--gold); }
+    .priority-top { display:flex; justify-content:space-between; gap:8px; color:var(--muted); font-size:11px; font-weight:700; }
+    .priority strong { display:block; margin:10px 0 6px; font-size:17px; }
+    .priority p { margin:0; color:#bcc9da; font-size:13px; line-height:1.45; }
+    .priority a { display:inline-block; margin-top:12px; color:#a9c7ff; font-size:12px; font-weight:800; }
+    .module-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+    .module-card { position:relative; min-height:174px; padding:17px; overflow:hidden; transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background .16s ease; }
+    .module-card:hover, .module-card:focus-visible { outline:none; transform:translateY(-3px); border-color:var(--accent); background:#16263d; box-shadow:0 12px 25px rgba(0,0,0,.2); }
+    .module-card::before { content:""; position:absolute; left:0; right:0; top:0; height:3px; background:var(--accent); }
+    .module-no { color:var(--accent); font-size:11px; font-weight:800; letter-spacing:.9px; }
+    .module-card h3 { margin:12px 0 7px; font-size:18px; line-height:1.15; letter-spacing:0; }
+    .module-card p { margin:0; color:var(--muted); font-size:13px; line-height:1.45; }
+    .module-link { position:absolute; bottom:16px; left:17px; color:#dbe7f9; font-size:12px; font-weight:800; }
+    footer { display:flex; justify-content:space-between; gap:12px; margin-top:18px; color:#7f91a9; font-size:11px; }
+    @media (max-width:1050px) { .intro{grid-template-columns:1fr}.module-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+    @media (max-width:690px) { .shell{width:min(100% - 20px,1540px);padding-top:10px}.topbar{align-items:flex-start;flex-direction:column}.hero{padding:21px}.source-panel,.priority-grid,.module-grid{grid-template-columns:1fr}.meta{justify-content:flex-start}.section-head{align-items:flex-start;flex-direction:column}.module-card{min-height:155px}footer{flex-direction:column} }
+  </style>
 </head>
 <body>
-<main class="shell">
-  <header class="topbar">
-    <div class="brand">
-      <div class="mark">AP</div>
-      <div><b>AperiON iSTasyon</b><small>CFO + üst akıl + hayat asistanı</small></div>
-    </div>
-    <div class="status">
-      <span class="chip ok">TEK LINK</span>
-      <span class="chip">Güncelleme 090726</span>
-      <span class="chip">BizimHesap kaynak sistem</span>
-    </div>
-  </header>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="AperiON ana ekran">
+        <span class="mark">AP</span><span><strong>AperiON iSTasyon</strong><small>Komuta masasi ve karar merkezi</small></span>
+      </a>
+      <div class="meta"><span class="pill live">KAYNAK SISTEM: BIZIMHESAP</span><span class="pill">GUNCELLEME <span id="buildCode">--</span></span></div>
+    </header>
 
-  <section class="hero">
-    <div class="heroMain">
-      <div class="eyebrow">AperiON birleşik komuta merkezi</div>
-      <h1>İşletme CFO’su ve kişisel hayat asistanı aynı ekranda.</h1>
-      <p>
-        AperiON artık ayrı ayrı ekranlar toplamı değil; BizimHesap, mail, banka, ekstre, ürün, FIFO,
-        hasta bezi, gider hafızası, kişisel faturalar ve günlük kararları tek linkten okuyan üst akıl panelidir.
-        Resmi kayıt BizimHesap’ta kalır; AperiON görür, anlar, uyarır, sen onaylayınca işletir.
-      </p>
-      <div class="actions">
-        <a class="btn primary" href="./index.html">Canlı CFO Paneli</a>
-        <a class="btn" href="./gunluk-banka-karar.html">Gunluk Banka Onayi</a>
-        <a class="btn" href="./hasta-bezi/karar-ekrani.html">Hasta Bezi / FIFO</a>
-        <a class="btn" href="./aperion-home-v3.html">Eski Kokpit</a>
-        <a class="btn" href="./mail-ekstre-canli.html">Mail / Ekstre</a>
-        <a class="btn" href="./finans-takvimi.html">Finans Takvimi</a>
+    <section class="intro" aria-label="Bugunun komuta masasi">
+      <article class="hero">
+        <div class="eyebrow">BUGUNUN KOMUTA MASASI</div>
+        <h1>Once karar ver. Sonra kayda gec.</h1>
+        <p>Banka hareketi, tahsilat, gider, stok ve cari riskleri ayni masada toplanir. AperiON onerir; kesin BizimHesap kaydi sen onayladiginda yapilir.</p>
+        <nav class="actions" aria-label="Hizli erisim">
+          <a class="button primary" href="./gunluk-banka-karar.html">Gunluk banka onayi</a>
+          <a class="button" href="./index.html">CFO ve gelir tablosu</a>
+          <a class="button" href="./hasta-bezi/karar-ekrani.html">Hasta bezi karar ekrani</a>
+        </nav>
+      </article>
+      <aside class="source-panel" aria-label="Canli kaynak durumu">
+        <div class="source"><label>BANKA ONAYI</label><strong id="bankState">Veri okunuyor</strong><p id="bankDetail">Onay havuzu kontrol ediliyor.</p><span class="state" id="bankStamp">Kaynak kontrolu</span></div>
+        <div class="source"><label>URUN VE FIFO</label><strong id="fifoState">Veri okunuyor</strong><p id="fifoDetail">Hareket kapsami kontrol ediliyor.</p><span class="state" id="fifoStamp">Kaynak kontrolu</span></div>
+        <div class="source"><label>RESMI KAYIT</label><strong>BizimHesap</strong><p>Fatura, cari, banka ve kasa kaydinin kaynak sistemi.</p><span class="state">Kesin kayit onayla</span></div>
+        <div class="source"><label>ISLETME HAFIZASI</label><strong>Supabase</strong><p>Kurallar, kaynak izleri, eslestirme ve onay gecmisi.</p><span class="state">Izlenebilir akıs</span></div>
+      </aside>
+    </section>
+
+    <section aria-labelledby="priorityTitle">
+      <div class="section-head"><div><h2 id="priorityTitle">Bugun once bunlara bak</h2><p>Rakam yoksa uydurulmaz; kaynak okunamiyorsa acikca bekliyor denir.</p></div></div>
+      <div class="priority-grid">
+        <article class="priority" data-tone="gold"><div class="priority-top"><span>01 / BANKA</span><span id="bankRisk">DURUM</span></div><strong id="bankPriority">Banka onay havuzu</strong><p id="bankPriorityDetail">Kaynak yaniti bekleniyor.</p><a href="./gunluk-banka-karar.html">Onay ekranina git -></a></article>
+        <article class="priority" data-tone="green"><div class="priority-top"><span>02 / TAHSILAT</span><span>CARI</span></div><strong>Cari ve tahsilat kontrolu</strong><p>Gelen para once aciklamasi ve cari adayi ile gorulur; eslesme kesinlesmeden kayit yapilmaz.</p><a href="./cari_kart.html">Cari kartlara git -></a></article>
+        <article class="priority"><div class="priority-top"><span>03 / STOK</span><span id="fifoRisk">KAPSAM</span></div><strong id="fifoPriority">FIFO ve stok kontrolu</strong><p id="fifoPriorityDetail">Kaynak kapsam bilgisi okunuyor.</p><a href="./hasta-bezi/karar-ekrani.html">Karar ekranina git -></a></article>
       </div>
-    </div>
-    <aside class="heroSide" aria-label="Özet durum">
-      <div class="metric"><small>Çekirdek</small><b>BizimHesap</b><span>ana kayıt ve fatura kaynağı</span></div>
-      <div class="metric"><small>Hafıza</small><b>Supabase</b><span>veri ambarı, kurallar, cache</span></div>
-      <div class="metric"><small>Karar</small><b>CFO Panel</b><span>plan, tahakkuk, nakit, risk</span></div>
-      <div class="metric"><small>Hayat</small><b>Asistan</b><span>kişisel fatura, aile, araç, randevu</span></div>
-    </aside>
-  </section>
+    </section>
 
-  <section class="grid" aria-label="Ana modüller">
-    <a class="module" style="--accent:var(--green)" href="./index.html">
-      <div class="code">01 işletme</div>
-      <h2>CFO Üst Akıl</h2>
-      <p>Bugün, dün, bu hafta, bu ay, tahakkuk, nakit, banka ve onay akışını tek karar ekranında toplar.</p>
-      <ul><li>Planlanan / tahakkuk / gerçekleşen</li><li>Satış, tahsilat, gider, ödeme</li><li>Risk ve aksiyon listesi</li></ul>
-    </a>
-    <a class="module" style="--accent:var(--brass)" href="./hasta-bezi/karar-ekrani.html">
-      <div class="code">02 ticaret zekası</div>
-      <h2>Hasta Bezi & FIFO</h2>
-      <p>Ürün-cari arama, alış faturası, sevk tarihi, FIFO maliyet, kar, marj ve oran kontrolünü yönetir.</p>
-      <ul><li>Ürün detay kartı</li><li>Fatura ve sevkiyat kanıtı</li><li>FIFO kar oranı</li></ul>
-    </a>
-    <a class="module" style="--accent:var(--blue)" href="./mail-ekstre-canli.html">
-      <div class="code">03 mail üst akıl</div>
-      <h2>Mail & Ekstre</h2>
-      <p>ALAYLI, şahsi ve belirsiz mailleri risk seviyesine göre sınıflandırır; banka, vergi, SGK, Moka, fatura ve ÜTS’i ayırır.</p>
-      <ul><li>ALAYLI / ŞAHSİ ayrımı</li><li>Mükerrer süzme</li><li>Onay merkezine hazırlık</li></ul>
-    </a>
-    <a class="module" style="--accent:var(--red)" href="./gunluk-banka-karar.html">
-      <div class="code">04 onay</div>
-      <h2>BizimHesap Onayı</h2>
-      <p>Banka hareketinin hangi hesap, cari, kategori ve kayıt türüyle BizimHesap’a gideceğini gösterir.</p>
-      <ul><li>Sen onaylarsın</li><li>Bot işler</li><li>Kayıt kanıtı kapanır</li></ul>
-    </a>
-    <a class="module" style="--accent:var(--cyan)" href="./cari_kart.html">
-      <div class="code">05 cari</div>
-      <h2>Cari Hafıza</h2>
-      <p>Müşteri, tedarikçi, tahsilat, ödeme disiplini, açık bakiye ve risk skorunu zaman içinde öğrenir.</p>
-      <ul><li>Cari arama</li><li>Tahsilat takibi</li><li>Risk uyarısı</li></ul>
-    </a>
-    <a class="module" style="--accent:var(--violet)" href="./stok_kart.html">
-      <div class="code">06 ürün</div>
-      <h2>Ürün Hafıza</h2>
-      <p>Ürünün ne zaman kaçtan alındığını, kaça satıldığını, stokta ne kaldığını ve fiyat stratejisini gösterir.</p>
-      <ul><li>Alış geçmişi</li><li>Satış geçmişi</li><li>Fiyat önerisi</li></ul>
-    </a>
-    <a class="module" style="--accent:#fb7185" href="./aperion-finans-takvimi-live.html">
-      <div class="code">07 hayat</div>
-      <h2>Hayat Asistanı</h2>
-      <p>Telefon, okul, kira, araç, sigorta, kredi kartı, kişisel banka ve aile takvimini şirketten ayrı takip eder.</p>
-      <ul><li>Kişisel gelir-gider</li><li>Fatura ve hatırlatma</li><li>Aile / araç / sağlık</li></ul>
-    </a>
-    <a class="module" style="--accent:#94a3b8" href="./veri-durumu.html">
-      <div class="code">08 veri güveni</div>
-      <h2>Kaynak Sağlığı</h2>
-      <p>Hangi verinin ne zaman geldiğini, nerede takıldığını ve hangi modülün güvenilir olduğunu açıkça gösterir.</p>
-      <ul><li>Son çekim</li><li>Eksik kaynak</li><li>Güncel / eski uyarısı</li></ul>
-    </a>
-  </section>
-
-  <section class="lower">
-    <div class="railCard">
-      <h2>Birleşik Akış</h2>
-      <div class="flow">
-        <div class="step"><div class="no">1</div><div><b>Veri gelir</b><small>BizimHesap, Gmail, banka, Moka, Telegram, Excel/PDF, kişisel belgeler.</small></div><span class="tag done">kurulu</span></div>
-        <div class="step"><div class="no">2</div><div><b>AperiON anlar</b><small>Firma, kişi, cari, ürün, kategori, tarih, tutar, mükerrer ve risk ayrılır.</small></div><span class="tag done">başladı</span></div>
-        <div class="step"><div class="no">3</div><div><b>Sen onaylarsın</b><small>Kesin kayıt kullanıcı onayı olmadan BizimHesap’a işlenmez.</small></div><span class="tag done">kilitli</span></div>
-        <div class="step"><div class="no">4</div><div><b>Bot işler</b><small>Onaylı banka/fatura/gider BizimHesap kuyruğuna girer ve kayıt kanıtıyla kapanır.</small></div><span class="tag todo">tamamlanacak</span></div>
-        <div class="step"><div class="no">5</div><div><b>Dashboard raporlar</b><small>CFO, ürün, cari, stok, hasta bezi ve hayat asistanı kararları aynı linkte görünür.</small></div><span class="tag done">bu sayfa</span></div>
-      </div>
-    </div>
-    <div class="railCard">
-      <h2>Hayat Asistanı Katmanı</h2>
-      <div class="assistantBox">
-        <div class="life"><b>Kişisel Finans</b><p>Kredi kartı ekstresi, şahsi banka, abonelik, telefon, su, elektrik, kira, aidat ve okul ödemeleri ayrı sınıfta tutulur.</p></div>
-        <div class="life"><b>Aile & Takvim</b><p>Çocuk okul ücreti, sağlık randevuları, araç muayene/sigorta, önemli evrak ve yapılacak işler günlük özetlenir.</p></div>
-        <div class="life"><b>Sabah Özeti</b><p>“Bugün ne yapmalıyım?” sorusuna işletme + kişisel hayat için tek öncelik listesi üretir.</p></div>
-      </div>
-      <div class="actions">
-        <a class="btn" href="./APERION_ISTEKLER_VE_GORSELLER.md">İstek Hafızası</a>
-        <a class="btn" href="./PROJECT_STATUS.md">Proje Durumu</a>
-        <a class="btn" href="./NEXT_TASK.md">Sıradaki İş</a>
-      </div>
-    </div>
-  </section>
-
-  <div class="footer">AperiON görür · AperiON anlar · Kullanıcı onaylar · AperiON işler · AperiON raporlar</div>
-</main>
-<script>
-  function repairTurkishText(value) {
-    let text = String(value ?? '');
-    const replacements = [
-      ['\u00c3\u0084\u00c2\u00b1', 'ı'], ['\u00c3\u0084\u00c2\u00b0', 'İ'], ['\u00c3\u0084\u00c2\u009f', 'ğ'], ['\u00c3\u0084\u00c2\u009e', 'Ğ'],
-      ['\u00c3\u0085\u00c2\u009f', 'ş'], ['\u00c3\u0085\u00c2\u009e', 'Ş'], ['\u00c3\u0083\u00c2\u00a7', 'ç'], ['\u00c3\u0083\u00c2\u0087', 'Ç'],
-      ['\u00c3\u0083\u00c2\u00b6', 'ö'], ['\u00c3\u0083\u00c2\u0096', 'Ö'], ['\u00c3\u0083\u00c2\u00bc', 'ü'], ['\u00c3\u0083\u00c2\u009c', 'Ü'],
-      ['\u00c4\u00b1', 'ı'], ['\u00c4\u00b0', 'İ'], ['\u00c4\u009f', 'ğ'], ['\u00c4\u009e', 'Ğ'], ['\u00c5\u009f', 'ş'], ['\u00c5\u0178', 'ş'], ['\u00c5\u009e', 'Ş'],
-      ['\u00c3\u00a7', 'ç'], ['\u00c3\u0087', 'Ç'], ['\u00c3\u00b6', 'ö'], ['\u00c3\u0096', 'Ö'], ['\u00c3\u00bc', 'ü'], ['\u00c3\u009c', 'Ü'], ['\u00e2\u20ac\u2122', '’']
-    ];
-    for (const [from, to] of replacements) text = text.split(from).join(to);
-    return text;
-  }
-
-  function setUpdateCode() {
-    const now = new Date();
-    const pad = value => String(value).padStart(2, '0');
-    // HHmmYYMMdd: 13:41, 10 July 2026 becomes 1341260710.
-    const code = `${pad(now.getHours())}${pad(now.getMinutes())}${String(now.getFullYear()).slice(-2)}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
-    const updateChip = document.querySelectorAll('.status .chip')[1];
-    if (updateChip) updateChip.textContent = `Güncelleme ${code}`;
-  }
-
-  document.title = repairTurkishText(document.title);
-  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-  const nodes = [];
-  while (walker.nextNode()) nodes.push(walker.currentNode);
-  nodes.forEach(node => { node.nodeValue = repairTurkishText(node.nodeValue); });
-  setUpdateCode();
-</script>
+    <section aria-labelledby="moduleTitle">
+      <div class="section-head"><div><h2 id="moduleTitle">Is alanlari</h2><p>Her alan tek bir soruya hizmet eder. Karttan ac, isini bitir, komuta masasina geri don.</p></div></div>
+      <nav class="module-grid" aria-label="AperiON modulleri">
+        <a class="module-card" style="--accent:var(--green)" href="./index.html"><span class="module-no">01 / CFO</span><h3>CFO ve Gelir Tablosu</h3><p>Plan, tahakkuk, nakit, gelir-gider ve donem karsilastirmasi.</p><span class="module-link">Finans gorunumu -></span></a>
+        <a class="module-card" style="--accent:var(--coral)" href="./gunluk-banka-karar.html"><span class="module-no">02 / ONAY</span><h3>Gunluk Banka Onayi</h3><p>Hareketi, kaniti, cari veya hedef hesabi gor; sonra tek tek onayla.</p><span class="module-link">Onay havuzu -></span></a>
+        <a class="module-card" style="--accent:var(--gold)" href="./hasta-bezi/karar-ekrani.html"><span class="module-no">03 / TICARET</span><h3>Hasta Bezi ve FIFO</h3><p>Urun, kategori, maliyet, stok omru ve siparis kararlarini incele.</p><span class="module-link">Urun karar ekrani -></span></a>
+        <a class="module-card" style="--accent:var(--blue)" href="./cari_kart.html"><span class="module-no">04 / CARI</span><h3>Cari ve Tahsilat</h3><p>Musteri ve tedarikci hareketleri, acik bakiye, tahsilat disiplini ve risk.</p><span class="module-link">Cari hafiza -></span></a>
+        <a class="module-card" style="--accent:#28c7c1" href="./mail-ekstre-canli.html"><span class="module-no">05 / KAYNAK</span><h3>Mail ve Ekstre</h3><p>Mailden gelen ekstrelere kaynak izi, tekrar kontrolu ve siniflandirma.</p><span class="module-link">Ekstre akisi -></span></a>
+        <a class="module-card" style="--accent:var(--violet)" href="./stok_kart.html"><span class="module-no">06 / URUN</span><h3>Urun ve Stok</h3><p>Alis, satis, stok, fiyat ve urun bazli karlilik bilgisini incele.</p><span class="module-link">Urun hafizasi -></span></a>
+        <a class="module-card" style="--accent:#ef7d4c" href="./finans-takvimi.html"><span class="module-no">07 / TAKVIM</span><h3>Finans Takvimi</h3><p>Sabit giderler, sozlesmeler, vade, tahsilat ve odeme hatirlatmalari.</p><span class="module-link">Takvime git -></span></a>
+        <a class="module-card" style="--accent:#c8d3e2" href="./veri-durumu.html"><span class="module-no">08 / GUVEN</span><h3>Veri Sagligi</h3><p>Hangi kaynagin ne zaman geldigi, nerede eksik kaldigi ve veri guveni.</p><span class="module-link">Kaynak sagligi -></span></a>
+      </nav>
+    </section>
+    <footer><span>AperiON gorur, siniflandirir, kanitini gosterir; sen onayladiginda resmi kayda alir.</span><a href="./index.html">Ana ekrana git -></a></footer>
+  </main>
+  <script>
+    function setText(id, value) { const el = document.getElementById(id); if (el) el.textContent = value; }
+    function buildCode() { const d = new Date(); return [String(d.getHours()).padStart(2,'0'),String(d.getMinutes()).padStart(2,'0'),String(d.getFullYear()).slice(-2),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join(''); }
+    function fmtDate(value) { const d = new Date(value); return Number.isNaN(d.getTime()) ? 'Kaynak tarihi yok' : new Intl.DateTimeFormat('tr-TR',{dateStyle:'short',timeStyle:'short'}).format(d); }
+    setText('buildCode', buildCode());
+    fetch('./data/aperion_bank_approval_status.json',{cache:'no-store'}).then(r => { if (!r.ok) throw new Error('bank status'); return r.json(); }).then(data => {
+      const s = data.summary || {}; const selected = data.selected_candidate || {};
+      const count = Number(s.candidate_count || 0); const review = Number(s.review_count || 0);
+      setText('bankState', count ? count + ' kayit karar bekliyor' : 'Onay adayi yok');
+      setText('bankDetail', selected.bank_name ? selected.bank_name + ' - ' + (selected.amount_label || 'tutar okunuyor') : 'Yeni aday bulunmadi.');
+      setText('bankStamp', 'Son kaynak: ' + fmtDate(data.created_at));
+      setText('bankRisk', count ? 'ONAY GEREKLI' : 'TEMIZ');
+      setText('bankPriority', count ? count + ' banka kaydi karar bekliyor' : 'Banka onay havuzu temiz');
+      setText('bankPriorityDetail', review ? review + ' kayit inceleme sinifinda; kayit oncesi kaniti gor.' : 'Yeni kayit bulunmuyor.');
+    }).catch(() => { setText('bankState','Kaynak okunamadi'); setText('bankDetail','Banka durum dosyasi bu ortamda yok.'); setText('bankStamp','Veri guveni ekranini kontrol et'); setText('bankRisk','KONTROL'); setText('bankPriority','Banka kaynagi kontrol edilmeli'); setText('bankPriorityDetail','Durum dosyasi okunamadi; karar vermeden once kaynak sagligini ac.'); });
+    fetch('./hasta-bezi/fifo_chunks/manifest.json',{cache:'no-store'}).then(r => { if (!r.ok) throw new Error('fifo manifest'); return r.json(); }).then(data => {
+      const warnings = Number(data.warningCount || data.warning_count || 0); const sales = Number(data.salesCount || data.sales_count || 0); const moves = Number(data.moveCount || data.move_count || 0);
+      setText('fifoState', sales ? sales.toLocaleString('tr-TR') + ' satis satiri' : 'Kaynak kapsami yok');
+      setText('fifoDetail', moves ? moves.toLocaleString('tr-TR') + ' hareket kaynakta tarandi.' : 'FIFO kaynak verisi bulunamadi.');
+      setText('fifoStamp', warnings ? warnings.toLocaleString('tr-TR') + ' maliyet uyarisi var' : 'Maliyet uyarisi yok');
+      setText('fifoRisk', warnings ? 'UYARI' : 'TEMIZ');
+      setText('fifoPriority', warnings ? warnings.toLocaleString('tr-TR') + ' FIFO kaydi kontrol bekliyor' : 'FIFO kaynak kapsami temiz');
+      setText('fifoPriorityDetail', warnings ? 'Acillis stogu, alis kaydi olmayan veya yetersiz lotlar ayri isaretlenir.' : 'Uyari bulunmuyor.');
+    }).catch(() => { setText('fifoState','Kaynak okunamadi'); setText('fifoDetail','FIFO manifesti bu ortamda yok.'); setText('fifoStamp','Urun karar ekranini kontrol et'); setText('fifoRisk','KONTROL'); setText('fifoPriority','FIFO kaynagi kontrol edilmeli'); setText('fifoPriorityDetail','Kaynak okunamadigi icin maliyet karari gosterilmez.'); });
+  </script>
 </body>
 </html>

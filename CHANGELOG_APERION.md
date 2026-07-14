@@ -1,5 +1,15 @@
 # AperiON Changelog
 
+## 2026-07-14 - Komuta Masasi v96
+
+- `aperion-ust-akil.html` operasyonel Komuta Masasi olarak yeniden tasarlandi.
+- Buyuk tanitim basligi ve anlamsiz kutular kaldirildi; kaynakli karar
+  oncelikleri ve sekiz tiklanabilir is alani eklendi.
+- Banka onay durumu ve FIFO kapsam bilgisi mevcut salt-okunur JSON
+  kaynaklarindan yuklenir; kaynak okunamazsa ekran rakam uydurmaz.
+- Yerel tarayici testi 8 modul karti, 3 oncelik karti ve yatay tasma olmadan
+  basariyla tamamlandi.
+
 ## 2026-07-14 - Hasta Bezi Giris Rotasi
 
 - Ust Akil ana butonu ve Hasta Bezi modul karti eski gorunum yerine
