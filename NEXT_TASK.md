@@ -2,7 +2,7 @@
 
 Son guncelleme: 2026-07-14 Europe/Istanbul
 
-## Aktif Tek Hedef - Hasta Bezi Maliyet Eslesmesi
+## Aktif Tek Hedef - Tarihsel FIFO Kaynak Girisi
 
 Tek ekran Hasta Bezi karar gorunumu tamamlandi. Kaynak denetimi, fallback
 satirlarinin kod ayrismasindan degil donem basi stok/gecmis alis eksigi,
@@ -11,6 +11,11 @@ hedef, BizimHesap'tan 2025 oncesi devir stok ve alis gecmisi alinabiliyorsa
 onu ayri bir kaynak olarak eklemek; alinmiyorsa bu satirlari maliyet kontrol
 listesinde birakmaktir. Hicbir fallback tutar kesin FIFO veya kesin kar olarak
 sunulmayacak. Ham cari/tarih/fatura detayi public Pages'e yazilmaz.
+
+Kaynak giris noktasi hazir: kullanici tarihsel satis, alis ve devir stok
+raporlarini `C:\Users\HP\Downloads\AperiON Tarihsel FIFO` klasorune verir.
+Ilk calisacak komut `npm run hasta-bezi:history:preflight` olur; kontrol
+raporu gecmeden import plani veya FIFO degisikligi yapilmaz.
 
 Gmail OAuth ve banka onay akisi ayri bir blokaj olarak kalir; bu tur onun
 gercek zamanli veri iddiasini degistirmez.

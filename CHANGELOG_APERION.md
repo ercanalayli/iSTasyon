@@ -1,5 +1,14 @@
 # AperiON Changelog
 
+## 2026-07-14 - Tarihsel FIFO Kaynak Girisi v95
+
+- `tools/preflight_historical_fifo_sources_v95.cjs` eklendi.
+- Komut, tarihsel satis, alis ve acilis stok raporlarini ayri klasorde
+  denetler; gerekli sutun, tarih araligi ve kaynak tipi olmadan FIFO paketine
+  veri eklemez.
+- Komut: `npm run hasta-bezi:history:preflight`.
+- Yerel kontrol raporu public repoya alinmaz.
+
 ## 2026-07-14 - FIFO Maliyet Kaniti v94
 
 - FIFO paketindeki fallback maliyet satirlari nedenlerine ayrildi:

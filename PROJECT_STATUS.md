@@ -2,6 +2,14 @@
 
 Son guncelleme: 2026-07-14 Europe/Istanbul
 
+## Guncel Tur - Tarihsel FIFO Kaynak Girisi v95
+
+Tarihsel satis, alis ve devir stok raporlarini ana FIFO paketinden ayri tutan
+salt-okunur on kontrol eklendi. `npm run hasta-bezi:history:preflight`,
+`C:\Users\HP\Downloads\AperiON Tarihsel FIFO` altindaki dosyalari tarar;
+satis, alis ve acilis stok kaynaklarinin gerekli sutunlarini ve tarih
+araliklarini kontrol eder. Uc kaynak dogrulanmadan FIFO paketi degismez.
+
 ## Guncel Tur - FIFO Maliyet Kaniti v94
 
 Hasta Bezi satis/alis disavurumlarinin yeniden denetiminde 19.202 fallback
