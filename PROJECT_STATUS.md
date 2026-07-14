@@ -2,6 +2,21 @@
 
 Son guncelleme: 2026-07-14 Europe/Istanbul
 
+## Guncel Tur - BizimHesap Canli Klon Guvenli Calisma Koku v97
+
+Denetimde Windows gorevinin guncel repo yerine eski
+`C:\Users\HP\Desktop\ErpaltH` klasorundeki runner'i calistirdigi goruldu.
+Eski bot kalici BizimHesap oturumuyla giris yapabiliyor ve ALAYLI MEDIKAL'i
+secebiliyor; basarisizlik giris degil, eski botun public Supabase anahtariyla
+`sales_raw` ve `masraf_raw` yazmaya calisip RLS tarafindan reddedilmesidir.
+
+Guncel repo icin DPAPI sifreli yerel servis anahtari, guvenli clone runner ve
+10:00/17:00 Windows gorev kurulum betikleri eklendi. Servis anahtari ne
+repoya ne `.env` dosyasina yazilir; sadece bu Windows kullanicisinin acabilecegi
+`.aperion-secrets` dosyasinda saklanir ve runner calisirken bellekte kullanilir.
+Canli kurulum, servis anahtari bir kez kullanici tarafindan girilmeden
+baslatilmayacak.
+
 ## Guncel Tur - Komuta Masasi v96
 
 `aperion-ust-akil.html` tanitim/launcher gorunumu olmaktan cikarildi ve

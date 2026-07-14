@@ -11,9 +11,14 @@ loadEnv(path.join(root, '.env'));
 
 const DEFAULT_SUPABASE_URL = 'https://iilfwosoroflzubkaryj.supabase.co';
 const DEFAULT_SUPABASE_KEY = 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
+const SECURE_SERVICE_SECRET = path.join(root, '.aperion-secrets', 'supabase_service_role.secure');
+const LEGACY_PROFILE_DIR = 'C:\\Users\\HP\\Desktop\\ErpaltH\\.bizimhesap-profile';
 const SUPABASE_URL = process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
 const HAS_SERVICE_KEY = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+const HAS_SECURE_SERVICE_SECRET = fs.existsSync(SECURE_SERVICE_SECRET);
+const PROFILE_DIRS = [process.env.BIZIMHESAP_PROFILE_DIR, path.join(root, '.bizimhesap-profile'), LEGACY_PROFILE_DIR].filter(Boolean);
+const HAS_SESSION_PROFILE = PROFILE_DIRS.some(dir => fs.existsSync(dir));
 const db = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
 
 const outJson = path.join(dataDir, 'aperion_system_preflight.json');
@@ -97,8 +102,9 @@ async function main() {
   const mStart = monthStart(now);
   const lastSync = readJson(path.join(dataDir, 'aperion_last_sync.json'), {});
 
-  add(checks, 'config', '.env exists', fs.existsSync(path.join(root, '.env')), '.env dosyası', 'required');
-  add(checks, 'config', 'BizimHesap password', Boolean(process.env.BIZIMHESAP_PASSWORD), process.env.BIZIMHESAP_PASSWORD ? 'var' : 'eksik', 'required');
+  add(checks, 'config', 'BizimHesap persistent session', HAS_SESSION_PROFILE, HAS_SESSION_PROFILE ? 'profile var' : 'profile eksik', 'required');
+  add(checks, 'config', 'BizimHesap password or session', Boolean(process.env.BIZIMHESAP_PASSWORD) || HAS_SESSION_PROFILE, process.env.BIZIMHESAP_PASSWORD ? 'password var' : (HAS_SESSION_PROFILE ? 'kalici oturum var' : 'eksik'), 'required');
+  add(checks, 'config', 'Supabase secure local write secret', HAS_SERVICE_KEY || HAS_SECURE_SERVICE_SECRET, HAS_SERVICE_KEY ? 'environment var' : (HAS_SECURE_SERVICE_SECRET ? 'DPAPI encrypted file' : 'eksik'), 'required');
   add(checks, 'config', 'Supabase read key', Boolean(SUPABASE_URL && SUPABASE_KEY), SUPABASE_URL, 'required');
   add(checks, 'bot', 'last sync ok', lastSync?.ok === true, lastSync?.finishedAt || 'son senkron yok', 'required');
   for (const task of [
@@ -158,7 +164,7 @@ async function main() {
   const telegramChat = Boolean(process.env.TELEGRAM_ALLOWED_CHAT_ID || process.env.APERION_TELEGRAM_CHAT_ID || process.env.TELEGRAM_CHAT_IDS);
   const bankApproveRpc = await rpcCheck('approve_bank_transaction_v58', { p_bank_transaction_id: 0, p_approved_by: 'preflight' });
   const bankRejectRpc = await rpcCheck('reject_bank_transaction_v58', { p_bank_transaction_id: 0, p_rejected_by: 'preflight' });
-  add(checks, 'config', 'Supabase write path', HAS_SERVICE_KEY || (bankApproveRpc.ok && bankRejectRpc.ok), HAS_SERVICE_KEY ? 'service role var' : 'approval RPC var', 'required');
+  add(checks, 'config', 'Supabase write path', HAS_SERVICE_KEY || HAS_SECURE_SERVICE_SECRET || (bankApproveRpc.ok && bankRejectRpc.ok), HAS_SERVICE_KEY ? 'service role var' : (HAS_SECURE_SERVICE_SECRET ? 'secure local runner' : 'approval RPC var'), 'required');
   add(checks, 'telegram', 'bot token', telegramToken, telegramToken ? 'var' : 'eksik', 'warning');
   add(checks, 'telegram', 'chat id', telegramChat, telegramChat ? 'var' : 'eksik', 'warning');
   add(checks, 'telegram', 'bank image bot file', fs.existsSync(path.join(root, 'telegram', 'aperion_bank_image_bot.cjs')), 'telegram/aperion_bank_image_bot.cjs', 'warning');

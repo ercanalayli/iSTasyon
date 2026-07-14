@@ -27,6 +27,7 @@ data/hasta_bezi_fifo_build_proof.json
 data/hasta_bezi_historical_source_preflight.json
 .__runtime_*.cjs
 .bizimhesap-profile/
+.aperion-secrets/
 diagnostics/
 debug_*.json
 debug_*.png

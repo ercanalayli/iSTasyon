@@ -1,5 +1,16 @@
 # AperiON Changelog
 
+## 2026-07-14 - BizimHesap Guvenli Yerel Klon v97
+
+- `tools/set_local_supabase_service_role.ps1` eklendi: servis anahtarini
+  Windows DPAPI ile sifreler; `.env` veya repo icine yazmaz.
+- `tools/invoke_secure_bizimhesap_clone.ps1` eklendi: sifreli anahtari sadece
+  calisma aninda bellekte acar, kalici BizimHesap profilini kullanir.
+- `tools/install_live_bizimhesap_clone_task.ps1` eklendi: guncel kod kokunu
+  kullanan 10:00 ve 17:00 gorevini kurar.
+- Sistem preflight'i kalici oturum ve DPAPI sifreli servis anahtarini ayrica
+  denetleyecek sekilde guncellendi.
+
 ## 2026-07-14 - Komuta Masasi v96
 
 - `aperion-ust-akil.html` operasyonel Komuta Masasi olarak yeniden tasarlandi.

@@ -2,6 +2,16 @@
 
 Son guncelleme: 2026-07-14 Europe/Istanbul
 
+## Aktif Tek Hedef - BizimHesap Canli Klonunun Kilidini Acmak
+
+Guncel botlar servis anahtarini public/anon anahtardan once kullanir; denetim
+12/12 basarili gecmistir. Tek blokaj, yerelde sifreli `SUPABASE_SERVICE_ROLE_KEY`
+kasasinin henuz olusturulmamis olmasidir. Kullanici bu anahtari gizli PowerShell
+girisiyle bir kez kaydettikten sonra, `AperiON_BizimHesap_Klon_Saatlik` gorevi
+guncel kod kokunde 10:00 ve 17:00 calisacak sekilde kurulacak; sonra salt-okunur
+ve commit senkron kaniti alinacaktir. Canli BizimHesap'a yeni kayit olusturma
+bu klon adiminin parcasi degildir.
+
 ## Aktif Tek Hedef - Komuta Masasi Canli Kaynak Denetimi
 
 Komuta Masasi v96 tamamlandi: ana giris tek ekranda banka onayi, cari,
