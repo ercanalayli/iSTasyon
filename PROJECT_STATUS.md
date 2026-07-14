@@ -2,6 +2,19 @@
 
 Son guncelleme: 2026-07-14 Europe/Istanbul
 
+## Guncel Tur - BizimHesap Canli Klon Dogrulamasi v98
+
+14 Temmuz 2026 tarihinde yerel Windows kullanicisi icin sifreli Supabase servis
+anahtari ve BizimHesap parolasi kasasi kuruldu. `AperiON_BizimHesap_Klon_Saatlik`
+gorevi guncel kod kokunden etkinlestirildi; 10:00 ve 17:00 yerel saatlerinde
+calisacak. Manuel canli gorev denetimi basarili bitti: `LastTaskResult=0` ve
+runner logunda `SONUC: BASARILI` goruldu.
+
+Kaynak dogrulama: son 15 gun icin 957 satis, bugun 66, dun 86, 2026 icin 343
+masraf, 5.667 urun/stok ve 3 son hareket okunabildi. Saglik kontrolu tum
+denetimlerde `saglikli`. Bu klon BizimHesap'a yeni muhasebe kaydi olusturmaz;
+sadece kaynak verisini AperiON/Supabase'e yeniler.
+
 ## Guncel Tur - BizimHesap Canli Klon Guvenli Calisma Koku v97
 
 Denetimde Windows gorevinin guncel repo yerine eski

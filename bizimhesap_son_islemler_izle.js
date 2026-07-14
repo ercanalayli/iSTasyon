@@ -242,10 +242,13 @@ async function scrapeEvents() {
 async function saveSupabase(events) {
   if (DRY_RUN) return { saved: 0, skipped: true, dryRun: true };
   if (!events.length) return { saved: 0, skipped: true };
+  // The portal can render the same latest movement more than once. PostgreSQL
+  // rejects an upsert batch that targets the same conflict key twice.
+  const uniqueEvents = [...new Map(events.map(event => [event.hash, event])).values()];
   const db = createClient(SUPABASE.url, SUPABASE.key, { auth: { persistSession: false } });
-  const { error } = await db.from(SUPABASE.table).upsert(events, { onConflict: 'hash' });
+  const { error } = await db.from(SUPABASE.table).upsert(uniqueEvents, { onConflict: 'hash' });
   if (error) return { saved: 0, skipped: true, error: error.message };
-  return { saved: events.length, skipped: false };
+  return { saved: uniqueEvents.length, skipped: false };
 }
 
 function runResync(events) {

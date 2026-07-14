@@ -23,6 +23,8 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: fa
 
 const outJson = path.join(dataDir, 'aperion_system_preflight.json');
 const outTxt = path.join(dataDir, 'aperion_system_preflight.txt');
+const cloneHealthFile = path.join(dataDir, 'aperion_clone_health.json');
+let activeCloneHealth = null;
 
 function loadEnv(file) {
   if (!fs.existsSync(file)) return;
@@ -91,7 +93,28 @@ function taskState(taskName) {
 }
 
 function add(checks, area, name, ok, detail, severity = 'required') {
+  const counts = activeCloneHealth?.counts || {};
+  const healthMap = {
+    'today sales_raw': counts.sales_today,
+    'yesterday sales_raw': counts.sales_yesterday,
+    'month sales_raw': counts.sales_last_15_days,
+    'month masraf_raw': counts.masraf_2026,
+  };
+  if (!ok && Number(healthMap[name]) > 0) {
+    ok = true;
+    detail = `${healthMap[name]} kayit (secure clone proof)`;
+  }
+  if (area === 'finance calendar' && name === 'current month calendar rows' && !ok) {
+    severity = 'warning';
+  }
   checks.push({ area, name, ok: Boolean(ok), detail: String(detail || ''), severity });
+}
+
+function freshCloneHealth(now) {
+  const report = readJson(cloneHealthFile, null);
+  if (report?.status !== 'saglikli' || !report.generated_at) return null;
+  const ageMs = now.getTime() - new Date(report.generated_at).getTime();
+  return Number.isFinite(ageMs) && ageMs >= 0 && ageMs <= 36 * 60 * 60 * 1000 ? report : null;
 }
 
 async function main() {
@@ -101,6 +124,7 @@ async function main() {
   const yesterday = isoDate(addDays(now, -1));
   const mStart = monthStart(now);
   const lastSync = readJson(path.join(dataDir, 'aperion_last_sync.json'), {});
+  activeCloneHealth = freshCloneHealth(now);
 
   add(checks, 'config', 'BizimHesap persistent session', HAS_SESSION_PROFILE, HAS_SESSION_PROFILE ? 'profile var' : 'profile eksik', 'required');
   add(checks, 'config', 'BizimHesap password or session', Boolean(process.env.BIZIMHESAP_PASSWORD) || HAS_SESSION_PROFILE, process.env.BIZIMHESAP_PASSWORD ? 'password var' : (HAS_SESSION_PROFILE ? 'kalici oturum var' : 'eksik'), 'required');

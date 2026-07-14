@@ -2,6 +2,15 @@
 
 Son guncelleme: 2026-07-14 Europe/Istanbul
 
+## Aktif Tek Hedef - Banka Onayindan BizimHesap Kayit Kanitina
+
+BizimHesap kaynak klonu canli olarak dogrulandi ve 10:00/17:00 zamanlanmis
+gorevi etkin. Siradaki hedef, en yeni gun banka hareketlerinden birini ham
+aciklama, hesap, cari onerisi, kayit turu ve guven kaniti ile sade gunluk onay
+paketine almak; kullanici onayindan sonra ayni kaydin BizimHesap kuyruk kimligini
+ve sonucunu satir bazinda kapatmaktir. Mükerrer veya belirsiz hareket otomatik
+kesin kayda gitmeyecek.
+
 ## Aktif Tek Hedef - BizimHesap Canli Klonunun Kilidini Acmak
 
 Guncel botlar servis anahtarini public/anon anahtardan once kullanir; denetim

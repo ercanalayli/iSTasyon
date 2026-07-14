@@ -1,5 +1,18 @@
 # AperiON Changelog
 
+## 2026-07-14 - BizimHesap Canli Klon Kaniti v98
+
+- Windows DPAPI ile sifreli yerel BizimHesap parola kasasi eklendi; parola
+  `.env`, Git veya gorev tanimina yazilmaz.
+- Klon saglik denetimi service-role anahtarini kullanacak sekilde duzeltildi;
+  RLS nedeniyle gorunen yanlis `0 kayit` sonucu kapatildi.
+- Son islem akisi ayni hash ile gelen yinelenen portal satirlarini upsert
+  oncesinde suzer; PostgreSQL cift conflict-key hatasi kapatildi.
+- `AperiON_BizimHesap_Klon_Saatlik` guncel kod kokunde etkin: 10:00 ve 17:00.
+  Manuel canli denetim: task sonucu `0`, runner sonucu `SONUC: BASARILI`.
+- Saglik kaniti: son 15 gun 957 satis, bugun 66, dun 86, 343 masraf,
+  5.667 urun/stok ve 3 son hareket; tum denetimler saglikli.
+
 ## 2026-07-14 - BizimHesap Guvenli Yerel Klon v97
 
 - `tools/set_local_supabase_service_role.ps1` eklendi: servis anahtarini

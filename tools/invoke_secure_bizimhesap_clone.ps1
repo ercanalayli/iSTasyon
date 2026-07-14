@@ -1,7 +1,10 @@
+param([switch]$HealthOnly)
+
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
 $secretFile = Join-Path $root '.aperion-secrets\supabase_service_role.secure'
+$bizimHesapPasswordFile = Join-Path $root '.aperion-secrets\bizimhesap_password.secure'
 $legacyProfile = 'C:\Users\HP\Desktop\ErpaltH\.bizimhesap-profile'
 $logDir = Join-Path $root 'logs'
 $logFile = Join-Path $logDir 'aperion_clone_task_stdout.log'
@@ -11,23 +14,37 @@ if (-not (Test-Path -LiteralPath $secretFile)) {
   Add-Content -LiteralPath $logFile -Value "[$(Get-Date -Format s)] BLOCKED: encrypted Supabase service role secret is missing"
   throw 'Sifreli Supabase servis anahtari yok. Once tools\set_local_supabase_service_role.ps1 calistirilmalidir.'
 }
+if (-not (Test-Path -LiteralPath $bizimHesapPasswordFile)) {
+  Add-Content -LiteralPath $logFile -Value "[$(Get-Date -Format s)] BLOCKED: encrypted BizimHesap password is missing"
+  throw 'Sifreli BizimHesap parolasi yok. Once tools\set_local_bizimhesap_password.ps1 calistirilmalidir.'
+}
 if (-not (Test-Path -LiteralPath $legacyProfile)) {
   Add-Content -LiteralPath $logFile -Value "[$(Get-Date -Format s)] BLOCKED: BizimHesap persistent profile is missing"
   throw 'BizimHesap kalici oturum profili bulunamadi.'
 }
 
 $secure = Get-Content -LiteralPath $secretFile -Raw | ConvertTo-SecureString
+$passwordSecure = Get-Content -LiteralPath $bizimHesapPasswordFile -Raw | ConvertTo-SecureString
 $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+$passwordPtr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($passwordSecure)
 try {
   $env:SUPABASE_SERVICE_ROLE_KEY = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+  $env:BIZIMHESAP_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($passwordPtr)
   $env:BIZIMHESAP_PROFILE_DIR = $legacyProfile
   $env:APERION_PROJECT_DIR = $root
   $env:NODE_PATH = Join-Path $root 'node_modules'
   Set-Location $root
-  Add-Content -LiteralPath $logFile -Value "[$(Get-Date -Format s)] START: secure BizimHesap clone"
-  & node (Join-Path $root 'local_bot\aperion_clone_retry_runner.js') *>> $logFile
+  if ($HealthOnly) {
+    Add-Content -LiteralPath $logFile -Value "[$(Get-Date -Format s)] START: secure clone health check"
+    & node (Join-Path $root 'aperion_clone_health_check.cjs') *>> $logFile
+  } else {
+    Add-Content -LiteralPath $logFile -Value "[$(Get-Date -Format s)] START: secure BizimHesap clone"
+    & node (Join-Path $root 'local_bot\aperion_clone_retry_runner.js') *>> $logFile
+  }
   exit $LASTEXITCODE
 } finally {
   if ($ptr -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
+  if ($passwordPtr -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($passwordPtr) }
   Remove-Item Env:SUPABASE_SERVICE_ROLE_KEY -ErrorAction SilentlyContinue
+  Remove-Item Env:BIZIMHESAP_PASSWORD -ErrorAction SilentlyContinue
 }

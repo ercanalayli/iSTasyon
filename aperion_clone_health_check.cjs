@@ -23,7 +23,9 @@ function loadEnvFallback() {
 loadEnvFallback();
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://iilfwosoroflzubkaryj.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
+// The health check must read with the same privileged credential as the clone.
+// A publishable key is subject to RLS and can incorrectly report zero fresh rows.
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function isoDate(d) {
