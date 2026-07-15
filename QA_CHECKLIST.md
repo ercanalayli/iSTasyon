@@ -49,6 +49,16 @@ Son guncelleme: 2026-07-15 Europe/Istanbul
 - [x] Ilk masraf kaydindaki yanlis AKBANK SIRKET hesabi ayni satirda `*VAKIF SIRKET` olarak duzeltildi.
 - [x] Masraf duzeltme basari ekrani ve son satir kaniti alindi.
 
+## 2026-07-15 Belirsiz Gelen Para Kontrolu
+
+- [x] BizimHesap `Hesaba Para Girisi` form alanlari kaydetmeden dogrulandi.
+- [x] Son gun aday secimi yalnizca dogrulanmis banka hareketini aliyor.
+- [x] Banka adi celiskisi ve reklam/duyuru adaylari otomatik kayda kapali.
+- [x] Cari eslesmesi belirsiz gelen para, cari bakiyesine dokunmayan planla olusturuluyor.
+- [ ] Canli Supabase `confirmed_counterparty` semasi uygulandi.
+- [ ] Gunluk belirsiz para girisi kuyrugu canli olusturuldu.
+- [ ] BizimHesap'ta canli kayit ve son satir kaniti alindi.
+
 ## Finans Komuta Merkezi Kontrolleri
 
 - [ ] Planlanan, tahakkuk ve gerceklesen ayrimi gorunuyor.

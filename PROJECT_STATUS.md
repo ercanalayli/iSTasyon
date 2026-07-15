@@ -489,3 +489,11 @@ Bu yuzdeler kesin metrik degil; son denetimde calisan testler, eksik kaynaklar v
 - Sol sidebar dashboard modunda gizli kalmaya devam ediyor.
 - Yerel tarayici kontrolde arka plan `#0E1420`, kart zemini `#161D2C`, 8 kartin gorunur oldugu, sol menunun gizli oldugu ve 720px viewportta scroll tasmasi olmadigi dogrulandi.
 - `npm run verify:single-screen-command-map` ve `npm run finance-smoke` gecti.
+
+## 2026-07-15 Belirsiz Gelen Banka Girisi Akisi
+
+- Canli BizimHesap `Hesaba Para Girisi` formu kaydetmeden incelendi: tarih `txtTransactionDate`, tutar `txtAmount`, aciklama `txtDefinition`, kaydet `btnSave`.
+- Kesin banka kaniti olan fakat cari eslesmesi bulunmayan gelen paralar, kaynak banka hesabinda cari/tedarikci bakiyesini etkilemeden `Hesaba Para Girisi` olarak planlanir.
+- Aciklama, AperiON kuyruk ID'si, banka, islem numarasi, karsi taraf ve ham ekstre kanitini tasir.
+- Reklam/duyuru ile banka adi celisen satirlar otomatik kayda kapali tutulur.
+- Gunluk son tarih onizlemesi 2026-07-07 icin sadece bir VakifBank 100,00 TL adayi buldu; canli kuyruk RPC'si Supabase'de eksik `confirmed_counterparty` kolonu nedeniyle durdu. BizimHesap'a yeni kayit atilmadi.

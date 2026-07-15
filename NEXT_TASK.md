@@ -228,6 +228,13 @@ Yeni aday kabul kriteri:
 
 ## Bekleyen Sonraki Hedefler
 
+### Aktif Tek Hedef - Banka Girisi Kuyruk Semasi
+
+1. Supabase SQL Editor'da `automation/sql/007_confirm_pending_bank_counterparty.sql` dosyasini uygula.
+2. `bank:unmatched-income:daily:dry` ile sadece en yeni gunun adayini kontrol et.
+3. Aday varsa kuyruga al, BizimHesap'ta kaynak banka hesabina cari baglamadan `Hesaba Para Girisi` kaydet ve kanit ekranini al.
+4. Reklam, duyuru, banka adi celiskisi veya belgesiz satiri otomatik kayda alma.
+
 - BizimHesap B2B API secretlarini ekle: `BIZIMHESAP_B2B_TOKEN`, `BIZIMHESAP_FIRM_ID`.
 - BizimHesap uyelik ekraninda `Api Key(FirmID)` ve `Zirve Express Aktarim Api Key` bulundu; degerler koda yazilmadan GitHub secret/env olarak kullanilacak.
 - BizimHesap'tan B2B token/API yetkisinin aktif olup olmadigi teyit edilmeli; Zirve Express anahtari GET endpointlerinde 401 verdi.

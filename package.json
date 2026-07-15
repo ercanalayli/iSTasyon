@@ -91,6 +91,8 @@
     "bank:approval:unified-status": "node tools/merge_bank_approval_status_v82.cjs",
     "bank:vakifbank:xlsx:dry": "node tools/import_vakifbank_statement_xlsx_v100.cjs",
     "verify:daily-bank-review": "node tools/verify_daily_bank_review_v89.cjs",
+    "verify:bank:unmatched-income": "node tools/verify_unmatched_bank_income_v103.cjs",
+    "bank:unmatched-income:daily:dry": "node tools/queue_unmatched_bank_incoming_v104.cjs",
     "bizimhesap:queue:secure-form": "powershell -ExecutionPolicy Bypass -File tools/invoke_secure_bizimhesap_queue.ps1",
     "bank:daily-review": "node tools/build_daily_bank_review_v89.cjs",
     "telegram:bank:daily-review": "node telegram/aperion_daily_bank_review_digest_v89.cjs",

@@ -118,3 +118,11 @@ Sonuc:
 - Cloudflare Pages yeniden erisilebilir hale gelirse ayrica test edilmeden production kaniti sayilmaz.
 - Canli kontrol botlari birden fazla yayin adayini deneyebilir; secilen URL rapora yazilmalidir.
 - Commit sonrasi kabul kriteri: GitHub CI, Pages deploy ve canli URL icerik kontrolu.
+
+## D-008 Belirsiz Gelen Banka Parasi
+
+Karar: Banka hareketi, tarih, tutar ve kaynak hesap kanitli; fakat cari/karsi taraf eslesmesi belirsiz gelen para, ilgili gercek banka hesabinda `Hesaba Para Girisi` olarak kaydedilir. Cari veya tedarikci bakiyesi etkilenmez.
+
+Gerekce: Belirsiz tahsilati tahmini bir cariye yazmak, cari mutabakatini bozar. Islem numarasi, banka, karsi taraf ve ham ekstre metni AperiON kuyruk ID'siyle aciklamada saklanir; sonradan dogru cariye/hesaba aktarim izlenebilir olur.
+
+Guvenlik siniri: Banka adi kaynakla celisen, reklam/duyuru niteligindeki veya banka hareketi kaniti olmayan satirlar bu otomasyona giremez.
