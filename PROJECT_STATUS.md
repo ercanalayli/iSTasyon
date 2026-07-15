@@ -2,6 +2,24 @@
 
 Son guncelleme: 2026-07-15 Europe/Istanbul
 
+## Guncel Tur - Hattat Aylik Odeme Listesi Hatti v108
+
+Hattat Musavir `Aylik Odeme Listesi` PDF'leri icin salt-okunur parser ve
+Finans Takvimi import plani eklendi. Kaynak PDF her ayin vergi/SGK tahakkuk
+ve vade bilgisini tasir; bu nedenle satirlar **odendi** olarak degil,
+`beklenen/tahakkuk` olarak olusturulur. Banka hareketi ile eslesme olmadan
+odeme kapanmaz. Ham PDF'ler ile parse/canli import kanitlari Git disi
+`finance_imports/hattat` alaninda kalir.
+
+Ocak-Haziran 2026 icin verilen alti PDF ile parser dogrulanacaktir. Hattat
+portalinden otomatik alma, kalici yerel oturumla sadece listeyi indiren ayri
+okuma adimi olarak eklenecek; giris bilgisi repoya, `.env` dosyasina veya
+GitHub'a yazilmaz.
+
+Dry-run sonucu: 6 PDF, 21 tahakkuk adayi ve `TL 644.070,38`. Her ayda kaynak
+satir toplami Hattat `Genel Toplam`i ile birebir eslesti. Supabase'e canli
+Finans Takvimi yazimi bu turda yapilmadi.
+
 ## Guncel Tur - VakifBank Masraf Hesabi Kaniti v107
 
 VakifBank POS komisyonu ilk kayit formunda portal varsayilani olan `AKBANK

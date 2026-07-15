@@ -2,6 +2,25 @@
 
 Son guncelleme: 2026-07-15 Europe/Istanbul
 
+## Aktif Tek Hedef - Hattat Aylik Odeme Listesi ve Finans Takvimi
+
+`npm run finance-calendar:hattat-payment-list:dry` Hattat PDF'lerini
+salt-okunur olarak parse eder ve vade/tutar/kaynak kanitli tahakkuk plani
+uretir. Ilk test alti verilen 2026 PDF ile yapilacak. Sonuc dogruysa
+`npm run finance-calendar:hattat-payment-list:import:dry` ile Supabase
+yazmadan plan gorulur. Canli Finans Takvimi importu, kullanici onayi ve
+`--commit --confirm=ONAYLIYORUM` ile ayri yapilir; banka mutabakati olmadan
+satirlar odendi sayilmaz.
+
+Portalden aylik otomatik alma sonraki adimdir: Hattat icin yerel kalici
+oturum klasoru kurulacak ve sadece Aylik Odeme Listesi PDF'lerini indirecek.
+Giris bilgisi kodda veya GitHub'da tutulmayacak.
+
+Ilk kurulum komutu `npm run hattat:session:setup`dir. Bu komut sadece yerel
+Chrome profilini acar; kullanici Hattat girisini kendi penceresinde tamamlar.
+Oturum dogrulandiysa sonraki tur PDF indirme adresi/dugmesi o ekrandan
+kesinlestirilir ve aylik takvime otomatik cekim eklenir.
+
 VakifBank POS komisyonu icin hesap varsayilani hatasi v107 ile kapatildi:
 her banka masrafi kaydinda kaydetme oncesi formdaki secili kaynak hesap,
 planlanan BizimHesap hesabiyla birebir kanitlanir. Hedef hesap uyusmazsa

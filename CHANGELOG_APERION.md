@@ -966,3 +966,16 @@
 - `bizimhesap_queue_worker.cjs`: Bu karar kaynaktaki banka hesabinda `Hesaba Para Girisi` formuna yazilir; cari/tedarikci bakiyesi degismez.
 - `tools/queue_unmatched_bank_incoming_v104.cjs`: Sadece en yeni gunun guvenli adaylarini idempotent kuyruga alir.
 - `tools/apply_pending_bank_counterparty_schema_v105.cjs`: Canli Supabase sema kurulumunu denetler; mevcut projede `exec_sql` RPC'si olmadigi icin SQL Editor kurulumu zorunlu oldugu acikca raporlanir.
+## 2026-07-15 - Hattat Aylik Odeme Listesi v108
+
+- Hattat Musavir PDF'lerinden vergi/SGK vade ve tahakkuk adaylarini okuyan
+  `tools/build_hattat_monthly_payment_plan_v108.cjs` eklendi.
+- Plan, kaynak dosya SHA-256 anahtari ve satir bazli source id ile
+  mukerrer korumasina sahiptir; ham PDF ve plan dosyalari Git disi
+  `finance_imports/hattat` alaninda tutulur.
+- `tools/import_hattat_monthly_payment_plan_v108.cjs` Finans Takvimi icin
+  dry-run ve onayli canli import ayrimini uygular.
+- Odeme listesi tek basina banka odemesi kaniti sayilmaz: satirlar tahakkuk
+  olarak acilir, banka mutabakati ile kapanir.
+- `hattat_oturum_kur.cjs` yerel kalici profil ile kullanicinin kendi
+  tarayicisinda oturum kurmasi icin eklendi; parola kaydedilmez.

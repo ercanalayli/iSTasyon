@@ -143,3 +143,14 @@ Guvenli sinir: Tarihsel dosya taramasi tek basina BizimHesap'a kayit yazmaz.
 Once `BizimHesap'ta islenmis`, `kuyrukta`, `guvenli isleme adayi` ve
 `inceleme gerekli` raporu uretilir. Canli yazma sadece kaniti olan kayit
 turleri icin ayri kullanici onayi ve sonuc kaniti ile yapilir.
+
+## D-010 Hattat Aylik Odeme Listesi Kaynak Kurali
+
+Karar: Hattat Musavir aylik odeme listeleri, isletmenin vergi/SGK ve diger
+yasal odeme tahakkuklari icin kaynak belgedir. AperiON bunlari Finans Takvimi'ne
+"beklenen/tahakkuk" olarak alir; PDF tek basina odeme yapildigi kaniti degildir.
+
+Gerekce: Ayni vade veya vergi kalemi, banka hareketi olmadan odendi kabul
+edilirse nakit durumu ve borc takibi yanlis gorunur. Kaynak dosya hash'i,
+referans, tutar ve vade mukerrer kontrolunu saglar; odeme ancak banka/BizimHesap
+mutabakati ile kapanir.
