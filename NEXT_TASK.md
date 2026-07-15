@@ -2,6 +2,11 @@
 
 Son guncelleme: 2026-07-15 Europe/Istanbul
 
+VakifBank POS komisyonu icin hesap varsayilani hatasi v107 ile kapatildi:
+her banka masrafi kaydinda kaydetme oncesi formdaki secili kaynak hesap,
+planlanan BizimHesap hesabiyla birebir kanitlanir. Hedef hesap uyusmazsa
+kaydetme yapilmaz.
+
 ## Aktif Tek Hedef - Ocak 2026 Sonrasi Banka Ekstre Mutabakati
 
 Kullanici ekstreleri `inbox/banka-ekstreleri` altina banka ve ay bazinda

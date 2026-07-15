@@ -29,6 +29,8 @@ assertHas('bizimhesap_queue_worker.cjs', 'Queue durum doğrulaması', 'verifies 
 assertHas('bizimhesap_queue_worker.cjs', "markQueue(row, 'failed'", 'marks failed');
 assertHas('bizimhesap_queue_worker.cjs', 'aperion_posting_result', 'writes posting result back');
 assertHas('bizimhesap_queue_worker.cjs', '_after_save', 'captures after-save diagnostics');
+assertHas('bizimhesap_queue_worker.cjs', 'verifyExpenseSourceAccount', 'verifies selected expense source account before save');
+assertHas('bizimhesap_queue_worker.cjs', 'Banka masrafi kaynak hesap kaniti basarisiz', 'blocks mismatched default bank account');
 assertHas('bizimhesap_queue_worker.cjs', 'manualPostingProof', 'skips manually verified postings');
 assertHas('bizimhesap_queue_worker.cjs', 'postingEvidence', 'builds queue posting evidence');
 assertHas('bizimhesap_queue_worker.cjs', 'safe_to_auto_save', 'reports safe auto-save decision');

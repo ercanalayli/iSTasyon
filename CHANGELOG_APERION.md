@@ -1,5 +1,14 @@
 # AperiON Changelog
 
+## 2026-07-15 - Banka Masrafi Kaynak Hesap Kilidi v107
+
+- BizimHesap masraf formunun `AKBANK SIRKET` varsayilanini sessizce
+  kullanabilme riski kapatildi.
+- Kaydetme oncesi secili hesap, planlanan kaynak hesapla tekrar okunur;
+  eslesme yoksa kaydetme durur.
+- VakifBank POS komisyonu ayni kayit uzerinde `*VAKIF SIRKET` hesabina
+  duzeltildi; mukerrer masraf kaydi olusturulmadi.
+
 ## 2026-07-15 - Tarihsel Banka Mutabakat Hatti v106
 
 - Ocak 2026 ve sonrasi banka ekstreleri icin Git disi yerel giris klasoru ve
