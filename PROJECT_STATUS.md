@@ -2,6 +2,15 @@
 
 Son guncelleme: 2026-07-15 Europe/Istanbul
 
+## Guncel Tur - VakifBank Masraf Hesabi Kaniti v107
+
+VakifBank POS komisyonu ilk kayit formunda portal varsayilani olan `AKBANK
+SIRKET` hesabi gorundugu icin yanlis hesaba kaydolma riski olustu. Kayit ayni
+BizimHesap satirinda `*VAKIF SIRKET` hesabina duzeltildi; ikinci kayit
+olusturulmadi. Worker artik banka masrafi kaydetmeden once formdaki secili
+hesap adini plana ait hedef hesapla yeniden okur. Eslesme yoksa kaydetme
+durdurulur; varsayilan AKBANK secimi sessizce kullanilamaz.
+
 ## Guncel Tur - Tarihsel Banka Ekstresi Mutabakat Hatti v106
 
 Ocak 2026'dan itibaren saglanacak ekstreler icin yerel, Git disi

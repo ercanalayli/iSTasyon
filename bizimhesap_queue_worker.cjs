@@ -641,6 +641,26 @@ async function clickSave(page, plan) {
   await new Promise(r => setTimeout(r, 1800));
 }
 
+async function verifyExpenseSourceAccount(page, plan) {
+  if (plan.kind !== 'bank_fee_expense') return;
+  const expected = String(plan.target_account || plan.account || '').trim();
+  if (!expected) throw new Error('Banka masrafi icin hedef hesap planda yok.');
+  const proof = await page.evaluate(expectedAccount => {
+    const normalize = value => String(value || '')
+      .toLocaleUpperCase('tr-TR')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^A-Z0-9]+/g, ' ')
+      .trim();
+    const select = document.getElementById('ddlCashierNew');
+    const selected = select?.options?.[select.selectedIndex]?.text || '';
+    return { expected: expectedAccount, selected, matches: normalize(selected).includes(normalize(expectedAccount)) };
+  }, expected);
+  if (!proof.matches) {
+    throw new Error(`Banka masrafi kaynak hesap kaniti basarisiz: beklenen ${proof.expected}, formda secili ${proof.selected || '-'}. Kaydetme durduruldu.`);
+  }
+}
+
 async function processLiveRow(page, row) {
   const plan = dryRunPlan(row);
   const manualProof = manualPostingProof(row.id);
@@ -667,6 +687,7 @@ async function processLiveRow(page, row) {
       : ['date', 'amount', 'description'];
   const missing = required.filter(k => !fill[k]);
   if (missing.length) throw new Error(`BizimHesap form alanları bulunamadı: ${missing.join(', ')}`);
+  await verifyExpenseSourceAccount(page, plan);
   if (!SAVE) {
     return { status: 'form_filled', message: 'Form dolduruldu, kaydet tuşuna basılmadı.', plan, fill };
   }
