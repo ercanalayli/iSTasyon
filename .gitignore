@@ -18,6 +18,8 @@ aperion-finans-config.js
 bizimhesap_exports/
 finance_imports/
 bank_exports/
+inbox/banka-ekstreleri/*
+!inbox/banka-ekstreleri/README.md
 moka_exports/
 luca_exports/
 logs/

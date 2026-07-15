@@ -2,6 +2,21 @@
 
 Son guncelleme: 2026-07-15 Europe/Istanbul
 
+## Guncel Tur - Tarihsel Banka Ekstresi Mutabakat Hatti v106
+
+Ocak 2026'dan itibaren saglanacak ekstreler icin yerel, Git disi
+`inbox/banka-ekstreleri` giris noktasi eklendi. Salt-okunur mutabakat araci
+dosyalari tarar; taninan VakifBank XLS/XLSX satirlarini duplicate key ile
+AperiON banka kaydi ve BizimHesap kuyruk sonucuna karsi kontrol eder.
+Rapor her satiri `bizimhesap_islenmis`, `bizimhesap_kuyrukta`,
+`aperionda_bekliyor`, `guvenli_isleme_adayi` veya `inceleme_gerekli` olarak
+ayirir. Ham ekstre ve rapor GitHub Pages'e yazilmaz.
+
+Yeni banka hesabi acilmayacak: cari belirsiz gelen para, kaynak banka
+hesabinda `Hesaba Para Girisi` olarak tutulacak; banka mutabakati bozulmadan
+sonradan dogru cari/hesaba aktarilabilecek. Ilk import salt-okunur raporla
+baslar; hicbir tarihsel satir korlemesine tekrar kaydedilmez.
+
 ## Guncel Tur - VakifBank POS Batch Kayit Akisi v100
 
 15 Temmuz 2026 tarihli VakifBank XLS ekstresi islem numarasi ile okundu.

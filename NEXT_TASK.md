@@ -2,6 +2,16 @@
 
 Son guncelleme: 2026-07-15 Europe/Istanbul
 
+## Aktif Tek Hedef - Ocak 2026 Sonrasi Banka Ekstre Mutabakati
+
+Kullanici ekstreleri `inbox/banka-ekstreleri` altina banka ve ay bazinda
+verecek. Ilk adim `npm run bank:history:reconcile:dry` ile salt-okunur
+mutabakat raporudur. Bu rapor islem numarasini AperiON pending/queue kanitiyla
+karsilastirir; islenmis satiri eler, sadece guvenli eksikleri aday olarak
+ayirir. PDF, Is Bankasi, Yapi Kredi, Akbank ve Garanti dosya formatlari ilk
+dosyalar geldikce ayri parser adapterleriyle eklenecek; format taninmadan
+canli kayit yapilmaz.
+
 ## Tamamlanan Hedef - Yeni BizimHesap Transfer Formu Kaniti
 
 VakifBank kaynakli iki net POS batch hareketi Supabase kuyruguna alindi:
