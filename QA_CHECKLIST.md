@@ -1,6 +1,6 @@
 # AperiON QA Checklist
 
-Son guncelleme: 2026-07-03 Europe/Istanbul
+Son guncelleme: 2026-07-15 Europe/Istanbul
 
 ## Her Tur Zorunlu Kontrol
 
@@ -39,6 +39,15 @@ Son guncelleme: 2026-07-03 Europe/Istanbul
 - [ ] Fatura detay okuma hatalari gorunur.
 - [ ] Onaylanan banka hareketi BizimHesap kuyruğuna giriyor.
 - [ ] Worker islenen kaydi processed/failed olarak isaretliyor.
+
+## 2026-07-15 Canli VakifBank Kaniti
+
+- [x] Kullanici onayi alindi: iki net VakifBank POS batch kaydi.
+- [x] `2026009923018191` 46.540,00 TL transfer formu, hedef hesap, tarih ve tutar dogrulandi.
+- [x] Transfer BizimHesap'ta kaydedildi; ilgili kuyruk `processed` durumunda.
+- [x] `2026009923018202` 902,81 TL POS komisyonu kaydedildi.
+- [x] Ilk masraf kaydindaki yanlis AKBANK SIRKET hesabi ayni satirda `*VAKIF SIRKET` olarak duzeltildi.
+- [x] Masraf duzeltme basari ekrani ve son satir kaniti alindi.
 
 ## Finans Komuta Merkezi Kontrolleri
 

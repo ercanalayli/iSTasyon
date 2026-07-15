@@ -3,7 +3,9 @@ param(
   [switch]$Save,
   [switch]$Retry,
   [switch]$RetryOnly,
-  [switch]$ProbeTransfer
+  [switch]$ProbeTransfer,
+  [switch]$ProbeExpense,
+  [switch]$CorrectExpense
 )
 
 $ErrorActionPreference = 'Stop'
@@ -29,6 +31,16 @@ try {
   Set-Location $root
   if ($ProbeTransfer) {
     & node (Join-Path $root 'tools\probe_bizimhesap_transfer_form_v101.cjs')
+    exit $LASTEXITCODE
+  }
+  if ($ProbeExpense) {
+    & node (Join-Path $root 'tools\probe_bizimhesap_expense_record_v102.cjs') $QueueId
+    exit $LASTEXITCODE
+  }
+  if ($CorrectExpense) {
+    $correctionArgs = @((Join-Path $root 'tools\correct_bizimhesap_expense_account_v102.cjs'), $QueueId)
+    if ($Save) { $correctionArgs += '--save' }
+    & node @correctionArgs
     exit $LASTEXITCODE
   }
   if ($Retry) {

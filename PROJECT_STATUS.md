@@ -1,6 +1,6 @@
 # AperiON Project Status
 
-Son guncelleme: 2026-07-14 Europe/Istanbul
+Son guncelleme: 2026-07-15 Europe/Istanbul
 
 ## Guncel Tur - VakifBank POS Batch Kayit Akisi v100
 
@@ -11,12 +11,15 @@ hesabindan `*VAKIF SIRKET` hesabina sirket ici POS banka transferi olarak;
 masrafi olarak planlandi. Her iki kaynak duplicate key ile Supabase onay/kuyruk
 zincirine birer kez alindi.
 
-Kaydetme kaniti henuz yoktur. Yeni BizimHesap portalinda POS kartinin transfer
-menusu eski otomasyon secicisiyle form alanlarini acmadi. Bot kaydet tusuna
-basmadi; iki kuyruk kaydi tekrar denenebilir durumdadir. Bu durum basari olarak
-gosterilmez. Sonraki tek hedef, yeni portal transfer modalinin hesap, tutar,
-tarih ve aciklama alanlarini dogrulamak ve ancak kayit sonrasi kanitla kuyrugu
-islenmis durumuna kapatmaktir.
+15 Temmuz 2026 tarihinde kullanici onayi ile iki kayit da BizimHesap'a
+islenmistir. `a4bb5122-798c-4d12-8354-507216c5b9cf` kuyrugu, `POS POS POS
+KREDI KARTI -> *VAKIF SIRKET` 46.540,00 TL transferi olarak islenmis ve
+`processed` durumuna kapanmistir. `7d269b6a-a80c-4cab-b84e-eb31ce85c154`
+kuyrugu 902,81 TL Banka/POS masrafi olarak islenmistir. Ilk kayitta portalin
+varsayilan hesap secimi AKBANK SIRKET oldugu icin bu masraf satiri ayni
+BizimHesap kaydi uzerinde `*VAKIF SIRKET` hesabina duzeltilmistir; ikinci
+masraf kaydi olusturulmamistir. Kayit ve duzeltme ekran kanitlari diagnostics
+klasorundedir.
 
 ## Guncel Tur - Saatlik Tam Kaynak Yenileme v99
 

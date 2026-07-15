@@ -1,5 +1,19 @@
 # AperiON Changelog
 
+## 2026-07-15 - BizimHesap Canli VakifBank Kayit Kaniti v101
+
+- Yeni BizimHesap transfer dropdown/modal akisi gerçek Puppeteer tiklamasiyla
+  acilacak sekilde duzeltildi; hedef hesap, tarih, tutar ve aciklama kaydetme
+  oncesi zorunlu olarak dogrulanir.
+- VakifBank `2026009923018191` Batch Yatan kaydi `POS POS POS KREDI KARTI ->
+  *VAKIF SIRKET` 46.540,00 TL transferi olarak BizimHesap'a kaydedildi.
+- VakifBank `2026009923018202` Batch Komisyonu kaydi 902,81 TL Banka/POS
+  masrafi olarak kaydedildi. Portal varsayilan AKBANK SIRKET secimini ilk
+  kanitta gosterdigi icin ayni satir `*VAKIF SIRKET` hesabina guncellendi;
+  yeni ya da mukerrer masraf kaydi olusturulmadi.
+- Banka masrafi formunda hesap, kategori ve odeme durumu bulunmadan kaydetmeye
+  izin verilmeyecek sekilde koruma eklendi.
+
 ## 2026-07-15 - VakifBank POS Batch Akisi v100
 
 - VakifBank XLS ekstrelerini kaynak hesap ve islem numarasi ile okuyup

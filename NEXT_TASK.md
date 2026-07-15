@@ -1,16 +1,25 @@
 # AperiON Next Task
 
-Son guncelleme: 2026-07-14 Europe/Istanbul
+Son guncelleme: 2026-07-15 Europe/Istanbul
 
-## Aktif Tek Hedef - Yeni BizimHesap Transfer Formu Kaniti
+## Tamamlanan Hedef - Yeni BizimHesap Transfer Formu Kaniti
 
 VakifBank kaynakli iki net POS batch hareketi Supabase kuyruguna alindi:
 `2026009923018191` POS banka aktarimi ve `2026009923018202` POS komisyonu.
 Bot kalici oturumla ALAYLI MEDIKAL ve `POS POS POS KREDI KARTI` hesap kartina
-ulasabiliyor. Ancak yeni portalin transfer dropdown/modal akisi eski seciciyle
-form alanlarini acmiyor. Siradaki is sadece bu modalin gercek alanlarini
-eslestirmek, kaydetmeden once alanlari kanitlamak, sonra kullanici onayli iki
-kaydi kaydetmek ve BizimHesap sonucunu satir bazinda kuyruga yazmaktir.
+ulasir. Yeni portal transfer modali, hedef hesap, tarih, tutar ve aciklama
+alanlari ile eslestirildi. 46.540,00 TL transfer ve 902,81 TL POS komisyonu
+canli kaydedildi; iki Supabase kuyrugu `processed` durumundadir. Komisyon
+hesabi ilk kayitta varsayilan AKBANK SIRKET olustugu icin ayni kayit uzerinde
+*VAKIF SIRKET hesabina duzeltildi ve kanitlandi.
+
+## Aktif Tek Hedef - Banka Kayitlarinda Hedef Hesap Korumasini Genellestirmek
+
+Yeni banka masrafi kaydi, bankanin BizimHesap hesap adini otomatik sececek;
+hesap eslesmesi bulunamazsa form doldurulmayacak ve kaydetme yapilmayacak.
+VakifBank icin `*VAKIF SIRKET` korumasi kanitlandi. Sonraki hedef, ayni
+korumayi Is Bankasi, Yapi Kredi, Akbank, Garanti ve Halkbank icin satir bazli
+form kanitiyla genellestirmektir.
 
 ## Aktif Tek Hedef - Saatlik Tam Kaynak Yenileme
 

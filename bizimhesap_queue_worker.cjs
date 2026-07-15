@@ -358,22 +358,14 @@ async function openPostingForm(page, plan) {
   const opened = await clickByText(page, [openingAccount, shortAccount, plan.account, plan.bank_name]);
   if (!opened) throw new Error(`BizimHesap hesap karti bulunamadi: ${openingAccount || plan.account}`);
   if (plan.kind === 'bank_transfer') {
-    const openedTransfer = await page.evaluate(() => {
-      const toggle = [...document.querySelectorAll('button')].find(el => /hesaplar\s+aras/i.test(el.innerText || ''));
-      if (!toggle) return false;
-      toggle.click();
-      return true;
-    });
-    if (!openedTransfer) throw new Error('BizimHesap hesap transfer dugmesi bulunamadi.');
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const transferSelected = await page.evaluate(() => {
-      const node = document.getElementById('btnTransfer');
-      if (!node) return false;
-      node.click();
-      return true;
-    });
-    if (!transferSelected) throw new Error('BizimHesap kaynak hesaptan transfer secenegi bulunamadi.');
-    await new Promise(resolve => setTimeout(resolve, 900));
+    const toggle = await page.$('button.dropdown-toggle');
+    if (!toggle) throw new Error('BizimHesap hesap transfer dugmesi bulunamadi.');
+    await toggle.click();
+    await new Promise(resolve => setTimeout(resolve, 450));
+    const transfer = await page.$('#btnTransfer');
+    if (!transfer) throw new Error('BizimHesap kaynak hesaptan transfer secenegi bulunamadi.');
+    await transfer.click();
+    await page.waitForSelector('#myModalTransferTo[style*="display: block"] #txtTransferAmount', { timeout: 8000 });
     return;
   }
   await clickByText(page, ['hesaptan para çıkışı', 'hesaptan para cikisi', 'para çıkışı', 'para cikisi', 'ödeme']);
@@ -419,6 +411,58 @@ async function searchAndOpenCounterparty(page, counterparty) {
 
 async function fillPostingForm(page, row, plan) {
   await page.waitForSelector('input,textarea,select,button', { timeout: 15000 });
+  if (plan.kind === 'bank_transfer') {
+    const fill = await page.evaluate((p, queueId) => {
+      const fold = value => String(value || '')
+        .toLocaleUpperCase('tr-TR')
+        .replace(/Ã„Â°|Ä°/g, 'I')
+        .replace(/Ã„Â±|Ä±/g, 'I')
+        .replace(/ÅÄ°|Å|ş|Ş/g, 'S')
+        .replace(/Ä|ğ|Ğ/g, 'G')
+        .replace(/Ãœ|ü|Ü/g, 'U')
+        .replace(/Ã–|ö|Ö/g, 'O')
+        .replace(/Ã‡|ç|Ç/g, 'C')
+        .replace(/[^A-Z0-9]+/g, ' ')
+        .trim();
+      const set = (id, value) => {
+        const el = document.getElementById(id);
+        if (!el) return false;
+        el.focus();
+        el.value = String(value || '');
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        el.blur();
+        return true;
+      };
+      const source = String(p.target_account || p.account || '');
+      const wanted = fold(source).split(' ').filter(token => token.length > 2);
+      const select = document.getElementById('ddlOtherAccount');
+      let option = select && [...select.options].find(item => {
+        const candidate = fold(item.text);
+        return wanted.length > 0 && wanted.every(token => candidate.includes(token));
+      });
+      // Some legacy BizimHesap pages expose Turkish characters with a broken
+      // browser encoding. Keep an intentionally narrow bank-only fallback.
+      if (!option && select && /VAKIF/i.test(source)) {
+        option = [...select.options].find(item => /VAKIF/i.test(item.text) && !/ERCAN|KK\s*VAKIF/i.test(item.text));
+      }
+      if (option) {
+        select.value = option.value;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      const date = String(p.date || '').replace(/^(\d{4})-(\d{2})-(\d{2}).*$/, '$3.$2.$1');
+      const description = `APERION QUEUE:${queueId} | ${p.title} | ${p.description || ''}`.slice(0, 300);
+      return {
+        date: set('txtTransferDate', date),
+        amount: set('txtTransferAmount', Number(p.amount || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })),
+        description: set('txtTransferDescription', description),
+        target_account: Boolean(option),
+        selected_target: option ? option.text : '',
+      };
+    }, plan, row.id);
+    await savePageDiagnostics(page, `bizimhesap_queue_${row.id}_form`).catch(() => {});
+    return fill;
+  }
   const fill = await page.evaluate((p, queueId) => {
     const norm = s => String(s || '').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const directSet = (id, value) => {
@@ -441,6 +485,21 @@ async function fillPostingForm(page, row, plan) {
       el.dispatchEvent(new Event('change', { bubbles: true }));
       return true;
     };
+    const selectExpenseAccount = () => {
+      const el = document.getElementById('ddlCashierNew');
+      if (!el) return false;
+      const source = `${p.account || ''} ${p.target_account || ''} ${p.bank_name || ''}`;
+      let opt = null;
+      if (/VAKIF/i.test(source)) {
+        opt = [...el.options].find(item => /VAKIF/i.test(item.text) && !/ERCAN|KK\s*VAKIF/i.test(item.text));
+      } else if (/AKBANK/i.test(source)) {
+        opt = [...el.options].find(item => /AKBANK/i.test(item.text) && !/KK/i.test(item.text));
+      }
+      if (!opt) return false;
+      el.value = opt.value;
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
+    };
     const trDate = value => {
       const s = String(value || '');
       const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -452,7 +511,7 @@ async function fillPostingForm(page, row, plan) {
       amount: directSet('txtAmount', p.amountText),
       description: directSet('txtNote', directDesc),
       counterparty: true,
-      account: directSelect('ddlCashierNew', [p.account, p.bank_name, 'akbank sirket', 'akbank şirket']),
+      account: selectExpenseAccount(),
       category: directSelect('ddlCostAccounts', [p.category, 'banka masraflari', 'banka masrafları', 'mali giderler banka masraflari', 'mali giderler banka masrafları']),
       paid: directSelect('ddlPaymentOption', ['odendi', 'ödendi']),
     };
@@ -504,7 +563,15 @@ async function fillPostingForm(page, row, plan) {
   return fill;
 }
 
-async function clickSave(page) {
+async function clickSave(page, plan) {
+  if (plan.kind === 'bank_transfer') {
+    const transferSave = await page.$('#myModalTransferTo #btnSaveTransfer');
+    if (!transferSave) throw new Error('BizimHesap transfer kaydet butonu bulunamadi');
+    await transferSave.click();
+    await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+    await new Promise(r => setTimeout(r, 1800));
+    return;
+  }
   const clicked = await page.evaluate(() => {
     const norm = s => String(s || '').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const btn = [...document.querySelectorAll('button,a,input[type="submit"]')]
@@ -535,13 +602,18 @@ async function processLiveRow(page, row) {
   }
   await openPostingForm(page, plan);
   const fill = await fillPostingForm(page, row, plan);
-  const missing = ['date', 'amount', 'description'].filter(k => !fill[k]);
+  const required = plan.kind === 'bank_transfer'
+    ? ['date', 'amount', 'description', 'target_account']
+    : plan.kind === 'bank_fee_expense'
+      ? ['date', 'amount', 'description', 'account', 'category', 'paid']
+      : ['date', 'amount', 'description'];
+  const missing = required.filter(k => !fill[k]);
   if (missing.length) throw new Error(`BizimHesap form alanları bulunamadı: ${missing.join(', ')}`);
   if (!SAVE) {
     return { status: 'form_filled', message: 'Form dolduruldu, kaydet tuşuna basılmadı.', plan, fill };
   }
   if (!SAVE_UNLOCKED) throw new Error('Canlı kaydetme kilitli: BIZIMHESAP_POSTING_SAVE=1 gerekli.');
-  await clickSave(page);
+  await clickSave(page, plan);
   await savePageDiagnostics(page, `bizimhesap_queue_${row.id}_after_save`).catch(() => {});
   return { status: 'processed', message: 'BizimHesap kaydet butonuna basıldı; kayıt sonrası ekran kanıtı alındı.', plan, fill };
 }
