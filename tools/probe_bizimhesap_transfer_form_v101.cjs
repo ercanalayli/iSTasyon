@@ -31,23 +31,26 @@ async function main() {
         .filter(node => /hesaplar|transfer/i.test(node.innerText || node.value || node.title || '') && String(node.innerText || node.value || '').length < 160)
         .map(node => ({ tag: node.tagName, text: (node.innerText || node.value || node.title || '').trim(), href: node.href || '', onclick: node.getAttribute('onclick') || '', html: node.outerHTML.slice(0, 1000) })),
     }));
-    const toggle = await page.evaluate(() => {
-      const node = [...document.querySelectorAll('button')].find(el => /hesaplar\s+aras/i.test(el.innerText || ''));
-      if (!node) return false;
-      node.click();
-      return true;
-    });
-    if (toggle) await new Promise(resolve => setTimeout(resolve, 300));
-    const clicked = toggle ? await page.evaluate(() => {
-      const node = document.getElementById('btnTransfer');
-      if (!node) return false;
-      node.click();
-      return true;
-    }) : false;
+    // Bootstrap's dropdown binds to pointer events. Use Puppeteer's real click,
+    // not HTMLElement.click(), so the hidden transfer modal is actually opened.
+    const toggleHandle = await page.$('button.dropdown-toggle');
+    const toggle = Boolean(toggleHandle);
+    if (toggleHandle) await toggleHandle.click();
+    if (toggle) await new Promise(resolve => setTimeout(resolve, 450));
+    const transferHandle = toggle ? await page.$('#btnTransfer') : null;
+    const clicked = Boolean(transferHandle);
+    if (transferHandle) await transferHandle.click();
     await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {});
     await new Promise(resolve => setTimeout(resolve, 1200));
     const after = await page.evaluate(() => ({
       url: location.href,
+      transfer_modals: [...document.querySelectorAll('[id*="Transfer"], [id*="transfer"]')].map(node => ({
+        id: node.id,
+        className: node.className,
+        style: node.getAttribute('style') || '',
+        text: (node.innerText || '').trim().slice(0, 1500),
+        html: node.outerHTML.slice(0, 12000),
+      })),
       fields: [...document.querySelectorAll('input,textarea,select,button')].map(node => ({ tag: node.tagName, id: node.id, name: node.name, type: node.type, placeholder: node.placeholder, text: (node.innerText || node.value || '').trim().slice(0, 120) })).slice(0, 80),
       text: document.body.innerText.slice(0, 4000),
     }));
