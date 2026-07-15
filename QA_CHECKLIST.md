@@ -15,6 +15,15 @@ Son guncelleme: 2026-07-15 Europe/Istanbul
 - [ ] `CHANGELOG_APERION.md` guncellendi.
 - [ ] Tur sonunda Yapilanlar / Kalanlar / Kontrol Ettiklerim / Commit / Guncellenen dosyalar raporlandi.
 
+## 2026-07-15 Hattat Odeme Listesi Kontrolu
+
+- [x] Hattat PDF'leri salt-okunur parse edildi.
+- [x] Kaynak PDF veya ham vergi bilgisi GitHub Pages'e yazilmadi.
+- [x] Her adayda kaynak dosya, source id, vade ve tutar var.
+- [x] Odeme listesi "odendi" olarak yorumlanmadi.
+- [ ] Canli Finans Takvimi importu ayrica onaylandi.
+- [ ] Banka mutabakati kapanis kaniti ayri tutuldu.
+
 ## Veri Guveni Kontrolleri
 
 - [ ] Dry-run canli tabloya yazmiyor.
