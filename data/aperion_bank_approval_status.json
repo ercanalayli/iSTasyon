@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-07-15T09:03:56.752Z",
+  "created_at": "2026-07-15T09:13:20.261Z",
   "safe_mode": true,
   "live_rpc_called": false,
   "live_bizimhesap_save_called": false,
@@ -9,7 +9,7 @@
     "candidate_count": 2,
     "low_risk_count": 1,
     "review_count": 21,
-    "ready_queue_count": 1,
+    "ready_queue_count": 2,
     "proof_queue_status": "queue_yok",
     "pending_status": "pending"
   },
@@ -22,8 +22,8 @@
     "amount_label": "TL 2.026,00",
     "target": "BizimHesap hesaplar arasi transfer",
     "type": "POS banka transferi",
-    "account": "Turkiye Is Bankasi banka hesabi",
-    "counterparty": "POS POS POS KREDI KARTI -> Turkiye Is Bankasi banka hesabi",
+    "account": "*IS BANKASI",
+    "counterparty": "POS POS POS KREDI KARTI -> *IS BANKASI",
     "category": "POS banka aktarimi",
     "confidence": 88,
     "risk_class": "low",

@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-07-15T09:03:58.305Z",
+  "created_at": "2026-07-15T09:13:22.125Z",
   "source": "pending_bank_movements",
   "company_id": "alayli",
   "review_date": "2026-07-07",
@@ -25,9 +25,11 @@
         "review_kind": "inceleme",
         "proposed_type": "Cari tahsilat",
         "proposed_counterparty": "Cari eslestirme onayda",
-        "proposed_account": "VakifBank banka hesabi",
+        "proposed_account": "*VAKIF SIRKET",
         "proposed_category": "Tahsilat",
         "confidence": 84,
+        "record_summary": "Cari eslestirme onayda carisine tahsilat",
+        "transaction_no": "",
         "question": "Cari eslestirme onayda carisine 100 TL tahsilat olarak BizimHesap'a isleyeyim mi?",
         "duplicate_key": "VAKIFBANK|2026-07-07|16:40||100.00|0.00|61962.29|VAKIFBANK_FAST_ANLIK_ODEME_BILGILENDIRMESI_VAKIFBANK_FAST_ANLIK_ODEME_BILGILENDIRMESI"
       },
@@ -41,9 +43,11 @@
         "review_kind": "inceleme",
         "proposed_type": "Cari tahsilat",
         "proposed_counterparty": "Cari eslestirme onayda",
-        "proposed_account": "Yapi Kredi banka hesabi",
+        "proposed_account": "*YAPI KREDI SIRKET",
         "proposed_category": "Tahsilat",
         "confidence": 72,
+        "record_summary": "Cari eslestirme onayda carisine tahsilat",
+        "transaction_no": "",
         "question": "Cari eslestirme onayda carisine 56 TL tahsilat olarak BizimHesap'a isleyeyim mi?",
         "duplicate_key": "YAPI_KREDI|2026-07-07|||56.00|0.00||BILGI_SAAT_SAAT_HALKA_ARZ_EDILIYOR_BILGI_SAAT_SAAT_HALKA_ARZ_EDILIYOR_SAAT_VE_SAAT_SANAYI_VE_TICARET_A_S_HALKA_ARZ_EDILIYOR"
       },
@@ -57,9 +61,11 @@
         "review_kind": "inceleme",
         "proposed_type": "Cari tahsilat",
         "proposed_counterparty": "Cari eslestirme onayda",
-        "proposed_account": "Turkiye Is Bankasi banka hesabi",
+        "proposed_account": "*IS BANKASI",
         "proposed_category": "Tahsilat",
         "confidence": 84,
+        "record_summary": "Cari eslestirme onayda carisine tahsilat",
+        "transaction_no": "",
         "question": "Cari eslestirme onayda carisine 712 TL tahsilat olarak BizimHesap'a isleyeyim mi?",
         "duplicate_key": "TURKIYE_IS_BANKASI|2026-07-07|10:34||712.00|0.00|41862.29|VAKIFBANK_FAST_ANLIK_ODEME_BILGILENDIRMESI_VAKIFBANK_FAST_ANLIK_ODEME_BILGILENDIRMESI"
       }
