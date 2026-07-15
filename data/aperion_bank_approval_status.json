@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-07-15T09:24:57.403Z",
+  "created_at": "2026-07-15T09:56:13.027Z",
   "safe_mode": true,
   "live_rpc_called": false,
   "live_bizimhesap_save_called": false,
@@ -9,7 +9,7 @@
     "candidate_count": 2,
     "low_risk_count": 1,
     "review_count": 21,
-    "ready_queue_count": 2,
+    "ready_queue_count": 0,
     "proof_queue_status": "queue_yok",
     "pending_status": "pending"
   },
@@ -41,7 +41,7 @@
     "latest_queue_id": null
   },
   "blockers": [],
-  "next_action": "BizimHesap worker dry-run ile hazir kuyruk planini kontrol et; canli save icin ayrica kullanici onayi gerekir.",
+  "next_action": "Kullanici bu tekil kaydi onaylarsa Supabase approve RPC calisir ve kayit BizimHesap queue icine alinir.",
   "required_user_approval_text": "Bu tek kaydi kuyruga almayi onayliyorum: 0cd1e230-2254-4908-a9a0-15a3d8678e38",
   "required_live_command_after_user_approval": "node tools/approve_bank_candidate_v70.cjs --id 0cd1e230-2254-4908-a9a0-15a3d8678e38 --confirm ONAYLIYORUM",
   "files": {
