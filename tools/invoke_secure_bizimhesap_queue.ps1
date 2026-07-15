@@ -1,11 +1,15 @@
 param(
-  [Parameter(Mandatory = $true)][string]$QueueId,
+  [string]$QueueId,
   [switch]$Save,
   [switch]$Retry,
   [switch]$RetryOnly,
   [switch]$ProbeTransfer,
   [switch]$ProbeExpense,
-  [switch]$CorrectExpense
+  [switch]$CorrectExpense,
+  [switch]$ProbeIncome,
+  [switch]$QueueUnmatchedDry,
+  [switch]$QueueUnmatchedLatest,
+  [switch]$RepairPendingBankSchema
 )
 
 $ErrorActionPreference = 'Stop'
@@ -26,11 +30,30 @@ try {
   $env:BIZIMHESAP_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($passwordPtr)
   $env:BIZIMHESAP_PROFILE_DIR = $profileDir
   $env:BIZIMHESAP_POSTING_LIVE = '1'
+  # The owner explicitly approved non-cari incoming bank movements to be
+  # recorded as account income with their source evidence preserved.
+  $env:BIZIMHESAP_POSTING_UNMATCHED_INCOMING = '1'
   $env:BIZIMHESAP_HEADLESS = 'false'
   $env:NODE_PATH = Join-Path $root 'node_modules'
   Set-Location $root
   if ($ProbeTransfer) {
     & node (Join-Path $root 'tools\probe_bizimhesap_transfer_form_v101.cjs')
+    exit $LASTEXITCODE
+  }
+  if ($ProbeIncome) {
+    & node (Join-Path $root 'tools\probe_bizimhesap_account_income_form_v103.cjs')
+    exit $LASTEXITCODE
+  }
+  if ($QueueUnmatchedDry) {
+    & node (Join-Path $root 'tools\queue_unmatched_bank_incoming_v104.cjs')
+    exit $LASTEXITCODE
+  }
+  if ($RepairPendingBankSchema) {
+    & node (Join-Path $root 'tools\apply_pending_bank_counterparty_schema_v105.cjs') --apply
+    exit $LASTEXITCODE
+  }
+  if ($QueueUnmatchedLatest) {
+    & node (Join-Path $root 'tools\queue_unmatched_bank_incoming_v104.cjs') --commit --confirm BANKA_GIRISI_ONAYLIYORUM
     exit $LASTEXITCODE
   }
   if ($ProbeExpense) {
@@ -51,7 +74,9 @@ try {
     & node (Join-Path $root 'tools\retry_bizimhesap_queue_row.cjs') $QueueId
     exit $LASTEXITCODE
   }
-  $nodeArgs = @((Join-Path $root 'bizimhesap_queue_worker.cjs'), '--firma', 'alayli', '--id', $QueueId, '--commit')
+  $nodeArgs = @((Join-Path $root 'bizimhesap_queue_worker.cjs'), '--firma', 'alayli')
+  if ($QueueId) { $nodeArgs += @('--id', $QueueId) }
+  $nodeArgs += '--commit'
   if ($Save) {
     $env:BIZIMHESAP_POSTING_SAVE = '1'
     $nodeArgs += '--save'
@@ -65,4 +90,5 @@ try {
   Remove-Item Env:BIZIMHESAP_PASSWORD -ErrorAction SilentlyContinue
   Remove-Item Env:BIZIMHESAP_POSTING_LIVE -ErrorAction SilentlyContinue
   Remove-Item Env:BIZIMHESAP_POSTING_SAVE -ErrorAction SilentlyContinue
+  Remove-Item Env:BIZIMHESAP_POSTING_UNMATCHED_INCOMING -ErrorAction SilentlyContinue
 }

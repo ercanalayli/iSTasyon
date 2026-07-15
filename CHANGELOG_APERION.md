@@ -938,3 +938,11 @@
   gorunur hale getirir.
 - Komutlar: `npm run hasta-bezi:source-audit` ve
   `npm run verify:hasta-bezi:source-audit`.
+
+## 2026-07-15 - Guvenli belirsiz banka girisi v103-v105
+
+- `tools/probe_bizimhesap_account_income_form_v103.cjs`: Gercek BizimHesap hesap-hareketi giris formu kaydetmeden dogrulandi.
+- `tools/bank_posting_plan.cjs`: Cari eslesmesi belirsiz, ancak banka hareketi kanitli gelen para icin `bank_unmatched_incoming` karari eklendi.
+- `bizimhesap_queue_worker.cjs`: Bu karar kaynaktaki banka hesabinda `Hesaba Para Girisi` formuna yazilir; cari/tedarikci bakiyesi degismez.
+- `tools/queue_unmatched_bank_incoming_v104.cjs`: Sadece en yeni gunun guvenli adaylarini idempotent kuyruga alir.
+- `tools/apply_pending_bank_counterparty_schema_v105.cjs`: Canli Supabase sema kurulumunu denetler; mevcut projede `exec_sql` RPC'si olmadigi icin SQL Editor kurulumu zorunlu oldugu acikca raporlanir.

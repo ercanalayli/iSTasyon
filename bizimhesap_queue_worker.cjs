@@ -91,6 +91,10 @@ function amountOf(payload) {
   return Number(payload.amount_in || 0) > 0 ? Number(payload.amount_in || 0) : Math.abs(Number(payload.amount_out || 0));
 }
 
+function unmatchedIncomingAutoSaveEnabled() {
+  return ['1', 'true', 'evet'].includes(String(process.env.BIZIMHESAP_POSTING_UNMATCHED_INCOMING || '').toLowerCase());
+}
+
 function analysisText(payload) {
   return [
     payload.description,
@@ -219,8 +223,12 @@ function cleanPlan(plan) {
 function postingEvidence(row, plan) {
   const manualProof = manualPostingProof(row.id);
   const queueStatus = row.status || 'ready_for_bizimhesap';
-  const safeToAutoSave = plan.confidence >= 84 && !plan.requires_user_review && !['supplier_or_expense_payment'].includes(plan.kind);
+  const safeToAutoSave = (plan.kind === 'bank_unmatched_incoming' && unmatchedIncomingAutoSaveEnabled()) ||
+    (plan.confidence >= 84 && !plan.requires_user_review && !['supplier_or_expense_payment'].includes(plan.kind));
   const blockers = [];
+  if (plan.kind === 'bank_unmatched_incoming' && !unmatchedIncomingAutoSaveEnabled()) {
+    blockers.push('bekletme para girisi otomatik kayit politikasi kapali');
+  }
   if (plan.confidence < 84) blockers.push(`guven ${plan.confidence}%`);
   if (plan.requires_user_review) blockers.push('kullanici/cari incelemesi gerekli');
   if (plan.kind === 'supplier_or_expense_payment') blockers.push('genel odeme tipi otomatik kayda kapali');
@@ -245,7 +253,8 @@ function postingEvidence(row, plan) {
 
 function dryRunPlan(row) {
   const plan = cleanPlan(classifyQueueRow(row));
-  const safeToAutoSave = plan.confidence >= 84 && !['supplier_or_expense_payment'].includes(plan.kind);
+  const safeToAutoSave = (plan.kind === 'bank_unmatched_incoming' && unmatchedIncomingAutoSaveEnabled()) ||
+    (plan.confidence >= 84 && !plan.requires_user_review && !['supplier_or_expense_payment'].includes(plan.kind));
   const stopReason = safeToAutoSave ? '' : 'Canlı kayıtta kullanıcı/cari eşleştirme kontrolü gerekli.';
   const steps = [
     'BizimHesap login',
@@ -357,6 +366,13 @@ async function openPostingForm(page, plan) {
   const shortAccount = String(openingAccount || '').split(/\s+/).slice(0, 3).join(' ');
   const opened = await clickByText(page, [openingAccount, shortAccount, plan.account, plan.bank_name]);
   if (!opened) throw new Error(`BizimHesap hesap karti bulunamadi: ${openingAccount || plan.account}`);
+  if (plan.kind === 'bank_unmatched_incoming') {
+    const income = await page.$('#btnIncome');
+    if (!income) throw new Error('BizimHesap Hesaba Para Girisi Yap dugmesi bulunamadi.');
+    await income.click();
+    await page.waitForSelector('#myModalCashEntry[style*="display: block"] #txtAmount', { timeout: 8000 });
+    return;
+  }
   if (plan.kind === 'bank_transfer') {
     const toggle = await page.$('button.dropdown-toggle');
     if (!toggle) throw new Error('BizimHesap hesap transfer dugmesi bulunamadi.');
@@ -461,6 +477,38 @@ async function fillPostingForm(page, row, plan) {
       };
     }, plan, row.id);
     await savePageDiagnostics(page, `bizimhesap_queue_${row.id}_form`).catch(() => {});
+    return fill;
+  }
+  if (plan.kind === 'bank_unmatched_incoming') {
+    const fill = await page.evaluate((p, queueId) => {
+      const set = (id, value) => {
+        const el = document.getElementById(id);
+        if (!el) return false;
+        el.focus();
+        el.value = String(value || '');
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        el.blur();
+        return true;
+      };
+      const date = String(p.date || '').replace(/^(\d{4})-(\d{2})-(\d{2}).*$/, '$3.$2.$1');
+      const reference = String(p.statement_transaction_no || p.transaction_no || p.reference_no || '').trim();
+      const description = [
+        `APERION QUEUE:${queueId}`,
+        'BANKA PARA GIRISI - CARI ESLESTIRME BEKLIYOR',
+        `Banka:${p.bank_name || '-'}`,
+        reference && `IslemNo:${reference}`,
+        `KarsiTaraf:${p.counterparty || 'Belirsiz'}`,
+        `Ham:${p.description || '-'}`,
+      ].filter(Boolean).join(' | ').slice(0, 300);
+      return {
+        date: set('txtTransactionDate', date),
+        amount: set('txtAmount', Number(p.amount || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })),
+        description: set('txtDefinition', description),
+        account: Boolean(p.account),
+      };
+    }, plan, row.id);
+    await savePageDiagnostics(page, `bizimhesap_queue_${row.id}_income_form`).catch(() => {});
     return fill;
   }
   const fill = await page.evaluate((p, queueId) => {
@@ -572,6 +620,14 @@ async function clickSave(page, plan) {
     await new Promise(r => setTimeout(r, 1800));
     return;
   }
+  if (plan.kind === 'bank_unmatched_incoming') {
+    const save = await page.$('#myModalCashEntry #btnSave');
+    if (!save) throw new Error('BizimHesap para girisi kaydet butonu bulunamadi.');
+    await save.click();
+    await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+    await new Promise(r => setTimeout(r, 1800));
+    return;
+  }
   const clicked = await page.evaluate(() => {
     const norm = s => String(s || '').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const btn = [...document.querySelectorAll('button,a,input[type="submit"]')]
@@ -604,6 +660,8 @@ async function processLiveRow(page, row) {
   const fill = await fillPostingForm(page, row, plan);
   const required = plan.kind === 'bank_transfer'
     ? ['date', 'amount', 'description', 'target_account']
+    : plan.kind === 'bank_unmatched_incoming'
+      ? ['date', 'amount', 'description', 'account']
     : plan.kind === 'bank_fee_expense'
       ? ['date', 'amount', 'description', 'account', 'category', 'paid']
       : ['date', 'amount', 'description'];

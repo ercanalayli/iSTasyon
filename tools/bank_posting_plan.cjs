@@ -201,6 +201,9 @@ function buildConfirmationQuestion(plan, scope) {
   if (plan.kind === 'bank_transfer') {
     return `${plan.source_account} hesabindan ${plan.target_account} hesabina ${plan.amount.toLocaleString('tr-TR')} TL sirket ici virman olarak BizimHesap'a isleyeyim mi?`;
   }
+  if (plan.kind === 'bank_unmatched_incoming') {
+    return `${plan.bank_name} hesabina gelen ${plan.amount.toLocaleString('tr-TR')} TL hareketi cari baglamadan Hesaba Para Girisi olarak islenecek; aciklamadaki karsi taraf sonra eslestirilecek.`;
+  }
   return `${plan.type} olarak BizimHesap kuyruğuna alinsin mi?`;
 }
 
@@ -225,6 +228,32 @@ function isNonBankSummary(row, text) {
     row.attachment_name,
   ].filter(Boolean).join(' '));
   return /BIZIMHESAP GUNLUK FINANSAL BILGILERINIZ|BIZIMHESAP GUNLUK HESAP HAREKETLERINIZ|GUNLUK NAKIT AKISINIZ|KASA VE BANKA BAKIYELERINIZ/.test(source || text);
+}
+
+function hasVerifiedBankMovement(row, text) {
+  const hasReference = [row.statement_transaction_no, row.transaction_no, row.reference_no]
+    .some(value => value !== undefined && value !== null && String(value).trim() !== '');
+  const hasNonZeroBalance = [row.balance_after, row.bakiye]
+    .some(value => Number.isFinite(Number(value)) && Number(value) !== 0);
+  const hasReferenceOrBalance = hasReference || hasNonZeroBalance;
+  const hasMovementLanguage = /GELEN|GIDEN|FAST|EFT|HAVALE|POS|BATCH|ISLEM NO|REFERANS|HESABINIZA|HESABINIZDAN/.test(text);
+  const looksLikeAnnouncement = /HALKA ARZ|BULTEN|KAMPANYA|DUYURU|BILGI:|BILGILENDIRME:/.test(text) && !hasReferenceOrBalance;
+  return !looksLikeAnnouncement && (hasReferenceOrBalance || hasMovementLanguage);
+}
+
+function hasBankNameConflict(row, text) {
+  const sourceBank = normalize(bankName(row));
+  const labels = [
+    ['VAKIFBANK', ['VAKIFBANK']],
+    ['IS BANKASI', ['IS BANKASI', 'TURKIYE IS BANKASI']],
+    ['YAPI KREDI', ['YAPI KREDI']],
+    ['AKBANK', ['AKBANK']],
+    ['GARANTI', ['GARANTI']],
+    ['HALKBANK', ['HALKBANK']],
+  ];
+  const mentioned = labels.filter(([needle]) => text.includes(needle));
+  if (!mentioned.length) return false;
+  return !mentioned.some(([, aliases]) => aliases.some(alias => sourceBank.includes(alias)));
 }
 
 function classifyBankMovement(row = {}) {
@@ -365,11 +394,29 @@ function classifyBankMovement(row = {}) {
   if (scope !== 'sirket_finansi') reasons.push(scope);
   const counterpartyAllowedByKind = ['bank_fee_expense', 'bank_transfer', 'credit_card_payment', 'tax_or_sgk_payment', 'utility_bill_payment'].includes(kind);
   const invalidCounterpartyForKind = isInvalidCounterparty(counterparty) && !counterpartyAllowedByKind;
+  const unresolvedCounterparty = /CARI ESLESTIRME ONAYDA/.test(normalize(counterparty));
+  const shouldHoldIncoming = kind === 'customer_collection' && incoming && (
+    confidence < 84 || invalidCounterpartyForKind || unresolvedCounterparty || relatedPartyReview
+  ) && hasVerifiedBankMovement(row, text) && !hasBankNameConflict(row, text);
+  if (incoming && hasBankNameConflict(row, text)) reasons.push('ekstre metnindeki banka ile kaynak banka uyusmuyor');
+  if (shouldHoldIncoming) {
+    kind = 'bank_unmatched_incoming';
+    type = 'Banka hesaba para girisi - eslestirme bekliyor';
+    target = 'BizimHesap Hesaba Para Girisi';
+    category = 'AperiON banka bekletme';
+    counterparty = (isInvalidCounterparty(counterparty) || unresolvedCounterparty) ? 'Belirsiz karsi taraf' : counterparty;
+    sourceAccount = '';
+    targetAccount = targetBankAccount(row);
+    confidence = 100;
+    reasons.push('gelen para kaydi kesin, cari eslestirmesi bilinmiyor');
+  }
   const requiresReview = kind === 'non_bank_summary_review' ||
-    confidence < 84 ||
-    invalidCounterpartyForKind ||
-    counterparty === 'Cari eslestirme onayda' ||
-    relatedPartyReview ||
+    (kind !== 'bank_unmatched_incoming' && (
+      confidence < 84 ||
+      invalidCounterpartyForKind ||
+      counterparty === 'Cari eslestirme onayda' ||
+      relatedPartyReview
+    )) ||
     scope !== 'sirket_finansi';
   const planBase = {
     kind,
@@ -381,6 +428,7 @@ function classifyBankMovement(row = {}) {
     counterparty,
     category,
     confidence: Math.min(99, Math.round(confidence)),
+    recording_confidence: kind === 'bank_unmatched_incoming' ? 100 : Math.min(99, Math.round(confidence)),
     amount,
     date: transactionDate(row),
     time: transactionTime(row),
@@ -389,7 +437,7 @@ function classifyBankMovement(row = {}) {
     source: fixMojibake(row.source || ''),
     business_scope: scope,
     fixed_variable: fixedVariable,
-    requires_counterparty_confirmation: relatedPartyReview,
+    requires_counterparty_confirmation: kind === 'bank_unmatched_incoming' ? false : relatedPartyReview,
     reasons: [...new Set(reasons)].slice(0, 7),
     requires_user_review: requiresReview,
     next_step_after_user_approval: 'approve_pending_bank_movement RPC -> bizimhesap_queue.status=ready_for_bizimhesap',
@@ -442,6 +490,7 @@ function classifyQueueRow(row = {}) {
     decision_summary: p.decision_summary,
     requires_counterparty_confirmation: p.requires_counterparty_confirmation,
     confidence: p.confidence,
+    recording_confidence: p.recording_confidence,
     reasons: p.reasons,
     requires_user_review: p.requires_user_review,
   };

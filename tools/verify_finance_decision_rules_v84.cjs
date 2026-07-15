@@ -16,11 +16,12 @@ const incomingOwner = classifyBankMovement({
   description: '16:52:20 Para Gonder Diger GELEN FAST - ERCAN ALAYLI tarafindan aktarilan',
 });
 
-assert.equal(incomingOwner.plan.kind, 'customer_collection');
+assert.equal(incomingOwner.plan.kind, 'bank_unmatched_incoming');
 assert.match(incomingOwner.plan.counterparty, /ERCAN ALAYLI/);
-assert.equal(incomingOwner.plan.requires_counterparty_confirmation, true);
-assert.equal(incomingOwner.plan.requires_user_review, true);
-assert.match(incomingOwner.plan.confirmation_question, /tahsilat/i);
+assert.equal(incomingOwner.plan.requires_counterparty_confirmation, false);
+assert.equal(incomingOwner.plan.requires_user_review, false);
+assert.equal(incomingOwner.plan.recording_confidence, 100);
+assert.match(incomingOwner.plan.confirmation_question, /cari baglamadan/i);
 assert.equal(incomingOwner.plan.business_scope, 'sirket_finansi');
 
 const confirmedOwner = classifyBankMovement({
@@ -36,6 +37,7 @@ const confirmedOwner = classifyBankMovement({
 
 assert.equal(confirmedOwner.plan.requires_counterparty_confirmation, false);
 assert.equal(confirmedOwner.plan.requires_user_review, false);
+assert.equal(confirmedOwner.plan.kind, 'customer_collection');
 
 const personalSchool = classifyBankMovement({
   id: 'test-personal-school',
