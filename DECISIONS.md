@@ -126,3 +126,20 @@ Karar: Banka hareketi, tarih, tutar ve kaynak hesap kanitli; fakat cari/karsi ta
 Gerekce: Belirsiz tahsilati tahmini bir cariye yazmak, cari mutabakatini bozar. Islem numarasi, banka, karsi taraf ve ham ekstre metni AperiON kuyruk ID'siyle aciklamada saklanir; sonradan dogru cariye/hesaba aktarim izlenebilir olur.
 
 Guvenlik siniri: Banka adi kaynakla celisen, reklam/duyuru niteligindeki veya banka hareketi kaniti olmayan satirlar bu otomasyona giremez.
+
+## D-009 Tarihsel Ekstre Mutabakati ve Kaynak Hesap Koruması
+
+Karar: Ocak 2026'dan itibaren verilecek banka ekstreleri once salt-okunur
+tarihsel mutabakat havuzuna alinir. Her satir islem numarasi, kaynak banka
+hesabi, tarih, tutar ve duplicate key ile AperiON kuyrugu/BizimHesap islem
+kanitina karsi kontrol edilir. Kanit bulunan satir tekrar yazilmaz.
+
+Belirsiz gelen para icin yeni bir banka hesabi acilmaz. Hareket, gercek kaynak
+banka hesabinda `Hesaba Para Girisi` olarak tutulur ve sonradan cari veya
+hedef hesaba aktarilir. Bu yaklasim banka mutabakatini bozmadan belirsizligi
+gorunur tutar.
+
+Guvenli sinir: Tarihsel dosya taramasi tek basina BizimHesap'a kayit yazmaz.
+Once `BizimHesap'ta islenmis`, `kuyrukta`, `guvenli isleme adayi` ve
+`inceleme gerekli` raporu uretilir. Canli yazma sadece kaniti olan kayit
+turleri icin ayri kullanici onayi ve sonuc kaniti ile yapilir.

@@ -1,5 +1,16 @@
 # AperiON Changelog
 
+## 2026-07-15 - Tarihsel Banka Mutabakat Hatti v106
+
+- Ocak 2026 ve sonrasi banka ekstreleri icin Git disi yerel giris klasoru ve
+  salt-okunur mutabakat araci eklendi.
+- VakifBank XLS/XLSX satirlari islem numarasi/duplicate key ile AperiON
+  pending kaydi ve BizimHesap kuyruk sonucuna karsi karsilastirilir.
+- Rapor, islenmis veya kuyruktaki kaydi tekrar yazmaz; guvenli isleme adayi
+  ile inceleme gerektiren kaydi ayri gosterir.
+- Belirsiz gelen para icin yeni hesap acmak yerine kaynak banka hesabinda
+  `Hesaba Para Girisi` politikasi korundu.
+
 ## 2026-07-15 - BizimHesap Canli VakifBank Kayit Kaniti v101
 
 - Yeni BizimHesap transfer dropdown/modal akisi gerçek Puppeteer tiklamasiyla
