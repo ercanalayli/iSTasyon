@@ -30,6 +30,19 @@ function reviewKind(item) {
   return 'hazir';
 }
 
+function recordSummary(plan) {
+  if (plan.kind === 'bank_transfer') {
+    return `${plan.source_account || 'Kaynak hesap'} -> ${plan.target_account || plan.account}`;
+  }
+  if (plan.kind === 'bank_fee_expense') {
+    return `${plan.bank_name} | ${plan.category}`;
+  }
+  if (plan.kind === 'customer_collection') {
+    return `${plan.counterparty} carisine tahsilat`;
+  }
+  return `${plan.type} | ${plan.category}`;
+}
+
 function publicItem(item) {
   return {
     id: item.pending_bank_movement_id,
@@ -44,7 +57,9 @@ function publicItem(item) {
     proposed_account: item.plan.account,
     proposed_category: item.plan.category,
     confidence: item.plan.confidence,
-    question: item.plan.confirmation_question,
+    record_summary: recordSummary(item.plan),
+    transaction_no: String(item.statement_transaction_no || item.transaction_no || item.reference_no || ''),
+    question: item.plan.requires_user_review ? item.plan.confirmation_question : '',
     duplicate_key: item.duplicate_key,
   };
 }
@@ -105,4 +120,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { buildDailyReview, publicItem, reviewKind, shortText };
+module.exports = { buildDailyReview, publicItem, reviewKind, shortText, recordSummary };

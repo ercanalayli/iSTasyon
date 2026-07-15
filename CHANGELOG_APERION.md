@@ -1,5 +1,19 @@
 # AperiON Changelog
 
+## 2026-07-15 - VakifBank POS Batch Akisi v100
+
+- VakifBank XLS ekstrelerini kaynak hesap ve islem numarasi ile okuyup
+  duplicate key ile Supabase'e alan guvenli importer eklendi.
+- `Batch Yatan` POS tahsilat aktarimi, `Batch Komisyonu` ise banka masrafi
+  olarak ayrildi; sirket ici hesap ve gider hedefi kuyruk payloadina yazildi.
+- Gunluk Telegram ozeti ham ekstre dump'i yerine kayit turu, tutar, hedef ve
+  islem numarasini kisa olarak gosterir. Sadece belirsiz hareketler soru sorar.
+- BizimHesap hesap adlari icin portal adlari kullanildi: `*VAKIF SIRKET`,
+  `*IS BANKASI`, `*YAPI KREDI SIRKET`, `AKBANK SIRKET` ve `GARANTI SIRKET`.
+- Canli form denetiminde yeni portal transfer menusu eski seciciyle formu
+  acmadigi goruldu. Kaydet tusuna basilmadi ve kuyruk kayitlari korunarak
+  tekrar denenebilir duruma getirildi.
+
 ## 2026-07-14 - Saatlik Tam Kaynak Yenileme v99
 
 - Saatlik BizimHesap klonu satis, urun/stok, masraf, son islemler, gider

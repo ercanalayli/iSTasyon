@@ -2,6 +2,22 @@
 
 Son guncelleme: 2026-07-14 Europe/Istanbul
 
+## Guncel Tur - VakifBank POS Batch Kayit Akisi v100
+
+15 Temmuz 2026 tarihli VakifBank XLS ekstresi islem numarasi ile okundu.
+`2026009923018191` 46.540 TL Batch Yatan satiri `POS POS POS KREDI KARTI`
+hesabindan `*VAKIF SIRKET` hesabina sirket ici POS banka transferi olarak;
+`2026009923018202` 902,81 TL Batch Komisyonu satiri ise VakifBank banka
+masrafi olarak planlandi. Her iki kaynak duplicate key ile Supabase onay/kuyruk
+zincirine birer kez alindi.
+
+Kaydetme kaniti henuz yoktur. Yeni BizimHesap portalinda POS kartinin transfer
+menusu eski otomasyon secicisiyle form alanlarini acmadi. Bot kaydet tusuna
+basmadi; iki kuyruk kaydi tekrar denenebilir durumdadir. Bu durum basari olarak
+gosterilmez. Sonraki tek hedef, yeni portal transfer modalinin hesap, tutar,
+tarih ve aciklama alanlarini dogrulamak ve ancak kayit sonrasi kanitla kuyrugu
+islenmis durumuna kapatmaktir.
+
 ## Guncel Tur - Saatlik Tam Kaynak Yenileme v99
 
 Saatlik guvenli klon, her saat `:05` tetiklenecek ve cakisan ikinci ornegi

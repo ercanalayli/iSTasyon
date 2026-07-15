@@ -353,10 +353,30 @@ async function openPostingForm(page, plan) {
     return;
   }
   await page.goto(ROUTES.accounts, { waitUntil: 'networkidle2', timeout: 30000 });
-  await clickByText(page, [plan.account, plan.bank_name, 'banka', 'hesap']);
-  await clickByText(page, plan.kind === 'bank_transfer'
-    ? ['hesaplar arası transfer', 'hesaplar arasi transfer', 'transfer']
-    : ['hesaptan para çıkışı', 'hesaptan para cikisi', 'para çıkışı', 'para cikisi', 'ödeme']);
+  const openingAccount = plan.kind === 'bank_transfer' ? plan.source_account : plan.account;
+  const shortAccount = String(openingAccount || '').split(/\s+/).slice(0, 3).join(' ');
+  const opened = await clickByText(page, [openingAccount, shortAccount, plan.account, plan.bank_name]);
+  if (!opened) throw new Error(`BizimHesap hesap karti bulunamadi: ${openingAccount || plan.account}`);
+  if (plan.kind === 'bank_transfer') {
+    const openedTransfer = await page.evaluate(() => {
+      const toggle = [...document.querySelectorAll('button')].find(el => /hesaplar\s+aras/i.test(el.innerText || ''));
+      if (!toggle) return false;
+      toggle.click();
+      return true;
+    });
+    if (!openedTransfer) throw new Error('BizimHesap hesap transfer dugmesi bulunamadi.');
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const transferSelected = await page.evaluate(() => {
+      const node = document.getElementById('btnTransfer');
+      if (!node) return false;
+      node.click();
+      return true;
+    });
+    if (!transferSelected) throw new Error('BizimHesap kaynak hesaptan transfer secenegi bulunamadi.');
+    await new Promise(resolve => setTimeout(resolve, 900));
+    return;
+  }
+  await clickByText(page, ['hesaptan para çıkışı', 'hesaptan para cikisi', 'para çıkışı', 'para cikisi', 'ödeme']);
 }
 
 async function clickByText(page, texts) {

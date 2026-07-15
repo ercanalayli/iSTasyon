@@ -14,7 +14,13 @@ function money(value) {
 
 function rowLine(item, index) {
   const direction = Number(item.amount) >= 0 ? 'Giris' : 'Cikis';
-  return `${index + 1}. ${item.bank} | ${money(Math.abs(item.amount))} ${direction}\n${item.proposed_type} | ${item.proposed_counterparty}\n${item.question}`;
+  const line = [
+    `${index + 1}. <b>${item.proposed_type}</b> | ${money(Math.abs(item.amount))} ${direction}`,
+    item.record_summary || `${item.bank} | ${item.proposed_category}`,
+  ];
+  if (item.transaction_no) line.push(`Islem no: ${item.transaction_no}`);
+  if (item.question) line.push(`Soru: ${item.question}`);
+  return line.join('\n');
 }
 
 function formatDailyBankReview(report) {
@@ -26,10 +32,12 @@ function formatDailyBankReview(report) {
     `Yeni/acik hareket: <b>${s.total || 0}</b>`,
     `Kayda hazir: <b>${s.hazir || 0}</b> | Cari sorusu: <b>${s.cari_dogrulama || 0}</b> | Inceleme: <b>${s.inceleme || 0}</b>`,
   ];
-  const priority = [...(report.buckets?.cari_dogrulama || []), ...(report.buckets?.inceleme || []), ...(report.buckets?.hazir || [])].slice(0, 4);
-  if (priority.length) lines.push(`\n<b>Bugunun karar listesi</b>\n${priority.map(rowLine).join('\n\n')}`);
-  else lines.push('\nBugun icin onay bekleyen yeni banka hareketi yok.');
-  lines.push('\nAperiON yalnizca cari ve kayit turu netlesen hareketi BizimHesap kuyruguna alir.');
+  const needsDecision = [...(report.buckets?.cari_dogrulama || []), ...(report.buckets?.inceleme || [])].slice(0, 3);
+  const ready = (report.buckets?.hazir || []).slice(0, 5);
+  if (ready.length) lines.push(`\n<b>Kayda hazir</b>\n${ready.map(rowLine).join('\n\n')}`);
+  if (needsDecision.length) lines.push(`\n<b>Sadece senin kararini bekleyenler</b>\n${needsDecision.map(rowLine).join('\n\n')}`);
+  if (!ready.length && !needsDecision.length) lines.push('\nBugun icin yeni banka hareketi yok.');
+  lines.push('\nAperiON net hareketleri kayda hazirlar; yalnizca cari veya tur belirsizse soru sorar.');
   return lines.join('\n');
 }
 

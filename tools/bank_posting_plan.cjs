@@ -95,21 +95,33 @@ function description(row) {
 }
 
 function targetBankAccount(row) {
-  return fixMojibake(row.target_account || `${bankName(row)} banka hesabi`);
+  if (row.target_account) return fixMojibake(row.target_account);
+  const bank = normalize(bankName(row));
+  const aliases = [
+    ['VAKIFBANK', '*VAKIF SIRKET'],
+    ['IS BANKASI', '*IS BANKASI'],
+    ['TURKIYE IS BANKASI', '*IS BANKASI'],
+    ['YAPI KREDI', '*YAPI KREDI SIRKET'],
+    ['AKBANK', 'AKBANK SIRKET'],
+    ['GARANTI', 'GARANTI SIRKET'],
+    ['HALKBANK', 'HALKBANK SIRKET'],
+  ];
+  const match = aliases.find(([needle]) => bank.includes(needle));
+  return match ? match[1] : `${bankName(row)} banka hesabi`;
 }
 
 function companyBankAccountFromText(value, excludedBank = '') {
   const text = normalize(value);
   const excluded = normalize(excludedBank);
   const banks = [
-    ['IS BANKASI', 'Is Bankasi banka hesabi'],
-    ['TURKIYE IS BANKASI', 'Is Bankasi banka hesabi'],
-    ['VAKIFBANK', 'VakifBank banka hesabi'],
-    ['AKBANK', 'Akbank banka hesabi'],
-    ['YAPI KREDI', 'Yapi Kredi banka hesabi'],
-    ['GARANTI BBVA', 'Garanti BBVA banka hesabi'],
-    ['GARANTI', 'Garanti BBVA banka hesabi'],
-    ['HALKBANK', 'Halkbank banka hesabi'],
+    ['IS BANKASI', '*IS BANKASI'],
+    ['TURKIYE IS BANKASI', '*IS BANKASI'],
+    ['VAKIFBANK', '*VAKIF SIRKET'],
+    ['AKBANK', 'AKBANK SIRKET'],
+    ['YAPI KREDI', '*YAPI KREDI SIRKET'],
+    ['GARANTI BBVA', 'GARANTI SIRKET'],
+    ['GARANTI', 'GARANTI SIRKET'],
+    ['HALKBANK', 'HALKBANK SIRKET'],
   ];
   const found = banks.find(([needle]) => text.includes(needle) && !(excluded.includes(needle) || needle.includes(excluded)));
   return found ? found[1] : '';
@@ -279,7 +291,7 @@ function classifyBankMovement(row = {}) {
     confidence = Math.max(confidence, 90);
     reasons.push('KMH ana para kapama');
   }
-  if (kind !== 'non_bank_summary_review' && kind !== 'bank_transfer' && incoming && /POS|NET SATIS|KREDI KART|BATCH YATAN|UYE ISYERI/.test(text)) {
+  if (kind !== 'non_bank_summary_review' && incoming && /POS|NET SATIS|KREDI KART|BATCH YATAN|UYE ISYERI/.test(text)) {
     kind = 'bank_transfer';
     type = 'POS banka transferi';
     target = 'BizimHesap hesaplar arasi transfer';
@@ -386,6 +398,7 @@ function classifyBankMovement(row = {}) {
   planBase.decision_summary = `${planBase.type} | ${planBase.counterparty} | ${planBase.category} | ${planBase.business_scope} | ${planBase.fixed_variable}`;
   return {
     pending_bank_movement_id: row.id || row.pending_bank_movement_id || '',
+    statement_transaction_no: fixMojibake(row.statement_transaction_no || row.transaction_no || row.reference_no || ''),
     bank_name: bankName(row),
     transaction_date: transactionDate(row),
     transaction_time: transactionTime(row),
