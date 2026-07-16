@@ -1,5 +1,17 @@
 # AperiON Changelog
 
+## 2026-07-16 - Ana ekran donemsel gelir tablosu matrisi v120
+
+- Ana finans yuzeyine, kullanicinin tarif ettigi Excel mantiginda donem
+  matrisi eklendi: Bugun icin plan/tahakkuk/nakit; diger donemlerde
+  tahakkuk/nakit.
+- Satis kategorileri, satislar toplam, satilan malin maliyeti, brut kar,
+  sabit-degisken gider, vergi/SGK ve net kar ayni tabloda gorunur.
+- Tahakkuk tutarlari tiklaninca mevcut kategori -> urun -> kaynak kayit
+  ayrintisina iner.
+- Banka/POS nakdi, kategoriyle kanitli esleme yoksa kategori satirlarina
+  dagitilmaz; toplam satirda tutulur.
+
 ## 2026-07-16 - Ana sayfa gelir tablosu ve bilanco onceligi v119
 
 - Gelir Tablosu ve Bilanco, ana acilis ekraninin ilk ve genis finans yuzeyine

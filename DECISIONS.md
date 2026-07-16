@@ -1,5 +1,17 @@
 # AperiON Decisions
 
+## D-015 Donemsel matris ve kanitli nakit dagitimi
+
+Karar: Ana ekrandaki gelir tablosu; satirlarda kategori ve finans kalemleri,
+sutunlarda Bugun-Dun-Bu Hafta-Bu Ay-Gecen Ay-Bu Yil-Gecen Yil gruplariyla
+gosterilir. Bugun plan/tahakkuk/nakit, diger donemler tahakkuk/nakit ayrimini
+tasir. Banka veya POS nakdi bir urun kategorisine ancak banka hareketi ile
+cari/fatura ve kategori arasinda kanitli esleme oldugunda dagitilir.
+
+Gerekce: Nakit tahsilatini satis kategorilerine kanitsiz dagitmak hem kategori
+karliligini hem de tahsilat performansini yaniltir. Toplam nakit gercek banka
+kaynagindan, kategori tahakkuku ise satis/fatura kaynagindan izlenmelidir.
+
 ## D-014 Ana sayfa once finans karari
 
 Karar: AperiON acildiginda ilk gorunen karar yuzeyi Gelir Tablosu ve Bilanco

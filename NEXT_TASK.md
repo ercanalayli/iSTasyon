@@ -2,6 +2,20 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Tamamlandi - Ana Ekran Donemsel Gelir Tablosu Matrisi v120
+
+Ana ekran, kullanicinin verdigi satir/sutun mantigiyla donemsel finans
+matrisini gosterir. Gelir tablosu satirlari tiklaninca kategori, urun ve
+kayit ayrintisina iner; nakit, tahakkuk ve bugune ait plan gorunumu birbirine
+karistirilmaz.
+
+## Aktif Tek Hedef - Nakit Hareketlerini Kategori ve Cari Kanitiyla Esleme
+
+Banka/POS tahsilat ve odemelerinin kategori satirina dagitilmasi ancak kaynak
+hareketi, BizimHesap cari/fatura ve ilgili kategori arasinda kanitli esleme
+oldugunda yapilacak. Esleme yoksa hareket sadece toplam nakit satirinda
+kalacak; kullaniciya kategori bazli kesinlik izlenimi verilmeyecek.
+
 ## Tamamlandi - Ana Sayfa Finans Onceligi v119
 
 Ana acilis ekraninda Gelir Tablosu ve Bilanco ilk karar yuzeyine tasindi.

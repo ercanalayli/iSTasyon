@@ -2,6 +2,20 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Guncel Tur - Ana Ekran Donemsel Gelir Tablosu Matrisi v120
+
+Ana finans yuzeyinde Excel benzeri donem matrisi gorunur hale getirildi.
+Satirlarda satis kategorileri, satislar toplam, satilan malin maliyeti, brut
+kar, sabit ve degisken gider, vergi/SGK ve net kar bulunur. Sutunlarda Bugun
+icin `Tahmini`, `Tahakkuk`, `Nakit`; Dun, Bu Hafta, Bu Ay, Gecen Ay, Bu Yil
+ve Gecen Yil icin `Tahakkuk` ve `Nakit` ayri gorunur.
+
+Kategori satirlarinin tahakkuk tutari kategori -> urun -> kaynak kayit
+zincirine iner. Banka/POS hareketi henuz urun kategorisine kanitli olarak
+baglanmadiginda kategoriye paylastirilmaz; nakit sadece toplam satis/gider/net
+satirinda gosterilir. Bu, nakit ile satis tahakkukunu yapay sekilde eslestirip
+yaniltici kategori karliligi uretmemek icindir.
+
 ## Guncel Tur - Ana Sayfa Finans Onceligi v119
 
 Gelir Tablosu ve Bilanco artik ayri CFO sayfasinda veya alt kartta beklemez.

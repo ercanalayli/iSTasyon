@@ -2197,10 +2197,15 @@ body.dashboard-mode .roadmap-item{
 }
 .cm-titlebar button:hover{border-color:#60A5FA;box-shadow:0 0 0 3px rgba(37,99,235,.10)}
 .cm-wrap{max-height:310px;overflow:auto}
-.cm-table{width:100%;border-collapse:separate;border-spacing:0;font-size:10px;min-width:980px}
+.cm-table{width:100%;border-collapse:separate;border-spacing:0;font-size:10px;min-width:1560px}
 .cm-table th,.cm-table td{border-right:1px solid #E4EAF2;border-bottom:1px solid #E4EAF2;padding:6px 7px;vertical-align:middle}
 .cm-table thead th{position:sticky;top:0;z-index:3;background:#F8FAFC;color:#344054;text-align:right;font-weight:950}
 .cm-table thead th:first-child{text-align:left;left:0;z-index:4}
+.cm-table thead tr:first-child th{top:0;background:#EAF2FF;color:#1E3A5F;text-align:center;border-bottom-color:#BFDBFE}
+.cm-table thead tr:first-child th.cm-main{text-align:left}
+.cm-table thead tr:nth-child(2) th{top:35px;z-index:3;background:#F8FAFC;font-size:8px;color:#64748B;text-align:right}
+.cm-table thead .cm-period-today{background:#E8F8F2!important;color:#047857!important}
+.cm-table thead .cm-period-cash{background:#EEF7FF!important;color:#1D4ED8!important}
 .cm-table thead span{display:block;font-family:var(--mono);font-size:8px;color:#98A2B3;margin-top:2px;font-weight:800}
 .cm-table tbody th{position:sticky;left:0;z-index:2;background:#FFFFFF;text-align:left;color:#101828;font-size:10px;font-weight:950;min-width:158px}
 .cm-section td{background:#101828 !important;color:#FFFFFF !important;font-size:10px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
@@ -2211,6 +2216,10 @@ body.dashboard-mode .roadmap-item{
 .cm-cell.empty b{color:#98A2B3}
 .cm-cell.cost b,.cm-cell.expense b{color:#DC2626}
 .cm-cell.profit b,.cm-cell.net b{color:#1D4ED8}
+.cm-cell.plan b{color:#B45309}
+.cm-cell.cash b{color:#047857}
+.cm-cell.unmapped{background:#FAFAFA;cursor:default}
+.cm-cell.unmapped b{color:#98A2B3}
 body.dashboard-mode .command-matrix{height:calc(100% - 0px);margin:0}
 body.dashboard-mode #incomeStatementTop>.income-head,
 body.dashboard-mode #incomeStatementTop>.report-grid,
@@ -2803,15 +2812,17 @@ body.dashboard-mode .diaper-mini-table tr:hover td{background:rgba(201,162,39,.0
 }
 .income-balance-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:0 0 12px}.income-half{border:1px solid #D8E4F4;border-radius:12px;padding:14px;background:#fff;min-width:0}.income-pnl-half{border-top:3px solid #2563EB}.income-balance-half{border-top:3px solid #0F766E}.income-half-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.income-half-head span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.8px;color:#64748B;font-weight:950}.income-half-head h3{margin:4px 0 0;font-size:16px;letter-spacing:0;color:#0F172A}.income-half-head button{border:1px solid #CBD5E1;background:#fff;color:#1D4ED8;font-weight:900;font-size:11px;border-radius:7px;padding:7px 9px;cursor:pointer}.income-half-head button:hover{border-color:#2563EB;background:#EFF6FF}.income-half-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.income-balance-item,.income-balance-proof{min-height:76px;border:1px solid #E2E8F0;border-radius:8px;background:#F8FAFC;padding:10px;text-align:left;min-width:0}.income-balance-item{cursor:pointer;font:inherit}.income-balance-item:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(15,23,42,.08);border-color:#94A3B8}.income-balance-item span,.income-balance-proof span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.55px;text-transform:uppercase;font-weight:950;color:#64748B}.income-balance-item b,.income-balance-proof b{display:block;margin-top:6px;font-size:17px;line-height:1.08;color:#0F172A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.income-balance-item em,.income-balance-proof em{display:block;margin-top:5px;font-size:10px;font-style:normal;color:#64748B;line-height:1.3}.income-balance-item.revenue{border-left:3px solid #2563EB}.income-balance-item.cogs{border-left:3px solid #F59E0B}.income-balance-item.profit{border-left:3px solid #059669}.income-balance-item.expense{border-left:3px solid #DC2626}.income-balance-item.net{border-left:3px solid #7C3AED}.income-balance-item.net.bad{border-left-color:#DC2626}.income-balance-item.asset{border-left:3px solid #0F766E}.income-balance-item.receivable{border-left:3px solid #0284C7}.income-balance-item.payable{border-left:3px solid #EA580C}.income-balance-item.stock{border-left:3px solid #7C3AED}.income-balance-proof{grid-column:span 2;background:#F0FDFA;border-color:#99F6E4}.income-balance-proof b{color:#0F766E}.income-cogs{cursor:pointer}.income-cogs:hover{background:#FFFBEB}.income-inline-action{display:block;margin-top:3px;font-family:var(--mono);font-size:9px;letter-spacing:.4px;color:#B45309}@media(max-width:980px){.income-balance-split{grid-template-columns:1fr}.income-half-grid{grid-template-columns:1fr 1fr}}@media(max-width:560px){.income-half-grid{grid-template-columns:1fr}.income-balance-proof{grid-column:auto}}
 
-/* Ana ekran v119: finans karar yuzeyi ilk gorunen alan, is alanlari ikinci katman. */
-body.dashboard-mode #pg-dashboard{grid-template-rows:minmax(360px,1fr) minmax(0,.62fr)!important;overflow:hidden!important}
+/* Ana ekran v120: finans matrisi karar yuzeyinde gorunur, ayrintilar tiklanarak acilir. */
+body.dashboard-mode #pg-dashboard{grid-template-rows:minmax(540px,1fr) minmax(0,.46fr)!important;overflow:hidden!important}
 body.dashboard-mode #incomeStatementCard{grid-column:1 / -1!important;grid-row:1!important;display:block!important;min-height:0!important;overflow:hidden!important;padding:14px!important}
 body.dashboard-mode #incomeStatementTop{height:100%!important;overflow:auto!important;padding-right:4px}
-body.dashboard-mode #incomeStatementTop>.command-matrix,body.dashboard-mode #incomeStatementTop>.report-grid,body.dashboard-mode #incomeStatementTop>.income-layout{display:none!important}
+body.dashboard-mode #incomeStatementTop>.report-grid,body.dashboard-mode #incomeStatementTop>.income-layout{display:none!important}
 body.dashboard-mode #incomeStatementTop>.income-head{display:grid!important;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr)!important;gap:12px!important}
 body.dashboard-mode #incomeStatementTop>.income-head .income-cockpit-main{display:block!important}
 body.dashboard-mode #incomeStatementTop>.income-head .income-component-panel{display:none!important}
-body.dashboard-mode #incomeStatementTop>.income-balance-split{margin:12px 0 0!important}
+body.dashboard-mode #incomeStatementTop>.income-balance-split{display:none!important}
+body.dashboard-mode #incomeStatementTop>.command-matrix{display:block!important;height:auto!important;margin:12px 0 0!important}
+body.dashboard-mode #incomeStatementTop>.command-matrix .cm-wrap{max-height:350px!important}
 body.dashboard-mode #kartsDiv{display:none!important}
 body.dashboard-mode .command-map{grid-row:2!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;grid-auto-rows:1fr!important;overflow:hidden!important}
 body.dashboard-mode .command-zone{min-height:0!important;padding:12px!important}
@@ -4770,10 +4781,11 @@ function commandMatrixPeriods(){
     {key:'prevYear',label:'GEÇEN YIL',from:pr.prevYearS,to:pr.prevYearE}
   ];
 }
-function commandMatrixBlank(){return {plan:0,accrual:0,cash:0,count:0,qty:0,cogs:0,gross:0,rows:[]};}
+function commandMatrixBlank(){return {plan:0,accrual:0,cash:0,count:0,qty:0,cogs:0,gross:0,rows:[],planAvailable:false,cashAvailable:false};}
 function commandMatrixAdd(bucket,row,kind){
   const amount=kind==='expense'?Number(row.tutar||row.amount||0):Number(row.ciro||row.tutar||0);
   if(!Number.isFinite(amount)||!amount)return;
+  bucket.sourceAvailable=true;
   bucket.accrual+=Math.abs(amount);
   bucket.count+=1;
   bucket.rows.push(row);
@@ -4784,9 +4796,11 @@ function commandMatrixAdd(bucket,row,kind){
     bucket.gross+=amount-cost;
   }
 }
-function commandMatrixCell(label,rowKey,period,value,sub='',tone=''){
-  const empty=!value;
-  return `<td class="cm-cell ${tone} ${empty?'empty':''}" onclick='commandMatrixDrill(${jsArg(rowKey)},${jsArg(period.key)})'>
+function commandMatrixCell(rowKey,period,metric,value,sub='',tone='',available=true){
+  const empty=!available;
+  const drill=metric==='accrual' ? `onclick='commandMatrixDrill(${jsArg(rowKey)},${jsArg(period.key)})'` : '';
+  const title=metric==='plan' ? 'Planlanan: Finans Takvimi ve plan kartları' : metric==='cash' ? 'Gerçekleşen nakit: banka, POS ve onaylanmış hareketler' : 'Tahakkuk: satış ve gider kaynak kayıtları';
+  return `<td class="cm-cell ${tone} ${metric} ${empty?'empty unmapped':''}" ${drill} title="${title}">
     <b>${empty?'—':dynMoney(value)}</b>${sub?`<span>${escHtml(sub)}</span>`:''}
   </td>`;
 }
@@ -4794,7 +4808,10 @@ function commandMatrixRow(label,rowKey,periods,data,tone=''){
   return `<tr><th>${escHtml(label)}</th>${periods.map(p=>{
     const x=data[p.key]||commandMatrixBlank();
     const sub=x.count?`${fmt(x.count)} işlem${x.qty?` · ${fmt(x.qty)} adet`:''}`:'';
-    return commandMatrixCell(label,rowKey,p,x.accrual,sub,tone);
+    const plan=p.key==='today'?commandMatrixCell(rowKey,p,'plan',x.plan,x.planCount?`${fmt(x.planCount)} plan`:'' ,tone,x.planAvailable):'';
+    const accrual=commandMatrixCell(rowKey,p,'accrual',x.accrual,sub,tone,x.sourceAvailable!==false);
+    const cash=commandMatrixCell(rowKey,p,'cash',x.cash,x.cashCount?`${fmt(x.cashCount)} hareket`:'' ,tone,x.cashAvailable);
+    return `${plan}${accrual}${cash}`;
   }).join('')}</tr>`;
 }
 async function renderCommandIncomeMatrix(model){
@@ -4824,23 +4841,45 @@ async function renderCommandIncomeMatrix(model){
       if(/vergi|sgk|kdv|stopaj/i.test(`${r.kategori||''} ${r.aciklama||''}`))commandMatrixAdd(ensure('tax',p),r,'expense');
     });
   });
+  let bankRows=[],approvedBankRows=[];
+  try{const {data}=await db.from('bank_transactions').select('*').eq('firma_id',PILOT_FIRMA).gte('tarih',from).lte('tarih',to).limit(5000);bankRows=data||[];}catch(e){}
+  try{const {data}=await db.from('pending_bank_movements').select('*').eq('company_id',PILOT_FIRMA).eq('status','approved').gte('transaction_date',from).lte('transaction_date',to).limit(5000);approvedBankRows=data||[];}catch(e){}
+  const cashRows=Array.from(new Map([...bankRows,...approvedBankRows].map((r,i)=>[String(r.id||r.transaction_id||r.mukerrer_anahtar||`${flowDate(r)}|${incomeCashAmount(r)}|${incomeText(r)}|${i}`),r])).values());
+  const planByPeriod=await Promise.all(periods.map(async p=>{
+    const calendar=await fetchFlowCalendarRows(p.from,p.to);
+    const seed=await fetchPlanSeedRows(p);
+    return {key:p.key,rows:[...(calendar.rows||[]),...seed]};
+  }));
+  const plans=new Map(planByPeriod.map(x=>[x.key,x.rows]));
   periods.forEach(p=>{
     const net=ensure('net',p), gross=matrix.gross?.[p.key]?.accrual||0, exp=matrix['expense:total']?.[p.key]?.accrual||0, tax=matrix.tax?.[p.key]?.accrual||0;
     net.accrual=gross-exp-tax;net.count=(matrix.gross?.[p.key]?.count||0)+(matrix['expense:total']?.[p.key]?.count||0);net.rows=[...(matrix.gross?.[p.key]?.rows||[]),...(matrix['expense:total']?.[p.key]?.rows||[])];
+    const salesTotal=ensure('sales:TOPLAM',p), expenseTotal=ensure('expense:total',p), cash=incomeCashBuckets(cashRows.filter(r=>flowInRange(r,p.from,p.to))), planRows=plans.get(p.key)||[];
+    const planIncome=planRows.filter(r=>flowKind(r)==='tahsilat'), planExpense=planRows.filter(r=>flowKind(r)==='gider_odeme'||flowKind(r)==='urun_alis_odeme');
+    salesTotal.plan=planIncome.reduce((s,r)=>s+flowAmount(r),0);salesTotal.planCount=planIncome.length;salesTotal.planAvailable=p.key==='today'&&planRows.length>0;
+    expenseTotal.plan=planExpense.reduce((s,r)=>s+flowAmount(r),0);expenseTotal.planCount=planExpense.length;expenseTotal.planAvailable=p.key==='today'&&planRows.length>0;
+    net.plan=salesTotal.plan-expenseTotal.plan;net.planCount=salesTotal.planCount+expenseTotal.planCount;net.planAvailable=p.key==='today'&&planRows.length>0;
+    salesTotal.cash=cash.collected;salesTotal.cashCount=cashRows.filter(r=>flowInRange(r,p.from,p.to)&&incomeCashAmount(r)>=0).length;salesTotal.cashAvailable=cashRows.length>0;
+    expenseTotal.cash=cash.paid;expenseTotal.cashCount=cashRows.filter(r=>flowInRange(r,p.from,p.to)&&incomeCashAmount(r)<0).length;expenseTotal.cashAvailable=cashRows.length>0;
+    net.cash=cash.collected-cash.paid;net.cashCount=salesTotal.cashCount+expenseTotal.cashCount;net.cashAvailable=cashRows.length>0;
+    [salesTotal,ensure('cogs',p),ensure('gross',p),expenseTotal,ensure('expense:fixed',p),ensure('expense:variable',p),ensure('tax',p),net].forEach(x=>x.sourceAvailable=true);
   });
-  window.APERION_COMMAND_MATRIX={periods,matrix,sales,expenses};
+  window.APERION_COMMAND_MATRIX={periods,matrix,sales,expenses,cashRows};
   const salesRows=COMMAND_MATRIX_CATEGORIES.map(c=>commandMatrixRow(c,`sales:${c}`,periods,matrix));
-  const head=`<tr><th class="cm-main">KALEM</th>${periods.map(p=>`<th>${escHtml(p.label)}<span>${p.from!==p.to?`${p.from} / ${p.to}`:p.from}</span></th>`).join('')}</tr>`;
+  const columnCount=1+periods.reduce((sum,p)=>sum+(p.key==='today'?3:2),0);
+  const head=`<tr><th class="cm-main" rowspan="2">KALEM</th>${periods.map(p=>`<th class="${p.key==='today'?'cm-period-today':''}" colspan="${p.key==='today'?3:2}">${escHtml(p.label)}<span>${p.from!==p.to?`${p.from} / ${p.to}`:p.from}</span></th>`).join('')}</tr><tr>${periods.map(p=>p.key==='today'?'<th>Tahmini</th><th>Tahakkuk</th><th class="cm-period-cash">Nakit</th>':'<th>Tahakkuk</th><th class="cm-period-cash">Nakit</th>').join('')}</tr>`;
   return `<div class="command-matrix">
-    <div class="cm-titlebar"><div><b>Gelir Tablosu Komuta Matrisi</b><span>Satır ve tutarlara tıklayınca kategori, ürün, cari ve hareket listesi açılır.</span></div><button onclick="incomeDrill('revenue')">Kategoriye İn</button></div>
+    <div class="cm-titlebar"><div><b>Gelir Tablosu ve Nakit Matrisi</b><span>Satış ve maliyet satırına tıklayınca kategori → ürün → kayıt listesi açılır. Nakit, banka/POS hareketlerinden gelir.</span></div><button onclick="incomeDrill('revenue')">Kategoriye İn</button></div>
     <div class="cm-wrap"><table class="cm-table"><thead>${head}</thead><tbody>
-      <tr class="cm-section"><td colspan="${periods.length+1}">SATIŞLAR</td></tr>
+      <tr class="cm-section"><td colspan="${columnCount}">SATIŞLAR</td></tr>
       ${salesRows.join('')}
+      ${commandMatrixRow('SATIŞLAR TOPLAM','sales:TOPLAM',periods,matrix,'profit')}
       ${commandMatrixRow('SATILAN MALIN MALİYETİ','cogs',periods,matrix,'cost')}
       ${commandMatrixRow('BRÜT KAR','gross',periods,matrix,'profit')}
-      <tr class="cm-section"><td colspan="${periods.length+1}">GİDERLER</td></tr>
+      <tr class="cm-section"><td colspan="${columnCount}">GİDERLER</td></tr>
       ${commandMatrixRow('SABİT GİDER','expense:fixed',periods,matrix,'expense')}
       ${commandMatrixRow('DEĞİŞKEN GİDER','expense:variable',periods,matrix,'expense')}
+      ${commandMatrixRow('GİDERLER TOPLAM','expense:total',periods,matrix,'expense')}
       ${commandMatrixRow('VERGİ / SGK','tax',periods,matrix,'expense')}
       ${commandMatrixRow('NET KAR','net',periods,matrix,'net')}
     </tbody></table></div>

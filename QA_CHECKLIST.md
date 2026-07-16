@@ -2,6 +2,17 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## 2026-07-16 Ana ekran donemsel gelir tablosu matrisi v120
+
+- [x] Bugun, Dun, Bu Hafta, Bu Ay, Gecen Ay, Bu Yil ve Gecen Yil sutun gruplari olusturuldu.
+- [x] Bugun grubu plan/tahakkuk/nakit; diger donemler tahakkuk/nakit olarak ayrildi.
+- [x] Satis, maliyet, brut kar, gider ve net kar satirlari matriste ayridir.
+- [x] Satis kategori tahakkuk tutari kategori -> urun -> kaynak kayit ekranina iner.
+- [x] Kategoriyle kanitli eslesmeyen banka/POS nakdi kategori satirina dagitilmaz.
+- [x] Inline JavaScript syntax ve `git diff --check` gecti.
+- [ ] Masaustu ve mobil canli ekran goruntusuyle yerlesim onayi.
+- [ ] Banka/POS nakit hareketlerinin cari/fatura/kategori kanitiyla eslenmesi.
+
 ## 2026-07-16 Ana sayfa finans onceligi v119
 
 - [x] `index.html` acildiginda Gelir Tablosu ve Bilanco ilk finans yuzeyidir.
