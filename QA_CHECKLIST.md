@@ -2,6 +2,13 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## 2026-07-16 Kaynak banka tarihi duzeltmesi v114
+
+- [x] Kaynak `transaction_date`, BizimHesap form tarihinden once ve sonra kontrol edildi.
+- [x] Aynı iki mevcut Vakif Sirket kaydi ikinci hareket olusturulmadan duzeltildi.
+- [x] POS tahsilati ve POS komisyonu hesap hareketleri listesinde `14.07.2026` olarak tekrar okundu.
+- [x] Formdaki asenkron eski kayit riski test edilip bekleme kaniti eklendi.
+
 ## 2026-07-16 Apsiyon personal accrual intake v112
 
 - [ ] `apsiyon_oturum_kur.cmd` opens a local browser profile without writing credentials to the repository.

@@ -1,5 +1,15 @@
 # AperiON Changelog
 
+## 2026-07-16 - Kaynak banka tarihi resmi kayit duzeltmesi v114
+
+- Vakif Sirket hesabindaki iki mevcut hareket, yeni kayit olusturmadan ayni
+  resmi BizimHesap kaydi uzerinde duzeltildi ve tekrar okundu.
+- POS banka tahsilati (`a4bb5122-798c-4d12-8354-507216c5b9cf`) ve POS
+  komisyonu (`7d269b6a-a80c-4cab-b84e-eb31ce85c154`) artik `14.07.2026`
+  finansal tarihini tasiyor.
+- Tekil tarih duzeltme araci formdaki asenkron veri yuklenmesini, tarih
+  kanitini ve sonradan hesap hareketi satiri kontrolunu zorunlu tutar.
+
 ## 2026-07-16 - Banka tarihi form kaniti v113
 
 - BizimHesap kuyruk worker'ina kaynak banka tarihi korumasi eklendi.

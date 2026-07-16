@@ -2,14 +2,21 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
-## Aktif Tek Hedef - Banka Tarihi Kaniti ve Mevcut Kayit Duzeltmesi v113
+## Aktif Tek Hedef - Gunluk POS Sonu ve Banka Mutabakati v115
+
+Her gun POS cihazindan gelen gun sonu raporu; ayni gun veya takip eden
+bankaya yatan POS tahsilati ve komisyon kaydi ile islem numarasi, batch,
+tutar ve tarih uzerinden salt-okunur mutabakat edilir. Sonuc: eslesen,
+eksik, tutar farkli ve inceleme gerekli. Kaynak kaniti olmadan yeni
+BizimHesap kaydi olusturulmaz.
+
+## Tamamlandi - Banka Tarihi Kaniti ve Mevcut Kayit Duzeltmesi v114
 
 Yeni BizimHesap banka, para girisi ve masraf kayitlari kaynak banka
 `transaction_date` degeri formda tekrar dogrulanmadan kaydedilemez. Siradaki
 adim, 14.07.2026 kaynakli olup 15.07.2026 gorunen iki VakifBank kaydinin
-tekil APERION QUEUE kaniti ile tarih duzeltme ekranina ulasilabildigini
-kontrol etmektir. Duzeltme, ayni kaydi degistirecek; ikinci kayit
-olusturmayacaktir.
+tekil APERION QUEUE kaniti ile ayni resmi kayitta duzeltilmesiydi. Duzeltme
+tamamlandi; iki hesap hareketi satiri da 14.07.2026 olarak tekrar okundu.
 
 ## Aktif Tek Hedef - Apsiyon Kisisel Tahakkuk Kaynak Dogrulamasi v112
 

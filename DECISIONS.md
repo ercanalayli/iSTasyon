@@ -194,3 +194,14 @@ Guvenlik siniri: Kaydetmeden once portal formundaki tarih alani kaynak tarihle
 tekrar okunur. Alan yoksa, tarih yoksa veya iki deger farkliysa bot kaydetmeyi
 durdurur. Tarih duzeltmesi ayni resmi kayit uzerinde yapilir; ikinci kayit
 olusmasina izin verilmez.
+
+## D-013 Kaynak Tarihi Duzeltme Kaniti
+
+Karar: Mevcut BizimHesap hareketinin tarihi duzeltilirken sadece duzenleme
+formunun alan degeri yeterli kanit sayilmaz. Kaydetmeden sonra ayni resmi
+hareket, hesap hareketleri listesinde kaynak tarih ile tekrar okunur.
+
+Gerekce: Portalin tek modal duzenleme penceresi asenkron yuklenir ve onceki
+hareketin gecici alanlarini gosterebilir. Duzeltme araci formu kapatir,
+yeniden acar, veri yuklemesini bekler ve yalnizca tekil resmi kayit kimligi
+ile calisir.

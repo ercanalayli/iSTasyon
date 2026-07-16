@@ -2,6 +2,16 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Guncel Tur - Banka Tarihi Duzeltmesi Dogrulandi v114
+
+Vakif Sirket hesabindaki iki denetlenmis resmi kayit, yeni hareket
+olusturulmadan kaynak banka tarihi olan `14.07.2026` ile kontrol edildi.
+`a4bb5122-798c-4d12-8354-507216c5b9cf` POS banka tahsilati ve
+`7d269b6a-a80c-4cab-b84e-eb31ce85c154` POS komisyonu, hem duzenleme
+formunda hem de hesap hareketleri satirinda `14.07.2026` gorunuyor.
+Kaynak tarih ile form tarihi farkliysa gelecekteki kayitlar kaydetmeden
+bloklanir.
+
 ## Guncel Tur - Banka Tarihi Kayit Koruması v113
 
 Banka ekstresindeki islem tarihi, BizimHesap kaydinin zorunlu finans tarihi
