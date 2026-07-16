@@ -2,6 +2,14 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## 2026-07-16 Moka United POS aktarim ogrenmesi v124
+
+- [x] Moka United anahtar kelimesi, POS aktarimi kuralina baglandi.
+- [x] Gercek BizimHesap kaynak hesabi `*MOCA SONOVA POS KREDI KARTI` olarak sabitlendi.
+- [x] 1 ve 2 Temmuz Is Bankasi adaylari kimlik bazli override ile Emanet sinifindan cikarildi.
+- [ ] Plan yeniden uretildikten sonra iki adayda kaynak/hedef/tutar/tarih kanitinin kontrolu.
+- [ ] Kullanici onayi ardindan BizimHesap'ta iki transferin kayit ve tekrar-okuma kaniti.
+
 ## 2026-07-16 Bugun satis, maliyet ve kar karari v121
 
 - [x] Ana gelir modelinin varsayilan donemi `today` yapildi.

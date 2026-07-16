@@ -1,11 +1,40 @@
 {
-  "version": "2026-07-10",
+  "version": "2026-07-16",
   "company_id": "alayli",
   "principle": "AperiON classifies every money movement before posting. Ambiguous personal, owner, family, and mixed company transactions require user confirmation before BizimHesap posting.",
   "business_accounts": {
     "banks": ["Akbank", "Yapi Kredi", "Is Bankasi", "VakifBank", "Garanti BBVA", "Halkbank"],
     "cash": ["TL Kasa"],
-    "pos": ["POS POS POS KREDI KARTI", "Moka United bekleyen tahsilatlar"]
+    "pos": ["POS POS POS KREDI KARTI", "*MOCA SONOVA POS KREDI KARTI"]
+  },
+  "known_settlement_sources": {
+    "moka_united": {
+      "keywords": ["moka united", "mokaunited", "moka"],
+      "source_account": "*MOCA SONOVA POS KREDI KARTI",
+      "category": "Moka POS banka aktarimi"
+    }
+  },
+  "movement_overrides": {
+    "e52ac8e9-15d6-4bd5-98b5-0e36334e621b": {
+      "kind": "bank_transfer",
+      "type": "Moka banka transferi",
+      "target": "BizimHesap hesaplar arasi transfer",
+      "category": "Moka POS banka aktarimi",
+      "source_account": "*MOCA SONOVA POS KREDI KARTI",
+      "target_account": "*IS BANKASI",
+      "confidence": 100,
+      "reason": "Moka United aciklamasi kullanici tarafindan POS tahsilat aktarimi olarak dogrulandi"
+    },
+    "f7b75d0d-5df0-4678-b0d3-482a3575af1f": {
+      "kind": "bank_transfer",
+      "type": "Moka banka transferi",
+      "target": "BizimHesap hesaplar arasi transfer",
+      "category": "Moka POS banka aktarimi",
+      "source_account": "*MOCA SONOVA POS KREDI KARTI",
+      "target_account": "*IS BANKASI",
+      "confidence": 100,
+      "reason": "Moka United aciklamasi kullanici tarafindan POS tahsilat aktarimi olarak dogrulandi"
+    }
   },
   "related_parties_need_confirmation": [
     "ERCAN ALAYLI",

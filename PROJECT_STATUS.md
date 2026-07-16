@@ -2,6 +2,15 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Guncel Tur - Moka United POS Aktarim Kurali v124
+
+Is Bankasi'na gelen `4.500 TL` ve `2.740 TL` iki hareket, kullanicinin
+gordugu `Moka United` aciklamasiyla yeniden siniflandirildi. Bunlar emanet
+veya cari tahsilat degil; `*MOCA SONOVA POS KREDI KARTI -> *IS BANKASI`
+hesaplar arasi POS tahsilat aktarimidir. Iki mevcut hareket immutable AperiON
+kimligiyle kalici override'a baglandi; gelecekte Moka United anahtar kelimesi
+bulunan girisler ayni kuraldan gecerek dogru kaynak hesabi onerir.
+
 ## Guncel Tur - Bugun Satis, Maliyet ve Kar Karari v121
 
 Ana finans yuzeyinin varsayilan donemi artik `Bugun`dur. Ilk gorunen karar

@@ -2,6 +2,14 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Aktif Tek Hedef - Moka POS Aktarimlarini Kanitli Kaydetme
+
+Moka United aciklamasi olan Is Bankasi girisleri `*MOCA SONOVA POS KREDI
+KARTI -> *IS BANKASI` transferi olarak planlanir. Iki geriye donuk aday
+yeniden uretildikten sonra, kullanicinin islem onayi ile BizimHesap'ta
+Hesaplar Arasi Transfer formuna kaydedilecek; tarih kaynak banka tarihi ve
+aciklama/APerION kimligiyle birlikte tekrar okunarak kanitlanacak.
+
 ## Tamamlandi - Bugun Satis, Maliyet ve Kar Karari v121
 
 Ana ekranin varsayilan donemi Bugun yapildi. Kullanici ilk bakista bugun ne

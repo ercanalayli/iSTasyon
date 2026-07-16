@@ -1,5 +1,17 @@
 # AperiON Decisions
 
+## D-017 Moka United POS tahsilatinin banka aktarimi
+
+Karar: Aciklamasinda `Moka United` bulunan ve sirket banka hesabina giren
+hareketler, `*MOCA SONOVA POS KREDI KARTI` kaynakli POS tahsilat aktarimi
+olarak siniflanir. Hedef, kaynak ekstredeki sirket banka hesabidir; Is
+Bankasi icin `*IS BANKASI` kullanilir. Bu hareketler Emanet hesabina veya
+cariye kaydedilmez.
+
+Gerekce: Moka United, kartli tahsilatin tahsilat aracisidir. Para ayni sirketin
+POS tahsilat hesabindan banka hesabina gecmektedir; gelir kaydi veya belirsiz
+para girisi tekrar olusturmak finansal mutabakati bozar.
+
 ## D-016 Varsayilan finans gorunumu bugun
 
 Karar: AperiON ana finans ekraninin varsayilan donemi `Bugun` olur. Ilk karar

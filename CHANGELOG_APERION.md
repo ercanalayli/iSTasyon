@@ -1,5 +1,14 @@
 # AperiON Changelog
 
+## 2026-07-16 - Moka United POS aktarim ogrenmesi v124
+
+- `Moka United` aciklamasi, artik Emanet veya belirsiz cari hareketi degil,
+  POS tahsilatinin bankaya aktarimi olarak siniflanir.
+- Kaynak BizimHesap hesabi, gercek hesap adi olan `*MOCA SONOVA POS KREDI
+  KARTI`; hedef Is Bankasi hareketinde `*IS BANKASI`dir.
+- 1 ve 2 Temmuz tarihli iki aday, kalici ve kimlik bazli kullanici dogrulamasi
+  ile tekrar islenebilir hale getirildi.
+
 ## 2026-07-16 - Bugun satis, maliyet ve kar karari v121
 
 - Ana gelir yuzeyinin varsayilan donemi `Bugun` yapildi.

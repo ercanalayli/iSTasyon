@@ -131,6 +131,25 @@ function kmhAccount(row) {
   return fixMojibake(row.kmh_account || `${bankName(row)} KMH / Ek Hesap`);
 }
 
+function mokaSettlementRule() {
+  return RULES?.known_settlement_sources?.moka_united || {
+    keywords: ['moka united', 'mokaunited', 'moka'],
+    source_account: '*MOCA SONOVA POS KREDI KARTI',
+    category: 'Moka POS banka aktarimi',
+  };
+}
+
+function isMokaSettlement(text) {
+  const normalized = normalize(text);
+  return (mokaSettlementRule().keywords || []).some(keyword => normalized.includes(normalize(keyword)));
+}
+
+function movementOverride(row) {
+  const id = String(row.id || row.pending_bank_movement_id || '').trim();
+  const overrides = RULES?.movement_overrides || {};
+  return id && overrides[id] ? overrides[id] : null;
+}
+
 function counterpartyGuess(row) {
   const explicit = fixMojibake(row.user_confirmed_counterparty || row.confirmed_counterparty || row.target_counterparty || row.suggested_counterparty || row.aday_cari || '').trim();
   if (explicit && !isInvalidCounterparty(explicit)) return explicit;
@@ -149,7 +168,7 @@ function counterpartyGuess(row) {
       if (!isInvalidCounterparty(candidate)) return candidate;
     }
   }
-  if (/MOKA|MOKAUNITED|SANAL POS/.test(text)) return 'Moka United bekleyen tahsilatlar';
+  if (isMokaSettlement(text)) return mokaSettlementRule().source_account;
   if (/POS|NET SATIS|KREDI KART|BATCH YATAN/.test(text)) return 'POS POS POS KREDI KARTI';
   if (/KMH|EK HESAP|ANAPARA BORCU TAHSILATI/.test(text)) return kmhAccount(row);
   if (/KOMISYON|BSMV|UCRET|MASRAF/.test(text)) return bankName(row);
@@ -276,7 +295,9 @@ function classifyBankMovement(row = {}) {
     row.suggested_bizimhesap_action,
     row.mail_subject,
     row.attachment_name,
+    row.raw_text,
   ].filter(Boolean).join(' '));
+  const override = movementOverride(row);
 
   let kind = incoming ? 'customer_collection' : 'supplier_or_expense_payment';
   let type = incoming ? 'Cari tahsilat' : 'Cari odeme';
@@ -307,12 +328,12 @@ function classifyBankMovement(row = {}) {
     reasons.push('banka disi ozet mail');
   }
 
-  if (kind !== 'non_bank_summary_review' && incoming && /MOKA|MOKAUNITED|SANAL POS/.test(text)) {
+  if (kind !== 'non_bank_summary_review' && incoming && isMokaSettlement(text)) {
     kind = 'bank_transfer';
     type = 'Moka banka transferi';
     target = 'BizimHesap hesaplar arasi transfer';
-    category = 'Moka banka aktarimi';
-    sourceAccount = 'Moka United bekleyen tahsilatlar';
+    category = mokaSettlementRule().category || 'Moka POS banka aktarimi';
+    sourceAccount = mokaSettlementRule().source_account;
     targetAccount = targetBankAccount(row);
     counterparty = `${sourceAccount} -> ${targetAccount}`;
     confidence = Math.max(confidence, 88);
@@ -402,6 +423,20 @@ function classifyBankMovement(row = {}) {
     reasons.push('fatura anahtar kelimesi');
   }
 
+  // A user-verified source rule is stronger than a generic parser result. It is
+  // keyed by the immutable pending movement id, so a correction is repeatable.
+  if (override && kind !== 'non_bank_summary_review') {
+    kind = override.kind || 'bank_transfer';
+    type = override.type || 'Moka banka transferi';
+    target = override.target || 'BizimHesap hesaplar arasi transfer';
+    category = override.category || 'Moka POS banka aktarimi';
+    sourceAccount = override.source_account || mokaSettlementRule().source_account;
+    targetAccount = override.target_account || targetBankAccount(row);
+    counterparty = override.counterparty || `${sourceAccount} -> ${targetAccount}`;
+    confidence = Math.max(confidence, Number(override.confidence || 100));
+    reasons.push(override.reason || 'kullanici dogrulamasiyla kalici kural');
+  }
+
   const amount = amountIn(row) > 0 ? amountIn(row) : Math.abs(amountOut(row));
   const scope = businessScope(row, text);
   const fixedVariable = fixedVariableClass(text, category);
@@ -443,8 +478,8 @@ function classifyBankMovement(row = {}) {
     target_account: targetAccount,
     counterparty,
     category,
-    confidence: Math.min(99, Math.round(confidence)),
-    recording_confidence: kind === 'bank_unmatched_incoming' ? 100 : Math.min(99, Math.round(confidence)),
+    confidence: override ? Math.min(100, Math.round(confidence)) : Math.min(99, Math.round(confidence)),
+    recording_confidence: kind === 'bank_unmatched_incoming' || override ? 100 : Math.min(99, Math.round(confidence)),
     amount,
     date: transactionDate(row),
     time: transactionTime(row),
