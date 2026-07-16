@@ -1,5 +1,5 @@
 {
-  "version": "2026-07-13",
+  "version": "2026-07-16",
   "timezone": "Europe/Istanbul",
   "principle": "No amount, counterparty, or due date is assumed. A payment becomes a posting candidate only after its source evidence and user approval are present.",
   "notification_policy": {
@@ -19,10 +19,26 @@
       "due_day": 16,
       "amount": null,
       "currency": "TRY",
-      "status": "amount_required",
-      "source": "user_instruction_2026-07-13",
+      "status": "source_session_required",
+      "source": "apsiyon_personal_account",
       "notification_enabled": true,
-      "note": "Her ayın 16'sı ödeme günü. Tutar, ödeme hesabı ve dekont eşleştirmesi henüz verilmedi."
+      "note": "Her ayin 16'si odeme gunu. Tutar ve tahakkuk Apsiyon ekranindan okunur; dekont/banka eslesmesi olmadan odendi kabul edilmez."
+    },
+    {
+      "id": "personal-batikent-ercan-ev-yakit",
+      "scope": "personal",
+      "kind": "monthly_accrual",
+      "title": "Batikent Ercan Ev Yakit Tahakkuku",
+      "category": "Ev / Yakit",
+      "counterparty": "Batikent site yonetimi",
+      "frequency": "monthly",
+      "due_day": null,
+      "amount": null,
+      "currency": "TRY",
+      "status": "source_session_required",
+      "source": "apsiyon_personal_account",
+      "notification_enabled": true,
+      "note": "Tutar ve son odeme gunu Apsiyon tahakkuk ekranindan okunur. Kaynak kaniti olmadan tahmini tutar veya odendi durumu olusturulmaz."
     },
     {
       "id": "personal-credit-card-review",

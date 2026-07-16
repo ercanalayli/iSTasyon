@@ -2,6 +2,15 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Guncel Tur - Apsiyon Kisisel Aidat ve Yakit Tahakkuk Hatti v112
+
+Batikent Ercan ev aidati ve yakit tahakkuklari icin kalici yerel Apsiyon
+oturum kurucusu ile salt-okunur kaynak okuyucu eklendi. Aidat icin kullanici
+tarafindan verilen aylik 16. gun kuralini korur. Yakit tutari ve son odeme
+gunu Apsiyon kaynak kaniti olmadan varsayilmaz. Ham ekran metni ve cikti
+Git disi `finance_imports/apsiyon` klasorunde kalir. Bu turda odeme, banka
+hareketi veya BizimHesap kaydi olusturulmaz.
+
 ## Guncel Tur - Ana Sayfa Gelir Tablosu ve Bilanco Karar Yuzeyi v111
 
 Kullanicinin `GELIR TABLOSU-BILANCO .xlsx` calisma formu ana ekran finans

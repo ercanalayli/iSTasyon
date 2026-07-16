@@ -1,5 +1,13 @@
 # AperiON Decisions
 
+## D-010 Personal accruals are source-bound and separate from payment proof
+
+Batikent personal aidat and yakit obligations are read from Apsiyon through a
+local persistent session. Amounts and dates may enter the Finance Calendar only
+with source evidence. Apsiyon accrual is not proof of payment; payment closure
+requires a matching bank movement or receipt. Credentials, browser profile, and
+raw source exports remain local and are ignored by Git.
+
 ## D-009 Bilanco Veri Kaniti Kurali
 
 Karar: Ana ekrandaki bilanço gorunumu, kaynak kaniti olmayan bir kalemi

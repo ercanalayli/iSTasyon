@@ -31,6 +31,8 @@ data/hasta_bezi_historical_source_preflight.json
 .bizimhesap-profile/
 .hattat-musavir-profile/
 data/hattat_musavir_session_status.json
+.apsiyon-profile/
+data/apsiyon_session_status.json
 .aperion-secrets/
 diagnostics/
 debug_*.json

@@ -1,5 +1,12 @@
 # AperiON Changelog
 
+## 2026-07-16 - Apsiyon personal accrual intake v112
+
+- Added local persistent Apsiyon session setup without storing credentials.
+- Added read-only Batikent aidat/yakit accrual extraction with source evidence.
+- Added a personal Batikent fuel obligation; amount and due date remain source-bound.
+- Added local-only ignore rules for Apsiyon profile, session state, and raw imports.
+
 ## 2026-07-16 - Ana Sayfa Gelir Tablosu ve Bilanco Karar Yuzeyi v111
 
 - Ana ekrana Exceldeki gelir tablosu siralamasina uygun iki parca karar

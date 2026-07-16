@@ -2,6 +2,15 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Aktif Tek Hedef - Apsiyon Kisisel Tahakkuk Kaynak Dogrulamasi v112
+
+`apsiyon_oturum_kur.cmd` sadece yerel kalici Chrome profilini acar. Kullanici
+Apsiyon girisini tamamlayip Batikent borclar/tahakkuk ekranina gelir. Sonra
+`apsiyon_tahakkuk_oku.cmd` aidat ve yakit satirlarini salt-okunur dry-run ile
+okur. Tutar, son odeme tarihi ve kaynak metni kanitli satirlar sonraki turda
+Finans Takvimi'ne beklenen odeme olarak eklenir. Banka dekontu olmadan odendi
+durumu kapanmaz.
+
 ## Aktif Tek Hedef - Ana Sayfa Gelir Tablosu ve Bilanco Dogrulama v111
 
 Ana ekran gelir tablosu/Bilanco karar yuzeyi kodlandi. Siradaki kontrol,

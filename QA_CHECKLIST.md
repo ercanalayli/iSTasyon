@@ -2,6 +2,14 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## 2026-07-16 Apsiyon personal accrual intake v112
+
+- [ ] `apsiyon_oturum_kur.cmd` opens a local browser profile without writing credentials to the repository.
+- [ ] Authenticated Apsiyon Borclar/Tahakkuk page is detected and session status is local-only.
+- [ ] `apsiyon_tahakkuk_oku.cmd` emits evidence-backed aidat and yakit candidates.
+- [ ] Aidat preserves day 16; fuel due date comes only from source evidence.
+- [ ] No candidate is marked paid before bank/dekont reconciliation.
+
 ## 2026-07-16 Ana Sayfa Gelir Tablosu ve Bilanco v111
 
 - [x] Excel donem sirasi (Bugun -> Gecen Yil) gelir tablosu motorunda var.
