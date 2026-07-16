@@ -2,6 +2,15 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## 2026-07-16 Tahsilat ve odeme kanal kirilimi v118
+
+- [x] Tahsilat ve odeme ayni ekranda birbirinden ayri gorunur.
+- [x] Nakit, kredi karti, cek ve diger kanallari iki akis icin de ayridir.
+- [x] Donem secimi Bugun, Dun, Bu Hafta, Bu Ay, Gecen Ay, Bu Yil ve Gecen Yil icin kanal basliklarini birlikte degistirir.
+- [x] Banka onay adayi sayisi kanal toplamina donusturulmez.
+- [x] Her kanal ilgili detay ekranina tiklanabilir baglantidir.
+- [ ] Canli tam nakit snapshot'i ile kanal tutarlarinin kaynak/tarih bazli mutabakati.
+
 ## 2026-07-16 Ana ekran gelir tablosu ve bilanco operasyon yuzeyi v117
 
 - [x] Ust yarida Gelir Tablosu ve Bilanco birlikte gorunur.

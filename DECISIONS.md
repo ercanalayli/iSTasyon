@@ -1,5 +1,11 @@
 # AperiON Decisions
 
+## D-013 Tahsilat ve odeme kanal ayrimi
+
+Karar: Gelir tablosu donemleriyle ayni secicide, Tahsilatlar ve Odemeler birbirinden bagimsiz olarak `Nakit`, `Kredi Karti`, `Cek`, `Diger` kanallarina ayrilir. Bir banka onay adayi sayisi veya kuyruk durumu nakit tutari, bakiye ya da gerceklesen gelir/gider sayilmaz. Kanal toplami sadece kaynak hesap, islem tarihi, yonu ve duplicate anahtari olan tam hareket snapshot'undan hesaplanir.
+
+Gerekce: Kullanici donemsel nakit nereden geldi ve nereye gitti sorusunu gerceklesmis hareketlerden yanitlamalidir; onay kuyrugu bunun yerine gecemez.
+
 ## D-012 Ana ekran finans karar yuzeyi
 
 Karar: AperiON ana komuta ekraninin ilk yarisi Gelir Tablosu ve Bilanco

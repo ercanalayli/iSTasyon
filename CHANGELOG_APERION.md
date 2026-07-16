@@ -1,5 +1,11 @@
 # AperiON Changelog
 
+## 2026-07-16 - Tahsilat ve odeme kanal kirilimi v118
+
+- CFO komuta ekranina ayni donem secicisiyle calisan iki ayri nakit akis yuzeyi eklendi: Tahsilatlar ve Odemeler.
+- Her iki yuzey `Nakit`, `Kredi Karti`, `Cek` ve `Diger` kanallarini ayri ve tiklanabilir olarak gosterir.
+- Kanal toplamlarinin banka onay adaylarindan turetilmesi engellendi. Tarihli tam nakit snapshot'i gelmeden herhangi bir tutar veya sifir gosterilmez.
+
 ## 2026-07-16 - Ana ekran gelir tablosu ve bilanço operasyon yuzeyi v117
 
 - Komuta sayfasinin ust yarisi, buyuk slogan ve yonlendirme kartlari yerine

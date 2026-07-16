@@ -2,6 +2,10 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Aktif Tek Hedef - Nakit Akis Snapshot ve Kanal Baglantisi v118
+
+BizimHesap, banka, POS/Moka ve cek hareketlerinden ayni as-of tarihini tasiyan bir nakit akis snapshot'i uret. Snapshot, her donem icin Tahsilatlar ve Odemeleri `Nakit`, `Kredi Karti`, `Cek`, `Diger` kanallarinda ayri verir. Onay havuzundaki adaylar sadece karar durumudur; toplamlara katilmaz. Mukerrer, onaysiz veya kaynaksiz hareket kesin nakit tutarina donusmez.
+
 ## Aktif Tek Hedef - Canli Gelir Tablosu ve Bilanco Kaynak Baglantisi v117
 
 Ana ekranin yeni Gelir Tablosu ve Bilanco yuzeyi once mevcut satis ozetini

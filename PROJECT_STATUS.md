@@ -2,6 +2,12 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Guncel Tur - Tahsilat ve Odeme Kanal Kirilimi v118
+
+Ana CFO yuzeyine, Excel gelir tablosundaki ayni donem secimiyle calisan iki ayri nakit akis paneli eklendi. Tahsilatlar ve Odemeler; `Nakit`, `Kredi Karti`, `Cek` ve `Diger` kanallarinda ayri gorunur ve her kanal ilgili detay ekranina iner. Banka onay adayi sayisi, bakiye veya tahsilat/odeme toplami olarak kullanilmaz.
+
+Kanal bazli tutarlar, tum hareketleri kapsayan tarihli nakit snapshot'i baglanmadan gosterilmez. Bu nedenle mevcut ekranda `Kaynak bekliyor` ifadesi veri eksigini anlatir; sifir veya uydurma tutar anlamina gelmez.
+
 ## Guncel Tur - Ana Ekran Canli Gelir Tablosu ve Bilanco v117
 
 `aperion-ust-akil.html` artik yonlendirme/vaat ekrani degil, ilk gorunen
