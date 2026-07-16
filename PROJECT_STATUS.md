@@ -2,6 +2,20 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Guncel Tur - Ana Ekran Canli Gelir Tablosu ve Bilanco v117
+
+`aperion-ust-akil.html` artik yonlendirme/vaat ekrani degil, ilk gorunen
+finans karar yuzeyidir. Ekranin ust yarisi Gelir Tablosu ve Bilanco olarak
+yeniden kuruldu: net satis, satilan malin maliyeti, brut kar, sabit/değisken
+gider, vergi, net kar, banka/kasa, alacak, borc ve stok ayni yuzeyde gorunur.
+Kalemler ilgili karar ekranlarina tiklanabilir baglantilar tasir.
+
+Satis tutari yalnizca mevcut `sales_report_summary_2025_2026.json` kaynagi
+okunursa gosterilir. Maliyet, gider, vergi, bakiye, alacak, borc veya stok
+kaynagi eksikse sifir ya da sahte kar yazilmaz; "kaynak bekliyor" olarak
+gorunur. Bu nedenle ekran her an neyin kanitli oldugunu ve net karin hangi
+veri eksigi nedeniyle henuz kesin olmadigini aciklar.
+
 ## Guncel Tur - Apsiyon Aylik Tahakkuk ve Odeme Defteri v116
 
 Batikent Ercan Apsiyon kisisel finans ekrani salt-okunur olarak ayrintili

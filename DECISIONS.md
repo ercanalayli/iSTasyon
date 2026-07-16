@@ -1,5 +1,16 @@
 # AperiON Decisions
 
+## D-012 Ana ekran finans karar yuzeyi
+
+Karar: AperiON ana komuta ekraninin ilk yarisi Gelir Tablosu ve Bilanco
+olacaktir. Kullanici gelir, maliyet, brut kar, gider, vergi, net kar ve
+likiditeyi tek bakista gorur; her satir detay ekranina iner. Net kar ancak
+gelir, maliyet, gider ve vergi ayni donem kaynaklariyla dogrulandiginda kesin
+sayilir. Kaynagi olmayan kalem `0` veya tahmini kesin rakam olarak sunulmaz.
+
+Gerekce: Kullanici her an ne kadar kazandigini ve bunun hangi kanita dayandigini
+gormelidir. Hizli gorunum ile muhasebe veri guveni birlikte korunur.
+
 ## D-011 Halkbank Ercan Alayli account ownership boundary
 
 The Halkbank account belonging to Ercan Alayli is owned by the separate ALKAM

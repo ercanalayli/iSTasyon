@@ -1,5 +1,16 @@
 # AperiON Changelog
 
+## 2026-07-16 - Ana ekran gelir tablosu ve bilanço operasyon yuzeyi v117
+
+- Komuta sayfasinin ust yarisi, buyuk slogan ve yonlendirme kartlari yerine
+  Gelir Tablosu ve Bilanco karar yuzeyine donusturuldu.
+- Net satis, maliyet, brut kar, sabit/değisken gider, vergi ve net kar ile
+  banka/kasa, alacak, borc, stok ayni ekranda ve tiklanabilir kalemler halinde
+  gorunur oldu.
+- Mevcut satis ozetinden sadece kaynakli net satis okunur. Maliyet, gider,
+  vergi ve bilanço kaynaklari bagli degilse sifir veya sahte net kar
+  gosterilmez; durum acikca "kaynak bekliyor" olarak belirtilir.
+
 ## 2026-07-16 - Apsiyon aylik tahakkuk ve odeme defteri v116
 
 - Apsiyonun `Tumunu Goster` kategori kirilimi kendi oturum istegiyle

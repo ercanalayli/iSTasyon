@@ -2,6 +2,16 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## 2026-07-16 Ana ekran gelir tablosu ve bilanco operasyon yuzeyi v117
+
+- [x] Ust yarida Gelir Tablosu ve Bilanco birlikte gorunur.
+- [x] Satis, maliyet, brut kar, gider, vergi ve net kar kalemleri ayridir.
+- [x] Her finans kalemi ilgili detay/karar ekranina tiklanabilir baglantidir.
+- [x] Satis tutari sadece mevcut kaynak ozetinden okunur.
+- [x] Eksik maliyet, gider, vergi veya bilanço kaynagi sifir kabul edilmez.
+- [ ] Canli clone snapshot ile tum kalemlerin ayni as-of tarihte mutabakati.
+- [ ] Mobil ve masaustu gorunumunun tarayici ekran goruntusuyle onayi.
+
 ## 2026-07-16 Apsiyon aylik tahakkuk ve odeme defteri v116
 
 - [x] Apsiyon `Tumunu Goster` kaynak kirilimindan aylik Aidat borc makbuzlari okundu.

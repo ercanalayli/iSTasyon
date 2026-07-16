@@ -2,7 +2,16 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
-## Aktif Tek Hedef - Apsiyon Tahakkuklarini Finans Takvimine Planlama v116
+## Aktif Tek Hedef - Canli Gelir Tablosu ve Bilanco Kaynak Baglantisi v117
+
+Ana ekranin yeni Gelir Tablosu ve Bilanco yuzeyi once mevcut satis ozetini
+okur. Siradaki teknik hedef, BizimHesap clone verisinden satilan malin
+maliyeti, gider, vergi, banka/kasa, cari alacak-borc ve stok degerlerini ayni
+as-of tarihiyle kaynakli snapshot'a baglamaktir. Net kar ancak tum zorunlu
+kalemler ayni donemde kanitlandiginda kesin gosterilir. Eksik kayit sifir
+sayilmaz ve asla uydurulmaz.
+
+## Sonraki Hedef - Apsiyon Tahakkuklarini Finans Takvimine Planlama v116
 
 Kaynakta kanitlanan Batikent Ercan Aidat ve Dogalgaz aylik satirlari,
 odeme kaniti olmadan "beklenen/tahakkuk" olarak Finans Takvimi import
