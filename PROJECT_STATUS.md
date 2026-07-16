@@ -666,3 +666,10 @@ Bu yuzdeler kesin metrik degil; son denetimde calisan testler, eksik kaynaklar v
 - Aciklama, AperiON kuyruk ID'si, banka, islem numarasi, karsi taraf ve ham ekstre kanitini tasir.
 - Reklam/duyuru ile banka adi celisen satirlar otomatik kayda kapali tutulur.
 - Gunluk son tarih onizlemesi 2026-07-07 icin sadece bir VakifBank 100,00 TL adayi buldu; canli kuyruk RPC'si Supabase'de eksik `confirmed_counterparty` kolonu nedeniyle durdu. BizimHesap'a yeni kayit atilmadi.
+
+## 2026-07-16 Gelir Tablosu ve Bilanco Yan Yana v122
+
+- Ana ekranda gelir tablosu solda, bilanço ve likidite özeti sağda konumlandı.
+- Dönem matrisi Bugün, Dün, Bu Hafta, Bu Ay, Geçen Ay, Bu Yıl ve Geçen Yıl başlıklarını korur.
+- Bugün altında `Tahmini`, `Tahakkuk`, `Ödenen / Tahsilat`; diğer dönemlerde `Tahakkuk` ve `Ödenen / Tahsilat` ayrı gösterilir.
+- Satış, maliyet, brüt kar, gider ve net kar satırları tıklanarak kategori, ürün ve kaynak kayda iner.

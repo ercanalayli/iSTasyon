@@ -275,3 +275,7 @@ aciklamasinda gecen kelime baska kategorinin kaynagini degistirmez.
 Guvenlik siniri: Devir satiri yeni odeme veya yeni tahakkuk degildir.
 Finans Takvimi'ne sadece borc makbuzu kanitli satir beklenen/tahakkuk olarak
 girilebilir; odendi kapanisi banka veya kaynak tahsilat mutabakati ister.
+
+## D-016 Gelir Tablosu ve Bilanco Yerlesimi
+
+Karar: Ana ekrandaki finans karar yüzeyinde gelir tablosu sol tarafta, bilanço ve likidite özeti sağ tarafta kalır. Dönem başlıkları sabittir. Bugün görünümünde planlanan, tahakkuk ve gerçekleşen nakit ayrı sütunlardır; diğer dönemlerde tahakkuk ve gerçekleşen nakit ayrı tutulur. Tutar hücreleri ilgili kategori, ürün ve kaynak kaydın detayına iner.

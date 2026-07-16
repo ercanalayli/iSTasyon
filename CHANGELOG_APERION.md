@@ -1095,3 +1095,9 @@
   olarak acilir, banka mutabakati ile kapanir.
 - `hattat_oturum_kur.cjs` yerel kalici profil ile kullanicinin kendi
   tarayicisinda oturum kurmasi icin eklendi; parola kaydedilmez.
+
+## 2026-07-16 - Gelir Tablosu ve Bilanco Yan Yana v122
+
+- Ana ekrandaki gelir tablosu matrisi bilanço/likidite özetinin soluna alındı.
+- Nakit sütunu kullanıcı diliyle `Ödenen / Tahsilat` olarak adlandırıldı.
+- Dönem başlıkları ve gün içi Tahmini/Tahakkuk/Ödenen-Tahsilat ayrımı korunarak tıklanabilir detay akışına bağlandı.

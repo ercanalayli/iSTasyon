@@ -2836,6 +2836,25 @@ body.dashboard-mode .today-finance-item em{display:block!important;overflow:hidd
 body.dashboard-mode .today-finance-item.cogs{border-top-color:#F59E0B!important}.dashboard-mode .today-finance-item.gross{border-top-color:#34D399!important}.dashboard-mode .today-finance-item.expense{border-top-color:#FB7185!important}.dashboard-mode .today-finance-item.net{border-top-color:#A78BFA!important}.dashboard-mode .today-finance-item.net.bad{border-top-color:#F43F5E!important}
 @media(max-width:1180px){body.dashboard-mode .today-finance-strip{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:640px){body.dashboard-mode .today-finance-strip{grid-template-columns:repeat(2,minmax(0,1fr))!important}body.dashboard-mode .income-title{font-size:24px!important}}
+
+/* Ana ekran v122: gelir tablosu solda, bilanço ve likidite sağda; karar sütunları dönem bazında sabit. */
+body.dashboard-mode #incomeStatementTop>.income-head{grid-template-columns:1fr!important;gap:8px!important;margin-bottom:10px!important}
+body.dashboard-mode #incomeStatementTop>.income-head .income-title{font-size:22px!important;line-height:1.18!important;letter-spacing:0!important}
+body.dashboard-mode #incomeStatementTop>.income-head .income-sub{font-size:11px!important}
+body.dashboard-mode #incomeStatementTop>.income-head .income-op-board{display:none!important}
+body.dashboard-mode #incomeStatementTop>.income-finance-split{display:grid!important;grid-template-columns:minmax(0,1.55fr) minmax(320px,.75fr)!important;gap:12px!important;align-items:stretch!important}
+body.dashboard-mode #incomeStatementTop .income-statement-panel{display:block!important;min-width:0!important;border:1px solid var(--home-border)!important;border-radius:10px!important;background:#FFFFFF!important;overflow:hidden!important}
+body.dashboard-mode #incomeStatementTop .income-statement-panel .command-matrix{display:block!important;height:100%!important;margin:0!important;border:0!important;border-radius:0!important}
+body.dashboard-mode #incomeStatementTop .income-statement-panel .cm-titlebar{padding:10px 12px!important}
+body.dashboard-mode #incomeStatementTop .income-statement-panel .cm-titlebar b{font-size:15px!important}
+body.dashboard-mode #incomeStatementTop .income-statement-panel .cm-wrap{max-height:390px!important;overflow:auto!important}
+body.dashboard-mode #incomeStatementTop .income-statement-panel .cm-table{min-width:1560px!important}
+body.dashboard-mode #incomeStatementTop .income-balance-half{display:block!important;min-height:0!important;padding:12px!important;border-radius:10px!important;background:#FFFFFF!important}
+body.dashboard-mode #incomeStatementTop .income-balance-half .income-half-grid{grid-template-columns:1fr 1fr!important;gap:8px!important}
+body.dashboard-mode #incomeStatementTop .income-balance-half .income-balance-item{min-height:88px!important}
+body.dashboard-mode #incomeStatementTop .income-balance-proof{grid-column:1 / -1!important}
+body.dashboard-mode #incomeStatementTop>.income-balance-split,body.dashboard-mode #incomeStatementTop>.command-matrix{display:none!important}
+@media(max-width:1180px){body.dashboard-mode #incomeStatementTop>.income-finance-split{grid-template-columns:1fr!important}body.dashboard-mode #incomeStatementTop .income-statement-panel .cm-wrap{max-height:360px!important}}
 body.dashboard-mode .command-map{grid-row:2!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;grid-auto-rows:1fr!important;overflow:hidden!important}
 body.dashboard-mode .command-zone{min-height:0!important;padding:12px!important}
 body.dashboard-mode .zone-title{font-size:15px!important}.zone-sub{font-size:10px!important}
@@ -4879,7 +4898,7 @@ async function renderCommandIncomeMatrix(model){
   window.APERION_COMMAND_MATRIX={periods,matrix,sales,expenses,cashRows};
   const salesRows=COMMAND_MATRIX_CATEGORIES.map(c=>commandMatrixRow(c,`sales:${c}`,periods,matrix));
   const columnCount=1+periods.reduce((sum,p)=>sum+(p.key==='today'?3:2),0);
-  const head=`<tr><th class="cm-main" rowspan="2">KALEM</th>${periods.map(p=>`<th class="${p.key==='today'?'cm-period-today':''}" colspan="${p.key==='today'?3:2}">${escHtml(p.label)}<span>${p.from!==p.to?`${p.from} / ${p.to}`:p.from}</span></th>`).join('')}</tr><tr>${periods.map(p=>p.key==='today'?'<th>Tahmini</th><th>Tahakkuk</th><th class="cm-period-cash">Nakit</th>':'<th>Tahakkuk</th><th class="cm-period-cash">Nakit</th>').join('')}</tr>`;
+  const head=`<tr><th class="cm-main" rowspan="2">KALEM</th>${periods.map(p=>`<th class="${p.key==='today'?'cm-period-today':''}" colspan="${p.key==='today'?3:2}">${escHtml(p.label)}<span>${p.from!==p.to?`${p.from} / ${p.to}`:p.from}</span></th>`).join('')}</tr><tr>${periods.map(p=>p.key==='today'?'<th>Tahmini</th><th>Tahakkuk</th><th class="cm-period-cash">Ödenen / Tahsilat</th>':'<th>Tahakkuk</th><th class="cm-period-cash">Ödenen / Tahsilat</th>').join('')}</tr>`;
   return `<div class="command-matrix">
     <div class="cm-titlebar"><div><b>Gelir Tablosu ve Nakit Matrisi</b><span>Satış ve maliyet satırına tıklayınca kategori → ürün → kayıt listesi açılır. Nakit, banka/POS hareketlerinden gelir.</span></div><button onclick="incomeDrill('revenue')">Kategoriye İn</button></div>
     <div class="cm-wrap"><table class="cm-table"><thead>${head}</thead><tbody>
@@ -5076,16 +5095,9 @@ async function renderIncomeStatementTop(){
       </div>
     </div>
   </div>
-  <div class="income-balance-split">
-    <section class="income-half income-pnl-half" aria-label="Gelir tablosu ozeti">
-      <div class="income-half-head"><div><span>01 · GELIR TABLOSU</span><h3>${p.label} performansi</h3></div><button onclick="incomeDrill('revenue')">Satisa in</button></div>
-      <div class="income-half-grid">
-        <button class="income-balance-item revenue" onclick="incomeDrill('revenue')"><span>Satislar</span><b>${dynMoney(model.revenue)}</b><em>${fmt(model.sales.length)} islem · kategoriye gir</em></button>
-        <button class="income-balance-item cogs" onclick="incomeDrill('cogs')"><span>Satilan malin maliyeti</span><b>${dynMoney(model.cogs)}</b><em>${model.missingCost?`${fmt(model.missingCost)} satirda maliyet eksik`:'kategori → urun maliyeti'}</em></button>
-        <button class="income-balance-item profit" onclick="incomeDrill('gross')"><span>Brut kar</span><b>${dynMoney(model.gross)}</b><em>marj ${dynPct(model.grossMargin)}</em></button>
-        <button class="income-balance-item expense" onclick="incomeDrill('expense')"><span>Giderler</span><b>${dynMoney(model.expenseTotal)}</b><em>${fmt(model.expenses.length)} tahakkuk kaydi</em></button>
-        <button class="income-balance-item net ${accrualNet<0?'bad':''}" onclick="incomeDrill('net')"><span>Net sonuc</span><b>${dynMoney(accrualNet)}</b><em>tahakkuk esasli</em></button>
-      </div>
+  <div class="income-finance-split">
+    <section class="income-statement-panel" aria-label="Gelir tablosu matrisi">
+      ${matrixHtml}
     </section>
     <section class="income-half income-balance-half" aria-label="Bilanco durumu">
       <div class="income-half-head"><div><span>02 · BILANCO DURUMU</span><h3>Dogulanmis finansal durum</h3></div><button onclick="gP('finans',null)">Banka detay</button></div>
@@ -5098,7 +5110,6 @@ async function renderIncomeStatementTop(){
       </div>
     </section>
   </div>
-  ${matrixHtml}
   <div class="report-grid" style="margin-bottom:12px">
     ${incomeMetricCard('Planlanan Net',model.plannedNet,'sözleşmeli + sabit + öngörülen','report-cool')}
     ${incomeMetricCard('Tahakkuk Net',accrualNet,'fatura/satış ve oluşan gider','report-warm')}

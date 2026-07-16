@@ -168,6 +168,10 @@ Son guncelleme: 2026-07-16 Europe/Istanbul
 
 ## Finans Komuta Merkezi Kontrolleri
 
+- [x] Gelir tablosu solda, bilanço ve likidite özeti sağda gösteriliyor.
+- [x] Bugün için Tahmini, Tahakkuk ve Ödenen / Tahsilat sütunları ayrı gösteriliyor.
+- [x] Dönem matrisindeki satış/maliyet/kar hücreleri kaynak detayına inecek şekilde korunuyor.
+
 - [ ] Planlanan, tahakkuk ve gerceklesen ayrimi gorunuyor.
 - [ ] Banka onay bekleyen sayisi gercek kaynaktan geliyor.
 - [ ] Gelir tablosu tutarlari kaynak belirtmeden kesin veri gibi sunulmuyor.

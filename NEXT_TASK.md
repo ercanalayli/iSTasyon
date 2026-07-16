@@ -396,3 +396,7 @@ Ana ekran Executive Workspace v80 katmanina alindi. Sol sekmeler dashboard modun
 ## Guncel ek not 13
 
 `aperion-ana-sayfa.html` referansi kullanici tarafindan begenildi ve v81 tasarim dili olarak ana ekrana uygulandi. Siradaki is: canli Pages deploy sonrasi koyu launcher gorunumunu dogrulamak, sonra ayni "kaleme tikla, icine gir" mantigini Gelir Tablosu ve Hasta Bezi detaylarinda gercek veriyle daha derinlestirmek.
+
+## Aktif Tek Hedef - Gelir Tablosu Kaynak Denetimi
+
+Yeni yan yana finans görünümü hazırdır. Sıradaki iş, `Bugün` satırlarının BizimHesap satış, alış/FIFO maliyet ve banka/POS tahsilat kaynaklarından eksiksiz geldiğini denetlemektir. Kaynakta olmayan tutar sıfır veya `kaynak bekliyor` görünür; değer uydurulmaz.
