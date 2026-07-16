@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-07-16T13:00:51.913Z",
+  "created_at": "2026-07-16T14:38:32.514Z",
   "safe_mode": true,
   "live_rpc_called": false,
   "live_bizimhesap_save_called": false,
@@ -39,34 +39,34 @@
   },
   "summary": {
     "status_preview_count": 25,
-    "status_candidate_count": 4,
-    "status_low_risk_count": 3,
-    "status_review_count": 13,
+    "status_candidate_count": 2,
+    "status_low_risk_count": 2,
+    "status_review_count": 15,
     "status_ready_queue_count": 0,
-    "candidate_file_count": 5,
+    "candidate_file_count": 3,
     "posting_plan_count": 25,
     "queue_dry_run_count": 0,
     "missing_file_count": 0,
     "parse_error_count": 0
   },
   "selected_candidate": {
-    "pending_bank_movement_id": "0cd1e230-2254-4908-a9a0-15a3d8678e38",
+    "pending_bank_movement_id": "f7b75d0d-5df0-4678-b0d3-482a3575af1f",
     "bank_name": "Turkiye Is Bankasi",
-    "transaction_date": "2026-07-05",
-    "transaction_time": "",
-    "amount": 2026,
-    "type": "POS banka transferi",
+    "transaction_date": "2026-07-02",
+    "transaction_time": "09:47",
+    "amount": 2740,
+    "type": "Moka banka transferi",
     "target": "BizimHesap hesaplar arasi transfer",
     "source_account": "",
     "target_account": "*IS BANKASI",
-    "counterparty": "POS POS POS KREDI KARTI -> *IS BANKASI",
-    "category": "POS banka aktarimi",
-    "confidence": 88,
+    "counterparty": "*MOCA SONOVA POS KREDI KARTI -> *IS BANKASI",
+    "category": "Moka POS banka aktarimi",
+    "confidence": 100,
     "risk_class": "low",
     "requires_user_review": false,
     "reasons": [
       "banka alacak/giris",
-      "POS banka aktarimi"
+      "Moka United aciklamasi kullanici tarafindan POS tahsilat aktarimi olarak dogrulandi"
     ]
   },
   "queues": {
@@ -77,15 +77,15 @@
   },
   "classifications": {
     "candidate_types": {
-      "POS banka transferi": 3,
-      "Banka hesaba para girisi - eslestirme bekliyor": 2
+      "Moka banka transferi": 3
     },
     "posting_plan_types": {
-      "Banka hesaba para girisi - eslestirme bekliyor": 8,
+      "Banka hesaba para girisi - eslestirme bekliyor": 6,
       "Cari tahsilat": 5,
       "Cari odeme": 4,
-      "POS banka transferi": 4,
-      "Banka disi ozet mail": 3,
+      "Banka disi ozet mail": 5,
+      "POS banka transferi": 2,
+      "Moka banka transferi": 2,
       "Vergi/SGK odemesi": 1
     }
   },
