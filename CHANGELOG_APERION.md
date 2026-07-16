@@ -1,5 +1,10 @@
 # AperiON Changelog
 
+## 2026-07-16 - Scope boundary for Halkbank Ercan Alayli account
+
+- Recorded the account as an ALKAM Mali-only source and excluded it from
+  AperiON, personal assistant, BizimHesap, and CFO reporting.
+
 ## 2026-07-16 - Apsiyon personal accrual intake v112
 
 - Added local persistent Apsiyon session setup without storing credentials.

@@ -1,5 +1,13 @@
 # AperiON Decisions
 
+## D-011 Halkbank Ercan Alayli account ownership boundary
+
+The Halkbank account belonging to Ercan Alayli is owned by the separate ALKAM
+Mali project at `https://alkam-mali.pages.dev/`. It is excluded from AperiON
+business, personal-life, BizimHesap, and CFO totals. No cross-project sync,
+classification, or reporting may include it unless the user explicitly opens a
+future integration task.
+
 ## D-010 Personal accruals are source-bound and separate from payment proof
 
 Batikent personal aidat and yakit obligations are read from Apsiyon through a

@@ -2,6 +2,12 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Scope Note - Halkbank Ercan Alayli Account
+
+This account belongs to the separate ALKAM Mali project, not AperiON. It is
+kept outside all AperiON and BizimHesap sync/reporting boundaries until an
+explicit future integration request.
+
 ## Guncel Tur - Apsiyon Kisisel Aidat ve Yakit Tahakkuk Hatti v112
 
 Batikent Ercan ev aidati ve yakit tahakkuklari icin kalici yerel Apsiyon
