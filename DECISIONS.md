@@ -216,3 +216,15 @@ kesin odeme eklenmez.
 Gerekce: Donemsel toplam borcu tek ayin odemesi gibi gostermek, kisisel nakit
 planini ve bildirimlerini bozar. Kaynak bakiye rapora kanit olarak girer;
 aylik tahakkuk sadece kaynak vade satiriyla ayri aday olur.
+
+## D-015 Apsiyon Aylik Kategori Defteri
+
+Karar: Apsiyon `Tumunu Goster` ayrintisinda her borc makbuzu ayri kaynak
+tahakkuk kabul edilir. Belge tarihi, son odeme tarihi, aciklama, borc,
+gecikme bedeli, tahsilat ve bakiye birbirinden ayri saklanir. Aidat,
+Dogalgaz ve diger kategoriler kategori basligindan siniflanir; tahsilat
+aciklamasinda gecen kelime baska kategorinin kaynagini degistirmez.
+
+Guvenlik siniri: Devir satiri yeni odeme veya yeni tahakkuk degildir.
+Finans Takvimi'ne sadece borc makbuzu kanitli satir beklenen/tahakkuk olarak
+girilebilir; odendi kapanisi banka veya kaynak tahsilat mutabakati ister.

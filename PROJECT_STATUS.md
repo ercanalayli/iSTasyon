@@ -2,13 +2,18 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
-## Guncel Tur - Apsiyon Kaynak Bakiye Ayrimi v115
+## Guncel Tur - Apsiyon Aylik Tahakkuk ve Odeme Defteri v116
 
-Batikent Ercan Apsiyon oturumu ile kisisel finans ekrani salt-okunur
-dogrulandi. Kaynakta Aidat bakiyesi `9.240,00 TL`, Dogalgaz bakiyesi
-`2.155,82 TL` olarak ayri gorunuyor. Bu degerler aylik vade satiri olmadigi
-icin Finans Takvimi'ne kesin odeme diye yazilmaz; sadece kaynak bakiye
-kanitidir.
+Batikent Ercan Apsiyon kisisel finans ekrani salt-okunur olarak ayrintili
+okundu. Apsiyonun kendi kategori kirilimi, Aidat icin Ocak-Temmuz 2026
+ayrilmis borc makbuzlarini; belge tarihi, son odeme tarihi, tutar, gecikme
+bedeli ve tahsilat satiriyla birlikte veriyor. Aidat tahakkuklari her biri
+`4.500,00 TL`, son odeme gunu ayin `15`i olarak kaynakta kanitlandi.
+
+Dogalgaz satirlari da kaynak tarih/tutar ile ayri okunur. Devir bakiyesi
+tahakkuk veya odeme adayi sayilmaz. Okuyucu toplam bakiye ile aylik satiri
+karistirmaz; sonuc `finance_imports/apsiyon` altinda yerel dry-run kaniti
+olarak kalir. Finans Takvimi'ne yazma bu turda yapilmadi.
 
 ## Guncel Tur - Banka Tarihi Duzeltmesi Dogrulandi v114
 

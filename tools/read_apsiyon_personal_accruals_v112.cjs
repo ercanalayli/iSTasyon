@@ -24,9 +24,9 @@ function normalize(text) {
 }
 
 function parseAmount(text) {
-  const match = String(text || '').match(/(?:TL|TRY|₺)\s*([\d.]+(?:,\d{1,2})?)|([\d.]+(?:,\d{1,2})?)\s*(?:TL|TRY|₺)/i);
+  const match = String(text || '').match(/(?:TL|TRY|₺)\s*([\d.]+(?:,\d{1,2})?)|([\d.]+(?:,\d{1,2})?)\s*(?:TL|TRY|₺)|^\s*([\d.]+(?:,\d{1,2})?)\s*$/i);
   if (!match) return null;
-  const value = (match[1] || match[2]).replace(/\./g, '').replace(',', '.');
+  const value = (match[1] || match[2] || match[3]).replace(/\./g, '').replace(',', '.');
   const amount = Number(value);
   return Number.isFinite(amount) ? amount : null;
 }
@@ -40,6 +40,7 @@ function parseDate(text) {
 
 function classify(text) {
   if (/aidat/i.test(text)) return { obligation_id: 'personal-batikent-ercan-ev-aidat', category: 'Ev / Aidat', title: 'Batikent Ercan Ev Aidati' };
+  if (/do.galgaz|doğalgaz/i.test(text)) return { obligation_id: 'personal-batikent-ercan-ev-dogalgaz', category: 'Ev / Dogalgaz', title: 'Batikent Ercan Ev Dogalgaz Tahakkuku' };
   if (/yak.t|yakit|akaryak.t|benzin|mazot/i.test(text)) return { obligation_id: 'personal-batikent-ercan-ev-yakit', category: 'Ev / Yakit', title: 'Batikent Ercan Ev Yakit Tahakkuku' };
   return null;
 }
@@ -99,14 +100,116 @@ function parseCategoryBalances(pageText) {
   return categories;
 }
 
+function parseMonthlyLedgerRows(rows) {
+  const ledgerRows = [];
+  const accruals = [];
+  const seen = new Set();
+  for (const row of rows || []) {
+    const item = classify(row.category || '') || classify(row.description || '');
+    if (!item) continue;
+    const documentDate = parseDate(row.document_date);
+    const dueDate = parseDate(row.due_date);
+    const debt = parseAmount(row.debt);
+    const penalty = parseAmount(row.penalty);
+    const credit = parseAmount(row.credit);
+    const balance = parseAmount(row.balance);
+    const sourceId = `apsiyon-ledger-${row.source_row_id || crypto.createHash('sha256').update(JSON.stringify(row)).digest('hex').slice(0, 18)}`;
+    if (seen.has(sourceId)) continue;
+    seen.add(sourceId);
+    const type = /^devir\b/i.test(row.description || '') ? 'opening_balance' : (debt ? 'accrual' : (credit ? 'payment' : 'other'));
+    const evidence = [row.category, row.document_date, row.due_date, row.description, row.debt, row.penalty, row.credit, row.balance].filter(Boolean).join(' | ');
+    ledgerRows.push({ source_id: sourceId, ...item, source_category: row.category || '', type, document_date: documentDate, due_date: dueDate, debt, penalty, credit, balance, currency: 'TRY', evidence_excerpt: evidence, source_cells: row.cell_values || [], source_category_text: row.category_text || '' });
+    if (type === 'accrual') {
+      accruals.push({
+        source_id: sourceId, ...item, document_date: documentDate, amount: debt, currency: 'TRY', due_date: dueDate,
+        status: debt !== null && dueDate ? 'ready_for_calendar_review' : 'needs_review',
+        evidence_excerpt: evidence, evidence_line: row.description || row.category,
+      });
+    }
+  }
+
+  // Apsiyon, borc makbuzlarini bazen tablo satiri yerine acilir kategori metninde sunuyor.
+  // Bu kaynak metni tarih, son odeme tarihi ve tutar kanitiyla ikinci kez taranir.
+  const categoryTexts = new Map();
+  for (const row of rows || []) {
+    const key = `${row.category || ''}|${row.category_text || ''}`;
+    if (row.category_text && !categoryTexts.has(key)) categoryTexts.set(key, row);
+  }
+  const money = '\\d{1,3}(?:\\.\\d{3})*,\\d{2}';
+  const accrualPattern = new RegExp(`(\\d{2}\\.\\d{2}\\.\\d{4})\\s+(\\d{2}\\.\\d{2}\\.\\d{4})\\s+(20\\d{2}-.+?\\/\\s*Bor(?:ç|Ã§)\\s*makbuzu.+?)\\s+(${money})\\s*TL(?:\\s+(${money})\\s*TL)?\\s+(${money})\\s*TL`, 'gi');
+  for (const row of categoryTexts.values()) {
+    const item = classify(row.category || '') || classify(row.category_text || '');
+    if (!item) continue;
+    for (const match of String(row.category_text).matchAll(accrualPattern)) {
+      const [, rawDocumentDate, rawDueDate, description, rawDebt, rawPenalty, rawBalance] = match;
+      const documentDate = parseDate(rawDocumentDate);
+      const dueDate = parseDate(rawDueDate);
+      const debt = parseAmount(rawDebt);
+      const penalty = parseAmount(rawPenalty);
+      const balance = parseAmount(rawBalance);
+      const sourceId = `apsiyon-accrual-${crypto.createHash('sha256').update(`${row.category}|${rawDocumentDate}|${rawDueDate}|${description}`).digest('hex').slice(0, 18)}`;
+      if (seen.has(sourceId)) continue;
+      seen.add(sourceId);
+      const evidence = [row.category, rawDocumentDate, rawDueDate, description, rawDebt, rawPenalty, rawBalance].filter(Boolean).join(' | ');
+      ledgerRows.push({ source_id: sourceId, ...item, source_category: row.category || '', type: 'accrual', document_date: documentDate, due_date: dueDate, debt, penalty, credit: null, balance, currency: 'TRY', evidence_excerpt: evidence, source_cells: [] });
+      accruals.push({ source_id: sourceId, ...item, document_date: documentDate, amount: debt, currency: 'TRY', due_date: dueDate, status: debt !== null && dueDate ? 'ready_for_calendar_review' : 'needs_review', evidence_excerpt: evidence, evidence_line: description });
+    }
+  }
+  return { ledgerRows, accruals };
+}
+
+async function fetchMonthlyLedgerRows(page) {
+  return page.evaluate(async () => {
+    const resource = performance.getEntriesByType('resource').map(entry => entry.name)
+      .find(url => /\/personalfinancialstatusheader\?/i.test(url));
+    if (!resource) return [];
+    const params = new URL(resource).searchParams;
+    const response = await fetch('/web/personalfinancialstatustable', {
+      method: 'POST', credentials: 'include',
+      headers: { 'content-type': 'application/json', 'x-requested-with': 'XMLHttpRequest', accept: 'text/html, */*; q=0.01' },
+      body: JSON.stringify({
+        ApartmentGuid: '00000000-0000-0000-0000-000000000000', ProfileGuid: params.get('prfGuid'), CategoryId: 0,
+        BeginDate: `${params.get('startDate')}T00:00:00.000Z`, EndDate: `${params.get('lastDate')}T23:59:59.999Z`,
+      }),
+    });
+    if (!response.ok) return [];
+    const document = new DOMParser().parseFromString(await response.text(), 'text/html');
+    const clean = (text) => {
+      const value = String(text || '').replace(/\s+/g, ' ').trim();
+      if (!/[ÃÄÅ]/.test(value)) return value;
+      try {
+        return new TextDecoder('utf-8').decode(Uint8Array.from(value, (char) => char.charCodeAt(0) & 0xff)).replace(/\s+/g, ' ').trim();
+      } catch (_) {
+        return value;
+      }
+    };
+    return [...document.querySelectorAll('.category-item')].flatMap(category => {
+      const categoryName = clean(category.querySelector('.tooltip-wrap')?.textContent);
+      const categoryText = clean(category.textContent);
+      return [...category.querySelectorAll('tbody > tr')].map(row => {
+        const cells = [...row.querySelectorAll(':scope > td')];
+        return {
+          source_row_id: row.id || '', category: categoryName, category_text: categoryText, table_class: String(row.closest('table')?.className || ''), is_extended: row.classList.contains('extended-row'),
+          document_date: clean(cells[0]?.textContent), due_date: clean(cells[1]?.textContent),
+          description: clean(cells[2]?.querySelector('.item-description')?.textContent || cells[2]?.textContent),
+          cell_values: cells.map((cell) => clean(cell.textContent)),
+          debt: clean(row.querySelector('#debt')?.textContent), penalty: clean(cells[4]?.textContent),
+          credit: clean(row.querySelector('#credit')?.textContent), balance: clean(cells[cells.length - 1]?.textContent),
+        };
+      });
+    });
+  });
+}
+
 async function main() {
   const out = valueArg('out', defaultOut);
   const headless = process.argv.includes('--headless') || process.env.APSIYON_HEADLESS === 'true';
   const session = fs.existsSync(sessionFile) ? JSON.parse(fs.readFileSync(sessionFile, 'utf8')) : null;
-  const url = valueArg('url', process.env.APSIYON_ACCRUALS_URL || session?.url || 'https://apsiyon.com/account/login');
+  const savedAccrualsUrl = /personalfinancialstatus/i.test(session?.url || '') ? session.url : '';
+  const url = valueArg('url', process.env.APSIYON_ACCRUALS_URL || savedAccrualsUrl || 'https://www.apsiyon.com/web/personalfinancialstatus');
   const result = {
     created_at: new Date().toISOString(), source: 'apsiyon_personal_accruals', scope: 'personal', owner: 'Ercan Alayli', location: 'Batikent', mode: 'dry_run', source_url: url,
-    summary: { found: 0, ready_for_calendar_review: 0, needs_review: 0, source_balance_categories: 0 }, accruals: [], source_balance_categories: [], discovered_links: [],
+    summary: { found: 0, ready_for_calendar_review: 0, needs_review: 0, source_balance_categories: 0, monthly_ledger_rows: 0 }, accruals: [], monthly_ledger_rows: [], source_balance_categories: [], discovered_links: [],
   };
   if (!fs.existsSync(profileDir)) {
     result.session = { ok: false, reason: 'profile_missing' };
@@ -133,12 +236,16 @@ async function main() {
       console.log('SONUC: OTURUM_GEREKLI');
       return;
     }
-    result.accruals = parseAccruals(snapshot.text);
+    const monthlyRows = await fetchMonthlyLedgerRows(page).catch(() => []);
+    const parsedLedger = parseMonthlyLedgerRows(monthlyRows);
+    result.monthly_ledger_rows = parsedLedger.ledgerRows;
+    result.accruals = parsedLedger.accruals.length ? parsedLedger.accruals : parseAccruals(snapshot.text);
     result.source_balance_categories = parseCategoryBalances(snapshot.text);
     result.summary.found = result.accruals.length;
     result.summary.ready_for_calendar_review = result.accruals.filter((item) => item.status === 'ready_for_calendar_review').length;
     result.summary.needs_review = result.accruals.filter((item) => item.status === 'needs_review').length;
     result.summary.source_balance_categories = result.source_balance_categories.length;
+    result.summary.monthly_ledger_rows = result.monthly_ledger_rows.length;
     result.message = result.accruals.length
       ? 'Tahakkuk adaylari kaynak kanitiyla okundu. Finans Takvimi importu ayri onay adimidir.'
       : (result.source_balance_categories.length

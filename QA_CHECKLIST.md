@@ -2,11 +2,20 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## 2026-07-16 Apsiyon aylik tahakkuk ve odeme defteri v116
+
+- [x] Apsiyon `Tumunu Goster` kaynak kirilimindan aylik Aidat borc makbuzlari okundu.
+- [x] Aidat belge tarihi, son odeme tarihi ve `4.500,00 TL` tutar her ay icin ayri kanitlandi.
+- [x] Tahsilat satirlari borc satirlarindan ayri tutuldu.
+- [x] Dogalgaz ve Aidat kaynaklari birbirine karistirilmadi.
+- [x] Devir bakiyesi odeme/tahakkuk adayi sayilmadi.
+- [x] Okuma dry-run olarak kaldi; Finans Takvimi ve BizimHesap'a yazim yapilmadi.
+
 ## 2026-07-16 Apsiyon kaynak bakiye ayrimi v115
 
 - [x] Apsiyon kalici oturumuyla Batikent kisisel finans ekrani salt-okunur okundu.
 - [x] Aidat ve Dogalgaz kaynak bakiyeleri ayri kategoriler olarak alindi.
-- [x] Vade olmayan toplam bakiyeler aylik odeme/tahakkuk diye Finans Takvimi'ne yazilmadi.
+- [x] Toplam bakiye aylik odeme/tahakkuk diye Finans Takvimi'ne yazilmadi.
 
 ## 2026-07-16 Kaynak banka tarihi duzeltmesi v114
 

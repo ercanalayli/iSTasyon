@@ -2,7 +2,15 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
-## Aktif Tek Hedef - Gunluk POS Sonu ve Banka Mutabakati v115
+## Aktif Tek Hedef - Apsiyon Tahakkuklarini Finans Takvimine Planlama v116
+
+Kaynakta kanitlanan Batikent Ercan Aidat ve Dogalgaz aylik satirlari,
+odeme kaniti olmadan "beklenen/tahakkuk" olarak Finans Takvimi import
+planina donusturulecek. Ilk plan 2026 Ocak-Temmuz Aidat ve kaynakta bulunan
+Dogalgaz satirlarini duplicate key ile onizler. Canli takvim yazimi ayri
+kullanici onayi ister; banka mutabakati olmadan hicbir satir odendi kapanmaz.
+
+## Sonraki Hedef - Gunluk POS Sonu ve Banka Mutabakati v115
 
 Her gun POS cihazindan gelen gun sonu raporu; ayni gun veya takip eden
 bankaya yatan POS tahsilati ve komisyon kaydi ile islem numarasi, batch,
@@ -10,12 +18,12 @@ tutar ve tarih uzerinden salt-okunur mutabakat edilir. Sonuc: eslesen,
 eksik, tutar farkli ve inceleme gerekli. Kaynak kaniti olmadan yeni
 BizimHesap kaydi olusturulmaz.
 
-## Tamamlandi - Apsiyon Kaynak Bakiye Ayrimi v115
+## Tamamlandi - Apsiyon Aylik Kaynak Okuma v115/v116
 
 Apsiyon kisisel finans sayfasinda Aidat ve Dogalgaz ayri kaynak bakiye
-satirlari olarak okundu. Aylik tahakkuk/vade satiri bulunmadigi icin takvime
-kesin odeme eklenmedi. Vade ayrintisi olan bir Apsiyon ekranina ulasildiginda
-ayni okuyucu bunu ayri tahakkuk adayi olarak kaydeder.
+satirlari olarak okundu. Ayrica acilir "Tumunu Goster" kirilimindan aylik
+Aidat borc makbuzlari ile son odeme tarihleri ayri adaylara donusturuldu.
+Kaynak toplam bakiye, aylik tahakkuk veya odeme diye yorumlanmaz.
 
 ## Tamamlandi - Banka Tarihi Kaniti ve Mevcut Kayit Duzeltmesi v114
 

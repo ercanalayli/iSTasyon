@@ -1,5 +1,16 @@
 # AperiON Changelog
 
+## 2026-07-16 - Apsiyon aylik tahakkuk ve odeme defteri v116
+
+- Apsiyonun `Tumunu Goster` kategori kirilimi kendi oturum istegiyle
+  salt-okunur okundu.
+- Aidat icin Ocak-Temmuz 2026 ayri borc makbuzlari, belge tarihi, son odeme
+  tarihi, tutar, gecikme ve tahsilat kanitlariyla ayrildi.
+- Dogalgaz satirlari ayri kaynak kalemi olarak korundu; devir bakiyesi yeni
+  tahakkuk veya odeme adayi sayilmadi.
+- Kaynak HTML'nin standart tablo satiri disindaki acilir ayrintilari da
+  ayristrildi. Bu turda Finans Takvimi veya BizimHesap'a yazim yapilmadi.
+
 ## 2026-07-16 - Apsiyon kaynak bakiye ayrimi v115
 
 - Apsiyon kisisel finans ekrani aidat ve dogalgaz kaynak bakiyeleri icin
