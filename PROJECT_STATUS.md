@@ -680,3 +680,9 @@ Bu yuzdeler kesin metrik degil; son denetimde calisan testler, eksik kaynaklar v
 - Dönem matrisi Bugün, Dün, Bu Hafta, Bu Ay, Geçen Ay, Bu Yıl ve Geçen Yıl başlıklarını korur.
 - Bugün altında `Tahmini`, `Tahakkuk`, `Ödenen / Tahsilat`; diğer dönemlerde `Tahakkuk` ve `Ödenen / Tahsilat` ayrı gösterilir.
 - Satış, maliyet, brüt kar, gider ve net kar satırları tıklanarak kategori, ürün ve kaynak kayda iner.
+# v124 - Canonical publication recovery (2026-07-16)
+
+- Canonical user-facing address is `https://aperion-istasyon.pages.dev/`.
+- `https://ercanalayli.github.io/iSTasyon/` is a legacy GitHub Pages backup; it is not the authoritative live cockpit.
+- Cloudflare address currently times out from this machine. The repository had visual-control workflows that assumed a Cloudflare deploy existed, but no workflow that actually deployed the project.
+- Added a production deployment workflow for the `aperion-istasyon` Pages project. It requires the repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`; deployment is not claimed successful until the workflow runs green and the canonical URL answers.

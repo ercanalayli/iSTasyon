@@ -1107,3 +1107,8 @@
 - Ana ekrandaki gelir tablosu matrisi bilanço/likidite özetinin soluna alındı.
 - Nakit sütunu kullanıcı diliyle `Ödenen / Tahsilat` olarak adlandırıldı.
 - Dönem başlıkları ve gün içi Tahmini/Tahakkuk/Ödenen-Tahsilat ayrımı korunarak tıklanabilir detay akışına bağlandı.
+# 2026-07-16 - Canonical Pages deployment repair
+
+- Added `.github/workflows/cloudflare-pages-deploy.yml` so pushes to `main` can publish the canonical `aperion-istasyon` Cloudflare Pages project.
+- Documented that GitHub Pages is a legacy backup and must not be presented as the primary AperiON cockpit.
+- Added an explicit secret gate so a missing Cloudflare credential fails safely rather than pretending a deploy exists.

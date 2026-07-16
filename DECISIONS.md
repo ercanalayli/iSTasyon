@@ -285,3 +285,9 @@ Karar: Kredi karti hesap ozeti, aylik ekstre bildirimi veya duyuru e-postasi tek
 Gerekce: Konu satirindaki donem/yil, kredi karti ya da POS kelimeleri gercek para hareketiyle karisabilir. Kesin kayit yalnizca tarih, tutar, hesap ve tekil hareket kaniti bir arada oldugunda yapilir.
 
 Karar: Ana ekrandaki finans karar yüzeyinde gelir tablosu sol tarafta, bilanço ve likidite özeti sağ tarafta kalır. Dönem başlıkları sabittir. Bugün görünümünde planlanan, tahakkuk ve gerçekleşen nakit ayrı sütunlardır; diğer dönemlerde tahakkuk ve gerçekleşen nakit ayrı tutulur. Tutar hücreleri ilgili kategori, ürün ve kaynak kaydın detayına iner.
+# D-018: Canonical AperiON address
+
+- Decision: `https://aperion-istasyon.pages.dev/` is the canonical AperiON cockpit URL.
+- GitHub Pages remains a recovery/preview surface only and must not be relied on for current financial decisions.
+- Rationale: the prior configuration had monitoring jobs waiting for a Cloudflare deployment but no production deployment job, which allowed the two URLs to drift.
+- Guardrail: the deploy workflow requires repository-scoped Cloudflare credentials and deploys only from `main`.

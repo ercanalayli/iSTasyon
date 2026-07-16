@@ -406,3 +406,8 @@ Ana ekran Executive Workspace v80 katmanina alindi. Sol sekmeler dashboard modun
 3. Kredi karti hesap ozeti, duyuru ve bulten e-postalarini finansal hareket olarak kayda alma.
 
 Yeni yan yana finans görünümü hazırdır. Sıradaki iş, `Bugün` satırlarının BizimHesap satış, alış/FIFO maliyet ve banka/POS tahsilat kaynaklarından eksiksiz geldiğini denetlemektir. Kaynakta olmayan tutar sıfır veya `kaynak bekliyor` görünür; değer uydurulmaz.
+# Next primary goal: restore canonical Cloudflare publication
+
+1. Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` to repository secrets, scoped only to the `aperion-istasyon` Pages project.
+2. Run `Deploy AperiON Cloudflare Pages` once and verify `https://aperion-istasyon.pages.dev/` returns the current main commit.
+3. Only after that verification, replace the legacy GitHub Pages entry point with a concise canonical-link fallback.

@@ -193,3 +193,12 @@ Son guncelleme: 2026-07-16 Europe/Istanbul
 - [ ] Cari karti satis/tahakkuk ile tahsilat/acik bakiye ayrimini karistirmiyor.
 - [ ] Eksik tahsilat veya bakiye kaynagi acikca isaretleniyor.
 
+# Canonical publication checks
+
+- [x] GitHub Pages and Cloudflare Pages endpoints checked separately.
+- [x] Confirmed `aperion-istasyon.pages.dev` was unreachable from the current machine at audit time.
+- [x] Confirmed no Cloudflare deployment workflow existed in the repository.
+- [x] Added deploy workflow with a non-secret credential presence gate.
+- [ ] Confirm a successful `Deploy AperiON Cloudflare Pages` run.
+- [ ] Confirm canonical root returns the current `main` cockpit.
+- [ ] Replace legacy GitHub Pages entry point only after canonical verification.
