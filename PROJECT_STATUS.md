@@ -2,6 +2,14 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Guncel Tur - Apsiyon Kaynak Bakiye Ayrimi v115
+
+Batikent Ercan Apsiyon oturumu ile kisisel finans ekrani salt-okunur
+dogrulandi. Kaynakta Aidat bakiyesi `9.240,00 TL`, Dogalgaz bakiyesi
+`2.155,82 TL` olarak ayri gorunuyor. Bu degerler aylik vade satiri olmadigi
+icin Finans Takvimi'ne kesin odeme diye yazilmaz; sadece kaynak bakiye
+kanitidir.
+
 ## Guncel Tur - Banka Tarihi Duzeltmesi Dogrulandi v114
 
 Vakif Sirket hesabindaki iki denetlenmis resmi kayit, yeni hareket

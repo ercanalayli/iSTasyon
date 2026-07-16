@@ -1,5 +1,12 @@
 # AperiON Changelog
 
+## 2026-07-16 - Apsiyon kaynak bakiye ayrimi v115
+
+- Apsiyon kisisel finans ekrani aidat ve dogalgaz kaynak bakiyeleri icin
+  salt-okunur olarak dogrulandi.
+- Okuyucu, kaynak bakiye kirilimini aylik tahakkuk adaylarindan ayirir.
+  Vade yoksa Finans Takvimi'ne kesin odeme kaydi olusturmaz.
+
 ## 2026-07-16 - Kaynak banka tarihi resmi kayit duzeltmesi v114
 
 - Vakif Sirket hesabindaki iki mevcut hareket, yeni kayit olusturmadan ayni

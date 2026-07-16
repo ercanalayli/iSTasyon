@@ -10,6 +10,13 @@ tutar ve tarih uzerinden salt-okunur mutabakat edilir. Sonuc: eslesen,
 eksik, tutar farkli ve inceleme gerekli. Kaynak kaniti olmadan yeni
 BizimHesap kaydi olusturulmaz.
 
+## Tamamlandi - Apsiyon Kaynak Bakiye Ayrimi v115
+
+Apsiyon kisisel finans sayfasinda Aidat ve Dogalgaz ayri kaynak bakiye
+satirlari olarak okundu. Aylik tahakkuk/vade satiri bulunmadigi icin takvime
+kesin odeme eklenmedi. Vade ayrintisi olan bir Apsiyon ekranina ulasildiginda
+ayni okuyucu bunu ayri tahakkuk adayi olarak kaydeder.
+
 ## Tamamlandi - Banka Tarihi Kaniti ve Mevcut Kayit Duzeltmesi v114
 
 Yeni BizimHesap banka, para girisi ve masraf kayitlari kaynak banka

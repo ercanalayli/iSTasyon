@@ -2,6 +2,12 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## 2026-07-16 Apsiyon kaynak bakiye ayrimi v115
+
+- [x] Apsiyon kalici oturumuyla Batikent kisisel finans ekrani salt-okunur okundu.
+- [x] Aidat ve Dogalgaz kaynak bakiyeleri ayri kategoriler olarak alindi.
+- [x] Vade olmayan toplam bakiyeler aylik odeme/tahakkuk diye Finans Takvimi'ne yazilmadi.
+
 ## 2026-07-16 Kaynak banka tarihi duzeltmesi v114
 
 - [x] Kaynak `transaction_date`, BizimHesap form tarihinden once ve sonra kontrol edildi.

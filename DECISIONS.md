@@ -205,3 +205,14 @@ Gerekce: Portalin tek modal duzenleme penceresi asenkron yuklenir ve onceki
 hareketin gecici alanlarini gosterebilir. Duzeltme araci formu kapatir,
 yeniden acar, veri yuklemesini bekler ve yalnizca tekil resmi kayit kimligi
 ile calisir.
+
+## D-014 Apsiyon Bakiye ve Tahakkuk Ayrimi
+
+Karar: Apsiyon kisisel finans ekranindaki kategori bakiyesi, aylik tahakkuk
+veya vadesi gelmis odeme olarak yorumlanmaz. Aidat, dogalgaz ve benzeri
+kirilimlerde vade/tutar satiri kaynakta ayrica gorunmeden Finans Takvimi'ne
+kesin odeme eklenmez.
+
+Gerekce: Donemsel toplam borcu tek ayin odemesi gibi gostermek, kisisel nakit
+planini ve bildirimlerini bozar. Kaynak bakiye rapora kanit olarak girer;
+aylik tahakkuk sadece kaynak vade satiriyla ayri aday olur.
