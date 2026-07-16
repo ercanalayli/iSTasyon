@@ -1,6 +1,16 @@
 # AperiON QA Checklist
 
-Son guncelleme: 2026-07-15 Europe/Istanbul
+Son guncelleme: 2026-07-16 Europe/Istanbul
+
+## 2026-07-16 Ana Sayfa Gelir Tablosu ve Bilanco v111
+
+- [x] Excel donem sirasi (Bugun -> Gecen Yil) gelir tablosu motorunda var.
+- [x] Planlanan / tahakkuk / gerceklesen kolonlari ayridir.
+- [x] Satis -> kategori -> urun -> kaynak kayit ayrintisi korunur.
+- [x] Satilan Malin Maliyeti ayri tiklanabilir kategori/urun akisi olarak eklendi.
+- [x] Banka/kasa toplami sadece bakiye alanli ekstre kaynaklarindan hesaplanir.
+- [x] Stok, ticari alacak ve ticari borc kaynagi yoksa kesin bilanço tutari uydurulmaz.
+- [ ] Canli Supabase kaynaklariyla donem ve drilldown arayuzu manuel kontrol edildi.
 
 ## Her Tur Zorunlu Kontrol
 
@@ -23,6 +33,18 @@ Son guncelleme: 2026-07-15 Europe/Istanbul
 - [x] Odeme listesi "odendi" olarak yorumlanmadi.
 - [ ] Canli Finans Takvimi importu ayrica onaylandi.
 - [ ] Banka mutabakati kapanis kaniti ayri tutuldu.
+
+## 2026-07-15 Sirket Banka Gecmis Mutabakati v109
+
+- [x] VakifBank islem numarali XLS/XLSX kaynaklari tanindi.
+- [x] ALAYLI MEDIKAL Is Bankasi hesap ozeti XLS kaynaklari tanindi.
+- [x] Kisisel vadesiz hesap dosyalari sirket akisi disinda tutuldu.
+- [x] Salt-okunur rapor 741 kaynak satir uzerinde uretildi.
+- [x] Is Bankasi ayni referansli ana hareket/masraf satirlari ayri duplicate anahtarla korunuyor.
+- [x] Is Bankasi giris ve cikis virmanlarinda kaynak/hedef yon testi gecti.
+- [ ] Sifreli servis anahtariyla Supabase/BizimHesap kaniti cekildi.
+- [ ] Islenmis ve eksik satirlar kaynak kanitiyla ayrildi.
+- [ ] Herhangi bir eksik satir canli kayda aday yapilmadan once hesap ve kayit turu dogrulandi.
 
 ## Veri Guveni Kontrolleri
 

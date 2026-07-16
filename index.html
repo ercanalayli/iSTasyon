@@ -2801,6 +2801,7 @@ body.dashboard-mode .diaper-mini-table tr:hover td{background:rgba(201,162,39,.0
   body.dashboard-mode #pg-dashboard #kartsDiv{display:block!important;height:auto!important}
   body.dashboard-mode .command-map{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
+.income-balance-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:0 0 12px}.income-half{border:1px solid #D8E4F4;border-radius:12px;padding:14px;background:#fff;min-width:0}.income-pnl-half{border-top:3px solid #2563EB}.income-balance-half{border-top:3px solid #0F766E}.income-half-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.income-half-head span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.8px;color:#64748B;font-weight:950}.income-half-head h3{margin:4px 0 0;font-size:16px;letter-spacing:0;color:#0F172A}.income-half-head button{border:1px solid #CBD5E1;background:#fff;color:#1D4ED8;font-weight:900;font-size:11px;border-radius:7px;padding:7px 9px;cursor:pointer}.income-half-head button:hover{border-color:#2563EB;background:#EFF6FF}.income-half-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.income-balance-item,.income-balance-proof{min-height:76px;border:1px solid #E2E8F0;border-radius:8px;background:#F8FAFC;padding:10px;text-align:left;min-width:0}.income-balance-item{cursor:pointer;font:inherit}.income-balance-item:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(15,23,42,.08);border-color:#94A3B8}.income-balance-item span,.income-balance-proof span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.55px;text-transform:uppercase;font-weight:950;color:#64748B}.income-balance-item b,.income-balance-proof b{display:block;margin-top:6px;font-size:17px;line-height:1.08;color:#0F172A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.income-balance-item em,.income-balance-proof em{display:block;margin-top:5px;font-size:10px;font-style:normal;color:#64748B;line-height:1.3}.income-balance-item.revenue{border-left:3px solid #2563EB}.income-balance-item.cogs{border-left:3px solid #F59E0B}.income-balance-item.profit{border-left:3px solid #059669}.income-balance-item.expense{border-left:3px solid #DC2626}.income-balance-item.net{border-left:3px solid #7C3AED}.income-balance-item.net.bad{border-left-color:#DC2626}.income-balance-item.asset{border-left:3px solid #0F766E}.income-balance-item.receivable{border-left:3px solid #0284C7}.income-balance-item.payable{border-left:3px solid #EA580C}.income-balance-item.stock{border-left:3px solid #7C3AED}.income-balance-proof{grid-column:span 2;background:#F0FDFA;border-color:#99F6E4}.income-balance-proof b{color:#0F766E}.income-cogs{cursor:pointer}.income-cogs:hover{background:#FFFBEB}.income-inline-action{display:block;margin-top:3px;font-family:var(--mono);font-size:9px;letter-spacing:.4px;color:#B45309}@media(max-width:980px){.income-balance-split{grid-template-columns:1fr}.income-half-grid{grid-template-columns:1fr 1fr}}@media(max-width:560px){.income-half-grid{grid-template-columns:1fr}.income-balance-proof{grid-column:auto}}
 </style>
 </head>
 <body class="dashboard-mode">
@@ -4668,6 +4669,25 @@ async function buildIncomeModel(mode=INCOME_MODE){
   writeIncomeCache(cacheKey,model);
   return model;
 }
+async function buildIncomeBalanceSnapshot(model){
+  const rows=[...(model?.bankRows||[]),...(model?.approvedBankRows||[])];
+  const read=async(table,query)=>{
+    try{const {data}=await query(db.from(table).select('*'));rows.push(...(data||[]));}catch(e){}
+  };
+  await Promise.all([
+    read('bank_transactions',q=>q.eq('firma_id',PILOT_FIRMA).order('tarih',{ascending:false}).limit(750)),
+    read('pending_bank_movements',q=>q.eq('company_id',PILOT_FIRMA).not('balance_after','is',null).order('transaction_date',{ascending:false}).limit(750)),
+    read('banka_raw',q=>q.eq('firma_id',PILOT_FIRMA).not('bakiye','is',null).order('tarih',{ascending:false}).limit(750))
+  ]);
+  const bank=latestBankBalances(rows);
+  return {
+    bank,
+    receivableGap:Math.max(0,(model?.revenue||0)-(model?.cashIn||0)),
+    payableGap:Math.max(0,(model?.expenseTotal||0)-(model?.cashOut||0)),
+    hasStockCost:(model?.cogs||0)>0,
+    sourceCount:bank.items.length
+  };
+}
 function incomeMoney(v,cls=''){return `<span class="income-click ${cls}" onclick="incomeDrill('${cls||'revenue'}')">${dynMoney(v)}</span>`;}
 function incomePlanMoney(v,type,bucket=''){
   const click=type==='plan_income'?'incomeDrillPlanIncome':type==='plan_expense'?'incomeDrillPlanExpense':'incomeDrill';
@@ -4923,6 +4943,7 @@ async function renderIncomeStatementTop(){
   const commandClass=accrualNet<0||cashNet<0?'bad':cashGap>0?'warn':'good';
   const activeBtn=m=>INCOME_MODE===m?'on':'';
   const matrixHtml=await renderCommandIncomeMatrix(model);
+  const balanceSnapshot=await buildIncomeBalanceSnapshot(model);
   el.innerHTML=`<div class="income-head">
     <div class="income-cockpit-main">
       <div class="income-eyebrow">AperiON Operational Finance App</div>
@@ -4974,6 +4995,28 @@ async function renderIncomeStatementTop(){
       </div>
     </div>
   </div>
+  <div class="income-balance-split">
+    <section class="income-half income-pnl-half" aria-label="Gelir tablosu ozeti">
+      <div class="income-half-head"><div><span>01 · GELIR TABLOSU</span><h3>${p.label} performansi</h3></div><button onclick="incomeDrill('revenue')">Satisa in</button></div>
+      <div class="income-half-grid">
+        <button class="income-balance-item revenue" onclick="incomeDrill('revenue')"><span>Satislar</span><b>${dynMoney(model.revenue)}</b><em>${fmt(model.sales.length)} islem · kategoriye gir</em></button>
+        <button class="income-balance-item cogs" onclick="incomeDrill('cogs')"><span>Satilan malin maliyeti</span><b>${dynMoney(model.cogs)}</b><em>${model.missingCost?`${fmt(model.missingCost)} satirda maliyet eksik`:'kategori → urun maliyeti'}</em></button>
+        <button class="income-balance-item profit" onclick="incomeDrill('gross')"><span>Brut kar</span><b>${dynMoney(model.gross)}</b><em>marj ${dynPct(model.grossMargin)}</em></button>
+        <button class="income-balance-item expense" onclick="incomeDrill('expense')"><span>Giderler</span><b>${dynMoney(model.expenseTotal)}</b><em>${fmt(model.expenses.length)} tahakkuk kaydi</em></button>
+        <button class="income-balance-item net ${accrualNet<0?'bad':''}" onclick="incomeDrill('net')"><span>Net sonuc</span><b>${dynMoney(accrualNet)}</b><em>tahakkuk esasli</em></button>
+      </div>
+    </section>
+    <section class="income-half income-balance-half" aria-label="Bilanco durumu">
+      <div class="income-half-head"><div><span>02 · BILANCO DURUMU</span><h3>Dogulanmis finansal durum</h3></div><button onclick="gP('finans',null)">Banka detay</button></div>
+      <div class="income-half-grid">
+        <button class="income-balance-item asset" onclick="gP('finans',null)"><span>Banka / kasa</span><b>${balanceSnapshot.sourceCount?dynMoney(balanceSnapshot.bank.total):'ekstre bekleniyor'}</b><em>${balanceSnapshot.sourceCount?`${fmt(balanceSnapshot.sourceCount)} hesap · ${escHtml(String(balanceSnapshot.bank.latest).substring(0,16))}`:'bakiye iceren kaynak yok'}</em></button>
+        <button class="income-balance-item receivable" onclick="incomeDrill('revenue')"><span>Tahsilat farki</span><b>${dynMoney(balanceSnapshot.receivableGap)}</b><em>tahakkuk - nakit · cari teyidi gerekir</em></button>
+        <button class="income-balance-item payable" onclick="incomeDrill('expense')"><span>Odeme farki</span><b>${dynMoney(balanceSnapshot.payableGap)}</b><em>gider - nakit · vade teyidi gerekir</em></button>
+        <button class="income-balance-item stock" onclick="gP('stok',null)"><span>Stok / FIFO degeri</span><b>${balanceSnapshot.hasStockCost?'detaya git':'kaynak baglanacak'}</b><em>stok degerleme ayri kanitla gosterilir</em></button>
+        <div class="income-balance-proof"><span>Bilanco veri guveni</span><b>${balanceSnapshot.sourceCount?'Kismi dogrulandi':'Kaynak bekleniyor'}</b><em>Banka bakiyesi gercek ekstre kaynagindan gelir; alacak, borc ve stok kalemleri ana kayitla tamamlanmadan kesin bilanço toplamina katilmaz.</em></div>
+      </div>
+    </section>
+  </div>
   ${matrixHtml}
   <div class="report-grid" style="margin-bottom:12px">
     ${incomeMetricCard('Planlanan Net',model.plannedNet,'sözleşmeli + sabit + öngörülen','report-cool')}
@@ -5010,6 +5053,7 @@ async function renderIncomeStatementTop(){
         ${incomeLine('Diğer giderler',0,eb.other,cb.otherOut,'expense','')}
         ${incomeRow('Toplam gider',model.plannedExpense,model.expenseTotal,model.cashOut,paymentRatio,'expense','plan_expense')}
         ${incomeSection('Kar ve Vergi')}
+        <div class="income-row income-total income-cogs" onclick="incomeDrill('cogs')"><div class="income-label">Satılan malın maliyeti <span class="income-inline-action">kategori / urune in</span></div><div class="income-cell muted">plan kaynagi baglanacak</div><div class="income-cell warn">${dynMoney(model.cogs)}</div><div class="income-cell muted">nakit hareketi degil</div><div class="income-cell">${model.missingCost?`${fmt(model.missingCost)} eksik`:'maliyet kanitli'}</div></div>
         <div class="income-row income-total"><div class="income-label">Brüt kar</div><div class="income-cell">${dynMoney(model.plannedIncome-model.plannedExpense)}</div><div class="income-cell good">${incomeMoney(model.gross,'gross')}</div><div class="income-cell">${model.cogs?`COGS ${dynMoney(model.cogs)}`:'maliyet kaynağı eksik'}</div><div class="income-cell">${dynPct(model.grossMargin)}</div></div>
         <div class="income-row"><div class="income-label">KDV tahakkuk</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell">kaynak bağlanacak</div><div class="income-cell">KDV alanı yok</div></div>
         <div class="income-row"><div class="income-label">Gelir vergisi tahakkuk</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell warn">kaynak bağlanacak</div><div class="income-cell">kaynak bağlanacak</div><div class="income-cell">vergi etiketi yok</div></div>
@@ -5028,7 +5072,7 @@ async function renderIncomeStatementTop(){
   incomeMiniChart('incomeChartA',['Plan Gelir','Tahakkuk Gelir','Gerçek Gelir','Plan Gider','Tahakkuk Gider','Gerçek Gider'],[model.plannedIncome,model.revenue,model.cashIn,model.plannedExpense,model.expenseTotal,model.cashOut],['#0EA5E9','#059669','#2563EB','#F59E0B','#DC2626','#7C3AED']);
   incomeMiniChart('incomeChartB',model.categories.slice(0,6).map(x=>x.name),model.categories.slice(0,6).map(x=>Math.max(0,x.gross)),['#2563EB','#059669','#F59E0B','#7C3AED','#0EA5E9','#EF4444'],'doughnut');
 }
-function incomeDrill(type,name=''){
+function incomeDrill(type,name='',context=''){
   const model=LAST_INCOME_MODEL;if(!model)return;
   let title='Gelir Tablosu Detay', rows=[];
   if(type==='expense'){
@@ -5064,25 +5108,25 @@ function incomeDrill(type,name=''){
       {label:name,action:`incomeDrill('expense_category',${jsArg(name)})`}
     ]);return;
   }else if(type==='category'){
-    const c=model.categories.find(x=>x.name===name);title=`Satış Kategorisi: ${name}`;
+    const c=model.categories.find(x=>x.name===name), costView=context==='cogs';title=`${costView?'Satılan Malın Maliyeti':'Satış Kategorisi'}: ${name}`;
     const byProduct={};
     (c?.rows||[]).forEach(r=>{const u=(r.urun||'Ürün Yok').trim()||'Ürün Yok';const x=byProduct[u]||(byProduct[u]={name:u,qty:0,revenue:0,cogs:0,rows:[]});x.qty+=(+r.adet||0);x.revenue+=(+r.ciro||0);x.cogs+=r.__cost?.total||0;x.rows.push(r);});
-    rows=Object.values(byProduct).map(x=>({...x,gross:x.revenue-x.cogs,margin:x.revenue?(x.revenue-x.cogs)/x.revenue*100:0})).sort((a,b)=>b.revenue-a.revenue).map(r=>({name:r.name,count:r.rows.length,qty:r.qty,d:r.revenue,gross:r.gross,margin:r.margin,note:`Kar ${dynMoney(r.gross)} · Marj ${dynPct(r.margin)}`,action:'Satışları aç',clickArg:r.name}));
+    rows=Object.values(byProduct).map(x=>({...x,gross:x.revenue-x.cogs,margin:x.revenue?(x.revenue-x.cogs)/x.revenue*100:0})).sort((a,b)=>(costView?b.cogs:b.revenue)-(costView?a.cogs:a.revenue)).map(r=>({name:r.name,count:r.rows.length,qty:r.qty,d:costView?r.cogs:r.revenue,gross:r.gross,margin:r.margin,note:costView?`Gelir ${dynMoney(r.revenue)} · Kar ${dynMoney(r.gross)}`:`Kar ${dynMoney(r.gross)} · Marj ${dynPct(r.margin)}`,action:costView?'Maliyet kayitlarini aç':'Satışları aç',clickArg:r.name}));
     openIncomeDetail(title,[
       {key:'name',label:'Ürün İsmi',fmt:v=>`<b>${escHtml(v)}</b>`},
       {key:'count',label:'İşlem'},
       {key:'qty',label:'Adet',fmt:v=>fmt(v)},
-      {key:'d',label:'Tutar',fmt:v=>dynMoney(v)},
+      {key:'d',label:costView?'Maliyet':'Tutar',fmt:v=>dynMoney(v)},
       {key:'gross',label:'Brüt Kar',fmt:v=>dynMoney(v)},
       {key:'margin',label:'Marj',fmt:v=>dynPct(v)}
-    ],rows,'d',-1,'incomeDrillProduct',incomeSide(name,'Bu kategori içindeki ürünler. Ürüne tıklayınca satış kayıtları açılır.',[
-      ['Gelir',dynMoney(c?.revenue||0)],
+    ],rows,'d',-1,'incomeDrillProduct',incomeSide(name,costView?'Bu kategori icindeki urunlerin satilan malin maliyeti. Urune tiklayinca kaynak satis kayitlari acilir.':'Bu kategori içindeki ürünler. Ürüne tıklayınca satış kayıtları açılır.',[
+      [costView?'Maliyet':'Gelir',dynMoney(costView?(c?.cogs||0):(c?.revenue||0))],
       ['Brüt kar',dynMoney(c?.gross||0)],
       ['Adet',fmt(c?.qty||0)],
       ['İşlem',fmt(c?.rows?.length||0)]
     ]),[
-      {label:'Gelir Kategorileri',action:"incomeDrill('revenue')"},
-      {label:name,action:`incomeDrill('category',${jsArg(name)})`}
+      {label:costView?'Maliyet Kategorileri':'Gelir Kategorileri',action:costView?"incomeDrill('cogs')":"incomeDrill('revenue')"},
+      {label:name,action:`incomeDrill('category',${jsArg(name)},${jsArg(costView?'cogs':'')})`}
     ]);return;
   }else if(type==='product'){
     const p=model.products.find(x=>x.name===name);title=`Ürün Kayıtları: ${name}`;
@@ -5105,9 +5149,9 @@ function incomeDrill(type,name=''){
       {label:p?.category||'Kategori',action:`incomeDrill('category',${jsArg(p?.category||'')})`},
       {label:name,action:`incomeDrill('product',${jsArg(name)})`}
     ]);return;
-  }else if(type==='gross'||type==='net'||type==='revenue'){
-    title=type==='revenue'?'Gelir Kategorileri':type==='gross'?'Brüt Kar Kategorileri':'Net Kar Kategorileri';
-    rows=model.categories.map(r=>({name:r.name,count:r.rows.length,qty:r.qty,d:type==='revenue'?r.revenue:r.gross,margin:r.margin,note:`Marj ${dynPct(r.margin)} · kategoriye gir`,action:'Ürünleri aç',clickArg:r.name}));
+  }else if(type==='cogs'||type==='gross'||type==='net'||type==='revenue'){
+    title=type==='revenue'?'Gelir Kategorileri':type==='cogs'?'Satılan Malın Maliyeti · Kategoriler':type==='gross'?'Brüt Kar Kategorileri':'Net Kar Kategorileri';
+    rows=model.categories.map(r=>({name:r.name,count:r.rows.length,qty:r.qty,d:type==='revenue'?r.revenue:type==='cogs'?r.cogs:r.gross,margin:r.margin,note:type==='cogs'?`Maliyet ${dynMoney(r.cogs)} · urune gir`:`Marj ${dynPct(r.margin)} · kategoriye gir`,action:type==='cogs'?'Ürün maliyetlerini aç':'Ürünleri aç',clickArg:r.name}));
     openIncomeDetail(title,[
       {key:'name',label:'Kategori',fmt:v=>`<b>${escHtml(v)}</b>`},
       {key:'count',label:'İşlem'},
@@ -5115,9 +5159,9 @@ function incomeDrill(type,name=''){
       {key:'d',label:'Tutar',fmt:v=>dynMoney(v)},
       {key:'margin',label:'Marj',fmt:v=>dynPct(v)},
       {key:'note',label:'Not'}
-    ],rows,'d',-1,'incomeDrillCategory',incomeSide('Kategori paneli','Kategoriye tıklayınca sağdaki bağlam korunarak ürün listesine geçilir; üründen satış kayıtlarına inilir.',[
+    ],rows,'d',-1,type==='cogs'?'incomeDrillCostCategory':'incomeDrillCategory',incomeSide(type==='cogs'?'Maliyet kategori paneli':'Kategori paneli',type==='cogs'?'Kategoriye tıklayınca ürün bazında gelir, maliyet ve brüt kar açılır; üründen satış kaydına inilir.':'Kategoriye tıklayınca sağdaki bağlam korunarak ürün listesine geçilir; üründen satış kayıtlarına inilir.',[
       ['Dönem',escHtml(model.period.caption)],
-      ['Gelir',dynMoney(model.revenue)],
+      [type==='cogs'?'Toplam maliyet':'Gelir',dynMoney(type==='cogs'?model.cogs:model.revenue)],
       ['Brüt kar',dynMoney(model.gross)],
       ['Kategori',fmt(model.categories.length)],
       ['Satış satırı',fmt(model.sales.length)]
@@ -5174,6 +5218,7 @@ function incomeDrillPlan(side,bucket=''){
   ]);
 }
 function incomeDrillCategory(name){incomeDrill('category',name);}
+function incomeDrillCostCategory(name){incomeDrill('category',name,'cogs');}
 function incomeDrillProduct(name){incomeDrill('product',name);}
 function incomeDrillExpenseCategory(name){incomeDrill('expense_category',name);}
 async function renderReportHub(){

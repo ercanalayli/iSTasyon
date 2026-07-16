@@ -1,8 +1,28 @@
 # AperiON Next Task
 
+Son guncelleme: 2026-07-16 Europe/Istanbul
+
+## Aktif Tek Hedef - Ana Sayfa Gelir Tablosu ve Bilanco Dogrulama v111
+
+Ana ekran gelir tablosu/Bilanco karar yuzeyi kodlandi. Siradaki kontrol,
+canli kaynaklarla Bugun-Dun-Bu Ay donem gecislerini; Satis -> kategori ->
+urun -> kayit ve Satilan Malin Maliyeti -> kategori -> urun -> kayit
+zincirlerini test etmektir. Banka/kasa toplami sadece bakiye alanli ekstre
+kaynaklarindan gelmelidir. Ticari alacak, borc ve stok degerleme veri
+kaynaklari baglanmadan kesin bilanço toplami verilmeyecektir.
+
 Son guncelleme: 2026-07-15 Europe/Istanbul
 
-## Aktif Tek Hedef - Hattat Aylik Odeme Listesi ve Finans Takvimi
+## Aktif Tek Hedef - Sirket Banka Gecmis Mutabakati
+
+Iki VakifBank ve iki Is Bankasi sirket ekstresi, islem numarasi/referans,
+tarih, tutar ve kaynak hesapla okunuyor. Siradaki adim sifreli servis anahtari
+ile salt-okunur Supabase/BizimHesap kuyruk kanitini cekmek; satirlari
+`islenmis`, `kuyrukta`, `guvenli eksik` ve `inceleme` olarak kapatmaktir.
+Canli yazim bu adimin parcasi degildir. Sadece kaynagi, hedef hesabi ve
+kayit turu kanitli eksikler sonraki ayri kayit partisine girebilir.
+
+## Sonraki Hedef - Hattat Aylik Odeme Listesi ve Finans Takvimi
 
 `npm run finance-calendar:hattat-payment-list:dry` Hattat PDF'lerini
 salt-okunur olarak parse eder ve vade/tutar/kaynak kanitli tahakkuk plani

@@ -1,5 +1,17 @@
 # AperiON Decisions
 
+## D-009 Bilanco Veri Kaniti Kurali
+
+Karar: Ana ekrandaki bilanço gorunumu, kaynak kaniti olmayan bir kalemi
+kesin finansal tutar gibi gostermeyecektir. Banka/kasa yalnizca son bakiye
+alanini tasiyan ekstre kayitlarindan; stok/FIFO, ticari alacak ve ticari borc
+ise kendi ana kayitlari baglandiginda hesaplanir. Tahakkuk-nakit farki bir
+izleme sinyalidir, tek basina bilanço alacagi veya borcu degildir.
+
+Gerekce: CFO karar ekraninda hiz kadar veri guveni de zorunludur. Kaynak
+baglanmadan gosterilen toplam, kullaniciyi yaniltir ve muhasebe mutabakatini
+bozar.
+
 ## D-008 Kullanici Fonksiyonu Koruma Kurali
 
 Karar: Kullanici tarafindan tarif edilen, ekranda ornegi verilen veya daha

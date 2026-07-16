@@ -1,6 +1,36 @@
 # AperiON Project Status
 
+Son guncelleme: 2026-07-16 Europe/Istanbul
+
+## Guncel Tur - Ana Sayfa Gelir Tablosu ve Bilanco Karar Yuzeyi v111
+
+Kullanicinin `GELIR TABLOSU-BILANCO .xlsx` calisma formu ana ekran finans
+yuzeyine uyarlandi: Bugun, Dun, Bu Hafta, Bu Ay, Gecen Ay, Bu Yil ve Gecen
+Yil donemleri; planlanan, tahakkuk ve gerceklesen mantigiyla korunur.
+Satislar ve Satilan Malin Maliyeti ayri tiklanabilir karar kalemleridir.
+Her ikisi kategori -> urun -> kaynak satis kaydi zincirine iner.
+
+Bilanco yuzeyi yalnizca ekstre bakiyesi bulunan banka/kasa hesaplarini
+toplar. Tahsilat farki ve odeme farki kesin ticari alacak/borc gibi
+gosterilmez; ana kaynak baglanana kadar acik durumuyla gorunur. Stok/FIFO,
+ticari alacak ve borc toplamlarini uydurmak yasaktir.
+
 Son guncelleme: 2026-07-15 Europe/Istanbul
+
+## Guncel Tur - Sirket Banka Gecmis Mutabakati v109
+
+Kullanicinin Indirilenler alaninda bulunan iki VakifBank ve iki Is Bankasi
+sirket ekstre dosyasi salt-okunur olarak incelendi. VakifBank islem numarali
+XLS/XLSX ve ALAYLI MEDIKAL adli Is Bankasi hesap ozeti XLS ayni mutabakat
+motorunda taninir. Ilk kaynak seti 741 satir verir: 6 VakifBank, 735 Is
+Bankasi. Ercan Alayli adli vadesiz hesap dosyalari sirket mutabakatina
+otomatik katilmaz; kisisel finans kapsaminda ayri ele alinacaktir.
+
+`tools/invoke_secure_bank_history_reconcile.ps1`, DPAPI ile sifrelenmis
+Supabase servis anahtarini sadece calisma aninda acarak bu satirlari
+`pending_bank_movements` ve `bizimhesap_queue` kanitiyla karsilastirir.
+Ham ekstre, anahtar veya rapor Git'e yazilmaz. Bu turda canli BizimHesap
+kaydi olusturulmamistir; once islenmis/kuyrukta/eksik satir raporu kapanir.
 
 ## Guncel Tur - Hattat Aylik Odeme Listesi Hatti v108
 

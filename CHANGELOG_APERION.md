@@ -1,5 +1,29 @@
 # AperiON Changelog
 
+## 2026-07-16 - Ana Sayfa Gelir Tablosu ve Bilanco Karar Yuzeyi v111
+
+- Ana ekrana Exceldeki gelir tablosu siralamasina uygun iki parca karar
+  yuzeyi eklendi: gelir tablosu ve bilanço durumu.
+- `Satilan Malin Maliyeti` artik ayri tiklanabilir satirdir; kategori,
+  urun ve satis kaydina kadar iner.
+- Bilanço tarafinda banka/kasa yalnizca bakiye alanli ekstrelerden hesaplanir.
+  Tahsilat/odeme farki izleme kalemi olarak etiketlenir; ticari alacak veya
+  borc diye kesinlestirilmez.
+
+## 2026-07-15 - Sirket Banka Gecmis Mutabakati v109
+
+- Tarihsel banka mutabakat motoruna ALAYLI MEDIKAL Is Bankasi XLS hesap
+  ozeti adapteri eklendi; VakifBank ve Is Bankasi satirlari islem
+  numarasi/referansla ayni duplicate/evidence zincirinde okunur.
+- Sayisal ve tarihsel alan parseri, VakifBank ve Is Bankasi'nin farkli
+  ondalik/tarih bicimlerini kayipsiz okuyacak sekilde genellestirildi.
+- DPAPI ile sifreli servis anahtarini yalnizca calisma aninda kullanan
+  `bank:history:reconcile:secure` komutu eklendi. Bu komut salt-okunurdur;
+  BizimHesap'a kayit yazmaz.
+- Is Bankasi ayni referansla ana hareket ve ucret urettiginde ikisini ayri
+  duplicate anahtarla izleyen koruma eklendi. Giris yonundeki sirket ici
+  virmanlarda kaynak/hedef hesap yonu ters yazilamaz.
+
 ## 2026-07-15 - Banka Masrafi Kaynak Hesap Kilidi v107
 
 - BizimHesap masraf formunun `AKBANK SIRKET` varsayilanini sessizce
