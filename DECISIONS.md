@@ -278,4 +278,10 @@ girilebilir; odendi kapanisi banka veya kaynak tahsilat mutabakati ister.
 
 ## D-016 Gelir Tablosu ve Bilanco Yerlesimi
 
+## D-017 Banka Hesap Ozeti E-postasi Karari
+
+Karar: Kredi karti hesap ozeti, aylik ekstre bildirimi veya duyuru e-postasi tek basina banka hareketi degildir. Ekteki satirlar tekil islem/refarans ile ayrismadan BizimHesap'a kayit onerisi, kuyruk kaydi veya otomatik islem uretilmez.
+
+Gerekce: Konu satirindaki donem/yil, kredi karti ya da POS kelimeleri gercek para hareketiyle karisabilir. Kesin kayit yalnizca tarih, tutar, hesap ve tekil hareket kaniti bir arada oldugunda yapilir.
+
 Karar: Ana ekrandaki finans karar yüzeyinde gelir tablosu sol tarafta, bilanço ve likidite özeti sağ tarafta kalır. Dönem başlıkları sabittir. Bugün görünümünde planlanan, tahakkuk ve gerçekleşen nakit ayrı sütunlardır; diğer dönemlerde tahakkuk ve gerçekleşen nakit ayrı tutulur. Tutar hücreleri ilgili kategori, ürün ve kaynak kaydın detayına iner.

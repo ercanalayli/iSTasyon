@@ -399,4 +399,10 @@ Ana ekran Executive Workspace v80 katmanina alindi. Sol sekmeler dashboard modun
 
 ## Aktif Tek Hedef - Gelir Tablosu Kaynak Denetimi
 
+## Aktif Tek Hedef - Is Bankasi Gercek Hareket Kaydi
+
+1. Kanitli 2.740 TL ve 4.500 TL Is Bankasi girislerini tekil onay ve kuyruk kaniti ile `Hesaba Para Girisi` olarak BizimHesap'a isle.
+2. Kayit sonrasi her hareketin resmi satirini, tarihini, tutarini ve AperiON kuyruk kimligini tekrar oku.
+3. Kredi karti hesap ozeti, duyuru ve bulten e-postalarini finansal hareket olarak kayda alma.
+
 Yeni yan yana finans görünümü hazırdır. Sıradaki iş, `Bugün` satırlarının BizimHesap satış, alış/FIFO maliyet ve banka/POS tahsilat kaynaklarından eksiksiz geldiğini denetlemektir. Kaynakta olmayan tutar sıfır veya `kaynak bekliyor` görünür; değer uydurulmaz.

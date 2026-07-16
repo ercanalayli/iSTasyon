@@ -669,6 +669,13 @@ Bu yuzdeler kesin metrik degil; son denetimde calisan testler, eksik kaynaklar v
 
 ## 2026-07-16 Gelir Tablosu ve Bilanco Yan Yana v122
 
+## 2026-07-16 Is Bankasi Ekstre Ayrisma Guvenligi v123
+
+- Is Bankasi kredi karti hesap ozeti e-postasinin yil bilgisi (`2.026 TL`) POS transferi gibi ayrisabiliyordu.
+- Hesap ozeti bildirimi, tekil hareket/refarans kaniti yoksa `Banka disi ozet mail` olarak ayrilir.
+- Hatali 2026-07-05 / 2.026 TL adayi onay listesinden cikti; BizimHesap'a kayit atilmadi.
+- Gercek Is Bankasi girisleri kayda hazir: 2026-07-02 2.740 TL ve 2026-07-01 4.500 TL. Hedef: `*IS BANKASI` hesabinda `Hesaba Para Girisi`; cari baglanmayacak.
+
 - Ana ekranda gelir tablosu solda, bilanço ve likidite özeti sağda konumlandı.
 - Dönem matrisi Bugün, Dün, Bu Hafta, Bu Ay, Geçen Ay, Bu Yıl ve Geçen Yıl başlıklarını korur.
 - Bugün altında `Tahmini`, `Tahakkuk`, `Ödenen / Tahsilat`; diğer dönemlerde `Tahakkuk` ve `Ödenen / Tahsilat` ayrı gösterilir.

@@ -180,6 +180,14 @@ Son guncelleme: 2026-07-16 Europe/Istanbul
 
 ## Urun ve Cari Kontrolleri
 
+## Is Bankasi Ayrisma Kontrolleri v123
+
+- [x] Kredi karti hesap ozeti e-postasi hareket adayindan dislanir.
+- [x] `POS` kelimesi tek basina POS banka transferi sinifi vermez.
+- [x] Hatali 2026 TL hesap ozeti adayi guvenli listeden cikti.
+- [x] Gercek Is Bankasi para girisleri `Hesaba Para Girisi` planiyla ayrildi.
+- [ ] Iki gercek girisin BizimHesap resmi satir kaniti alinacak.
+
 - [ ] Urun karti satis, adet, ciro ve maliyet kaynagini gosteriyor.
 - [ ] Kategori katsayisi ile hesaplanan maliyet kaynak notu tasiyor.
 - [ ] Cari karti satis/tahakkuk ile tahsilat/acik bakiye ayrimini karistirmiyor.

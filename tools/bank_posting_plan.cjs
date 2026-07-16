@@ -227,6 +227,15 @@ function isNonBankSummary(row, text) {
     row.mail_from,
     row.attachment_name,
   ].filter(Boolean).join(' '));
+  const hasStructuredMovementReference = [row.statement_transaction_no, row.transaction_no, row.reference_no]
+    .some(value => value !== undefined && value !== null && String(value).trim() !== '');
+  const isCreditCardStatementNotification = /KREDI KARTI HESAP OZETI|MAXIMILES KREDI KARTI HESAP OZETI|MAXIMUM KREDI KARTI HESAP OZETI/.test(source);
+  const hasExplicitStatementLine = /ISLEM NO|REFERANS NO|BATCH YATAN|POS KOMISYON|GELEN FAST|GIDEN FAST|GELEN EFT|GIDEN EFT|HESABINIZA PARA|HESABINIZDAN PARA/.test(source);
+
+  // An email saying that a card statement is attached is not a cash movement.
+  // Only a parsed attachment line with a transaction/reference can enter the approval flow.
+  if (isCreditCardStatementNotification && !hasStructuredMovementReference && !hasExplicitStatementLine) return true;
+
   return /BIZIMHESAP GUNLUK FINANSAL BILGILERINIZ|BIZIMHESAP GUNLUK HESAP HAREKETLERINIZ|GUNLUK NAKIT AKISINIZ|KASA VE BANKA BAKIYELERINIZ/.test(source || text);
 }
 
@@ -345,11 +354,18 @@ function classifyBankMovement(row = {}) {
   if (kind !== 'non_bank_summary_review' && /VIRMAN|HESAPLAR ARASI/.test(text)) {
     kind = 'bank_transfer';
     const companyTarget = companyBankAccountFromText(text, bankName(row));
+    const sourceBankAccount = targetBankAccount(row);
     type = companyTarget ? 'Sirket bankalari arasi virman' : 'Banka virmani';
     target = 'BizimHesap banka virmani';
     category = 'Bankalar arasi transfer';
-    sourceAccount = fixMojibake(row.source_account || `${bankName(row)} banka hesabi`);
-    targetAccount = fixMojibake(row.target_account || companyTarget || 'Hedef banka hesabi');
+    if (companyTarget && incoming) {
+      sourceAccount = fixMojibake(companyTarget);
+      targetAccount = fixMojibake(row.target_account || sourceBankAccount);
+      reasons.push('giris yonu kaynak/hedef ters cevrildi');
+    } else {
+      sourceAccount = fixMojibake(row.source_account || sourceBankAccount);
+      targetAccount = fixMojibake(row.target_account || companyTarget || 'Hedef banka hesabi');
+    }
     counterparty = `${sourceAccount} -> ${targetAccount}`;
     confidence = Math.max(confidence, companyTarget ? 90 : 84);
     reasons.push(companyTarget ? 'aciklamada iki sirket bankasi ve virman bulundu' : 'virman');

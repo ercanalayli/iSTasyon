@@ -1098,6 +1098,12 @@
 
 ## 2026-07-16 - Gelir Tablosu ve Bilanco Yan Yana v122
 
+## 2026-07-16 - Is Bankasi Hesap Ozeti Koruması v123
+
+- Kredi karti hesap ozeti e-postalari, tekil hareket/refarans kaniti olmadan banka hareketi olarak siniflanmaz.
+- `POS`, `kredi karti` veya yil bilgisi tek basina POS banka transferi kaydi olusturamaz.
+- Yanlis 2.026 TL Is Bankasi adayi guvenli onay listesinden cikti; iki kanitli gelen para girisi ayri aday olarak korundu.
+
 - Ana ekrandaki gelir tablosu matrisi bilanço/likidite özetinin soluna alındı.
 - Nakit sütunu kullanıcı diliyle `Ödenen / Tahsilat` olarak adlandırıldı.
 - Dönem başlıkları ve gün içi Tahmini/Tahakkuk/Ödenen-Tahsilat ayrımı korunarak tıklanabilir detay akışına bağlandı.
