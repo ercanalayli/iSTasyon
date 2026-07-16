@@ -1,20 +1,18 @@
 {
-  "created_at": "2026-07-15T18:46:25.721Z",
+  "created_at": "2026-07-16T06:47:16.256Z",
   "source": "pending_bank_movements",
   "company_id": "alayli",
   "review_date": "2026-07-07",
   "rule": "En yeni islem gunu once listelenir. Merrerler kaynak duplicate_key ile suzulur. Cari belirsizse kesin kayit yapilmaz.",
   "summary": {
     "total": 3,
-    "hazir": 0,
+    "hazir": 1,
     "cari_dogrulama": 0,
-    "inceleme": 3,
+    "inceleme": 2,
     "total_absolute_amount": 868
   },
   "buckets": {
-    "hazir": [],
-    "cari_dogrulama": [],
-    "inceleme": [
+    "hazir": [
       {
         "id": "0ce7ea56-3628-4c23-b067-3f41912fb0de",
         "bank": "VakifBank",
@@ -22,17 +20,20 @@
         "time": "16:40",
         "amount": 100,
         "description": "VAKIFBANK - FAST Anlık Ödeme Bilgilendirmesi - VAKIFBANK - FAST Anlık Ödeme Bilgilendirmesi",
-        "review_kind": "inceleme",
-        "proposed_type": "Cari tahsilat",
-        "proposed_counterparty": "Cari eslestirme onayda",
+        "review_kind": "hazir",
+        "proposed_type": "Banka hesaba para girisi - eslestirme bekliyor",
+        "proposed_counterparty": "Belirsiz karsi taraf",
         "proposed_account": "*VAKIF SIRKET",
-        "proposed_category": "Tahsilat",
-        "confidence": 84,
-        "record_summary": "Cari eslestirme onayda carisine tahsilat",
+        "proposed_category": "AperiON banka bekletme",
+        "confidence": 99,
+        "record_summary": "Banka hesaba para girisi - eslestirme bekliyor | AperiON banka bekletme",
         "transaction_no": "",
-        "question": "Cari eslestirme onayda carisine 100 TL tahsilat olarak BizimHesap'a isleyeyim mi?",
+        "question": "",
         "duplicate_key": "VAKIFBANK|2026-07-07|16:40||100.00|0.00|61962.29|VAKIFBANK_FAST_ANLIK_ODEME_BILGILENDIRMESI_VAKIFBANK_FAST_ANLIK_ODEME_BILGILENDIRMESI"
-      },
+      }
+    ],
+    "cari_dogrulama": [],
+    "inceleme": [
       {
         "id": "151c24e4-c75e-42aa-a5e5-ea79e27b39ac",
         "bank": "Yapi Kredi",

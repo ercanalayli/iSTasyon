@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-07-15T18:46:23.874Z",
+  "created_at": "2026-07-16T06:47:14.241Z",
   "safe_mode": true,
   "live_rpc_called": false,
   "live_bizimhesap_save_called": false,
@@ -39,11 +39,11 @@
   },
   "summary": {
     "status_preview_count": 25,
-    "status_candidate_count": 2,
-    "status_low_risk_count": 1,
-    "status_review_count": 21,
+    "status_candidate_count": 4,
+    "status_low_risk_count": 3,
+    "status_review_count": 13,
     "status_ready_queue_count": 0,
-    "candidate_file_count": 3,
+    "candidate_file_count": 5,
     "posting_plan_count": 25,
     "queue_dry_run_count": 0,
     "missing_file_count": 0,
@@ -77,10 +77,12 @@
   },
   "classifications": {
     "candidate_types": {
-      "POS banka transferi": 3
+      "POS banka transferi": 3,
+      "Banka hesaba para girisi - eslestirme bekliyor": 2
     },
     "posting_plan_types": {
-      "Cari tahsilat": 13,
+      "Banka hesaba para girisi - eslestirme bekliyor": 8,
+      "Cari tahsilat": 5,
       "Cari odeme": 4,
       "POS banka transferi": 4,
       "Banka disi ozet mail": 3,
