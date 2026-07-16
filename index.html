@@ -2824,6 +2824,18 @@ body.dashboard-mode #incomeStatementTop>.income-balance-split{display:none!impor
 body.dashboard-mode #incomeStatementTop>.command-matrix{display:block!important;height:auto!important;margin:12px 0 0!important}
 body.dashboard-mode #incomeStatementTop>.command-matrix .cm-wrap{max-height:350px!important}
 body.dashboard-mode #kartsDiv{display:none!important}
+body.dashboard-mode .income-period-switcher{display:flex!important;flex-wrap:wrap!important;gap:6px!important;margin:14px 0 10px!important}
+body.dashboard-mode .income-period-switcher button{border:1px solid rgba(255,255,255,.2)!important;background:rgba(255,255,255,.06)!important;color:#E7EDF7!important;border-radius:7px!important;padding:6px 9px!important;font-size:10px!important;font-weight:900!important;cursor:pointer!important}
+body.dashboard-mode .income-period-switcher button:hover,body.dashboard-mode .income-period-switcher button.on{background:#F6C15C!important;border-color:#F6C15C!important;color:#161616!important}
+body.dashboard-mode .today-finance-strip{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:8px!important;margin:0 0 12px!important}
+body.dashboard-mode .today-finance-item{min-width:0!important;text-align:left!important;border:1px solid rgba(255,255,255,.14)!important;border-top:3px solid #60A5FA!important;background:rgba(255,255,255,.075)!important;color:#FFFFFF!important;border-radius:8px!important;padding:9px!important;cursor:pointer!important;font:inherit!important;transition:transform .14s,background .14s,border-color .14s!important}
+body.dashboard-mode .today-finance-item:hover{transform:translateY(-2px)!important;background:rgba(255,255,255,.13)!important;border-color:#F6C15C!important}
+body.dashboard-mode .today-finance-item span{display:block!important;color:rgba(247,247,239,.72)!important;font-family:var(--mono)!important;font-size:8px!important;font-weight:950!important;letter-spacing:.6px!important;text-transform:uppercase!important}
+body.dashboard-mode .today-finance-item b{display:block!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;margin-top:5px!important;color:#FFFFFF!important;font-family:var(--mono)!important;font-size:16px!important;font-weight:950!important}
+body.dashboard-mode .today-finance-item em{display:block!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;margin-top:5px!important;color:rgba(247,247,239,.68)!important;font-size:8px!important;font-style:normal!important}
+body.dashboard-mode .today-finance-item.cogs{border-top-color:#F59E0B!important}.dashboard-mode .today-finance-item.gross{border-top-color:#34D399!important}.dashboard-mode .today-finance-item.expense{border-top-color:#FB7185!important}.dashboard-mode .today-finance-item.net{border-top-color:#A78BFA!important}.dashboard-mode .today-finance-item.net.bad{border-top-color:#F43F5E!important}
+@media(max-width:1180px){body.dashboard-mode .today-finance-strip{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:640px){body.dashboard-mode .today-finance-strip{grid-template-columns:repeat(2,minmax(0,1fr))!important}body.dashboard-mode .income-title{font-size:24px!important}}
 body.dashboard-mode .command-map{grid-row:2!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;grid-auto-rows:1fr!important;overflow:hidden!important}
 body.dashboard-mode .command-zone{min-height:0!important;padding:12px!important}
 body.dashboard-mode .zone-title{font-size:15px!important}.zone-sub{font-size:10px!important}
@@ -4436,7 +4448,7 @@ async function renderMainFinanceFlow(){
   el.innerHTML=`<div class="finance-flow-wrap"><table class="finance-flow-table"><thead><tr><th>Dönem</th><th>Satışlar</th><th>Tahsilatlar</th><th>Ürün Alışları</th><th>Ürün Alış Ödemeleri</th><th>Gider Tahakkuk</th><th>Gider Ödemeleri</th><th>Tahsilat / Satış</th><th>Satış / Alış</th><th>Tahsilat / Ürün Alış + Gider Ödeme</th><th>Veri Durumu</th></tr></thead><tbody>${body}</tbody></table></div>
   <div class="flow-foot">Kaynaklar: sales_raw, finance_calendar_drawer_view, masraf_raw/bank_transactions, ürün alış ham tabloları. Banka ekran görüntüsü için banka_gorsel_parser.js hazır; Telegram onay akışı banka_onay modülü üzerinden bağlanır.</div>`;
 }
-let INCOME_MODE='month', incomeChartA=null, incomeChartB=null, LAST_INCOME_MODEL=null;
+let INCOME_MODE='today', incomeChartA=null, incomeChartB=null, LAST_INCOME_MODEL=null;
 let INCOME_DETAIL_ROWS=[],INCOME_DETAIL_COLS=[],INCOME_DETAIL_SORT={key:'d',dir:-1},INCOME_DETAIL_CLICK='',INCOME_DETAIL_SIDE='',INCOME_DETAIL_TRAIL=[];
 function setIncomeMode(mode){
   INCOME_MODE=mode||'month';
@@ -5000,9 +5012,24 @@ async function renderIncomeStatementTop(){
   const balanceSnapshot=await buildIncomeBalanceSnapshot(model);
   el.innerHTML=`<div class="income-head">
     <div class="income-cockpit-main">
-      <div class="income-eyebrow">AperiON Operational Finance App</div>
-      <div class="income-title">${p.label} Gelir Tablosu</div>
-      <div class="income-sub">${p.caption} · planlanan / tahakkuk / gerçekleşen aynı ekranda.</div>
+      <div class="income-eyebrow">GÜNLÜK FİNANS KARARI</div>
+      <div class="income-title">${p.label}: ne sattım, maliyeti ne, ne kazandım?</div>
+      <div class="income-sub">${p.caption} · satış ve maliyet tahakkuk esaslı; nakit ise banka/POS kaynaklarından ayrı izlenir.</div>
+      <div class="income-period-switcher" aria-label="Gelir tablosu dönem seçimi">
+        <button class="${activeBtn('today')}" onclick="setIncomeMode('today')">Bugün</button>
+        <button class="${activeBtn('yesterday')}" onclick="setIncomeMode('yesterday')">Dün</button>
+        <button class="${activeBtn('week')}" onclick="setIncomeMode('week')">Bu Hafta</button>
+        <button class="${activeBtn('month')}" onclick="setIncomeMode('month')">Bu Ay</button>
+        <button class="${activeBtn('last_month')}" onclick="setIncomeMode('last_month')">Geçen Ay</button>
+        <button class="${activeBtn('year')}" onclick="setIncomeMode('year')">Bu Yıl</button>
+      </div>
+      <div class="today-finance-strip" aria-label="Donem finans ozeti">
+        <button class="today-finance-item revenue" onclick="incomeDrill('revenue')"><span>Satışlar</span><b>${dynMoney(model.revenue)}</b><em>${fmt(model.sales.length)} işlem · ürünlere gir</em></button>
+        <button class="today-finance-item cogs" onclick="incomeDrill('cogs')"><span>Satılan malın maliyeti</span><b>${dynMoney(model.cogs)}</b><em>${model.missingCost?`${fmt(model.missingCost)} satır maliyet teyidi ister`:'FIFO / kategori maliyeti'}</em></button>
+        <button class="today-finance-item gross" onclick="incomeDrill('gross')"><span>Brüt kar</span><b>${dynMoney(model.gross)}</b><em>marj ${dynPct(model.grossMargin)}</em></button>
+        <button class="today-finance-item expense" onclick="incomeDrill('expense')"><span>Giderler</span><b>${dynMoney(model.expenseTotal)}</b><em>${fmt(model.expenses.length)} tahakkuk kaydı</em></button>
+        <button class="today-finance-item net ${model.net<0?'bad':''}" onclick="incomeDrill('net')"><span>Net sonuç</span><b>${dynMoney(model.net)}</b><em>satış - maliyet - gider</em></button>
+      </div>
       <div class="income-decision ${commandClass}">
         <span>Karar durumu</span><b>${escHtml(commandState)}</b>
         <em>${cashGap>0?'Tahakkuk var, tahsilat bekliyor.':cashNet<0?'Nakit çıkışı tahsilatı aşmış.':'Nakit ve tahakkuk birlikte izleniyor.'}</em>

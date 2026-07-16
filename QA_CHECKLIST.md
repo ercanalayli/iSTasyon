@@ -2,6 +2,15 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## 2026-07-16 Bugun satis, maliyet ve kar karari v121
+
+- [x] Ana gelir modelinin varsayilan donemi `today` yapildi.
+- [x] Satis, maliyet, brut kar, gider ve net sonuc ilk gorunen karar satirindadir.
+- [x] Her karar karti mevcut ayrinti akimina tiklanabilir baglantidir.
+- [x] Donem degistirme dugmeleri ayni yuzeydedir.
+- [x] Inline JavaScript syntax ve `git diff --check` gecti.
+- [ ] Canli kaynakta bugun tarihli satis satirinin saatlik klon sonrasi denetimi.
+
 ## 2026-07-16 Ana ekran donemsel gelir tablosu matrisi v120
 
 - [x] Bugun, Dun, Bu Hafta, Bu Ay, Gecen Ay, Bu Yil ve Gecen Yil sutun gruplari olusturuldu.

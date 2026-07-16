@@ -1,5 +1,15 @@
 # AperiON Decisions
 
+## D-016 Varsayilan finans gorunumu bugun
+
+Karar: AperiON ana finans ekraninin varsayilan donemi `Bugun` olur. Ilk karar
+katmaninda satis, satilan malin maliyeti, brut kar, gider ve net sonuc birlikte
+gosterilir. Diger donemler kaybolmaz; ayni yuzeydeki donem dugmeleri ve alttaki
+matris ile karsilastirilir.
+
+Gerekce: Kullanici ilk olarak bugun ne sattigini, maliyetini ve kazancini
+gormelidir. Aylik ve yillik raporlar ikinci bakis icindir.
+
 ## D-015 Donemsel matris ve kanitli nakit dagitimi
 
 Karar: Ana ekrandaki gelir tablosu; satirlarda kategori ve finans kalemleri,

@@ -2,6 +2,15 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Guncel Tur - Bugun Satis, Maliyet ve Kar Karari v121
+
+Ana finans yuzeyinin varsayilan donemi artik `Bugun`dur. Ilk gorunen karar
+satiri; Satislar, Satilan Malin Maliyeti, Brut Kar, Giderler ve Net Sonuc
+kalemlerini ayni yerde verir. Her kalem tiklanarak mevcut detay zincirine
+iner. Donem dugmeleri ile Dun, Bu Hafta, Bu Ay, Gecen Ay ve Bu Yil ayni
+gorunume gecilir; donem matrisi ayrintili karsilastirma icin hemen asagida
+kalir.
+
 ## Guncel Tur - Ana Ekran Donemsel Gelir Tablosu Matrisi v120
 
 Ana finans yuzeyinde Excel benzeri donem matrisi gorunur hale getirildi.

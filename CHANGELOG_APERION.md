@@ -1,5 +1,13 @@
 # AperiON Changelog
 
+## 2026-07-16 - Bugun satis, maliyet ve kar karari v121
+
+- Ana gelir yuzeyinin varsayilan donemi `Bugun` yapildi.
+- Ust gorunume tiklanabilir Satislar, Satilan Malin Maliyeti, Brut Kar,
+  Giderler ve Net Sonuc kartlari eklendi.
+- Donem degistirme dugmeleri ayni karar yuzeyine tasindi; ayrintili donem
+  matrisi korunarak ikinci katmanda kaldi.
+
 ## 2026-07-16 - Ana ekran donemsel gelir tablosu matrisi v120
 
 - Ana finans yuzeyine, kullanicinin tarif ettigi Excel mantiginda donem

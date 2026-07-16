@@ -2,6 +2,19 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Tamamlandi - Bugun Satis, Maliyet ve Kar Karari v121
+
+Ana ekranin varsayilan donemi Bugun yapildi. Kullanici ilk bakista bugun ne
+sattigini, satilan malin maliyetini, brut kari, giderini ve net sonucunu
+gorur; kartlar ayrintiya tiklanabilir baglantidir.
+
+## Aktif Tek Hedef - Kaynakta Gorunmeyen Bugun Satislarini Denetle
+
+Bugun kartlari `TL 0` goruyorsa bu tasarim sonucu degil, kaynakta bugun tarihli
+`sales_raw` satiri olmadigini veya BizimHesap klonunun geride kaldigini
+anlatir. Saatlik klon sonrasi kaynak tarihi, satir sayisi ve firma filtresi
+denetlenerek ekrana gercek durum yansitilacak.
+
 ## Tamamlandi - Ana Ekran Donemsel Gelir Tablosu Matrisi v120
 
 Ana ekran, kullanicinin verdigi satir/sutun mantigiyla donemsel finans
