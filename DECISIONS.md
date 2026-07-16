@@ -1,5 +1,13 @@
 # AperiON Decisions
 
+## D-014 Ana sayfa once finans karari
+
+Karar: AperiON acildiginda ilk gorunen karar yuzeyi Gelir Tablosu ve Bilanco
+olur. Islevsel moduller bankayi, onayi, satisi, urunu, cariyi ve kaynak
+sagligini kapsayan ikinci komuta katmani olarak korunur. Bu bir ozellik
+silmesi degil, kullanicinin "simdi ne kadar kazandim" sorusunu onceleyen
+yerlesim kuralidir.
+
 ## D-013 Tahsilat ve odeme kanal ayrimi
 
 Karar: Gelir tablosu donemleriyle ayni secicide, Tahsilatlar ve Odemeler birbirinden bagimsiz olarak `Nakit`, `Kredi Karti`, `Cek`, `Diger` kanallarina ayrilir. Bir banka onay adayi sayisi veya kuyruk durumu nakit tutari, bakiye ya da gerceklesen gelir/gider sayilmaz. Kanal toplami sadece kaynak hesap, islem tarihi, yonu ve duplicate anahtari olan tam hareket snapshot'undan hesaplanir.

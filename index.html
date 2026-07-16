@@ -2802,6 +2802,21 @@ body.dashboard-mode .diaper-mini-table tr:hover td{background:rgba(201,162,39,.0
   body.dashboard-mode .command-map{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
 .income-balance-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:0 0 12px}.income-half{border:1px solid #D8E4F4;border-radius:12px;padding:14px;background:#fff;min-width:0}.income-pnl-half{border-top:3px solid #2563EB}.income-balance-half{border-top:3px solid #0F766E}.income-half-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.income-half-head span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.8px;color:#64748B;font-weight:950}.income-half-head h3{margin:4px 0 0;font-size:16px;letter-spacing:0;color:#0F172A}.income-half-head button{border:1px solid #CBD5E1;background:#fff;color:#1D4ED8;font-weight:900;font-size:11px;border-radius:7px;padding:7px 9px;cursor:pointer}.income-half-head button:hover{border-color:#2563EB;background:#EFF6FF}.income-half-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.income-balance-item,.income-balance-proof{min-height:76px;border:1px solid #E2E8F0;border-radius:8px;background:#F8FAFC;padding:10px;text-align:left;min-width:0}.income-balance-item{cursor:pointer;font:inherit}.income-balance-item:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(15,23,42,.08);border-color:#94A3B8}.income-balance-item span,.income-balance-proof span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.55px;text-transform:uppercase;font-weight:950;color:#64748B}.income-balance-item b,.income-balance-proof b{display:block;margin-top:6px;font-size:17px;line-height:1.08;color:#0F172A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.income-balance-item em,.income-balance-proof em{display:block;margin-top:5px;font-size:10px;font-style:normal;color:#64748B;line-height:1.3}.income-balance-item.revenue{border-left:3px solid #2563EB}.income-balance-item.cogs{border-left:3px solid #F59E0B}.income-balance-item.profit{border-left:3px solid #059669}.income-balance-item.expense{border-left:3px solid #DC2626}.income-balance-item.net{border-left:3px solid #7C3AED}.income-balance-item.net.bad{border-left-color:#DC2626}.income-balance-item.asset{border-left:3px solid #0F766E}.income-balance-item.receivable{border-left:3px solid #0284C7}.income-balance-item.payable{border-left:3px solid #EA580C}.income-balance-item.stock{border-left:3px solid #7C3AED}.income-balance-proof{grid-column:span 2;background:#F0FDFA;border-color:#99F6E4}.income-balance-proof b{color:#0F766E}.income-cogs{cursor:pointer}.income-cogs:hover{background:#FFFBEB}.income-inline-action{display:block;margin-top:3px;font-family:var(--mono);font-size:9px;letter-spacing:.4px;color:#B45309}@media(max-width:980px){.income-balance-split{grid-template-columns:1fr}.income-half-grid{grid-template-columns:1fr 1fr}}@media(max-width:560px){.income-half-grid{grid-template-columns:1fr}.income-balance-proof{grid-column:auto}}
+
+/* Ana ekran v119: finans karar yuzeyi ilk gorunen alan, is alanlari ikinci katman. */
+body.dashboard-mode #pg-dashboard{grid-template-rows:minmax(360px,1fr) minmax(0,.62fr)!important;overflow:hidden!important}
+body.dashboard-mode #incomeStatementCard{grid-column:1 / -1!important;grid-row:1!important;display:block!important;min-height:0!important;overflow:hidden!important;padding:14px!important}
+body.dashboard-mode #incomeStatementTop{height:100%!important;overflow:auto!important;padding-right:4px}
+body.dashboard-mode #incomeStatementTop>.command-matrix,body.dashboard-mode #incomeStatementTop>.report-grid,body.dashboard-mode #incomeStatementTop>.income-layout{display:none!important}
+body.dashboard-mode #incomeStatementTop>.income-head{display:grid!important;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr)!important;gap:12px!important}
+body.dashboard-mode #incomeStatementTop>.income-head .income-cockpit-main{display:block!important}
+body.dashboard-mode #incomeStatementTop>.income-head .income-component-panel{display:none!important}
+body.dashboard-mode #incomeStatementTop>.income-balance-split{margin:12px 0 0!important}
+body.dashboard-mode #kartsDiv{display:none!important}
+body.dashboard-mode .command-map{grid-row:2!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;grid-auto-rows:1fr!important;overflow:hidden!important}
+body.dashboard-mode .command-zone{min-height:0!important;padding:12px!important}
+body.dashboard-mode .zone-title{font-size:15px!important}.zone-sub{font-size:10px!important}
+@media(max-width:1180px){body.dashboard-mode .content{overflow:auto!important}body.dashboard-mode #pg-dashboard{height:auto!important;display:flex!important;flex-direction:column!important}body.dashboard-mode #incomeStatementCard{min-height:560px!important;order:1!important}body.dashboard-mode .command-map{order:2!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-rows:132px!important;overflow:visible!important}body.dashboard-mode #kartsDiv{display:block!important;order:3!important;height:auto!important}}
 </style>
 </head>
 <body class="dashboard-mode">
@@ -2889,6 +2904,9 @@ body.dashboard-mode .diaper-mini-table tr:hover td{background:rgba(201,162,39,.0
   </div>
   <div class="content">
     <div id="pg-dashboard" class="page on">
+      <div id="incomeStatementCard" class="income-card">
+        <div id="incomeStatementTop"><div class="dashboard-income-fallback"><div class="income-op-title">Gelir Tablosu ve Bilanço</div><div class="dash-income-big">hesaplanıyor</div><div class="dash-income-note">Planlanan / tahakkuk / gerçekleşen finans görünümü hazırlanıyor.</div></div></div>
+      </div>
       <section class="command-map" id="aperionCommandMap" aria-label="AperiON ana komuta bolgeleri">
         <button class="command-zone bank" onclick="gP('finans',null);setTimeout(()=>fT('banka'),80)">
           <span class="zone-code">BK</span>
@@ -2949,9 +2967,6 @@ body.dashboard-mode .diaper-mini-table tr:hover td{background:rgba(201,162,39,.0
         <div class="card" id="homeMorningApprovalCard">
           <div class="card-hd"><div><div class="card-l">Sabah Onay Kartları</div><div style="font-size:11px;color:var(--t3);font-weight:800;margin-top:3px">Mailden gelen banka hareketleri analiz edilir; tek tıkla BizimHesap kuyruğuna alınır.</div></div><button class="empty-btn" onclick="gP('finans',null);setTimeout(()=>document.querySelector('.ft-tab[onclick*=banka]')?.click(),60)">Tümünü Aç</button></div>
           <div id="homeMorningApprovalCards"><div class="finance-empty">Sabah onay kartları hazırlanıyor...</div></div>
-        </div>
-        <div id="incomeStatementCard" class="income-card">
-          <div id="incomeStatementTop"><div class="dashboard-income-fallback"><div class="income-op-title">Gelir Tablosu</div><div class="dash-income-big">hesaplanıyor</div><div class="dash-income-note">Planlanan / tahakkuk / gerçekleşen net sonuç hazırlanıyor.</div></div></div>
         </div>
         <div class="card diaper-card" id="homeDiaperDecisionCard">
           <div id="homeDiaperDecision"><div class="finance-empty">Hasta bezi karar ekranı hazırlanıyor...</div></div>

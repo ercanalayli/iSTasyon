@@ -1,5 +1,12 @@
 # AperiON Changelog
 
+## 2026-07-16 - Ana sayfa gelir tablosu ve bilanco onceligi v119
+
+- Gelir Tablosu ve Bilanco, ana acilis ekraninin ilk ve genis finans yuzeyine
+  tasindi.
+- Banka, onay, satis, urun, cari, kaynak ve bildirim alanlari silinmedi;
+  gelir tablosunun ardindaki sekiz tiklanabilir komuta alaninda tutuldu.
+
 ## 2026-07-16 - Tahsilat ve odeme kanal kirilimi v118
 
 - CFO komuta ekranina ayni donem secicisiyle calisan iki ayri nakit akis yuzeyi eklendi: Tahsilatlar ve Odemeler.

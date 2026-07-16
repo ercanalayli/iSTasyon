@@ -2,6 +2,13 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## 2026-07-16 Ana sayfa finans onceligi v119
+
+- [x] `index.html` acildiginda Gelir Tablosu ve Bilanco ilk finans yuzeyidir.
+- [x] Finans yuzeyi, komuta alanlarindan once ve genislik onceligiyle gorunur.
+- [x] Sekiz komuta alani korunur ve finans yuzeyinin ardinda tiklanabilir kalir.
+- [ ] Masaustu ve mobil ekran goruntusuyle son yerlesim onayi.
+
 ## 2026-07-16 Tahsilat ve odeme kanal kirilimi v118
 
 - [x] Tahsilat ve odeme ayni ekranda birbirinden ayri gorunur.

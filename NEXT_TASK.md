@@ -2,6 +2,12 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Tamamlandi - Ana Sayfa Finans Onceligi v119
+
+Ana acilis ekraninda Gelir Tablosu ve Bilanco ilk karar yuzeyine tasindi.
+Is alanlari kaldirilmadi; finans yuzeyinin ardindaki tiklanabilir komuta
+katmaninda korunuyor.
+
 ## Aktif Tek Hedef - Nakit Akis Snapshot ve Kanal Baglantisi v118
 
 BizimHesap, banka, POS/Moka ve cek hareketlerinden ayni as-of tarihini tasiyan bir nakit akis snapshot'i uret. Snapshot, her donem icin Tahsilatlar ve Odemeleri `Nakit`, `Kredi Karti`, `Cek`, `Diger` kanallarinda ayri verir. Onay havuzundaki adaylar sadece karar durumudur; toplamlara katilmaz. Mukerrer, onaysiz veya kaynaksiz hareket kesin nakit tutarina donusmez.

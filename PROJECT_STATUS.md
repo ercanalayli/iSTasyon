@@ -2,6 +2,14 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Guncel Tur - Ana Sayfa Finans Onceligi v119
+
+Gelir Tablosu ve Bilanco artik ayri CFO sayfasinda veya alt kartta beklemez.
+`index.html` acildiginda ilk ve genis alan bu finans karar yuzeyidir. Satis,
+satilan malin maliyeti, brut kar, gider, net sonuc, banka/kasa, tahsilat ve
+odeme farklari bu yuzeyde gorunur; sekiz is alani bunun altindaki tiklanabilir
+komuta katmanidir.
+
 ## Guncel Tur - Tahsilat ve Odeme Kanal Kirilimi v118
 
 Ana CFO yuzeyine, Excel gelir tablosundaki ayni donem secimiyle calisan iki ayri nakit akis paneli eklendi. Tahsilatlar ve Odemeler; `Nakit`, `Kredi Karti`, `Cek` ve `Diger` kanallarinda ayri gorunur ve her kanal ilgili detay ekranina iner. Banka onay adayi sayisi, bakiye veya tahsilat/odeme toplami olarak kullanilmaz.
