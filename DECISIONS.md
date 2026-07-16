@@ -182,3 +182,15 @@ Gerekce: Ayni vade veya vergi kalemi, banka hareketi olmadan odendi kabul
 edilirse nakit durumu ve borc takibi yanlis gorunur. Kaynak dosya hash'i,
 referans, tutar ve vade mukerrer kontrolunu saglar; odeme ancak banka/BizimHesap
 mutabakati ile kapanir.
+
+## D-012 Banka Kaynak Tarihi Zorunlulugu
+
+Karar: Banka ekstresindeki hareket tarihi (`transaction_date`) BizimHesap
+banka, transfer, hesaba para girisi ve banka masrafi kayitlarinin finansal
+tarihidir. Botun calistigi veya kaydin girildigi gun yalnizca denetim zaman
+damgasidir; finansal hareket tarihinin yerine kullanilamaz.
+
+Guvenlik siniri: Kaydetmeden once portal formundaki tarih alani kaynak tarihle
+tekrar okunur. Alan yoksa, tarih yoksa veya iki deger farkliysa bot kaydetmeyi
+durdurur. Tarih duzeltmesi ayni resmi kayit uzerinde yapilir; ikinci kayit
+olusmasina izin verilmez.

@@ -2,6 +2,15 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Aktif Tek Hedef - Banka Tarihi Kaniti ve Mevcut Kayit Duzeltmesi v113
+
+Yeni BizimHesap banka, para girisi ve masraf kayitlari kaynak banka
+`transaction_date` degeri formda tekrar dogrulanmadan kaydedilemez. Siradaki
+adim, 14.07.2026 kaynakli olup 15.07.2026 gorunen iki VakifBank kaydinin
+tekil APERION QUEUE kaniti ile tarih duzeltme ekranina ulasilabildigini
+kontrol etmektir. Duzeltme, ayni kaydi degistirecek; ikinci kayit
+olusturmayacaktir.
+
 ## Aktif Tek Hedef - Apsiyon Kisisel Tahakkuk Kaynak Dogrulamasi v112
 
 `apsiyon_oturum_kur.cmd` sadece yerel kalici Chrome profilini acar. Kullanici

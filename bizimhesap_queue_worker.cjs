@@ -82,6 +82,45 @@ function isoDate(v) {
   return String(v || '').slice(0, 10);
 }
 
+// The bank statement is the financial source of truth.  BizimHesap may open a
+// form with today's date, so compare the value in the rendered form again
+// immediately before a form is returned or saved.
+function canonicalPostingDate(value) {
+  const text = String(value || '').trim();
+  let match = text.match(/^(\d{4})[-./](\d{2})[-./](\d{2})/);
+  if (match) return `${match[1]}-${match[2]}-${match[3]}`;
+  match = text.match(/^(\d{2})[-./](\d{2})[-./](\d{4})/);
+  if (match) return `${match[3]}-${match[2]}-${match[1]}`;
+  return '';
+}
+
+function postingDateSelector(kind) {
+  if (kind === 'bank_transfer') return '#txtTransferDate';
+  if (kind === 'bank_unmatched_incoming') return '#txtTransactionDate';
+  return '#txtDocumentDate';
+}
+
+async function verifyPostingDate(page, plan) {
+  const expected = canonicalPostingDate(plan.date);
+  if (!expected) {
+    throw new Error('Kaynak banka tarihi yok; BizimHesap kaydi durduruldu.');
+  }
+  const selector = postingDateSelector(plan.kind);
+  const proof = await page.evaluate((formSelector) => {
+    const field = document.querySelector(formSelector);
+    return {
+      selector: formSelector,
+      exists: Boolean(field),
+      value: field ? String(field.value || '').trim() : '',
+    };
+  }, selector);
+  const selected = canonicalPostingDate(proof.value);
+  if (!proof.exists || selected !== expected) {
+    throw new Error(`Banka tarihi form kaniti basarisiz: beklenen ${expected}, formda ${selected || proof.value || '-'}; kaydetme durduruldu.`);
+  }
+  return { expected, selected, selector };
+}
+
 function queuePayload(row) {
   if (!row || typeof row.payload !== 'object' || row.payload === null) return {};
   return row.payload;
@@ -688,13 +727,14 @@ async function processLiveRow(page, row) {
   const missing = required.filter(k => !fill[k]);
   if (missing.length) throw new Error(`BizimHesap form alanları bulunamadı: ${missing.join(', ')}`);
   await verifyExpenseSourceAccount(page, plan);
+  const dateProof = await verifyPostingDate(page, plan);
   if (!SAVE) {
-    return { status: 'form_filled', message: 'Form dolduruldu, kaydet tuşuna basılmadı.', plan, fill };
+    return { status: 'form_filled', message: 'Form dolduruldu, kaydet tuşuna basılmadı.', plan, fill, dateProof };
   }
   if (!SAVE_UNLOCKED) throw new Error('Canlı kaydetme kilitli: BIZIMHESAP_POSTING_SAVE=1 gerekli.');
   await clickSave(page, plan);
   await savePageDiagnostics(page, `bizimhesap_queue_${row.id}_after_save`).catch(() => {});
-  return { status: 'processed', message: 'BizimHesap kaydet butonuna basıldı; kayıt sonrası ekran kanıtı alındı.', plan, fill };
+  return { status: 'processed', message: 'BizimHesap kaydet butonuna basıldı; kayıt sonrası ekran kanıtı alındı.', plan, fill, dateProof };
 }
 
 async function writeDryRun(rows) {
@@ -719,6 +759,18 @@ async function writeDryRun(rows) {
 }
 
 async function main() {
+  if (args.includes('--self-test')) {
+    const cases = [
+      ['2026-07-14', '2026-07-14'],
+      ['14.07.2026', '2026-07-14'],
+      ['14/07/2026', '2026-07-14'],
+    ];
+    for (const [input, expected] of cases) {
+      if (canonicalPostingDate(input) !== expected) throw new Error(`Tarih self-test basarisiz: ${input}`);
+    }
+    console.log('SONUC: BANKA_TARIHI_KORUMASI_BASARILI');
+    return;
+  }
   log(`AperiON BizimHesap queue worker - ${COMMIT ? 'FORM' : 'DRY'}${SAVE ? '+SAVE' : ''} - limit ${LIMIT}`);
   if (COMMIT && !LIVE_UNLOCKED) {
     throw new Error('Canlı form modu kilitli: BIZIMHESAP_POSTING_LIVE=1 gerekli.');

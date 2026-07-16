@@ -1,5 +1,13 @@
 # AperiON Changelog
 
+## 2026-07-16 - Banka tarihi form kaniti v113
+
+- BizimHesap kuyruk worker'ina kaynak banka tarihi korumasi eklendi.
+- Transfer, hesaba para girisi ve gider formlarinda kaydetmeden once ekrandaki
+  tarih, kaynak `transaction_date` ile tekrar karsilastirilir.
+- Tarih yoksa veya form bugunun tarihi gibi farkli bir deger tasiyorsa kayit
+  durdurulur; kaynak finans tarihi varsayilan form tarihiyle ezilemez.
+
 ## 2026-07-16 - Scope boundary for Halkbank Ercan Alayli account
 
 - Recorded the account as an ALKAM Mali-only source and excluded it from

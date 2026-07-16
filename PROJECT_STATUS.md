@@ -2,6 +2,14 @@
 
 Son guncelleme: 2026-07-16 Europe/Istanbul
 
+## Guncel Tur - Banka Tarihi Kayit Koruması v113
+
+Banka ekstresindeki islem tarihi, BizimHesap kaydinin zorunlu finans tarihi
+olarak kilitlendi. Kuyruk worker'i formu doldurduktan sonra tarih alanini
+yeniden okur; kaynak tarih yoksa veya formdaki tarih farkliysa kaydetme
+durdurulur. Botun calistigi tarih sadece denetim/zaman damgasi olabilir;
+finansal hareket tarihinin yerine gecemez.
+
 ## Scope Note - Halkbank Ercan Alayli Account
 
 This account belongs to the separate ALKAM Mali project, not AperiON. It is
