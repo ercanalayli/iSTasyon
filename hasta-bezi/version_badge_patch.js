@@ -1,5 +1,5 @@
 (function(){
-  var VERSION='1455261707';
+  var VERSION='1540261707';
   function apply(){
     var text='🆚 '+VERSION;
     document.querySelectorAll('#stamp,.stamp').forEach(function(el){if(el.textContent!==text)el.textContent=text});
