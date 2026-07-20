@@ -25,7 +25,7 @@ const marketing = parse(
 assert.deepEqual(marketing, [], 'Pazarlama/halka arz maili finansal hareket uretmemeli');
 
 const bankMismatch = parse(
-  'VAKIFBANK - FAST Anlik Odeme Bilgilendirmesi 07.07.2026 10:34 712,00 TL',
+  'VAKIFBANK - FAST Anlik Odeme Bilgilendirmesi 07.07.2026 10:34 tarihinde hesabiniza 712,00 TL para gonderildi.',
   {
     bankHint: 'isbank Türkiye İş Bankası',
     subject: 'Hesap Hareket Bilgilendirmesi',
