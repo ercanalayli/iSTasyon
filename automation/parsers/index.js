@@ -22,6 +22,7 @@ export function parseBankStatement(text, meta = {}) {
   const bank = detectBank(text, meta);
   const isNotification = meta.source === 'gmail_bank_notification' || meta.attachment_name === 'mail_body';
   if (isNotification) {
+    if (!passesNotificationEvidenceGate(text, meta)) return [];
     const notificationRows = parseBankNotification(text, { ...meta, bank_name: bank });
     if (notificationRows.length) return qualityGate(notificationRows);
   }
@@ -124,6 +125,60 @@ function key(v) {
 function isNonBankMail(text, meta = {}) {
   const source = key(`${meta.mail_from || ''} ${meta.mail_subject || ''} ${meta.attachment_name || ''} ${text || ''}`).replace(/_/g, ' ');
   return /BIZIMHESAP GUNLUK FINANSAL BILGILERINIZ|BIZIMHESAP GUNLUK HESAP HAREKETLERINIZ|GUNLUK NAKIT AKISINIZ|KASA VE BANKA BAKIYELERINIZ/.test(source);
+}
+
+function passesNotificationEvidenceGate(text, meta = {}) {
+  const source = key(`${meta.mail_subject || ''} ${text || ''}`).replace(/_/g, ' ');
+  if (isMarketingOrAnnouncement(source)) return false;
+  if (!hasFinancialTransactionEvidence(source)) return false;
+  if (hasBankIdentityMismatch(text, meta)) return false;
+  return true;
+}
+
+function isMarketingOrAnnouncement(source) {
+  const marketing = /HALKA ARZ|KAMPANYA|DUYURU|REKLAM|FIRSAT|INDIRIM|AVANTAJ|CEKILIS|SIZE OZEL|YENI URUN|TALEP FIYATI|BASIN BULTENI/;
+  const transaction = /HESABINIZA|HESABINIZDAN|PARA GONDERILDI|TAHSIL EDILDI|TAHSIL EDILMISTIR|ODEME GERCEKLESTI|ODEME YAPILDI|GELEN (?:FAST|EFT|HAVALE)|GIDEN (?:FAST|EFT|HAVALE)|BAKIYE/;
+  return marketing.test(source) && !transaction.test(source);
+}
+
+function hasFinancialTransactionEvidence(source) {
+  const directAction = /HESABINIZA|HESABINIZDAN|PARA GONDERILDI|TAHSIL EDILDI|TAHSIL EDILMISTIR|ODEME GERCEKLESTI|ODEME YAPILDI|HESAPTAN CEKILDI|HESABA YATIRILDI|GELEN (?:FAST|EFT|HAVALE)|GIDEN (?:FAST|EFT|HAVALE)|POS ODEMESI|KOMISYON TAHSILATI/;
+  const transactionContext = /ISLEM (?:TUTARI|NO|NUMARASI)|REFERANS (?:NO|NUMARASI)|GUNCEL BAKIYE|KALAN BAKIYE/;
+  return directAction.test(source) || transactionContext.test(source);
+}
+
+function sourceBankIdentity(meta = {}) {
+  const source = key(`${meta.bank_hint || ''} ${meta.mail_from || ''} ${meta.mail_subject || ''}`).replace(/_/g, ' ');
+  if (/TURKIYE IS BANKASI|IS BANKASI|ISBANK/.test(source)) return 'isbank';
+  if (/VAKIFBANK|VAKIF BANK/.test(source)) return 'vakifbank';
+  if (/YAPI KREDI|YAPIKREDI/.test(source)) return 'yapikredi';
+  if (/AKBANK|AXESS/.test(source)) return 'akbank';
+  if (/GARANTI|GARANTI BBVA/.test(source)) return 'garanti';
+  if (/HALKBANK|HALK BANKASI/.test(source)) return 'halkbank';
+  if (/ZIRAAT|BANKKART/.test(source)) return 'ziraat';
+  if (/QNB|FINANSBANK|ENPARA/.test(source)) return 'qnb';
+  return '';
+}
+
+function banksMentionedInBody(text) {
+  const source = key(text || '').replace(/_/g, ' ');
+  const found = new Set();
+  if (/TURKIYE IS BANKASI|IS BANKASI|ISBANK/.test(source)) found.add('isbank');
+  if (/VAKIFBANK|VAKIF BANK/.test(source)) found.add('vakifbank');
+  if (/YAPI KREDI|YAPIKREDI/.test(source)) found.add('yapikredi');
+  if (/AKBANK|AXESS/.test(source)) found.add('akbank');
+  if (/GARANTI|GARANTI BBVA/.test(source)) found.add('garanti');
+  if (/HALKBANK|HALK BANKASI/.test(source)) found.add('halkbank');
+  if (/ZIRAAT|BANKKART/.test(source)) found.add('ziraat');
+  if (/QNB|FINANSBANK|ENPARA/.test(source)) found.add('qnb');
+  return found;
+}
+
+function hasBankIdentityMismatch(text, meta = {}) {
+  const sourceBank = sourceBankIdentity(meta);
+  if (!sourceBank) return false;
+  const bodyBanks = banksMentionedInBody(text);
+  return bodyBanks.size > 0 && !bodyBanks.has(sourceBank);
 }
 
 function typeOf(desc, amount) {
