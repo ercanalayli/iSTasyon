@@ -133,15 +133,17 @@
     "verify:payment-calendar-navigation": "node tools/verify_payment_calendar_navigation_v87.cjs",
     "payment:reminders:preview": "node telegram/aperion_payment_reminder_digest_v88.cjs",
     "payment:reminders:send": "node telegram/aperion_payment_reminder_digest_v88.cjs --send",
-    "verify:payment-reminders": "node tools/verify_payment_reminder_candidates_v88.cjs"
-    ,"hasta-bezi:source-audit": "node tools/audit_hasta_bezi_source_reports_v91.cjs"
-    ,"verify:hasta-bezi:source-audit": "node tools/verify_hasta_bezi_source_reports_v91.cjs"
-    ,"hasta-bezi:fifo:build": "node tools/build_hasta_bezi_fifo_chunks_v92.cjs"
-    ,"hasta-bezi:history:preflight": "node tools/preflight_historical_fifo_sources_v95.cjs"
-    ,"bizimhesap:local-secret:set": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/set_local_supabase_service_role.ps1"
-    ,"bizimhesap:local-password:set": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/set_local_bizimhesap_password.ps1"
-    ,"bizimhesap:local-clone:secure": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/invoke_secure_bizimhesap_clone.ps1"
-    ,"bizimhesap:task:install-live": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/install_live_bizimhesap_clone_task.ps1"
+    "verify:payment-reminders": "node tools/verify_payment_reminder_candidates_v88.cjs",
+    "hasta-bezi:source-audit": "node tools/audit_hasta_bezi_source_reports_v91.cjs",
+    "verify:hasta-bezi:source-audit": "node tools/verify_hasta_bezi_source_reports_v91.cjs",
+    "hasta-bezi:fifo:build": "node tools/build_hasta_bezi_fifo_chunks_v92.cjs",
+    "hasta-bezi:history:preflight": "node tools/preflight_historical_fifo_sources_v95.cjs",
+    "bizimhesap:local-secret:set": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/set_local_supabase_service_role.ps1",
+    "bizimhesap:local-password:set": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/set_local_bizimhesap_password.ps1",
+    "bizimhesap:local-clone:secure": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/invoke_secure_bizimhesap_clone.ps1",
+    "bizimhesap:task:install-live": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/install_live_bizimhesap_clone_task.ps1",
+    "verify:commerce-core": "node tools/verify_commerce_core_v112.mjs",
+    "verify:sales-catalog": "node tools/verify_sales_catalog_v113.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

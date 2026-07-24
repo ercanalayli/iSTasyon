@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="ALAYLI Medikal ürün kataloğu ve İnegöl içi hızlı sipariş.">
+  <title>ALAYLI Medikal | Ürün Kataloğu</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="hero">
+    <p class="eyebrow">2006'dan beri İnegöl'de</p>
+    <h1>ALAYLI Medikal</h1>
+    <p>Medikal, ortopedi ve evde bakım ürünleri. İnegöl içi adrese teslim.</p>
+  </header>
+  <main>
+    <section class="toolbar" aria-label="Katalog filtreleri">
+      <input id="search" type="search" placeholder="Ürün, marka veya barkod ara" aria-label="Ürün ara">
+      <select id="category" aria-label="Kategori"><option value="">Tüm kategoriler</option></select>
+    </section>
+    <section id="notice" class="notice" role="status"></section>
+    <section id="products" class="grid" aria-live="polite"></section>
+  </main>
+  <template id="product-template">
+    <article class="card">
+      <div class="image-wrap"><img class="product-image" alt="" loading="lazy"></div>
+      <div class="card-body">
+        <p class="category"></p><h2 class="name"></h2><p class="summary"></p>
+        <div class="price-row"><strong class="price"></strong><span class="stock"></span></div>
+        <a class="order" target="_blank" rel="noopener">WhatsApp'tan sor</a>
+      </div>
+    </article>
+  </template>
+  <footer>Fiyat ve stok bilgisi sipariş sırasında teyit edilir.</footer>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
