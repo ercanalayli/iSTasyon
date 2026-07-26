@@ -1,0 +1,181 @@
+name: AperiON Supabase Read-Only Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/supabase-readonly-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check database secret
+        shell: bash
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "${SUPABASE_DB_URL:-}" ]; then
+            echo "::error::SUPABASE_DB_URL secret eksik."
+            exit 1
+          fi
+
+      - name: Install PostgreSQL client
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Run read-only catalog audit
+        shell: bash
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PGOPTIONS: "-c default_transaction_read_only=on -c statement_timeout=60000"
+        run: |
+          mkdir -p audit-output
+          psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1             --pset pager=off --pset footer=off             --file=/dev/stdin > audit-output/supabase-readonly-audit.txt <<'SQL'
+          BEGIN TRANSACTION READ ONLY;
+
+          \echo '=== AUDIT META ==='
+          SELECT now() AT TIME ZONE 'UTC' AS audited_at_utc,
+                 current_database() AS database_name,
+                 current_user AS database_user,
+                 current_setting('transaction_read_only') AS transaction_read_only;
+
+          \echo '=== TARGET FUNCTIONS: EXISTENCE, SECURITY DEFINER, EXECUTE PRIVILEGES ==='
+          WITH target(name) AS (
+            VALUES
+              ('approve_bank_transaction_v58'),
+              ('approve_pending_bank_movement'),
+              ('finance_calendar_mark_paid'),
+              ('finance_calendar_mark_done'),
+              ('finance_calendar_postpone'),
+              ('finance_calendar_reject'),
+              ('finance_calendar_create_plan')
+          )
+          SELECT n.nspname AS schema_name,
+                 p.proname AS function_name,
+                 pg_get_function_identity_arguments(p.oid) AS identity_arguments,
+                 p.prosecdef AS security_definer,
+                 has_function_privilege('anon', p.oid, 'EXECUTE') AS anon_can_execute,
+                 has_function_privilege('authenticated', p.oid, 'EXECUTE') AS authenticated_can_execute,
+                 p.proacl::text AS explicit_acl
+          FROM pg_proc p
+          JOIN pg_namespace n ON n.oid = p.pronamespace
+          JOIN target t ON t.name = p.proname
+          ORDER BY n.nspname, p.proname, identity_arguments;
+
+          \echo '=== TARGET FUNCTIONS NOT FOUND ==='
+          WITH target(name) AS (
+            VALUES
+              ('approve_bank_transaction_v58'),
+              ('approve_pending_bank_movement'),
+              ('finance_calendar_mark_paid'),
+              ('finance_calendar_mark_done'),
+              ('finance_calendar_postpone'),
+              ('finance_calendar_reject'),
+              ('finance_calendar_create_plan')
+          )
+          SELECT t.name AS missing_function
+          FROM target t
+          WHERE NOT EXISTS (SELECT 1 FROM pg_proc p WHERE p.proname = t.name)
+          ORDER BY t.name;
+
+          \echo '=== TARGET TABLES: RLS AND WRITE PRIVILEGES ==='
+          WITH target(name) AS (
+            VALUES
+              ('bank_transactions'),
+              ('banka_raw'),
+              ('product_raw'),
+              ('audit_logs'),
+              ('bizimhesap_events'),
+              ('kurumsal_hafiza')
+          )
+          SELECT n.nspname AS schema_name,
+                 c.relname AS table_name,
+                 c.relrowsecurity AS rls_enabled,
+                 c.relforcerowsecurity AS rls_forced,
+                 has_table_privilege('anon', c.oid, 'INSERT') AS anon_insert,
+                 has_table_privilege('anon', c.oid, 'UPDATE') AS anon_update,
+                 has_table_privilege('anon', c.oid, 'DELETE') AS anon_delete,
+                 has_table_privilege('authenticated', c.oid, 'INSERT') AS authenticated_insert,
+                 has_table_privilege('authenticated', c.oid, 'UPDATE') AS authenticated_update,
+                 has_table_privilege('authenticated', c.oid, 'DELETE') AS authenticated_delete,
+                 c.reltuples::bigint AS estimated_rows
+          FROM pg_class c
+          JOIN pg_namespace n ON n.oid = c.relnamespace
+          JOIN target t ON t.name = c.relname
+          WHERE c.relkind IN ('r','p')
+          ORDER BY n.nspname, c.relname;
+
+          \echo '=== TARGET TABLES NOT FOUND ==='
+          WITH target(name) AS (
+            VALUES
+              ('bank_transactions'),
+              ('banka_raw'),
+              ('product_raw'),
+              ('audit_logs'),
+              ('bizimhesap_events'),
+              ('kurumsal_hafiza')
+          )
+          SELECT t.name AS missing_table
+          FROM target t
+          WHERE NOT EXISTS (
+            SELECT 1 FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relname = t.name AND c.relkind IN ('r','p')
+          )
+          ORDER BY t.name;
+
+          \echo '=== RLS POLICIES FOR TARGET TABLES ==='
+          SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
+          FROM pg_policies
+          WHERE tablename IN (
+            'bank_transactions','banka_raw','product_raw','audit_logs',
+            'bizimhesap_events','kurumsal_hafiza'
+          )
+          ORDER BY schemaname, tablename, policyname;
+
+          \echo '=== PUBLIC SCHEMA TABLE INVENTORY (FINANCE/MEMORY CANDIDATES) ==='
+          SELECT c.table_schema, c.table_name,
+                 string_agg(c.column_name || ':' || c.data_type, ', ' ORDER BY c.ordinal_position) AS columns
+          FROM information_schema.columns c
+          WHERE c.table_schema = 'public'
+            AND (
+              c.table_name ILIKE ANY (ARRAY['%bank%','%banka%','%finance%','%finans%','%payment%','%odeme%','%bizimhesap%','%hafiza%','%memory%','%audit%'])
+              OR c.column_name IN ('firma_id','company_id','tahakkuk_tarihi','nakit_tarihi')
+            )
+          GROUP BY c.table_schema, c.table_name
+          ORDER BY c.table_name;
+
+          \echo '=== CANONICAL SCHEMA SIGNALS ==='
+          SELECT c.table_schema, c.table_name,
+                 bool_or(c.column_name IN ('firma_id','company_id')) AS has_company_scope,
+                 bool_or(c.column_name IN ('tarih','date','transaction_date','islem_tarihi')) AS has_date,
+                 bool_or(c.column_name IN ('tip','type','transaction_type','islem_tipi')) AS has_type,
+                 bool_or(c.column_name IN ('tutar','amount')) AS has_amount,
+                 bool_or(c.column_name IN ('kategori','category')) AS has_category,
+                 bool_or(c.column_name IN ('tahakkuk_tarihi','accrual_date')) AS has_accrual_date,
+                 bool_or(c.column_name IN ('nakit_tarihi','cash_date')) AS has_cash_date
+          FROM information_schema.columns c
+          WHERE c.table_schema = 'public'
+          GROUP BY c.table_schema, c.table_name
+          HAVING bool_or(c.column_name IN ('firma_id','company_id'))
+             AND bool_or(c.column_name IN ('tutar','amount'))
+          ORDER BY c.table_name;
+
+          COMMIT;
+          SQL
+
+      - name: Upload audit evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: aperion-supabase-readonly-audit
+          path: audit-output/supabase-readonly-audit.txt
+          if-no-files-found: error
+          retention-days: 14
