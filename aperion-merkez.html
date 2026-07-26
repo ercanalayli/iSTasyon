@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071326">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AperiON">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/aperion-icon-192-v2.png">
+  <title>AperiON iSTasyon · Tek Merkez</title>
+  <style>
+    :root{color-scheme:dark;--bg:#050b18;--panel:#0b1628;--panel2:#101e34;--line:#233653;--text:#f5f8ff;--muted:#91a2bb;--blue:#43a5ff;--green:#32d59a;--amber:#ffbf5b;--red:#ff6b74}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top right,#102c52 0,transparent 34%),var(--bg);color:var(--text);font:14px Inter,system-ui,-apple-system,sans-serif}
+    button,input{font:inherit}.shell{min-height:100dvh;display:grid;grid-template-columns:260px 1fr}.side{border-right:1px solid var(--line);background:rgba(5,11,24,.92);padding:20px 14px;position:sticky;top:0;height:100dvh;overflow:auto}
+    .brand{display:flex;gap:12px;align-items:center;margin:0 6px 20px}.mark{width:44px;height:44px;border-radius:13px;background:linear-gradient(145deg,#1473d4,#071c38);display:grid;place-items:center;font-weight:900;font-size:18px;box-shadow:0 8px 26px #1473d455}.brand b{display:block;font-size:18px}.brand span{color:var(--muted);font-size:12px}
+    .sectionLabel{margin:18px 8px 8px;color:#6f83a1;font-size:10px;font-weight:800;letter-spacing:.13em}.nav{display:grid;gap:6px}.nav button{border:1px solid transparent;border-radius:11px;background:transparent;color:var(--muted);padding:11px 12px;text-align:left;cursor:pointer}.nav button:hover,.nav button.on{background:var(--panel2);border-color:var(--line);color:var(--text)}.nav small{display:block;color:#6f83a1;margin-top:3px}
+    .main{padding:22px;min-width:0}.top{display:flex;gap:14px;align-items:center;justify-content:space-between;margin-bottom:18px}.top h1{font-size:23px;margin:0}.top p{margin:4px 0 0;color:var(--muted)}.badges{display:flex;gap:8px;flex-wrap:wrap}.badge{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 10px;color:var(--muted)}.badge strong{color:var(--green)}
+    .notice{border:1px solid #755b28;background:#281f10;border-radius:12px;padding:12px 14px;color:#ffdc9c;margin-bottom:16px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.card{grid-column:span 3;background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:15px;padding:15px;min-height:126px;cursor:pointer;transition:.18s}.card:hover{transform:translateY(-2px);border-color:#3f6390}.card .icon{font-size:22px}.card h2{font-size:15px;margin:18px 0 5px}.card p{color:var(--muted);margin:0;font-size:12px;line-height:1.5}.card .state{display:inline-block;margin-top:11px;color:var(--green);font-size:11px;font-weight:700}.span6{grid-column:span 6}
+    .workspace{display:none;margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}.workspace.on{display:block}.workspaceHead{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-bottom:1px solid var(--line)}.workspaceHead b{font-size:13px}.actions{display:flex;gap:8px}.actions a,.actions button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:9px;padding:7px 10px;text-decoration:none;cursor:pointer}iframe{display:block;border:0;width:100%;height:72dvh;background:#fff}
+    .legacy{display:none}.legacy.on{display:block}.legacyTop{display:flex;gap:10px;margin-bottom:12px}.legacy input{width:100%;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:11px;padding:12px}.legacyList{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.legacyItem{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px;cursor:pointer}.legacyItem b{display:block;font-size:13px}.legacyItem span{display:block;color:var(--muted);font-size:11px;margin-top:5px}.legacyItem em{display:inline-block;color:var(--blue);font-size:10px;font-style:normal;margin-top:8px}
+    @media(max-width:900px){.shell{grid-template-columns:1fr}.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:12px}.brand{margin-bottom:10px}.sectionLabel{display:none}.nav{display:flex;overflow:auto}.nav button{white-space:nowrap;min-width:max-content}.main{padding:14px}.top{align-items:flex-start;flex-direction:column}.card{grid-column:span 6}.legacyList{grid-template-columns:1fr 1fr}iframe{height:68dvh}}
+    @media(max-width:560px){.card,.span6{grid-column:1/-1}.legacyList{grid-template-columns:1fr}.main{padding-bottom:82px}.badges{font-size:11px}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="brand"><div class="mark">AP</div><div><b>AperiON</b><span>iSTasyon · Tek Merkez</span></div></div>
+    <div class="sectionLabel">ANA YÖNETİM</div>
+    <nav class="nav" id="mainNav">
+      <button class="on" data-view="overview">⌂ Genel Bakış<small>Tek karar ekranı</small></button>
+      <button data-module="approval">✓ Onay Merkezi<small>Kanıt ve kullanıcı kararı</small></button>
+      <button data-module="finance">₺ Finans<small>Ödeme, vade, nakit</small></button>
+      <button data-module="bank">▤ Banka<small>Ekstre ve mutabakat</small></button>
+      <button data-module="sales">↗ Satış & Ürün<small>Satış, stok, sevkiyat</small></button>
+      <button data-view="legacy">▦ Tüm Ekranlar<small>Silinmeyen eski kayıtlar</small></button>
+    </nav>
+  </aside>
+  <main class="main">
+    <header class="top">
+      <div><h1 id="pageTitle">Bugünün AperiON Merkezi</h1><p id="pageSubtitle">Fikirler, kararlar ve operasyonlar tek girişte.</p></div>
+      <div class="badges"><span class="badge">Aktif şirket: <strong>ALAYLI Medikal</strong></span><span class="badge">Safe mode: <strong>Açık</strong></span></div>
+    </header>
+    <div class="notice">Açık onay olmadan dış sisteme kayıt yok. Eski ekranların hiçbiri silinmedi; “Tüm Ekranlar” kataloğunda korunuyor.</div>
+    <section id="overview" class="grid">
+      <article class="card" data-module="approval"><div class="icon">✓</div><h2>Onay ve Kanıt Merkezi</h2><p>Ekstre kanıtı, kaynak/hedef hesap, güven skoru ve insan kararı.</p><span class="state">Kullanıcı onayı şart</span></article>
+      <article class="card" data-module="finance"><div class="icon">₺</div><h2>Finans ve Ödemeler</h2><p>Kritik ödemeler, vadeler, kartlar, faturalar ve nakit görünümü.</p><span class="state">Tek finans çatısı</span></article>
+      <article class="card" data-module="bank"><div class="icon">▤</div><h2>Banka ve Ekstre</h2><p>Mail ekstre, banka hareketleri, POS/Moka transferleri ve mutabakat.</p><span class="state">Kanıt öncelikli</span></article>
+      <article class="card" data-module="sales"><div class="icon">↗</div><h2>Satış, Ürün ve Stok</h2><p>Satış analizi, cari, stok, fiyat, sevkiyat ve hasta bezi operasyonu.</p><span class="state">Operasyon modülleri</span></article>
+      <article class="card span6" data-module="work"><div class="icon">✦</div><h2>AperiON İş Merkezi</h2><p>CEO/CFO bakışı, öncelik radarı, görevler ve yapay zekâ karar desteği.</p><span class="state">Üst akıl görünümü</span></article>
+      <article class="card span6" data-view="legacy"><div class="icon">▦</div><h2>Korunan Ekranlar ve Fikir Arşivi</h2><p>Bütün HTML ekranları; başlık, kategori ve özellik sinyalleriyle aranabilir.</p><span class="state" id="surfaceCount">Envanter yükleniyor</span></article>
+    </section>
+    <section id="workspace" class="workspace">
+      <div class="workspaceHead"><b id="moduleTitle">Modül</b><div class="actions"><a id="moduleNewTab" href="#" target="_blank" rel="noopener">Yeni sekme</a><button id="moduleClose">Kapat</button></div></div>
+      <iframe id="moduleFrame" title="AperiON modül çalışma alanı"></iframe>
+    </section>
+    <section id="legacy" class="legacy">
+      <div class="legacyTop"><input id="legacySearch" type="search" placeholder="Ekran, başlık veya kategori ara…"></div>
+      <div class="legacyList" id="legacyList"></div>
+    </section>
+  </main>
+</div>
+<script>
+const MODULES={
+  approval:{title:'Onay ve Kanıt Merkezi',url:'/aperion-home-v3.html?legacy=1#approval'},
+  finance:{title:'Finans ve Ödemeler',url:'/aperion-finans-takvimi-live.html'},
+  bank:{title:'Banka ve Ekstre Merkezi',url:'/mail-ekstre-canli.html'},
+  sales:{title:'Satış, Ürün ve Stok',url:'/alayli-merkez.html'},
+  work:{title:'AperiON İş Merkezi',url:'/aperion-is-merkezi.html'}
+};
+const $=id=>document.getElementById(id);
+let surfaces=[];
+function activeNav(target){document.querySelectorAll('#mainNav button').forEach(button=>button.classList.toggle('on',button===target))}
+function showOverview(target){$('overview').style.display='grid';$('workspace').classList.remove('on');$('legacy').classList.remove('on');$('pageTitle').textContent='Bugünün AperiON Merkezi';$('pageSubtitle').textContent='Fikirler, kararlar ve operasyonlar tek girişte.';if(target)activeNav(target)}
+function openModule(key,target){const module=MODULES[key];if(!module)return;$('overview').style.display='none';$('legacy').classList.remove('on');$('workspace').classList.add('on');$('moduleFrame').src=module.url;$('moduleTitle').textContent=module.title;$('moduleNewTab').href=module.url;$('pageTitle').textContent=module.title;$('pageSubtitle').textContent='AperiON içinden ayrılmadan çalışan modül.';if(target)activeNav(target)}
+function showLegacy(target){$('overview').style.display='none';$('workspace').classList.remove('on');$('legacy').classList.add('on');$('pageTitle').textContent='Korunan Ekranlar ve Fikir Arşivi';$('pageSubtitle').textContent='Hiçbir ekran silinmedi; bütün eski çalışmalar buradan açılır.';renderLegacy('');if(target)activeNav(target)}
+function renderLegacy(query){const q=query.toLocaleLowerCase('tr');const rows=surfaces.filter(item=>`${item.file} ${item.title} ${item.heading} ${item.category}`.toLocaleLowerCase('tr').includes(q));$('legacyList').innerHTML=rows.map(item=>`<article class="legacyItem" data-url="${item.url}"><b>${item.title||item.file}</b><span>${item.file}</span><em>${item.category}</em></article>`).join('');document.querySelectorAll('.legacyItem').forEach(item=>item.onclick=()=>{const url=item.dataset.url;$('legacy').classList.remove('on');$('workspace').classList.add('on');$('moduleFrame').src=url;$('moduleTitle').textContent=item.querySelector('b').textContent;$('moduleNewTab').href=url})}
+document.addEventListener('click',event=>{const moduleTarget=event.target.closest('[data-module]');if(moduleTarget)openModule(moduleTarget.dataset.module,moduleTarget.matches('#mainNav button')?moduleTarget:null);const viewTarget=event.target.closest('[data-view]');if(viewTarget){if(viewTarget.dataset.view==='legacy')showLegacy(viewTarget.matches('#mainNav button')?viewTarget:null);else showOverview(viewTarget)}});$('moduleClose').onclick=()=>showOverview(document.querySelector('[data-view="overview"]'));$('legacySearch').oninput=event=>renderLegacy(event.target.value);
+fetch('/data/aperion_surface_inventory.json',{cache:'no-store'}).then(response=>response.json()).then(data=>{surfaces=data.surfaces||[];$('surfaceCount').textContent=`${surfaces.length} ekran korunuyor`}).catch(()=>{$('surfaceCount').textContent='Envanter okunamadı'});
+</script>
+<script src="/aperion-mobile.js"></script>
+</body>
+</html>
