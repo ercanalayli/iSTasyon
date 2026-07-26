@@ -18,6 +18,10 @@ on:
       - ".github/workflows/bank-approval-status.yml"
       - "tools/build_bank_approval_status_v76.cjs"
       - "tools/merge_bank_approval_status_v82.cjs"
+      - "tools/build_bizimhesap_simulation_v116.cjs"
+      - "tools/attach_bizimhesap_simulation_to_approval_v117.cjs"
+      - "tools/verify_bizimhesap_simulation_v116.cjs"
+      - "tools/verify_bizimhesap_approval_center_v117.cjs"
       - "tools/approve_bank_candidate_v70.cjs"
       - "tools/check_bank_candidate_queue_proof_v71.cjs"
       - "tools/select_bank_approval_candidate_v69.cjs"
@@ -69,6 +73,15 @@ jobs:
       - name: Build unified bank approval status
         run: npm run bank:approval:unified-status
 
+      - name: Build and attach BizimHesap simulation
+        run: |
+          node tools/verify_bizimhesap_simulation_v116.cjs
+          node tools/verify_bizimhesap_approval_center_v117.cjs
+          if [ -f data/bizimhesap_queue_dryrun.json ]; then
+            node tools/build_bizimhesap_simulation_v116.cjs
+          fi
+          node tools/attach_bizimhesap_simulation_to_approval_v117.cjs
+
       - name: Build latest daily bank review
         run: npm run bank:daily-review
 
@@ -76,7 +89,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/aperion_bank_approval_status.json data/aperion_bank_approval_unified_status.json data/aperion_daily_bank_review.json
+          git add data/aperion_bank_approval_status.json data/aperion_bank_approval_unified_status.json data/aperion_daily_bank_review.json data/bizimhesap_simulation.json
           if git diff --cached --quiet; then
             echo "No bank approval status change"
           else
@@ -98,4 +111,5 @@ jobs:
             data/banka_onay_guvenli_adaylar.json
             data/banka_onay_kuyruk_kaniti.json
             data/bizimhesap_queue_dryrun.json
+            data/bizimhesap_simulation.json
             data/banka_onay_bizimhesap_kayit_plani.json
