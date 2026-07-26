@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#030711">
+  <title>AP — Neural Command</title>
+  <style>
+    :root{
+      --bg:#030711;--panel:rgba(12,22,42,.72);--line:rgba(112,218,255,.18);
+      --cyan:#4de8ff;--blue:#3d7cff;--violet:#9a6cff;--mint:#37f3bf;
+      --amber:#ffb84d;--red:#ff5576;--text:#f4f8ff;--muted:#89a0bc;
+    }
+    *{box-sizing:border-box} html,body{margin:0;min-height:100%;background:var(--bg)}
+    body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",sans-serif;color:var(--text);
+      background:
+        radial-gradient(circle at 85% -5%,rgba(75,76,255,.25),transparent 31%),
+        radial-gradient(circle at 3% 35%,rgba(0,216,255,.11),transparent 32%),
+        linear-gradient(180deg,#030711 0%,#07101e 50%,#040813 100%);
+      overflow-x:hidden}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.25;
+      background-image:linear-gradient(rgba(79,230,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(79,230,255,.035) 1px,transparent 1px);
+      background-size:28px 28px;mask-image:linear-gradient(to bottom,#000,transparent 75%)}
+    button{font:inherit;color:inherit}
+    .app{width:min(100%,430px);margin:auto;min-height:100dvh;padding:calc(env(safe-area-inset-top) + 12px) 18px calc(102px + env(safe-area-inset-bottom));position:relative}
+    .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+    .brand{display:flex;align-items:center;gap:11px}
+    .orb{width:42px;height:42px;border-radius:15px;display:grid;place-items:center;font-weight:900;font-size:13px;letter-spacing:-.5px;
+      background:linear-gradient(145deg,rgba(68,227,255,.2),rgba(111,70,255,.28));border:1px solid rgba(96,230,255,.5);
+      box-shadow:0 0 26px rgba(62,219,255,.24),inset 0 0 18px rgba(104,91,255,.28);position:relative}
+    .orb:after{content:"";position:absolute;inset:-5px;border-radius:19px;border:1px solid rgba(77,232,255,.12)}
+    .brand strong{font-size:17px;letter-spacing:.2px}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:1.6px;margin-top:2px}
+    .signal{display:flex;align-items:center;gap:7px;color:var(--mint);font-size:10px;font-weight:700;letter-spacing:.8px}
+    .dot{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 12px var(--mint);animation:pulse 2s infinite}
+    @keyframes pulse{50%{opacity:.45;transform:scale(.82)}}
+    .hello{margin-bottom:18px}.date{font-size:12px;color:var(--cyan);font-weight:700;letter-spacing:.8px;margin-bottom:8px}
+    h1{font-size:31px;line-height:1.04;letter-spacing:-1.3px;margin:0 0 9px}
+    .brief{color:#a9bad0;font-size:14px;line-height:1.5}.brief b{color:#fff}
+    .pulsebar{height:2px;margin:17px 0;background:linear-gradient(90deg,transparent,var(--cyan),var(--violet),transparent);opacity:.65;box-shadow:0 0 12px var(--cyan)}
+    .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:18px}
+    .metric{padding:12px 10px;border:1px solid var(--line);border-radius:15px;background:linear-gradient(160deg,rgba(22,40,72,.76),rgba(8,17,34,.7));backdrop-filter:blur(18px)}
+    .metric span{display:block;font-size:21px;font-weight:850}.metric small{display:block;color:var(--muted);font-size:9px;font-weight:700;letter-spacing:.8px;margin-top:4px}
+    .metric.red span{color:var(--red)}.metric.violet span{color:#b38cff}.metric.amber span{color:var(--amber)}
+    .section-title{display:flex;justify-content:space-between;align-items:center;margin:19px 2px 10px}
+    .section-title strong{font-size:12px;letter-spacing:1px}.section-title button{border:0;background:none;color:var(--cyan);font-size:11px}
+    .card{position:relative;overflow:hidden;border-radius:19px;padding:16px;margin-bottom:11px;background:linear-gradient(145deg,rgba(17,31,58,.88),rgba(8,17,34,.78));
+      border:1px solid var(--line);box-shadow:0 15px 40px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,255,255,.03)}
+    .card:before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:2px;background:var(--tone);box-shadow:0 0 12px var(--tone)}
+    .card.red{--tone:var(--red)}.card.violet{--tone:var(--violet)}.card.blue{--tone:var(--cyan)}
+    .eyebrow{display:flex;align-items:center;gap:7px;color:var(--tone);font-size:9px;font-weight:800;letter-spacing:1.15px;margin-bottom:7px}
+    .card h2{font-size:16px;margin:0 0 6px;letter-spacing:-.25px}.card p{font-size:12px;color:#9db0c8;line-height:1.45;margin:0}
+    .meta{display:flex;gap:12px;margin-top:9px;color:#c3d0df;font-size:10px}.meta b{color:#fff}
+    .actions{display:flex;gap:8px;margin-top:13px}
+    .actions button{border-radius:11px;padding:9px 12px;border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.04);font-size:11px;font-weight:750;cursor:pointer}
+    .actions .primary{background:linear-gradient(135deg,color-mix(in srgb,var(--tone) 78%,#12213d),color-mix(in srgb,var(--tone) 55%,#5237ad));border-color:transparent;box-shadow:0 8px 20px color-mix(in srgb,var(--tone) 17%,transparent)}
+    .command{margin-top:17px;border:1px solid rgba(77,232,255,.28);border-radius:18px;padding:5px;background:linear-gradient(90deg,rgba(77,232,255,.08),rgba(154,108,255,.1));box-shadow:0 0 30px rgba(77,232,255,.07)}
+    .command-inner{height:52px;border-radius:14px;background:rgba(4,10,22,.88);display:flex;align-items:center;gap:11px;padding:0 8px 0 14px}
+    .command input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#dceaff;font-size:13px}.command input::placeholder{color:#7086a0}
+    .mic{border:0;width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#397cff,#8c56ef);display:grid;place-items:center;box-shadow:0 0 18px rgba(94,103,255,.35);font-size:16px}
+    .nav{position:fixed;z-index:5;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,430px);height:calc(78px + env(safe-area-inset-bottom));
+      padding:9px 18px env(safe-area-inset-bottom);display:flex;justify-content:space-between;align-items:flex-start;
+      background:linear-gradient(180deg,rgba(5,11,23,.35),rgba(5,11,23,.96) 30%);backdrop-filter:blur(22px);border-top:1px solid rgba(77,232,255,.1)}
+    .nav button{width:58px;border:0;background:none;color:#71859f;font-size:9px;font-weight:700;display:grid;place-items:center;gap:4px}
+    .nav i{font-style:normal;font-size:19px;height:25px}.nav .on{color:var(--cyan)}
+    .nav .ap{transform:translateY(-20px);color:#fff}.nav .ap i{width:56px;height:56px;border-radius:19px;display:grid;place-items:center;font-size:14px;font-weight:900;
+      background:linear-gradient(145deg,#1cc9ed,#7454ef);border:1px solid rgba(255,255,255,.22);box-shadow:0 0 25px rgba(54,211,255,.3),0 12px 30px rgba(0,0,0,.4)}
+    .sheet{position:fixed;z-index:20;inset:0;background:rgba(1,4,10,.65);backdrop-filter:blur(8px);display:none;align-items:flex-end;justify-content:center}
+    .sheet.open{display:flex}.sheet-box{width:min(100%,430px);border-radius:25px 25px 0 0;padding:18px 20px calc(24px + env(safe-area-inset-bottom));background:#0a1426;border:1px solid rgba(77,232,255,.22);animation:up .22s ease-out}
+    @keyframes up{from{transform:translateY(100%)}}
+    .handle{width:42px;height:4px;border-radius:2px;background:#34465e;margin:0 auto 18px}.sheet h3{margin:0 0 7px}.sheet p{color:#91a5bd;font-size:13px;line-height:1.5}
+    .sheet .close{width:100%;padding:13px;border-radius:13px;border:0;background:linear-gradient(135deg,#247fc9,#7255df);font-weight:800;margin-top:10px}
+    @media(min-width:700px){.app{margin-top:20px;margin-bottom:20px;border:1px solid rgba(77,232,255,.12);border-radius:36px;min-height:860px;box-shadow:0 30px 90px #000}.nav{bottom:20px;border-radius:0 0 36px 36px}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <div class="brand"><div class="orb">AP</div><div><strong>AperiON</strong><small>NEURAL COMMAND</small></div></div>
+      <div class="signal"><span class="dot"></span> ÇEVRİMİÇİ</div>
+    </header>
+
+    <section class="hello">
+      <div class="date">26 TEMMUZ • PAZAR</div>
+      <h1>İyi akşamlar,<br>Ercan.</h1>
+      <div class="brief">AperiON taramayı tamamladı. <b>Önce bir finans kararına odaklanmanı öneriyorum.</b></div>
+    </section>
+
+    <div class="pulsebar"></div>
+
+    <section class="summary">
+      <div class="metric red"><span>3</span><small>KRİTİK</small></div>
+      <div class="metric violet"><span>2</span><small>KARAR</small></div>
+      <div class="metric amber"><span>1</span><small>RİSK</small></div>
+    </section>
+
+    <div class="section-title"><strong>ŞİMDİ NE ÖNEMLİ?</strong><button onclick="openSheet('Tüm gündem','Bugün, kararlar ve riskler tek zaman çizelgesinde açılacak.')">Tümünü gör</button></div>
+
+    <article class="card red">
+      <div class="eyebrow">● BUGÜN KRİTİK</div>
+      <h2>Rekormed firma ödemesi</h2>
+      <p>Vade bugün. Ödeme kaydı banka kanıtıyla henüz doğrulanmadı.</p>
+      <div class="meta"><span>Tutar <b>Kontrol bekliyor</b></span><span>Öncelik <b>Yüksek</b></span></div>
+      <div class="actions"><button class="primary" onclick="openSheet('Rekormed ödemesi','Kaynak belge, banka kanıtı, tutar, vade ve ödeme hazırlığı bu kartta birlikte gösterilecek.')">Ödemeyi hazırla</button><button onclick="openSheet('Kanıt zinciri','Ekstre, referans, kaynak dosya ve işlem geçmişi açılacak.')">Kanıtı gör</button></div>
+    </article>
+
+    <article class="card violet">
+      <div class="eyebrow">◆ KARARINI BEKLİYOR</div>
+      <h2>2 banka hareketi</h2>
+      <p>AperiON eşleştirmeyi hazırladı. Kesin kayıt için senin açık onayın gerekiyor.</p>
+      <div class="actions"><button class="primary" onclick="openSheet('Banka Onay Merkezi','İki hareket kaynak ve hedef hesapları, ekstre kanıtı ve önerilen kayıtla açılacak.')">Karar merkezini aç</button></div>
+    </article>
+
+    <article class="card blue">
+      <div class="eyebrow">✦ APERİON ANALİZİ</div>
+      <h2>BizimHesap verisi gecikiyor</h2>
+      <p>Son başarılı eşitleme 4 saat önce. Güvenlik nedeniyle otomatik finans kayıtları durduruldu.</p>
+      <div class="actions"><button class="primary" onclick="openSheet('Sistem sağlığı','Eşitleme zinciri, son başarı ve güvenli kurtarma adımları gösterilecek.')">Sorunu incele</button><button onclick="openSheet('Güvenli durum','Yeni kayıt durdu; mevcut veriler ve finansal kayıtlar etkilenmedi.')">Etkisini gör</button></div>
+    </article>
+
+    <div class="command">
+      <div class="command-inner"><input aria-label="AperiON komutu" placeholder="AperiON’a söyle…"><button class="mic" onclick="openSheet('Sesli komut','Dinleme yalnız sen başlattığında açılacak.')" aria-label="Sesli komut">◉</button></div>
+    </div>
+  </main>
+
+  <nav class="nav">
+    <button class="on"><i>⌁</i>Bugün</button>
+    <button onclick="openSheet('Kararlar','Tüm onay bekleyen işler risk ve tutara göre sıralanacak.')"><i>◇</i>Kararlar</button>
+    <button class="ap" onclick="openSheet('AperiON','Yazılı komut, sesli komut ve hızlı işlemler burada birleşecek.')"><i>AP</i>AperiON</button>
+    <button onclick="openSheet('İşler','ALAYLI Medikal ve kişisel işler tek proje görünümünde açılacak.')"><i>▱</i>İşler</button>
+    <button onclick="openSheet('Hafıza','Kurallar, kararlar ve devam eden konular kalıcı hafızadan açılacak.')"><i>⌬</i>Hafıza</button>
+  </nav>
+
+  <div class="sheet" id="sheet" onclick="if(event.target===this)closeSheet()">
+    <div class="sheet-box"><div class="handle"></div><h3 id="sheetTitle"></h3><p id="sheetText"></p><button class="close" onclick="closeSheet()">Tamam</button></div>
+  </div>
+
+  <script>
+    function openSheet(title,text){document.getElementById('sheetTitle').textContent=title;document.getElementById('sheetText').textContent=text;document.getElementById('sheet').classList.add('open')}
+    function closeSheet(){document.getElementById('sheet').classList.remove('open')}
+  </script>
+</body>
+</html>
