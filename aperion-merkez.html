@@ -18,6 +18,7 @@
     .sectionLabel{margin:18px 8px 8px;color:#6f83a1;font-size:10px;font-weight:800;letter-spacing:.13em}.nav{display:grid;gap:6px}.nav button{border:1px solid transparent;border-radius:11px;background:transparent;color:var(--muted);padding:11px 12px;text-align:left;cursor:pointer}.nav button:hover,.nav button.on{background:var(--panel2);border-color:var(--line);color:var(--text)}.nav small{display:block;color:#6f83a1;margin-top:3px}
     .main{padding:22px;min-width:0}.top{display:flex;gap:14px;align-items:center;justify-content:space-between;margin-bottom:18px}.top h1{font-size:23px;margin:0}.top p{margin:4px 0 0;color:var(--muted)}.badges{display:flex;gap:8px;flex-wrap:wrap}.badge{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 10px;color:var(--muted)}.badge strong{color:var(--green)}
     .notice{border:1px solid #755b28;background:#281f10;border-radius:12px;padding:12px 14px;color:#ffdc9c;margin-bottom:16px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.card{grid-column:span 3;background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:15px;padding:15px;min-height:126px;cursor:pointer;transition:.18s}.card:hover{transform:translateY(-2px);border-color:#3f6390}.card .icon{font-size:22px}.card h2{font-size:15px;margin:18px 0 5px}.card p{color:var(--muted);margin:0;font-size:12px;line-height:1.5}.card .state{display:inline-block;margin-top:11px;color:var(--green);font-size:11px;font-weight:700}.span6{grid-column:span 6}
+    .dataTitle{grid-column:1/-1;margin:10px 2px 0;font-size:13px;color:#c9d7eb}.dataCard{cursor:default;min-height:152px}.dataCard:hover{transform:none}.dataCard h2{margin:8px 0 2px}.metric{font-size:23px;font-weight:850;letter-spacing:-.03em}.meta{display:grid;gap:4px;margin-top:10px;color:var(--muted);font-size:11px}.status{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800}.status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--amber)}.status.ok::before{background:var(--green)}.status.bad::before{background:var(--red)}.status.bad{color:#ff9ba2}.status.warn{color:#ffd181}
     .workspace{display:none;margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}.workspace.on{display:block}.workspaceHead{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-bottom:1px solid var(--line)}.workspaceHead b{font-size:13px}.actions{display:flex;gap:8px}.actions a,.actions button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:9px;padding:7px 10px;text-decoration:none;cursor:pointer}iframe{display:block;border:0;width:100%;height:72dvh;background:#fff}
     .legacy{display:none}.legacy.on{display:block}.legacyTop{display:flex;gap:10px;margin-bottom:12px}.legacy input{width:100%;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:11px;padding:12px}.legacyList{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.legacyItem{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px;cursor:pointer}.legacyItem b{display:block;font-size:13px}.legacyItem span{display:block;color:var(--muted);font-size:11px;margin-top:5px}.legacyItem em{display:inline-block;color:var(--blue);font-size:10px;font-style:normal;margin-top:8px}
     @media(max-width:900px){.shell{grid-template-columns:1fr}.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:12px}.brand{margin-bottom:10px}.sectionLabel{display:none}.nav{display:flex;overflow:auto}.nav button{white-space:nowrap;min-width:max-content}.main{padding:14px}.top{align-items:flex-start;flex-direction:column}.card{grid-column:span 6}.legacyList{grid-template-columns:1fr 1fr}iframe{height:68dvh}}
@@ -45,6 +46,12 @@
     </header>
     <div class="notice">Açık onay olmadan dış sisteme kayıt yok. Eski ekranların hiçbiri silinmedi; “Tüm Ekranlar” kataloğunda korunuyor.</div>
     <section id="overview" class="grid">
+      <h2 class="dataTitle">Gerçek Veri Durumu</h2>
+      <article class="card dataCard"><div class="status warn" id="bankDataStatus">Banka verisi okunuyor</div><h2>Banka Onay</h2><div class="metric" id="bankDataMetric">—</div><p id="bankDataText">Kaynak bağlantısı kontrol ediliyor.</p><div class="meta"><span id="bankDataDate">Veri tarihi: —</span><span>Kaynak: Banka onay status JSON</span></div></article>
+      <article class="card dataCard"><div class="status warn" id="paymentDataStatus">Ödemeler okunuyor</div><h2>Ödenecekler</h2><div class="metric" id="paymentDataMetric">—</div><p id="paymentDataText">Kaynak bağlantısı kontrol ediliyor.</p><div class="meta"><span id="paymentDataDate">Veri tarihi: —</span><span>Kaynak: Ödeme yükümlülükleri</span></div></article>
+      <article class="card dataCard"><div class="status warn" id="salesDataStatus">Satış okunuyor</div><h2>Satış Kaynağı</h2><div class="metric" id="salesDataMetric">—</div><p id="salesDataText">Kaynak bağlantısı kontrol ediliyor.</p><div class="meta"><span id="salesDataDate">Veri dönemi: —</span><span>Kaynak: SATIŞ RAPORU 13–15</span></div></article>
+      <article class="card dataCard"><div class="status warn" id="syncDataStatus">Senkron okunuyor</div><h2>BizimHesap Senkron</h2><div class="metric" id="syncDataMetric">—</div><p id="syncDataText">Kaynak bağlantısı kontrol ediliyor.</p><div class="meta"><span id="syncDataDate">Son çalışma: —</span><span>Kaynak: AperiON son senkron</span></div></article>
+      <h2 class="dataTitle">Modüller</h2>
       <article class="card" data-module="approval"><div class="icon">✓</div><h2>Onay ve Kanıt Merkezi</h2><p>Ekstre kanıtı, kaynak/hedef hesap, güven skoru ve insan kararı.</p><span class="state">Kullanıcı onayı şart</span></article>
       <article class="card" data-module="finance"><div class="icon">₺</div><h2>Finans ve Ödemeler</h2><p>Kritik ödemeler, vadeler, kartlar, faturalar ve nakit görünümü.</p><span class="state">Tek finans çatısı</span></article>
       <article class="card" data-module="bank"><div class="icon">▤</div><h2>Banka ve Ekstre</h2><p>Mail ekstre, banka hareketleri, POS/Moka transferleri ve mutabakat.</p><span class="state">Kanıt öncelikli</span></article>
@@ -72,6 +79,47 @@ const MODULES={
 };
 const $=id=>document.getElementById(id);
 let surfaces=[];
+const money=value=>new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',minimumFractionDigits:2}).format(Number(value||0));
+const dateTime=value=>value?new Intl.DateTimeFormat('tr-TR',{dateStyle:'short',timeStyle:'short',timeZone:'Europe/Istanbul'}).format(new Date(value)):'—';
+const set=(id,value)=>{const node=$(id);if(node)node.textContent=value};
+const setStatus=(id,text,state)=>{const node=$(id);if(!node)return;node.textContent=text;node.className=`status ${state||'warn'}`};
+async function getJson(path){const response=await fetch(path,{cache:'no-store'});if(!response.ok)throw new Error(path);return response.json()}
+async function loadRealData(){
+  const [bank,payments,sales,sync]=await Promise.allSettled([
+    getJson('/data/aperion_bank_approval_unified_status.json'),
+    getJson('/data/aperion_payment_obligation_registry.json'),
+    getJson('/data/sales_report_summary_2025_2026.json'),
+    getJson('/data/aperion_last_sync.json')
+  ]);
+  if(bank.status==='fulfilled'){
+    const data=bank.value, summary=data.summary||{};
+    setStatus('bankDataStatus','Kaynak doğrulandı','ok');
+    set('bankDataMetric',`${summary.status_preview_count??0} hareket`);
+    set('bankDataText',`${summary.status_candidate_count??0} aday · ${summary.status_review_count??0} inceleme · ${summary.status_ready_queue_count??0} kayıt hazır`);
+    set('bankDataDate',`Veri tarihi: ${dateTime(data.created_at)}`);
+  }else{setStatus('bankDataStatus','Kaynak okunamadı','bad');set('bankDataText','Banka status dosyası erişilemiyor.')}
+  if(payments.status==='fulfilled'){
+    const data=payments.value, rows=data.obligations||[], incomplete=rows.filter(row=>row.amount==null||row.due_day==null).length;
+    setStatus('paymentDataStatus',incomplete?'Kaynak bilgisi eksik':'Kaynak doğrulandı',incomplete?'warn':'ok');
+    set('paymentDataMetric',`${rows.length} yükümlülük`);
+    set('paymentDataText',incomplete?`${incomplete} kayıtta tutar veya vade kanıtı henüz yok.`:'Tutar ve vadeler kaynaklarıyla doğrulandı.');
+    set('paymentDataDate',`Veri sürümü: ${data.version||'—'}`);
+  }else{setStatus('paymentDataStatus','Kaynak okunamadı','bad');set('paymentDataText','Ödeme yükümlülük dosyası erişilemiyor.')}
+  if(sales.status==='fulfilled'){
+    const data=sales.value, total=data.grand_total||{}, latest=(data.report_summary||[]).at(-1)||{};
+    setStatus('salesDataStatus','Geçmiş kaynak doğrulandı','warn');
+    set('salesDataMetric',money(total.Toplam));
+    set('salesDataText',`${Number(total.Satır||0).toLocaleString('tr-TR')} kaynak satırı; bugünkü satış değildir.`);
+    set('salesDataDate',`Veri dönemi: ${latest.Dönem||'—'}`);
+  }else{setStatus('salesDataStatus','Kaynak okunamadı','bad');set('salesDataText','Satış özet dosyası erişilemiyor.')}
+  if(sync.status==='fulfilled'){
+    const data=sync.value, jobs=data.jobs||[], failed=jobs.filter(job=>job.status==='failed').length;
+    setStatus('syncDataStatus',data.ok?'Senkron başarılı':'Senkron başarısız',data.ok?'ok':'bad');
+    set('syncDataMetric',data.ok?'Güncel':`${failed} hata`);
+    set('syncDataText',data.ok?'BizimHesap veri yenilemesi tamamlandı.':'Bugünkü satış, stok ve masraf güncel kabul edilemez.');
+    set('syncDataDate',`Son çalışma: ${dateTime(data.finishedAt||data.startedAt)}`);
+  }else{setStatus('syncDataStatus','Kaynak okunamadı','bad');set('syncDataText','Son senkron kanıtı erişilemiyor.')}
+}
 function activeNav(target){document.querySelectorAll('#mainNav button').forEach(button=>button.classList.toggle('on',button===target))}
 function showOverview(target){$('overview').style.display='grid';$('workspace').classList.remove('on');$('legacy').classList.remove('on');$('pageTitle').textContent='Bugünün AperiON Merkezi';$('pageSubtitle').textContent='Fikirler, kararlar ve operasyonlar tek girişte.';if(target)activeNav(target)}
 function openModule(key,target){const module=MODULES[key];if(!module)return;$('overview').style.display='none';$('legacy').classList.remove('on');$('workspace').classList.add('on');$('moduleFrame').src=module.url;$('moduleTitle').textContent=module.title;$('moduleNewTab').href=module.url;$('pageTitle').textContent=module.title;$('pageSubtitle').textContent='AperiON içinden ayrılmadan çalışan modül.';if(target)activeNav(target)}
@@ -79,6 +127,7 @@ function showLegacy(target){$('overview').style.display='none';$('workspace').cl
 function renderLegacy(query){const q=query.toLocaleLowerCase('tr');const rows=surfaces.filter(item=>`${item.file} ${item.title} ${item.heading} ${item.category}`.toLocaleLowerCase('tr').includes(q));$('legacyList').innerHTML=rows.map(item=>`<article class="legacyItem" data-url="${item.url}"><b>${item.title||item.file}</b><span>${item.file}</span><em>${item.category}</em></article>`).join('');document.querySelectorAll('.legacyItem').forEach(item=>item.onclick=()=>{const url=item.dataset.url;$('legacy').classList.remove('on');$('workspace').classList.add('on');$('moduleFrame').src=url;$('moduleTitle').textContent=item.querySelector('b').textContent;$('moduleNewTab').href=url})}
 document.addEventListener('click',event=>{const moduleTarget=event.target.closest('[data-module]');if(moduleTarget)openModule(moduleTarget.dataset.module,moduleTarget.matches('#mainNav button')?moduleTarget:null);const viewTarget=event.target.closest('[data-view]');if(viewTarget){if(viewTarget.dataset.view==='legacy')showLegacy(viewTarget.matches('#mainNav button')?viewTarget:null);else showOverview(viewTarget)}});$('moduleClose').onclick=()=>showOverview(document.querySelector('[data-view="overview"]'));$('legacySearch').oninput=event=>renderLegacy(event.target.value);
 fetch('/data/aperion_surface_inventory.json',{cache:'no-store'}).then(response=>response.json()).then(data=>{surfaces=data.surfaces||[];$('surfaceCount').textContent=`${surfaces.length} ekran korunuyor`}).catch(()=>{$('surfaceCount').textContent='Envanter okunamadı'});
+loadRealData();
 </script>
 <script src="/aperion-mobile.js"></script>
 </body>
