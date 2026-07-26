@@ -1,10 +1,10 @@
 {
-  "created_at": "2026-07-26T11:45:11.439Z",
+  "created_at": "2026-07-26T12:02:57.035Z",
   "safe_mode": true,
   "live_rpc_called": false,
   "live_bizimhesap_save_called": false,
   "safe_to_post": false,
-  "policy": "Bu rapor sadece okuma/dry-run raporudur. Kullanıcı açık onayı ve canlı doğrulama olmadan BizimHesap kaydı yapılmaz.",
+  "policy": "Onay Merkezi salt okunur simülasyon gösterir. Açık kullanıcı onayı, canlı kilit ve kayıt sonrası geri doğrulama olmadan BizimHesap kaydı yapılamaz.",
   "files": {
     "status": {
       "path": "data/aperion_bank_approval_status.json",
@@ -92,5 +92,16 @@
   "missing_files": [],
   "parse_errors": [],
   "blockers": [],
-  "next_action": "Kullanıcı açık onay verirse yalnızca tekil seçili aday için approve RPC dry/live akışı ayrı çalıştırılabilir."
+  "next_action": "Kullanıcı açık onay verirse yalnızca tekil seçili aday için approve RPC dry/live akışı ayrı çalıştırılabilir.",
+  "approval_center_simulation": {
+    "source": "bizimhesap_queue_worker dry-run",
+    "created_at": "2026-07-26T12:02:57.166Z",
+    "writes_to_bizimhesap": false,
+    "live_save_allowed": false,
+    "queue_count": 0,
+    "ready_for_user_approval": 0,
+    "blocked": 0,
+    "selected": null,
+    "simulations": []
+  }
 }
