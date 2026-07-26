@@ -1,0 +1,40 @@
+name: AperiON Safety Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'aperion-merkez.html'
+      - 'aperion-home-v3.html'
+      - 'manifest.json'
+      - 'sw.js'
+      - 'data/aperion_*.json'
+      - 'data/sales_report_summary_2025_2026.json'
+      - 'tools/verify_aperion_*.mjs'
+      - '.github/workflows/aperion-safety-gate.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'aperion-merkez.html'
+      - 'aperion-home-v3.html'
+      - 'manifest.json'
+      - 'sw.js'
+      - 'data/aperion_*.json'
+      - 'data/sales_report_summary_2025_2026.json'
+      - 'tools/verify_aperion_*.mjs'
+      - '.github/workflows/aperion-safety-gate.yml'
+
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify unified center
+        run: node tools/verify_aperion_unified_center_v121.mjs
+      - name: Verify real-data wiring
+        run: node tools/verify_aperion_real_data_v122.mjs
+      - name: Verify safety and freshness
+        run: node tools/verify_aperion_safety_gate_v123.mjs
