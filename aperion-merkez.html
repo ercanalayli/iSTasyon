@@ -81,6 +81,9 @@ const $=id=>document.getElementById(id);
 let surfaces=[];
 const money=value=>new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',minimumFractionDigits:2}).format(Number(value||0));
 const dateTime=value=>value?new Intl.DateTimeFormat('tr-TR',{dateStyle:'short',timeStyle:'short',timeZone:'Europe/Istanbul'}).format(new Date(value)):'—';
+const ageDays=value=>value?Math.max(0,Math.floor((Date.now()-new Date(value).getTime())/86400000)):null;
+const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const safeLegacyUrl=value=>{try{const url=new URL(value,location.origin);return url.origin===location.origin&&url.pathname.endsWith('.html')?url.pathname+url.search+url.hash:null}catch{return null}};
 const set=(id,value)=>{const node=$(id);if(node)node.textContent=value};
 const setStatus=(id,text,state)=>{const node=$(id);if(!node)return;node.textContent=text;node.className=`status ${state||'warn'}`};
 async function getJson(path){const response=await fetch(path,{cache:'no-store'});if(!response.ok)throw new Error(path);return response.json()}
@@ -93,10 +96,11 @@ async function loadRealData(){
   ]);
   if(bank.status==='fulfilled'){
     const data=bank.value, summary=data.summary||{};
-    setStatus('bankDataStatus','Kaynak doğrulandı','ok');
+    const days=ageDays(data.created_at), stale=days==null||days>1;
+    setStatus('bankDataStatus',stale?'Banka verisi eski':'Kaynak doğrulandı',stale?'warn':'ok');
     set('bankDataMetric',`${summary.status_preview_count??0} hareket`);
     set('bankDataText',`${summary.status_candidate_count??0} aday · ${summary.status_review_count??0} inceleme · ${summary.status_ready_queue_count??0} kayıt hazır`);
-    set('bankDataDate',`Veri tarihi: ${dateTime(data.created_at)}`);
+    set('bankDataDate',`Veri tarihi: ${dateTime(data.created_at)}${days==null?'':` · ${days} gün önce`}`);
   }else{setStatus('bankDataStatus','Kaynak okunamadı','bad');set('bankDataText','Banka status dosyası erişilemiyor.')}
   if(payments.status==='fulfilled'){
     const data=payments.value, rows=data.obligations||[], incomplete=rows.filter(row=>row.amount==null||row.due_day==null).length;
@@ -114,17 +118,18 @@ async function loadRealData(){
   }else{setStatus('salesDataStatus','Kaynak okunamadı','bad');set('salesDataText','Satış özet dosyası erişilemiyor.')}
   if(sync.status==='fulfilled'){
     const data=sync.value, jobs=data.jobs||[], failed=jobs.filter(job=>job.status==='failed').length;
-    setStatus('syncDataStatus',data.ok?'Senkron başarılı':'Senkron başarısız',data.ok?'ok':'bad');
+    const syncDate=data.finishedAt||data.startedAt, days=ageDays(syncDate), healthy=data.ok===true&&failed===0&&days!==null&&days<=1;
+    setStatus('syncDataStatus',healthy?'Senkron başarılı':data.ok?'Senkron eski':'Senkron başarısız',healthy?'ok':'bad');
     set('syncDataMetric',data.ok?'Güncel':`${failed} hata`);
     set('syncDataText',data.ok?'BizimHesap veri yenilemesi tamamlandı.':'Bugünkü satış, stok ve masraf güncel kabul edilemez.');
-    set('syncDataDate',`Son çalışma: ${dateTime(data.finishedAt||data.startedAt)}`);
+    set('syncDataDate',`Son çalışma: ${dateTime(syncDate)}${days==null?'':` · ${days} gün önce`}`);
   }else{setStatus('syncDataStatus','Kaynak okunamadı','bad');set('syncDataText','Son senkron kanıtı erişilemiyor.')}
 }
 function activeNav(target){document.querySelectorAll('#mainNav button').forEach(button=>button.classList.toggle('on',button===target))}
 function showOverview(target){$('overview').style.display='grid';$('workspace').classList.remove('on');$('legacy').classList.remove('on');$('pageTitle').textContent='Bugünün AperiON Merkezi';$('pageSubtitle').textContent='Fikirler, kararlar ve operasyonlar tek girişte.';if(target)activeNav(target)}
 function openModule(key,target){const module=MODULES[key];if(!module)return;$('overview').style.display='none';$('legacy').classList.remove('on');$('workspace').classList.add('on');$('moduleFrame').src=module.url;$('moduleTitle').textContent=module.title;$('moduleNewTab').href=module.url;$('pageTitle').textContent=module.title;$('pageSubtitle').textContent='AperiON içinden ayrılmadan çalışan modül.';if(target)activeNav(target)}
 function showLegacy(target){$('overview').style.display='none';$('workspace').classList.remove('on');$('legacy').classList.add('on');$('pageTitle').textContent='Korunan Ekranlar ve Fikir Arşivi';$('pageSubtitle').textContent='Hiçbir ekran silinmedi; bütün eski çalışmalar buradan açılır.';renderLegacy('');if(target)activeNav(target)}
-function renderLegacy(query){const q=query.toLocaleLowerCase('tr');const rows=surfaces.filter(item=>`${item.file} ${item.title} ${item.heading} ${item.category}`.toLocaleLowerCase('tr').includes(q));$('legacyList').innerHTML=rows.map(item=>`<article class="legacyItem" data-url="${item.url}"><b>${item.title||item.file}</b><span>${item.file}</span><em>${item.category}</em></article>`).join('');document.querySelectorAll('.legacyItem').forEach(item=>item.onclick=()=>{const url=item.dataset.url;$('legacy').classList.remove('on');$('workspace').classList.add('on');$('moduleFrame').src=url;$('moduleTitle').textContent=item.querySelector('b').textContent;$('moduleNewTab').href=url})}
+function renderLegacy(query){const q=query.toLocaleLowerCase('tr');const rows=surfaces.filter(item=>`${item.file} ${item.title} ${item.heading} ${item.category}`.toLocaleLowerCase('tr').includes(q));$('legacyList').innerHTML=rows.map(item=>{const url=safeLegacyUrl(item.url);return url?`<article class="legacyItem" data-url="${esc(url)}"><b>${esc(item.title||item.file)}</b><span>${esc(item.file)}</span><em>${esc(item.category)}</em></article>`:''}).join('');document.querySelectorAll('.legacyItem').forEach(item=>item.onclick=()=>{const url=safeLegacyUrl(item.dataset.url);if(!url)return;$('legacy').classList.remove('on');$('workspace').classList.add('on');$('moduleFrame').src=url;$('moduleTitle').textContent=item.querySelector('b').textContent;$('moduleNewTab').href=url})}
 document.addEventListener('click',event=>{const moduleTarget=event.target.closest('[data-module]');if(moduleTarget)openModule(moduleTarget.dataset.module,moduleTarget.matches('#mainNav button')?moduleTarget:null);const viewTarget=event.target.closest('[data-view]');if(viewTarget){if(viewTarget.dataset.view==='legacy')showLegacy(viewTarget.matches('#mainNav button')?viewTarget:null);else showOverview(viewTarget)}});$('moduleClose').onclick=()=>showOverview(document.querySelector('[data-view="overview"]'));$('legacySearch').oninput=event=>renderLegacy(event.target.value);
 fetch('/data/aperion_surface_inventory.json',{cache:'no-store'}).then(response=>response.json()).then(data=>{surfaces=data.surfaces||[];$('surfaceCount').textContent=`${surfaces.length} ekran korunuyor`}).catch(()=>{$('surfaceCount').textContent='Envanter okunamadı'});
 loadRealData();
