@@ -1,21 +1,26 @@
 {
-  "name": "iSTasyon",
-  "short_name": "iSTasyon",
-  "description": "Alkam Mali Müşavirlik — İş Zekası Platformu",
-  "start_url": "/",
+  "name": "AperiON iSTasyon",
+  "short_name": "AperiON",
+  "description": "ALAYLI Medikal finans, onay ve operasyon komuta merkezi",
+  "start_url": "/aperion-home-v3.html?source=pwa",
+  "scope": "/",
   "display": "standalone",
-  "orientation": "any",
-  "background_color": "#0A0C10",
-  "theme_color": "#0A0C10",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
+  "orientation": "portrait-primary",
+  "background_color": "#050B18",
+  "theme_color": "#071326",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -23,7 +28,9 @@
   ],
   "categories": [
     "business",
-    "finance"
+    "finance",
+    "productivity"
   ],
-  "lang": "tr"
+  "lang": "tr",
+  "dir": "ltr"
 }
