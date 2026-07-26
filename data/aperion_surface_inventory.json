@@ -1,0 +1,1042 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-26T13:08:56.908Z",
+  "preservation_policy": "No HTML surface is deleted. Legacy screens remain addressable from the unified catalog.",
+  "total_html_surfaces": 54,
+  "category_counts": {
+    "Satış ve ürün": 7,
+    "Diğer araç": 4,
+    "Ana ekran türevi": 17,
+    "Finans": 12,
+    "Banka ve onay": 7,
+    "Veri ve sistem": 7
+  },
+  "surfaces": [
+    {
+      "file": "alayli-fiyat-sevkiyat-launcher.html",
+      "url": "/alayli-fiyat-sevkiyat-launcher.html",
+      "title": "ALAYLI Fiyat ve Sevkiyat",
+      "heading": "ALAYLI Fiyat ve Sevkiyat Kontrol Merkezi",
+      "category": "Satış ve ürün",
+      "size_bytes": 1281,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "alayli-fiyat-sevkiyat.html",
+      "url": "/alayli-fiyat-sevkiyat.html",
+      "title": "alayli-fiyat-sevkiyat.html",
+      "heading": "alayli-fiyat-sevkiyat.html",
+      "category": "Satış ve ürün",
+      "size_bytes": 1,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "alayli-fiyat-veri-aktarim.html",
+      "url": "/alayli-fiyat-veri-aktarim.html",
+      "title": "AperiON | ALAYLI Veri Aktarim Merkezi",
+      "heading": "ALAYLI Veri Aktarim Merkezi",
+      "category": "Satış ve ürün",
+      "size_bytes": 16398,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": false
+      }
+    },
+    {
+      "file": "alayli-hasta-bezi-analiz.html",
+      "url": "/alayli-hasta-bezi-analiz.html",
+      "title": "ALAYLI Hasta Bezi Ana Sistem",
+      "heading": "ALAYLI Hasta Bezi Ana Sistem",
+      "category": "Satış ve ürün",
+      "size_bytes": 3906,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "alayli-hb-tek-ekran.html",
+      "url": "/alayli-hb-tek-ekran.html",
+      "title": "ALAYLI Tek Ekran",
+      "heading": "ALAYLI Tek Ekran",
+      "category": "Satış ve ürün",
+      "size_bytes": 1929,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "alayli-merkez.html",
+      "url": "/alayli-merkez.html",
+      "title": "AperiON | ALAYLI Merkez",
+      "heading": "ALAYLI Medikal Merkezi",
+      "category": "Diğer araç",
+      "size_bytes": 7332,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "alayli-pdf-maliyet-merkezi.html",
+      "url": "/alayli-pdf-maliyet-merkezi.html",
+      "title": "AperiON | ALAYLI PDF Maliyet Merkezi",
+      "heading": "ALAYLI PDF Maliyet Merkezi",
+      "category": "Diğer araç",
+      "size_bytes": 15786,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "alayli.html",
+      "url": "/alayli.html",
+      "title": "ALAYLI Merkez",
+      "heading": "ALAYLI Medikal Merkezi",
+      "category": "Diğer araç",
+      "size_bytes": 972,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "aperion_ui_upgrade_pack.html",
+      "url": "/aperion_ui_upgrade_pack.html",
+      "title": "AperiON UI Upgrade Pack",
+      "heading": "AperiON UI Upgrade Pack",
+      "category": "Ana ekran türevi",
+      "size_bytes": 9282,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": false,
+        "sales": true,
+        "inventory": true,
+        "tasks": true
+      }
+    },
+    {
+      "file": "aperion-finans-takvimi-live.html",
+      "url": "/aperion-finans-takvimi-live.html",
+      "title": "AperiON Finans Takvimi Live",
+      "heading": "AperiON Finans Takvimi ve Nakit Akışı Merkezi",
+      "category": "Finans",
+      "size_bytes": 24785,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": true,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "aperion-finans-takvimi.html",
+      "url": "/aperion-finans-takvimi.html",
+      "title": "AperiON Finans Takvimi ve Nakit Akışı Merkezi",
+      "heading": "AperiON Finans Takvimi ve Nakit Akışı Merkezi",
+      "category": "Finans",
+      "size_bytes": 23197,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": true,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "aperion-home-v2.html",
+      "url": "/aperion-home-v2.html",
+      "title": "AperiON iSTasyon",
+      "heading": "AperiON Ana Ekran",
+      "category": "Ana ekran türevi",
+      "size_bytes": 4450,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": false
+      }
+    },
+    {
+      "file": "aperion-home-v3.html",
+      "url": "/aperion-home-v3.html",
+      "title": "AperiON iSTasyon – CFO Komuta Merkezi",
+      "heading": "Bugün neyi görmezsem para kaybederim?",
+      "category": "Ana ekran türevi",
+      "size_bytes": 33680,
+      "signals": {
+        "pwa": true,
+        "supabase": true,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": true
+      }
+    },
+    {
+      "file": "aperion-home.html",
+      "url": "/aperion-home.html",
+      "title": "AperiON iSTasyon Ana Ekran",
+      "heading": "AperiON Ana Ekran",
+      "category": "Ana ekran türevi",
+      "size_bytes": 5081,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": false
+      }
+    },
+    {
+      "file": "aperion-is-merkezi.html",
+      "url": "/aperion-is-merkezi.html",
+      "title": "AperiON İş Merkezi",
+      "heading": "AperiON İş Merkezi",
+      "category": "Ana ekran türevi",
+      "size_bytes": 6825,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": false,
+        "inventory": true,
+        "tasks": false
+      }
+    },
+    {
+      "file": "aperion-merkez.html",
+      "url": "/aperion-merkez.html",
+      "title": "AperiON iSTasyon · Tek Merkez",
+      "heading": "Bugünün AperiON Merkezi",
+      "category": "Ana ekran türevi",
+      "size_bytes": 11767,
+      "signals": {
+        "pwa": true,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": true
+      }
+    },
+    {
+      "file": "aperion-ust-akil.html",
+      "url": "/aperion-ust-akil.html",
+      "title": "AperiON iSTasyon | CFO Komuta Merkezi",
+      "heading": "Gelir Tablosu ve Bilanço",
+      "category": "Ana ekran türevi",
+      "size_bytes": 30119,
+      "signals": {
+        "pwa": true,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": false
+      }
+    },
+    {
+      "file": "aperion.html",
+      "url": "/aperion.html",
+      "title": "AperiON iSTasyon",
+      "heading": "AperiON iSTasyon",
+      "category": "Ana ekran türevi",
+      "size_bytes": 1016,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "banka_onay.html",
+      "url": "/banka_onay.html",
+      "title": "AperiON Banka Onayı",
+      "heading": "AperiON Banka Onayı",
+      "category": "Banka ve onay",
+      "size_bytes": 11434,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": false,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "cari_kart.html",
+      "url": "/cari_kart.html",
+      "title": "iSTasyon · Cari Kart",
+      "heading": "iSTasyon · Cari Kart",
+      "category": "Finans",
+      "size_bytes": 35189,
+      "signals": {
+        "pwa": true,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": false
+      }
+    },
+    {
+      "file": "dev.html",
+      "url": "/dev.html",
+      "title": "AperiON — ErpaltH",
+      "heading": "AperiON — ErpaltH",
+      "category": "Ana ekran türevi",
+      "size_bytes": 205260,
+      "signals": {
+        "pwa": true,
+        "supabase": true,
+        "charts": true,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": true
+      }
+    },
+    {
+      "file": "fatura-kesim.html",
+      "url": "/fatura-kesim.html",
+      "title": "Fatura Kesim",
+      "heading": "Fatura Kesim Ekrani",
+      "category": "Finans",
+      "size_bytes": 3587,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "final.html",
+      "url": "/final.html",
+      "title": "AperiON â€” ErpaltH",
+      "heading": "AperiON â€” ErpaltH",
+      "category": "Ana ekran türevi",
+      "size_bytes": 180000,
+      "signals": {
+        "pwa": true,
+        "supabase": true,
+        "charts": true,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": false
+      }
+    },
+    {
+      "file": "finance_dashboard_embed.html",
+      "url": "/finance_dashboard_embed.html",
+      "title": "finance_dashboard_embed.html",
+      "heading": "finance_dashboard_embed.html",
+      "category": "Finans",
+      "size_bytes": 1231,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "finance-command-center-live.html",
+      "url": "/finance-command-center-live.html",
+      "title": "AperiON Finans Komuta Merkezi Live",
+      "heading": "AperiON Finans Komuta Merkezi",
+      "category": "Finans",
+      "size_bytes": 16748,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": true,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": true
+      }
+    },
+    {
+      "file": "finance-command-center.html",
+      "url": "/finance-command-center.html",
+      "title": "AperiON Finans Komuta Merkezi",
+      "heading": "AperiON Finans Komuta Merkezi",
+      "category": "Finans",
+      "size_bytes": 15104,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": true,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": true
+      }
+    },
+    {
+      "file": "finans-komuta-merkezi.html",
+      "url": "/finans-komuta-merkezi.html",
+      "title": "AperiON Finans Komuta Merkezi",
+      "heading": "Finans Komuta Merkezi",
+      "category": "Finans",
+      "size_bytes": 1899,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "finans-onay-merkezi-final.html",
+      "url": "/finans-onay-merkezi-final.html",
+      "title": "Akıllı Onay Merkezi",
+      "heading": "Akıllı Onay Merkezi",
+      "category": "Banka ve onay",
+      "size_bytes": 8478,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "finans-onay-merkezi-preview.html",
+      "url": "/finans-onay-merkezi-preview.html",
+      "title": "Onay Merkezi",
+      "heading": "Onay Merkezi",
+      "category": "Banka ve onay",
+      "size_bytes": 1117,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": false,
+        "finance": true,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "finans-takvimi.html",
+      "url": "/finans-takvimi.html",
+      "title": "AperiON Finans Takvimi",
+      "heading": "AperiON Finans Takvimi",
+      "category": "Finans",
+      "size_bytes": 1554,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "finans-v54.html",
+      "url": "/finans-v54.html",
+      "title": "AperiON Canlı Finans Merkezi",
+      "heading": "AperiON Canlı Finans Merkezi",
+      "category": "Finans",
+      "size_bytes": 16986,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "finans.html",
+      "url": "/finans.html",
+      "title": "AperiON Finans Telegram Komuta",
+      "heading": "AperiON Finans Telegram Komuta",
+      "category": "Finans",
+      "size_bytes": 2533,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": false
+      }
+    },
+    {
+      "file": "giderler.html",
+      "url": "/giderler.html",
+      "title": "ALAYLI Gider Kokpiti",
+      "heading": "ALAYLI Gider Kokpiti",
+      "category": "Finans",
+      "size_bytes": 4416,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": false,
+        "bank": true,
+        "finance": false,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "gunluk-banka-karar.html",
+      "url": "/gunluk-banka-karar.html",
+      "title": "AperiON | Gunluk Banka Kararlari",
+      "heading": "Gunluk Banka Onayi",
+      "category": "Banka ve onay",
+      "size_bytes": 11422,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": false,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "hasta-bezi.html",
+      "url": "/hasta-bezi.html",
+      "title": "Hasta Bezi Analiz",
+      "heading": "Hasta Bezi Analiz Dashboard",
+      "category": "Satış ve ürün",
+      "size_bytes": 864,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "index_ui_v2.html",
+      "url": "/index_ui_v2.html",
+      "title": "AperiON UI v2 Preview",
+      "heading": "AperiON UI v2 Preview",
+      "category": "Ana ekran türevi",
+      "size_bytes": 18663,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": true
+      }
+    },
+    {
+      "file": "index_ui_v3.html",
+      "url": "/index_ui_v3.html",
+      "title": "AperiON UI v3 Preview",
+      "heading": "AperiON UI v3 Preview",
+      "category": "Ana ekran türevi",
+      "size_bytes": 11671,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": true
+      }
+    },
+    {
+      "file": "index_ui_v4.html",
+      "url": "/index_ui_v4.html",
+      "title": "AperiON UI v4 Preview",
+      "heading": "AperiON UI v4 Preview",
+      "category": "Ana ekran türevi",
+      "size_bytes": 10947,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": true
+      }
+    },
+    {
+      "file": "index_ui_v5.html",
+      "url": "/index_ui_v5.html",
+      "title": "AperiON UI v5 Preview",
+      "heading": "AperiON UI v5 Preview",
+      "category": "Ana ekran türevi",
+      "size_bytes": 15842,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": true
+      }
+    },
+    {
+      "file": "index_ui_v6.html",
+      "url": "/index_ui_v6.html",
+      "title": "AperiON UI v6 Preview",
+      "heading": "AperiON UI v6 Preview",
+      "category": "Ana ekran türevi",
+      "size_bytes": 15453,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": true
+      }
+    },
+    {
+      "file": "index.html",
+      "url": "/index.html",
+      "title": "AperiON - ErpaltH",
+      "heading": "AperiON - ErpaltH",
+      "category": "Ana ekran türevi",
+      "size_bytes": 533425,
+      "signals": {
+        "pwa": true,
+        "supabase": true,
+        "charts": true,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": true
+      }
+    },
+    {
+      "file": "klon.html",
+      "url": "/klon.html",
+      "title": "AperiON — ErpaltH",
+      "heading": "AperiON — ErpaltH",
+      "category": "Ana ekran türevi",
+      "size_bytes": 178046,
+      "signals": {
+        "pwa": true,
+        "supabase": true,
+        "charts": true,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": true
+      }
+    },
+    {
+      "file": "login.html",
+      "url": "/login.html",
+      "title": "AperiON — Giriş",
+      "heading": "AperiON — Giriş",
+      "category": "Veri ve sistem",
+      "size_bytes": 6834,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "mail-ekstre-canli.html",
+      "url": "/mail-ekstre-canli.html",
+      "title": "AperiON Mail Ekstre Canlı",
+      "heading": "🔔 AperiON Mail Ekstre Canlı Merkezi",
+      "category": "Banka ve onay",
+      "size_bytes": 4964,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": false,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "mail-ekstre-parser.html",
+      "url": "/mail-ekstre-parser.html",
+      "title": "Mail Ekstre Parser",
+      "heading": "Mail Ekstre Parser",
+      "category": "Banka ve onay",
+      "size_bytes": 3084,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": true,
+        "finance": false,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "mail-ekstre-test.html",
+      "url": "/mail-ekstre-test.html",
+      "title": "AperiON Mail Ekstre Test",
+      "heading": "Mail Ekstre Test Merkezi",
+      "category": "Banka ve onay",
+      "size_bytes": 4002,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": true,
+        "finance": false,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "portaller.html",
+      "url": "/portaller.html",
+      "title": "ErpaltH — Portal Giriş Bilgileri",
+      "heading": "ErpaltH — Portal Giriş Bilgileri",
+      "category": "Veri ve sistem",
+      "size_bytes": 7814,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": true,
+        "inventory": true,
+        "tasks": false
+      }
+    },
+    {
+      "file": "rapor.html",
+      "url": "/rapor.html",
+      "title": "iSTasyon · Rapor",
+      "heading": "iSTasyon · Rapor",
+      "category": "Veri ve sistem",
+      "size_bytes": 64914,
+      "signals": {
+        "pwa": true,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": false
+      }
+    },
+    {
+      "file": "stok_kart.html",
+      "url": "/stok_kart.html",
+      "title": "iSTasyon · Stok Kart",
+      "heading": "iSTasyon · Stok Kart",
+      "category": "Satış ve ürün",
+      "size_bytes": 42343,
+      "signals": {
+        "pwa": true,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": false
+      }
+    },
+    {
+      "file": "telegram-product-check-preview.html",
+      "url": "/telegram-product-check-preview.html",
+      "title": "AperiON Telegram Ürün Kontrol",
+      "heading": "AperiON Telegram Ürün Kontrol",
+      "category": "Veri ve sistem",
+      "size_bytes": 7007,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": false
+      }
+    },
+    {
+      "file": "tmp-restore-test.html",
+      "url": "/tmp-restore-test.html",
+      "title": "tmp-restore-test.html",
+      "heading": "tmp-restore-test.html",
+      "category": "Diğer araç",
+      "size_bytes": 43,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "veri_yukle.html",
+      "url": "/veri_yukle.html",
+      "title": "AperiON Veri Yükle",
+      "heading": "AperiON Veri Yükle",
+      "category": "Veri ve sistem",
+      "size_bytes": 2822,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "veri-durumu-v2.html",
+      "url": "/veri-durumu-v2.html",
+      "title": "AperiON Veri Durumu v2",
+      "heading": "AperiON Veri Durumu",
+      "category": "Veri ve sistem",
+      "size_bytes": 6349,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "veri-durumu.html",
+      "url": "/veri-durumu.html",
+      "title": "AperiON Veri Durumu v2",
+      "heading": "AperiON Veri Durumu",
+      "category": "Veri ve sistem",
+      "size_bytes": 6349,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    }
+  ]
+}
