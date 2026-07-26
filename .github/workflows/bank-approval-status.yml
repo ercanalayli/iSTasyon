@@ -22,6 +22,8 @@ on:
       - "tools/attach_bizimhesap_simulation_to_approval_v117.cjs"
       - "tools/verify_bizimhesap_simulation_v116.cjs"
       - "tools/verify_bizimhesap_approval_center_v117.cjs"
+      - "tools/verify_bizimhesap_simulation_card_v118.cjs"
+      - "aperion-home-v3.html"
       - "tools/approve_bank_candidate_v70.cjs"
       - "tools/check_bank_candidate_queue_proof_v71.cjs"
       - "tools/select_bank_approval_candidate_v69.cjs"
@@ -77,6 +79,7 @@ jobs:
         run: |
           node tools/verify_bizimhesap_simulation_v116.cjs
           node tools/verify_bizimhesap_approval_center_v117.cjs
+          node tools/verify_bizimhesap_simulation_card_v118.cjs
           if [ -f data/bizimhesap_queue_dryrun.json ]; then
             node tools/build_bizimhesap_simulation_v116.cjs
           fi
