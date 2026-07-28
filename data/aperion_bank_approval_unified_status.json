@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-07-28T12:55:32.065Z",
+  "created_at": "2026-07-28T14:58:25.296Z",
   "safe_mode": true,
   "live_rpc_called": false,
   "live_bizimhesap_save_called": false,
@@ -95,7 +95,7 @@
   "next_action": "Kullanıcı açık onay verirse yalnızca tekil seçili aday için approve RPC dry/live akışı ayrı çalıştırılabilir.",
   "approval_center_simulation": {
     "source": "bizimhesap_queue_worker dry-run",
-    "created_at": "2026-07-28T12:55:32.200Z",
+    "created_at": "2026-07-28T14:58:25.428Z",
     "writes_to_bizimhesap": false,
     "live_save_allowed": false,
     "queue_count": 0,
