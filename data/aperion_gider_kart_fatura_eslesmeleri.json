@@ -1,0 +1,395 @@
+{
+  "created_at": "2026-07-29T15:23:12.115Z",
+  "source": "bizimhesap_invoice_detail",
+  "firma_id": "alayli",
+  "memory": {
+    "dir": "C:\\AperiON\\iSTasyon\\data",
+    "active_company": "ALAYLI Medikal",
+    "gotcha_rules": 4,
+    "expense_card_templates": 19,
+    "rule_note": "BizimHesap kaynak sistemdir; AperiON kesin kayit oncesi hafiza, fatura detayi, mukerrer ve onay kontrolu yapar."
+  },
+  "inputs": {
+    "details": "C:\\AperiON\\iSTasyon\\data\\bizimhesap_fatura_detaylari_raw.json",
+    "cards": "C:\\AperiON\\iSTasyon\\data\\gider_kartlari_alayli_2026.json"
+  },
+  "summary": {
+    "invoice_details": 8,
+    "unique_invoice_details": 8,
+    "matched_existing_cards": 3,
+    "proposed_cards": 1,
+    "approval_required": 8,
+    "skipped_duplicates": 0
+  },
+  "matches": [
+    {
+      "match_id": "f30ffec868fa979b7515c358db2375d7561ab645",
+      "task_id": "alayli-2026-07-27-2",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-27",
+      "cari_unvan": "",
+      "genel_toplam": 50,
+      "read_status": "needs_review",
+      "decision": "return_record",
+      "gider_karti": "Satis Iadesi / Ters Kayit",
+      "existing_card": false,
+      "confidence": 95,
+      "reason": "Normal gider degil, ters kayit kontrolu gerekir",
+      "gotcha_flags": [
+        "iade_ters_kayit"
+      ],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail"
+    },
+    {
+      "match_id": "14c61c0b1412cb590bc6724d79fb73ac7e38e2d7",
+      "task_id": "alayli-2026-07-27-3",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-27",
+      "cari_unvan": "",
+      "genel_toplam": 1400,
+      "read_status": "not_found",
+      "decision": "mapped",
+      "gider_karti": "Su - ALAYLI",
+      "existing_card": true,
+      "confidence": 94,
+      "reason": "Fatura detayi gider karti kuralina uydu",
+      "gotcha_flags": [],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail"
+    },
+    {
+      "match_id": "ae661ff93899fef0236a831b428045eb2f20b4cf",
+      "task_id": "alayli-2026-07-25-6",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-25",
+      "cari_unvan": "",
+      "genel_toplam": 1578.4,
+      "read_status": "not_found",
+      "decision": "needs_review",
+      "gider_karti": "Market - Mutfak / Temizlik",
+      "existing_card": false,
+      "confidence": 80,
+      "reason": "Market faturasi mutfak/temizlik/kisisel ayrimi icin onay ister",
+      "gotcha_flags": [
+        "market_ayrimi"
+      ],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail"
+    },
+    {
+      "match_id": "67f98fff0d655d4699b7085c86fcbf494bbec96d",
+      "task_id": "alayli-2026-07-25-7",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-25",
+      "cari_unvan": "",
+      "genel_toplam": 140,
+      "read_status": "needs_review",
+      "decision": "return_record",
+      "gider_karti": "Satis Iadesi / Ters Kayit",
+      "existing_card": false,
+      "confidence": 95,
+      "reason": "Normal gider degil, ters kayit kontrolu gerekir",
+      "gotcha_flags": [
+        "iade_ters_kayit"
+      ],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail"
+    },
+    {
+      "match_id": "95dcc6a620317888fe7f054ae179f977fe2134e9",
+      "task_id": "alayli-2026-07-24-10",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-24",
+      "cari_unvan": "",
+      "genel_toplam": 500,
+      "read_status": "needs_review",
+      "decision": "needs_review",
+      "gider_karti": "Market - Mutfak / Temizlik",
+      "existing_card": false,
+      "confidence": 80,
+      "reason": "Market faturasi mutfak/temizlik/kisisel ayrimi icin onay ister",
+      "gotcha_flags": [
+        "market_ayrimi"
+      ],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail"
+    },
+    {
+      "match_id": "53329a5b88d0f6cc9711419b54fbf47290ab47ba",
+      "task_id": "alayli-2026-07-24-12",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-24",
+      "cari_unvan": "",
+      "genel_toplam": 1964,
+      "read_status": "not_found",
+      "decision": "mapped",
+      "gider_karti": "Kargo / Nakliye",
+      "existing_card": true,
+      "confidence": 94,
+      "reason": "Fatura detayi gider karti kuralina uydu",
+      "gotcha_flags": [
+        "kargo_nakliye"
+      ],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail"
+    },
+    {
+      "match_id": "1b542915fa646fe37c91fd40ec6dbd4d367cd6af",
+      "task_id": "alayli-2026-07-24-13",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-24",
+      "cari_unvan": "",
+      "genel_toplam": 200,
+      "read_status": "needs_review",
+      "decision": "return_record",
+      "gider_karti": "Satis Iadesi / Ters Kayit",
+      "existing_card": false,
+      "confidence": 95,
+      "reason": "Normal gider degil, ters kayit kontrolu gerekir",
+      "gotcha_flags": [
+        "iade_ters_kayit"
+      ],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail"
+    },
+    {
+      "match_id": "88a377d6aefb22671512f5e28cb8c0244c9fbd9d",
+      "task_id": "alayli-2026-07-23-14",
+      "fatura_no": "AAA2026001560084",
+      "fatura_tarihi": "2026-07-23",
+      "cari_unvan": "ARAS KARGO YURT İÇİ YURT DIŞI TAŞIMACILIK A.Ş.",
+      "genel_toplam": 204.14,
+      "read_status": "ok",
+      "decision": "mapped",
+      "gider_karti": "Kargo / Nakliye",
+      "existing_card": true,
+      "confidence": 94,
+      "reason": "Fatura detayi gider karti kuralina uydu",
+      "gotcha_flags": [
+        "kargo_nakliye"
+      ],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail"
+    }
+  ],
+  "proposed_cards": [
+    {
+      "card_name": "Market - Mutfak / Temizlik",
+      "owner_type": "business",
+      "main_category": "Market / Mutfak",
+      "sub_category": "Mutfak / Temizlik",
+      "expense_class": "variable",
+      "status": "control_required",
+      "reason": "Market faturasi mutfak/temizlik/kisisel ayrimi icin onay ister"
+    }
+  ],
+  "approval_center": [
+    {
+      "match_id": "f30ffec868fa979b7515c358db2375d7561ab645",
+      "task_id": "alayli-2026-07-27-2",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-27",
+      "cari_unvan": "",
+      "genel_toplam": 50,
+      "read_status": "needs_review",
+      "decision": "return_record",
+      "gider_karti": "Satis Iadesi / Ters Kayit",
+      "existing_card": false,
+      "confidence": 95,
+      "reason": "Normal gider degil, ters kayit kontrolu gerekir",
+      "gotcha_flags": [
+        "iade_ters_kayit"
+      ],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail",
+      "approval_reason": "Fatura detayi okunamadi veya eksik"
+    },
+    {
+      "match_id": "14c61c0b1412cb590bc6724d79fb73ac7e38e2d7",
+      "task_id": "alayli-2026-07-27-3",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-27",
+      "cari_unvan": "",
+      "genel_toplam": 1400,
+      "read_status": "not_found",
+      "decision": "mapped",
+      "gider_karti": "Su - ALAYLI",
+      "existing_card": true,
+      "confidence": 94,
+      "reason": "Fatura detayi gider karti kuralina uydu",
+      "gotcha_flags": [],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail",
+      "approval_reason": "Fatura detayi okunamadi veya eksik"
+    },
+    {
+      "match_id": "ae661ff93899fef0236a831b428045eb2f20b4cf",
+      "task_id": "alayli-2026-07-25-6",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-25",
+      "cari_unvan": "",
+      "genel_toplam": 1578.4,
+      "read_status": "not_found",
+      "decision": "needs_review",
+      "gider_karti": "Market - Mutfak / Temizlik",
+      "existing_card": false,
+      "confidence": 80,
+      "reason": "Market faturasi mutfak/temizlik/kisisel ayrimi icin onay ister",
+      "gotcha_flags": [
+        "market_ayrimi"
+      ],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail",
+      "approval_reason": "Fatura detayi okunamadi veya eksik"
+    },
+    {
+      "match_id": "67f98fff0d655d4699b7085c86fcbf494bbec96d",
+      "task_id": "alayli-2026-07-25-7",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-25",
+      "cari_unvan": "",
+      "genel_toplam": 140,
+      "read_status": "needs_review",
+      "decision": "return_record",
+      "gider_karti": "Satis Iadesi / Ters Kayit",
+      "existing_card": false,
+      "confidence": 95,
+      "reason": "Normal gider degil, ters kayit kontrolu gerekir",
+      "gotcha_flags": [
+        "iade_ters_kayit"
+      ],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail",
+      "approval_reason": "Fatura detayi okunamadi veya eksik"
+    },
+    {
+      "match_id": "95dcc6a620317888fe7f054ae179f977fe2134e9",
+      "task_id": "alayli-2026-07-24-10",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-24",
+      "cari_unvan": "",
+      "genel_toplam": 500,
+      "read_status": "needs_review",
+      "decision": "needs_review",
+      "gider_karti": "Market - Mutfak / Temizlik",
+      "existing_card": false,
+      "confidence": 80,
+      "reason": "Market faturasi mutfak/temizlik/kisisel ayrimi icin onay ister",
+      "gotcha_flags": [
+        "market_ayrimi"
+      ],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail",
+      "approval_reason": "Fatura detayi okunamadi veya eksik"
+    },
+    {
+      "match_id": "53329a5b88d0f6cc9711419b54fbf47290ab47ba",
+      "task_id": "alayli-2026-07-24-12",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-24",
+      "cari_unvan": "",
+      "genel_toplam": 1964,
+      "read_status": "not_found",
+      "decision": "mapped",
+      "gider_karti": "Kargo / Nakliye",
+      "existing_card": true,
+      "confidence": 94,
+      "reason": "Fatura detayi gider karti kuralina uydu",
+      "gotcha_flags": [
+        "kargo_nakliye"
+      ],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail",
+      "approval_reason": "Fatura detayi okunamadi veya eksik"
+    },
+    {
+      "match_id": "1b542915fa646fe37c91fd40ec6dbd4d367cd6af",
+      "task_id": "alayli-2026-07-24-13",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-24",
+      "cari_unvan": "",
+      "genel_toplam": 200,
+      "read_status": "needs_review",
+      "decision": "return_record",
+      "gider_karti": "Satis Iadesi / Ters Kayit",
+      "existing_card": false,
+      "confidence": 95,
+      "reason": "Normal gider degil, ters kayit kontrolu gerekir",
+      "gotcha_flags": [
+        "iade_ters_kayit"
+      ],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail",
+      "approval_reason": "Fatura detayi okunamadi veya eksik"
+    },
+    {
+      "match_id": "88a377d6aefb22671512f5e28cb8c0244c9fbd9d",
+      "task_id": "alayli-2026-07-23-14",
+      "fatura_no": "AAA2026001560084",
+      "fatura_tarihi": "2026-07-23",
+      "cari_unvan": "ARAS KARGO YURT İÇİ YURT DIŞI TAŞIMACILIK A.Ş.",
+      "genel_toplam": 204.14,
+      "read_status": "ok",
+      "decision": "mapped",
+      "gider_karti": "Kargo / Nakliye",
+      "existing_card": true,
+      "confidence": 94,
+      "reason": "Fatura detayi gider karti kuralina uydu",
+      "gotcha_flags": [
+        "kargo_nakliye"
+      ],
+      "memory_context": {
+        "active_company": "ALAYLI Medikal",
+        "rule_note": "Ozet satir on bilgidir; kesin kayit fatura detayi ve kullanici onayi ile ilerler."
+      },
+      "source": "bizimhesap_invoice_detail",
+      "approval_reason": "Hafiza kontrol bayragi: kargo_nakliye"
+    }
+  ]
+}

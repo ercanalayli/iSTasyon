@@ -1,25 +1,24 @@
 {
   "firma": "alayli",
-  "mode": "dry-run",
-  "startedAt": "2026-07-13T13:04:55.561Z",
-  "finishedAt": "2026-07-13T13:07:22.428Z",
+  "mode": "commit",
+  "startedAt": "2026-07-29T15:19:54.918Z",
+  "finishedAt": "2026-07-29T15:23:49.335Z",
   "ok": false,
   "jobs": [
     {
-      "label": "BizimHesap satis kaynak yenileme 2026-06-29 - 2026-07-13",
+      "label": "BizimHesap satis kaynak yenileme 2026-07-15 - 2026-07-29",
       "file": "bizimhesap_bot.js",
-      "status": "failed",
-      "code": 1,
+      "status": "ok",
+      "code": 0,
       "required": true,
       "attempts": [
         {
           "attempt": 1,
-          "code": 1,
-          "issue": "Senkron isi hata verdi, log kontrol edilmeli"
+          "code": 0,
+          "issue": ""
         }
       ],
-      "durationMs": 14772,
-      "issue": "Senkron isi hata verdi, log kontrol edilmeli"
+      "durationMs": 94812
     },
     {
       "label": "BizimHesap urun ve stok kartlari",
@@ -34,7 +33,7 @@
           "issue": "Senkron isi hata verdi, log kontrol edilmeli"
         }
       ],
-      "durationMs": 34728,
+      "durationMs": 16534,
       "issue": "Senkron isi hata verdi, log kontrol edilmeli"
     },
     {
@@ -50,7 +49,7 @@
           "issue": "Senkron isi hata verdi, log kontrol edilmeli"
         }
       ],
-      "durationMs": 25219,
+      "durationMs": 21027,
       "issue": "Senkron isi hata verdi, log kontrol edilmeli"
     },
     {
@@ -66,15 +65,60 @@
           "issue": "Senkron isi hata verdi, log kontrol edilmeli"
         }
       ],
-      "durationMs": 34432,
+      "durationMs": 9981,
       "issue": "Senkron isi hata verdi, log kontrol edilmeli"
     },
     {
-      "label": "BizimHesap satis kaynak yenileme 2026-06-29 - 2026-07-13 final tekrar",
-      "file": "bizimhesap_bot.js",
+      "label": "AperiON gider kartlari kaynak yenileme",
+      "file": "tools/build_expense_cards_from_masraf_v59.cjs",
+      "status": "ok",
+      "code": 0,
+      "required": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "code": 0,
+          "issue": ""
+        }
+      ],
+      "durationMs": 73
+    },
+    {
+      "label": "BizimHesap fatura detay kuyrugu yenileme",
+      "file": "tools/build_invoice_detail_tasks_v60.cjs",
+      "status": "ok",
+      "code": 0,
+      "required": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "code": 0,
+          "issue": ""
+        }
+      ],
+      "durationMs": 68
+    },
+    {
+      "label": "BizimHesap acilabilir fatura detaylari",
+      "file": "bizimhesap_fatura_detay_oku.js",
+      "status": "ok",
+      "code": 0,
+      "required": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "code": 0,
+          "issue": ""
+        }
+      ],
+      "durationMs": 54520
+    },
+    {
+      "label": "BizimHesap dogrulanmis alis fatura satirlari",
+      "file": "tools/import_bizimhesap_invoice_details_to_purchase_raw_v127.cjs",
       "status": "failed",
       "code": 1,
-      "required": true,
+      "required": false,
       "attempts": [
         {
           "attempt": 1,
@@ -82,8 +126,23 @@
           "issue": "Senkron isi hata verdi, log kontrol edilmeli"
         }
       ],
-      "durationMs": 13830,
+      "durationMs": 111,
       "issue": "Senkron isi hata verdi, log kontrol edilmeli"
+    },
+    {
+      "label": "Fatura detaylarini gider kartlarina baglama",
+      "file": "tools/link_invoice_details_to_expense_cards_v64.cjs",
+      "status": "ok",
+      "code": 0,
+      "required": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "code": 0,
+          "issue": ""
+        }
+      ],
+      "durationMs": 62
     },
     {
       "label": "BizimHesap urun ve stok kartlari final tekrar",
@@ -98,7 +157,7 @@
           "issue": "Senkron isi hata verdi, log kontrol edilmeli"
         }
       ],
-      "durationMs": 14437,
+      "durationMs": 15564,
       "issue": "Senkron isi hata verdi, log kontrol edilmeli"
     },
     {
@@ -114,7 +173,7 @@
           "issue": "Senkron isi hata verdi, log kontrol edilmeli"
         }
       ],
-      "durationMs": 9422,
+      "durationMs": 21645,
       "issue": "Senkron isi hata verdi, log kontrol edilmeli"
     }
   ],

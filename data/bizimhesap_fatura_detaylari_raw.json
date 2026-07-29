@@ -1,0 +1,525 @@
+{
+  "created_at": "2026-07-29T15:23:11.920Z",
+  "source": "bizimhesap",
+  "firma_id": "alayli",
+  "memory": {
+    "dir": "C:\\AperiON\\iSTasyon\\data",
+    "active_company": "ALAYLI Medikal",
+    "rule_note": "Ozet satir on bilgidir; kesin karar fatura detayi okununca verilir.",
+    "gotcha_rules": 4
+  },
+  "summary": {
+    "queue_count": 61,
+    "read_success": 1,
+    "read_failed": 0,
+    "needs_review": 4,
+    "not_found": 3
+  },
+  "details": [
+    {
+      "task_id": "alayli-2026-07-27-2",
+      "read_status": "needs_review",
+      "search_key": "50 2026-07-27",
+      "fatura_tipi": "satis_iadesi",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-27",
+      "vade_tarihi": "",
+      "cari_unvan": "",
+      "vergi_no": "",
+      "aciklama": "Mali Giderler/İADE ÜRÜN",
+      "ara_toplam": 0,
+      "kdv_toplam": 0,
+      "genel_toplam": 50,
+      "odeme_durumu": "",
+      "cari_durum": "",
+      "belge_pdf": "",
+      "belge_xml": "",
+      "kalemler": [],
+      "raw_text": "",
+      "error": "Satir bulundu ama detay/duzenle aksiyonu yok",
+      "diagnostics": [
+        {
+          "url": "https://bizimhesap.com/web/ngn/acc/ngncosts",
+          "key": "50 2026-07-27",
+          "opened": true,
+          "error": "",
+          "candidates": []
+        }
+      ]
+    },
+    {
+      "task_id": "alayli-2026-07-27-3",
+      "read_status": "not_found",
+      "search_key": "1400 2026-07-27",
+      "fatura_tipi": "gider_faturasi",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-27",
+      "vade_tarihi": "",
+      "cari_unvan": "",
+      "vergi_no": "",
+      "aciklama": "İşletme Giderleri Su",
+      "ara_toplam": 0,
+      "kdv_toplam": 0,
+      "genel_toplam": 1400,
+      "odeme_durumu": "",
+      "cari_durum": "",
+      "belge_pdf": "",
+      "belge_xml": "",
+      "kalemler": [],
+      "raw_text": "",
+      "error": "BizimHesap icinde fatura/cari hareket bulunamadi",
+      "diagnostics": [
+        {
+          "url": "https://bizimhesap.com/web/ngn/acc/ngncosts",
+          "key": "1400 2026-07-27",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi Hesaplarım Çalışanlar Masraflar Gelen E-Faturalar Projeler Senet Portföyü E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi Hesaplarım Çalışanlar Masraflar Gelen E-Faturalar Projeler Senet Portföyü E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/acc/ngncosts",
+          "key": "2026-07-27 | 1400",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi Hesaplarım Çalışanlar Masraflar Gelen E-Faturalar Projeler Senet Portföyü E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi Hesaplarım Çalışanlar Masraflar Gelen E-Faturalar Projeler Senet Portföyü E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/doc/ngnretailpurchases",
+          "key": "1400 2026-07-27",
+          "opened": false,
+          "error": "Protocol error (Runtime.callFunctionOn): Execution context was destroyed.",
+          "candidates": []
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/app/ngntakingnotifications",
+          "key": "2026-07-27 | 1400",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/app/ngneinvoices",
+          "key": "1400 2026-07-27",
+          "opened": false,
+          "error": "Protocol error (Runtime.callFunctionOn): Execution context was destroyed.",
+          "candidates": []
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/app/ngneinvoices",
+          "key": "2026-07-27 | 1400",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "Toggle navigation Ana Sayfa HAKKINDA ÖZELLİKLER FİYAT GİRİŞ",
+            "Toggle navigation Ana Sayfa HAKKINDA ÖZELLİKLER FİYAT GİRİŞ",
+            "Toggle navigation",
+            "Toggle navigation",
+            "Toggle navigation"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/newportal",
+          "key": "1400 2026-07-27",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/newportal",
+          "key": "2026-07-27 | 1400",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "alayli-2026-07-25-6",
+      "read_status": "not_found",
+      "search_key": "1578.4 2026-07-25",
+      "fatura_tipi": "gider_faturasi",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-25",
+      "vade_tarihi": "",
+      "cari_unvan": "",
+      "vergi_no": "",
+      "aciklama": "İşletme Giderleri MARKET",
+      "ara_toplam": 0,
+      "kdv_toplam": 0,
+      "genel_toplam": 1578.4,
+      "odeme_durumu": "",
+      "cari_durum": "",
+      "belge_pdf": "",
+      "belge_xml": "",
+      "kalemler": [],
+      "raw_text": "",
+      "error": "BizimHesap icinde fatura/cari hareket bulunamadi",
+      "diagnostics": [
+        {
+          "url": "https://bizimhesap.com/web/ngn/acc/ngncosts",
+          "key": "1578.4 2026-07-25",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi Hesaplarım Çalışanlar Masraflar Gelen E-Faturalar Projeler Senet Portföyü E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi Hesaplarım Çalışanlar Masraflar Gelen E-Faturalar Projeler Senet Portföyü E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/acc/ngncosts",
+          "key": "2026-07-25 | 1578.4",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi Hesaplarım Çalışanlar Masraflar Gelen E-Faturalar Projeler Senet Portföyü E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi Hesaplarım Çalışanlar Masraflar Gelen E-Faturalar Projeler Senet Portföyü E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/doc/ngnretailpurchases",
+          "key": "1578.4 2026-07-25",
+          "opened": false,
+          "error": "Protocol error (Runtime.callFunctionOn): Execution context was destroyed.",
+          "candidates": []
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/app/ngntakingnotifications",
+          "key": "2026-07-25 | 1578.4",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/app/ngneinvoices",
+          "key": "1578.4 2026-07-25",
+          "opened": false,
+          "error": "Protocol error (Runtime.callFunctionOn): Execution context was destroyed.",
+          "candidates": []
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/app/ngneinvoices",
+          "key": "2026-07-25 | 1578.4",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA HAKKINDA ÖZELLİKLER FİYAT GİRİŞ",
+            "ANA SAYFA HAKKINDA ÖZELLİKLER FİYAT GİRİŞ",
+            "ANA SAYFA",
+            "HAKKINDA",
+            "ÖZELLİKLER"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/newportal",
+          "key": "1578.4 2026-07-25",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/newportal",
+          "key": "2026-07-25 | 1578.4",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "alayli-2026-07-25-7",
+      "read_status": "needs_review",
+      "search_key": "140 2026-07-25",
+      "fatura_tipi": "satis_iadesi",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-25",
+      "vade_tarihi": "",
+      "cari_unvan": "",
+      "vergi_no": "",
+      "aciklama": "Mali Giderler İADE ÜRÜN",
+      "ara_toplam": 0,
+      "kdv_toplam": 0,
+      "genel_toplam": 140,
+      "odeme_durumu": "",
+      "cari_durum": "",
+      "belge_pdf": "",
+      "belge_xml": "",
+      "kalemler": [],
+      "raw_text": "",
+      "error": "Satir bulundu ama detay/duzenle aksiyonu yok",
+      "diagnostics": [
+        {
+          "url": "https://bizimhesap.com/web/ngn/acc/ngncosts",
+          "key": "140 2026-07-25",
+          "opened": true,
+          "error": "",
+          "candidates": []
+        }
+      ]
+    },
+    {
+      "task_id": "alayli-2026-07-24-10",
+      "read_status": "needs_review",
+      "search_key": "500 2026-07-24",
+      "fatura_tipi": "gider_faturasi",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-24",
+      "vade_tarihi": "",
+      "cari_unvan": "",
+      "vergi_no": "",
+      "aciklama": "İşletme Giderleri MARKET",
+      "ara_toplam": 0,
+      "kdv_toplam": 0,
+      "genel_toplam": 500,
+      "odeme_durumu": "",
+      "cari_durum": "",
+      "belge_pdf": "",
+      "belge_xml": "",
+      "kalemler": [],
+      "raw_text": "",
+      "error": "Satir bulundu ama detay/duzenle aksiyonu yok",
+      "diagnostics": [
+        {
+          "url": "https://bizimhesap.com/web/ngn/acc/ngncosts",
+          "key": "500 2026-07-24",
+          "opened": true,
+          "error": "",
+          "candidates": []
+        }
+      ]
+    },
+    {
+      "task_id": "alayli-2026-07-24-12",
+      "read_status": "not_found",
+      "search_key": "1964 2026-07-24",
+      "fatura_tipi": "gider_faturasi",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-24",
+      "vade_tarihi": "",
+      "cari_unvan": "",
+      "vergi_no": "",
+      "aciklama": "aras kargo demersan 20-14 40-12",
+      "ara_toplam": 0,
+      "kdv_toplam": 0,
+      "genel_toplam": 1964,
+      "odeme_durumu": "",
+      "cari_durum": "",
+      "belge_pdf": "",
+      "belge_xml": "",
+      "kalemler": [],
+      "raw_text": "",
+      "error": "BizimHesap icinde fatura/cari hareket bulunamadi",
+      "diagnostics": [
+        {
+          "url": "https://bizimhesap.com/web/ngn/acc/ngncosts",
+          "key": "1964 2026-07-24",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi Hesaplarım Çalışanlar Masraflar Gelen E-Faturalar Projeler Senet Portföyü E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi Hesaplarım Çalışanlar Masraflar Gelen E-Faturalar Projeler Senet Portföyü E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/acc/ngncosts",
+          "key": "2026-07-24 | 1964",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi Hesaplarım Çalışanlar Masraflar Gelen E-Faturalar Projeler Senet Portföyü E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi Hesaplarım Çalışanlar Masraflar Gelen E-Faturalar Projeler Senet Portföyü E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/doc/ngnretailpurchases",
+          "key": "1964 2026-07-24",
+          "opened": false,
+          "error": "Protocol error (Runtime.callFunctionOn): Execution context was destroyed.",
+          "candidates": []
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/app/ngntakingnotifications",
+          "key": "2026-07-24 | 1964",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/app/ngneinvoices",
+          "key": "1964 2026-07-24",
+          "opened": false,
+          "error": "Protocol error (Runtime.callFunctionOn): Execution context was destroyed.",
+          "candidates": []
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/app/ngneinvoices",
+          "key": "2026-07-24 | 1964",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "Toggle navigation ANA SAYFA HAKKINDA ÖZELLİKLER FİYAT GİRİŞ",
+            "Toggle navigation ANA SAYFA HAKKINDA ÖZELLİKLER FİYAT GİRİŞ",
+            "Toggle navigation",
+            "Toggle navigation",
+            "Toggle navigation"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/newportal",
+          "key": "1964 2026-07-24",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        },
+        {
+          "url": "https://bizimhesap.com/web/ngn/newportal",
+          "key": "2026-07-24 | 1964",
+          "opened": false,
+          "error": "",
+          "candidates": [
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA BizimSipariş yeni Müşteriler Tedarikçiler Ürünler Satışlar Alışlar Teklifler Nakit Yönetimi E-Ticaret yeni Ayarlar Raporlar Yardım Fihrist Ekran Kilidi",
+            "ANA SAYFA",
+            "ANA SAYFA",
+            "BizimSipariş yeni"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "alayli-2026-07-24-13",
+      "read_status": "needs_review",
+      "search_key": "200 2026-07-24",
+      "fatura_tipi": "satis_iadesi",
+      "fatura_no": "",
+      "fatura_tarihi": "2026-07-24",
+      "vade_tarihi": "",
+      "cari_unvan": "",
+      "vergi_no": "",
+      "aciklama": "Mali Giderler/İADE ÜRÜN",
+      "ara_toplam": 0,
+      "kdv_toplam": 0,
+      "genel_toplam": 200,
+      "odeme_durumu": "",
+      "cari_durum": "",
+      "belge_pdf": "",
+      "belge_xml": "",
+      "kalemler": [],
+      "raw_text": "",
+      "error": "Satir bulundu ama detay/duzenle aksiyonu yok",
+      "diagnostics": [
+        {
+          "url": "https://bizimhesap.com/web/ngn/acc/ngncosts",
+          "key": "200 2026-07-24",
+          "opened": true,
+          "error": "",
+          "candidates": []
+        }
+      ]
+    },
+    {
+      "task_id": "alayli-2026-07-23-14",
+      "read_status": "ok",
+      "search_key": "AAA2026001560084",
+      "fatura_tipi": "alis_faturasi",
+      "fatura_no": "AAA2026001560084",
+      "fatura_tarihi": "2026-07-23",
+      "vade_tarihi": "2026-07-23",
+      "cari_unvan": "ARAS KARGO YURT İÇİ YURT DIŞI TAŞIMACILIK A.Ş.",
+      "vergi_no": "",
+      "aciklama": "Tedarikçiden Alış No:AAA2026001560084 İşletme Giderleri\\KARGO",
+      "ara_toplam": 34.01999999999998,
+      "kdv_toplam": 170.12,
+      "genel_toplam": 204.14,
+      "odeme_durumu": "odenmedi",
+      "cari_durum": "",
+      "belge_pdf": "",
+      "belge_xml": "javascript:__doPostBack('downloadxml', );",
+      "kalemler": [
+        {
+          "sira": 1,
+          "mal_hizmet": "ARAS STANDART KARGO",
+          "miktar": 1,
+          "birim": "",
+          "birim_fiyat": 1,
+          "kdv_orani": 0,
+          "kdv_tutari": 170.12,
+          "satir_toplami": 170.12
+        }
+      ],
+      "raw_text": "ANA SAYFA\nBizimSipariş yeni\nMüşteriler\nTedarikçiler\nÜrünler\nSatışlar\nAlışlar\nTeklifler\nNakit Yönetimi\nE-Ticaret yeni\nAyarlar\nRaporlar\nYardım\nFihrist\nEkran Kilidi\nALAYLI MEDİKAL ORTOPEDİ KUL...\n29\nALAYLI\nYazdır    Düzenle   İptal Et    Paylaş\nKopyala\nTedarikçi Sayfası\nDiğer\nARAS KARGO YURT İÇİ YURT DIŞI TAŞIMACILIK A.Ş.\nAşağıdaki bilgileri güncellemek için tıklayın\nBelge No\nAAA2026001560084\nDurumu\nFaturalaşmış\nTarihi\n23.07.2026\nVadesi\n23.07.2026\nMasraf\nİşletme Giderleri\\KARGO\nAçıklama\nOtomatik Tekrarla\nArşiv\nArşiv Belgesi\nAlış belgesini taratıp veya resmini çekip buraya ekleyebilirsiniz.\nDETAYLAR\n# Açıklama Miktar Fiyat Tutar İndirim Net\n1\nARAS STANDART KARGO\n1 ad 170,12 170,12 0,00 170,12\nToplam Miktar 1 ad\nBrüt Toplam 170,12 TL\nİndirim 0,00 TL\nNet Toplam 170,12 TL\nKDV (%20) 34,02 TL\nTOPLAM 204,14 TL\n2014, 2025 © BizimHesap A.Ş. 82d5550005",
+      "error": ""
+    }
+  ]
+}

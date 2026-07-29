@@ -1,0 +1,32 @@
+{
+  "created_at": "2026-07-29T15:56:25.194Z",
+  "source": "bizimhesap_fatura_detayi",
+  "firma_id": "alayli",
+  "rows": [
+    {
+      "firma_id": "alayli",
+      "tarih": "2026-07-23",
+      "belge_no": "AAA2026001560084",
+      "tedarikci": "ARAS KARGO YURT İÇİ YURT DIŞI TAŞIMACILIK A.Ş.",
+      "urun_kod": "",
+      "barkod": "",
+      "urun": "ARAS STANDART KARGO",
+      "kategori": "",
+      "miktar": 1,
+      "birim": "",
+      "alis_fiyat": 1,
+      "tutar": 0,
+      "kaynak": "bizimhesap_fatura_detayi",
+      "raw": {
+        "kdv_orani": 0,
+        "kdv_tutari": 170.12,
+        "net_alis_kdv_haric": 0,
+        "net_alis_kdv_dahil": 170.12,
+        "belge_pdf": "",
+        "belge_xml": "javascript:__doPostBack('downloadxml', );",
+        "task_id": "alayli-2026-07-23-14"
+      },
+      "hash": "220de63e59e9b1781b1e93e7480a14680bb555d475f2f75dfab841797f0003a9"
+    }
+  ]
+}
