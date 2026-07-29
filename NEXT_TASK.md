@@ -9,6 +9,9 @@ yeniledigini kanitla. Jender XXL / Ilkbahar Eczanesi eslesmesi kaynakta
 varsa urun ve cari kartinda acilmali; yoksa kaynak denetimi acik blokaj
 yazmali ve ornek veri eklenmemelidir.
 
+Canli tekrar calismasinda snapshot commit'inin yayinlandigini, kaynak
+sayimlarini ve kabul eslesmelerini denetle.
+
 ## Aktif Tek Hedef - Moka POS Aktarimlarini Kanitli Kaydetme
 
 Moka United aciklamasi olan Is Bankasi girisleri `*MOCA SONOVA POS KREDI
@@ -110,7 +113,7 @@ canli kaynaklarla Bugun-Dun-Bu Ay donem gecislerini; Satis -> kategori ->
 urun -> kayit ve Satilan Malin Maliyeti -> kategori -> urun -> kayit
 zincirlerini test etmektir. Banka/kasa toplami sadece bakiye alanli ekstre
 kaynaklarindan gelmelidir. Ticari alacak, borc ve stok degerleme veri
-kaynaklari baglanmadan kesin bilanço toplami verilmeyecektir.
+kaynaklari baglanmadan kesin bilanÃ§o toplami verilmeyecektir.
 
 Son guncelleme: 2026-07-15 Europe/Istanbul
 
@@ -197,7 +200,7 @@ BizimHesap kaynak klonu canli olarak dogrulandi; zamanlanmis gorev kullanici
 karariyla her saat `:05` calisacak sekilde etkin. Siradaki hedef, en yeni gun banka hareketlerinden birini ham
 aciklama, hesap, cari onerisi, kayit turu ve guven kaniti ile sade gunluk onay
 paketine almak; kullanici onayindan sonra ayni kaydin BizimHesap kuyruk kimligini
-ve sonucunu satir bazinda kapatmaktir. Mükerrer veya belirsiz hareket otomatik
+ve sonucunu satir bazinda kapatmaktir. MÃ¼kerrer veya belirsiz hareket otomatik
 kesin kayda gitmeyecek.
 
 ## Aktif Tek Hedef - BizimHesap Canli Klonunun Kilidini Acmak
@@ -219,7 +222,7 @@ veri uydurmaz. Sonraki is, Gmail OAuth blokaji kalktiginda gunluk yeni banka
 mailinin bu snapshotta gorundugunu ve onay ekranina ayni kayit kimligiyle
 gectigini kanitlamaktir.
 
-Arayuz koruma notu: Kullanici tarafindan verilen fonksiyonlar azaltılmaz.
+Arayuz koruma notu: Kullanici tarafindan verilen fonksiyonlar azaltÄ±lmaz.
 Hasta Bezi eski ana sayfasi, yeni karar ekrani, siparis, sevkiyat, urun/cari
 arama, fiyat ve kontrol alanlarinin tek tek gorunur girislerini koruyacak
 sekilde ele alinacaktir. Ilk cift yonlu gecis tamamlandi. Bu turda fonksiyon
@@ -259,7 +262,7 @@ BizimHesap kuyrugu ve guncel rapor kaniti uretildigi iddia edilmeyecek.
 
 Telegram odeme bildirim workflow'u eklendi ve mevcut coklu chat kimligi yapisiyla uyumlandi. Siradaki tek hedef: GitHub repository secret'larinda `TELEGRAM_CHAT_IDS` varsa manuel `send=true` calistirmasiyla tek bir salt-okunur mesaj kaniti almak. Bu kanit alinincaya kadar gonderim basarili varsayilmaz.
 
-Finans Takvimi ana gecisi sadeleştirildi. Canli sayfada odeme kartlarinin vade aciliyeti gosterimi sonraki arayuz turunda kart bazli renk/etiketlerle tamamlanacak; veri kaynagi veya kesin borc kurali degismeyecek.
+Finans Takvimi ana gecisi sadeleÅŸtirildi. Canli sayfada odeme kartlarinin vade aciliyeti gosterimi sonraki arayuz turunda kart bazli renk/etiketlerle tamamlanacak; veri kaynagi veya kesin borc kurali degismeyecek.
 
 Guncel tur notu 2026-07-13 ikinci asama: Finans Takvimi artik gercek tarihle filtrelenir ve Supabase kaydi yoksa odeme hafizasini gosterir. Siradaki tek hedef aynidir: her kredi karti/KMH/banka hesabini ad, son dort hane, kesim gunu, son odeme gunu, kapsam ve kaynak ekstre ile kesinlestirmek. Bu veriler gelmeden Telegram'a bildirim adayi olusur fakat otomatik kesin odeme/tahakkuk olusmaz.
 
@@ -313,11 +316,11 @@ Guncel ek not 10: Canli kontrol botlari `APERION_LIVE_URLS` fallback listesine g
 
 Onay Merkezi analiz guvenini production seviyesine tasimak.
 
-Durum: Ana is programi kullanicinin tum isteklerine gore 20 maddelik siraya indirildi. 04 numarali Onay Merkezi analiz guveni ilk katmani tamamlandi: risk etiketleri, kanit kutusu, 84 guven esigi, tazelik/mukerrer/kuyruk/cari kanit gosterimi eklendi. 05 numarali BizimHesap tek tik kayit kanitinin ilk katmani da eklendi: queue worker dry-run raporu artik evidence ve summary uretir; ana ust akil karti onay bekleyen/kuyrukta/islenmis/hata ayrimini gosterir. `bank:approval:status` tek komutla guncel aday, dry-check, kuyruk kaniti ve BizimHesap worker dry-run sonucunu toplar; Banka Komuta Merkezi artik bu raporu `Sıradaki BizimHesap adayı` bandinda gosterir. `AperiON Bank Approval Status` workflow'u bu snapshot'i otomatik yeniler ve sadece `data/aperion_bank_approval_status.json` dosyasini commitler. Ana ekran Pages JSON gecikirse GitHub raw fallback ile ayni statusu okur. Son kanit: `2026-06-30 Yapi Kredi -3.56 TL Vergi/SGK odemesi`, pending id `d1455265-abaf-4ea1-a6d4-386bf16b93c1`, status `pending`, queue `0`. Siradaki is, kullanicinin bu tekil ID icin acik onay vermesi halinde kaydi kuyruga alip worker kanitini gercek kayit uzerinde dogrulamak.
+Durum: Ana is programi kullanicinin tum isteklerine gore 20 maddelik siraya indirildi. 04 numarali Onay Merkezi analiz guveni ilk katmani tamamlandi: risk etiketleri, kanit kutusu, 84 guven esigi, tazelik/mukerrer/kuyruk/cari kanit gosterimi eklendi. 05 numarali BizimHesap tek tik kayit kanitinin ilk katmani da eklendi: queue worker dry-run raporu artik evidence ve summary uretir; ana ust akil karti onay bekleyen/kuyrukta/islenmis/hata ayrimini gosterir. `bank:approval:status` tek komutla guncel aday, dry-check, kuyruk kaniti ve BizimHesap worker dry-run sonucunu toplar; Banka Komuta Merkezi artik bu raporu `SÄ±radaki BizimHesap adayÄ±` bandinda gosterir. `AperiON Bank Approval Status` workflow'u bu snapshot'i otomatik yeniler ve sadece `data/aperion_bank_approval_status.json` dosyasini commitler. Ana ekran Pages JSON gecikirse GitHub raw fallback ile ayni statusu okur. Son kanit: `2026-06-30 Yapi Kredi -3.56 TL Vergi/SGK odemesi`, pending id `d1455265-abaf-4ea1-a6d4-386bf16b93c1`, status `pending`, queue `0`. Siradaki is, kullanicinin bu tekil ID icin acik onay vermesi halinde kaydi kuyruga alip worker kanitini gercek kayit uzerinde dogrulamak.
 
 ## Neden Bu Hedef?
 
-Kullanici sabah banka maillerinden gelen hareketleri analiz edilmis sekilde gormek ve tek tikla BizimHesap'a gondermek istiyor. Bu akista hata olursa finansal kayit, cari, banka/kasa ve raporlar zincirleme bozulur. Bu yuzden once Onay Merkezi'nin neyi neden onerdiğini acik kanitlamasi gerekiyor.
+Kullanici sabah banka maillerinden gelen hareketleri analiz edilmis sekilde gormek ve tek tikla BizimHesap'a gondermek istiyor. Bu akista hata olursa finansal kayit, cari, banka/kasa ve raporlar zincirleme bozulur. Bu yuzden once Onay Merkezi'nin neyi neden onerdiÄŸini acik kanitlamasi gerekiyor.
 
 ## Tum Isteklerin Uygulama Sirasi
 
@@ -420,9 +423,17 @@ Ana ekran Executive Workspace v80 katmanina alindi. Sol sekmeler dashboard modun
 2. Kayit sonrasi her hareketin resmi satirini, tarihini, tutarini ve AperiON kuyruk kimligini tekrar oku.
 3. Kredi karti hesap ozeti, duyuru ve bulten e-postalarini finansal hareket olarak kayda alma.
 
-Yeni yan yana finans görünümü hazırdır. Sıradaki iş, `Bugün` satırlarının BizimHesap satış, alış/FIFO maliyet ve banka/POS tahsilat kaynaklarından eksiksiz geldiğini denetlemektir. Kaynakta olmayan tutar sıfır veya `kaynak bekliyor` görünür; değer uydurulmaz.
+Yeni yan yana finans gÃ¶rÃ¼nÃ¼mÃ¼ hazÄ±rdÄ±r. SÄ±radaki iÅŸ, `BugÃ¼n` satÄ±rlarÄ±nÄ±n BizimHesap satÄ±ÅŸ, alÄ±ÅŸ/FIFO maliyet ve banka/POS tahsilat kaynaklarÄ±ndan eksiksiz geldiÄŸini denetlemektir. Kaynakta olmayan tutar sÄ±fÄ±r veya `kaynak bekliyor` gÃ¶rÃ¼nÃ¼r; deÄŸer uydurulmaz.
 # Next primary goal: restore canonical Cloudflare publication
 
 1. Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` to repository secrets, scoped only to the `aperion-istasyon` Pages project.
 2. Run `Deploy AperiON Cloudflare Pages` once and verify `https://aperion-istasyon.pages.dev/` returns the current main commit.
 3. Only after that verification, replace the legacy GitHub Pages entry point with a concise canonical-link fallback.
+
+## Aktif Tek Hedef - Hasta Bezi Canli Kaynak Kabul Testi
+
+1. Saatlik BizimHesap workflow'unu v127 kaynak motoruyla calistir.
+2. Canli ciktilarda sales_raw, purchase_raw ve stock_raw satirlarini say.
+3. Satis fatura numarasi eksiklerini ve FIFO `KONTROL` kalan satirlari raporla.
+4. Jender XXL urun kartinda Ilkbahar Eczanesi satisi, alis gecmisi, FIFO kaynagi ve KDV haric kar hesabini dogrula.
+5. Kaynak eksikse basari ilan etme; eksik BizimHesap raporunu veya ekrani adi ve adresiyle belirt.
