@@ -78,6 +78,13 @@ const jobs = [
     timeoutMs: 180000,
   },
   {
+    label: 'BizimHesap dogrulanmis alis fatura satirlari',
+    file: 'tools/import_bizimhesap_invoice_details_to_purchase_raw_v127.cjs',
+    args: [commit],
+    required: false,
+    timeoutMs: 120000,
+  },
+  {
     label: 'Fatura detaylarini gider kartlarina baglama',
     file: 'tools/link_invoice_details_to_expense_cards_v64.cjs',
     args: [],
@@ -168,16 +175,16 @@ function releaseLock() {
 
 function diagnoseSyncFailure(output) {
   const text = String(output || '').toLocaleLowerCase('tr-TR');
-  if (text.includes('ngnpasswordchangerequest') || text.includes('sifrenizi mi unuttunuz') || text.includes('şifrenizi mi unuttunuz')) {
+  if (text.includes('ngnpasswordchangerequest') || text.includes('sifrenizi mi unuttunuz') || text.includes('ÅŸifrenizi mi unuttunuz')) {
     return 'BizimHesap giris dogrulamasi kontrol bekliyor';
   }
-  if (text.includes('giris tamamlanmadi') || text.includes('girisi tamamlanmadi') || text.includes('giriş tamamlanmadi') || text.includes('girişi tamamlanmadi') || text.includes('giris dogrulamasi') || text.includes('giriş dogrulamasi')) {
+  if (text.includes('giris tamamlanmadi') || text.includes('girisi tamamlanmadi') || text.includes('giriÅŸ tamamlanmadi') || text.includes('giriÅŸi tamamlanmadi') || text.includes('giris dogrulamasi') || text.includes('giriÅŸ dogrulamasi')) {
     return 'BizimHesap giris dogrulamasi kontrol bekliyor';
   }
-  if (text.includes('firma bulunamad') || text.includes('firma secilemedi') || text.includes('firma seçilemedi')) {
+  if (text.includes('firma bulunamad') || text.includes('firma secilemedi') || text.includes('firma seÃ§ilemedi')) {
     return 'BizimHesap firma secim ekrani acilamadi';
   }
-  if (text.includes('giris butonu') || text.includes('giriş butonu')) {
+  if (text.includes('giris butonu') || text.includes('giriÅŸ butonu')) {
     return 'BizimHesap giris ekrani degismis olabilir';
   }
   return 'Senkron isi hata verdi, log kontrol edilmeli';
