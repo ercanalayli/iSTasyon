@@ -87,6 +87,7 @@ jobs:
             echo "Dashboard source snapshots are unchanged."
             exit 0
           fi
+          git stash push --include-untracked -m "runner-only sync outputs" || true
           for attempt in 1 2 3; do
             git pull --rebase origin main
             if git push origin HEAD:main; then
