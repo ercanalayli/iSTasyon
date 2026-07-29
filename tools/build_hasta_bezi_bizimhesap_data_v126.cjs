@@ -74,7 +74,15 @@ function write(name, payload) {
     fetchAll('stock_raw', 'id,tarih,urun_kod,barkod,urun,kategori,depo,hareket_tipi,miktar,birim,kaynak,raw,created_at'),
   ]);
 
-  const productRows = productsResult.rows;
+  const productRowsByKey = new Map();
+  for (const row of productsResult.rows) {
+    const keyName = norm(row.urun_kod || row.barkod) || productKey(row.urun);
+    const current = productRowsByKey.get(keyName);
+    if (!current || s(row.updated_at).localeCompare(s(current.updated_at)) >= 0) {
+      productRowsByKey.set(keyName, row);
+    }
+  }
+  const productRows = [...productRowsByKey.values()];
   const productByName = new Map(productRows.map(row => [norm(row.urun), row]));
   let sales = salesResult.rows.map(row => {
     const product = productByName.get(norm(row.urun)) || {};
