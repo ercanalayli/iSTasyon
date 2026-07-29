@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { approvePreview, createSimulator, previewOperation } from '../commerce/bizimhesap-simulator.mjs';
+const state=createSimulator(),evidence={source:'vakifbank-ekstre.xlsx',hash:'sha256:abc'};
+const pos=previewOperation(state,{type:'pos_to_bank_transfer',kind:'transfer',amount:1000,sourceAccount:'POS POS POS KREDI KARTI',targetAccount:'VAKIFBANK',evidence,idempotencyKey:'pos-001'});
+assert.equal(pos.status,'preview');assert.equal(pos.requiresApproval,true);assert.equal(approvePreview(pos,'ercan').queueItem.status,'approved_for_live_queue');
+assert.equal(previewOperation(state,{type:'pos_to_bank_transfer',kind:'collection',sourceAccount:'POS',targetAccount:'BANKA',evidence,idempotencyKey:'pos-002'}).status,'blocked');
+assert.equal(previewOperation(state,{type:'bank_movement',waitingAccount:'emanet_cari',waitingMeta:{reason:'eşleşmedi'},evidence,idempotencyKey:'bank-001'}).status,'blocked');
+const waiting=previewOperation(state,{type:'bank_movement',waitingAccount:'emanet_cari',waitingMeta:{reason:'eşleşmedi',candidateAccount:'Rekormed',owner:'Ercan',resolveBy:'2026-07-25'},evidence,idempotencyKey:'bank-002'});
+assert.equal(waiting.status,'preview');assert.ok(waiting.warnings.length);assert.equal(previewOperation(waiting.nextState,{type:'bank_movement',evidence,idempotencyKey:'bank-002'}).status,'duplicate');
+console.log('BizimHesap simulator regression tests passed.');

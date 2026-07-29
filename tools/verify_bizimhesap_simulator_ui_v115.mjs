@@ -1,0 +1,4 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import {validateOperation} from '../commerce/simulator-rules.mjs';
+for(const file of ['bizimhesap-simulator/index.html','bizimhesap-simulator/app.js','bizimhesap-simulator/styles.css'])assert.ok(fs.existsSync(file),`${file} eksik`);
+const html=fs.readFileSync('bizimhesap-simulator/index.html','utf8');assert.match(html,/BizimHesap Simülatörü/);assert.match(html,/Ekstre\/dosya kaynağı/);assert.match(html,/Onay kuyruğuna hazırla/);
+const evidence={source:'ekstre.xlsx',hash:'sha256:test'};assert.deepEqual(validateOperation({idempotency:{}},{type:'pos_to_bank_transfer',kind:'transfer',sourceAccount:'POS',targetAccount:'BANKA',evidence,idempotencyKey:'1'}),[]);assert.match(validateOperation({idempotency:{}},{type:'pos_to_bank_transfer',kind:'collection',sourceAccount:'POS',targetAccount:'BANKA',evidence,idempotencyKey:'2'})[0],/tahsilat değil transfer/);console.log('BizimHesap simulator UI tests passed.');
