@@ -7,6 +7,10 @@
 - Urun ve cari kartlari, fatura kaniti ve kar hesap detayi tiklanabilir hale getirildi.
 - FIFO lotlari tarih sirasiyla tuketilir; eksik kanitta kesin kar uydurulmaz.
 - Mevcut siparis/sevkiyat ekrani `hasta-bezi/operasyon-legacy.html` olarak korundu.
+- Eszamanli otomasyon commit'lerinde veri push'unun kaybolmamasi icin
+  `pull --rebase` ve uc denemeli push korumasi eklendi.
+- Urun ve cari satis eslestirmeleri tek gecisli indekslere alinarak buyuk
+  BizimHesap veri setindeki snapshot uretim suresi dusuruldu.
 - Guncelleme no `1245290726`.
 
 ## 2026-07-16 - Moka United POS aktarim ogrenmesi v124
@@ -51,15 +55,15 @@
 - Her iki yuzey `Nakit`, `Kredi Karti`, `Cek` ve `Diger` kanallarini ayri ve tiklanabilir olarak gosterir.
 - Kanal toplamlarinin banka onay adaylarindan turetilmesi engellendi. Tarihli tam nakit snapshot'i gelmeden herhangi bir tutar veya sifir gosterilmez.
 
-## 2026-07-16 - Ana ekran gelir tablosu ve bilanço operasyon yuzeyi v117
+## 2026-07-16 - Ana ekran gelir tablosu ve bilanÃ§o operasyon yuzeyi v117
 
 - Komuta sayfasinin ust yarisi, buyuk slogan ve yonlendirme kartlari yerine
   Gelir Tablosu ve Bilanco karar yuzeyine donusturuldu.
-- Net satis, maliyet, brut kar, sabit/değisken gider, vergi ve net kar ile
+- Net satis, maliyet, brut kar, sabit/deÄŸisken gider, vergi ve net kar ile
   banka/kasa, alacak, borc, stok ayni ekranda ve tiklanabilir kalemler halinde
   gorunur oldu.
 - Mevcut satis ozetinden sadece kaynakli net satis okunur. Maliyet, gider,
-  vergi ve bilanço kaynaklari bagli degilse sifir veya sahte net kar
+  vergi ve bilanÃ§o kaynaklari bagli degilse sifir veya sahte net kar
   gosterilmez; durum acikca "kaynak bekliyor" olarak belirtilir.
 
 ## 2026-07-16 - Apsiyon aylik tahakkuk ve odeme defteri v116
@@ -113,10 +117,10 @@
 ## 2026-07-16 - Ana Sayfa Gelir Tablosu ve Bilanco Karar Yuzeyi v111
 
 - Ana ekrana Exceldeki gelir tablosu siralamasina uygun iki parca karar
-  yuzeyi eklendi: gelir tablosu ve bilanço durumu.
+  yuzeyi eklendi: gelir tablosu ve bilanÃ§o durumu.
 - `Satilan Malin Maliyeti` artik ayri tiklanabilir satirdir; kategori,
   urun ve satis kaydina kadar iner.
-- Bilanço tarafinda banka/kasa yalnizca bakiye alanli ekstrelerden hesaplanir.
+- BilanÃ§o tarafinda banka/kasa yalnizca bakiye alanli ekstrelerden hesaplanir.
   Tahsilat/odeme farki izleme kalemi olarak etiketlenir; ticari alacak veya
   borc diye kesinlestirilmez.
 
@@ -156,7 +160,7 @@
 
 ## 2026-07-15 - BizimHesap Canli VakifBank Kayit Kaniti v101
 
-- Yeni BizimHesap transfer dropdown/modal akisi gerçek Puppeteer tiklamasiyla
+- Yeni BizimHesap transfer dropdown/modal akisi gerÃ§ek Puppeteer tiklamasiyla
   acilacak sekilde duzeltildi; hedef hesap, tarih, tutar ve aciklama kaydetme
   oncesi zorunlu olarak dogrulanir.
 - VakifBank `2026009923018191` Batch Yatan kaydi `POS POS POS KREDI KARTI ->
@@ -322,7 +326,7 @@
 
 - Windows gorevleri, yerel senkron loglari, repo botlari, kuyruk dogrulamasi,
   B2B on kontrolu ve GitHub saatlik workflow sonucu salt-okunur denetlendi.
-- Kök neden: Windows'un calistirdigi ayri `ErpaltH` kopyasinda masraf botu
+- KÃ¶k neden: Windows'un calistirdigi ayri `ErpaltH` kopyasinda masraf botu
   `masraf_raw` tablosuna publishable anahtarla yazmaya calisiyor; RLS bu
   yazimi reddediyor.
 - Giris ve firma secimi, satis/urun/stok/son-islemler adimlari kanitlandi;
@@ -364,393 +368,9 @@
 
 ### Cari Dogrulama -> BizimHesap Tahsilat Kaniti
 
-- Mail Ekstre Onay Merkezi'ne `Cari doğrula` eylemi eklendi.
+- Mail Ekstre Onay Merkezi'ne `Cari doÄŸrula` eylemi eklendi.
 - Ilgili kisi/firma hareketinde kullanici hedef BizimHesap carisini yazar ve ikinci bir onayla dogrular.
-- `confirmed_counterparty`, `counterparty_confirmed` ve `counterparty_confirmed_at` alanlari banka hareketinde karar kanitini saklar.
-- `automation/sql/007_confirm_pending_bank_counterparty.sql` eklendi; mevcut veritabanini bozmadan alanlari ve RPC'yi kurar.
-- BizimHesap kuyrugu artik dogrulanmis cari varsa onu `suggested_counterparty` ve `target_counterparty` olarak kullanir.
-- SQL workflow bu yeni kurulum dosyasini takip eder.
-- Canli cari onayi, kuyruk veya BizimHesap kaydi bu turda calistirilmadi.
-
-### Canli Kurulum ve Gmail Durumu
-
-- `Supabase SQL Install` GitHub Actions run `29082485210` basariyla tamamlandi; cari dogrulama SQL'i canli kuruldu.
-- `AperiON Mail Ekstre Pipeline` Gmail OAuth token kontrolunde durdu. Mailbox, Supabase ve SQL kontrolleri basarili; sorun eski/iptal edilmis `GOOGLE_REFRESH_TOKEN`.
-- Yeni token kullanici tarafindan Google izin ekraninda yenilenmeden mailden yeni banka hareketi alma devam edemez.
-- `Live Visual Control` Telegram canli kutusunu bulamadigi icin basarisiz kaldi; bu durum finansal kayit veya Supabase SQL sonucunu etkilemez.
-
-### Telegram Gorsel Ekstre Virman Karari
-
-- Gorsel ekstre parser'inda virmanin otomatik reddedilmesi kaldirildi; virman artik kullanici onayina duser.
-- Telegram banka onay mesaji ham aciklamayi kanit olarak, kaynak hesap, hedef hesap, BizimHesap hedefi, kategori ve guven ile birlikte gosterir.
-- Sirket Is Bankasi -> Sirket VakifBank gibi aciklamalar `Sirket bankalari arasi virman` olarak taninir.
-- Telegram sorusu artik tutar ve hesaplari acik yazar; kullanici neye onay verdigini gorur.
-- `verify:telegram-bank-virman` komutu eklendi.
-
-### Dashboard Guncellik Damgasi
-
-- Ust cubuktaki eski sabit tarih kaldirildi.
-- `SON RAPOR` artik Banka Onay Status snapshot'inin gercek olusturulma zamanini kullanir.
-- Rapor zamani ile finansal kaynak tarihi ayrildi; kartlardaki kaynak/kanit satirlari veri tarihini gostermeye devam eder.
-
-### ERP Ust Akil Kapsami
-
-- Kullanici AperiON'un sadece para hareketi degil; satis, alis, raporlama, analiz, anomali tespiti, CFO, CEO, ERP ve ust akil sistemi olmasi gerektigini netlestirdi.
-- `config/aperion_intelligence_scope.json` eklendi.
-- `docs/APERION_ERP_UST_AKIL_KAPSAM.md` eklendi.
-- Kapsam CFO finans, CEO satis, alis/gider, stok/FIFO, anomali/risk ve hayat asistani motorlari olarak tanimlandi.
-- Bundan sonraki uygulama turlari banka onay akisina sikismayacak; satis/alis/stok/cari/anomali ayni ust akil mimarisine baglanacak.
-
-### Finans Karar Hafizasi ve Cari Dogrulama
-
-- Banka/Gmail/Telegram'dan gelen para hareketleri icin kalici karar hafizasi eklendi: `config/aperion_finance_rules.json`.
-- Kural hafizasi sirket bankalari, POS hesaplari, ilgili kisi/firma dogrulama listesi, sirket sabit giderleri, kisisel sabit giderler ve inceleme isteyen anahtar kelimeleri tutar.
-- Banka karar motoru `tools/bank_posting_plan.cjs` bu kurallari okuyacak sekilde guncellendi.
-- Gelen havale/EFT/FAST aciklamalarinda `ERCAN ALAYLI tarafindan aktarilan` gibi kaliplardan cari/karsi taraf daha net yakalanir.
-- `ERCAN ALAYLI`, `ERHAN ALAYLI`, `ALAYLI MEDIKAL` gibi ilgili kisi/firma hareketleri otomatik kesin kayda gitmez; once cari dogrulamasi ister.
-- Kisisel/aile/okul/zekat/bagis gibi hareketler sirket gideri kabul edilmez; `kisisel_veya_sirket_disi_inceleme` olarak Onay Merkezi'nde kalir.
-- Ana ekran banka karar satirlari artik kapsam ve sabit/degisken bilgisini ve insan dilinde onay sorusunu gosterir.
-- `verify:finance-decision-rules` testi eklendi.
-- Bu tur canli BizimHesap kaydi, Supabase yazimi veya banka onayi yapilmadi.
-
-## 2026-07-09
-
-### Birlesik Ust Akil ve Hayat Asistani Linki
-
-- Kullanici iki hatti birlestirmek istedi: AperiON iSTasyon CFO/ust akil sistemi ve Hasta Bezi/FIFO urun-cari sistemi.
-- `aperion-ust-akil.html` eklendi.
-- Sayfa 8 tiklanabilir modulu tek linkte toplar: CFO Ust Akil, Hasta Bezi & FIFO, Mail & Ekstre, BizimHesap Onayi, Cari Hafiza, Urun Hafiza, Hayat Asistani, Veri Guveni.
-- `aperion.html` kisa giris kapisi olarak `aperion-ust-akil.html` sayfasina yonlendirir.
-- Sayfa mevcut calisan ekranlari silmeden ilgili modullere link verir.
-- Moka banka yatirimi siniflandirmasinin genel POS kuralina ezilmesi engellendi; Moka hareketi `Moka banka transferi` olarak kalir.
-- Bu tur canli BizimHesap kaydi, Supabase yazimi veya banka onayi yapilmadi.
-
-## 2026-07-04
-
-### Executive Workspace ve Hasta Bezi Karar Karti
-
-- `aperion-ust-akil-tasarim.html` referansi ana ekran yonu olarak okundu.
-- Dashboard modunda sol sidebar ve toggle gizlendi; ana ekran tam viewport genisliginde calisir.
-- 8 tiklanabilir komuta bolgesi tek ekran ana karar yuzeyi olarak kilitlendi.
-- `APERION HASTA BEZI EKRAN.xlsx` incelendi; donem sirasi, hasta bezi alt segmentleri, kanal ayrimi ve metrikleri cikarildi.
-- Ana ekrana `Hasta Bezi Karar Ekrani` karti eklendi.
-- Kart bu ay ciro, adet, brut kar, dun/hafta karsilastirma ve segment ozetlerini gosterir.
-- Karttaki `Tam Rapor` ve segment satirlari hasta bezi detay modalini acar.
-- Detay modalinda segment, kanal, donem, tutar, adet, kar ve ortalama TL alanlari yer alir.
-- Urun listesi mevcut dinamik urun kartina baglanir.
-- Veri gecikmesinde kartin sonsuz yukleme yazisinda kalmamasi icin RAW/cache fallback ve arka plan yenileme eklendi.
-- Canli BizimHesap kaydi, Supabase SQL veya finansal veri mutasyonu yapilmadi.
-
-### Ana Sayfa v81 Koyu Launcher Tasarimi
-
-- Kullanici `aperion-ana-sayfa.html` referansini begendigini belirtti.
-- Referanstaki koyu zemin, brass vurgu, Fraunces/IBM Plex Mono tipografi ve kart/kapidan gir tasarim dili ana dashboard'a uygulandi.
-- 8 tiklanabilir ana bolge korunarak 4x2 launcher karti haline getirildi.
-- Dashboard topbar, komuta kartlari, banka/gelir/hasta bezi/sabah onay yuzeyleri ayni koyu/brass tasarim diliyle hizalandi.
-- Yerel tarayici kontrolde sol sidebar gizli, 8 kart gorunur, koyu arka plan aktif ve 720px viewportta tasma yok olarak olculdu.
-- `npm run verify:single-screen-command-map` ve `npm run finance-smoke` gecti.
-
-### Canli v81 ve Banka Aday Snapshot Kontrolu
-
-- GitHub Pages `?v=cf81c26` icerigi uzaktan okundu; v81 koyu launcher, Fraunces fontu, koyu zemin, 8 komuta haritasi ve hasta bezi karti yayinda dogrulandi.
-- `npm run bank:approval:status` salt-okunur calisti ve `data/aperion_bank_approval_status.json` guncellendi.
-- Guncel secili aday: `2026-07-03 Yapi Kredi 4.600 TL POS tahsilati`, pending id `c7f757fa-939a-45e3-aa0b-145259234045`, guven `%88`.
-- `npm run bizimhesap:queue:dry` 0 hazir BizimHesap kuyrugu gosterdi.
-- `npm run verify:bank-approval-action` gecti.
-- Canli RPC, kuyruga alma veya BizimHesap save calismadi.
-
-### Saatlik BizimHesap Sync RLS Duzeltmesi
-
-- GitHub Actions `Hourly BizimHesap Sync` basarisiz run logu incelendi.
-- BizimHesap login ve ALAYLI MEDIKAL firma seciminin calistigi, hatanin Supabase yaziminda oldugu dogrulandi.
-- `sales_raw` ve `masraf_raw` icin `new row violates row-level security policy` hatasi kok neden olarak belirlendi.
-- `bizimhesap_bot.js`, `bizimhesap_masraf_cek.js`, `bizimhesap_urun_stok_cek.js` ve `bizimhesap_son_islemler_izle.js` artik `SUPABASE_SERVICE_ROLE_KEY` degerini publishable/anon key'den once kullanir.
-- Supabase client'larinda auth session persist kapatildi.
-- `tools/verify_bizimhesap_supabase_service_key_v79.cjs` eklendi.
-- `verify:bizimhesap:supabase-service-key` komutu eklendi ve 12/12 gecti.
-- Fix sonrasi `Hourly BizimHesap Sync` run `28701917165` basarili tamamlandi.
-- Kanit logu: satis 963 kayit, urun/stok 3203 kayit, masraf 82 kayit, son islemler 3 yeni kayit.
-- Canli BizimHesap kaydi, toplu onay veya Supabase SQL hardening uygulanmadi.
-
-## 2026-07-03
-
-### Tek Ekran Komuta Haritasi
-
-- Masaustu gorunumde sol sidebar ve sidebar toggle gizlendi.
-- Ana ekran tam genislige alindi; dashboard tek ekran karar yuzeyi olarak duzenlendi.
-- 8 tiklanabilir ana bolge eklendi: Banka Canli, Onay Merkezi, Gelir Tablosu, Satis & Tahsilat, Urun & Stok, Cari Risk, Veri Guveni, Bildirim Merkezi.
-- Bolgeler 4x2 komuta haritasi seklinde, renkli kenar, hover ve focus cercevesiyle ayrildi.
-- Dashboard altinda eski kritik kartlar korunarak Banka Komuta Merkezi ve Gelir Tablosu matrisi tek ekran icinde tutuldu.
-- `tools/verify_single_screen_command_map_v78.cjs` eklendi.
-- `verify:single-screen-command-map` komutu eklendi.
-- Tarayici kontrolde sol menusuz gorunum, 8 bolge, iki satir, yatay tasma olmamasi ve kutularin cakismamasi dogrulandi.
-- GitHub Pages deploy sonrasi canli URL'de `aperionCommandMap`, 8 komuta bolgesi ve sol menusuz gorunum dogrulandi.
-
-### Banka / BizimHesap Kayit Rotasi
-
-- Banka Canli satirlarina ve sabah onay kartlarina `bankLedgerRouteHtml` eklendi.
-- Her hareket Kaynak, AperiON karari, BizimHesap hedefi ve Sonuc bolumleriyle okunur hale geldi.
-- `Onay anlami` kutusu eklendi: hangi banka hesabi, hangi cari, hangi kategori ve hangi kayit turuyle kuyruga alinacagi kullanici dilinde yazilir.
-- `verify:bank-approval-action` testine rota ve insan dilinde onay anlami kontrolleri eklendi.
-- Canli BizimHesap kaydi veya toplu onay yapilmadi.
-
-### CFO Modu Referans Plani
-
-- Kullanici `Finans Direktoru (CFO) Egitimi` gorselini referans olarak verdi.
-- `APERION_CFO_MODUL_PLANI.md` eklendi.
-- CFO modu; finansal tablolar, butce, maliyet, isletme sermayesi, risk ve stratejik karar ekranini AperiON verilerine baglayacak sekilde planlandi.
-- `APERION_ISTEKLER_VE_GORSELLER.md` icine CFO gibi dusunen finans direktoru modu eklendi.
-- Aktif uygulama hedefi degismedi: once Banka Canli / Onay Merkezi kayit kaniti bitirilecek.
-
-### Kullanici Istekleri ve Gorsel Referans Dosyasi
-
-- `APERION_ISTEKLER_VE_GORSELLER.md` eklendi.
-- Ana vizyon, oncelik sirasi, banka/BizimHesap/mail/Telegram/gelir tablosu/urun/hasta bezi/kisisel finans istekleri tek dosyada toplandi.
-- Sohbette paylasilan gorsel referans dosya yollari ve ne anlattiklari listelendi.
-
-### Supabase / BizimHesap Guvenlik Hardening
-
-- Claude'un canli tarafta yaptigi cookie/API guvenlik notu repo akisine alindi.
-- `supabase_security_hardening_v77.sql` eklendi.
-- Migration anon kullanicinin kritik banka/onay/finans RPC'lerini calistirmasini engelleyecek revoke adimlarini icerir.
-- `bank_transactions`, `banka_raw`, `bizimhesap_events`, `product_raw`, `audit_logs` icin eski anon write/read prototip politikalarini kaldiran kilitler eklendi.
-- Authenticated okuma politikasi `aperion_users.firma_id` ve `all` admin modeliyle yeniden tanimlandi.
-- `tools/verify_supabase_security_hardening_v77.cjs` ve `verify:supabase-security-hardening` komutu eklendi.
-- `verify:supabase-security-hardening` 16/16 gecti.
-- Canli Supabase SQL uygulanmadi; bu tur repo hazirligi ve denetim turudur.
-
-## 2026-07-02
-
-### Banka Onay Adayi Odaklama
-
-- Banka Komuta Merkezi `Siradaki BizimHesap adayi` bandina `Adayi Ac` eylemi eklendi.
-- Eylem canli kayit yapmaz; Finans > Banka Canli ekranini acar ve secili pending id satirini sari cerceveyle odaklar.
-- Kartta BizimHesap hedefi, banka hesabi, cari/karsi taraf, kategori, risk ve guven alani ayrica gosterilir.
-- Kart onayin ekrandaki ilgili satirdan verilecegini acik yazar.
-- Banka onay tablo satirlarina `data-bank-pending-id` ve `data-bank-row-id` isaretleri eklendi.
-- `verify:bank-approval-action` icine aday odaklama helper, satir id ve focus CSS kontrolleri eklendi.
-- Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
-
-### Banka Satir Kayit Kaniti
-
-- Banka Canli satirlarina `AperiON onayi`, `BizimHesap kuyrugu`, `Kayit sonucu` seridi eklendi.
-- Her hareketin onay bekliyor, kuyruk yok/kuyrukta, bekliyor/islendi/hata durumlari satir uzerinde okunur hale getirildi.
-- `verify:bank-approval-action` icine satir kayit kaniti kontrolu eklendi.
-- Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
-
-### Sabah Onay Kartlarinda Kayit Kaniti
-
-- Sabah onay kartlari da `AperiON onayi -> BizimHesap kuyrugu -> Kayit sonucu` seridini kullanir hale getirildi.
-- Ana ekran karti ve Banka Canli tablosu ayni kayit durum dilini paylasir.
-- `verify:bank-approval-action` sabah karti helper baglantisini kontrol eder.
-- Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
-
-### Banka Aday Ozet Sayaclari
-
-- `Siradaki BizimHesap adayi` kartina taranan hareket, guvenli aday, inceleme isteyen kayit ve hazir kuyruk sayaclari eklendi.
-- Ana ekran tek adayin yaninda aday secim raporunun ozetini de gosterir.
-- Status raporunun olusturulma zamani Turkiye saatiyle ayni sayac satirinda gorunur.
-- Ana aday karti ve sabah onay kartlarina onay, kuyruk, bot kaydi ve sonuc kontrolu islem yolu eklendi.
-- `verify:bank-approval-action` bu sayaclarin varligini kontrol eder.
-- `dbbd736` icin CI basarili, Pages deploy hata verdigi icin durum notu ile yeniden deploy tetiklenir.
-- Canli yayin teyidi GitHub Pages olarak netlestirildi; Netlify PR preview bilgisi production kaniti sayilmaz.
-- HTML basina production-source marker eklendi; Netlify linklerinin preview-only oldugu dosya icinde de isaretlendi.
-- GitHub Pages deploy hatasi connector logu ile incelendi; gecici `try again later` hatasi oldugu goruldu ve failed deploy job retry sonrasi basarili oldu.
-- Canli kontrol botlari `APERION_LIVE_URLS` fallback listesine alindi; Cloudflare acilmazsa GitHub Pages denenir ve secilen URL rapora yazilir.
-- Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
-
-### Banka Status Pages Fallback
-
-- GitHub raw status JSON dosyasinin mevcut oldugu dogrulandi.
-- GitHub Pages deploy `in_progress` iken `data/aperion_bank_approval_status.json` gecici 404 donebildigi goruldu.
-- `fetchBankApprovalStatusReport()` once Pages/local JSON'u, olmazsa GitHub raw JSON'u dener hale getirildi.
-- `verify:bank-approval-action` icine raw fallback kontrolu eklendi.
-- `verify:bank-approval-action`, HTML script parse ve `finance-smoke` gecti.
-- Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
-
-### Banka Onay Status Otomasyonu
-
-- `.github/workflows/bank-approval-status.yml` eklendi.
-- Workflow manuel, mail ekstre pipeline sonrasi, BizimHesap queue worker sonrasi ve zamanli olarak calisir.
-- Workflow canli RPC veya BizimHesap save yapmaz; sadece `npm run bank:approval:status` ile okuma/dry-run raporu uretir.
-- Degisiklik varsa yalnizca `data/aperion_bank_approval_status.json` snapshot dosyasini commitler.
-- Canli ana ekran workflow beklemeden status bandi gosterebilsin diye guvenli ilk snapshot repo icine alindi.
-- `verify:bank-candidate-guard` workflow'un canli RPC icermedigini ve sadece status snapshot commitledigini kontrol eder.
-- `verify:bank-candidate-guard`, `verify:bank-approval-action`, `bank:approval:status`, `verify:bizimhesap:queue`, `finance-smoke` ve syntax kontrolu gecti.
-- Canli BizimHesap kaydi yapilmadi.
-
-### Ana Ekranda Banka Onay Durumu
-
-- Banka Komuta Merkezi icine `Sıradaki BizimHesap adayı` durum bandi eklendi.
-- Ekran `data/aperion_bank_approval_status.json` varsa secili aday, tutar, karar tipi, cari/kategori, guven, queue status ve gerekli tekil onay metnini gosterir.
-- Status dosyasi yoksa ana banka kartlari bozulmadan calismaya devam eder.
-- Dashboard modunda durum bandinin tek ekran duzenini bozmasini engelleyen kompakt CSS eklendi.
-- `verify:bank-approval-action`, `verify:bank-candidate-guard`, `finance-smoke`, `bank:approval:status`, `verify:bizimhesap:queue` ve HTML script parse kontrolu gecti.
-- Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
-
-### Banka Onay Tek Durum Raporu
-
-- `tools/build_bank_approval_status_v76.cjs` eklendi.
-- `bank:approval:status` komutu eklendi.
-- Komut guncel banka aday secimi, dry-check, kuyruk kaniti ve BizimHesap worker dry-run adimlarini salt-okunur sekilde calistirir.
-- Cikti `data/aperion_bank_approval_status.json` icine yazilir.
-- Rapor secili aday, hedef hesap/cari/kategori, guven, risk, pending status, queue status, blokajlar, gerekli kullanici onay metni ve sonraki komutu tek yerde gosterir.
-- Son durum: `2026-06-30 Yapi Kredi -3.56 TL Vergi/SGK odemesi`, pending id `d1455265-abaf-4ea1-a6d4-386bf16b93c1`, queue `0`.
-- Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
-
-### Banka Aday Kanitinda Guncel Secim
-
-- `bank:approval:candidate:proof` komutu artik once `bank:approval:candidates` calistirir.
-- `tools/check_bank_candidate_queue_proof_v71.cjs` eski sabit pending id yerine `data/banka_onay_guvenli_adaylar.json` icindeki guncel `recommended_first_approval` kaydini kullanir.
-- `tools/approve_bank_candidate_v70.cjs` guvenli odeme/vergi/SGK adaylarini dry-check icinde taniyacak sekilde genisletildi.
-- Dusuk risk, %84 guven, kullanici incelemesi istememe ve canli islem icin `--id` + `--confirm ONAYLIYORUM` kilitleri korunuyor.
-- Son dry-check adayi: `2026-06-30 Yapi Kredi -3.56 TL Vergi/SGK odemesi`, pending id `d1455265-abaf-4ea1-a6d4-386bf16b93c1`.
-- Kanit sonucu: pending bulundu, status `pending`, queue count `0`, queue status `queue_yok`.
-- Canli RPC, kuyruga alma veya BizimHesap kaydi yapilmadi.
-
-### Banka Mail Metin Temizleme ve Onay Kontrolu
-
-- `tools/bank_posting_plan.cjs` icindeki bozuk karakter temizleme mantigi guclendirildi.
-- `automation/lib/pending-normalize.js` yeni gelen banka hareketlerinde banka adi, mail konusu, ek adi, aciklama, raw text, tip ve cari ipucunu kayda girmeden once temizler hale getirildi.
-- Gmail/HTML kaynakli `AkÄ±llÄ±`, `AnlÄ±k Ã–deme`, `Ãœye Ä°şyeri`, `â‚º` gibi diziler icin ozel onarim eklendi.
-- `npm run bank:approval:preview` calisti: 25 ornek hareket, 14 yuksek guven, 11 inceleme isteyen kayit.
-- `npm run bank:approval:candidates` calisti: 14 aday, 12 dusuk risk, 11 inceleme isteyen kayit; ilk dusuk riskli aday `2026-06-30 Yapi Kredi -0.62 TL`.
-- `npm run verify:bank-approval-action` gecti.
-- `npm run bizimhesap:queue:dry` calisti ve 0 hazir BizimHesap kuyrugu oldugunu dogruladi.
-- Kullanici onayi olmadan Supabase RPC, kuyruga alma veya BizimHesap kaydetme calistirilmadi.
-
-### Banka Cari Guvenlik Kilidi
-
-- Banka hareketi analizinde `ACIKL`, `ACIKLAMA`, `HESAP SUBE`, `IBAN`, `YATIRILAN TUTAR`, `KART NO`, `ATM NO` gibi banka teknik parcalari cari/karsi taraf kabul edilmiyor.
-- Ayni kural ana ekran `index.html` anlik banka planina da eklendi.
-- `npm run bank:approval:preview` tekrar calisti: 25 ornek hareket, 7 guvenli aday, 18 inceleme isteyen kayit.
-- `npm run bank:approval:candidates` tekrar calisti; ilk dusuk riskli aday `2026-07-02 Akbank 57 TL POS tahsilati`.
-- `npm run finance-smoke`, `npm run verify:bank-approval-action` ve `npm run bizimhesap:queue:dry` gecti.
-
-### Banka Disi Mail Filtresi
-
-- BizimHesap gunluk finans/hareket ozetleri mail ekstre parser'inda banka hareketi olarak kabul edilmiyor.
-- Mevcut bekleyenlerde bu tip kayitlar `Banka disi ozet mail` ve `Onay Merkezi inceleme` olarak siniflandirilir.
-- `Akilli Asistan`, `Anlik Odeme Bilgilendirmesi`, `Bilgi Fisi` gibi bildirim basliklari cari kabul edilmiyor.
-- `npm run bank:approval:preview` tekrar calisti: 25 ornek hareket, 2 guvenli aday, 23 inceleme isteyen kayit.
-- `npm run bank:approval:candidates` tekrar calisti; ilk dusuk riskli aday `2026-06-30 Yapi Kredi -3.56 TL Vergi/SGK odemesi`.
-- `npm run bizimhesap:queue:dry` 0 hazir kuyruk gosterdi; canli onay veya BizimHesap kaydi yapilmadi.
-
-### Banka Bildirimlerinde Karsi Taraf Yakalama
-
-- Gmail banka bildirim parser'i `Gonderen / Aciklama`, `Alici`, `Karsi Taraf`, `Cari` ve `Gelen/Giden FAST/EFT/Havale` kaliplarindan karsi taraf ipucu cikarir hale getirildi.
-- Cikarilan karsi taraf `suggested_counterparty` alanina yaziliyor.
-- `FAST`, `EFT`, `HAVALE`, IBAN, hesap, sube, bakiye, tutar ve kart teknik parcalari cari adi olarak kabul edilmiyor.
-- Sentetik gelen EFT testinde karsi taraf `RAMIZ YIGIT` olarak temiz yakalandi.
-- BizimHesap gunluk finans ozet parser testi 0 banka hareketi dondurdu.
-- `npm run verify:bank-approval-action`, `npm run bank:approval:candidates`, `npm run bizimhesap:queue:dry` ve `npm run finance-smoke` gecti.
-
-### Ana Is Programi Sira Kilidi
-
-- Ana ekrandaki `AperiON Ana Is Programi` kullanicinin tum isteklerini kapsayan 20 maddelik siraya cevrildi.
-- Bitmis, kismen bitmis, kalmis ve siradaki isler ayni listede ayrildi.
-- Bundan sonraki aktif hedef `Onay Merkezi analiz guveni` olarak belirlendi.
-- Yeni sira `NEXT_TASK.md` icine de yazildi; her tur bu siraya gore ilerleyecek.
-
-### Onay Merkezi Analiz Guveni
-
-- Banka onay satirlarina risk etiketleri eklendi: analiz net, cari net degil, guven dusuk, mukerrer, eski bekleyen, kuyruk/sonuc var.
-- Banka karar kutusuna kanit alani eklendi: yon, cari kanit kaynagi, hareket tazeligi, kuyruk, karar nedeni ve mukerrer bilgisi.
-- Sabah onay kartlari ayni risk etiketlerini gosterir hale geldi.
-- BizimHesap'a gonderilebilir banka hareketi guven esigi 70'ten 84'e cikarildi.
-- `verify:bank-approval-action`, `bank:approval:candidates`, `bizimhesap:queue:dry` ve `finance-smoke` gecti.
-- Canli BizimHesap kaydi veya Supabase onay/RPC calistirilmadi.
-
-### BizimHesap Tek Tik Kayit Kaniti
-
-- `bizimhesap_queue_worker.cjs` dry-run raporuna `summary` ve her kayit icin `evidence` alani eklendi.
-- Evidence artik queue id, pending id, kuyruk statusu, hedef, hesap, cari, kategori, guven, otomatik kayit guvenli mi, blokajlar, manuel kanit/tekrar kayit kilidi ve sonraki adimi gosterir.
-- Ana ust akil kartinda BizimHesap'a gidecek banka kaydi sayaci onay bekleyen/kuyrukta/islenmis/hata ayrimina cevrildi.
-- `verify:bizimhesap:queue`, `bizimhesap:queue:dry`, `verify:bank-approval-action` ve `finance-smoke` gecti.
-- Kuyrukta hazir kayit 0 oldugu icin canli BizimHesap kaydi yapilmadi.
-
-## 2026-07-01
-
-### Gmail OAuth Yenileme Yardimcisi
-
-- Yerel PowerShell'in GitHub repository secrets degerlerini okuyamadigi icin `gmail-oauth-start.js` hata verdigi netlestirildi.
-- `.github/workflows/gmail-oauth-refresh.yml` eklendi.
-- `automation/gmail-oauth-refresh-helper.cjs` eklendi.
-- Workflow `mode=start` ile GitHub secrets uzerinden Gmail izin linki uretir.
-- Workflow `mode=finish` ile Google code degerini yeni `GOOGLE_REFRESH_TOKEN` degerine cevirir.
-- Akis `alaylimedikal@gmail.com` disinda mailbox ile calismaz.
-- `tools/verify_gmail_oauth_refresh_helper_v75.cjs` ve `verify:gmail-oauth-refresh` komutu eklendi.
-- Canli mail okuma, Supabase yazma veya BizimHesap kaydi yapilmadi.
-- Google izin akisinda `alaylimedikal@gmail.com` hesabi secildi ve yeni Gmail refresh token helper artifact'i uretildi.
-- `GOOGLE_REFRESH_TOKEN` GitHub repository secret'i guncellendi; token degeri repo dosyalarina yazilmadi.
-- Yenilenmis secret sonrasi mail-ekstre pipeline'in tekrar calismasi icin davranis degistirmeyen workflow tetikleme notu eklendi.
-- `GOOGLE_REFRESH_TOKEN` GitHub API uzerinden yeniden yazildi ve `AperiON Mail Ekstre Pipeline` workflow_dispatch ile calistirildi.
-- Mail ekstre run `28525249930` success: OAuth success, dry-run 326 satir, live ingest 214 yeni `pending_bank_movements`, 82 mukerrer.
-- DealerStatement run `28525566041` OAuth success; failure sebebi yanlis/uyumsuz ek kolonlari. Ekte gelecek tahsilat DealerStatement kolonlari bulunmadi.
-
-### Banka Mail Guncelligi ve Eski Bekleyen Ayrimi
-
-- Ramiz Yigit tahsilatinin yeni Temmuz kaydi degil, `2026-06-10` tarihli eski bekleyen banka hareketi oldugu dogrulandi.
-- Ana ekran mail ekstre sorgusu ve `fetchPendingBankMovements` siralamasi `transaction_date` esasina alindi.
-- Banka Onay preview komutu `created_at` yerine `transaction_date` ile siralanacak sekilde duzeltildi.
-- Sabah onay kartlari yalnizca son 7 gunluk hareketleri ana ekranda gosterir hale getirildi.
-- Eski bekleyen banka kayitlari artik ana ekranda yeni mail gibi gorunmez; Banka Canli ekraninda `eski bekleyen` etiketiyle kontrol edilir.
-- Ust Akil ozeti mail-ekstre workflow hatasini Gmail OAuth/refresh token kontrolu olarak gorunur hale getirir.
-- Canli BizimHesap kaydi veya Supabase onay/RPC calistirilmadi.
-
-### DealerStatement Mail Otomasyonu
-
-- `tools/dealer_statement_gmail_worker_v74.mjs` eklendi.
-- `dealer-statement:gmail:dry` npm komutu eklendi.
-- `.github/workflows/dealer-statement-receivables.yml` eklendi.
-- Workflow 10:20 ve 17:20 Turkiye saatiyle DealerStatement mail eklerini kontrol edecek sekilde kuruldu.
-- Dogru posta kutusu `alaylimedikal@gmail.com` olarak kilitlendi.
-- Worker DealerStatement ekini indirir, Finans Takvimi planini uretir ve yalnizca dry-run import kaniti yazar.
-- Workflow ve worker icinde `--commit` kullanimi yok; canli Supabase insert yapilmaz.
-- `tools/verify_dealer_statement_automation_v74.cjs` ve `verify:dealer-statement-automation` eklendi.
-- Ilk GitHub run `28500494014` Gmail dry-run step'inde failure verdi.
-- Worker Gmail/OAuth hatasinda da `dealer_statement_gmail_worker_report.json` yazacak sekilde guclendirildi.
-- Workflow dry-run step'i `continue-on-error` ve ayrica sonuc raporu adimiyla artifact yuklemeye devam eder hale getirildi.
-- Workflow'a artifact yukleme sonrasinda `Gate DealerStatement result` eklendi; rapor yoksa veya `result` `_failed` ise workflow artik basarisiz donecek.
-- Gate'li GitHub Actions run `28506469160` beklenen sekilde failure verdi ve artifact olusturdu; hata artik yesil gorunmuyor.
-- Artifact raporu `oauth2.googleapis.com/token: Premature close` hatasini gosterdi.
-- DealerStatement Gmail worker'a gecici OAuth/network kopmalari icin 3 denemeli retry eklendi.
-- Mail-ekstre artifact'i incelendi; pipeline success olmasina ragmen Gmail sorgularinin `invalid_grant` verdigi tespit edildi.
-- `automation/gmail-oauth-check.cjs` ve `gmail:oauth:check` eklendi.
-- DealerStatement ve mail-ekstre workflow'lari Gmail OAuth bozuksa erken kirmizi donecek sekilde guncellendi.
-
-### DealerStatement Finans Takvimi Import Kilidi
-
-- `tools/import_dealer_statement_receivables_v73.cjs` eklendi.
-- `finance-calendar:dealer-statement:import:dry` ve `finance-calendar:dealer-statement:import` npm komutlari eklendi.
-- Canli Supabase insert `--commit --confirm ONAYLIYORUM` olmadan calismaz.
-- 2026-07-01 as-of ile rapor tekrar okundu: 80 gelecek tahsilat, TL 657.666,43.
-- Satis tutari 0 olup yatirilan tutari olan 1 kayit otomatik butceye alinmadi, `needs_review` listesine ayrildi.
-- Import dry-run basarili; canli insert yapilmadi.
-
-### DealerStatement Ana Ekran Gorunurlugu
-
-- Ana Finans Takvimi paneli `finance_calendar_items` icinden `source_table='dealer_statement'` kayitlarini ayrica okur hale getirildi.
-- `Gelecek Tahsilat Butcesi` KPI karti eklendi.
-- Ilk 8 gelecek tahsilat ve ay kirilimi ana panelde gosterilecek sekilde hazirlandi.
-- `verify:dealer-statement-dashboard` komutu eklendi ve gecti.
-- Canli Supabase insert yapilmadi.
-
-## 2026-06-30
-
-### DealerStatement Gelecek Tahsilat Plani
-
-- `tools/build_dealer_statement_receivables_v72.cjs` eklendi.
-- `finance-calendar:dealer-statement` npm komutu eklendi.
-- `.xls` uzantili HTML DealerStatement raporu okunur hale geldi.
-- `Bayi Ekstre ID` kaynak anahtari olarak kullanildi; tekrar gelen raporlarda mukerrer insert engeli icin SQL preview `not exists` uretir.
-- `DealerStatement (3).xls` kuru calisti: 705 satir, 83 gelecek tahsilat, TL 681.416,43.
-- Cikti `finance_calendar_items` modeline `receivable / in / forecast` olarak hazirlandi.
-- Canli Supabase insert yapilmadi.
-
-### Banka Aday Kontrolu
-
-- Canli ana ekran `a5f3548-final` uzerinden 1920x1080 olculdu; ana kartlar sinir icinde kaldi.
+- `confirmed_counterparty`, `counterparty_confirmed` ve `counterparty_confirmed_at` alanlari banka hareketinde karar…6823 tokens truncated…li ana ekran `a5f3548-final` uzerinden 1920x1080 olculdu; ana kartlar sinir icinde kaldi.
 - Gelir Tablosu Komuta Matrisi ilk yuklemede bekledi, veri yukleme sonrasi render oldu; console hatasi gorulmedi.
 - `npm run bank:approval:candidates` salt-okunur calisti: 25 bekleyen hareket, 18 yuksek guven, 7 inceleme isteyen kayit var.
 - Onerilen ilk dusuk riskli aday: VakifBank 2026-05-13, -34 TL, Banka/POS masrafi, guven %90, pending id `d4164166-5427-4f46-8f66-a84b43dddd0b`.
@@ -773,7 +393,7 @@
 
 ### Sabah Onay Kartlari Tarih ve Karar Gorunumu
 
-- Banka onay kartlarinda tarih `yyyy-aa-gg` kirpilmis gorunumden `gg.aa.yyyy · ss:dd` formatina alindi.
+- Banka onay kartlarinda tarih `yyyy-aa-gg` kirpilmis gorunumden `gg.aa.yyyy Â· ss:dd` formatina alindi.
 - Kart basligi kaynak, banka ve tarih ciplerine ayrildi.
 - BizimHesap kayit plani kart icinde `BizimHesap`, `Cari`, `Kategori`, `Guven` kutulari olarak gosterildi.
 - Kart okunabilirligi icin hover, cerceve, mini plan grid ve tasma kontrolleri iyilestirildi.
@@ -1046,7 +666,7 @@
 ### Banka Onay Aksiyonu
 
 - Banka Canli / Onay Akisi satirlarinda hazirlik kontrolu eklendi.
-- `BizimHesap'a Kaydet` / `KuyruÄŸa Al` aksiyonu yalnizca hazir kayitlarda aktif kalir.
+- `BizimHesap'a Kaydet` / `KuyruÃ„Å¸a Al` aksiyonu yalnizca hazir kayitlarda aktif kalir.
 - Dusuk guvenli, mukerrer adayli, cari belirsiz veya zaten kuyrukta/islenmis kayitlarda buton pasif hale gelir.
 - Her satirda hedef hesap, cari, kayit turu ve BizimHesap kanit metni netlestirildi.
 - Sabah onay kartlari da ayni hazirlik kontrolunu kullanir.
@@ -1116,17 +736,26 @@
 
 ## 2026-07-16 - Gelir Tablosu ve Bilanco Yan Yana v122
 
-## 2026-07-16 - Is Bankasi Hesap Ozeti Koruması v123
+## 2026-07-16 - Is Bankasi Hesap Ozeti KorumasÄ± v123
 
 - Kredi karti hesap ozeti e-postalari, tekil hareket/refarans kaniti olmadan banka hareketi olarak siniflanmaz.
 - `POS`, `kredi karti` veya yil bilgisi tek basina POS banka transferi kaydi olusturamaz.
 - Yanlis 2.026 TL Is Bankasi adayi guvenli onay listesinden cikti; iki kanitli gelen para girisi ayri aday olarak korundu.
 
-- Ana ekrandaki gelir tablosu matrisi bilanço/likidite özetinin soluna alındı.
-- Nakit sütunu kullanıcı diliyle `Ödenen / Tahsilat` olarak adlandırıldı.
-- Dönem başlıkları ve gün içi Tahmini/Tahakkuk/Ödenen-Tahsilat ayrımı korunarak tıklanabilir detay akışına bağlandı.
+- Ana ekrandaki gelir tablosu matrisi bilanÃ§o/likidite Ã¶zetinin soluna alÄ±ndÄ±.
+- Nakit sÃ¼tunu kullanÄ±cÄ± diliyle `Ã–denen / Tahsilat` olarak adlandÄ±rÄ±ldÄ±.
+- DÃ¶nem baÅŸlÄ±klarÄ± ve gÃ¼n iÃ§i Tahmini/Tahakkuk/Ã–denen-Tahsilat ayrÄ±mÄ± korunarak tÄ±klanabilir detay akÄ±ÅŸÄ±na baÄŸlandÄ±.
 # 2026-07-16 - Canonical Pages deployment repair
 
 - Added `.github/workflows/cloudflare-pages-deploy.yml` so pushes to `main` can publish the canonical `aperion-istasyon` Cloudflare Pages project.
 - Documented that GitHub Pages is a legacy backup and must not be presented as the primary AperiON cockpit.
 - Added an explicit secret gate so a missing Cloudflare credential fails safely rather than pretending a deploy exists.
+
+## 2026-07-29 - Hasta Bezi BizimHesap Kaynak Motoru v127
+
+- Satis botuna kanitli ham rapor snapshot'i ve fatura/urun/KDV alanlari eklendi.
+- Stok botuna `stock_raw` yazimi eklendi.
+- Fatura detaylarindan gercek `purchase_raw` ureten importer eklendi.
+- Hasta Bezi snapshot builder'a yerel ham kaynak fallback'i, satis-fatura eslestirmesi ve stok hareket alanlari eklendi.
+- Saatlik workflow'a alis importer'i ve kaynak tamlik denetimi eklendi.
+- Yeni test sales/purchase/stock, fatura no, urun gecmisleri, FIFO KONTROL, Jender XXL ve Ilkbahar Eczanesi sonucunu sayisal olarak raporlar.
