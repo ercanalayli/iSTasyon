@@ -202,6 +202,16 @@ function write(name, payload) {
     if (!purchaseByProduct.has(keyName)) purchaseByProduct.set(keyName, []);
     purchaseByProduct.get(keyName).push(row);
   }
+  const salesByProduct = new Map();
+  const salesByCustomer = new Map();
+  for (const sale of sales) {
+    const keyName = productKey(sale.urun);
+    if (!salesByProduct.has(keyName)) salesByProduct.set(keyName, []);
+    salesByProduct.get(keyName).push(sale);
+    const customerName = norm(sale.musteri);
+    if (!salesByCustomer.has(customerName)) salesByCustomer.set(customerName, []);
+    salesByCustomer.get(customerName).push(sale);
+  }
   const stockMovements = new Map();
   for (const row of stockResult.rows) {
     const keyName = productKey(row.urun);
@@ -211,7 +221,7 @@ function write(name, payload) {
 
   const products = productRows.map(row => {
     const keyName = productKey(row.urun);
-    const productSales = sales.filter(sale => productKey(sale.urun) === keyName);
+    const productSales = salesByProduct.get(keyName) || [];
     const productPurchases = purchaseByProduct.get(keyName) || [];
     const priceHistory = ['ekim', 'ocak', 'subat', 'nisan', 'mayis'].map(month => ({
       donem: month,
@@ -248,7 +258,7 @@ function write(name, payload) {
     if (!customerSeed.has(norm(sale.musteri))) customerSeed.set(norm(sale.musteri), { cari_unvan: sale.musteri });
   }
   const customers = [...customerSeed.values()].map((row, index) => {
-    const customerSales = sales.filter(sale => norm(sale.musteri) === norm(row.cari_unvan));
+    const customerSales = salesByCustomer.get(norm(row.cari_unvan)) || [];
     const knownProfits = customerSales.filter(sale => sale.toplam_kar !== null);
     const totalNet = round(customerSales.reduce((sum, sale) => sum + sale.satis_kdv_haric, 0));
     const totalProfit = knownProfits.length ? round(knownProfits.reduce((sum, sale) => sum + sale.toplam_kar, 0)) : null;
