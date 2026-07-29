@@ -1,1 +1,38 @@
-{"update_no":"1245290726","source":"BizimHesap","firma_id":"alayli","generated_at":null,"last_sync_at":null,"counts":{"sales":0,"purchases":0,"products":0,"customers":0,"stock":0},"acceptance":{"jender_xxl_sales":0,"ilkbahar_sales":0,"jender_xxl_ilkbahar_matches":0},"issues":["Saatlik BizimHesap üretimi bekleniyor."]}
+{
+  "update_no": "1245290726",
+  "source": "BizimHesap",
+  "firma_id": "alayli",
+  "generated_at": "2026-07-29T11:53:27.066Z",
+  "last_sync_at": "2026-07-29T11:51:42.719+00:00",
+  "counts": {
+    "sales": 17484,
+    "purchases": 0,
+    "products": 5680,
+    "customers": 797,
+    "stock": 5680
+  },
+  "table_errors": {
+    "sales_raw": "",
+    "purchase_raw": "Could not find the table 'public.purchase_raw' in the schema cache",
+    "product_raw": "",
+    "customers": "column customers.tip does not exist",
+    "stock_raw": "Could not find the table 'public.stock_raw' in the schema cache"
+  },
+  "acceptance": {
+    "jender_xxl_sales": 60,
+    "ilkbahar_sales": 5,
+    "jender_xxl_ilkbahar_matches": 4
+  },
+  "rules": {
+    "net_kar": "Satış KDV Hariç - FIFO Maliyet - Nakliye",
+    "kar_marji": "Kâr / Satış KDV Hariç",
+    "kar_orani": "Kâr / FIFO Maliyet",
+    "order_close": "Fatura no + sevk tarihi zorunlu",
+    "purchase_invoice": "Alış fatura no boşsa KONTROL"
+  },
+  "issues": [
+    "purchase_raw boş: FIFO ve alış geçmişi kesin hesaplanamaz.",
+    "sales_raw fatura numarası taşımıyor: satış faturası alanları KONTROL.",
+    "Satış-FIFO lot eşleştirmesi eksik: kâr alanı kesinleştirilmedi."
+  ]
+}
