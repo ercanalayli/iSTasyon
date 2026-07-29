@@ -16,6 +16,8 @@ on:
       - "bizimhesap_son_islemler_izle.js"
       - "bizimhesap_masraf_cek.js"
       - "bizimhesap_urun_stok_cek.js"
+      - "tools/import_bizimhesap_invoice_details_to_purchase_raw_v127.cjs"
+      - "tools/verify_hasta_bezi_source_completeness_v127.cjs"
       - "tools/check_bizimhesap_action_secrets.cjs"
       - "tools/stress_check_index_sales_today.cjs"
       - "tools/build_hasta_bezi_bizimhesap_data_v126.cjs"
@@ -77,6 +79,9 @@ jobs:
         run: npm run build:hasta-bezi:bizimhesap
       - name: Verify Hasta Bezi dashboard source contract
         run: npm run verify:hasta-bezi:bizimhesap
+      - name: Report Hasta Bezi source completeness
+        continue-on-error: true
+        run: npm run verify:hasta-bezi:source-completeness
       - name: Commit dashboard source snapshots
         run: |
           git config user.name "github-actions[bot]"
