@@ -759,3 +759,9 @@
 - Hasta Bezi snapshot builder'a yerel ham kaynak fallback'i, satis-fatura eslestirmesi ve stok hareket alanlari eklendi.
 - Saatlik workflow'a alis importer'i ve kaynak tamlik denetimi eklendi.
 - Yeni test sales/purchase/stock, fatura no, urun gecmisleri, FIFO KONTROL, Jender XXL ve Ilkbahar Eczanesi sonucunu sayisal olarak raporlar.
+
+## 2026-07-29 - v127 Actions calisma duzeltmesi
+
+- BizimHesap satis botundaki Unicode fonksiyon adi GitHub Actions uyumu icin ASCII yapildi.
+- Alis fatura importer'inin komut satiri secenekleri ile dosya yollarini ayirmasi saglandi.
+- Kaynak semasi Actions uzerinde basariyla kurulmus olarak dogrulandi.

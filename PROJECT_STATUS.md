@@ -561,3 +561,10 @@ Bu yuzdeler kesin metrik degil; son denetimde calisan testler, eksik kaynaklar v
 - Hasta Bezi veri motoru Supabase kaynagi yaninda botun kanitli yerel ham ciktilarini da okuyabilir; sahte veri veya tahmini fatura numarasi uretmez.
 - Yeni kaynak tamlik testi sales, purchase, stock, satis fatura no, alis/satis gecmisi, FIFO KONTROL, Jender XXL ve Ilkbahar Eczanesi kabul kosullarini ayri raporlar.
 - Yerel checkout'ta kaynak dosyalari bos oldugu icin tamlik testi bilincli olarak basarisizdir. Canli sonuc, secrets bulunan saatlik GitHub calismasi tamamlanmadan basarili sayilmayacak.
+
+### 2026-07-29 - Saatlik akis hata duzeltmesi
+
+- Supabase `purchase_raw` ve `stock_raw` sema adimi GitHub Actions uzerinde basariyla tamamlandi.
+- Satis botunun Actions calisma kopyasini durduran Turkce fonksiyon adi ASCII `firmaSec` olarak sabitlendi.
+- Alis importer'i `--commit` secenegini dosya yolu olarak yorumlamayacak sekilde duzeltildi.
+- Yeni saatlik calisma ve canli kaynak sayimlari dogrulanmadan is tamamlandi sayilmayacak.

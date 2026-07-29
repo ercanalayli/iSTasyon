@@ -155,7 +155,7 @@ async function login(page) {
 }
 
 // â”€â”€ FÄ°RMA SEÃ‡ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-async function firmaSeÃ§(page, firma) {
+async function firmaSec(page, firma) {
   return selectFirma(page, firma, log);
   log(`[FÄ°RMA] ${firma.adi}`);
   await page.goto(CONFIG.firmUrl, { waitUntil: 'networkidle2', timeout: 20000 });
@@ -322,7 +322,7 @@ async function eksikGunleriBul(firmaId) {
 }
 
 // â”€â”€ GEÃ‡MÄ°Å VERÄ° MODU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function tarihlerArasÄ±ndakiGunler(baslangic, bitis) {
+function tarihlerArasindakiGunler(baslangic, bitis) {
   const dates = [];
   const cur = new Date(baslangic);
   const end = new Date(bitis);
@@ -352,12 +352,12 @@ async function main() {
 
     if (GECMIS_MOD) {
       // GeÃ§miÅŸ mod: her firma iÃ§in tÃ¼m gÃ¼nleri Ã§ek
-      const gunler = tarihlerArasÄ±ndakiGunler(GECMIS_BASLANGIC, GECMIS_BITIS);
+      const gunler = tarihlerArasindakiGunler(GECMIS_BASLANGIC, GECMIS_BITIS);
       log(`Toplam ${gunler.length} gÃ¼n Ã— ${FIRMALAR.filter(f=>f.aktif).length} firma Ã§ekilecek`);
 
       for (const firma of AKTIF_FIRMALAR) {
         let firmaTop = 0;
-        await firmaSeÃ§(page, firma);
+        await firmaSec(page, firma);
 
         for (const tarihTR of gunler) {
           const tarihISO = tarihTR.split('.').reverse().join('-');
@@ -385,7 +385,7 @@ async function main() {
             continue;
           }
 
-          await firmaSeÃ§(page, firma);
+          await firmaSec(page, firma);
 
           for (const tarihISO of eksikler) {
             const tarihTR = tarihISO.split('-').reverse().join('.');

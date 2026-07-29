@@ -437,3 +437,10 @@ Yeni yan yana finans gÃ¶rÃ¼nÃ¼mÃ¼ hazÄ±rdÄ±r. SÄ±radaki iÅŸ, `Bu
 3. Satis fatura numarasi eksiklerini ve FIFO `KONTROL` kalan satirlari raporla.
 4. Jender XXL urun kartinda Ilkbahar Eczanesi satisi, alis gecmisi, FIFO kaynagi ve KDV haric kar hesabini dogrula.
 5. Kaynak eksikse basari ilan etme; eksik BizimHesap raporunu veya ekrani adi ve adresiyle belirt.
+
+## Siradaki dogrulama
+
+1. ASCII satis botu ve duzeltilmis alis importer'i ile saatlik workflow'u yeniden calistir.
+2. Uretilen audit dosyasindan sales, purchase, stock ve eksik fatura sayilarini oku.
+3. Purchase sifirsa BizimHesap `Alislar` / `Gelen E-Faturalar` listesinin kuyruktan bagimsiz tam taramasini uygula.
+4. Kabul testi gecmeden FIFO ve kar icin basari raporu verme.
