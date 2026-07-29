@@ -2,10 +2,10 @@
   "update_no": "1245290726",
   "source": "BizimHesap",
   "firma_id": "alayli",
-  "generated_at": "2026-07-29T15:20:53.097Z",
-  "last_sync_at": "2026-07-29T15:19:04.461+00:00",
+  "generated_at": "2026-07-29T17:37:11.455Z",
+  "last_sync_at": "2026-07-29T17:35:13.695+00:00",
   "counts": {
-    "sales": 17513,
+    "sales": 17515,
     "purchases": 0,
     "products": 997,
     "customers": 841,
