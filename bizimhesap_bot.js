@@ -1,8 +1,8 @@
 /**
  * AperiON Veri Motoru v6
- * - Çok firma desteği (ALAYLI, ELİT, ODYOFORM)
- * - Geçmiş veri modu: node bot.js --gecmis 2026-01-01 2026-03-20
- * - Normal mod: her gün dünü + saatlik bugünü çeker
+ * - Ã‡ok firma desteÄŸi (ALAYLI, ELÄ°T, ODYOFORM)
+ * - GeÃ§miÅŸ veri modu: node bot.js --gecmis 2026-01-01 2026-03-20
+ * - Normal mod: her gÃ¼n dÃ¼nÃ¼ + saatlik bugÃ¼nÃ¼ Ã§eker
  */
 
 const puppeteer = require('puppeteer');
@@ -10,15 +10,19 @@ const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const { getBizimHesapConfig, launchOptions, loginBizimHesap, selectFirma } = require('./bizimhesap_common.cjs');
 
-// ── ARGÜMAN PARSE ──────────────────────────────────────────────────────────
+// â”€â”€ ARGÃœMAN PARSE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const args = process.argv.slice(2);
 const GECMIS_MOD = args.includes('--gecmis');
 const GECMIS_BASLANGIC = GECMIS_MOD ? args[args.indexOf('--gecmis')+1] : null;
 const GECMIS_BITIS     = GECMIS_MOD ? args[args.indexOf('--gecmis')+2] : null;
 const FIRMA_ARG = args.includes('--firma') ? args[args.indexOf('--firma') + 1] : null;
 const DRY_RUN = args.includes('--dry-run');
+const RAW_OUT = args.includes('--raw-out')
+  ? args[args.indexOf('--raw-out') + 1]
+  : 'data/bizimhesap_sales_report_raw.json';
+const capturedSales = [];
 
-// ── TARİH HESAPLA ──────────────────────────────────────────────────────────
+// â”€â”€ TARÄ°H HESAPLA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function fmtTR(d) { return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`; }
 function fmtISO(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 
@@ -26,27 +30,27 @@ const simdi  = new Date();
 const bugunD = new Date(simdi.getFullYear(), simdi.getMonth(), simdi.getDate());
 const dunD   = new Date(bugunD); dunD.setDate(dunD.getDate()-1);
 
-// Her zaman dünü çek (sabah günlük mod)
+// Her zaman dÃ¼nÃ¼ Ã§ek (sabah gÃ¼nlÃ¼k mod)
 const TARIH_TR  = GECMIS_MOD ? null : fmtTR(dunD);
 const TARIH_ISO = GECMIS_MOD ? null : fmtISO(dunD);
 
-// ── FİRMA TANIMLARI ────────────────────────────────────────────────────────
+// â”€â”€ FÄ°RMA TANIMLARI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const FIRMALAR = [
   {
     id:      'alayli',
-    adi:     'ALAYLI MEDİKAL',
+    adi:     'ALAYLI MEDÄ°KAL',
     sektor:  'ALAYLI',
     aktif:   true,
   },
   {
     id:      'elit',
-    adi:     'ELİT ET ÜRÜNLERİ',
-    sektor:  'ELİT',
+    adi:     'ELÄ°T ET ÃœRÃœNLERÄ°',
+    sektor:  'ELÄ°T',
     aktif:   true,
   },
   {
     id:      'odyoform',
-    adi:     'ODYOFORM İŞİTME CİHAZLARI',
+    adi:     'ODYOFORM Ä°ÅÄ°TME CÄ°HAZLARI',
     sektor:  'ODYOFORM',
     aktif:   true,
   },
@@ -55,7 +59,7 @@ const AKTIF_FIRMALAR = FIRMA_ARG
   ? FIRMALAR.filter(f => f.aktif && f.id === FIRMA_ARG)
   : FIRMALAR.filter(f => f.aktif);
 
-// ── AYARLAR ────────────────────────────────────────────────────────────────
+// â”€â”€ AYARLAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const CONFIG = {
   ...getBizimHesapConfig(),
   reportUrl: 'https://bizimhesap.com/web/ngn/rep/NgnNewSalesReport',
@@ -67,7 +71,7 @@ const SUPABASE = {
   table: 'sales_raw',
 };
 
-// ── WHATSAPP KİŞİLER ───────────────────────────────────────────────────────
+// â”€â”€ WHATSAPP KÄ°ÅÄ°LER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const WP = [
   { isim:'Patron',    phone:'', apikey:'', alarm:50000, icerik:['ciro','adet','top'] },
   { isim:'Muhasebe',  phone:'', apikey:'', alarm:0,     icerik:['ciro','adet'] },
@@ -75,7 +79,7 @@ const WP = [
 
 const db = createClient(SUPABASE.url, SUPABASE.key, { auth: { persistSession: false } });
 
-// ── LOG ────────────────────────────────────────────────────────────────────
+// â”€â”€ LOG â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function log(msg) {
   const t = new Date().toLocaleString('tr-TR');
   const line = `[${t}] ${msg}`;
@@ -87,7 +91,7 @@ const fmt = n => n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':n.t
 
 function trNumber(value) {
   if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
-  const raw = String(value || '').replace(/TL|TRY|₺/gi, '').replace(/\s/g, '').replace(/[^0-9,.-]/g, '');
+  const raw = String(value || '').replace(/TL|TRY|â‚º/gi, '').replace(/\s/g, '').replace(/[^0-9,.-]/g, '');
   if (!raw) return 0;
   const lastComma = raw.lastIndexOf(',');
   const lastDot = raw.lastIndexOf('.');
@@ -104,7 +108,7 @@ function trNumber(value) {
   return Number.isFinite(n) ? n : 0;
 }
 
-// ── BROWSER BAŞLAT ─────────────────────────────────────────────────────────
+// â”€â”€ BROWSER BAÅLAT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function startBrowser() {
   const browser = await puppeteer.launch(launchOptions({ headless: true, width: 1366, height: 768 }));
   const page = await browser.newPage();
@@ -113,7 +117,7 @@ async function startBrowser() {
   return { browser, page };
 }
 
-// ── LOGIN ──────────────────────────────────────────────────────────────────
+// â”€â”€ LOGIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function login(page) {
   return loginBizimHesap(page, log);
   log('[LOGIN] ' + CONFIG.loginUrl);
@@ -124,7 +128,7 @@ async function login(page) {
     await page.evaluate(() => {
       const norm = s => String(s || '').toLocaleLowerCase('tr-TR');
       const el = [...document.querySelectorAll('a,button')]
-        .find(x => norm(x.innerText || x.value || x.title).includes('giriş yap') || norm(x.innerText || x.value || x.title).includes('giris yap'));
+        .find(x => norm(x.innerText || x.value || x.title).includes('giriÅŸ yap') || norm(x.innerText || x.value || x.title).includes('giris yap'));
       if (el) el.click();
     });
     await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(()=>{});
@@ -142,18 +146,18 @@ async function login(page) {
   const ok = await page.evaluate(() => {
     const norm = s => String(s || '').toLocaleLowerCase('tr-TR');
     const b = document.querySelector('#btnLogin')
-      || [...document.querySelectorAll('button')].find(b => norm(b.innerText || b.value).includes('giriş yap'));
+      || [...document.querySelectorAll('button')].find(b => norm(b.innerText || b.value).includes('giriÅŸ yap'));
     if(b){b.click();return true;}return false;
   });
   if (!ok) throw new Error('BizimHesap giris butonu bulunamadi');
   await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 20000 }).catch(()=>{});
-  log('  ✓ → ' + page.url());
+  log('  âœ“ â†’ ' + page.url());
 }
 
-// ── FİRMA SEÇ ──────────────────────────────────────────────────────────────
-async function firmaSeç(page, firma) {
+// â”€â”€ FÄ°RMA SEÃ‡ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+async function firmaSeÃ§(page, firma) {
   return selectFirma(page, firma, log);
-  log(`[FİRMA] ${firma.adi}`);
+  log(`[FÄ°RMA] ${firma.adi}`);
   await page.goto(CONFIG.firmUrl, { waitUntil: 'networkidle2', timeout: 20000 });
   await page.waitForSelector('a,div', { timeout: 10000 });
 
@@ -166,12 +170,12 @@ async function firmaSeç(page, firma) {
     return false;
   }, firma.sektor);
 
-  if (!ok) throw new Error('Firma bulunamadı: ' + firma.adi);
+  if (!ok) throw new Error('Firma bulunamadÄ±: ' + firma.adi);
   await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(()=>{});
   await new Promise(r => setTimeout(r, 1000));
 }
 
-// ── RAPOR ÇEK ──────────────────────────────────────────────────────────────
+// â”€â”€ RAPOR Ã‡EK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function raporCek(page, tarihTR) {
   log(`  [RAPOR] ${tarihTR}`);
   await page.goto(CONFIG.reportUrl, { waitUntil: 'networkidle2', timeout: 30000 });
@@ -185,14 +189,14 @@ async function raporCek(page, tarihTR) {
   }
 
   await page.evaluate(() => {
-    const btn = [...document.querySelectorAll('button')].find(b=>b.innerText?.includes('Hazırla'));
+    const btn = [...document.querySelectorAll('button')].find(b=>b.innerText?.includes('HazÄ±rla'));
     if (btn) btn.click();
   });
 
   try {
     await page.waitForSelector('table tbody tr', { timeout: 30000 });
   } catch {
-    log('  ⚠ Tablo yok');
+    log('  âš  Tablo yok');
     return [];
   }
   await new Promise(r => setTimeout(r, 1500));
@@ -203,8 +207,8 @@ async function raporCek(page, tarihTR) {
     if (!tbl) return rows;
     const hs = [...tbl.querySelectorAll('thead th')].map(h =>
       h.innerText.trim().toLowerCase().replace(/\s+/g,'_')
-        .replace(/ı/g,'i').replace(/ş/g,'s').replace(/ç/g,'c')
-        .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ö/g,'o'));
+        .replace(/Ä±/g,'i').replace(/ÅŸ/g,'s').replace(/Ã§/g,'c')
+        .replace(/ÄŸ/g,'g').replace(/Ã¼/g,'u').replace(/Ã¶/g,'o'));
     for (const tr of tbl.querySelectorAll('tbody tr')) {
       const cells = [...tr.querySelectorAll('td')].map(td=>td.innerText.trim());
       if (!cells.length||cells.every(c=>!c)) continue;
@@ -215,19 +219,19 @@ async function raporCek(page, tarihTR) {
   });
 }
 
-// ── SUPABASE KAYDET ────────────────────────────────────────────────────────
+// â”€â”€ SUPABASE KAYDET â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function kaydet(rows, firma, tarihISO) {
-  if (!rows.length) { log('  ⚠ Veri yok'); return 0; }
+  if (!rows.length) { log('  âš  Veri yok'); return 0; }
   if (DRY_RUN) {
     log(`  [DRY-RUN] ${rows.length} satir yazilmayacak (${firma.id} ${tarihISO})`);
     return rows.length;
   }
-  log(`  [DB] ${rows.length} satır yazılıyor...`);
+  log(`  [DB] ${rows.length} satÄ±r yazÄ±lÄ±yor...`);
 
   // Gun/firma bazinda raporu yenile
   await db.from(SUPABASE.table).delete().eq('firma_id', firma.id).eq('tarih', tarihISO);
 
-  const records = rows.map(r => ({
+  const enrichedRecords = rows.map((r, index) => ({
     urun:     (r.satir_aciklamasi||r.urun||r.aciklama||(r._cells||[]).slice(-1)[0]||'EMPTY').substring(0,500),
     adet:     trNumber(r.adet||r.miktar||'1'),
     ciro:     trNumber(r.toplam||r.tutar||r.net||r.ciro||'0'),
@@ -239,23 +243,33 @@ async function kaydet(rows, firma, tarihISO) {
     firma_adi:firma.adi,
     yil:      parseInt(tarihISO.substring(0,4)),
     ay:       parseInt(tarihISO.substring(5,7)),
+    fatura_no: r.fatura_no || r.fatura || r.belge_no || r.evrak_no || r.fis_no || '',
+    urun_kod: r.urun_kodu || r.urun_kod || r.stok_kodu || r.kod || '',
+    satis_kdv_haric: trNumber(r.kdv_haric || r.net_tutar || r.matrah || r.net || r.toplam || r.tutar || r.ciro || '0'),
+    satis_kdv_dahil: trNumber(r.kdv_dahil || r.genel_toplam || r.toplam || r.tutar || r.ciro || '0'),
+    kaynak_satir: index + 1,
+    raw: r,
   }));
+  capturedSales.push(...enrichedRecords);
+  const records = enrichedRecords.map(({
+    fatura_no, urun_kod, satis_kdv_haric, satis_kdv_dahil, kaynak_satir, raw, ...record
+  }) => record);
 
   const { data, error } = await db.from(SUPABASE.table).insert(records).select();
 
-  if (error) { log('  ✗ DB hatası: ' + error.message); return 0; }
-  log(`  ✓ ${data.length} kayıt`);
+  if (error) { log('  âœ— DB hatasÄ±: ' + error.message); return 0; }
+  log(`  âœ“ ${data.length} kayÄ±t`);
   return data.length;
 }
 
-// ── WHATSAPP ───────────────────────────────────────────────────────────────
+// â”€â”€ WHATSAPP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function wpGonder(phone, apikey, msg) {
   const https = require('https');
   return new Promise(resolve => {
     if (!phone||!apikey){resolve(false);return;}
     const url = `https://api.callmebot.com/whatsapp.php?phone=${phone}&text=${encodeURIComponent(msg)}&apikey=${apikey}`;
-    https.get(url, res => { log(`  📱 WP → ${phone} (${res.statusCode})`); resolve(true); })
-      .on('error', e => { log(`  ✗ WP: ${e.message}`); resolve(false); });
+    https.get(url, res => { log(`  ğŸ“± WP â†’ ${phone} (${res.statusCode})`); resolve(true); })
+      .on('error', e => { log(`  âœ— WP: ${e.message}`); resolve(false); });
   });
 }
 
@@ -268,19 +282,19 @@ async function wpSabahOzeti(tumRows) {
 
   for (const k of WP) {
     if (!k.phone||!k.apikey) continue;
-    let lines = [`📊 *AperiON Sabah Raporu*\n${tarih}`,''];
-    if(k.icerik.includes('ciro'))  lines.push(`💰 Toplam Ciro: ₺${fmt(tc)}`);
-    if(k.icerik.includes('adet'))  lines.push(`📦 Adet: ${Math.round(ta).toLocaleString('tr')}`);
-    if(k.icerik.includes('top')&&mx) lines.push(`🏆 Top: ${(mx.urun||'').substring(0,30)}`);
-    lines.push('','_AperiON · iSTasyon ErpaltH_');
+    let lines = [`ğŸ“Š *AperiON Sabah Raporu*\n${tarih}`,''];
+    if(k.icerik.includes('ciro'))  lines.push(`ğŸ’° Toplam Ciro: â‚º${fmt(tc)}`);
+    if(k.icerik.includes('adet'))  lines.push(`ğŸ“¦ Adet: ${Math.round(ta).toLocaleString('tr')}`);
+    if(k.icerik.includes('top')&&mx) lines.push(`ğŸ† Top: ${(mx.urun||'').substring(0,30)}`);
+    lines.push('','_AperiON Â· iSTasyon ErpaltH_');
     await wpGonder(k.phone, k.apikey, lines.join('\n'));
     await new Promise(r=>setTimeout(r,2000));
   }
 }
 
-// ── EKSİK GÜN BULUCU ──────────────────────────────────────────────────────
+// â”€â”€ EKSÄ°K GÃœN BULUCU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function eksikGunleriBul(firmaId) {
-  // Son 7 günü hesapla (bugün hariç, dün dahil)
+  // Son 7 gÃ¼nÃ¼ hesapla (bugÃ¼n hariÃ§, dÃ¼n dahil)
   const gunler = [];
   for (let i = 1; i <= 7; i++) {
     const d = new Date(bugunD);
@@ -288,7 +302,7 @@ async function eksikGunleriBul(firmaId) {
     gunler.push(fmtISO(d));
   }
 
-  // DB'de hangi günler var?
+  // DB'de hangi gÃ¼nler var?
   const { data } = await db
     .from(SUPABASE.table)
     .select('tarih')
@@ -299,16 +313,16 @@ async function eksikGunleriBul(firmaId) {
   const eksikler = gunler.filter(g => !mevcutlar.has(g));
 
   if (eksikler.length === 0) {
-    log(`  [${firmaId}] Son 7 gün tam ✓`);
+    log(`  [${firmaId}] Son 7 gÃ¼n tam âœ“`);
   } else {
-    log(`  [${firmaId}] Eksik ${eksikler.length} gün: ${eksikler.join(', ')}`);
+    log(`  [${firmaId}] Eksik ${eksikler.length} gÃ¼n: ${eksikler.join(', ')}`);
   }
 
   return eksikler; // ISO format
 }
 
-// ── GEÇMİŞ VERİ MODU ──────────────────────────────────────────────────────
-function tarihlerArasındakiGunler(baslangic, bitis) {
+// â”€â”€ GEÃ‡MÄ°Å VERÄ° MODU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function tarihlerArasÄ±ndakiGunler(baslangic, bitis) {
   const dates = [];
   const cur = new Date(baslangic);
   const end = new Date(bitis);
@@ -319,16 +333,16 @@ function tarihlerArasındakiGunler(baslangic, bitis) {
   return dates;
 }
 
-// ── MAIN ───────────────────────────────────────────────────────────────────
+// â”€â”€ MAIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function main() {
-  log('══════════════════════════════════════════════════');
-  log('  AperiON Veri Motoru v6 — iSTasyon ErpaltH      ');
+  log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
+  log('  AperiON Veri Motoru v6 â€” iSTasyon ErpaltH      ');
   if (GECMIS_MOD) {
-    log(`  MOD: GEÇMİŞ VERİ — ${GECMIS_BASLANGIC} → ${GECMIS_BITIS}`);
+    log(`  MOD: GEÃ‡MÄ°Å VERÄ° â€” ${GECMIS_BASLANGIC} â†’ ${GECMIS_BITIS}`);
   } else {
-    log(`  MOD: AKILLI — Son 7 gün eksik kontrol`);
+    log(`  MOD: AKILLI â€” Son 7 gÃ¼n eksik kontrol`);
   }
-  log('══════════════════════════════════════════════════');
+  log('â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
 
   const { browser, page } = await startBrowser();
   const tumRows = [];
@@ -337,13 +351,13 @@ async function main() {
     await login(page);
 
     if (GECMIS_MOD) {
-      // Geçmiş mod: her firma için tüm günleri çek
-      const gunler = tarihlerArasındakiGunler(GECMIS_BASLANGIC, GECMIS_BITIS);
-      log(`Toplam ${gunler.length} gün × ${FIRMALAR.filter(f=>f.aktif).length} firma çekilecek`);
+      // GeÃ§miÅŸ mod: her firma iÃ§in tÃ¼m gÃ¼nleri Ã§ek
+      const gunler = tarihlerArasÄ±ndakiGunler(GECMIS_BASLANGIC, GECMIS_BITIS);
+      log(`Toplam ${gunler.length} gÃ¼n Ã— ${FIRMALAR.filter(f=>f.aktif).length} firma Ã§ekilecek`);
 
       for (const firma of AKTIF_FIRMALAR) {
         let firmaTop = 0;
-        await firmaSeç(page, firma);
+        await firmaSeÃ§(page, firma);
 
         for (const tarihTR of gunler) {
           const tarihISO = tarihTR.split('.').reverse().join('-');
@@ -351,27 +365,27 @@ async function main() {
             const rows = await raporCek(page, tarihTR);
             firmaTop += await kaydet(rows, firma, tarihISO);
           } catch (e) {
-            log(`  ✗ ${firma.id} ${tarihTR}: ${e.message}`);
+            log(`  âœ— ${firma.id} ${tarihTR}: ${e.message}`);
           }
-          await new Promise(r => setTimeout(r, 500)); // BizimHesap'a yük verme
+          await new Promise(r => setTimeout(r, 500)); // BizimHesap'a yÃ¼k verme
         }
-        log(`  ✅ ${firma.adi}: ${firmaTop} kayıt`);
+        log(`  âœ… ${firma.adi}: ${firmaTop} kayÄ±t`);
       }
 
     } else {
-      // Akıllı mod: son 7 günde eksik günleri bul ve çek
-      log('  Eksik günler kontrol ediliyor...');
+      // AkÄ±llÄ± mod: son 7 gÃ¼nde eksik gÃ¼nleri bul ve Ã§ek
+      log('  Eksik gÃ¼nler kontrol ediliyor...');
 
       for (const firma of AKTIF_FIRMALAR) {
         try {
           const eksikler = await eksikGunleriBul(firma.id);
 
           if (eksikler.length === 0) {
-            log(`  ✓ ${firma.adi}: Veriler tam, atlandı`);
+            log(`  âœ“ ${firma.adi}: Veriler tam, atlandÄ±`);
             continue;
           }
 
-          await firmaSeç(page, firma);
+          await firmaSeÃ§(page, firma);
 
           for (const tarihISO of eksikler) {
             const tarihTR = tarihISO.split('-').reverse().join('.');
@@ -379,15 +393,15 @@ async function main() {
               const rows = await raporCek(page, tarihTR);
               const n = await kaydet(rows, firma, tarihISO);
               tumRows.push(...rows.map(r=>({...r,ciro:trNumber(r.toplam||r.tutar||r.net||r.ciro||'0')})));
-              log(`  ✅ ${firma.adi} ${tarihTR}: ${n} kayıt`);
+              log(`  âœ… ${firma.adi} ${tarihTR}: ${n} kayÄ±t`);
             } catch (e) {
-              log(`  ✗ ${firma.adi} ${tarihTR}: ${e.message}`);
+              log(`  âœ— ${firma.adi} ${tarihTR}: ${e.message}`);
             }
             await new Promise(r => setTimeout(r, 800));
           }
 
         } catch (e) {
-          log(`  ✗ ${firma.adi}: ${e.message}`);
+          log(`  âœ— ${firma.adi}: ${e.message}`);
           await page.screenshot({ path: `debug_${firma.id}.png`, fullPage: true }).catch(()=>{});
         }
       }
@@ -395,10 +409,18 @@ async function main() {
       await wpSabahOzeti(tumRows);
     }
 
-    log('✅ TAMAMLANDI');
+    fs.mkdirSync(require('path').dirname(RAW_OUT), { recursive: true });
+    fs.writeFileSync(RAW_OUT, JSON.stringify({
+      created_at: new Date().toISOString(),
+      source: 'bizimhesap_satis_raporu',
+      firma_id: FIRMA_ARG || 'coklu',
+      rows: capturedSales,
+    }, null, 2), 'utf8');
+    log(`  Ham satis raporu: ${capturedSales.length} satir -> ${RAW_OUT}`);
+    log('âœ… TAMAMLANDI');
 
   } catch (e) {
-    log('✗ KRİTİK HATA: ' + e.message);
+    log('âœ— KRÄ°TÄ°K HATA: ' + e.message);
     await page.screenshot({ path: 'debug_error.png', fullPage: true }).catch(()=>{});
     process.exit(1);
   } finally {
