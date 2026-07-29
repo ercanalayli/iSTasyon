@@ -96,7 +96,7 @@ async function login(page) {
     await page.evaluate(() => {
       const norm = s => String(s || '').toLocaleLowerCase('tr-TR');
       const el = [...document.querySelectorAll('a,button')]
-        .find(x => norm(x.innerText || x.value || x.title).includes('giriş yap') || norm(x.innerText || x.value || x.title).includes('giris yap'));
+        .find(x => norm(x.innerText || x.value || x.title).includes('giriÅŸ yap') || norm(x.innerText || x.value || x.title).includes('giris yap'));
       if (el) el.click();
     });
     await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
@@ -111,7 +111,7 @@ async function login(page) {
   const clicked = await page.evaluate(() => {
     const norm = s => String(s || '').toLocaleLowerCase('tr-TR');
     const b = document.querySelector('#btnLogin')
-      || [...document.querySelectorAll('button')].find(x => norm(x.innerText || x.value).includes('giriş yap'));
+      || [...document.querySelectorAll('button')].find(x => norm(x.innerText || x.value).includes('giriÅŸ yap'));
     if (b) { b.click(); return true; }
     return false;
   });
@@ -255,6 +255,28 @@ async function kaydet(rows) {
     .upsert(records, { onConflict: 'firma_id,satir_hash' })
     .select('id');
   if (error) throw new Error(`Supabase ${SUPABASE.table}: ${error.message}`);
+  const snapshotDate = new Date().toISOString().slice(0, 10);
+  const stockRecords = uniqueRows.map(r => ({
+    firma_id: r.firma_id,
+    tarih: snapshotDate,
+    urun_kod: r.urun_kod,
+    barkod: r.barkod,
+    urun: r.urun,
+    kategori: r.kategori,
+    depo: r.depo,
+    hareket_tipi: 'anlik_stok',
+    miktar: r.miktar,
+    birim: r.birim,
+    kaynak: 'bizimhesap_stok_raporu',
+    hash: rowHash(r),
+    raw: r.raw,
+    updated_at: new Date().toISOString(),
+  }));
+  const stockWrite = await db.from('stock_raw')
+    .upsert(stockRecords, { onConflict: 'firma_id,hash' });
+  if (stockWrite.error) {
+    throw new Error(`Supabase stock_raw: ${stockWrite.error.message}`);
+  }
   return data?.length || records.length;
 }
 
