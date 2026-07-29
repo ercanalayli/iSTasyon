@@ -2,13 +2,13 @@
   "update_no": "1245290726",
   "source": "BizimHesap",
   "firma_id": "alayli",
-  "generated_at": "2026-07-29T19:42:58.040Z",
-  "last_sync_at": "2026-07-29T19:41:05.381+00:00",
+  "generated_at": "2026-07-29T21:13:28.053Z",
+  "last_sync_at": "2026-07-29T21:11:41.401+00:00",
   "counts": {
-    "sales": 17471,
+    "sales": 17516,
     "purchases": 0,
     "products": 997,
-    "customers": 799,
+    "customers": 835,
     "stock": 997
   },
   "table_errors": {
@@ -19,7 +19,7 @@
     "stock_raw": ""
   },
   "acceptance": {
-    "jender_xxl_sales": 60,
+    "jender_xxl_sales": 61,
     "ilkbahar_sales": 0,
     "jender_xxl_ilkbahar_matches": 0
   },
