@@ -63,6 +63,15 @@ function write(name, payload) {
   fs.renameSync(temp, file);
 }
 
+function readRows(file, fallback = []) {
+  try {
+    const payload = JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
+    return Array.isArray(payload) ? payload : payload.rows || payload.kayitlar || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
   const generatedAt = new Date().toISOString();
@@ -73,6 +82,31 @@ function write(name, payload) {
     fetchAll('customers', 'id,cari_kod,cari_unvan,tip,telefon,email,adres,bakiye,bakiye_tipi,risk_etiketi,kaynak,raw,updated_at'),
     fetchAll('stock_raw', 'id,tarih,urun_kod,barkod,urun,kategori,depo,hareket_tipi,miktar,birim,kaynak,raw,created_at'),
   ]);
+
+  const localSalesRows = readRows(path.join(ROOT, 'data', 'bizimhesap_sales_report_raw.json'));
+  const localPurchaseRows = readRows(path.join(ROOT, 'data', 'bizimhesap_purchase_raw.json'));
+  const localStockRows = readRows(path.join(ROOT, 'urun_stok_alayli.json'));
+  if (!purchasesResult.rows.length && localPurchaseRows.length) purchasesResult.rows = localPurchaseRows;
+  if (!stockResult.rows.length && localStockRows.length) {
+    stockResult.rows = localStockRows.map(row => ({
+      ...(row.raw || {}),
+      ...row,
+      tarih: generatedAt.slice(0, 10),
+      hareket_tipi: 'anlik_stok',
+      kaynak: row.kaynak || 'bizimhesap_stok_raporu',
+    }));
+  }
+
+  const rawSaleBuckets = new Map();
+  for (const row of localSalesRows) {
+    const keyName = id(row.tarih, row.urun, row.unvan, round(row.ciro));
+    if (!rawSaleBuckets.has(keyName)) rawSaleBuckets.set(keyName, []);
+    rawSaleBuckets.get(keyName).push(row);
+  }
+  const takeRawSale = row => {
+    const keyName = id(row.tarih, row.urun, row.unvan, round(row.ciro));
+    return (rawSaleBuckets.get(keyName) || []).shift() || {};
+  };
 
   const productRowsByKey = new Map();
   for (const row of productsResult.rows) {
@@ -85,6 +119,7 @@ function write(name, payload) {
   const productRows = [...productRowsByKey.values()];
   const productByName = new Map(productRows.map(row => [norm(row.urun), row]));
   let sales = salesResult.rows.map(row => {
+    const reportRow = takeRawSale(row);
     const product = productByName.get(norm(row.urun)) || {};
     const qty = n(row.adet);
     const net = n(row.ciro);
@@ -95,13 +130,14 @@ function write(name, payload) {
       source: 'BizimHesap',
       tarih: row.tarih || '',
       musteri: row.unvan || 'KONTROL',
-      fatura_no: 'KONTROL',
+      fatura_no: reportRow.fatura_no || 'KONTROL',
+      urun_kod: reportRow.urun_kod || product.urun_kod || '',
       urun: row.urun || 'KONTROL',
       kategori: row.kategori || product.kategori || 'KONTROL',
       adet: qty,
       paket_koli_balya: s(rawValue(row.raw, ['paket_koli_balya', 'paket', 'koli', 'balya'])) || 'KONTROL',
-      satis_kdv_haric: round(net),
-      satis_kdv_dahil: round(net * (1 + kdvRate / 100)),
+      satis_kdv_haric: round(reportRow.satis_kdv_haric || net),
+      satis_kdv_dahil: round(reportRow.satis_kdv_dahil || net * (1 + kdvRate / 100)),
       satis_birim_fiyat: qty ? round(net / qty) : 0,
       fifo_birim_maliyet: null,
       fifo_toplam_maliyet: null,
@@ -271,9 +307,9 @@ function write(name, payload) {
     const totalNet = round(customerSales.reduce((sum, sale) => sum + sale.satis_kdv_haric, 0));
     const totalProfit = knownProfits.length ? round(knownProfits.reduce((sum, sale) => sum + sale.toplam_kar, 0)) : null;
     const warnings = [];
-    if (customerSales.some(sale => sale.fatura_no === 'KONTROL')) warnings.push('Eksik fatura numarası');
-    if (customerSales.some(sale => sale.fifo_status === 'KONTROL')) warnings.push('FIFO maliyet kanıtı eksik');
-    if (customerSales.some(sale => sale.toplam_kar !== null && sale.toplam_kar < 0)) warnings.push('Zarar eden satış');
+    if (customerSales.some(sale => sale.fatura_no === 'KONTROL')) warnings.push('Eksik fatura numarasÄ±');
+    if (customerSales.some(sale => sale.fifo_status === 'KONTROL')) warnings.push('FIFO maliyet kanÄ±tÄ± eksik');
+    if (customerSales.some(sale => sale.toplam_kar !== null && sale.toplam_kar < 0)) warnings.push('Zarar eden satÄ±ÅŸ');
     return {
       id: row.id ? `customer-${row.id}` : `customer-derived-${index + 1}`,
       source: row.kaynak || 'BizimHesap',
@@ -302,6 +338,7 @@ function write(name, payload) {
     };
   }).sort((a, b) => a.cari_unvan.localeCompare(b.cari_unvan, 'tr'));
 
+  const latest = values => values.filter(Boolean).sort().at(-1) || null;
   const stock = products.map(product => ({
     product_id: product.id,
     source: 'BizimHesap',
@@ -315,17 +352,22 @@ function write(name, payload) {
     alis_referans_fiyati: product.alis_referans_fiyati,
     stok_degeri_referans: round(product.stok * product.alis_referans_fiyati),
     updated_at: product.updated_at,
+    giris: round((stockMovements.get(productKey(product.urun)) || [])
+      .filter(row => /GIRIS/i.test(row.hareket_tipi || '')).reduce((sum, row) => sum + n(row.miktar), 0)),
+    cikis: round((stockMovements.get(productKey(product.urun)) || [])
+      .filter(row => /CIKIS/i.test(row.hareket_tipi || '')).reduce((sum, row) => sum + n(row.miktar), 0)),
+    hareket_tarihi: latest((stockMovements.get(productKey(product.urun)) || []).map(row => row.tarih || row.created_at)),
+    hareket_tipi: (stockMovements.get(productKey(product.urun)) || []).at(-1)?.hareket_tipi || 'anlik_stok',
   }));
 
-  const latest = values => values.filter(Boolean).sort().at(-1) || null;
   const issues = [];
-  if (!purchases.length) issues.push('purchase_raw boş: FIFO ve alış geçmişi kesin hesaplanamaz.');
-  if (sales.some(row => row.fatura_no === 'KONTROL')) issues.push('sales_raw fatura numarası taşımıyor: satış faturası alanları KONTROL.');
-  if (sales.some(row => row.fifo_status === 'KONTROL')) issues.push('Satış-FIFO lot eşleştirmesi eksik: kâr alanı kesinleştirilmedi.');
+  if (!purchases.length) issues.push('purchase_raw boÅŸ: FIFO ve alÄ±ÅŸ geÃ§miÅŸi kesin hesaplanamaz.');
+  if (sales.some(row => row.fatura_no === 'KONTROL')) issues.push('sales_raw fatura numarasÄ± taÅŸÄ±mÄ±yor: satÄ±ÅŸ faturasÄ± alanlarÄ± KONTROL.');
+  if (sales.some(row => row.fifo_status === 'KONTROL')) issues.push('SatÄ±ÅŸ-FIFO lot eÅŸleÅŸtirmesi eksik: kÃ¢r alanÄ± kesinleÅŸtirilmedi.');
   const jender = sales.filter(row => /JENDER.*XXL|XXL.*JENDER/i.test(row.urun));
-  const ilkbahar = sales.filter(row => /İLKBAHAR|ILKBAHAR/i.test(row.musteri));
-  const match = sales.filter(row => /JENDER.*XXL|XXL.*JENDER/i.test(row.urun) && /İLKBAHAR|ILKBAHAR/i.test(row.musteri));
-  if (!match.length) issues.push('Kabul kontrolü bekliyor: Jender XXL / İlkbahar Eczanesi satışı BizimHesap kaynağında bulunamadı.');
+  const ilkbahar = sales.filter(row => /Ä°LKBAHAR|ILKBAHAR/i.test(row.musteri));
+  const match = sales.filter(row => /JENDER.*XXL|XXL.*JENDER/i.test(row.urun) && /Ä°LKBAHAR|ILKBAHAR/i.test(row.musteri));
+  if (!match.length) issues.push('Kabul kontrolÃ¼ bekliyor: Jender XXL / Ä°lkbahar Eczanesi satÄ±ÅŸÄ± BizimHesap kaynaÄŸÄ±nda bulunamadÄ±.');
 
   const envelope = rows => ({ update_no: UPDATE_NO, source: 'BizimHesap', firma_id: FIRMA_ID, generated_at: generatedAt, rows });
   write('bizimhesap_sales.json', envelope(sales));
@@ -363,15 +405,15 @@ function write(name, payload) {
       jender_xxl_ilkbahar_matches: match.length,
     },
     rules: {
-      net_kar: 'Satış KDV Hariç - FIFO Maliyet - Nakliye',
-      kar_marji: 'Kâr / Satış KDV Hariç',
-      kar_orani: 'Kâr / FIFO Maliyet',
+      net_kar: 'SatÄ±ÅŸ KDV HariÃ§ - FIFO Maliyet - Nakliye',
+      kar_marji: 'KÃ¢r / SatÄ±ÅŸ KDV HariÃ§',
+      kar_orani: 'KÃ¢r / FIFO Maliyet',
       order_close: 'Fatura no + sevk tarihi zorunlu',
-      purchase_invoice: 'Alış fatura no boşsa KONTROL',
+      purchase_invoice: 'AlÄ±ÅŸ fatura no boÅŸsa KONTROL',
     },
     issues,
   });
-  console.log(`Hasta bezi BizimHesap veri motoru: ${sales.length} satış, ${purchases.length} alış, ${products.length} ürün, ${customers.length} cari, ${stock.length} stok.`);
+  console.log(`Hasta bezi BizimHesap veri motoru: ${sales.length} satÄ±ÅŸ, ${purchases.length} alÄ±ÅŸ, ${products.length} Ã¼rÃ¼n, ${customers.length} cari, ${stock.length} stok.`);
 })().catch(error => {
   console.error(error.stack || error.message);
   process.exit(1);
