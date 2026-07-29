@@ -18,6 +18,7 @@ on:
       - "bizimhesap_urun_stok_cek.js"
       - "tools/import_bizimhesap_invoice_details_to_purchase_raw_v127.cjs"
       - "tools/verify_hasta_bezi_source_completeness_v127.cjs"
+      - "supabase_hasta_bezi_source_raw_v127.sql"
       - "tools/check_bizimhesap_action_secrets.cjs"
       - "tools/stress_check_index_sales_today.cjs"
       - "tools/build_hasta_bezi_bizimhesap_data_v126.cjs"
@@ -50,6 +51,12 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci --no-audit --no-fund
+      - name: Ensure Hasta Bezi source tables
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          test -n "$SUPABASE_DB_URL"
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase_hasta_bezi_source_raw_v127.sql
       - name: Check BizimHesap secrets
         env:
           BIZIMHESAP_EMAIL: ${{ secrets.BIZIMHESAP_EMAIL }}
