@@ -2,37 +2,38 @@
   "update_no": "1245290726",
   "source": "BizimHesap",
   "firma_id": "alayli",
-  "generated_at": "2026-07-29T13:12:00.375Z",
-  "last_sync_at": "2026-07-29T13:11:37.573+00:00",
+  "generated_at": "2026-07-29T13:58:47.835Z",
+  "last_sync_at": "2026-07-29T13:56:46.389+00:00",
   "counts": {
     "sales": 17498,
     "purchases": 0,
     "products": 997,
-    "customers": 773,
+    "customers": 841,
     "stock": 997
   },
   "table_errors": {
     "sales_raw": "",
-    "purchase_raw": "Could not find the table 'public.purchase_raw' in the schema cache",
+    "purchase_raw": "",
     "product_raw": "",
     "customers": "column customers.tip does not exist",
-    "stock_raw": "Could not find the table 'public.stock_raw' in the schema cache"
+    "stock_raw": ""
   },
   "acceptance": {
-    "jender_xxl_sales": 68,
-    "ilkbahar_sales": 3,
-    "jender_xxl_ilkbahar_matches": 2
+    "jender_xxl_sales": 60,
+    "ilkbahar_sales": 0,
+    "jender_xxl_ilkbahar_matches": 0
   },
   "rules": {
-    "net_kar": "Satış KDV Hariç - FIFO Maliyet - Nakliye",
-    "kar_marji": "Kâr / Satış KDV Hariç",
-    "kar_orani": "Kâr / FIFO Maliyet",
+    "net_kar": "SatÄ±ÅŸ KDV HariÃ§ - FIFO Maliyet - Nakliye",
+    "kar_marji": "KÃ¢r / SatÄ±ÅŸ KDV HariÃ§",
+    "kar_orani": "KÃ¢r / FIFO Maliyet",
     "order_close": "Fatura no + sevk tarihi zorunlu",
-    "purchase_invoice": "Alış fatura no boşsa KONTROL"
+    "purchase_invoice": "AlÄ±ÅŸ fatura no boÅŸsa KONTROL"
   },
   "issues": [
-    "purchase_raw boş: FIFO ve alış geçmişi kesin hesaplanamaz.",
-    "sales_raw fatura numarası taşımıyor: satış faturası alanları KONTROL.",
-    "Satış-FIFO lot eşleştirmesi eksik: kâr alanı kesinleştirilmedi."
+    "purchase_raw boÅŸ: FIFO ve alÄ±ÅŸ geÃ§miÅŸi kesin hesaplanamaz.",
+    "sales_raw fatura numarasÄ± taÅŸÄ±mÄ±yor: satÄ±ÅŸ faturasÄ± alanlarÄ± KONTROL.",
+    "SatÄ±ÅŸ-FIFO lot eÅŸleÅŸtirmesi eksik: kÃ¢r alanÄ± kesinleÅŸtirilmedi.",
+    "Kabul kontrolÃ¼ bekliyor: Jender XXL / Ä°lkbahar Eczanesi satÄ±ÅŸÄ± BizimHesap kaynaÄŸÄ±nda bulunamadÄ±."
   ]
 }
