@@ -1,5 +1,14 @@
 # AperiON Changelog
 
+## 2026-07-29 - Hasta Bezi BizimHesap Veri Motoru v126
+
+- Satis, alis, urun, cari, stok ve kaynak denetimi icin alti JSON sozlesmesi eklendi.
+- Saatlik BizimHesap workflow'u snapshot uretip degisiklik varsa commit edecek sekilde baglandi.
+- Urun ve cari kartlari, fatura kaniti ve kar hesap detayi tiklanabilir hale getirildi.
+- FIFO lotlari tarih sirasiyla tuketilir; eksik kanitta kesin kar uydurulmaz.
+- Mevcut siparis/sevkiyat ekrani `hasta-bezi/operasyon-legacy.html` olarak korundu.
+- Guncelleme no `1245290726`.
+
 ## 2026-07-16 - Moka United POS aktarim ogrenmesi v124
 
 - `Moka United` aciklamasi, artik Emanet veya belirsiz cari hareketi degil,

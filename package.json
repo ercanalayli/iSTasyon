@@ -112,6 +112,8 @@
     "verify:bizimhesap:b2b-api": "node tools/check_bizimhesap_b2b_api.cjs",
     "verify:bizimhesap:b2b-api:live": "node tools/check_bizimhesap_b2b_api.cjs --live-get",
     "verify:bizimhesap:queue": "node tools/verify_bizimhesap_queue_worker_v65.cjs",
+    "build:hasta-bezi:bizimhesap": "node tools/build_hasta_bezi_bizimhesap_data_v126.cjs",
+    "verify:hasta-bezi:bizimhesap": "node tools/verify_hasta_bezi_bizimhesap_v126.cjs",
     "sync:bizimhesap": "node aperion_veri_senkron.js --firma alayli",
     "sync:bizimhesap:plan": "node aperion_veri_senkron.js --firma alayli --plan",
     "sync:bizimhesap:dry": "node aperion_veri_senkron.js --firma alayli --dry-run",

@@ -1,6 +1,15 @@
 # AperiON Project Status
 
-Son guncelleme: 2026-07-16 Europe/Istanbul
+Son guncelleme: 2026-07-29 Europe/Istanbul
+
+## Guncel Tur - Hasta Bezi BizimHesap Veri Motoru v126
+
+`hasta-bezi/` ana veri kaynagi saatlik BizimHesap senkronundan uretilen
+denetlenebilir satis, alis, urun, cari ve stok snapshot dosyalaridir. Urun,
+cari, fatura ve kar alanlari tiklanabilir. Alis lotu veya fatura kaniti
+eksikse kesin rakam uydurulmaz ve `KONTROL` gosterilir. Onceki siparis,
+sevkiyat ve kontrol ekrani `hasta-bezi/operasyon-legacy.html` adresinde
+korunmustur. Guncelleme no `1245290726`.
 
 ## Guncel Tur - Moka United POS Aktarim Kurali v124
 

@@ -1,6 +1,13 @@
 # AperiON Next Task
 
-Son guncelleme: 2026-07-16 Europe/Istanbul
+Son guncelleme: 2026-07-29 Europe/Istanbul
+
+## Aktif Tek Hedef - Hasta Bezi Canli Kaynak Kaniti v126
+
+Saatlik workflow'un alti BizimHesap JSON dosyasini gercek sayimlarla
+yeniledigini kanitla. Jender XXL / Ilkbahar Eczanesi eslesmesi kaynakta
+varsa urun ve cari kartinda acilmali; yoksa kaynak denetimi acik blokaj
+yazmali ve ornek veri eklenmemelidir.
 
 ## Aktif Tek Hedef - Moka POS Aktarimlarini Kanitli Kaydetme
 

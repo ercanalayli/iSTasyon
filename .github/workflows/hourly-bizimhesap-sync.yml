@@ -1,5 +1,8 @@
 name: Hourly BizimHesap Sync
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
   push:
@@ -15,6 +18,9 @@ on:
       - "bizimhesap_urun_stok_cek.js"
       - "tools/check_bizimhesap_action_secrets.cjs"
       - "tools/stress_check_index_sales_today.cjs"
+      - "tools/build_hasta_bezi_bizimhesap_data_v126.cjs"
+      - "tools/verify_hasta_bezi_bizimhesap_v126.cjs"
+      - "hasta-bezi/index.html"
       - "package.json"
       - "package-lock.json"
   schedule:
@@ -64,3 +70,17 @@ jobs:
           key: bizimhesap-session-alayli-${{ github.run_id }}
       - name: Verify sales today screen source
         run: node tools/stress_check_index_sales_today.cjs
+      - name: Build Hasta Bezi BizimHesap source snapshots
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npm run build:hasta-bezi:bizimhesap
+      - name: Verify Hasta Bezi dashboard source contract
+        run: npm run verify:hasta-bezi:bizimhesap
+      - name: Commit dashboard source snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add hasta-bezi/bizimhesap_*.json
+          git diff --cached --quiet || git commit -m "data: refresh Hasta Bezi BizimHesap snapshots"
+          git push
