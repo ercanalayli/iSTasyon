@@ -1,4 +1,4 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
@@ -8,7 +8,7 @@ const FIRMA_ID = 'alayli';
 const UPDATE_NO = '1245290726';
 const PAGE_SIZE = 1000;
 
-const url = process.env.SUPABASE_URL;
+const url = (process.env.SUPABASE_URL || '').replace(/\/rest\/v1\/?$/,'');
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
 if (!url || !key) {
   console.error('SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY gerekli.');
@@ -307,9 +307,9 @@ function readRows(file, fallback = []) {
     const totalNet = round(customerSales.reduce((sum, sale) => sum + sale.satis_kdv_haric, 0));
     const totalProfit = knownProfits.length ? round(knownProfits.reduce((sum, sale) => sum + sale.toplam_kar, 0)) : null;
     const warnings = [];
-    if (customerSales.some(sale => sale.fatura_no === 'KONTROL')) warnings.push('Eksik fatura numarasÄ±');
-    if (customerSales.some(sale => sale.fifo_status === 'KONTROL')) warnings.push('FIFO maliyet kanÄ±tÄ± eksik');
-    if (customerSales.some(sale => sale.toplam_kar !== null && sale.toplam_kar < 0)) warnings.push('Zarar eden satÄ±ÅŸ');
+    if (customerSales.some(sale => sale.fatura_no === 'KONTROL')) warnings.push('Eksik fatura numarasÃ„Â±');
+    if (customerSales.some(sale => sale.fifo_status === 'KONTROL')) warnings.push('FIFO maliyet kanÃ„Â±tÃ„Â± eksik');
+    if (customerSales.some(sale => sale.toplam_kar !== null && sale.toplam_kar < 0)) warnings.push('Zarar eden satÃ„Â±Ã…Å¸');
     return {
       id: row.id ? `customer-${row.id}` : `customer-derived-${index + 1}`,
       source: row.kaynak || 'BizimHesap',
@@ -361,13 +361,13 @@ function readRows(file, fallback = []) {
   }));
 
   const issues = [];
-  if (!purchases.length) issues.push('purchase_raw boÅŸ: FIFO ve alÄ±ÅŸ geÃ§miÅŸi kesin hesaplanamaz.');
-  if (sales.some(row => row.fatura_no === 'KONTROL')) issues.push('sales_raw fatura numarasÄ± taÅŸÄ±mÄ±yor: satÄ±ÅŸ faturasÄ± alanlarÄ± KONTROL.');
-  if (sales.some(row => row.fifo_status === 'KONTROL')) issues.push('SatÄ±ÅŸ-FIFO lot eÅŸleÅŸtirmesi eksik: kÃ¢r alanÄ± kesinleÅŸtirilmedi.');
+  if (!purchases.length) issues.push('purchase_raw boÃ…Å¸: FIFO ve alÃ„Â±Ã…Å¸ geÃƒÂ§miÃ…Å¸i kesin hesaplanamaz.');
+  if (sales.some(row => row.fatura_no === 'KONTROL')) issues.push('sales_raw fatura numarasÃ„Â± taÃ…Å¸Ã„Â±mÃ„Â±yor: satÃ„Â±Ã…Å¸ faturasÃ„Â± alanlarÃ„Â± KONTROL.');
+  if (sales.some(row => row.fifo_status === 'KONTROL')) issues.push('SatÃ„Â±Ã…Å¸-FIFO lot eÃ…Å¸leÃ…Å¸tirmesi eksik: kÃƒÂ¢r alanÃ„Â± kesinleÃ…Å¸tirilmedi.');
   const jender = sales.filter(row => /JENDER.*XXL|XXL.*JENDER/i.test(row.urun));
-  const ilkbahar = sales.filter(row => /Ä°LKBAHAR|ILKBAHAR/i.test(row.musteri));
-  const match = sales.filter(row => /JENDER.*XXL|XXL.*JENDER/i.test(row.urun) && /Ä°LKBAHAR|ILKBAHAR/i.test(row.musteri));
-  if (!match.length) issues.push('Kabul kontrolÃ¼ bekliyor: Jender XXL / Ä°lkbahar Eczanesi satÄ±ÅŸÄ± BizimHesap kaynaÄŸÄ±nda bulunamadÄ±.');
+  const ilkbahar = sales.filter(row => /Ã„Â°LKBAHAR|ILKBAHAR/i.test(row.musteri));
+  const match = sales.filter(row => /JENDER.*XXL|XXL.*JENDER/i.test(row.urun) && /Ã„Â°LKBAHAR|ILKBAHAR/i.test(row.musteri));
+  if (!match.length) issues.push('Kabul kontrolÃƒÂ¼ bekliyor: Jender XXL / Ã„Â°lkbahar Eczanesi satÃ„Â±Ã…Å¸Ã„Â± BizimHesap kaynaÃ„Å¸Ã„Â±nda bulunamadÃ„Â±.');
 
   const envelope = rows => ({ update_no: UPDATE_NO, source: 'BizimHesap', firma_id: FIRMA_ID, generated_at: generatedAt, rows });
   write('bizimhesap_sales.json', envelope(sales));
@@ -405,16 +405,17 @@ function readRows(file, fallback = []) {
       jender_xxl_ilkbahar_matches: match.length,
     },
     rules: {
-      net_kar: 'SatÄ±ÅŸ KDV HariÃ§ - FIFO Maliyet - Nakliye',
-      kar_marji: 'KÃ¢r / SatÄ±ÅŸ KDV HariÃ§',
-      kar_orani: 'KÃ¢r / FIFO Maliyet',
+      net_kar: 'SatÃ„Â±Ã…Å¸ KDV HariÃƒÂ§ - FIFO Maliyet - Nakliye',
+      kar_marji: 'KÃƒÂ¢r / SatÃ„Â±Ã…Å¸ KDV HariÃƒÂ§',
+      kar_orani: 'KÃƒÂ¢r / FIFO Maliyet',
       order_close: 'Fatura no + sevk tarihi zorunlu',
-      purchase_invoice: 'AlÄ±ÅŸ fatura no boÅŸsa KONTROL',
+      purchase_invoice: 'AlÃ„Â±Ã…Å¸ fatura no boÃ…Å¸sa KONTROL',
     },
     issues,
   });
-  console.log(`Hasta bezi BizimHesap veri motoru: ${sales.length} satÄ±ÅŸ, ${purchases.length} alÄ±ÅŸ, ${products.length} Ã¼rÃ¼n, ${customers.length} cari, ${stock.length} stok.`);
+  console.log(`Hasta bezi BizimHesap veri motoru: ${sales.length} satÃ„Â±Ã…Å¸, ${purchases.length} alÃ„Â±Ã…Å¸, ${products.length} ÃƒÂ¼rÃƒÂ¼n, ${customers.length} cari, ${stock.length} stok.`);
 })().catch(error => {
   console.error(error.stack || error.message);
   process.exit(1);
 });
+

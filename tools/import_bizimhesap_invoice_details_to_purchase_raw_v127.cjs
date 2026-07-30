@@ -83,7 +83,8 @@ async function main() {
 
   if (COMMIT && rows.length) {
     if (!url || !key) throw new Error('SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY gerekli');
-    const db = createClient(url, key, { auth: { persistSession: false } });
+    const cleanUrl = (url || '').replace(/\/rest\/v1\/?$/,'');
+  const db = createClient(cleanUrl, key, { auth: { persistSession: false } });
     const { error } = await db.from('purchase_raw')
       .upsert(rows.map(row => ({ ...row, updated_at: new Date().toISOString() })), {
         onConflict: 'firma_id,hash',
@@ -102,4 +103,5 @@ main().catch(error => {
   console.error(error.stack || error.message);
   process.exit(1);
 });
+
 
