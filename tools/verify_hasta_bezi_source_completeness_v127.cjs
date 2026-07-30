@@ -1,4 +1,4 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -14,10 +14,10 @@ const fifoControl = sales.filter(row => row.fifo_status !== 'OK').length;
 const productsWithSales = products.filter(row => Number(row.satis_sayisi) > 0).length;
 const productsWithPurchases = products.filter(row => Number(row.alis_sayisi) > 0).length;
 const jender = sales.filter(row => /JENDER.*XXL|XXL.*JENDER/i.test(row.urun || ''));
-const ilkbahar = sales.filter(row => /ILKBAHAR|Ä°LKBAHAR/i.test(row.musteri || ''));
+const ilkbahar = sales.filter(row => /ILKBAHAR|Ã„Â°LKBAHAR/i.test(row.musteri || ''));
 const match = sales.filter(row =>
   /JENDER.*XXL|XXL.*JENDER/i.test(row.urun || '') &&
-  /ILKBAHAR|Ä°LKBAHAR/i.test(row.musteri || ''));
+  /ILKBAHAR|Ã„Â°LKBAHAR/i.test(row.musteri || ''));
 
 const report = {
   sales_raw: sales.length,
@@ -38,11 +38,12 @@ const failed = [];
 if (!sales.length) failed.push('sales_raw yok');
 if (!purchases.length) failed.push('purchase_raw yok');
 if (!stock.length) failed.push('stock_raw yok');
-if (invoiceMissing) failed.push(`${invoiceMissing} satÄ±ÅŸta fatura no eksik`);
-if (!productsWithSales) failed.push('Ã¼rÃ¼n kartÄ±nda satÄ±ÅŸ geÃ§miÅŸi yok');
-if (!productsWithPurchases) failed.push('Ã¼rÃ¼n kartÄ±nda alÄ±ÅŸ geÃ§miÅŸi yok');
-if (!match.length) failed.push('Jender XXL / Ä°lkbahar Eczanesi eÅŸleÅŸmesi yok');
+if (invoiceMissing) failed.push(`${invoiceMissing} satÃ„Â±Ã…Å¸ta fatura no eksik`);
+if (!productsWithSales) failed.push('ÃƒÂ¼rÃƒÂ¼n kartÃ„Â±nda satÃ„Â±Ã…Å¸ geÃƒÂ§miÃ…Å¸i yok');
+if (!productsWithPurchases) failed.push('ÃƒÂ¼rÃƒÂ¼n kartÃ„Â±nda alÃ„Â±Ã…Å¸ geÃƒÂ§miÃ…Å¸i yok');
+if (!match.length) failed.push('Jender XXL / Ã„Â°lkbahar Eczanesi eÃ…Å¸leÃ…Å¸mesi yok');
 if (failed.length) {
-  console.error(`KAYNAK EKSÄ°K: ${failed.join('; ')}`);
+  console.error(`KAYNAK EKSÃ„Â°K: ${failed.join('; ')}`);
   process.exit(1);
 }
+
