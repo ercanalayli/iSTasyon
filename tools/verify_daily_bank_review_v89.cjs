@@ -1,4 +1,4 @@
-﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
+if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const assert = require('assert');
 const { buildDailyReview } = require('./build_daily_bank_review_v89.cjs');
 const { formatDailyBankReview } = require('../telegram/aperion_daily_bank_review_digest_v89.cjs');

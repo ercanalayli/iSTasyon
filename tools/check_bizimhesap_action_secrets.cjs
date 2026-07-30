@@ -1,4 +1,4 @@
-﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
+if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const required = ['BIZIMHESAP_EMAIL', 'BIZIMHESAP_PASSWORD'];
 const EXPECTED_EMAIL = 'alaylimedikal@gmail.com';
 

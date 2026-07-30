@@ -1,4 +1,4 @@
-﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
+if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const assert = require('assert');
 const { attachSimulation } = require('./attach_bizimhesap_simulation_to_approval_v117.cjs');
 
