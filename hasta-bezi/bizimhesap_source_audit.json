@@ -2,13 +2,13 @@
   "update_no": "1245290726",
   "source": "BizimHesap",
   "firma_id": "alayli",
-  "generated_at": "2026-07-30T03:25:32.223Z",
-  "last_sync_at": "2026-07-30T03:23:46.169+00:00",
+  "generated_at": "2026-07-30T06:31:34.384Z",
+  "last_sync_at": "2026-07-30T06:31:28.828738+00:00",
   "counts": {
-    "sales": 17516,
-    "purchases": 0,
+    "sales": 17518,
+    "purchases": 1,
     "products": 997,
-    "customers": 759,
+    "customers": 743,
     "stock": 997
   },
   "table_errors": {
@@ -19,7 +19,7 @@
     "stock_raw": ""
   },
   "acceptance": {
-    "jender_xxl_sales": 63,
+    "jender_xxl_sales": 66,
     "ilkbahar_sales": 0,
     "jender_xxl_ilkbahar_matches": 0
   },
@@ -31,7 +31,6 @@
     "purchase_invoice": "AlÄ±ÅŸ fatura no boÅŸsa KONTROL"
   },
   "issues": [
-    "purchase_raw boÅŸ: FIFO ve alÄ±ÅŸ geÃ§miÅŸi kesin hesaplanamaz.",
     "sales_raw fatura numarasÄ± taÅŸÄ±mÄ±yor: satÄ±ÅŸ faturasÄ± alanlarÄ± KONTROL.",
     "SatÄ±ÅŸ-FIFO lot eÅŸleÅŸtirmesi eksik: kÃ¢r alanÄ± kesinleÅŸtirilmedi.",
     "Kabul kontrolÃ¼ bekliyor: Jender XXL / Ä°lkbahar Eczanesi satÄ±ÅŸÄ± BizimHesap kaynaÄŸÄ±nda bulunamadÄ±."
