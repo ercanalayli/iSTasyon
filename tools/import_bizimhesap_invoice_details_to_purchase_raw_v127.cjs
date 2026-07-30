@@ -1,4 +1,4 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
@@ -8,7 +8,7 @@ const positional = process.argv.slice(2).filter(arg => !arg.startsWith('--'));
 const INPUT = positional[0] || path.join(ROOT, 'data', 'bizimhesap_fatura_detaylari_raw.json');
 const OUTPUT = positional[1] || path.join(ROOT, 'data', 'bizimhesap_purchase_raw.json');
 const COMMIT = process.argv.includes('--commit');
-const url = process.env.SUPABASE_URL;
+const url = (process.env.SUPABASE_URL || '').replace(/\/rest\/v1\/?$/,'');
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
 
 const text = value => String(value ?? '').trim();
@@ -102,3 +102,4 @@ main().catch(error => {
   console.error(error.stack || error.message);
   process.exit(1);
 });
+
