@@ -8,7 +8,7 @@ const FIRMA_ID = 'alayli';
 const UPDATE_NO = '1245290726';
 const PAGE_SIZE = 1000;
 
-const url = (process.env.SUPABASE_URL || '').replace(/\/rest\/v1\/?$/,'');
+const url = ((process.env.SUPABASE_URL || '').replace(/\/rest\/v1\/?$/i, '') || '').replace(/\/rest\/v1\/?$/,'');
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
 if (!url || !key) {
   console.error('SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY gerekli.');
@@ -418,5 +418,6 @@ function readRows(file, fallback = []) {
   console.error(error.stack || error.message);
   process.exit(1);
 });
+
 
 
