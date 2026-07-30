@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
@@ -34,7 +35,7 @@ function numberValue(value) {
 }
 
 function readStatement(input) {
-  if (!input || !fs.existsSync(input)) throw new Error(`VakıfBank XLS bulunamadı: ${input || '-'}`);
+  if (!input || !fs.existsSync(input)) throw new Error(`VakÄ±fBank XLS bulunamadÄ±: ${input || '-'}`);
   const book = XLSX.readFile(input, { cellDates: false });
   const rows = XLSX.utils.sheet_to_json(book.Sheets[book.SheetNames[0]], { header: 1, defval: '' });
   const dataRows = rows.filter(row => /^\d{2}\.\d{2}\.\d{4}/.test(clean(row[2])) && clean(row[9]));
@@ -69,7 +70,7 @@ function readStatement(input) {
     };
     const plan = classifyBankMovement(base).plan;
     if (!['bank_transfer', 'bank_fee_expense'].includes(plan.kind)) {
-      throw new Error(`İşlem türü güvenli otomatik kayıt için uygun değil: ${transactionNo} (${plan.type})`);
+      throw new Error(`Ä°ÅŸlem tÃ¼rÃ¼ gÃ¼venli otomatik kayÄ±t iÃ§in uygun deÄŸil: ${transactionNo} (${plan.type})`);
     }
     return { ...base, plan };
   });
@@ -90,7 +91,7 @@ function queuePayload(row) {
 }
 
 async function commitRows(rows) {
-  if (!key) throw new Error('SUPABASE_SERVICE_ROLE_KEY gerekli. Sadece önizleme üretildi.');
+  if (!key) throw new Error('SUPABASE_SERVICE_ROLE_KEY gerekli. Sadece Ã¶nizleme Ã¼retildi.');
   const db = createClient(url, key, { auth: { persistSession: false } });
   const result = { inserted: 0, duplicate: 0, queued: 0, ids: [] };
   for (const row of rows) {
@@ -108,7 +109,7 @@ async function commitRows(rows) {
     const { data: pending, error: insertError } = await db.from('pending_bank_movements').insert({
       ...insertable,
       status: 'approved',
-      approval_note: `Açık VakıfBank POS/batch hareketi; kullanıcı onayıyla otomatik kayıt planı (${row.statement_transaction_no}).`,
+      approval_note: `AÃ§Ä±k VakÄ±fBank POS/batch hareketi; kullanÄ±cÄ± onayÄ±yla otomatik kayÄ±t planÄ± (${row.statement_transaction_no}).`,
       approved_at: new Date().toISOString(),
     }).select('id').single();
     if (insertError) throw new Error(insertError.message);
@@ -143,3 +144,4 @@ async function main() {
 }
 
 main().catch(error => { console.error(error.message || error); process.exitCode = 1; });
+

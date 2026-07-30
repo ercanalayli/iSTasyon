@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
@@ -24,7 +25,7 @@ function normalize(text) {
 }
 
 function parseAmount(text) {
-  const match = String(text || '').match(/(?:TL|TRY|₺)\s*([\d.]+(?:,\d{1,2})?)|([\d.]+(?:,\d{1,2})?)\s*(?:TL|TRY|₺)|^\s*([\d.]+(?:,\d{1,2})?)\s*$/i);
+  const match = String(text || '').match(/(?:TL|TRY|â‚º)\s*([\d.]+(?:,\d{1,2})?)|([\d.]+(?:,\d{1,2})?)\s*(?:TL|TRY|â‚º)|^\s*([\d.]+(?:,\d{1,2})?)\s*$/i);
   if (!match) return null;
   const value = (match[1] || match[2] || match[3]).replace(/\./g, '').replace(',', '.');
   const amount = Number(value);
@@ -40,7 +41,7 @@ function parseDate(text) {
 
 function classify(text) {
   if (/aidat/i.test(text)) return { obligation_id: 'personal-batikent-ercan-ev-aidat', category: 'Ev / Aidat', title: 'Batikent Ercan Ev Aidati' };
-  if (/do.galgaz|doğalgaz/i.test(text)) return { obligation_id: 'personal-batikent-ercan-ev-dogalgaz', category: 'Ev / Dogalgaz', title: 'Batikent Ercan Ev Dogalgaz Tahakkuku' };
+  if (/do.galgaz|doÄŸalgaz/i.test(text)) return { obligation_id: 'personal-batikent-ercan-ev-dogalgaz', category: 'Ev / Dogalgaz', title: 'Batikent Ercan Ev Dogalgaz Tahakkuku' };
   if (/yak.t|yakit|akaryak.t|benzin|mazot/i.test(text)) return { obligation_id: 'personal-batikent-ercan-ev-yakit', category: 'Ev / Yakit', title: 'Batikent Ercan Ev Yakit Tahakkuku' };
   return null;
 }
@@ -82,7 +83,7 @@ function parseCategoryBalances(pageText) {
   for (let index = 0; index < lines.length; index += 1) {
     const raw = lines[index];
     const name = raw.toLocaleUpperCase('tr-TR');
-    const kind = name === 'AİDAT' ? 'aidat' : (name === 'DOĞALGAZ' ? 'dogalgaz' : '');
+    const kind = name === 'AÄ°DAT' ? 'aidat' : (name === 'DOÄALGAZ' ? 'dogalgaz' : '');
     if (!kind) continue;
     const values = lines.slice(index + 1, index + 5).map(parseAmount);
     if (values.length !== 4 || values.some((value) => value === null)) continue;
@@ -136,7 +137,7 @@ function parseMonthlyLedgerRows(rows) {
     if (row.category_text && !categoryTexts.has(key)) categoryTexts.set(key, row);
   }
   const money = '\\d{1,3}(?:\\.\\d{3})*,\\d{2}';
-  const accrualPattern = new RegExp(`(\\d{2}\\.\\d{2}\\.\\d{4})\\s+(\\d{2}\\.\\d{2}\\.\\d{4})\\s+(20\\d{2}-.+?\\/\\s*Bor(?:ç|Ã§)\\s*makbuzu.+?)\\s+(${money})\\s*TL(?:\\s+(${money})\\s*TL)?\\s+(${money})\\s*TL`, 'gi');
+  const accrualPattern = new RegExp(`(\\d{2}\\.\\d{2}\\.\\d{4})\\s+(\\d{2}\\.\\d{2}\\.\\d{4})\\s+(20\\d{2}-.+?\\/\\s*Bor(?:Ã§|ÃƒÂ§)\\s*makbuzu.+?)\\s+(${money})\\s*TL(?:\\s+(${money})\\s*TL)?\\s+(${money})\\s*TL`, 'gi');
   for (const row of categoryTexts.values()) {
     const item = classify(row.category || '') || classify(row.category_text || '');
     if (!item) continue;
@@ -176,7 +177,7 @@ async function fetchMonthlyLedgerRows(page) {
     const document = new DOMParser().parseFromString(await response.text(), 'text/html');
     const clean = (text) => {
       const value = String(text || '').replace(/\s+/g, ' ').trim();
-      if (!/[ÃÄÅ]/.test(value)) return value;
+      if (!/[ÃƒÃ„Ã…]/.test(value)) return value;
       try {
         return new TextDecoder('utf-8').decode(Uint8Array.from(value, (char) => char.charCodeAt(0) & 0xff)).replace(/\s+/g, ' ').trim();
       } catch (_) {
@@ -260,3 +261,4 @@ async function main() {
 }
 
 main().catch((error) => { console.error('SONUC: BASARISIZ'); console.error(error.message || error); process.exitCode = 1; });
+

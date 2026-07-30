@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -22,7 +23,7 @@ function norm(value) {
     .toLocaleLowerCase('tr-TR')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/Ä±/g, 'i').replace(/ÅŸ/g, 's').replace(/Ã§/g, 'c').replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/Ã¶/g, 'o')
+    .replace(/Ã„Â±/g, 'i').replace(/Ã…Å¸/g, 's').replace(/ÃƒÂ§/g, 'c').replace(/Ã„Å¸/g, 'g').replace(/ÃƒÂ¼/g, 'u').replace(/ÃƒÂ¶/g, 'o')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 }
@@ -88,13 +89,13 @@ function classify(detail) {
   if (/urun alis|stok|mal alis|tedarikciden alis|hasta bezi|sonova|phonak|isitme cihazi|barkod|sarf/.test(text)) {
     return { ...out, decision: 'stock_purchase', main_category: 'Urun Alis / Stok', sub_category: 'Tedarikci Faturasi', expense_class: 'stock_purchase', card_name: 'Urun Alis / Stok Kontrol', reason: 'Gider degil, stok/cari kontrolune gitmeli', confidence: 92 };
   }
-  if (/elektrik|enerjisa|limak|beda[sş]|ck bogazici|aydem/.test(text)) return mapped('Fatura / Abonelik', 'Elektrik', 'periodic', 'Elektrik - ALAYLI', 96);
+  if (/elektrik|enerjisa|limak|beda[sÅŸ]|ck bogazici|aydem/.test(text)) return mapped('Fatura / Abonelik', 'Elektrik', 'periodic', 'Elektrik - ALAYLI', 96);
   if (/\bsu\b|iski|aski|su faturasi/.test(text)) return mapped('Fatura / Abonelik', 'Su', 'periodic', 'Su - ALAYLI', 94);
   if (/telefon|internet|iletisim|telekom|turkcell|vodafone|ttnet|superonline/.test(text)) return mapped('Fatura / Abonelik', 'Iletisim', 'periodic', 'Iletisim - Sirket Hatlari', 95);
   if (/isinma|dogalgaz|gazdas|igdas|komb/i.test(text)) return mapped('Fatura / Abonelik', 'Isinma', 'periodic', 'Isinma - ALAYLI', 92);
   if (/kargo|nakliye|tasima|aras|yurtici|mng|surat kargo|ptt kargo/.test(text)) return mapped('Kargo / Nakliye', 'Kargo', 'variable', 'Kargo / Nakliye', 94);
   if (/personel yemek|yemek|tost|lokanta|restoran|yemek kart/.test(text)) return mapped('Personel', 'Personel Yemek', 'variable', 'Personel Yemek', 90);
-  if (/maas|maa[sş]|prim|yol parasi|yol ucreti|personel/.test(text)) return mapped('Personel', 'Maas / Prim / Yol', 'fixed', 'Personel Giderleri', 91);
+  if (/maas|maa[sÅŸ]|prim|yol parasi|yol ucreti|personel/.test(text)) return mapped('Personel', 'Maas / Prim / Yol', 'fixed', 'Personel Giderleri', 91);
   if (/sgk|ssk|vergi|stopaj|kdv|damga vergisi|muhtasar/.test(text)) return mapped('Vergi / SGK', 'Resmi Odeme', 'periodic', 'Vergi / SGK', 96);
   if (/market|mutfak|temizlik|deterjan|sabun|kahve|cay|ikram/.test(text)) {
     return { ...mapped('Market / Mutfak', 'Mutfak / Temizlik', 'variable', 'Market - Mutfak / Temizlik', 80), decision: 'needs_review', reason: 'Market faturasi mutfak/temizlik/kisisel ayrimi icin onay ister' };
@@ -232,3 +233,4 @@ fs.writeFileSync(outPath, JSON.stringify(output, null, 2), 'utf8');
 appendTransactionLog(`${new Date().toISOString().slice(0, 10)} | ALAYLI | aperion | fatura_gider_karti_eslestirme | ${matches.length} detay | ${approvalCenter.length} onay | 0.00 | ok`);
 console.log(JSON.stringify(output.summary, null, 2));
 console.log(outPath);
+

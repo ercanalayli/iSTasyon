@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const puppeteer = require('puppeteer');
 const { launchOptions, loginBizimHesap, selectFirma, savePageDiagnostics } = require('../bizimhesap_common.cjs');
@@ -57,3 +58,4 @@ async function main() {
 }
 
 main().catch(error => { console.error(error.message || error); process.exitCode = 1; });
+

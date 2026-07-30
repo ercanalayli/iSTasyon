@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const DEFAULT_LIVE_URLS = [
   'https://aperion-istasyon.pages.dev/',
   'https://ercanalayli.github.io/iSTasyon/'
@@ -48,10 +49,10 @@ async function main() {
   const checks = [
     ['AperiON identity', html.includes('AperiON')],
     ['iSTasyon identity', html.includes('iSTasyon')],
-    ['Command center module', includesAny(html, ['Komuta Merkezi', 'Ust Akil Paneli', 'Üst Akıl Paneli'])],
-    ['Satis Akisi menu', includesAny(html, ['Satis Akisi', 'Satış Akışı', 'SatÄ±ÅŸ AkÄ±ÅŸÄ±'])],
+    ['Command center module', includesAny(html, ['Komuta Merkezi', 'Ust Akil Paneli', 'Ãœst AkÄ±l Paneli'])],
+    ['Satis Akisi menu', includesAny(html, ['Satis Akisi', 'SatÄ±ÅŸ AkÄ±ÅŸÄ±', 'SatÃ„Â±Ã…Å¸ AkÃ„Â±Ã…Å¸Ã„Â±'])],
     ['Cari Kartlar menu', html.includes('Cari Kartlar')],
-    ['Banka Canli menu', includesAny(html, ['Banka Canli', 'Banka Canlı', 'Banka / Moka'])],
+    ['Banka Canli menu', includesAny(html, ['Banka Canli', 'Banka CanlÄ±', 'Banka / Moka'])],
     ['Gelir Tablosu menu', html.includes('Gelir Tablosu')],
     ['Bank approval posting path', html.includes('bank-approval-path') && html.includes('bank-posting-flow')]
   ];
@@ -74,3 +75,4 @@ main().catch(error => {
   console.error(error.message || error);
   process.exitCode = 1;
 });
+

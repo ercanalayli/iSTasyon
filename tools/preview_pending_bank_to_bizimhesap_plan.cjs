@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
@@ -24,7 +25,7 @@ function valueArg(name, fallback = '') {
 
 function fixMojibake(value) {
   const text = String(value || '');
-  if (!/[ÃÄÅÂ]/.test(text)) return text;
+  if (!/[ÃƒÃ„Ã…Ã‚]/.test(text)) return text;
   try {
     const repaired = Buffer.from(text, 'latin1').toString('utf8');
     return repaired && repaired.length >= Math.min(3, text.length / 2) ? repaired : text;
@@ -117,3 +118,4 @@ main().catch(error => {
   console.error(error.message || error);
   process.exitCode = 1;
 });
+

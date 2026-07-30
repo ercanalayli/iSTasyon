@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -65,7 +66,7 @@ function dueDateFor(obligation, asOf) {
 }
 
 function classify(obligation, asOf, dueDate, policy) {
-  if (!dueDate) return { level: 'needs_details', action: 'Kaynak ekstrelerinden hesap ve vade bilgisini öğren.', notify: false, days: null };
+  if (!dueDate) return { level: 'needs_details', action: 'Kaynak ekstrelerinden hesap ve vade bilgisini Ã¶ÄŸren.', notify: false, days: null };
   const remaining = daysBetween(asOf, dueDate);
   if (remaining < 0) {
     const overdueDays = Math.abs(remaining);
@@ -73,15 +74,15 @@ function classify(obligation, asOf, dueDate, policy) {
     return {
       level: 'overdue',
       action: obligation.status === 'payment_confirmation_required'
-        ? 'Dekont veya ödeme kanıtını kontrol et; ödenmiş varsayma.'
-        : 'Gecikme nedenini ve ödeme durumunu doğrula.',
+        ? 'Dekont veya Ã¶deme kanÄ±tÄ±nÄ± kontrol et; Ã¶denmiÅŸ varsayma.'
+        : 'Gecikme nedenini ve Ã¶deme durumunu doÄŸrula.',
       notify: followUp || overdueDays === 1,
       days: -overdueDays
     };
   }
-  if (remaining === 0) return { level: 'due_today', action: 'Ödeme veya ödeme kanıtı kontrolü gerekli.', notify: true, days: 0 };
+  if (remaining === 0) return { level: 'due_today', action: 'Ã–deme veya Ã¶deme kanÄ±tÄ± kontrolÃ¼ gerekli.', notify: true, days: 0 };
   if ((policy.reminder_days_before || []).includes(remaining)) {
-    return { level: `due_in_${remaining}`, action: 'Vade yaklaşımı: hesap, tutar ve dekont eşleştirmesini hazırla.', notify: true, days: remaining };
+    return { level: `due_in_${remaining}`, action: 'Vade yaklaÅŸÄ±mÄ±: hesap, tutar ve dekont eÅŸleÅŸtirmesini hazÄ±rla.', notify: true, days: remaining };
   }
   return { level: 'scheduled', action: 'Takvimde izleniyor.', notify: false, days: remaining };
 }
@@ -148,3 +149,4 @@ function main() {
 if (require.main === module) main();
 
 module.exports = { buildCandidates, buildReport, todayInIstanbul, dueDateFor, classify, addDays };
+

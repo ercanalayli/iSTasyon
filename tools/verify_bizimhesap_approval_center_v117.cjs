@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const assert = require('assert');
 const { attachSimulation } = require('./attach_bizimhesap_simulation_to_approval_v117.cjs');
 
@@ -22,4 +23,5 @@ assert.equal(result.approval_center_simulation.writes_to_bizimhesap, false);
 assert.equal(result.approval_center_simulation.queue_count, 2);
 assert.equal(result.approval_center_simulation.selected.queue_id, 'q-pos-1');
 assert.equal(result.approval_center_simulation.simulations[1].blockers[0], 'target_account');
-console.log('RESULT: OK - Gerçek BizimHesap dry-run simülasyonu AperiON Onay Merkezi birleşik durumuna bağlandı.');
+console.log('RESULT: OK - GerÃ§ek BizimHesap dry-run simÃ¼lasyonu AperiON Onay Merkezi birleÅŸik durumuna baÄŸlandÄ±.');
+

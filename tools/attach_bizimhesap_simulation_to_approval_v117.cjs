@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -31,7 +32,7 @@ function attachSimulation(unified = {}, simulation = {}) {
       selected,
       simulations: rows,
     },
-    policy: 'Onay Merkezi salt okunur simülasyon gösterir. Açık kullanıcı onayı, canlı kilit ve kayıt sonrası geri doğrulama olmadan BizimHesap kaydı yapılamaz.',
+    policy: 'Onay Merkezi salt okunur simÃ¼lasyon gÃ¶sterir. AÃ§Ä±k kullanÄ±cÄ± onayÄ±, canlÄ± kilit ve kayÄ±t sonrasÄ± geri doÄŸrulama olmadan BizimHesap kaydÄ± yapÄ±lamaz.',
   };
 }
 
@@ -40,11 +41,12 @@ if (require.main === module) {
   const simulationFile = process.argv[3] || 'data/bizimhesap_simulation.json';
   const outputFile = process.argv[4] || unifiedFile;
   const unified = readJson(unifiedFile);
-  if (!unified) throw new Error(`Birleşik Onay Merkezi durumu bulunamadı: ${unifiedFile}`);
+  if (!unified) throw new Error(`BirleÅŸik Onay Merkezi durumu bulunamadÄ±: ${unifiedFile}`);
   const simulation = readJson(simulationFile) || { simulations: [], summary: {} };
   const result = attachSimulation(unified, simulation);
   writeJson(outputFile, result);
-  console.log(`Onay Merkezi simülasyonu: ${result.approval_center_simulation.queue_count} kayıt, canlı yazma: 0`);
+  console.log(`Onay Merkezi simÃ¼lasyonu: ${result.approval_center_simulation.queue_count} kayÄ±t, canlÄ± yazma: 0`);
 }
 
 module.exports = { attachSimulation };
+

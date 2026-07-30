@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -13,8 +14,8 @@ const checks = [
   ['moduleReadinessRows helper exists', /function\s+moduleReadinessRows\s*\(/.test(index)],
   ['daily readiness score exists', /function\s+dailyReadinessScore\s*\(/.test(index)],
   ['daily readiness rendered inside data audit', /dailyReadinessHtml\(a\)/.test(index)],
-  ['readiness title visible', index.includes('Günlük Kullanım Durumu')],
-  ['blocker list mentions BizimHesap proof', index.includes('Canlı BizimHesap kayıt sonucunu')],
+  ['readiness title visible', index.includes('GÃ¼nlÃ¼k KullanÄ±m Durumu')],
+  ['blocker list mentions BizimHesap proof', index.includes('CanlÄ± BizimHesap kayÄ±t sonucunu')],
   ['Telegram is explicitly marked as blocked', /name:'Telegram Evrak',level:'blocked'/.test(index)],
   ['sales readiness depends on audit result', index.includes('salesReady=proofOk')],
   ['package script registered', pkg.scripts && pkg.scripts['verify:daily-readiness'] === 'node tools/verify_daily_readiness_v67.cjs']
@@ -36,3 +37,4 @@ if (failed) {
 }
 
 console.log('Daily readiness verification passed.');
+

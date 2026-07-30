@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
@@ -14,7 +15,7 @@ function argValue(name, fallback) {
 }
 
 function normalize(value) {
-  return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i').replace(/İ/g, 'I').toLowerCase();
+  return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/Ä±/g, 'i').replace(/Ä°/g, 'I').toLowerCase();
 }
 
 function parseMoney(value) {
@@ -34,14 +35,14 @@ function sourceId(seed) {
 }
 
 function paymentListSection(text) {
-  // PDF'lerin ek beyannameleri sonradan geliyor. Ödeme listesi, ilk MUHASEBE
-  // toplamıyla kapanır; şirket adı bazen SGK listesinin ortasında tekrar geçer.
+  // PDF'lerin ek beyannameleri sonradan geliyor. Ã–deme listesi, ilk MUHASEBE
+  // toplamÄ±yla kapanÄ±r; ÅŸirket adÄ± bazen SGK listesinin ortasÄ±nda tekrar geÃ§er.
   const marker = text.search(/\nMUHASEBE\s*\nToplam/i);
   return marker >= 0 ? text.slice(0, marker + 120) : text.slice(0, 8000);
 }
 
 function monthInfo(text) {
-  const match = text.match(/(\d{4})\/([A-Za-zÇĞİÖŞÜçğıöşü]+)\s+ayı\s+ödeme\s+listesi/i);
+  const match = text.match(/(\d{4})\/([A-Za-zÃ‡ÄÄ°Ã–ÅÃœÃ§ÄŸÄ±Ã¶ÅŸÃ¼]+)\s+ayÄ±\s+Ã¶deme\s+listesi/i);
   if (!match) return { year: null, month: null, label: null };
   const month = MONTHS[normalize(match[2])];
   return { year: match[1], month: month || null, label: `${match[1]}/${match[2]}` };
@@ -60,7 +61,7 @@ function buildItem({ code, period, reference, amount, dueDate, meta, fileHash, f
   return {
     company: 'ALAYLI', item_date: dueDate, original_due_date: dueDate, effective_due_date: dueDate,
     item_type: 'payment', direction: 'out', title: `${code} tahakkuku ${period}`,
-    description: `Hattat aylık ödeme listesi: ${meta.label}; referans ${reference}`,
+    description: `Hattat aylÄ±k Ã¶deme listesi: ${meta.label}; referans ${reference}`,
     cari_name: cariName, category: 'Vergi/SGK', expected_amount: amount,
     source_type: 'hattat_pdf', source_table: 'monthly_payment_list', source_id: sourceId(key),
     plan_type: 'accrual', scope: 'business', fixed_or_variable: 'variable', priority: 'high',
@@ -105,7 +106,7 @@ async function parseFile(file) {
   const filename = path.basename(file);
   const items = [...parseTaxItems(page, meta, fileHash, filename), ...parseSgkItems(page, meta, fileHash, filename)];
   const generalMatch = page.match(/Genel\s+Toplam\s*([\d.]+,\d{2})\s*TL/i);
-  return { source_file: filename, source_hash: fileHash, month: meta, general_total: generalMatch ? parseMoney(generalMatch[1]) : null, item_total: Number(items.reduce((sum, item) => sum + item.expected_amount, 0).toFixed(2)), items, parse_warnings: meta.month ? [] : ['Aylık ödeme listesi dönemi okunamadı.'] };
+  return { source_file: filename, source_hash: fileHash, month: meta, general_total: generalMatch ? parseMoney(generalMatch[1]) : null, item_total: Number(items.reduce((sum, item) => sum + item.expected_amount, 0).toFixed(2)), items, parse_warnings: meta.month ? [] : ['AylÄ±k Ã¶deme listesi dÃ¶nemi okunamadÄ±.'] };
 }
 
 function defaultFiles() {
@@ -117,22 +118,23 @@ async function main() {
   const explicit = process.argv.filter((arg) => arg.startsWith('--file=')).map((arg) => arg.slice('--file='.length));
   const files = explicit.length ? explicit : defaultFiles();
   const out = argValue('out', path.join(root, 'finance_imports', 'hattat', 'hattat_monthly_payment_plan.json'));
-  if (!files.length) throw new Error('Aylık ödeme listesi PDF bulunamadı. --file=... ile dosya belirtin.');
+  if (!files.length) throw new Error('AylÄ±k Ã¶deme listesi PDF bulunamadÄ±. --file=... ile dosya belirtin.');
   const reports = [];
   for (const file of files) {
-    if (!fs.existsSync(file)) throw new Error(`PDF bulunamadı: ${file}`);
+    if (!fs.existsSync(file)) throw new Error(`PDF bulunamadÄ±: ${file}`);
     reports.push(await parseFile(file));
   }
   reports.sort((a, b) => `${a.month.year || ''}${a.month.month || ''}`.localeCompare(`${b.month.year || ''}${b.month.month || ''}`));
   const items = reports.flatMap((report) => report.items);
-  const result = { created_at: new Date().toISOString(), source: 'hattat_musavir_monthly_payment_list', mode: 'dry_run', company: 'ALAYLI', payment_status_note: 'Bu liste tahakkuk/beklenen ödemedir. Banka mutabakatı yapılmadan ödenmiş sayılmaz.', summary: { files: reports.length, payment_candidates: items.length, expected_total: Number(items.reduce((sum, item) => sum + item.expected_amount, 0).toFixed(2)) }, reports, finance_calendar_items: items };
+  const result = { created_at: new Date().toISOString(), source: 'hattat_musavir_monthly_payment_list', mode: 'dry_run', company: 'ALAYLI', payment_status_note: 'Bu liste tahakkuk/beklenen Ã¶demedir. Banka mutabakatÄ± yapÄ±lmadan Ã¶denmiÅŸ sayÄ±lmaz.', summary: { files: reports.length, payment_candidates: items.length, expected_total: Number(items.reduce((sum, item) => sum + item.expected_amount, 0).toFixed(2)) }, reports, finance_calendar_items: items };
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, `${JSON.stringify(result, null, 2)}\n`, 'utf8');
-  console.log('Hattat aylık ödeme listesi -> Finans Takvimi dry-run');
-  console.log(`PDF: ${reports.length}; ödeme adayı: ${items.length}; toplam: TL ${result.summary.expected_total.toLocaleString('tr-TR')}`);
-  console.log(`Çıktı: ${out}`);
+  console.log('Hattat aylÄ±k Ã¶deme listesi -> Finans Takvimi dry-run');
+  console.log(`PDF: ${reports.length}; Ã¶deme adayÄ±: ${items.length}; toplam: TL ${result.summary.expected_total.toLocaleString('tr-TR')}`);
+  console.log(`Ã‡Ä±ktÄ±: ${out}`);
   console.log('SONUC: BASARILI');
 }
 
 if (require.main === module) main().catch((error) => { console.error('SONUC: BASARISIZ'); console.error(error.message || error); process.exitCode = 1; });
 module.exports = { parseFile, parseDate, parseMoney, sourceId };
+

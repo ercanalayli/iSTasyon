@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 #!/usr/bin/env node
 /* Build the public, product-level FIFO package from the two local BizimHesap exports. */
 const fs = require('fs');
@@ -11,7 +12,7 @@ const OUT = path.join(ROOT, 'hasta-bezi', 'fifo_chunks');
 const CHUNK_SIZE = 240000;
 
 function clean(v) { return String(v == null ? '' : v).trim(); }
-function norm(v) { return clean(v).replace(/[ıİ]/g, 'I').replace(/[şŞ]/g, 'S').replace(/[ğĞ]/g, 'G').replace(/[üÜ]/g, 'U').replace(/[öÖ]/g, 'O').replace(/[çÇ]/g, 'C').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+function norm(v) { return clean(v).replace(/[Ä±Ä°]/g, 'I').replace(/[ÅŸÅ]/g, 'S').replace(/[ÄŸÄ]/g, 'G').replace(/[Ã¼Ãœ]/g, 'U').replace(/[Ã¶Ã–]/g, 'O').replace(/[Ã§Ã‡]/g, 'C').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
 function num(v) { if (typeof v === 'number') return Number.isFinite(v) ? v : 0; const x = Number(clean(v).replace(/\./g, '').replace(',', '.').replace(/[^0-9.-]/g, '')); return Number.isFinite(x) ? x : 0; }
 function date(v) { if (v instanceof Date && !Number.isNaN(v.valueOf())) return v; if (typeof v === 'number') { const d = XLSX.SSF.parse_date_code(v); if (d) return new Date(Date.UTC(d.y, d.m - 1, d.d)); } const m = clean(v).match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/); return m ? new Date(Date.UTC(+m[3], +m[2] - 1, +m[1])) : null; }
 function iso(d) { return d ? d.toISOString().slice(0, 10) : ''; }
@@ -71,3 +72,4 @@ function main() {
   console.log(`RESULT: OK - ${summary.length} products, ${all.length} movements, ${sales.length} sales, ${warnings.length} FIFO fallback warnings, ${files.length} public chunks.`);
 }
 main();
+

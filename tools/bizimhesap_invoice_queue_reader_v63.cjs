@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 const { loadAperionMemory, appendTransactionLog } = require('./aperion_memory.cjs');
@@ -67,3 +68,4 @@ fs.writeFileSync(outPath, JSON.stringify(report, null, 2), 'utf8');
 appendTransactionLog(`${new Date().toISOString().slice(0, 10)} | ALAYLI | aperion | fatura_reader_manifest | ${path.basename(queuePath)} | ${details.length} bekliyor | 0.00 | ok`);
 console.log(JSON.stringify(report.summary, null, 2));
 console.log(outPath);
+

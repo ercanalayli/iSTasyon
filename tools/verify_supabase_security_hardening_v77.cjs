@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -56,3 +57,4 @@ console.log(`\nSupabase security hardening checks: ${okCount}/${checks.length}`)
 if (failed.length) {
   process.exitCode = 1;
 }
+

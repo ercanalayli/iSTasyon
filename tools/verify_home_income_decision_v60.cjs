@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -9,12 +10,12 @@ const reportPos = html.indexOf('class="card report-hub"');
 
 const checks = [
   ['home income module before report hub', incomePos > 0 && reportPos > 0 && incomePos < reportPos],
-  ['seven period buttons', ['Bugün','Dün','Bu Hafta','Bu Ay','Geçen Ay','Bu Yıl','Geçen Yıl'].every(x => html.includes(x))],
-  ['three decision nets', html.includes('Planlanan Net') && html.includes('Tahakkuk Net') && html.includes('Gerçekleşen Net')],
-  ['planned/accrual/cash wording', html.includes('Planlanan') && html.includes('Tahakkuk Esası') && html.includes('Gerçekleşen')],
-  ['income lines', html.includes('Sözleşmeli gelirler') && html.includes('Sabit gelirler') && html.includes('Satış gelirleri') && html.includes('Banka tahsilatları')],
-  ['expense lines', html.includes('Sözleşmeli giderler') && html.includes('Sabit giderler') && html.includes('Banka giderleri') && html.includes('Kredi kartı giderleri') && html.includes('Vergi / SGK')],
-  ['cash gaps', html.includes('Tahsil Edilecek') && html.includes('Ödenecek') && html.includes('Nakit Farkı') && html.includes('Tahakkuk Farkı')],
+  ['seven period buttons', ['BugÃ¼n','DÃ¼n','Bu Hafta','Bu Ay','GeÃ§en Ay','Bu YÄ±l','GeÃ§en YÄ±l'].every(x => html.includes(x))],
+  ['three decision nets', html.includes('Planlanan Net') && html.includes('Tahakkuk Net') && html.includes('GerÃ§ekleÅŸen Net')],
+  ['planned/accrual/cash wording', html.includes('Planlanan') && html.includes('Tahakkuk EsasÄ±') && html.includes('GerÃ§ekleÅŸen')],
+  ['income lines', html.includes('SÃ¶zleÅŸmeli gelirler') && html.includes('Sabit gelirler') && html.includes('SatÄ±ÅŸ gelirleri') && html.includes('Banka tahsilatlarÄ±')],
+  ['expense lines', html.includes('SÃ¶zleÅŸmeli giderler') && html.includes('Sabit giderler') && html.includes('Banka giderleri') && html.includes('Kredi kartÄ± giderleri') && html.includes('Vergi / SGK')],
+  ['cash gaps', html.includes('Tahsil Edilecek') && html.includes('Ã–denecek') && html.includes('Nakit FarkÄ±') && html.includes('Tahakkuk FarkÄ±')],
   ['approved bank feed', html.includes("pending_bank_movements") && html.includes(".eq('status','approved')")],
   ['cash bucket model', html.includes('function incomeCashBuckets') && html.includes('incomeExpenseAccrualBuckets')],
 ];
@@ -31,5 +32,6 @@ if (failed) {
   console.log(`RESULT: FAILED - ${failed} kontrol eksik.`);
   process.exitCode = 1;
 } else {
-  console.log('RESULT: OK - Ana sayfa gelir tablosu karar paneli bağlı.');
+  console.log('RESULT: OK - Ana sayfa gelir tablosu karar paneli baÄŸlÄ±.');
 }
+

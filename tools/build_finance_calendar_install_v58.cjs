@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -32,3 +33,4 @@ const body = parts.map(file => {
 
 fs.writeFileSync(out, header + body, 'utf8');
 console.log(`OK: ${out}`);
+

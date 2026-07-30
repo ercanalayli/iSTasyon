@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -8,12 +9,12 @@ const actionsSql = fs.readFileSync(path.join(root, 'finance', 'AperiON_Finance_C
 const fullSql = fs.readFileSync(path.join(root, 'finance', 'AperiON_Finance_Calendar_FULL_INSTALL_v58.sql'), 'utf8');
 
 const checks = [
-  ['UI plan tab', html.includes("fT('plan'") && html.includes('Plan Girişi')],
-  ['UI business/personal scope', html.includes('planScope') && html.includes('Kişisel')],
-  ['UI plan type fields', html.includes('planType') && html.includes('Sözleşmeli') && html.includes('Öngörülen')],
+  ['UI plan tab', html.includes("fT('plan'") && html.includes('Plan GiriÅŸi')],
+  ['UI business/personal scope', html.includes('planScope') && html.includes('KiÅŸisel')],
+  ['UI plan type fields', html.includes('planType') && html.includes('SÃ¶zleÅŸmeli') && html.includes('Ã–ngÃ¶rÃ¼len')],
   ['UI date amount responsibility', html.includes('planStart') && html.includes('planEnd') && html.includes('planAmount') && html.includes('planResponsible')],
   ['UI save RPC call', html.includes("db.rpc('finance_calendar_create_plan'")],
-  ['UI expense template cards', html.includes('PLAN_TEMPLATES') && html.includes('İşyeri Kirası') && html.includes('Kredi Kartı Ekstresi')],
+  ['UI expense template cards', html.includes('PLAN_TEMPLATES') && html.includes('Ä°ÅŸyeri KirasÄ±') && html.includes('Kredi KartÄ± Ekstresi')],
   ['UI template apply function', html.includes('function applyPlanTemplate')],
   ['SQL scope column', liveSql.includes("scope text default 'business'")],
   ['SQL plan type column', liveSql.includes('plan_type text default')],
@@ -35,5 +36,6 @@ if (failed) {
   console.log(`RESULT: FAILED - ${failed} kontrol eksik.`);
   process.exitCode = 1;
 } else {
-  console.log('RESULT: OK - İşletme/kisisel plan girişi, SQL modeli ve RPC bağlı.');
+  console.log('RESULT: OK - Ä°ÅŸletme/kisisel plan giriÅŸi, SQL modeli ve RPC baÄŸlÄ±.');
 }
+

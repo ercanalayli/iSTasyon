@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
@@ -70,7 +71,7 @@ async function openEditor(page, transactionId) {
     window.UpdateTrx(id);
     return true;
   }, transactionId);
-  if (!opened) throw new Error(`${transactionId}: düzenleme formu acilamadi.`);
+  if (!opened) throw new Error(`${transactionId}: dÃ¼zenleme formu acilamadi.`);
   // UpdateTrx hydrates the same modal through an async request. The field can
   // still contain the preceding transaction for a short moment.
   await new Promise(resolve => setTimeout(resolve, 1100));
@@ -160,3 +161,4 @@ async function main() {
 }
 
 main().catch(error => { console.error(error.stack || error.message || error); process.exitCode = 1; });
+

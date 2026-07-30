@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -28,14 +29,15 @@ if (missing.length) {
 }
 
 const mustNotContain = [
-  'Alış / Satış',
-  'Tahsilat / Çıkış'
+  'AlÄ±ÅŸ / SatÄ±ÅŸ',
+  'Tahsilat / Ã‡Ä±kÄ±ÅŸ'
 ];
 
 const stale = mustNotContain.filter((needle) => html.includes(needle));
 if (stale.length) {
-  console.error('Eski oran etiketi kaldı:', stale.join(', '));
+  console.error('Eski oran etiketi kaldÄ±:', stale.join(', '));
   process.exit(1);
 }
 
 console.log('OK: Ana finans akis matrisi v55 index.html icinde dogrulandi.');
+

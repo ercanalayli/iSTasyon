@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const { createClient } = require('@supabase/supabase-js');
 const { classifyBankMovement } = require('./bank_posting_plan.cjs');
 
@@ -33,3 +34,4 @@ const db = createClient(process.env.SUPABASE_URL || 'https://iilfwosoroflzubkary
   if (error) throw new Error(error.message);
   console.log(`RESULT: QUEUE_RETRIED ${data.id} ${data.status}`);
 })().catch(error => { console.error(error.message || error); process.exitCode = 1; });
+

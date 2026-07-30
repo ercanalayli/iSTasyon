@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 const { loadAperionMemory, appendTransactionLog } = require('./aperion_memory.cjs');
@@ -9,7 +10,7 @@ const MEMORY = loadAperionMemory();
 
 const norm = (v) => String(v || '').toLocaleLowerCase('tr-TR')
   .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-  .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
+  .replace(/Ä±/g, 'i').replace(/ÅŸ/g, 's').replace(/Ã§/g, 'c').replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/Ã¶/g, 'o');
 
 function money(v) {
   const n = Number(v || 0);
@@ -21,34 +22,34 @@ function classify(row) {
   const out = {
     owner: 'ALAYLI',
     owner_type: 'business',
-    main_category: 'Diğer / Kontrol',
+    main_category: 'DiÄŸer / Kontrol',
     sub_category: 'Kontrol Gerekli',
     expense_class: 'variable',
-    card_name: 'Diğer - Kontrol',
+    card_name: 'DiÄŸer - Kontrol',
     status: 'control_required',
     reason: ''
   };
 
-  if (/hayir|kurban|zekat/.test(text)) return { ...out, owner_type: 'personal', main_category: 'Kişisel / Aile', sub_category: 'Hayır / Kurban / Zekat', card_name: 'Hayır / Kurban / Zekat', reason: 'Banka masrafı değildir, kişisel/aile kontrolü gerekir' };
-  if (/okul|egitim/.test(text)) return { ...out, owner_type: 'family', main_category: 'Kişisel / Aile', sub_category: 'Okul / Eğitim', card_name: 'Okul / Eğitim', reason: 'Personel gideri değildir, kontrol gerekir' };
-  if (/iade/.test(text)) return { ...out, main_category: 'İade / Ters Kayıt', sub_category: 'Satış İadesi', expense_class: 'return', card_name: 'Satış İadesi / Ters Kayıt', status: 'mapped', reason: 'Normal gider değildir' };
-  if (/urun alis|ürün alış|sonova|hasta bezi|tedarikciden alis|tedarikçiden alış/.test(text)) return { ...out, main_category: 'Tedarikçi / Ürün Alışları', sub_category: 'Ürün Alış', expense_class: 'stock_purchase', card_name: `Ürün Alış - ${row.tedarikci || 'Tedarikçi'}`, status: 'mapped' };
-  if (/maas|maaş/.test(text)) return { ...out, main_category: 'Personel', sub_category: 'Maaş', expense_class: 'fixed', card_name: 'Personel Maaş', status: 'mapped' };
+  if (/hayir|kurban|zekat/.test(text)) return { ...out, owner_type: 'personal', main_category: 'KiÅŸisel / Aile', sub_category: 'HayÄ±r / Kurban / Zekat', card_name: 'HayÄ±r / Kurban / Zekat', reason: 'Banka masrafÄ± deÄŸildir, kiÅŸisel/aile kontrolÃ¼ gerekir' };
+  if (/okul|egitim/.test(text)) return { ...out, owner_type: 'family', main_category: 'KiÅŸisel / Aile', sub_category: 'Okul / EÄŸitim', card_name: 'Okul / EÄŸitim', reason: 'Personel gideri deÄŸildir, kontrol gerekir' };
+  if (/iade/.test(text)) return { ...out, main_category: 'Ä°ade / Ters KayÄ±t', sub_category: 'SatÄ±ÅŸ Ä°adesi', expense_class: 'return', card_name: 'SatÄ±ÅŸ Ä°adesi / Ters KayÄ±t', status: 'mapped', reason: 'Normal gider deÄŸildir' };
+  if (/urun alis|Ã¼rÃ¼n alÄ±ÅŸ|sonova|hasta bezi|tedarikciden alis|tedarikÃ§iden alÄ±ÅŸ/.test(text)) return { ...out, main_category: 'TedarikÃ§i / ÃœrÃ¼n AlÄ±ÅŸlarÄ±', sub_category: 'ÃœrÃ¼n AlÄ±ÅŸ', expense_class: 'stock_purchase', card_name: `ÃœrÃ¼n AlÄ±ÅŸ - ${row.tedarikci || 'TedarikÃ§i'}`, status: 'mapped' };
+  if (/maas|maaÅŸ/.test(text)) return { ...out, main_category: 'Personel', sub_category: 'MaaÅŸ', expense_class: 'fixed', card_name: 'Personel MaaÅŸ', status: 'mapped' };
   if (/prim|hakedi/.test(text)) return { ...out, main_category: 'Personel', sub_category: 'Prim', card_name: 'Personel Prim', status: 'mapped' };
-  if (/yol parasi|yol parası/.test(text)) return { ...out, main_category: 'Personel', sub_category: 'Yol Parası', card_name: 'Personel Yol Parası', status: 'mapped' };
-  if (/yemek|tost/.test(text)) return { ...out, main_category: 'Yemek / Ağırlama', sub_category: 'Personel Yemeği', card_name: 'Personel Yemeği', status: 'mapped' };
-  if (/sgk|ssk|vergi|stopaj|kdv/.test(text)) return { ...out, main_category: 'Vergi / SGK', sub_category: 'Resmi Ödeme', expense_class: 'periodic', card_name: 'Vergi / SGK', status: 'mapped' };
-  if (/kira/.test(text)) return { ...out, main_category: 'Kira / Sözleşmeli', sub_category: 'Kira', expense_class: 'contractual', card_name: `Kira - ${row.tedarikci || 'ALAYLI'}`, status: 'mapped' };
-  if (/aidat/.test(text)) return { ...out, main_category: 'Kira / Sözleşmeli', sub_category: 'Aidat', expense_class: 'periodic', card_name: 'Aidat', status: 'mapped' };
+  if (/yol parasi|yol parasÄ±/.test(text)) return { ...out, main_category: 'Personel', sub_category: 'Yol ParasÄ±', card_name: 'Personel Yol ParasÄ±', status: 'mapped' };
+  if (/yemek|tost/.test(text)) return { ...out, main_category: 'Yemek / AÄŸÄ±rlama', sub_category: 'Personel YemeÄŸi', card_name: 'Personel YemeÄŸi', status: 'mapped' };
+  if (/sgk|ssk|vergi|stopaj|kdv/.test(text)) return { ...out, main_category: 'Vergi / SGK', sub_category: 'Resmi Ã–deme', expense_class: 'periodic', card_name: 'Vergi / SGK', status: 'mapped' };
+  if (/kira/.test(text)) return { ...out, main_category: 'Kira / SÃ¶zleÅŸmeli', sub_category: 'Kira', expense_class: 'contractual', card_name: `Kira - ${row.tedarikci || 'ALAYLI'}`, status: 'mapped' };
+  if (/aidat/.test(text)) return { ...out, main_category: 'Kira / SÃ¶zleÅŸmeli', sub_category: 'Aidat', expense_class: 'periodic', card_name: 'Aidat', status: 'mapped' };
   if (/elektrik|limak/.test(text)) return { ...out, main_category: 'Fatura / Abonelik', sub_category: 'Elektrik', expense_class: 'periodic', card_name: 'Elektrik - ALAYLI', status: 'mapped' };
   if (/su/.test(text)) return { ...out, main_category: 'Fatura / Abonelik', sub_category: 'Su', expense_class: 'periodic', card_name: 'Su - ALAYLI', status: 'mapped' };
-  if (/iletisim|iletişim|telefon|internet|telekom|vodafone|turkcell|ttnet/.test(text)) return { ...out, main_category: 'Fatura / Abonelik', sub_category: 'İletişim', expense_class: 'periodic', card_name: 'İletişim - Şirket Hatları', status: 'mapped' };
-  if (/isinma|ısınma|dogalgaz|doğalgaz/.test(text)) return { ...out, main_category: 'Fatura / Abonelik', sub_category: 'Isınma', expense_class: 'periodic', card_name: 'Isınma - ALAYLI', status: 'mapped' };
-  if (/market|kahve|cay|çay|yumurta|mutfak/.test(text)) return { ...out, main_category: 'Market / Mutfak', sub_category: 'Mutfak / İkram', card_name: 'Market - Mutfak / İkram', status: 'mapped' };
+  if (/iletisim|iletiÅŸim|telefon|internet|telekom|vodafone|turkcell|ttnet/.test(text)) return { ...out, main_category: 'Fatura / Abonelik', sub_category: 'Ä°letiÅŸim', expense_class: 'periodic', card_name: 'Ä°letiÅŸim - Åirket HatlarÄ±', status: 'mapped' };
+  if (/isinma|Ä±sÄ±nma|dogalgaz|doÄŸalgaz/.test(text)) return { ...out, main_category: 'Fatura / Abonelik', sub_category: 'IsÄ±nma', expense_class: 'periodic', card_name: 'IsÄ±nma - ALAYLI', status: 'mapped' };
+  if (/market|kahve|cay|Ã§ay|yumurta|mutfak/.test(text)) return { ...out, main_category: 'Market / Mutfak', sub_category: 'Mutfak / Ä°kram', card_name: 'Market - Mutfak / Ä°kram', status: 'mapped' };
   if (/temizlik|deterjan|sabun/.test(text)) return { ...out, main_category: 'Market / Mutfak', sub_category: 'Temizlik', card_name: 'Market - Temizlik', status: 'mapped' };
-  if (/kargo|nakliye|tasima|taşıma/.test(text)) return { ...out, main_category: 'Kargo / Nakliye', sub_category: 'Kargo', card_name: 'Kargo / Nakliye', status: 'mapped' };
-  if (/yakit|yakıt|akaryakit|benzin|mazot/.test(text)) return { ...out, main_category: 'Araç / Yakıt', sub_category: 'Yakıt', card_name: 'Araç Yakıt', status: 'mapped' };
-  if (/banka|eft|havale|fast|bsmv|komisyon|masraf|ucret|ücret/.test(text)) return { ...out, main_category: 'Mali Giderler', sub_category: 'Banka Masrafı', card_name: 'Banka Masrafı', status: 'mapped' };
+  if (/kargo|nakliye|tasima|taÅŸÄ±ma/.test(text)) return { ...out, main_category: 'Kargo / Nakliye', sub_category: 'Kargo', card_name: 'Kargo / Nakliye', status: 'mapped' };
+  if (/yakit|yakÄ±t|akaryakit|benzin|mazot/.test(text)) return { ...out, main_category: 'AraÃ§ / YakÄ±t', sub_category: 'YakÄ±t', card_name: 'AraÃ§ YakÄ±t', status: 'mapped' };
+  if (/banka|eft|havale|fast|bsmv|komisyon|masraf|ucret|Ã¼cret/.test(text)) return { ...out, main_category: 'Mali Giderler', sub_category: 'Banka MasrafÄ±', card_name: 'Banka MasrafÄ±', status: 'mapped' };
   return out;
 }
 
@@ -121,3 +122,4 @@ fs.writeFileSync(output, JSON.stringify(report, null, 2), 'utf8');
 appendTransactionLog(`${new Date().toISOString().slice(0, 10)} | ALAYLI | aperion | gider_kartlari_uretildi | ${path.basename(input)} | ${cards.length} kart | ${report.summary.total_amount.toFixed(2)} | ok`);
 console.log(JSON.stringify(report.summary, null, 2));
 console.log(output);
+

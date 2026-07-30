@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const assert = require('assert');
 const { classifyBankMovement } = require('./bank_posting_plan.cjs');
 
@@ -46,3 +47,4 @@ assert.notEqual(bankConflict.plan.kind, 'bank_unmatched_incoming');
 assert.equal(bankConflict.plan.requires_user_review, true);
 
 console.log('RESULT: OK - unknown incoming bank movements use the non-cari Hesaba Para Girisi flow.');
+

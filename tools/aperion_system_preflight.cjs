@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
@@ -84,12 +85,12 @@ function taskState(taskName) {
     shell: false,
   });
   const text = `${r.stdout || ''}\n${r.stderr || ''}`;
-  if (r.status !== 0) return { ok: false, detail: 'görev bulunamadı' };
+  if (r.status !== 0) return { ok: false, detail: 'gÃ¶rev bulunamadÄ±' };
   const enabled = /Scheduled Task State:\s+Enabled/i.test(text);
   const next = (text.match(/Next Run Time:\s+(.+)/i) || [])[1]?.trim() || '-';
   const last = (text.match(/Last Run Time:\s+(.+)/i) || [])[1]?.trim() || '-';
   const result = (text.match(/Last Result:\s+(.+)/i) || [])[1]?.trim() || '-';
-  return { ok: enabled, detail: `${enabled ? 'Enabled' : 'Disabled'} · next=${next} · last=${last} · result=${result}` };
+  return { ok: enabled, detail: `${enabled ? 'Enabled' : 'Disabled'} Â· next=${next} Â· last=${last} Â· result=${result}` };
 }
 
 function add(checks, area, name, ok, detail, severity = 'required') {
@@ -144,19 +145,19 @@ async function main() {
   const salesToday = await countRows('sales_raw', [{ op: 'eq', col: 'firma_id', val: 'alayli' }, { op: 'eq', col: 'tarih', val: today }]);
   const salesYday = await countRows('sales_raw', [{ op: 'eq', col: 'firma_id', val: 'alayli' }, { op: 'eq', col: 'tarih', val: yesterday }]);
   const salesMonth = await countRows('sales_raw', [{ op: 'eq', col: 'firma_id', val: 'alayli' }, { op: 'gte', col: 'tarih', val: mStart }, { op: 'lte', col: 'tarih', val: today }]);
-  add(checks, 'sales', 'today sales_raw', !salesToday.error && salesToday.count > 0, salesToday.error || `${salesToday.count} kayıt`, 'required');
-  add(checks, 'sales', 'yesterday sales_raw', !salesYday.error && salesYday.count > 0, salesYday.error || `${salesYday.count} kayıt`, 'required');
-  add(checks, 'sales', 'month sales_raw', !salesMonth.error && salesMonth.count > 0, salesMonth.error || `${salesMonth.count} kayıt`, 'required');
+  add(checks, 'sales', 'today sales_raw', !salesToday.error && salesToday.count > 0, salesToday.error || `${salesToday.count} kayÄ±t`, 'required');
+  add(checks, 'sales', 'yesterday sales_raw', !salesYday.error && salesYday.count > 0, salesYday.error || `${salesYday.count} kayÄ±t`, 'required');
+  add(checks, 'sales', 'month sales_raw', !salesMonth.error && salesMonth.count > 0, salesMonth.error || `${salesMonth.count} kayÄ±t`, 'required');
 
   const masrafMonth = await countRows('masraf_raw', [{ op: 'eq', col: 'firma_id', val: 'alayli' }, { op: 'gte', col: 'tarih', val: mStart }, { op: 'lte', col: 'tarih', val: today }]);
   const productRaw = await countRows('product_raw', [{ op: 'eq', col: 'firma_id', val: 'alayli' }]);
-  add(checks, 'expenses', 'month masraf_raw', !masrafMonth.error && masrafMonth.count > 0, masrafMonth.error || `${masrafMonth.count} kayıt`, 'required');
-  add(checks, 'stock', 'product_raw', !productRaw.error && productRaw.count > 0, productRaw.error || `${productRaw.count} kayıt`, 'required');
+  add(checks, 'expenses', 'month masraf_raw', !masrafMonth.error && masrafMonth.count > 0, masrafMonth.error || `${masrafMonth.count} kayÄ±t`, 'required');
+  add(checks, 'stock', 'product_raw', !productRaw.error && productRaw.count > 0, productRaw.error || `${productRaw.count} kayÄ±t`, 'required');
 
   for (const table of ['banka_raw', 'bank_transactions']) {
     const exists = await existsObject(table);
     const count = exists.ok ? await countRows(table, [{ op: 'eq', col: 'firma_id', val: 'alayli' }]) : { count: 0, error: exists.detail };
-    add(checks, 'bank', table, exists.ok && !count.error, count.error || `${count.count} kayıt`, 'warning');
+    add(checks, 'bank', table, exists.ok && !count.error, count.error || `${count.count} kayÄ±t`, 'warning');
   }
 
   for (const table of [
@@ -169,7 +170,7 @@ async function main() {
     add(checks, 'finance calendar', table, exists.ok, exists.detail, 'required');
   }
   const calMonth = await countRows('finance_calendar_drawer_view', [{ op: 'gte', col: 'calendar_date', val: mStart }, { op: 'lte', col: 'calendar_date', val: `${today}` }]);
-  add(checks, 'finance calendar', 'current month calendar rows', !calMonth.error && calMonth.count > 0, calMonth.error || `${calMonth.count} kayıt`, 'required');
+  add(checks, 'finance calendar', 'current month calendar rows', !calMonth.error && calMonth.count > 0, calMonth.error || `${calMonth.count} kayÄ±t`, 'required');
 
   for (const table of [
     'finance_account_cards',
@@ -206,9 +207,9 @@ async function main() {
   };
 
   const lines = [
-    `AperiON sistem ön kontrol: ${report.status}`,
+    `AperiON sistem Ã¶n kontrol: ${report.status}`,
     `Tarih: ${report.generated_at}`,
-    `Blokaj: ${blocking.length} · Uyarı: ${warnings.length}`,
+    `Blokaj: ${blocking.length} Â· UyarÄ±: ${warnings.length}`,
     '',
     ...checks.map(c => `${c.ok ? 'OK' : c.severity === 'required' ? 'BLOK' : 'UYARI'} [${c.area}] ${c.name}: ${c.detail}`),
   ];
@@ -223,3 +224,4 @@ main().catch(error => {
   console.error(error.message || error);
   process.exit(1);
 });
+

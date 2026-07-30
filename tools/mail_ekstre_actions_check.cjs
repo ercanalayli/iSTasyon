@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const { createClient } = require('@supabase/supabase-js');
 
 const required = [
@@ -67,3 +68,4 @@ main().catch(error => {
   console.error(error.message || error);
   process.exitCode = 1;
 });
+

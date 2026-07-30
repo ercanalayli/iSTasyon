@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
@@ -77,3 +78,4 @@ assert(/counterparty_confirmed/i.test(counterpartySql), 'counterparty SQL proof 
 assert(/target_counterparty.*confirmed_counterparty/is.test(counterpartySql), 'queue payload does not use confirmed counterparty');
 
 console.log('Finance decision rules v84 verification passed.');
+

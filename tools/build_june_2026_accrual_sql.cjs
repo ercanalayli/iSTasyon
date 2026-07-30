@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
@@ -66,17 +67,17 @@ async function getSalesAccruals() {
     date,
     type: 'receivable',
     direction: 'in',
-    title: `Haziran satış tahakkuku ${date}`,
-    description: `${v.rows} satış satırı, ${v.adet} adet. Kaynak: sales_raw.`,
-    cari: 'Satış müşterileri',
+    title: `Haziran satÄ±ÅŸ tahakkuku ${date}`,
+    description: `${v.rows} satÄ±ÅŸ satÄ±rÄ±, ${v.adet} adet. Kaynak: sales_raw.`,
+    cari: 'SatÄ±ÅŸ mÃ¼ÅŸterileri',
     account: 'Cari Alacak',
-    category: 'Satış Tahakkuku',
+    category: 'SatÄ±ÅŸ Tahakkuku',
     amount: v.amount,
     sourceType: 'sales_raw',
     sourceTable: 'sales_raw',
     sourceId: v.minId || 'null',
     priority: 'normal',
-    note: 'Otomatik üretilen Haziran tahakkuk adayı; onaydan önce kontrol edilir.',
+    note: 'Otomatik Ã¼retilen Haziran tahakkuk adayÄ±; onaydan Ã¶nce kontrol edilir.',
   })).filter(r => r.amount > 0);
 }
 
@@ -93,7 +94,7 @@ async function getExpenseAccruals() {
     type: 'variable_expense',
     direction: 'out',
     title: `Haziran gider tahakkuku ${r.kategori || 'Gider'} ${String(r.tarih || '').slice(0, 10)}`,
-    description: r.aciklama || r.kategori || 'BizimHesap gider kaydı',
+    description: r.aciklama || r.kategori || 'BizimHesap gider kaydÄ±',
     cari: r.kategori || 'Gider',
     account: 'Gider Tahakkuku',
     category: r.kategori || 'Gider',
@@ -133,3 +134,4 @@ main().catch(error => {
   console.error(error.message || error);
   process.exit(1);
 });
+

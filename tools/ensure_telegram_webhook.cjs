@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 #!/usr/bin/env node
 /* AperiON Telegram Webhook Watchdog
    Purpose: keep Telegram Quick Capture ready without user testing.
@@ -92,8 +93,8 @@ async function main(){
     },
     ok,
     user_message: ok
-      ? 'Telegram Quick Capture hazır. Kullanıcı direkt Telegram’a yazabilir.'
-      : 'Telegram Quick Capture hazır değil; endpoint, webhook veya Telegram son hatası kontrol edilmeli.'
+      ? 'Telegram Quick Capture hazÄ±r. KullanÄ±cÄ± direkt Telegramâ€™a yazabilir.'
+      : 'Telegram Quick Capture hazÄ±r deÄŸil; endpoint, webhook veya Telegram son hatasÄ± kontrol edilmeli.'
   };
 
   console.log(JSON.stringify(report, null, 2));
@@ -104,3 +105,4 @@ main().catch(err => {
   console.error(err);
   process.exitCode = 1;
 });
+

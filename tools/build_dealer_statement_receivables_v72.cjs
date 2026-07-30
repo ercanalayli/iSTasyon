@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
@@ -67,14 +68,14 @@ function main() {
   const rows = XLSX.utils.sheet_to_json(sheet, { defval: null });
   const first = rows[0] || {};
   const idKey = keyOf(first, ['Bayi Ekstre ID']);
-  const qtyKey = keyOf(first, ['Satış Adedi', 'Satis Adedi']);
-  const amountKey = keyOf(first, ['Satış Tutarı', 'Satis Tutari']);
-  const startKey = keyOf(first, ['Başlang', 'Baslang']);
-  const endKey = keyOf(first, ['Bitiş', 'Bitis']);
-  const paymentKey = keyOf(first, ['Ödeme Tarihi', 'Odeme Tarihi', 'deme Tarihi']);
+  const qtyKey = keyOf(first, ['SatÄ±ÅŸ Adedi', 'Satis Adedi']);
+  const amountKey = keyOf(first, ['SatÄ±ÅŸ TutarÄ±', 'Satis Tutari']);
+  const startKey = keyOf(first, ['BaÅŸlang', 'Baslang']);
+  const endKey = keyOf(first, ['BitiÅŸ', 'Bitis']);
+  const paymentKey = keyOf(first, ['Ã–deme Tarihi', 'Odeme Tarihi', 'deme Tarihi']);
   const statusKey = keyOf(first, ['Durum']);
   const commissionKey = keyOf(first, ['Komisyon']);
-  const paidKey = keyOf(first, ['Yatırılan', 'Yatirilan']);
+  const paidKey = keyOf(first, ['YatÄ±rÄ±lan', 'Yatirilan']);
 
   const required = { idKey, qtyKey, amountKey, startKey, endKey, paymentKey, statusKey };
   const missing = Object.entries(required).filter(([, value]) => !value).map(([key]) => key);
@@ -189,3 +190,4 @@ try {
   console.error(error.message || error);
   process.exit(1);
 }
+

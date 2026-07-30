@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
@@ -23,3 +24,4 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(`RESULT: OK - ${sales.accepted_row_count} sales and ${purchases.accepted_row_count} purchase lines cover ${sales.date_range.from} through ${sales.date_range.to}; FIFO package line counts match.`);
+

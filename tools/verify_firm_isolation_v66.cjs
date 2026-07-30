@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -10,15 +11,15 @@ const checks = [
     ok: /const PILOT_FIRMA='alayli'/.test(index),
   },
   {
-    name: 'görünen firmalar sadece pilot',
+    name: 'gÃ¶rÃ¼nen firmalar sadece pilot',
     ok: /const VISIBLE_FIRMS=\[PILOT_FIRMA\]/.test(index),
   },
   {
-    name: 'ana satış yükleme firma filtreli',
+    name: 'ana satÄ±ÅŸ yÃ¼kleme firma filtreli',
     ok: /db\.from\('sales_raw'\)\.select\('\*'\)\.eq\('firma_id',PILOT_FIRMA\)/.test(index),
   },
   {
-    name: 'satış satırı firma sızıntısı engeli',
+    name: 'satÄ±ÅŸ satÄ±rÄ± firma sÄ±zÄ±ntÄ±sÄ± engeli',
     ok: /function isAlayliRow\(r\)[\s\S]*r\.firma_id!==PILOT_FIRMA/.test(index),
   },
   {
@@ -42,11 +43,11 @@ const checks = [
     ok: /db\.from\('banka_raw'\)\.select\('\*'\)\.eq\('firma_id',PILOT_FIRMA\)/.test(index),
   },
   {
-    name: 'bot logları firma filtreli',
+    name: 'bot loglarÄ± firma filtreli',
     ok: /db\.from\('bot_logs'\)\.select\('\*'\)\.eq\('firma_id',PILOT_FIRMA\)/.test(index),
   },
   {
-    name: 'başka firmalar kapalı',
+    name: 'baÅŸka firmalar kapalÄ±',
     ok: /let SHOW_OTHER_FIRMS=false/.test(index),
   },
 ];
@@ -65,3 +66,4 @@ if (failed) {
 } else {
   console.log('RESULT: OK - ALAYLI karar ekranlari firma filtreli.');
 }
+

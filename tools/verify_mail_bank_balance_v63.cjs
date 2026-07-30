@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -25,7 +26,7 @@ const checks = [
   ['worker prefilters historical duplicates', worker.includes('filterAlreadyStoredRows') && worker.includes('rowSignature') && worker.includes('skipped_existing')],
   ['rpc duplicate signature guard', sql.includes('duplicate_key = v_key') && sql.includes("coalesce(bank_name,'')") && sql.includes("coalesce(description,'')")],
   ['approved/onay flow preserved', html.includes('pending_bank_movements') && html.includes('approve_pending_bank_movement')],
-  ['morning approval cards', html.includes('Sabah Onay Kartları') && html.includes('morning-approval-card') && html.includes('renderBankMorningCards') && html.includes('renderHomeMorningApprovalCards')],
+  ['morning approval cards', html.includes('Sabah Onay KartlarÄ±') && html.includes('morning-approval-card') && html.includes('renderBankMorningCards') && html.includes('renderHomeMorningApprovalCards')],
   ['bank money styling', html.includes('.finance-home-kpi.bank-money') && html.includes('.bank-command-card')]
 ];
 
@@ -42,3 +43,4 @@ if (!ok) {
   process.exit(1);
 }
 console.log('RESULT: OK - Bankalar en ustte, ID/dedupe/onay ve guncel bakiye hatti bagli.');
+

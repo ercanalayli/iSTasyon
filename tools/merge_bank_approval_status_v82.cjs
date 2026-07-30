@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -89,12 +90,12 @@ function buildReport() {
   const queueRows = Array.isArray(queueDryRun.queue) ? queueDryRun.queue : Array.isArray(queueDryRun.items) ? queueDryRun.items : [];
 
   const blockers = [];
-  if (missing_files.length) blockers.push('Bazı kanıt dosyaları repo içinde yok veya workflow tarafından üretilmemiş.');
-  if (parse_errors.length) blockers.push('Bazı JSON dosyaları okunamadı.');
-  if (!selected) blockers.push('Seçili banka adayı yok.');
-  if (status.live_bizimhesap_save_called) blockers.push('Durum dosyası canlı BizimHesap save çalıştığını söylüyor; elle doğrulama gerekir.');
-  if (selected && selected.requires_user_review) blockers.push('Seçili aday kullanıcı incelemesi istiyor.');
-  if (selected && selected.confidence && selected.confidence < 84) blockers.push(`Seçili aday güveni düşük: ${selected.confidence}`);
+  if (missing_files.length) blockers.push('BazÄ± kanÄ±t dosyalarÄ± repo iÃ§inde yok veya workflow tarafÄ±ndan Ã¼retilmemiÅŸ.');
+  if (parse_errors.length) blockers.push('BazÄ± JSON dosyalarÄ± okunamadÄ±.');
+  if (!selected) blockers.push('SeÃ§ili banka adayÄ± yok.');
+  if (status.live_bizimhesap_save_called) blockers.push('Durum dosyasÄ± canlÄ± BizimHesap save Ã§alÄ±ÅŸtÄ±ÄŸÄ±nÄ± sÃ¶ylÃ¼yor; elle doÄŸrulama gerekir.');
+  if (selected && selected.requires_user_review) blockers.push('SeÃ§ili aday kullanÄ±cÄ± incelemesi istiyor.');
+  if (selected && selected.confidence && selected.confidence < 84) blockers.push(`SeÃ§ili aday gÃ¼veni dÃ¼ÅŸÃ¼k: ${selected.confidence}`);
 
   const safe_to_post = false;
 
@@ -104,7 +105,7 @@ function buildReport() {
     live_rpc_called: Boolean(status.live_rpc_called),
     live_bizimhesap_save_called: Boolean(status.live_bizimhesap_save_called),
     safe_to_post,
-    policy: 'Bu rapor sadece okuma/dry-run raporudur. Kullanıcı açık onayı ve canlı doğrulama olmadan BizimHesap kaydı yapılmaz.',
+    policy: 'Bu rapor sadece okuma/dry-run raporudur. KullanÄ±cÄ± aÃ§Ä±k onayÄ± ve canlÄ± doÄŸrulama olmadan BizimHesap kaydÄ± yapÄ±lmaz.',
     files: Object.fromEntries(Object.entries(loaded).map(([key, info]) => [key, {
       path: info.file,
       exists: info.exists,
@@ -145,18 +146,19 @@ function buildReport() {
     parse_errors,
     blockers,
     next_action: blockers.length
-      ? 'Önce eksik kanıt dosyalarını/workflow çıktılarını üret ve seçili adayın onay durumunu kanıtla.'
-      : 'Kullanıcı açık onay verirse yalnızca tekil seçili aday için approve RPC dry/live akışı ayrı çalıştırılabilir.',
+      ? 'Ã–nce eksik kanÄ±t dosyalarÄ±nÄ±/workflow Ã§Ä±ktÄ±larÄ±nÄ± Ã¼ret ve seÃ§ili adayÄ±n onay durumunu kanÄ±tla.'
+      : 'KullanÄ±cÄ± aÃ§Ä±k onay verirse yalnÄ±zca tekil seÃ§ili aday iÃ§in approve RPC dry/live akÄ±ÅŸÄ± ayrÄ± Ã§alÄ±ÅŸtÄ±rÄ±labilir.',
   };
 }
 
 const report = buildReport();
 writeJson(out, report);
 
-console.log('AperiON banka onay birleşik durum raporu');
+console.log('AperiON banka onay birleÅŸik durum raporu');
 console.log(`Safe mode: ${report.safe_mode}`);
-console.log(`BizimHesap save çalıştı mı: ${report.live_bizimhesap_save_called}`);
+console.log(`BizimHesap save Ã§alÄ±ÅŸtÄ± mÄ±: ${report.live_bizimhesap_save_called}`);
 console.log(`Eksik dosya: ${report.summary.missing_file_count}`);
-console.log(`Seçili aday: ${report.selected_candidate ? `${report.selected_candidate.transaction_date} ${report.selected_candidate.bank_name} ${report.selected_candidate.amount} TL / ${report.selected_candidate.type}` : 'yok'}`);
+console.log(`SeÃ§ili aday: ${report.selected_candidate ? `${report.selected_candidate.transaction_date} ${report.selected_candidate.bank_name} ${report.selected_candidate.amount} TL / ${report.selected_candidate.type}` : 'yok'}`);
 console.log(`Safe to post: ${report.safe_to_post}`);
 console.log(`Output: ${out}`);
+

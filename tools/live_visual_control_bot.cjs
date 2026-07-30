@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 
@@ -69,22 +70,22 @@ async function main() {
     const liveUrl = await gotoFirstLiveUrl(page);
     await sleep(3000);
     results.push([`Canli URL secildi: ${liveUrl}`, true]);
-    results.push(['Canlı site açıldı', true]);
+    results.push(['CanlÄ± site aÃ§Ä±ldÄ±', true]);
     await shot(page, '01-home');
 
     const onayClicked = await clickText(page, 'Onay Merkezi');
-    results.push(['Onay Merkezi menüsü/alanı', onayClicked || await hasText(page, 'Onay')]);
+    results.push(['Onay Merkezi menÃ¼sÃ¼/alanÄ±', onayClicked || await hasText(page, 'Onay')]);
     await shot(page, '02-onay-merkezi');
 
-    results.push(['Telegram canlı kutusu', await hasText(page, 'Telegram') && (await hasText(page, 'canlı') || await hasText(page, 'alarm'))]);
+    results.push(['Telegram canlÄ± kutusu', await hasText(page, 'Telegram') && (await hasText(page, 'canlÄ±') || await hasText(page, 'alarm'))]);
     results.push(['Basit Telegram kutusu', await hasText(page, 'Basit Telegram') || await hasText(page, 'Telegram')]);
-    results.push(['Gamze harici cari kontrolü', !(await hasText(page, 'Gamze Eczanesi ALKAM'))]);
+    results.push(['Gamze harici cari kontrolÃ¼', !(await hasText(page, 'Gamze Eczanesi ALKAM'))]);
 
     const hesapClicked = await clickText(page, 'Hesaplar');
-    results.push(['Hesaplar ekranı', hesapClicked || await hasText(page, 'Hesap')]);
+    results.push(['Hesaplar ekranÄ±', hesapClicked || await hasText(page, 'Hesap')]);
     await shot(page, '03-hesaplar');
 
-    results.push(['Banka ekstre yükleme kutusu', (await hasText(page, 'Banka')) && ((await hasText(page, 'Ekstre')) || (await hasText(page, 'Yükle')))]);
+    results.push(['Banka ekstre yÃ¼kleme kutusu', (await hasText(page, 'Banka')) && ((await hasText(page, 'Ekstre')) || (await hasText(page, 'YÃ¼kle')))]);
     await shot(page, '04-banka-ekstre');
 
     const failed = results.filter(x => !x[1]);
@@ -109,3 +110,4 @@ main().catch(err => {
   console.error(err && err.stack ? err.stack : err);
   process.exitCode = 1;
 });
+

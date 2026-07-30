@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 #!/usr/bin/env node
 /* Validate historical FIFO source exports before they are allowed into the live package. */
 const fs = require('fs');
@@ -11,8 +12,8 @@ const OUTPUT = path.join(ROOT, 'data', 'hasta_bezi_historical_source_preflight.j
 function clean(value) { return String(value == null ? '' : value).trim(); }
 function normal(value) {
   return clean(value)
-    .replace(/[ıİ]/g, 'I').replace(/[şŞ]/g, 'S').replace(/[ğĞ]/g, 'G')
-    .replace(/[üÜ]/g, 'U').replace(/[öÖ]/g, 'O').replace(/[çÇ]/g, 'C')
+    .replace(/[Ä±Ä°]/g, 'I').replace(/[ÅŸÅ]/g, 'S').replace(/[ÄŸÄ]/g, 'G')
+    .replace(/[Ã¼Ãœ]/g, 'U').replace(/[Ã¶Ã–]/g, 'O').replace(/[Ã§Ã‡]/g, 'C')
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
@@ -82,3 +83,4 @@ function main() {
 }
 
 main();
+

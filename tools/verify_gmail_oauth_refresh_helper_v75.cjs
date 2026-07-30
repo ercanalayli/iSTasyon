@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 
 function ok(name, pass) {
@@ -27,3 +28,4 @@ if (failed) {
 }
 
 console.log('Gmail OAuth refresh helper verification passed.');
+

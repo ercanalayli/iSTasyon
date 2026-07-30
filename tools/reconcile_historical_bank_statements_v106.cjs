@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
@@ -128,3 +129,4 @@ async function main() {
 }
 
 main().catch(error => { console.error(error.message || error); process.exitCode = 1; });
+

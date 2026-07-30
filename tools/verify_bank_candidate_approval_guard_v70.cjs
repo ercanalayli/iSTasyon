@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 
 function read(file) {
@@ -45,3 +46,4 @@ if (process.exitCode) {
 }
 
 console.log('Bank candidate approval guard verification passed.');
+

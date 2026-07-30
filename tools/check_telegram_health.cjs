@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 #!/usr/bin/env node
 /* AperiON Telegram Health Check
    Checks:
@@ -93,16 +94,16 @@ async function main(){
 
   if(cloudOk && telegramOk){
     out.overall_status = 'ok';
-    out.user_message = 'Telegram bot canlı ve webhook AperiON Quick Capture endpointine bağlı.';
+    out.user_message = 'Telegram bot canlÄ± ve webhook AperiON Quick Capture endpointine baÄŸlÄ±.';
   }else if(cloudOk && out.telegram_webhook.ok && !out.telegram_webhook.matches_expected){
     out.overall_status = 'webhook_mismatch';
-    out.user_message = 'Telegram bot canlı olabilir ama webhook beklenen AperiON endpointine bağlı değil.';
+    out.user_message = 'Telegram bot canlÄ± olabilir ama webhook beklenen AperiON endpointine baÄŸlÄ± deÄŸil.';
   }else if(!cloudOk){
     out.overall_status = 'cloudflare_function_down';
-    out.user_message = 'Cloudflare Telegram webhook endpointi çalışmıyor veya deploy/env eksik.';
+    out.user_message = 'Cloudflare Telegram webhook endpointi Ã§alÄ±ÅŸmÄ±yor veya deploy/env eksik.';
   }else{
     out.overall_status = 'telegram_not_ready';
-    out.user_message = 'Telegram webhook hazır değil. Token, webhook URL veya son hata kontrol edilmeli.';
+    out.user_message = 'Telegram webhook hazÄ±r deÄŸil. Token, webhook URL veya son hata kontrol edilmeli.';
   }
 
   fs.mkdirSync(path.join(process.cwd(), 'data'), { recursive: true });
@@ -116,3 +117,4 @@ main().catch(err => {
   console.error(err);
   process.exitCode = 1;
 });
+

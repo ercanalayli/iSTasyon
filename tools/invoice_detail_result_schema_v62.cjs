@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 const { loadAperionMemory } = require('./aperion_memory.cjs');
@@ -75,3 +76,4 @@ fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, JSON.stringify(result, null, 2), 'utf8');
 console.log(JSON.stringify(result.summary, null, 2));
 console.log(outPath);
+

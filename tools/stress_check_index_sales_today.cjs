@@ -1,13 +1,14 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 
 const html = fs.readFileSync('index.html', 'utf8');
 const checks = [
   ['AperiON title exists', html.includes('AperiON')],
-  ['Sales page title exists', html.includes('Satış Akışı') || html.includes('Satışlar')],
-  ['Today button exists', html.includes("sM('today',this,1)") || html.includes('>Bugün</button>')],
-  ['Today period support exists', html.includes("mode==='today'") || html.includes('label:\'Bugün\'')],
+  ['Sales page title exists', html.includes('SatÄ±ÅŸ AkÄ±ÅŸÄ±') || html.includes('SatÄ±ÅŸlar')],
+  ['Today button exists', html.includes("sM('today',this,1)") || html.includes('>BugÃ¼n</button>')],
+  ['Today period support exists', html.includes("mode==='today'") || html.includes('label:\'BugÃ¼n\'')],
   ['Today metric variable exists', html.includes('todayM=met') || html.includes('todayM.ciro')],
-  ['Today KPI card exists', html.includes('<div class="kpi-l">Bugün</div>') || html.includes('Bugün</div><div class="kpi-v">')],
+  ['Today KPI card exists', html.includes('<div class="kpi-l">BugÃ¼n</div>') || html.includes('BugÃ¼n</div><div class="kpi-v">')],
   ['Yesterday metric still exists', html.includes('yday=met') || html.includes('yday.ciro')],
   ['Week metric still exists', html.includes('week=met') || html.includes('week.ciro')],
   ['Month metric still exists', html.includes('month=met') || html.includes('month.ciro')],
@@ -25,10 +26,10 @@ for (const [name, ok] of checks) {
   if (!ok) failed += 1;
 }
 
-const todayCount = (html.match(/Bugün/g) || []).length;
+const todayCount = (html.match(/BugÃ¼n/g) || []).length;
 const salesRawCount = (html.match(/sales_raw/g) || []).length;
 console.log('-------------------------------------');
-console.log('Bugün occurrences:', todayCount);
+console.log('BugÃ¼n occurrences:', todayCount);
 console.log('sales_raw occurrences:', salesRawCount);
 
 if (failed) {
@@ -37,3 +38,4 @@ if (failed) {
 } else {
   console.log('RESULT: OK - live sales today patch passed static stress checks.');
 }
+

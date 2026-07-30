@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const {
   BizimHesapB2BClient,
   getBizimHesapApiConfig,
@@ -36,13 +37,13 @@ async function main() {
   else fail('firm_id', 'GitHub secret BIZIMHESAP_FIRM_ID gerekli');
 
   if (!liveGet) {
-    console.log('LIVE_GET=0 - aÄŸ testi yapÄ±lmadÄ±. CanlÄ± okuma iÃ§in: npm run verify:bizimhesap:b2b-api:live');
+    console.log('LIVE_GET=0 - aÃ„Å¸ testi yapÃ„Â±lmadÃ„Â±. CanlÃ„Â± okuma iÃƒÂ§in: npm run verify:bizimhesap:b2b-api:live');
     if (!config.token || !config.firmId) process.exitCode = 1;
     return;
   }
 
   if (process.env.BIZIMHESAP_B2B_API_LIVE !== '1') {
-    throw new Error('CanlÄ± API okuma kilitli: BIZIMHESAP_B2B_API_LIVE=1 gerekli.');
+    throw new Error('CanlÃ„Â± API okuma kilitli: BIZIMHESAP_B2B_API_LIVE=1 gerekli.');
   }
   if (!config.token) throw new Error('BIZIMHESAP_B2B_TOKEN yok.');
 
@@ -56,17 +57,18 @@ async function main() {
   for (const [name, fn] of checks) {
     try {
       const result = await fn();
-      ok(`GET ${name}`, `${countOf(result)} kayÄ±t/alan`);
+      ok(`GET ${name}`, `${countOf(result)} kayÃ„Â±t/alan`);
     } catch (e) {
       fail(`GET ${name}`, e.message);
       process.exitCode = 1;
     }
   }
 
-  console.log('CanlÄ± yazma yapÄ±lmadÄ±. AddInvoice/AddCustomer/AddProduct ayrÄ± kilit olmadan Ã§aÄŸrÄ±lmaz.');
+  console.log('CanlÃ„Â± yazma yapÃ„Â±lmadÃ„Â±. AddInvoice/AddCustomer/AddProduct ayrÃ„Â± kilit olmadan ÃƒÂ§aÃ„Å¸rÃ„Â±lmaz.');
 }
 
 main().catch((e) => {
   console.error(`BIZIMHESAP_B2B_PREFLIGHT_FAILED: ${e.message}`);
   process.exit(1);
 });
+

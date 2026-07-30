@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -26,3 +27,4 @@ main().catch(err => {
   console.error(err.message || err);
   process.exitCode = 1;
 });
+

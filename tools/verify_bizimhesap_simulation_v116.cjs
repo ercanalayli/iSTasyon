@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const assert = require('assert');
 const { buildSimulation } = require('./build_bizimhesap_simulation_v116.cjs');
 
@@ -21,3 +22,4 @@ assert.equal(report.simulations[0].fields.target_account, '*IS BANKASI');
 assert(report.simulations[1].blockers.some(x => x.includes('source_account')));
 
 console.log('RESULT: OK - Gercek queue worker dry-run plani guvenli BizimHesap simulasyon raporuna donusuyor.');
+

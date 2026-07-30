@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 const { loadAperionMemory, appendTransactionLog } = require('./aperion_memory.cjs');
@@ -10,15 +11,15 @@ const MEMORY = loadAperionMemory();
 function norm(v) {
   return String(v || '').toLocaleLowerCase('tr-TR')
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
+    .replace(/Ä±/g, 'i').replace(/ÅŸ/g, 's').replace(/Ã§/g, 'c').replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/Ã¶/g, 'o');
 }
 
 function invoiceNo(text) {
   const s = String(text || '');
   const patterns = [
-    /No[:\s]*([A-ZÇĞİÖŞÜ0-9]{3,}[0-9]{6,})/i,
-    /([A-ZÇĞİÖŞÜ]{2,4}[0-9]{10,})/i,
-    /([A-ZÇĞİÖŞÜ][0-9]{12,})/i
+    /No[:\s]*([A-ZÃ‡ÄÄ°Ã–ÅÃœ0-9]{3,}[0-9]{6,})/i,
+    /([A-ZÃ‡ÄÄ°Ã–ÅÃœ]{2,4}[0-9]{10,})/i,
+    /([A-ZÃ‡ÄÄ°Ã–ÅÃœ][0-9]{12,})/i
   ];
   for (const p of patterns) {
     const m = s.match(p);
@@ -97,3 +98,4 @@ fs.writeFileSync(output, JSON.stringify(report, null, 2), 'utf8');
 appendTransactionLog(`${new Date().toISOString().slice(0, 10)} | ALAYLI | aperion | fatura_kuyrugu_uretildi | ${path.basename(input)} | ${tasks.length} gorev | 0.00 | ok`);
 console.log(JSON.stringify(report.summary, null, 2));
 console.log(output);
+

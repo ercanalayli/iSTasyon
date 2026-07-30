@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -112,3 +113,4 @@ console.log(`Karar: ${status.selected_candidate ? `${status.selected_candidate.t
 console.log(`Kuyruk: ${status.summary.ready_queue_count} hazir, kanit ${status.proof.queue_status}`);
 console.log(`Sonraki adim: ${status.next_action}`);
 console.log(`Output: ${out}`);
+

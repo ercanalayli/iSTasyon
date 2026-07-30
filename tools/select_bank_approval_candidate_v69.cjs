@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -44,7 +45,7 @@ function riskClass(item) {
   const amount = absAmount(item);
   if (plan.requires_user_review) return 'review';
   if (plan.confidence < 84) return 'review';
-  if (['Cari tahsilat', 'Cari odeme'].includes(plan.type) && /eslestirme|eşleştirme|onayda/i.test(plan.counterparty || '')) return 'review';
+  if (['Cari tahsilat', 'Cari odeme'].includes(plan.type) && /eslestirme|eÅŸleÅŸtirme|onayda/i.test(plan.counterparty || '')) return 'review';
   if (amount > 100000 && /virman|transfer/i.test(plan.type || '')) return 'medium';
   if (amount > 10000 && !/masraf|komisyon/i.test(`${plan.type} ${plan.category}`)) return 'medium';
   return 'low';

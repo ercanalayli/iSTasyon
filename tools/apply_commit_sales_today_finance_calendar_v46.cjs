@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -37,3 +38,4 @@ run('git add index.html index.backup-before-sales-today-finance-calendar-v46.htm
 run('git commit -m "Integrate sales today filter and finance calendar v46"');
 
 console.log('\nRESULT: OK - committed locally. Push with: git push');
+

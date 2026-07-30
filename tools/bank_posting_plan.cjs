@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -19,7 +20,7 @@ function loadFinanceRules() {
 
 function fixMojibake(value) {
   const text = replaceMojibakeSequences(String(value || ''));
-  if (!/[ÃÄÅÂâ�]/.test(text)) return text;
+  if (!/[ÃƒÃ„Ã…Ã‚Ã¢ï¿½]/.test(text)) return text;
   let current = text;
   for (let i = 0; i < 3; i += 1) {
     try {
@@ -34,7 +35,7 @@ function fixMojibake(value) {
 }
 
 function mojibakeScore(text) {
-  return (String(text || '').match(/[ÃÄÅÂâ�]/g) || []).length;
+  return (String(text || '').match(/[ÃƒÃ„Ã…Ã‚Ã¢ï¿½]/g) || []).length;
 }
 
 function replaceMojibakeSequences(value) {
@@ -223,7 +224,7 @@ function buildConfirmationQuestion(plan, scope) {
   if (plan.kind === 'bank_unmatched_incoming') {
     return `${plan.bank_name} hesabina gelen ${plan.amount.toLocaleString('tr-TR')} TL hareketi cari baglamadan Hesaba Para Girisi olarak islenecek; aciklamadaki karsi taraf sonra eslestirilecek.`;
   }
-  return `${plan.type} olarak BizimHesap kuyruğuna alinsin mi?`;
+  return `${plan.type} olarak BizimHesap kuyruÄŸuna alinsin mi?`;
 }
 
 function isInvalidCounterparty(value) {
@@ -553,3 +554,4 @@ module.exports = {
   classifyBankMovement,
   classifyQueueRow,
 };
+

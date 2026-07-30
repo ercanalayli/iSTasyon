@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -27,3 +28,4 @@ ok('notification zone clickable', /command-zone notify[\s\S]*gP\('bildirim',null
 ok('dashboard layout reserves command map row', /#pg-dashboard\{height:100%;display:grid;grid-template-rows:auto minmax\(0,1fr\);gap:12px\}/.test(html));
 ok('report hub hidden in single screen dashboard', /#reportHubCard,\s*body\.dashboard-mode #financeCalendarCard\{display:none!important\}/.test(html));
 ok('npm script registered', pkg.scripts && pkg.scripts['verify:single-screen-command-map'] === 'node tools/verify_single_screen_command_map_v78.cjs');
+

@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
@@ -24,9 +25,10 @@ assert(parser.includes("'bankalar_arasi_transfer', 'onay_bekliyor'"), 'visual pa
 
 const telegram = fs.readFileSync(path.join(root, 'telegram', 'aperion_bank_image_bot.cjs'), 'utf8');
 assert(telegram.includes('function waitingRowText'), 'Telegram decision explanation missing');
-assert(telegram.includes('Açıklama kanıtı'), 'Telegram source explanation missing');
+assert(telegram.includes('AÃ§Ä±klama kanÄ±tÄ±'), 'Telegram source explanation missing');
 assert(telegram.includes('Kaynak hesap:'), 'Telegram source account missing');
 assert(telegram.includes('Hedef hesap:'), 'Telegram target account missing');
 assert(telegram.includes('Sorum:'), 'Telegram confirmation question missing');
 
 console.log('Telegram company virman decision verification passed.');
+

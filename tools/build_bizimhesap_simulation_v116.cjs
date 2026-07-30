@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -78,8 +79,9 @@ if (require.main === module) {
   const output = process.argv[3] || 'data/bizimhesap_simulation.json';
   const report = buildSimulation(readJson(input));
   writeJson(output, report);
-  console.log(`BizimHesap simülasyonu: ${report.summary.queue_count} kayıt, ${report.summary.blocked} blokaj, canlı yazma: 0`);
+  console.log(`BizimHesap simÃ¼lasyonu: ${report.summary.queue_count} kayÄ±t, ${report.summary.blocked} blokaj, canlÄ± yazma: 0`);
   console.log(`Output: ${output}`);
 }
 
 module.exports = { simulatePlan, buildSimulation };
+

@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
@@ -44,27 +45,27 @@ async function main() {
   for (const name of required) checks.push(await existsObject(name));
 
   const missing = checks.filter(x => !x.ok);
-  console.log('AperiON finans takvimi canlı ön kontrol');
+  console.log('AperiON finans takvimi canlÄ± Ã¶n kontrol');
   console.log('--------------------------------------');
   for (const c of checks) console.log(`${c.ok ? 'OK ' : 'YOK'} ${c.name}${c.error ? ' - ' + c.error : ''}`);
 
   if (missing.length) {
     console.log('');
-    console.log('RESULT: FAILED - Haziran tahakkukları için finans takvimi Supabase kurulumu eksik.');
-    console.log('Kurulum dosyası üret: npm run finance-calendar:build-install');
-    console.log('Sonra Supabase SQL Editor içinde finance/AperiON_Finance_Calendar_FULL_INSTALL_v58.sql çalıştır.');
+    console.log('RESULT: FAILED - Haziran tahakkuklarÄ± iÃ§in finans takvimi Supabase kurulumu eksik.');
+    console.log('Kurulum dosyasÄ± Ã¼ret: npm run finance-calendar:build-install');
+    console.log('Sonra Supabase SQL Editor iÃ§inde finance/AperiON_Finance_Calendar_FULL_INSTALL_v58.sql Ã§alÄ±ÅŸtÄ±r.');
     process.exit(1);
   }
 
   const june = await countRange('finance_calendar_drawer_view', 'calendar_date', '2026-06-01', '2026-06-30');
   console.log('');
-  console.log(`Haziran finans takvimi görünen kayıt: ${june.error ? june.error : june.count}`);
+  console.log(`Haziran finans takvimi gÃ¶rÃ¼nen kayÄ±t: ${june.error ? june.error : june.count}`);
   if (june.error || june.count === 0) {
-    console.log('RESULT: WARNING - Kurulum var ama Haziran tahakkuk kaydı yok.');
+    console.log('RESULT: WARNING - Kurulum var ama Haziran tahakkuk kaydÄ± yok.');
     process.exitCode = 2;
     return;
   }
-  console.log('RESULT: OK - Finans takvimi canlı ve Haziran kaydı var.');
+  console.log('RESULT: OK - Finans takvimi canlÄ± ve Haziran kaydÄ± var.');
 }
 
 main().catch(error => {
@@ -72,3 +73,4 @@ main().catch(error => {
   console.error(error.message || error);
   process.exit(1);
 });
+

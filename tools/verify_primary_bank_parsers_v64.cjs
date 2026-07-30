@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -78,3 +79,4 @@ function fail(message) {
 function pathToFileUrl(filePath) {
   return `file:///${filePath.replace(/\\/g, '/')}`;
 }
+

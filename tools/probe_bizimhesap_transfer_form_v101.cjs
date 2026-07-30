@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const puppeteer = require('puppeteer');
 const { launchOptions, loginBizimHesap, selectFirma } = require('../bizimhesap_common.cjs');
@@ -16,7 +17,7 @@ async function main() {
     await page.goto(process.env.BIZIMHESAP_ACCOUNTS_URL || 'https://bizimhesap.com/web/ngn/acc/ngnaccounts', { waitUntil: 'networkidle2', timeout: 30000 });
     const opened = await page.evaluate((needle) => {
       const visible = node => !!(node.offsetWidth || node.offsetHeight || node.getClientRects().length);
-      const text = value => String(value || '').toLocaleUpperCase('tr-TR').replace(/Ä°/g, 'İ').replace(/Ä±/g, 'ı');
+      const text = value => String(value || '').toLocaleUpperCase('tr-TR').replace(/Ã„Â°/g, 'Ä°').replace(/Ã„Â±/g, 'Ä±');
       const nodes = [...document.querySelectorAll('a,button,div,span')].filter(visible);
       const item = nodes.find(node => text(node.innerText).includes(needle) && String(node.innerText || '').length < 160);
       if (!item) return false;
@@ -61,3 +62,4 @@ async function main() {
 }
 
 main().catch(error => { console.error(error.message || error); process.exitCode = 1; });
+

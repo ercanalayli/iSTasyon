@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 
@@ -105,3 +106,4 @@ main().catch(err => {
   console.error(err && err.stack ? err.stack : err);
   process.exitCode = 1;
 });
+

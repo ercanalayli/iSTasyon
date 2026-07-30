@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const fs = require('fs');
 const path = require('path');
 
@@ -31,3 +32,4 @@ if (!ok) {
   process.exit(1);
 }
 console.log('RESULT: OK - Ana ekran profesyonel komuta yuzeyi kilitlendi.');
+

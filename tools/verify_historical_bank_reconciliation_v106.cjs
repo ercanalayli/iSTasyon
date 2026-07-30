@@ -1,3 +1,4 @@
+﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 const assert = require('assert');
 const { classifyBankMovement } = require('./bank_posting_plan.cjs');
 
@@ -11,3 +12,4 @@ assert.equal(unknown.kind, 'bank_unmatched_incoming');
 assert.equal(unknown.target_account, '*VAKIF SIRKET');
 assert.equal(unknown.requires_user_review, false);
 console.log('RESULT: OK - historical reconciliation policy preserves source bank account and prevents duplicate posting.');
+
