@@ -1,5 +1,5 @@
-﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
+if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 /* Build the public, product-level FIFO package from the two local BizimHesap exports. */
 const fs = require('fs');
 const path = require('path');

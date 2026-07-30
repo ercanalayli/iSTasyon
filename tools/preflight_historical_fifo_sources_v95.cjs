@@ -1,5 +1,5 @@
-﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
+if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 /* Validate historical FIFO source exports before they are allowed into the live package. */
 const fs = require('fs');
 const path = require('path');

@@ -1,5 +1,5 @@
-﻿if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
+if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
 /* AperiON Telegram Health Check
    Checks:
    - Cloudflare Pages Function health endpoint
