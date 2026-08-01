@@ -85,10 +85,11 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
       <tbody id="catMatrixSalesBody"></tbody>
       <tr><td colspan="22" style="padding:10px 12px;background:#152742;font-weight:800;border-top:2px solid #2c3d56">SATILAN MALIN MALİYETİ</td></tr>
       <tbody id="catMatrixCogsBody"></tbody>
-      <tr id="catGross" style="background:#152742;border-left:3px solid var(--gold)"><td style="padding:9px 12px;font-weight:850">BRÜT KAR</td><td colspan="21" style="padding:9px 12px;text-align:right;color:var(--muted)">Maliyet kaynağı bağlanınca hesaplanır</td></tr>
-      <tr><td style="padding:9px 12px;font-weight:800" colspan="22">GİDERLER — Tahmini / Tahakkuk / Ödenen — kaynak bekliyor, bkz. index.html Finans sekmesi</td></tr>
+      <tr id="catGross" style="background:#152742;border-left:3px solid var(--gold)"><td style="padding:9px 12px;font-weight:850">BRÜT KAR</td><td colspan="21" style="padding:9px 12px;text-align:right;color:var(--muted)">Maliyet (SMM) olmadan matematiksel olarak hesaplanamaz — kaynak bekliyor</td></tr>
+      <tr><td colspan="22" style="padding:8px 12px;background:#0d1727;font-weight:800;color:#83e8c1">GİDERLER (gerçek veri: masraf_raw)</td></tr>
+      <tbody id="giderBody"></tbody>
       <tr><td style="padding:9px 12px;font-weight:800" colspan="22">VERGİ — kaynak bekliyor</td></tr>
-      <tr style="background:#152742;border-left:3px solid var(--green)"><td style="padding:9px 12px;font-weight:850">NET KAR</td><td colspan="21" style="padding:9px 12px;text-align:right;color:var(--muted)">Gider/vergi kaynağı bağlanınca hesaplanır</td></tr>
+      <tr style="background:#152742;border-left:3px solid var(--green)"><td style="padding:9px 12px;font-weight:850">NET KAR</td><td colspan="21" style="padding:9px 12px;text-align:right;color:var(--muted)">Brüt kâr hesaplanamadığı için Net Kâr da hesaplanamaz — maliyet kaynağı bekliyor</td></tr>
     </table>
     </div>
     <div style="padding:10px 18px;color:var(--muted);font-size:11px;border-top:1px solid var(--line)" id="matrixSource">Kaynak: sales_raw (ALAYLI). Maliyet için product_raw eşleşmesi henüz doğrulanmadı — "kaynak bekliyor" olarak gösterilir.</div>
@@ -261,6 +262,21 @@ db.from('aperion_category_income_matrix_v3_view').select('*').then(({data,error}
   cogsBody.innerHTML = '<tr style="border-top:1px solid #23344d"><td style="padding:7px 12px;color:var(--muted)">Tüm kategoriler</td><td colspan="21" style="padding:7px 12px;text-align:right;color:#f6c86a">Kaynak bekliyor (ürün kod eşleşmesi doğrulanmadı)</td></tr>';
   setText('matrixSource', 'Kaynak: sales_raw (ALAYLI) + BizimHesap Sınıflandırma 1 (canlı çekildi, 24 distribütör cari), ' + catOrder.length + ' kategori grubu. Son satış tarihi: ' + (data.reduce((m,r)=>r.son_tarih&&r.son_tarih>m?r.son_tarih:m,'')||'-') + '. Tahsilat kategori bazında henüz bağlı değil, Maliyet: product_raw eşleşmesi doğrulanmadı — ikisi de "kaynak bekliyor".');
 }).catch(e=>{ document.getElementById('catMatrixSalesBody').innerHTML = '<tr><td colspan="22" style="padding:10px 12px;color:var(--muted)">Hata: '+String(e)+'</td></tr>'; });
+
+db.from('aperion_gider_ozet_v1_view').select('*').then(({data,error})=>{
+  const body = document.getElementById('giderBody');
+  if (error || !data) { body.innerHTML = '<tr><td colspan="22" style="padding:7px 12px;color:var(--muted)">Kaynak okunamadı: '+(error?error.message:'boş sonuç')+'</td></tr>'; return; }
+  const byClass = {}; data.forEach(r=>{ byClass[r.sinif]=r; });
+  const order = [['SABIT','Sabit giderler'],['DEGISKEN','Değişken giderler'],['SINIFLANDIRILMAMIS','Sınıflandırılmamış (kategori boş)']];
+  const totalRow = {}; periodKeys.forEach(p=>{ totalRow['gider_'+p]=0; });
+  let rowsHtml = order.map(([key,label])=>{
+    const r = byClass[key] || {};
+    const cells = periodKeys.map(p=>{ const v = Number(r['gider_'+p]||0); totalRow['gider_'+p]+=v; return '<td colspan="3" style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;border-left:1px solid #1c293c">'+(v?money(v):'<span style="color:#5c6d84">-</span>')+'</td>'; }).join('');
+    return '<tr style="border-top:1px solid #23344d"><td style="padding:7px 12px;font-weight:700;position:sticky;left:0;background:var(--surface)">'+label+' <span style="color:var(--muted);font-weight:400">('+(r.kayit_sayisi||0)+' kayıt)</span></td>'+cells+'</tr>';
+  }).join('');
+  const totalCells = periodKeys.map(p=>'<td colspan="3" style="text-align:right;padding:7px 8px;font-weight:850;font-variant-numeric:tabular-nums;color:#ff9aa7;border-left:1px solid #1c293c">'+money(totalRow['gider_'+p])+'</td>').join('');
+  body.innerHTML = rowsHtml + '<tr style="border-top:2px solid #2c3d56;background:#0f1b2c"><td style="padding:7px 12px;font-weight:850;position:sticky;left:0;background:#0f1b2c">TOPLAM GİDER</td>'+totalCells+'</tr>';
+}).catch(e=>{ document.getElementById('giderBody').innerHTML = '<tr><td colspan="22" style="padding:7px 12px;color:var(--muted)">Hata: '+String(e)+'</td></tr>'; });
 
 function normalizeBank(name){
   const n = String(name||'').toLocaleLowerCase('tr').replace(/i̇/g,'i');
