@@ -182,6 +182,18 @@ async function raporCek(page, tarihTR) {
   await page.waitForSelector('input', { timeout: 10000 });
   await new Promise(r => setTimeout(r, 800));
 
+  // Kolonlar secimi hesap bazinda kaydediliyor - bazi BizimHesap kullanicilarinda
+  // "Barkod"/"Urun Kodu" kolonlari secili degil, bu yuzden urun_kod hep bos geliyordu.
+  // Rapor uretmeden once bu iki kolonu her ihtimale karsi zorla isaretliyoruz.
+  await page.evaluate(() => {
+    const wanted = ['Barkod', 'Ürün Kodu'];
+    const boxes = [...document.querySelectorAll('input[type="checkbox"]')];
+    wanted.forEach(label => {
+      const cb = boxes.find(c => (c.closest('label')?.innerText || c.parentElement?.innerText || '').trim() === label);
+      if (cb && !cb.checked) cb.click();
+    });
+  });
+
   const inputs = await page.$$('input[type="text"]');
   for (let i = 0; i < Math.min(inputs.length, 2); i++) {
     await inputs[i].click({ clickCount: 3 });
