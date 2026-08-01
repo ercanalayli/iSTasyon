@@ -2,8 +2,8 @@
   "name": "AperiON iSTasyon",
   "short_name": "AperiON",
   "description": "ALAYLI Medikal finans, onay ve operasyon komuta merkezi",
-  "id": "/aperion-merkez.html",
-  "start_url": "/aperion-merkez.html?source=pwa",
+  "id": "/aperion-ust-akil.html",
+  "start_url": "/aperion-ust-akil.html?source=pwa",
   "scope": "/",
   "display": "standalone",
   "display_override": [
