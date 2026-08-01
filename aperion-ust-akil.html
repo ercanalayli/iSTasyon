@@ -102,7 +102,7 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
       <tr style="background:#152742;border-left:3px solid var(--green)"><td style="padding:9px 12px;font-weight:850">NET KAR</td><td colspan="21" id="catNetValue" style="padding:9px 12px;text-align:right;color:var(--muted)">Hesaplanıyor…</td></tr>
     </table>
     </div>
-    <div style="padding:10px 18px;color:var(--muted);font-size:11px;border-top:1px solid var(--line)" id="matrixSource">Kaynak: sales_raw (ALAYLI). Maliyet için product_raw eşleşmesi henüz doğrulanmadı — "kaynak bekliyor" olarak gösterilir.</div>
+    <div style="padding:10px 18px;color:var(--muted);font-size:11px;border-top:1px solid var(--line)" id="matrixSource">Yükleniyor…</div>
   </section>
 
   <section class="grid12" id="cardGrid" aria-label="Operasyon kartları">
@@ -445,7 +445,7 @@ db.from('sales_flow_finance_mini_v47_view').select('*').eq('company','ALAYLI').m
   if (error || !data) { setText('satis-value','Kaynak okunamadı'); setText('satis-note', error?error.message:'Kayıt bulunamadı'); return; }
   setText('satis-value', money(data.today_sales) + ' bugünkü satış');
   setText('satis-note', (Number(data.today_qty||0)).toLocaleString('tr-TR') + ' adet · Geciken alacak ' + money(data.overdue_receivable) + ' · Geciken borç ' + money(data.overdue_payable) + ' · ' + (data.urgent_tasks||0) + ' acil görev.');
-  { const st = Number(data.overdue_receivable||0)+Number(data.overdue_payable||0) > 0 ? 'uyari':'iyi'; setText('satis-status', st==='uyari'?'UYARI':'İYİ'); setClass('satis-status', st); }
+  { const st = Number(data.overdue_receivable||0)+Number(data.overdue_payable||0) > 0 ? 'uyari':'iyi'; setText('satis-status', st==='uyari'?'UYARI':'İYİ'); setClass('satis-status', st); setRisk('card-satis', st==='uyari'?'orange':'green'); }
   setText('satis-time', fmtTime(new Date().toISOString()));
 
   const overdueTotal = Number(data.overdue_receivable||0) + Number(data.overdue_payable||0);
