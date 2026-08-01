@@ -63,6 +63,23 @@ tr.cat-clickable:hover .row-btn::after,tr.gider-clickable:hover .row-btn::after{
 @media (max-width:1180px){.grid12{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){.shell{width:min(100% - 20px,1560px)}.grid12{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}}
 footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color:#7f91a9;font-size:11px;flex-wrap:wrap}
+.period-tabs{display:none;gap:6px;padding:0 18px 10px;overflow-x:auto}
+.period-tab{flex:0 0 auto;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);font-size:11px;font-weight:800;white-space:nowrap}
+.period-tab.active{background:var(--gold);color:#241a04;border-color:var(--gold)}
+/* 28 sutunlu genis tablo telefonda kullanilamiyordu — mobilde tek donem (sekmeyle secilir),
+   masaustunde tam tablo. Ercan'in canli iPhone ekran goruntusuyle bulundu (2026-08-01). */
+@media (max-width:640px){
+  .period-tabs{display:flex}
+  #catMatrix{min-width:0 !important;width:100%}
+  #catMatrix .pp-period{display:none}
+  #catMatrix[data-active="bugun"] .pp-bugun{display:table-cell}
+  #catMatrix[data-active="dun"] .pp-dun{display:table-cell}
+  #catMatrix[data-active="hafta"] .pp-hafta{display:table-cell}
+  #catMatrix[data-active="ay"] .pp-ay{display:table-cell}
+  #catMatrix[data-active="gecen_ay"] .pp-gecen_ay{display:table-cell}
+  #catMatrix[data-active="yil"] .pp-yil{display:table-cell}
+  #catMatrix[data-active="gecen_yil"] .pp-gecen_yil{display:table-cell}
+}
 </style>
 </head>
 <body>
@@ -79,22 +96,29 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
     <header style="padding:16px 18px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
       <div><div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">KATEGORİ BAZLI GELİR TABLOSU</div><h2 id="matrixTitle" style="margin:5px 0 4px;font-size:19px">Satışlar → SMM → Brüt Kar → Giderler → Net Kar</h2><p style="margin:0;color:var(--muted);font-size:12px">Ürün kategorisine göre; Bugün / Dün / Bu Hafta / Bu Ay / Geçen Ay / Bu Yıl / Geçen Yıl</p></div>
     </header>
+    <div class="period-tabs" id="periodTabs">
+      <button type="button" class="period-tab active" data-period="bugun">Bugün</button>
+      <button type="button" class="period-tab" data-period="dun">Dün</button>
+      <button type="button" class="period-tab" data-period="hafta">Hafta</button>
+      <button type="button" class="period-tab" data-period="ay">Ay</button>
+      <button type="button" class="period-tab" data-period="gecen_ay">Geçen Ay</button>
+      <button type="button" class="period-tab" data-period="yil">Yıl</button>
+      <button type="button" class="period-tab" data-period="gecen_yil">Geçen Yıl</button>
+    </div>
     <div style="overflow-x:auto">
-    <table style="width:100%;border-collapse:collapse;font-size:11.5px;min-width:2200px" id="catMatrix">
+    <table style="width:100%;border-collapse:collapse;font-size:11.5px;min-width:2200px" id="catMatrix" data-active="bugun">
       <thead>
         <tr style="background:#0d1727">
-          <th rowspan="2" style="text-align:left;padding:8px 12px;color:#a7bad2;font-size:10px;font-weight:900;letter-spacing:.5px;position:sticky;left:0;background:#0d1727;vertical-align:bottom">KATEGORİ</th>
-          <th colspan="4" style="text-align:center;padding:6px 8px;color:#83e8c1;font-size:10px;font-weight:900;border-left:1px solid #23344d">BUGÜN</th>
-          <th colspan="4" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">DÜN</th>
-          <th colspan="4" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">BU HAFTA</th>
-          <th colspan="4" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">BU AY</th>
-          <th colspan="4" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">GEÇEN AY</th>
-          <th colspan="4" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">BU YIL</th>
-          <th colspan="4" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">GEÇEN YIL</th>
+          <th rowspan="2" class="pp-label" style="text-align:left;padding:8px 12px;color:#a7bad2;font-size:10px;font-weight:900;letter-spacing:.5px;position:sticky;left:0;background:#0d1727;vertical-align:bottom">KATEGORİ</th>
+          <th colspan="4" class="pp-period pp-bugun" style="text-align:center;padding:6px 8px;color:#83e8c1;font-size:10px;font-weight:900;border-left:1px solid #23344d">BUGÜN</th>
+          <th colspan="4" class="pp-period pp-dun" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">DÜN</th>
+          <th colspan="4" class="pp-period pp-hafta" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">BU HAFTA</th>
+          <th colspan="4" class="pp-period pp-ay" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">BU AY</th>
+          <th colspan="4" class="pp-period pp-gecen_ay" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">GEÇEN AY</th>
+          <th colspan="4" class="pp-period pp-yil" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">BU YIL</th>
+          <th colspan="4" class="pp-period pp-gecen_yil" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">GEÇEN YIL</th>
         </tr>
-        <tr style="background:#0d1727">
-          <script>document.write('<th style="border-left:1px solid #23344d;padding:5px 6px;color:#7f91a9;font-size:9px;font-weight:800" title="satılan/kalan stok">ADET/STOK</th><th style="padding:5px 6px;color:#7f91a9;font-size:9px;font-weight:800">SATIŞ TL</th><th style="padding:5px 6px;color:#c9b676;font-size:9px;font-weight:800">SMM</th><th style="padding:5px 6px;color:#7be7ba;font-size:9px;font-weight:800">KAR</th>'.repeat(7));</script>
-        </tr>
+        <tr style="background:#0d1727" id="subHeaderRow"></tr>
       </thead>
       <tbody id="catMatrixBody"></tbody>
     </table>
@@ -248,6 +272,24 @@ setText('updatedPill', 'Güncellendi · ' + new Intl.DateTimeFormat('tr-TR',{dat
 
 const catOrder = ['MEDİKAL AKÜLÜ','MEKİKAL ELEKTRONİK','HASTA ALTI BEZİ','PERİNE VÜCUT TEMİZLEME','KİRALIK','KARYOLA','YÜRÜMEYE YARDIMCI','ORTOPEDİ TEKSTİL','SARF','SONDA','KOLOSTOMİ','AYAKKABI TERLİK','SGK','SOLUNUM','DİĞER'];
 const periodKeys = ['bugun','dun','hafta','ay','gecen_ay','yil','gecen_yil'];
+
+// Alt basliklari (ADET/STOK, SATIS TL, SMM, KAR) her donem icin ayri class ile uret -
+// mobilde tek donem gosterip digerlerini gizlemek icin (bkz .pp-period CSS kurallari).
+document.getElementById('subHeaderRow').innerHTML = periodKeys.map(p =>
+  '<th class="pp-period pp-'+p+'" style="border-left:1px solid #23344d;padding:5px 6px;color:#7f91a9;font-size:9px;font-weight:800" title="satılan/kalan stok">ADET/STOK</th>'
+  + '<th class="pp-period pp-'+p+'" style="padding:5px 6px;color:#7f91a9;font-size:9px;font-weight:800">SATIŞ TL</th>'
+  + '<th class="pp-period pp-'+p+'" style="padding:5px 6px;color:#c9b676;font-size:9px;font-weight:800">SMM</th>'
+  + '<th class="pp-period pp-'+p+'" style="padding:5px 6px;color:#7be7ba;font-size:9px;font-weight:800">KAR</th>'
+).join('');
+
+// Mobil donem sekmeleri (masaustunde CSS ile gizli)
+document.getElementById('periodTabs').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('.period-tab');
+  if (!btn) return;
+  document.querySelectorAll('.period-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('catMatrix').setAttribute('data-active', btn.getAttribute('data-period'));
+});
 const qty = v => v ? Number(v).toLocaleString('tr-TR') : '<span style="color:#5c6d84">-</span>';
 const dash = '<span style="color:#5c6d84">-</span>';
 // Tek birlesik satir: ADET | SATIS TL | SMM | KAR — Satis ve SMM ayri tablolar oldugunda
@@ -262,10 +304,11 @@ function fourCol(adet, satis, cogsR, satisForPct, p, stok){
   const kar = ec ? (ec - m) : null;
   const karCell = kar===null ? dash : '<span style="color:'+(kar>=0?'#7be7ba':'#ff9aa7')+'">'+money(kar)+'</span>';
   const adetCell = qty(adet) + (stok!=null ? ' <span style="color:#5c8dff;font-size:9px">/'+Number(stok).toLocaleString('tr-TR',{maximumFractionDigits:0})+'</span>' : '');
-  return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;color:var(--muted);border-left:1px solid #1c293c" title="satılan/kalan stok">'+adetCell+'</td>'
-    + '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums">'+(satis?money(satis):dash)+'</td>'
-    + '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;color:#c9b676">'+smmCell+'</td>'
-    + '<td style="text-align:right;padding:6px 8px;font-weight:700;font-variant-numeric:tabular-nums">'+karCell+'</td>';
+  const pp = 'pp-period pp-'+p;
+  return '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;color:var(--muted);border-left:1px solid #1c293c" title="satılan/kalan stok">'+adetCell+'</td>'
+    + '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums">'+(satis?money(satis):dash)+'</td>'
+    + '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;color:#c9b676">'+smmCell+'</td>'
+    + '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-weight:700;font-variant-numeric:tabular-nums">'+karCell+'</td>';
 }
 function giderThreeCol(v){
   return '<td style="text-align:right;padding:6px 8px;color:#f6c86a;font-size:10px;border-left:1px solid #1c293c">kaynak bekliyor</td>'
