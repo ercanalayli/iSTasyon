@@ -244,7 +244,11 @@ async function kaydet(rows, firma, tarihISO) {
     yil:      parseInt(tarihISO.substring(0,4)),
     ay:       parseInt(tarihISO.substring(5,7)),
     fatura_no: r.fatura_no || r.fatura || r.belge_no || r.evrak_no || r.fis_no || '',
-    urun_kod: r.urun_kodu || r.urun_kod || r.stok_kodu || r.kod || '',
+    // Satis raporu kolonlari "Kod" ve "Barkod" (ASCII basliklar, Turkce karakter sorunu yok) -
+    // eskiden urun_kod hep bos kayit ediliyordu cunku asagidaki destructuring bunu kasitli
+    // disliyordu (satis<->urun eslestirmesi hic calismiyordu). Simdi hem yakalaniyor hem kaydediliyor.
+    urun_kod: r.kod || r.urun_kodu || r.stok_kodu || '',
+    barkod: r.barkod || '',
     satis_kdv_haric: trNumber(r.kdv_haric || r.net_tutar || r.matrah || r.net || r.toplam || r.tutar || r.ciro || '0'),
     satis_kdv_dahil: trNumber(r.kdv_dahil || r.genel_toplam || r.toplam || r.tutar || r.ciro || '0'),
     kaynak_satir: index + 1,
@@ -252,7 +256,7 @@ async function kaydet(rows, firma, tarihISO) {
   }));
   capturedSales.push(...enrichedRecords);
   const records = enrichedRecords.map(({
-    fatura_no, urun_kod, satis_kdv_haric, satis_kdv_dahil, kaynak_satir, raw, ...record
+    satis_kdv_haric, satis_kdv_dahil, kaynak_satir, raw, ...record
   }) => record);
 
   const { data, error } = await db.from(SUPABASE.table).insert(records).select();
