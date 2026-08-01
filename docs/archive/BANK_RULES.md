@@ -51,6 +51,15 @@ Bu işlem:
 
 Güven 100/100 olsa bile kullanıcı onayı olmadan BizimHesap'a otomatik yazılmayacaktır.
 
+## Moka / KMH / Batch sınıflandırma kuralları
+
+(2026-07-08'de eklenmesi planlanmış, 2026-07-31'e kadar bu dosyaya hiç işlenmemişti — root `DECISIONS.md`'deki D-017 kararıyla birlikte buraya taşındı.)
+
+- **Moka United POS aktarımı:** Açıklamasında "Moka United" geçen ve şirket banka hesabına giren hareketler, `*MOCA SONOVA POS KREDI KARTI` kaynaklı POS tahsilat aktarımı olarak sınıflanır. Hedef, kaynak ekstredeki şirket banka hesabıdır (İş Bankası için `*IS BANKASI`). Bu hareketler Emanet hesabına veya cariye kaydedilmez — Moka United sadece kartlı tahsilatın aracısıdır, aynı paranın ikinci kez gelir/cari kaydı olarak oluşturulması mutabakatı bozar.
+- **KMH ana para kapama:** "KMH-ANAPARA BORCU TAHSİLATI" açıklamalı hareketler KMH ana para kapama olarak sınıflanır, gider değildir.
+- **Batch komisyonu:** "Batch Komisyonu" açıklamalı hareketler banka/POS komisyon gideri olarak sınıflanır.
+- **Gelen FAST:** Cari tahsilat adayı olarak işaretlenir; cari netleşmeden otomatik kayıt atılmaz.
+
 ## Kanıt zorunluluğu
 
 Onay ekranında ve Telegram mesajında şu bilgiler mümkün olduğunca gösterilmelidir:

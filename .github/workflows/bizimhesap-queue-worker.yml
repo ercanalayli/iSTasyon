@@ -66,6 +66,14 @@ jobs:
           COMPANY_ID: alayli
         run: npm run bizimhesap:queue:dry
 
+      - name: Auto-queue unmatched bank incoming (EMANET karsi hesap)
+        if: ${{ github.event_name == 'schedule' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          COMPANY_ID: alayli
+        run: node tools/queue_unmatched_bank_incoming_v104.cjs --commit --confirm BANKA_GIRISI_ONAYLIYORUM
+
       - name: Scheduled approved queue live save
         if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
         env:

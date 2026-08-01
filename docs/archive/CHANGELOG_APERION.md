@@ -1,40 +1,5 @@
 # AperiON Changelog
 
-Bu dosya, root `CHANGELOG_APERION.md` (767 satır, en güncel/en tam changelog)
-temel alınarak, eski `docs/CHANGELOG.md`'nin tek girdisi (2026-07-08, docs/
-klasörünün başlangıcı) en alta eklenerek ve `QA_CHECKLIST.md`'nin sürüm
-numarasıyla eşleşen test maddeleri ilgili girdilerin altına "QA" notu olarak
-katlanarak 2026-07-31'de birleştirildi. `QA_CHECKLIST.md`, sürüme bağlı
-olmayan genel/standing kontrol listeleri "Kalıcı QA kontrol listeleri"
-bölümüne taşınarak retire edildi. Kaynak dosyaların tamamı `docs/archive/`
-altındadır.
-
-**Tarih tutarsızlığı notu:** En alttaki "2026-07-08 — docs/ klasörünün
-başlangıcı" girdisinin tarihi, hemen üstündeki "2026-06-27" girdisinden
-kronolojik olarak daha yenidir. Orijinal konsolidasyon talimatı bu girdiyi
-"en eski" olarak en alta koymayı istiyordu (muhtemelen docs/ yapısının
-mantıksal/temel başlangıcı olduğu için); tarih sırası tam kronolojik değil,
-bilerek böyle bırakıldı — bu bir hata değil, kaynaktaki tarih etiketleme
-tutarsızlığının şeffaf şekilde taşınmasıdır.
-
-## 2026-07-31 - Doküman konsolidasyonu ve güvenlik doğrulaması
-
-- Canlı Supabase güvenlik denetimi tekrarlandı: `ingest_mail_bank_movements`,
-  `mark_bizimhesap_queue_processed`, `finance_calendar_log_action`,
-  `kullanici_firma_idler`, `on_maliyet_upload`, `rls_auto_enable`
-  fonksiyonlarının hâlâ anon çalıştırılabilir olduğu bulundu (ikisi PUBLIC
-  rolü üzerinden miras) ve hepsi REVOKE edilip doğrulandı.
-- Yeni bulgu: `bank_transactions` tablosunda anon herkes okuyabiliyor, giriş
-  yapan herkes sınırsız yazabiliyor — kullanıcı ile birlikte tasarlanacak,
-  bu turda dokunulmadı (bkz. `docs/OPERATIONS_RULES.md` §9).
-- `docs/BANK_RULES.md`'ye üç haftadır eksik olan Moka/KMH/Batch sınıflandırma
-  kuralları eklendi (şimdi `docs/OPERATIONS_RULES.md` §1.4).
-- Kanonik canlı adres doğrulandı: `_redirects` → `aperion.html` →
-  `aperion-ust-akil.html` (bkz. `docs/ARCHITECTURE.md`).
-- 56 markdown dosyası (`docs/` 38-41 + kök 17) tek doğruluk kaynağı olacak
-  11 aktif dosyaya konsolide edildi; orijinaller `docs/archive/` altına
-  taşındı, hiçbiri silinmedi.
-
 ## 2026-07-29 - Hasta Bezi BizimHesap Veri Motoru v126
 
 - Satis, alis, urun, cari, stok ve kaynak denetimi icin alti JSON sozlesmesi eklendi.
@@ -57,13 +22,6 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
 - 1 ve 2 Temmuz tarihli iki aday, kalici ve kimlik bazli kullanici dogrulamasi
   ile tekrar islenebilir hale getirildi.
 
-**QA (eski QA_CHECKLIST.md, "2026-07-16 Moka United POS aktarim ogrenmesi v124"):**
-- [x] Moka United anahtar kelimesi, POS aktarimi kuralina baglandi.
-- [x] Gercek BizimHesap kaynak hesabi `*MOCA SONOVA POS KREDI KARTI` olarak sabitlendi.
-- [x] 1 ve 2 Temmuz Is Bankasi adaylari kimlik bazli override ile Emanet sinifindan cikarildi.
-- [ ] Plan yeniden uretildikten sonra iki adayda kaynak/hedef/tutar/tarih kanitinin kontrolu.
-- [ ] Kullanici onayi ardindan BizimHesap'ta iki transferin kayit ve tekrar-okuma kaniti.
-
 ## 2026-07-16 - Bugun satis, maliyet ve kar karari v121
 
 - Ana gelir yuzeyinin varsayilan donemi `Bugun` yapildi.
@@ -71,14 +29,6 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
   Giderler ve Net Sonuc kartlari eklendi.
 - Donem degistirme dugmeleri ayni karar yuzeyine tasindi; ayrintili donem
   matrisi korunarak ikinci katmanda kaldi.
-
-**QA (eski QA_CHECKLIST.md, "2026-07-16 Bugun satis, maliyet ve kar karari v121"):**
-- [x] Ana gelir modelinin varsayilan donemi `today` yapildi.
-- [x] Satis, maliyet, brut kar, gider ve net sonuc ilk gorunen karar satirindadir.
-- [x] Her karar karti mevcut ayrinti akimina tiklanabilir baglantidir.
-- [x] Donem degistirme dugmeleri ayni yuzeydedir.
-- [x] Inline JavaScript syntax ve `git diff --check` gecti.
-- [ ] Canli kaynakta bugun tarihli satis satirinin saatlik klon sonrasi denetimi.
 
 ## 2026-07-16 - Ana ekran donemsel gelir tablosu matrisi v120
 
@@ -92,16 +42,6 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
 - Banka/POS nakdi, kategoriyle kanitli esleme yoksa kategori satirlarina
   dagitilmaz; toplam satirda tutulur.
 
-**QA (eski QA_CHECKLIST.md, "2026-07-16 Ana ekran donemsel gelir tablosu matrisi v120"):**
-- [x] Bugun, Dun, Bu Hafta, Bu Ay, Gecen Ay, Bu Yil ve Gecen Yil sutun gruplari olusturuldu.
-- [x] Bugun grubu plan/tahakkuk/nakit; diger donemler tahakkuk/nakit olarak ayrildi.
-- [x] Satis, maliyet, brut kar, gider ve net kar satirlari matriste ayridir.
-- [x] Satis kategori tahakkuk tutari kategori -> urun -> kaynak kayit ekranina iner.
-- [x] Kategoriyle kanitli eslesmeyen banka/POS nakdi kategori satirina dagitilmaz.
-- [x] Inline JavaScript syntax ve `git diff --check` gecti.
-- [ ] Masaustu ve mobil canli ekran goruntusuyle yerlesim onayi.
-- [ ] Banka/POS nakit hareketlerinin cari/fatura/kategori kanitiyla eslenmesi.
-
 ## 2026-07-16 - Ana sayfa gelir tablosu ve bilanco onceligi v119
 
 - Gelir Tablosu ve Bilanco, ana acilis ekraninin ilk ve genis finans yuzeyine
@@ -109,45 +49,22 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
 - Banka, onay, satis, urun, cari, kaynak ve bildirim alanlari silinmedi;
   gelir tablosunun ardindaki sekiz tiklanabilir komuta alaninda tutuldu.
 
-**QA (eski QA_CHECKLIST.md, "2026-07-16 Ana sayfa finans onceligi v119"):**
-- [x] `index.html` acildiginda Gelir Tablosu ve Bilanco ilk finans yuzeyidir.
-- [x] Finans yuzeyi, komuta alanlarindan once ve genislik onceligiyle gorunur.
-- [x] Sekiz komuta alani korunur ve finans yuzeyinin ardinda tiklanabilir kalir.
-- [ ] Masaustu ve mobil ekran goruntusuyle son yerlesim onayi.
-
 ## 2026-07-16 - Tahsilat ve odeme kanal kirilimi v118
 
 - CFO komuta ekranina ayni donem secicisiyle calisan iki ayri nakit akis yuzeyi eklendi: Tahsilatlar ve Odemeler.
 - Her iki yuzey `Nakit`, `Kredi Karti`, `Cek` ve `Diger` kanallarini ayri ve tiklanabilir olarak gosterir.
 - Kanal toplamlarinin banka onay adaylarindan turetilmesi engellendi. Tarihli tam nakit snapshot'i gelmeden herhangi bir tutar veya sifir gosterilmez.
 
-**QA (eski QA_CHECKLIST.md, "2026-07-16 Tahsilat ve odeme kanal kirilimi v118"):**
-- [x] Tahsilat ve odeme ayni ekranda birbirinden ayri gorunur.
-- [x] Nakit, kredi karti, cek ve diger kanallari iki akis icin de ayridir.
-- [x] Donem secimi Bugun, Dun, Bu Hafta, Bu Ay, Gecen Ay, Bu Yil ve Gecen Yil icin kanal basliklarini birlikte degistirir.
-- [x] Banka onay adayi sayisi kanal toplamina donusturulmez.
-- [x] Her kanal ilgili detay ekranina tiklanabilir baglantidir.
-- [ ] Canli tam nakit snapshot'i ile kanal tutarlarinin kaynak/tarih bazli mutabakati.
-
-## 2026-07-16 - Ana ekran gelir tablosu ve bilanço operasyon yuzeyi v117
+## 2026-07-16 - Ana ekran gelir tablosu ve bilanÃ§o operasyon yuzeyi v117
 
 - Komuta sayfasinin ust yarisi, buyuk slogan ve yonlendirme kartlari yerine
   Gelir Tablosu ve Bilanco karar yuzeyine donusturuldu.
-- Net satis, maliyet, brut kar, sabit/değisken gider, vergi ve net kar ile
+- Net satis, maliyet, brut kar, sabit/deÄŸisken gider, vergi ve net kar ile
   banka/kasa, alacak, borc, stok ayni ekranda ve tiklanabilir kalemler halinde
   gorunur oldu.
 - Mevcut satis ozetinden sadece kaynakli net satis okunur. Maliyet, gider,
-  vergi ve bilanço kaynaklari bagli degilse sifir veya sahte net kar
+  vergi ve bilanÃ§o kaynaklari bagli degilse sifir veya sahte net kar
   gosterilmez; durum acikca "kaynak bekliyor" olarak belirtilir.
-
-**QA (eski QA_CHECKLIST.md, "2026-07-16 Ana ekran gelir tablosu ve bilanco operasyon yuzeyi v117"):**
-- [x] Ust yarida Gelir Tablosu ve Bilanco birlikte gorunur.
-- [x] Satis, maliyet, brut kar, gider, vergi ve net kar kalemleri ayridir.
-- [x] Her finans kalemi ilgili detay/karar ekranina tiklanabilir baglantidir.
-- [x] Satis tutari sadece mevcut kaynak ozetinden okunur.
-- [x] Eksik maliyet, gider, vergi veya bilanço kaynagi sifir kabul edilmez.
-- [ ] Canli clone snapshot ile tum kalemlerin ayni as-of tarihte mutabakati.
-- [ ] Mobil ve masaustu gorunumunun tarayici ekran goruntusuyle onayi.
 
 ## 2026-07-16 - Apsiyon aylik tahakkuk ve odeme defteri v116
 
@@ -160,25 +77,12 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
 - Kaynak HTML'nin standart tablo satiri disindaki acilir ayrintilari da
   ayristrildi. Bu turda Finans Takvimi veya BizimHesap'a yazim yapilmadi.
 
-**QA (eski QA_CHECKLIST.md, "2026-07-16 Apsiyon aylik tahakkuk ve odeme defteri v116"):**
-- [x] Apsiyon `Tumunu Goster` kaynak kirilimindan aylik Aidat borc makbuzlari okundu.
-- [x] Aidat belge tarihi, son odeme tarihi ve `4.500,00 TL` tutar her ay icin ayri kanitlandi.
-- [x] Tahsilat satirlari borc satirlarindan ayri tutuldu.
-- [x] Dogalgaz ve Aidat kaynaklari birbirine karistirilmadi.
-- [x] Devir bakiyesi odeme/tahakkuk adayi sayilmadi.
-- [x] Okuma dry-run olarak kaldi; Finans Takvimi ve BizimHesap'a yazim yapilmadi.
-
 ## 2026-07-16 - Apsiyon kaynak bakiye ayrimi v115
 
 - Apsiyon kisisel finans ekrani aidat ve dogalgaz kaynak bakiyeleri icin
   salt-okunur olarak dogrulandi.
 - Okuyucu, kaynak bakiye kirilimini aylik tahakkuk adaylarindan ayirir.
   Vade yoksa Finans Takvimi'ne kesin odeme kaydi olusturmaz.
-
-**QA (eski QA_CHECKLIST.md, "2026-07-16 Apsiyon kaynak bakiye ayrimi v115"):**
-- [x] Apsiyon kalici oturumuyla Batikent kisisel finans ekrani salt-okunur okundu.
-- [x] Aidat ve Dogalgaz kaynak bakiyeleri ayri kategoriler olarak alindi.
-- [x] Toplam bakiye aylik odeme/tahakkuk diye Finans Takvimi'ne yazilmadi.
 
 ## 2026-07-16 - Kaynak banka tarihi resmi kayit duzeltmesi v114
 
@@ -189,12 +93,6 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
   finansal tarihini tasiyor.
 - Tekil tarih duzeltme araci formdaki asenkron veri yuklenmesini, tarih
   kanitini ve sonradan hesap hareketi satiri kontrolunu zorunlu tutar.
-
-**QA (eski QA_CHECKLIST.md, "2026-07-16 Kaynak banka tarihi duzeltmesi v114"):**
-- [x] Kaynak `transaction_date`, BizimHesap form tarihinden once ve sonra kontrol edildi.
-- [x] Aynı iki mevcut Vakif Sirket kaydi ikinci hareket olusturulmadan duzeltildi.
-- [x] POS tahsilati ve POS komisyonu hesap hareketleri listesinde `14.07.2026` olarak tekrar okundu.
-- [x] Formdaki asenkron eski kayit riski test edilip bekleme kaniti eklendi.
 
 ## 2026-07-16 - Banka tarihi form kaniti v113
 
@@ -216,31 +114,15 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
 - Added a personal Batikent fuel obligation; amount and due date remain source-bound.
 - Added local-only ignore rules for Apsiyon profile, session state, and raw imports.
 
-**QA (eski QA_CHECKLIST.md, "2026-07-16 Apsiyon personal accrual intake v112" — hiçbiri işaretlenmemişti, hepsi açık kalmıştı):**
-- [ ] `apsiyon_oturum_kur.cmd` opens a local browser profile without writing credentials to the repository.
-- [ ] Authenticated Apsiyon Borclar/Tahakkuk page is detected and session status is local-only.
-- [ ] `apsiyon_tahakkuk_oku.cmd` emits evidence-backed aidat and yakit candidates.
-- [ ] Aidat preserves day 16; fuel due date comes only from source evidence.
-- [ ] No candidate is marked paid before bank/dekont reconciliation.
-
 ## 2026-07-16 - Ana Sayfa Gelir Tablosu ve Bilanco Karar Yuzeyi v111
 
 - Ana ekrana Exceldeki gelir tablosu siralamasina uygun iki parca karar
-  yuzeyi eklendi: gelir tablosu ve bilanço durumu.
+  yuzeyi eklendi: gelir tablosu ve bilanÃ§o durumu.
 - `Satilan Malin Maliyeti` artik ayri tiklanabilir satirdir; kategori,
   urun ve satis kaydina kadar iner.
-- Bilanço tarafinda banka/kasa yalnizca bakiye alanli ekstrelerden hesaplanir.
+- BilanÃ§o tarafinda banka/kasa yalnizca bakiye alanli ekstrelerden hesaplanir.
   Tahsilat/odeme farki izleme kalemi olarak etiketlenir; ticari alacak veya
   borc diye kesinlestirilmez.
-
-**QA (eski QA_CHECKLIST.md, "2026-07-16 Ana Sayfa Gelir Tablosu ve Bilanco v111"):**
-- [x] Excel donem sirasi (Bugun -> Gecen Yil) gelir tablosu motorunda var.
-- [x] Planlanan / tahakkuk / gerceklesen kolonlari ayridir.
-- [x] Satis -> kategori -> urun -> kaynak kayit ayrintisi korunur.
-- [x] Satilan Malin Maliyeti ayri tiklanabilir kategori/urun akisi olarak eklendi.
-- [x] Banka/kasa toplami sadece bakiye alanli ekstre kaynaklarindan hesaplanir.
-- [x] Stok, ticari alacak ve ticari borc kaynagi yoksa kesin bilanço tutari uydurulmaz.
-- [ ] Canli Supabase kaynaklariyla donem ve drilldown arayuzu manuel kontrol edildi.
 
 ## 2026-07-15 - Sirket Banka Gecmis Mutabakati v109
 
@@ -255,17 +137,6 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
 - Is Bankasi ayni referansla ana hareket ve ucret urettiginde ikisini ayri
   duplicate anahtarla izleyen koruma eklendi. Giris yonundeki sirket ici
   virmanlarda kaynak/hedef hesap yonu ters yazilamaz.
-
-**QA (eski QA_CHECKLIST.md, "2026-07-15 Sirket Banka Gecmis Mutabakati v109"):**
-- [x] VakifBank islem numarali XLS/XLSX kaynaklari tanindi.
-- [x] ALAYLI MEDIKAL Is Bankasi hesap ozeti XLS kaynaklari tanindi.
-- [x] Kisisel vadesiz hesap dosyalari sirket akisi disinda tutuldu.
-- [x] Salt-okunur rapor 741 kaynak satir uzerinde uretildi.
-- [x] Is Bankasi ayni referansli ana hareket/masraf satirlari ayri duplicate anahtarla korunuyor.
-- [x] Is Bankasi giris ve cikis virmanlarinda kaynak/hedef yon testi gecti.
-- [ ] Sifreli servis anahtariyla Supabase/BizimHesap kaniti cekildi.
-- [ ] Islenmis ve eksik satirlar kaynak kanitiyla ayrildi.
-- [ ] Herhangi bir eksik satir canli kayda aday yapilmadan once hesap ve kayit turu dogrulandi.
 
 ## 2026-07-15 - Banka Masrafi Kaynak Hesap Kilidi v107
 
@@ -289,7 +160,7 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
 
 ## 2026-07-15 - BizimHesap Canli VakifBank Kayit Kaniti v101
 
-- Yeni BizimHesap transfer dropdown/modal akisi gerçek Puppeteer tiklamasiyla
+- Yeni BizimHesap transfer dropdown/modal akisi gerÃ§ek Puppeteer tiklamasiyla
   acilacak sekilde duzeltildi; hedef hesap, tarih, tutar ve aciklama kaydetme
   oncesi zorunlu olarak dogrulanir.
 - VakifBank `2026009923018191` Batch Yatan kaydi `POS POS POS KREDI KARTI ->
@@ -300,14 +171,6 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
   yeni ya da mukerrer masraf kaydi olusturulmadi.
 - Banka masrafi formunda hesap, kategori ve odeme durumu bulunmadan kaydetmeye
   izin verilmeyecek sekilde koruma eklendi.
-
-**QA (eski QA_CHECKLIST.md, "2026-07-15 Canli VakifBank Kaniti"):**
-- [x] Kullanici onayi alindi: iki net VakifBank POS batch kaydi.
-- [x] `2026009923018191` 46.540,00 TL transfer formu, hedef hesap, tarih ve tutar dogrulandi.
-- [x] Transfer BizimHesap'ta kaydedildi; ilgili kuyruk `processed` durumunda.
-- [x] `2026009923018202` 902,81 TL POS komisyonu kaydedildi.
-- [x] Ilk masraf kaydindaki yanlis AKBANK SIRKET hesabi ayni satirda `*VAKIF SIRKET` olarak duzeltildi.
-- [x] Masraf duzeltme basari ekrani ve son satir kaniti alindi.
 
 ## 2026-07-15 - VakifBank POS Batch Akisi v100
 
@@ -463,15 +326,14 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
 
 - Windows gorevleri, yerel senkron loglari, repo botlari, kuyruk dogrulamasi,
   B2B on kontrolu ve GitHub saatlik workflow sonucu salt-okunur denetlendi.
-- Kök neden: Windows'un calistirdigi ayri `ErpaltH` kopyasinda masraf botu
+- KÃ¶k neden: Windows'un calistirdigi ayri `ErpaltH` kopyasinda masraf botu
   `masraf_raw` tablosuna publishable anahtarla yazmaya calisiyor; RLS bu
   yazimi reddediyor.
 - Giris ve firma secimi, satis/urun/stok/son-islemler adimlari kanitlandi;
   masraf ve dolayisiyla tam finans guncelligi kanitlanmadi.
 - Denetimde canli BizimHesap kaydi, banka onayi veya Supabase veri yazimi
-  yapilmadi. Ayrintilar (2026-07-31 itibarıyla `docs/archive/BIZIMHESAP_UCTAN_UCA_DENETIM_2026-07-13.md`
-  içindeydi, çözülüp çözülmediği yeniden doğrulanmadı — bkz.
-  `docs/OPERATIONS_RULES.md` §9).
+  yapilmadi. Ayrintilar `docs/BIZIMHESAP_UCTAN_UCA_DENETIM_2026-07-13.md`
+  dosyasinda.
 - Cift ve hatali yerel calismayi kesmek icin
   `AperiON_BizimHesap_Klon_Saatlik` Windows gorevi devre disi birakildi.
   Ayri yonetici sahipli sabah kontrol gorevi bu oturumdan kapatilamadi;
@@ -485,6 +347,7 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
 - `payment-reminder-digest.yml` eklendi; 07:00 ve 17:00 Istanbul saatleri icin salt-okunur Telegram odeme ozeti planlandi. Eksik bilgi kartlari gunluk bildirim spaminden ayrildi.
 - Odeme hatirlatma gondericisi mevcut `TELEGRAM_CHAT_IDS` coklu hedef secret yapisini da destekler hale getirildi.
 - Finans Takvimi baslaticisi canli ekrana dogrudan yonlendirilir hale getirildi; mevcut bozuk metinler icin goruntuleme onarimi ve ay sonu vade hesap korumasi eklendi.
+
 - `data/aperion_payment_obligation_registry.json` eklendi; sahsi/sirket yukumluluklari icin kaynakli hafiza baslatildi.
 - Batikent Ercan Ev Aidati aylik, ayin 16'si, tutar bekliyor olarak eklendi.
 - Finans Takvimi live ekraninda odeme hafizasi, vade, veri eksigi ve 7/3/1/0 gun bildirim politikasi gorunur hale getirildi.
@@ -493,112 +356,6 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
 - `verify:payment-calendar-navigation` eklendi.
 - Takvimde kalan sabit Mayis 2026 tarihi kaldirildi; gercek gun ve ayla filtreleme yapilir.
 - Supabase kaydi yoksa eski demo borclari yerine kaynakli odeme hafizasi fallback olarak gosterilir.
-
-## 2026-07-13 - Hasta Bezi kaynak denetimi v91
-
-- `SATIS RAPORU (24)` ve `ALIS RAPORU (5)` yerel BizimHesap exportlari icin
-  yeniden calistirilabilir denetim eklendi.
-- Kanit: 34.869 satis satiri, 3.389 alis satiri, toplam 38.258 FIFO hareketi.
-- Tarih kapsami: satis 2025-01-01 - 2026-07-08; alis 2025-01-02 - 2026-07-06.
-- Public dashboard icin sadece guvenli aggregate kanit dosyasi
-  `hasta-bezi/fifo_chunks/source_audit.json` yazilir; ham cari, tedarikci ve
-  fatura satirlari yerelde kalir.
-- `hasta-bezi/index.html` kaynak denetimi basariliysa kapsami ust bantta
-  gorunur hale getirir.
-- Komutlar: `npm run hasta-bezi:source-audit` ve
-  `npm run verify:hasta-bezi:source-audit`.
-
-## 2026-07-15 - Guvenli belirsiz banka girisi v103-v105
-
-- `tools/probe_bizimhesap_account_income_form_v103.cjs`: Gercek BizimHesap hesap-hareketi giris formu kaydetmeden dogrulandi.
-- `tools/bank_posting_plan.cjs`: Cari eslesmesi belirsiz, ancak banka hareketi kanitli gelen para icin `bank_unmatched_incoming` karari eklendi.
-- `bizimhesap_queue_worker.cjs`: Bu karar kaynaktaki banka hesabinda `Hesaba Para Girisi` formuna yazilir; cari/tedarikci bakiyesi degismez.
-- `tools/queue_unmatched_bank_incoming_v104.cjs`: Sadece en yeni gunun guvenli adaylarini idempotent kuyruga alir.
-- `tools/apply_pending_bank_counterparty_schema_v105.cjs`: Canli Supabase sema kurulumunu denetler; mevcut projede `exec_sql` RPC'si olmadigi icin SQL Editor kurulumu zorunlu oldugu acikca raporlanir.
-
-**QA (eski QA_CHECKLIST.md, "2026-07-15 Belirsiz Gelen Para Kontrolu"):**
-- [x] BizimHesap `Hesaba Para Girisi` form alanlari kaydetmeden dogrulandi.
-- [x] Son gun aday secimi yalnizca dogrulanmis banka hareketini aliyor.
-- [x] Banka adi celiskisi ve reklam/duyuru adaylari otomatik kayda kapali.
-- [x] Cari eslesmesi belirsiz gelen para, cari bakiyesine dokunmayan planla olusturuluyor.
-- [ ] Canli Supabase `confirmed_counterparty` semasi uygulandi.
-- [ ] Gunluk belirsiz para girisi kuyrugu canli olusturuldu.
-- [ ] BizimHesap'ta canli kayit ve son satir kaniti alindi.
-
-## 2026-07-15 - Hattat Aylik Odeme Listesi v108
-
-- Hattat Musavir PDF'lerinden vergi/SGK vade ve tahakkuk adaylarini okuyan
-  `tools/build_hattat_monthly_payment_plan_v108.cjs` eklendi.
-- Plan, kaynak dosya SHA-256 anahtari ve satir bazli source id ile
-  mukerrer korumasina sahiptir; ham PDF ve plan dosyalari Git disi
-  `finance_imports/hattat` alaninda tutulur.
-- `tools/import_hattat_monthly_payment_plan_v108.cjs` Finans Takvimi icin
-  dry-run ve onayli canli import ayrimini uygular.
-- Odeme listesi tek basina banka odemesi kaniti sayilmaz: satirlar tahakkuk
-  olarak acilir, banka mutabakati ile kapanir.
-- `hattat_oturum_kur.cjs` yerel kalici profil ile kullanicinin kendi
-  tarayicisinda oturum kurmasi icin eklendi; parola kaydedilmez.
-
-**QA (eski QA_CHECKLIST.md, "2026-07-15 Hattat Odeme Listesi Kontrolu"):**
-- [x] Hattat PDF'leri salt-okunur parse edildi.
-- [x] Kaynak PDF veya ham vergi bilgisi GitHub Pages'e yazilmadi.
-- [x] Her adayda kaynak dosya, source id, vade ve tutar var.
-- [x] Odeme listesi "odendi" olarak yorumlanmadi.
-- [ ] Canli Finans Takvimi importu ayrica onaylandi.
-- [ ] Banka mutabakati kapanis kaniti ayri tutuldu.
-
-## 2026-07-16 - Gelir Tablosu ve Bilanco Yan Yana v122
-
-- Ana ekrandaki gelir tablosu matrisi bilanço/likidite özetinin soluna alındı.
-- Nakit sütunu kullanıcı diliyle "Ödenen / Tahsilat" olarak adlandırıldı.
-- Dönem başlıkları ve gün içi Tahmini/Tahakkuk/Ödenen-Tahsilat ayrımı korunarak tıklanabilir detay akışına bağlandı.
-
-## 2026-07-16 - Is Bankasi Hesap Ozeti Koruması v123
-
-- Kredi karti hesap ozeti e-postalari, tekil hareket/refarans kaniti olmadan banka hareketi olarak siniflanmaz.
-- `POS`, `kredi karti` veya yil bilgisi tek basina POS banka transferi kaydi olusturamaz.
-- Yanlis 2.026 TL Is Bankasi adayi guvenli onay listesinden cikti; iki kanitli gelen para girisi ayri aday olarak korundu.
-
-**QA (eski QA_CHECKLIST.md, "Is Bankasi Ayrisma Kontrolleri v123"):**
-- [x] Kredi karti hesap ozeti e-postasi hareket adayindan dislanir.
-- [x] `POS` kelimesi tek basina POS banka transferi sinifi vermez.
-- [x] Hatali 2026 TL hesap ozeti adayi guvenli listeden cikti.
-- [x] Gercek Is Bankasi para girisleri `Hesaba Para Girisi` planiyla ayrildi.
-- [ ] Iki gercek girisin BizimHesap resmi satir kaniti alinacak.
-
-## 2026-07-16 - Canonical Pages deployment repair
-
-- Added `.github/workflows/cloudflare-pages-deploy.yml` so pushes to `main` can publish the canonical `aperion-istasyon` Cloudflare Pages project.
-- Documented that GitHub Pages is a legacy backup and must not be presented as the primary AperiON cockpit.
-- Added an explicit secret gate so a missing Cloudflare credential fails safely rather than pretending a deploy exists.
-
-**QA (eski QA_CHECKLIST.md, "Canonical publication checks"):**
-- [x] GitHub Pages and Cloudflare Pages endpoints checked separately.
-- [x] Confirmed `aperion-istasyon.pages.dev` was unreachable from the current machine at audit time.
-- [x] Confirmed no Cloudflare deployment workflow existed in the repository.
-- [x] Added deploy workflow with a non-secret credential presence gate.
-- [ ] Confirm a successful `Deploy AperiON Cloudflare Pages` run.
-- [ ] Confirm canonical root returns the current `main` cockpit.
-- [ ] Replace legacy GitHub Pages entry point only after canonical verification.
-
-*(2026-07-31 güncelleme: bu son üç madde artık doğrulanmış kabul edilir —
-bkz. `docs/ARCHITECTURE.md` §1, canlı zincir `_redirects` → `aperion.html`
-→ `aperion-ust-akil.html` olarak teyit edildi.)*
-
-## 2026-07-29 - Hasta Bezi BizimHesap Kaynak Motoru v127
-
-- Satis botuna kanitli ham rapor snapshot'i ve fatura/urun/KDV alanlari eklendi.
-- Stok botuna `stock_raw` yazimi eklendi.
-- Fatura detaylarindan gercek `purchase_raw` ureten importer eklendi.
-- Hasta Bezi snapshot builder'a yerel ham kaynak fallback'i, satis-fatura eslestirmesi ve stok hareket alanlari eklendi.
-- Saatlik workflow'a alis importer'i ve kaynak tamlik denetimi eklendi.
-- Yeni test sales/purchase/stock, fatura no, urun gecmisleri, FIFO KONTROL, Jender XXL ve Ilkbahar Eczanesi sonucunu sayisal olarak raporlar.
-
-## 2026-07-29 - v127 Actions calisma duzeltmesi
-
-- BizimHesap satis botundaki Unicode fonksiyon adi GitHub Actions uyumu icin ASCII yapildi.
-- Alis fatura importer'inin komut satiri secenekleri ile dosya yollarini ayirmasi saglandi.
-- Kaynak semasi Actions uzerinde basariyla kurulmus olarak dogrulandi.
 
 ## 2026-07-10
 
@@ -611,10 +368,9 @@ bkz. `docs/ARCHITECTURE.md` §1, canlı zincir `_redirects` → `aperion.html`
 
 ### Cari Dogrulama -> BizimHesap Tahsilat Kaniti
 
-- Mail Ekstre Onay Merkezi'ne `Cari doğrula` eylemi eklendi.
+- Mail Ekstre Onay Merkezi'ne `Cari doÄŸrula` eylemi eklendi.
 - Ilgili kisi/firma hareketinde kullanici hedef BizimHesap carisini yazar ve ikinci bir onayla dogrular.
-- `confirmed_counterparty`, `counterparty_confirmed` ve `counterparty_confirmed_at` alanlari banka hareketinde karar destegi olarak eklendi.
-- Mobil canli ana ekran `a5f3548-final` uzerinden 1920x1080 olculdu; ana kartlar sinir icinde kaldi.
+- `confirmed_counterparty`, `counterparty_confirmed` ve `counterparty_confirmed_at` alanlari banka hareketinde karar…6823 tokens truncated…li ana ekran `a5f3548-final` uzerinden 1920x1080 olculdu; ana kartlar sinir icinde kaldi.
 - Gelir Tablosu Komuta Matrisi ilk yuklemede bekledi, veri yukleme sonrasi render oldu; console hatasi gorulmedi.
 - `npm run bank:approval:candidates` salt-okunur calisti: 25 bekleyen hareket, 18 yuksek guven, 7 inceleme isteyen kayit var.
 - Onerilen ilk dusuk riskli aday: VakifBank 2026-05-13, -34 TL, Banka/POS masrafi, guven %90, pending id `d4164166-5427-4f46-8f66-a84b43dddd0b`.
@@ -637,7 +393,7 @@ bkz. `docs/ARCHITECTURE.md` §1, canlı zincir `_redirects` → `aperion.html`
 
 ### Sabah Onay Kartlari Tarih ve Karar Gorunumu
 
-- Banka onay kartlarinda tarih `yyyy-aa-gg` kirpilmis gorunumden `gg.aa.yyyy · ss:dd` formatina alindi.
+- Banka onay kartlarinda tarih `yyyy-aa-gg` kirpilmis gorunumden `gg.aa.yyyy Â· ss:dd` formatina alindi.
 - Kart basligi kaynak, banka ve tarih ciplerine ayrildi.
 - BizimHesap kayit plani kart icinde `BizimHesap`, `Cari`, `Kategori`, `Guven` kutulari olarak gosterildi.
 - Kart okunabilirligi icin hover, cerceve, mini plan grid ve tasma kontrolleri iyilestirildi.
@@ -678,7 +434,7 @@ bkz. `docs/ARCHITECTURE.md` §1, canlı zincir `_redirects` → `aperion.html`
 
 ### Istek Listesi Kilidi
 
-- Veri guveni, Banka mail ekstre, Onay Merkezi, BizimHesap kaydi, Gelir Tablosu, Urun Karliligi, Hasta Bezi Raporu, Telegram/Mail evrak, sabit/sozlesmeli gelir-gider ve cache/isletme hafizasi istekleri `PROJECT_STATUS.md` icine urun yon haritasi olarak yazildi (bu içerik 2026-07-31'de `docs/VISION_AND_ROADMAP.md`'ye taşındı).
+- Veri guveni, Banka mail ekstre, Onay Merkezi, BizimHesap kaydi, Gelir Tablosu, Urun Karliligi, Hasta Bezi Raporu, Telegram/Mail evrak, sabit/sozlesmeli gelir-gider ve cache/isletme hafizasi istekleri `PROJECT_STATUS.md` icine urun yon haritasi olarak yazildi.
 
 ### Dogrulandi
 
@@ -790,7 +546,7 @@ bkz. `docs/ARCHITECTURE.md` §1, canlı zincir `_redirects` → `aperion.html`
 
 - Kullanici yeni Entegrasyon API dokumanini paylasti.
 - Mevcut `bizimhesap_api_client.cjs` dokumandaki fatura, cari, urun, depo, stok ve cari ekstre endpointleriyle karsilastirildi.
-- `docs/bizimhesap_b2b_api_notlari.md` guncellendi (bu içerik 2026-07-31'de `docs/DATA_MODEL_AND_STANDARDS.md` Ek A'ya taşındı).
+- `docs/bizimhesap_b2b_api_notlari.md` guncellendi.
 - `npm run verify:bizimhesap:b2b-api` calisti; token ve firm id eksik oldugu icin canli okuma yapilmadi.
 - Banka/kasa hareketi icin dokumanda endpoint gorunmedigi not edildi.
 - Kullanici BizimHesap uyelik ekraninda `Api Key(FirmID)` ve `Zirve Express Aktarim Api Key` alanlarini gosterdi; bunlar secret eslesmesi olarak not edildi.
@@ -820,7 +576,7 @@ bkz. `docs/ARCHITECTURE.md` §1, canlı zincir `_redirects` → `aperion.html`
 ### Eklendi
 
 - Koordineli calisma protokolu repo standardi olarak baslatildi.
-- `PROJECT_STATUS.md`, `NEXT_TASK.md`, `QA_CHECKLIST.md`, `DECISIONS.md` ve `CHANGELOG_APERION.md` tek-kaynak dosyalari olusturuldu (bu dosyalar 2026-07-31'de `docs/` altına konsolide edildi — bkz. `docs/DECISIONS.md` D-002 güncellemesi).
+- `PROJECT_STATUS.md`, `NEXT_TASK.md`, `QA_CHECKLIST.md`, `DECISIONS.md` ve `CHANGELOG_APERION.md` tek-kaynak dosyalari olusturuldu.
 - Mevcut proje durumu son teknik denetim bulgularina gore belgelendi.
 
 ### Yayin
@@ -910,7 +666,7 @@ bkz. `docs/ARCHITECTURE.md` §1, canlı zincir `_redirects` → `aperion.html`
 ### Banka Onay Aksiyonu
 
 - Banka Canli / Onay Akisi satirlarinda hazirlik kontrolu eklendi.
-- `BizimHesap'a Kaydet` / `Kuyruğa Al` aksiyonu yalnizca hazir kayitlarda aktif kalir.
+- `BizimHesap'a Kaydet` / `KuyruÃ„Å¸a Al` aksiyonu yalnizca hazir kayitlarda aktif kalir.
 - Dusuk guvenli, mukerrer adayli, cari belirsiz veya zaten kuyrukta/islenmis kayitlarda buton pasif hale gelir.
 - Her satirda hedef hesap, cari, kayit turu ve BizimHesap kanit metni netlestirildi.
 - Sabah onay kartlari da ayni hazirlik kontrolunu kullanir.
@@ -942,137 +698,70 @@ bkz. `docs/ARCHITECTURE.md` §1, canlı zincir `_redirects` → `aperion.html`
 - `tools/verify_supabase_security_hardening_v77.cjs` 26 kontrol yapacak sekilde genisletildi.
 - `SUPABASE_GUVENLIK_RAPORU_DEGERLENDIRME.md` eklendi.
 - Test: `npm run verify:supabase-security-hardening` 26/26 gecti.
-- Canli Supabase SQL uygulanmadi (**2026-07-31 güncelleme:** kısmen uygulandı, sonra yeniden kontrol edilip eksik kalan anon izinleri de kapatıldı — bkz. yukarıdaki "2026-07-31" girdisi ve `docs/OPERATIONS_RULES.md` §9).
+- Canli Supabase SQL uygulanmadi.
+## 2026-07-13 - Hasta Bezi kaynak denetimi v91
 
----
+- `SATIS RAPORU (24)` ve `ALIS RAPORU (5)` yerel BizimHesap exportlari icin
+  yeniden calistirilabilir denetim eklendi.
+- Kanit: 34.869 satis satiri, 3.389 alis satiri, toplam 38.258 FIFO hareketi.
+- Tarih kapsami: satis 2025-01-01 - 2026-07-08; alis 2025-01-02 - 2026-07-06.
+- Public dashboard icin sadece guvenli aggregate kanit dosyasi
+  `hasta-bezi/fifo_chunks/source_audit.json` yazilir; ham cari, tedarikci ve
+  fatura satirlari yerelde kalir.
+- `hasta-bezi/index.html` kaynak denetimi basariliysa kapsami ust bantta
+  gorunur hale getirir.
+- Komutlar: `npm run hasta-bezi:source-audit` ve
+  `npm run verify:hasta-bezi:source-audit`.
 
-## 2026-07-08 - docs/ klasörünün başlangıcı
+## 2026-07-15 - Guvenli belirsiz banka girisi v103-v105
 
-*(Bu girdi eski `docs/CHANGELOG.md`'nin tek girdisiydi; kaynak konsolidasyon
-talimatı gereği burada "en eski" olarak listeleniyor — tarih notu için
-dosyanın en üstündeki uyarıya bakın.)*
+- `tools/probe_bizimhesap_account_income_form_v103.cjs`: Gercek BizimHesap hesap-hareketi giris formu kaydetmeden dogrulandi.
+- `tools/bank_posting_plan.cjs`: Cari eslesmesi belirsiz, ancak banka hareketi kanitli gelen para icin `bank_unmatched_incoming` karari eklendi.
+- `bizimhesap_queue_worker.cjs`: Bu karar kaynaktaki banka hesabinda `Hesaba Para Girisi` formuna yazilir; cari/tedarikci bakiyesi degismez.
+- `tools/queue_unmatched_bank_incoming_v104.cjs`: Sadece en yeni gunun guvenli adaylarini idempotent kuyruga alir.
+- `tools/apply_pending_bank_counterparty_schema_v105.cjs`: Canli Supabase sema kurulumunu denetler; mevcut projede `exec_sql` RPC'si olmadigi icin SQL Editor kurulumu zorunlu oldugu acikca raporlanir.
+## 2026-07-15 - Hattat Aylik Odeme Listesi v108
 
-### Yapılanlar
+- Hattat Musavir PDF'lerinden vergi/SGK vade ve tahakkuk adaylarini okuyan
+  `tools/build_hattat_monthly_payment_plan_v108.cjs` eklendi.
+- Plan, kaynak dosya SHA-256 anahtari ve satir bazli source id ile
+  mukerrer korumasina sahiptir; ham PDF ve plan dosyalari Git disi
+  `finance_imports/hattat` alaninda tutulur.
+- `tools/import_hattat_monthly_payment_plan_v108.cjs` Finans Takvimi icin
+  dry-run ve onayli canli import ayrimini uygular.
+- Odeme listesi tek basina banka odemesi kaniti sayilmaz: satirlar tahakkuk
+  olarak acilir, banka mutabakati ile kapanir.
+- `hattat_oturum_kur.cjs` yerel kalici profil ile kullanicinin kendi
+  tarayicisinda oturum kurmasi icin eklendi; parola kaydedilmez.
 
-- AperiON iSTasyon için `/docs` klasörü başlatıldı.
-- `VISION.md`, `ARCHITECTURE.md`, `DATABASE.md`, `BANK_RULES.md`,
-  `GMAIL_RULES.md`, `BIZIMHESAP_RULES.md`, `TELEGRAM_RULES.md`,
-  `AUTOMATION_RULES.md`, `UI_STANDARDS.md`, `ROADMAP.md`,
-  `REPO_AUDIT_2026-07-08.md` oluşturuldu.
-- `OPERATING_MODEL.md`, `CHATGPT_CONTINUITY_PROTOCOL.md`, `START_HERE.md`,
-  `SESSION_STATE.md`, `NEXT_ACTION.md`, `PERSONAL_FINANCE_RULES.md`,
-  `FINANCIAL_DATA_STANDARDS.md` ve `DASHBOARD_BLUEPRINT.md` eklendi.
-- Banka sınıflandırma motorunda POS banka yatışları düzeltildi: `POS
-  tahsilati` yerine `POS banka transferi`, hedef olarak da `BizimHesap
-  hesaplar arasi transfer` kullanılacak.
-- POS banka aktarım planına `source_account` ve `target_account` alanları
-  eklendi. Kaynak hesap standardı: `POS POS POS KREDI KARTI`; hedef hesap:
-  paranın yattığı banka hesabı.
-- Banka onay aday seçim motoru pilot banka kuralına göre düzeltildi. İş
-  Bankası pilot banka olarak önceliklendirilir; pilot aday varsa Yapı
-  Kredi/Akbank/VakıfBank gibi farklı banka adayları ilk sıraya alınmaz.
-- Aday seçim skorunda eski `POS tahsilati` ödülü kaldırıldı; doğru `POS
-  banka transferi / POS banka aktarimi` sınıfı pozitif kriter yapıldı.
-- `verify_bank_candidate_pilot_scope_v83.cjs` testi eklendi.
-- `AperiON Bank Approval Status` workflow'u `BANK_APPROVAL_PILOT_BANK=IS
-  BANKASI` ile çalışacak ve pilot kapsam testi geçmeden banka onay status
-  raporu üretmeyecek şekilde güncellendi.
-- BizimHesap worker uyumu için POS banka transferi teknik `kind` değeri
-  `bank_transfer` yoluna alındı; kullanıcıya görünen `type` yine "POS banka
-  transferi" olarak kalır.
-- `aperion-home-v3.html` Operasyon Merkezi kokpitine çevrildi. Başlık
-  `AperiON iSTasyon – Operasyon Merkezi` yapıldı, `ErpaltH` canlı başlık izi
-  kaldırıldı, ana kartlar eklendi (**not:** bu ekran daha sonra kanonik
-  canlı ekran olmaktan çıktı — bkz. `docs/ARCHITECTURE.md` §1).
-- Operasyon kokpitine Bankalar, BizimHesap, Moka/POS, Kredi Kartları,
-  Faturalar/Abonelikler, Şahsi Finans ve Sistem Sağlığı kartları eklendi.
+## 2026-07-16 - Gelir Tablosu ve Bilanco Yan Yana v122
 
-### Kararlar
+## 2026-07-16 - Is Bankasi Hesap Ozeti KorumasÄ± v123
 
-- Doğru proje adı: AperiON iSTasyon.
-- Operasyon Merkezi tek ana ekran olacak.
-- İş Bankası banka mutabakatı pilot iş olarak kabul edildi.
-- Kullanıcı onayı olmadan BizimHesap'a finansal kayıt yazılmayacak.
-- POS kredi kartı tahsilatlarının ertesi gün bankaya yatması tahsilat değil
-  transfer sayılacak.
-- Telegram onay mesajlarında kanıt zorunlu olacak.
-- Mükerrer kayıt kontrolü `bank_row_key` ve `duplicate_key` ile zorunlu
-  tutulacak.
-- Şahsi finans, ALAYLI şirket mutabakatından ayrı tutulacak.
+- Kredi karti hesap ozeti e-postalari, tekil hareket/refarans kaniti olmadan banka hareketi olarak siniflanmaz.
+- `POS`, `kredi karti` veya yil bilgisi tek basina POS banka transferi kaydi olusturamaz.
+- Yanlis 2.026 TL Is Bankasi adayi guvenli onay listesinden cikti; iki kanitli gelen para girisi ayri aday olarak korundu.
 
-### Kalanlar (2026-07-08 tarihli — büyük ölçüde ilerledi, ayrıntı için yukarıdaki daha yeni girdilere bakın)
+- Ana ekrandaki gelir tablosu matrisi bilanÃ§o/likidite Ã¶zetinin soluna alÄ±ndÄ±.
+- Nakit sÃ¼tunu kullanÄ±cÄ± diliyle `Ã–denen / Tahsilat` olarak adlandÄ±rÄ±ldÄ±.
+- DÃ¶nem baÅŸlÄ±klarÄ± ve gÃ¼n iÃ§i Tahmini/Tahakkuk/Ã–denen-Tahsilat ayrÄ±mÄ± korunarak tÄ±klanabilir detay akÄ±ÅŸÄ±na baÄŸlandÄ±.
+# 2026-07-16 - Canonical Pages deployment repair
 
-- Yanlış isimlerin repo içinde kontrollü temizliği.
-- İş Bankası ID 33-35 onay durumunun gerçek sistem kanıtıyla doğrulanması.
-- Onaylı kayıtların BizimHesap'a işlenmeden önce dry-run planının
-  üretilmesi.
-- İşlem sonrası BizimHesap doğrulamasının yapılması.
-- Operasyon kokpiti için gerçek Gmail, kredi kartı, fatura/abonelik ve
-  şahsi finans data JSON kaynaklarının bağlanması.
+- Added `.github/workflows/cloudflare-pages-deploy.yml` so pushes to `main` can publish the canonical `aperion-istasyon` Cloudflare Pages project.
+- Documented that GitHub Pages is a legacy backup and must not be presented as the primary AperiON cockpit.
+- Added an explicit secret gate so a missing Cloudflare credential fails safely rather than pretending a deploy exists.
 
----
+## 2026-07-29 - Hasta Bezi BizimHesap Kaynak Motoru v127
 
-## Kalıcı QA kontrol listeleri (eski `QA_CHECKLIST.md`, sürüme bağlı olmayan standing checklist'ler)
+- Satis botuna kanitli ham rapor snapshot'i ve fatura/urun/KDV alanlari eklendi.
+- Stok botuna `stock_raw` yazimi eklendi.
+- Fatura detaylarindan gercek `purchase_raw` ureten importer eklendi.
+- Hasta Bezi snapshot builder'a yerel ham kaynak fallback'i, satis-fatura eslestirmesi ve stok hareket alanlari eklendi.
+- Saatlik workflow'a alis importer'i ve kaynak tamlik denetimi eklendi.
+- Yeni test sales/purchase/stock, fatura no, urun gecmisleri, FIFO KONTROL, Jender XXL ve Ilkbahar Eczanesi sonucunu sayisal olarak raporlar.
 
-Bu bölüm, `QA_CHECKLIST.md`'de belirli bir sürüm etiketine bağlı olmayan,
-her turda tekrar kullanılan genel kontrol listelerini içerir. Yukarıdaki
-sürüme özel QA notlarının aksine bunlar tek bir tarihe ait değildir; her yeni
-çalışma turunda hâlâ referans olarak kullanılabilir.
+## 2026-07-29 - v127 Actions calisma duzeltmesi
 
-### Her Tur Zorunlu Kontrol
-
-- [ ] Tek ana hedef belirlendi.
-- [ ] Canli kayit gerekiyorsa kullanici onayi alindi.
-- [ ] Demo/uydurma veri canli karar ekrani gibi sunulmadi.
-- [ ] Firma izolasyonu kontrol edildi.
-- [ ] Degisiklikten once ilgili dosyalar okundu.
-- [ ] Test komutlari calistirildi veya neden calistirilamadigi yazildi.
-- [ ] `docs/CURRENT_STATUS.md` guncellendi (eski karşılığı: `PROJECT_STATUS.md`/`NEXT_TASK.md`).
-- [ ] `docs/CHANGELOG.md` guncellendi (eski karşılığı: `CHANGELOG_APERION.md`).
-- [ ] Tur sonunda Yapilanlar / Kalanlar / Kontrol Ettiklerim / Commit / Guncellenen dosyalar raporlandi.
-
-### Veri Guveni Kontrolleri
-
-- [ ] Dry-run canli tabloya yazmiyor.
-- [ ] Commit modu acikca ayriliyor.
-- [ ] Hata alan komut basarili gibi raporlanmiyor.
-- [ ] `aperion_last_sync.json` gercek sonucu yaziyor.
-- [ ] Mukkerrer kayit kontrolu var.
-- [ ] Kaynak, firma, tarih ve kayit ID izlenebilir.
-- [ ] Duzeltme ve ret islemleri loglaniyor.
-- [ ] Anon role finansal onay RPC'lerini calistiramiyor.
-- [ ] Anon role finansal ham/queue/log tablolarina yazamiyor.
-- [ ] Authenticated okuma firma izolasyonu ile sinirli.
-- [ ] Service role yazma hattinin testleri hardening sonrasi tekrar kosuldu.
-
-*(2026-07-31 notu: bu listenin son üç maddesi `bank_transactions` tablosu
-için hâlâ tam sağlanmıyor — bkz. `docs/OPERATIONS_RULES.md` §9.)*
-
-### BizimHesap Kontrolleri
-
-- [ ] Login calisiyor.
-- [ ] ALAYLI MEDIKAL firma secimi dogru.
-- [ ] Satis cekimi calisiyor.
-- [ ] Urun/stok cekimi calisiyor.
-- [ ] Masraf cekimi calisiyor.
-- [ ] Fatura detay okuma hatalari gorunur.
-- [ ] Onaylanan banka hareketi BizimHesap kuyruğuna giriyor.
-- [ ] Worker islenen kaydi processed/failed olarak isaretliyor.
-
-### Finans Komuta Merkezi Kontrolleri
-
-- [x] Gelir tablosu solda, bilanço ve likidite özeti sağda gösteriliyor.
-- [x] Bugün için Tahmini, Tahakkuk ve Ödenen / Tahsilat sütunları ayrı gösteriliyor.
-- [x] Dönem matrisindeki satış/maliyet/kar hücreleri kaynak detayına inecek şekilde korunuyor.
-- [ ] Planlanan, tahakkuk ve gerceklesen ayrimi gorunuyor.
-- [ ] Banka onay bekleyen sayisi gercek kaynaktan geliyor.
-- [ ] Gelir tablosu tutarlari kaynak belirtmeden kesin veri gibi sunulmuyor.
-- [ ] Banka bakiyeleri son ekstreye gore tarih ve kaynakla gorunuyor.
-- [ ] Kullanici onayi olmadan kesin kayit yapilmiyor.
-
-### Ürün ve Cari Kontrolleri
-
-- [ ] Urun karti satis, adet, ciro ve maliyet kaynagini gosteriyor.
-- [ ] Kategori katsayisi ile hesaplanan maliyet kaynak notu tasiyor.
-- [ ] Cari karti satis/tahakkuk ile tahsilat/acik bakiye ayrimini karistirmiyor.
-- [ ] Eksik tahsilat veya bakiye kaynagi acikca isaretleniyor.
+- BizimHesap satis botundaki Unicode fonksiyon adi GitHub Actions uyumu icin ASCII yapildi.
+- Alis fatura importer'inin komut satiri secenekleri ile dosya yollarini ayirmasi saglandi.
+- Kaynak semasi Actions uzerinde basariyla kurulmus olarak dogrulandi.

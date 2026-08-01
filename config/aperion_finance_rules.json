@@ -5,7 +5,13 @@
   "business_accounts": {
     "banks": ["Akbank", "Yapi Kredi", "Is Bankasi", "VakifBank", "Garanti BBVA", "Halkbank"],
     "cash": ["TL Kasa"],
-    "pos": ["POS POS POS KREDI KARTI", "*MOCA SONOVA POS KREDI KARTI"]
+    "pos": ["POS POS POS KREDI KARTI", "*MOCA SONOVA POS KREDI KARTI"],
+    "suspense": "EMANET - BANKA HAREKETLERI / SINIFLANDIRMA BEKLEYEN"
+  },
+  "suspense_account": {
+    "name": "EMANET - BANKA HAREKETLERI / SINIFLANDIRMA BEKLEYEN",
+    "verified_in_bizimhesap": "2026-08-01",
+    "policy": "Karsi taraf kesinlesmeyen gelen para GERCEK banka hesabinda kalir (bakiye dogru olsun); karsi taraf/karsi hesap olarak bu emanet hesabi gosterilir. Emanet hesabin kendisine para tasinmaz, sadece siniflandirma bekleyen hareketin karsi-hesap etiketi olarak kullanilir."
   },
   "known_settlement_sources": {
     "moka_united": {

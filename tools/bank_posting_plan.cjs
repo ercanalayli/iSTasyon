@@ -128,6 +128,10 @@ function companyBankAccountFromText(value, excludedBank = '') {
   return found ? found[1] : '';
 }
 
+function suspenseAccount() {
+  return RULES?.suspense_account?.name || RULES?.business_accounts?.suspense || 'EMANET - BANKA HAREKETLERI / SINIFLANDIRMA BEKLEYEN';
+}
+
 function kmhAccount(row) {
   return fixMojibake(row.kmh_account || `${bankName(row)} KMH / Ek Hesap`);
 }
@@ -451,16 +455,23 @@ function classifyBankMovement(row = {}) {
     confidence < 84 || invalidCounterpartyForKind || unresolvedCounterparty || relatedPartyReview
   ) && hasVerifiedBankMovement(row, text) && !hasBankNameConflict(row, text);
   if (incoming && hasBankNameConflict(row, text)) reasons.push('ekstre metnindeki banka ile kaynak banka uyusmuyor');
+  let emanetRouted = false;
   if (shouldHoldIncoming) {
     kind = 'bank_unmatched_incoming';
     type = 'Banka hesaba para girisi - eslestirme bekliyor';
     target = 'BizimHesap Hesaba Para Girisi';
     category = 'AperiON banka bekletme';
-    counterparty = (isInvalidCounterparty(counterparty) || unresolvedCounterparty) ? 'Belirsiz karsi taraf' : counterparty;
-    sourceAccount = '';
+    const isUnresolved = isInvalidCounterparty(counterparty) || unresolvedCounterparty;
+    // Para GERCEK banka hesabinda kalir (bakiye dogru olsun); karsi taraf belirsizse
+    // karsi-hesap olarak Emanet hesabi gosterilir (para Emanet'e tasinmaz, sadece
+    // "siniflandirma bekliyor" etiketi olarak kullanilir). Ercan'in kurali: "gercek
+    // bankaya, karsiligi bu emanet hesaba islenir."
+    counterparty = isUnresolved ? suspenseAccount() : counterparty;
+    sourceAccount = isUnresolved ? suspenseAccount() : '';
     targetAccount = targetBankAccount(row);
     confidence = 100;
-    reasons.push('gelen para kaydi kesin, cari eslestirmesi bilinmiyor');
+    emanetRouted = isUnresolved;
+    reasons.push(isUnresolved ? 'gelen para kaydi kesin, karsi hesap EMANET olarak isaretlendi' : 'gelen para kaydi kesin, cari eslestirmesi bilinmiyor');
   }
   const requiresReview = kind === 'non_bank_summary_review' ||
     (kind !== 'bank_unmatched_incoming' && (
@@ -490,6 +501,7 @@ function classifyBankMovement(row = {}) {
     business_scope: scope,
     fixed_variable: fixedVariable,
     requires_counterparty_confirmation: kind === 'bank_unmatched_incoming' ? false : relatedPartyReview,
+    emanet_routed: emanetRouted,
     reasons: [...new Set(reasons)].slice(0, 7),
     requires_user_review: requiresReview,
     next_step_after_user_approval: 'approve_pending_bank_movement RPC -> bizimhesap_queue.status=ready_for_bizimhesap',

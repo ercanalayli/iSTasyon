@@ -293,13 +293,20 @@ function bankaCanliKilit(h) {
 }
 
 function aperionAciklama(h, tip) {
+  // emanet_routed: bank_posting_plan.cjs'in classifyBankMovement ciktisindan tasinir
+  // (plan.emanet_routed veya dogrudan h.emanet_routed). Karsi taraf kesin degilse
+  // "AUTO-EMANET" etiketi kullanilir, boylece hangi kayitlarin gercek onaylanmis
+  // override (AUTO-POST) yerine emanet-yonlendirme oldugu ayirt edilebilir.
+  const emanetRouted = Boolean(h.emanet_routed || h.plan?.emanet_routed);
+  const etiket = emanetRouted ? 'APERION AUTO-EMANET' : 'APERION AUTO';
   const parcalar = [
-    'APERION AUTO',
+    etiket,
     `ID:${h.id || '-'}`,
     `TIP:${tip}`,
     h.firma_id ? `FIRMA:${h.firma_id}` : '',
     h.aciklama || h.description || h.banka_aciklama || '',
     h.karsi_taraf || h.cari_unvan || h.musteri || '',
+    emanetRouted ? 'KARSI:EMANET-SINIFLANDIRMA-BEKLIYOR' : '',
   ].filter(Boolean);
   return parcalar.join(' | ').substring(0, 250);
 }

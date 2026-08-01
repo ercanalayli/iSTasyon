@@ -80,9 +80,17 @@ async function main() {
       report.queued.push({ pending_bank_movement_id: item.row.id, queue_id: existing[0].id, status: existing[0].status, action: 'already_queued' });
       continue;
     }
+    const plan = item.classified.plan;
     const { data: queueId, error: rpcError } = await db.rpc('approve_pending_bank_movement', {
       p_id: item.row.id,
-      p_note: 'AperiON gunluk belirsiz banka girisi: cari baglamadan Hesaba Para Girisi',
+      p_note: plan.emanet_routed
+        ? 'AperiON gunluk belirsiz banka girisi: karsi hesap EMANET olarak isaretlendi'
+        : 'AperiON gunluk belirsiz banka girisi: cari baglamadan Hesaba Para Girisi',
+      p_target_counterparty: plan.counterparty || null,
+      p_target_account: plan.account || plan.target_account || null,
+      p_bizimhesap_action: 'bank_unmatched_incoming',
+      p_category: plan.category || null,
+      p_emanet_routed: Boolean(plan.emanet_routed),
     });
     if (rpcError || !queueId) throw new Error(`Kuyruk olusturulamadi (${item.row.id}): ${rpcError?.message || 'queue id yok'}`);
     report.queued.push({ pending_bank_movement_id: item.row.id, queue_id: queueId, status: 'ready_for_bizimhesap', action: 'queued' });

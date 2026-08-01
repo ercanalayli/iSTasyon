@@ -1,115 +1,389 @@
 <!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AperiON iSTasyon | CFO Komuta Merkezi</title>
-  <style>
-    :root { --bg:#09111e; --surface:#111c2d; --surface-2:#16243a; --surface-3:#1a2b43; --line:#2c3d56; --text:#f2f6fc; --muted:#aab9ca; --green:#20c58b; --blue:#5c8dff; --gold:#edbd32; --coral:#f26478; --violet:#a78bfa; --ink:#07101c; }
-    * { box-sizing:border-box; }
-    body { margin:0; min-width:320px; color:var(--text); background:var(--bg); font-family:Inter,Segoe UI,Arial,sans-serif; letter-spacing:0; }
-    a { color:inherit; text-decoration:none; }
-    button { font:inherit; }
-    .shell { width:min(1580px,calc(100% - 32px)); margin:0 auto; padding:16px 0 34px; }
-    .topbar { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:12px 16px; border:1px solid var(--line); background:#0e1828; border-radius:10px; }
-    .brand { display:flex; align-items:center; gap:11px; min-width:0; }.mark { width:34px; height:34px; display:grid; place-items:center; flex:0 0 auto; color:#06151a; font-weight:900; background:var(--green); border-radius:8px; }.brand strong { display:block; font-size:15px; }.brand small { display:block; margin-top:2px; color:var(--muted); font-size:11px; }
-    .meta { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:8px; font-size:11px; color:var(--muted); }.pill { border:1px solid var(--line); border-radius:99px; padding:6px 9px; white-space:nowrap; }.pill.live { color:#a8f5d4; border-color:#25775c; background:#103528; }
-    .financial-desk { margin-top:16px; border:1px solid var(--line); border-top:3px solid var(--green); border-radius:10px; background:var(--surface); overflow:hidden; }.desk-head { display:flex; justify-content:space-between; gap:18px; align-items:flex-start; padding:19px 21px 15px; border-bottom:1px solid var(--line); }.eyebrow { color:#83e8c1; font-size:10px; font-weight:900; letter-spacing:1.05px; }.desk-head h1 { margin:5px 0 4px; font-size:25px; line-height:1.15; letter-spacing:0; }.desk-head p { margin:0; color:var(--muted); font-size:13px; line-height:1.45; }.periods { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; }.period { min-height:33px; padding:7px 10px; cursor:pointer; color:#cbd6e4; border:1px solid #38506e; border-radius:7px; background:#17263b; font-size:11px; font-weight:800; }.period:hover,.period:focus-visible,.period.active { outline:none; color:#101c15; border-color:#d9b027; background:var(--gold); }
-    .signal-strip { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; padding:14px 21px; background:#0d1727; border-bottom:1px solid var(--line); }.signal { min-height:74px; padding:11px 13px; border:1px solid #30445e; border-radius:8px; background:var(--surface-2); }.signal label { display:block; color:#a7bad2; font-size:10px; font-weight:900; letter-spacing:.7px; }.signal strong { display:block; margin-top:7px; font-size:20px; letter-spacing:0; }.signal span { display:block; margin-top:4px; color:var(--muted); font-size:11px; }.signal.positive strong { color:#7be7ba; }.signal.alert strong { color:#ff9aa7; }.signal.info strong { color:#a9c6ff; }.signal.gold strong { color:#ffd66b; }
-    .statement-grid { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(340px,.8fr); gap:14px; padding:16px 21px 21px; }.statement, .balance { border:1px solid #30425a; border-radius:9px; background:#0f1b2c; overflow:hidden; }.panel-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding:15px 16px 12px; border-bottom:1px solid #2a3b54; }.panel-head h2 { margin:0; font-size:16px; }.panel-head p { margin:4px 0 0; color:var(--muted); font-size:11px; }.view-tabs { display:flex; gap:5px; }.view { padding:5px 7px; border:1px solid #3b5270; border-radius:6px; background:transparent; color:#c6d3e2; font-size:10px; font-weight:800; }.view.active { border-color:#287b62; color:#9bf4ce; background:#12372e; }
-    .income-row { display:grid; grid-template-columns:minmax(0,1fr) 136px 128px 105px; align-items:center; gap:10px; min-height:46px; padding:8px 16px; border-bottom:1px solid #23344d; }.income-row:last-child { border-bottom:0; }.income-row.clickable { cursor:pointer; transition:background .15s ease; }.income-row.clickable:hover,.income-row.clickable:focus-visible { outline:none; background:#182a43; }.row-name { display:flex; align-items:center; gap:8px; min-width:0; font-size:13px; font-weight:750; }.row-name small { overflow:hidden; color:var(--muted); text-overflow:ellipsis; white-space:nowrap; font-size:10px; font-weight:500; }.row-value { text-align:right; font-variant-numeric:tabular-nums; font-size:13px; font-weight:800; }.row-value.muted { color:#9aacc2; font-size:11px; font-weight:650; }.row-state { justify-self:end; padding:4px 7px; border:1px solid #3d5069; border-radius:99px; color:#aebed1; font-size:10px; white-space:nowrap; }.income-row.total { min-height:53px; background:#152742; }.income-row.gross { border-left:3px solid var(--gold); }.income-row.net { border-left:3px solid var(--green); }.income-row.net .row-name,.income-row.net .row-value { font-size:15px; }.income-row.warn { border-left:3px solid var(--coral); }.income-row .positive { color:#7be7ba; }.income-row .unavailable { color:#f6c86a; }
-    .balance-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:14px; }.balance-card { min-height:100px; padding:12px; border:1px solid #30445f; border-radius:8px; background:var(--surface-2); }.balance-card label { display:block; color:#a9b9cc; font-size:10px; font-weight:900; letter-spacing:.7px; }.balance-card strong { display:block; margin-top:9px; font-size:18px; letter-spacing:0; }.balance-card p { margin:6px 0 0; color:var(--muted); font-size:10px; line-height:1.4; }.balance-card.source strong { color:#80e7bb; }.balance-card.pending strong { color:#f5ca6c; }.balance-foot { margin:0 14px 14px; padding:11px 12px; border:1px solid #37516e; border-radius:7px; color:#b5c5d8; background:#13243a; font-size:11px; line-height:1.45; }
-    .cash-flow-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding:0 21px 16px; }.cash-flow { overflow:hidden; border:1px solid #30425a; border-radius:9px; background:#0f1b2c; }.cash-flow .panel-head { padding-bottom:11px; }.cash-flow-total { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:12px 14px 10px; padding:10px 12px; border:1px solid #36516e; border-radius:7px; background:#13243a; }.cash-flow-total span { color:#9eb2c9; font-size:10px; font-weight:850; letter-spacing:.7px; }.cash-flow-total strong { font-size:14px; font-variant-numeric:tabular-nums; }.cash-flow.collection .cash-flow-total strong { color:#7be7ba; }.cash-flow.payment .cash-flow-total strong { color:#ffb0bb; }.cash-line { display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:36px; padding:8px 14px; border-top:1px solid #23344d; transition:background .15s ease; }.cash-line:hover,.cash-line:focus-visible { outline:none; background:#182a43; }.cash-line span { color:#dce6f3; font-size:12px; font-weight:750; }.cash-line small { color:#9caec3; font-size:10px; }.cash-line b { color:#f2c956; font-size:11px; white-space:nowrap; }
-    .source-line { display:flex; justify-content:space-between; gap:12px; padding:0 21px 16px; color:#91a5bd; font-size:11px; }.source-line strong { color:#d9e4f1; }.source-line a { color:#9cc2ff; font-weight:800; }
-    .section-head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin:26px 0 11px; }.section-head h2 { margin:0; font-size:19px; }.section-head p { margin:4px 0 0; color:var(--muted); font-size:13px; }.priority-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }.priority { padding:16px; border:1px solid var(--line); border-left:4px solid var(--blue); border-radius:9px; background:var(--surface); }.priority[data-tone="green"] { border-left-color:var(--green); }.priority[data-tone="gold"] { border-left-color:var(--gold); }.priority-top { display:flex; justify-content:space-between; gap:8px; color:var(--muted); font-size:11px; font-weight:700; }.priority strong { display:block; margin:10px 0 6px; font-size:16px; }.priority p { margin:0; color:#bcc9da; font-size:13px; line-height:1.45; }.priority a { display:inline-block; margin-top:12px; color:#a9c7ff; font-size:12px; font-weight:800; }
-    .module-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }.module-card { position:relative; min-height:155px; padding:16px; overflow:hidden; border:1px solid var(--line); border-radius:9px; background:var(--surface); transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background .16s ease; }.module-card:hover,.module-card:focus-visible { outline:none; transform:translateY(-3px); border-color:var(--accent); background:#16263d; box-shadow:0 12px 25px rgba(0,0,0,.2); }.module-card::before { content:""; position:absolute; left:0; right:0; top:0; height:3px; background:var(--accent); }.module-no { color:var(--accent); font-size:11px; font-weight:800; letter-spacing:.9px; }.module-card h3 { margin:12px 0 7px; font-size:17px; line-height:1.15; }.module-card p { margin:0; color:var(--muted); font-size:12px; line-height:1.45; }.module-link { position:absolute; bottom:15px; left:16px; color:#dbe7f9; font-size:12px; font-weight:800; } footer { display:flex; justify-content:space-between; gap:12px; margin-top:18px; color:#7f91a9; font-size:11px; }
-    @media (max-width:1080px) { .statement-grid{grid-template-columns:1fr}.module-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
-    @media (max-width:760px) { .shell{width:min(100% - 20px,1580px);padding-top:10px}.topbar,.desk-head{align-items:flex-start;flex-direction:column}.signal-strip,.priority-grid,.module-grid,.cash-flow-grid{grid-template-columns:1fr}.statement-grid,.cash-flow-grid{padding:12px}.cash-flow-grid{gap:12px}.income-row{grid-template-columns:minmax(0,1fr) 110px}.income-row .row-value.muted,.income-row .row-state{display:none}.source-line{align-items:flex-start;flex-direction:column}.periods{justify-content:flex-start}.meta{justify-content:flex-start}footer{flex-direction:column} }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AperiON iSTasyon – Operasyon Merkezi</title>
+<meta http-equiv="Cache-Control" content="no-cache">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#09111e;--surface:#111c2d;--surface-2:#16243a;--surface-3:#1a2b43;--line:#2c3d56;--text:#f2f6fc;--muted:#aab9ca;--green:#20c58b;--blue:#5c8dff;--gold:#edbd32;--coral:#f26478;--violet:#a78bfa;--ink:#07101c;--red:#ff5d6c;--orange:#f2954a;--yellow:#e8c445}
+*{box-sizing:border-box}
+body{margin:0;min-width:320px;color:var(--text);background:var(--bg);font-family:Inter,Segoe UI,Arial,sans-serif}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer}
+.shell{width:min(1560px,calc(100% - 32px));margin:0 auto;padding:16px 0 40px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px 16px;border:1px solid var(--line);background:#0e1828;border-radius:10px}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.mark{width:34px;height:34px;display:grid;place-items:center;flex:0 0 auto;color:#06151a;font-weight:900;background:var(--green);border-radius:8px}
+.brand strong{display:block;font-size:15px}
+.brand small{display:block;margin-top:2px;color:var(--muted);font-size:11px}
+.meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}
+.pill{border:1px solid var(--line);border-radius:99px;padding:6px 10px;white-space:nowrap}
+.pill.live{color:#a8f5d4;border-color:#25775c;background:#103528}
+h1.title{margin:20px 0 2px;font-size:24px}
+p.subtitle{margin:0 0 18px;color:var(--muted);font-size:14px}
+.grid12{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.card{position:relative;display:flex;flex-direction:column;gap:9px;min-height:172px;padding:15px 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);border-left:4px solid var(--blue);transition:transform .14s ease,border-color .14s ease}
+.card:hover{transform:translateY(-2px)}
+.card[data-risk="red"]{border-left-color:var(--red)}
+.card[data-risk="orange"]{border-left-color:var(--orange)}
+.card[data-risk="yellow"]{border-left-color:var(--yellow)}
+.card[data-risk="green"]{border-left-color:var(--green)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.card-title{font-size:13px;font-weight:800}
+.card-class{font-size:9px;font-weight:800;letter-spacing:.6px;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:2px 7px;white-space:nowrap}
+.card-status{font-size:10px;font-weight:800;letter-spacing:.4px}
+.card-status.iyi{color:#7be7ba}
+.card-status.uyari{color:#ffd66b}
+.card-status.kritik{color:#ff9aa7}
+.card-status.bekliyor{color:#8fa3bd}
+.card-value{font-size:19px;font-weight:850;font-variant-numeric:tabular-nums}
+.card-note{font-size:11px;color:var(--muted);line-height:1.4;flex:1}
+.card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:8px;border-top:1px solid #23344d;font-size:10px;color:#8ea0b8}
+.card-foot .evidence{font-weight:800}
+.card-foot .evidence.yes{color:#7be7ba}
+.card-foot .evidence.no{color:#ff9aa7}
+.card-open{font-size:11px;font-weight:800;color:#a9c7ff}
+.upd{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:800;color:#83e8c1;background:#103528;border:1px solid #25775c;border-radius:99px;padding:2px 8px;margin-left:6px}
+@media (max-width:1180px){.grid12{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.shell{width:min(100% - 20px,1560px)}.grid12{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}}
+footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color:#7f91a9;font-size:11px;flex-wrap:wrap}
+</style>
 </head>
 <body>
-  <main class="shell">
-    <header class="topbar">
-      <a class="brand" href="./index.html" aria-label="AperiON ana ekran"><span class="mark">AP</span><span><strong>AperiON iSTasyon</strong><small>CFO, onay ve isletme hafizasi</small></span></a>
-      <div class="meta"><span class="pill live">KAYNAK SISTEM: BIZIMHESAP</span><span class="pill">GUNCELLEME <span id="buildCode">--</span></span></div>
+<main class="shell">
+  <header class="topbar">
+    <a class="brand" href="./index.html" aria-label="AperiON ana ekran"><span class="mark">AP</span><span><strong>AperiON iSTasyon</strong><small>Operasyon Merkezi</small></span></a>
+    <div class="meta"><span class="pill live">KAYNAK: SUPABASE CANLI</span><span class="pill">GÜNCELLEME <span id="buildCode">--</span></span></div>
+  </header>
+
+  <h1 class="title">AperiON iSTasyon – Operasyon Merkezi</h1>
+  <p class="subtitle">Bugün ne kritik?<span class="upd" id="updatedPill">Güncellendi · --</span></p>
+
+  <section aria-labelledby="matrixTitle" style="margin-bottom:22px;border:1px solid var(--line);border-top:3px solid var(--gold);border-radius:10px;background:var(--surface);overflow:hidden">
+    <header style="padding:16px 18px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+      <div><div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">KATEGORİ BAZLI GELİR TABLOSU</div><h2 id="matrixTitle" style="margin:5px 0 4px;font-size:19px">Satışlar → SMM → Brüt Kar → Giderler → Net Kar</h2><p style="margin:0;color:var(--muted);font-size:12px">Ürün kategorisine göre; Bugün / Dün / Bu Hafta / Bu Ay / Geçen Ay / Bu Yıl / Geçen Yıl</p></div>
     </header>
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:11.5px;min-width:1900px" id="catMatrix">
+      <thead>
+        <tr style="background:#0d1727">
+          <th rowspan="2" style="text-align:left;padding:8px 12px;color:#a7bad2;font-size:10px;font-weight:900;letter-spacing:.5px;position:sticky;left:0;background:#0d1727;vertical-align:bottom">KATEGORİ</th>
+          <th colspan="3" style="text-align:center;padding:6px 8px;color:#83e8c1;font-size:10px;font-weight:900;border-left:1px solid #23344d">BUGÜN</th>
+          <th colspan="3" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">DÜN</th>
+          <th colspan="3" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">BU HAFTA</th>
+          <th colspan="3" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">BU AY</th>
+          <th colspan="3" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">GEÇEN AY</th>
+          <th colspan="3" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">BU YIL</th>
+          <th colspan="3" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">GEÇEN YIL</th>
+        </tr>
+        <tr style="background:#0d1727">
+          <script>document.write('<th style="border-left:1px solid #23344d;padding:5px 6px;color:#7f91a9;font-size:9px;font-weight:800">SATIŞ TL</th><th style="padding:5px 6px;color:#7f91a9;font-size:9px;font-weight:800">ADET</th><th style="padding:5px 6px;color:#7f91a9;font-size:9px;font-weight:800">TAHSİLAT</th>'.repeat(7));</script>
+        </tr>
+      </thead>
+      <tbody id="catMatrixSalesBody"></tbody>
+      <tr><td colspan="22" style="padding:10px 12px;background:#152742;font-weight:800;border-top:2px solid #2c3d56">SATILAN MALIN MALİYETİ</td></tr>
+      <tbody id="catMatrixCogsBody"></tbody>
+      <tr id="catGross" style="background:#152742;border-left:3px solid var(--gold)"><td style="padding:9px 12px;font-weight:850">BRÜT KAR</td><td colspan="21" style="padding:9px 12px;text-align:right;color:var(--muted)">Maliyet kaynağı bağlanınca hesaplanır</td></tr>
+      <tr><td style="padding:9px 12px;font-weight:800" colspan="22">GİDERLER — Tahmini / Tahakkuk / Ödenen — kaynak bekliyor, bkz. index.html Finans sekmesi</td></tr>
+      <tr><td style="padding:9px 12px;font-weight:800" colspan="22">VERGİ — kaynak bekliyor</td></tr>
+      <tr style="background:#152742;border-left:3px solid var(--green)"><td style="padding:9px 12px;font-weight:850">NET KAR</td><td colspan="21" style="padding:9px 12px;text-align:right;color:var(--muted)">Gider/vergi kaynağı bağlanınca hesaplanır</td></tr>
+    </table>
+    </div>
+    <div style="padding:10px 18px;color:var(--muted);font-size:11px;border-top:1px solid var(--line)" id="matrixSource">Kaynak: sales_raw (ALAYLI). Maliyet için product_raw eşleşmesi henüz doğrulanmadı — "kaynak bekliyor" olarak gösterilir.</div>
+  </section>
 
-    <section class="financial-desk" aria-labelledby="financialTitle">
-      <header class="desk-head">
-        <div><div class="eyebrow">CANLI FINANS GORUNUMU</div><h1 id="financialTitle">Gelir Tablosu ve Bilanço</h1><p>Gelir, maliyet, gider, net sonuc ve likidite ayni ekranda. Bir kaleme tikladiginda ilgili kayit listesine gecersin.</p></div>
-        <div class="periods" aria-label="Donem secimi"><button class="period" type="button" data-period="today">Bugun</button><button class="period" type="button" data-period="yesterday">Dun</button><button class="period" type="button" data-period="week">Bu Hafta</button><button class="period" type="button" data-period="month">Bu Ay</button><button class="period" type="button" data-period="lastMonth">Gecen Ay</button><button class="period active" type="button" data-period="year">Bu Yil</button><button class="period" type="button" data-period="lastYear">Gecen Yil</button></div>
-      </header>
-      <div class="signal-strip">
-        <div class="signal info"><label>NET SATIS</label><strong id="salesSignal">Kaynak okunuyor</strong><span id="salesSignalNote">BizimHesap satis ozeti bekleniyor.</span></div>
-        <div class="signal gold"><label>BRUT KAR</label><strong id="grossSignal">Hesaplanamiyor</strong><span id="grossSignalNote">Maliyet kaynagi olmadan gosterilmez.</span></div>
-        <div class="signal positive"><label>NET KAR</label><strong id="netSignal">Hesaplanamiyor</strong><span id="netSignalNote">Gider ve vergi kaynagi bekleniyor.</span></div>
-        <div class="signal alert"><label>NAKIT VE BANKA</label><strong id="cashSignal">Kaynak bekliyor</strong><span id="cashSignalNote">Onayli banka/kasa bakiyesi gerekir.</span></div>
-      </div>
-      <div class="statement-grid">
-        <section class="statement" aria-labelledby="incomeTitle">
-          <header class="panel-head"><div><h2 id="incomeTitle">Gelir Tablosu</h2><p id="periodLabel">Bu yil - kaynak kapsamina gore</p></div><div class="view-tabs" aria-label="Muhasebe gorunumu"><button class="view active" type="button">Tahakkuk</button><button class="view" type="button">Nakit</button></div></header>
-          <a class="income-row clickable" href="./index.html#sales" aria-label="Satis kayitlarini ac"><span class="row-name">Satis gelirleri <small>kategori ve urune in</small></span><span class="row-value" id="salesValue">Kaynak okunuyor</span><span class="row-value muted" id="salesSub">-</span><span class="row-state">Kaynak</span></a>
-          <a class="income-row clickable" href="./hasta-bezi/karar-ekrani.html" aria-label="Satilan malin maliyetini ac"><span class="row-name">Satilan malin maliyeti <small>FIFO ve alis kaniti</small></span><span class="row-value unavailable" id="cogsValue">Bagli degil</span><span class="row-value muted">Alis/FIFO gerekli</span><span class="row-state">Eksik</span></a>
-          <a class="income-row total gross clickable" href="./hasta-bezi/karar-ekrani.html" aria-label="Brut kar detayini ac"><span class="row-name">Brut kar <small>satis eksi maliyet</small></span><span class="row-value unavailable" id="grossValue">Hesaplanamiyor</span><span class="row-value muted">Maliyet bekliyor</span><span class="row-state">Kontrol</span></a>
-          <a class="income-row clickable" href="./finans-takvimi.html" aria-label="Sabit gider detayini ac"><span class="row-name">Sabit ve sozlesmeli giderler <small>kira, maas, abonelik, takvim</small></span><span class="row-value unavailable" id="fixedValue">Kaynak bekliyor</span><span class="row-value muted">Plan/tahakkuk</span><span class="row-state">Bekliyor</span></a>
-          <a class="income-row clickable" href="./index.html#expenses" aria-label="Degisken gider detayini ac"><span class="row-name">Degisken giderler <small>masraf, kargo, banka, hizmet</small></span><span class="row-value unavailable" id="variableValue">Kaynak bekliyor</span><span class="row-value muted">Fatura/masraf</span><span class="row-state">Bekliyor</span></a>
-          <a class="income-row clickable" href="./finans-takvimi.html" aria-label="Vergi detayini ac"><span class="row-name">Vergi ve diger yukumlulukler <small>KDV, SGK, stopaj</small></span><span class="row-value unavailable" id="taxValue">Kaynak bekliyor</span><span class="row-value muted">Tahakkuk gerekli</span><span class="row-state">Bekliyor</span></a>
-          <a class="income-row total net clickable" href="./index.html" aria-label="Net kar raporunu ac"><span class="row-name">Net kar <small>gelir eksi maliyet, gider ve vergi</small></span><span class="row-value unavailable" id="netValue">Hesaplanamiyor</span><span class="row-value muted" id="netSub">Tum kalemler gerekli</span><span class="row-state">Dogrulanacak</span></a>
-        </section>
-        <aside class="balance" aria-labelledby="balanceTitle">
-          <header class="panel-head"><div><h2 id="balanceTitle">Bilanço ve likidite</h2><p>Kaynaklar onaylandikca guncellenir.</p></div></header>
-          <div class="balance-grid">
-            <a class="balance-card source" href="./gunluk-banka-karar.html"><label>BANKA VE KASA</label><strong id="bankCashValue">Kaynak bekliyor</strong><p id="bankCashNote">Onayli hesap bakiyesi okunacak.</p></a>
-            <a class="balance-card pending" href="./cari_kart.html"><label>ALACAKLAR</label><strong id="receivableValue">Kaynak bekliyor</strong><p id="receivableNote">Cari acik bakiye baglanacak.</p></a>
-            <a class="balance-card pending" href="./cari_kart.html"><label>BORCLAR</label><strong id="payableValue">Kaynak bekliyor</strong><p>Cari tedarikci bakiyesi baglanacak.</p></a>
-            <a class="balance-card" href="./hasta-bezi/karar-ekrani.html"><label>STOK</label><strong id="inventoryValue">Kaynak bekliyor</strong><p>FIFO stok degeri tamamlaninca gorunur.</p></a>
-          </div>
-          <div class="balance-foot" id="balanceFoot">Bilanço rakami, banka/kasa + cari + stok kaynaklari ayni tarih itibariyla dogrulanmadan kesin olarak gosterilmez.</div>
-        </aside>
-      </div>
-      <div class="cash-flow-grid" aria-label="Tahsilat ve odeme kanallari">
-        <section class="cash-flow collection" aria-labelledby="collectionsTitle">
-          <header class="panel-head"><div><h2 id="collectionsTitle">Tahsilatlar</h2><p id="collectionsLabel">Donem secimine gore nakit esasi</p></div></header>
-          <div class="cash-flow-total"><span>TOPLAM TAHSILAT</span><strong id="collectionsTotal">Kaynak bekliyor</strong></div>
-          <a class="cash-line" href="./finans-takvimi.html"><span>1. Nakit <small>kasa ve banka nakit girisleri</small></span><b id="collectionCash">Kaynak bekliyor</b></a>
-          <a class="cash-line" href="./gunluk-banka-karar.html"><span>2. Kredi karti <small>POS ve Moka tahsilatlari</small></span><b id="collectionCard">Kaynak bekliyor</b></a>
-          <a class="cash-line" href="./cari_kart.html"><span>3. Cek <small>cek tahsilatlari</small></span><b id="collectionCheque">Kaynak bekliyor</b></a>
-          <a class="cash-line" href="./gunluk-banka-karar.html"><span>4. Diger <small>EFT, havale ve diger tahsilatlar</small></span><b id="collectionOther">Kaynak bekliyor</b></a>
-        </section>
-        <section class="cash-flow payment" aria-labelledby="paymentsTitle">
-          <header class="panel-head"><div><h2 id="paymentsTitle">Odemeler</h2><p id="paymentsLabel">Donem secimine gore nakit esasi</p></div></header>
-          <div class="cash-flow-total"><span>TOPLAM ODEME</span><strong id="paymentsTotal">Kaynak bekliyor</strong></div>
-          <a class="cash-line" href="./finans-takvimi.html"><span>1. Nakit <small>kasa ve banka nakit cikislari</small></span><b id="paymentCash">Kaynak bekliyor</b></a>
-          <a class="cash-line" href="./gunluk-banka-karar.html"><span>2. Kredi karti <small>kart ile odemeler</small></span><b id="paymentCard">Kaynak bekliyor</b></a>
-          <a class="cash-line" href="./cari_kart.html"><span>3. Cek <small>cek ile odemeler</small></span><b id="paymentCheque">Kaynak bekliyor</b></a>
-          <a class="cash-line" href="./gunluk-banka-karar.html"><span>4. Diger <small>EFT, havale, vergi ve diger odemeler</small></span><b id="paymentOther">Kaynak bekliyor</b></a>
-        </section>
-      </div>
-      <div class="source-line"><span id="sourceLine"><strong>Veri durumu:</strong> kaynaklar okunuyor.</span><a href="./veri-durumu.html">Kaynak sagligini ac -></a></div>
-    </section>
+  <section class="grid12" id="cardGrid" aria-label="Operasyon kartları">
 
-    <section aria-labelledby="priorityTitle"><div class="section-head"><div><h2 id="priorityTitle">Bugun once bunlara bak</h2><p>Rakam yoksa uydurulmaz; kaynak okunamiyorsa acikca bekliyor denir.</p></div></div><div class="priority-grid"><article class="priority" data-tone="gold"><div class="priority-top"><span>01 / BANKA</span><span id="bankRisk">DURUM</span></div><strong id="bankPriority">Banka onay havuzu</strong><p id="bankPriorityDetail">Kaynak yaniti bekleniyor.</p><a href="./gunluk-banka-karar.html">Onay ekranina git -></a></article><article class="priority" data-tone="green"><div class="priority-top"><span>02 / TAHSILAT</span><span>CARI</span></div><strong>Cari ve tahsilat kontrolu</strong><p>Gelen para aciklamasi ve cari adayi ile gorulur; eslesme kesinlesmeden kayit yapilmaz.</p><a href="./cari_kart.html">Cari kartlara git -></a></article><article class="priority"><div class="priority-top"><span>03 / STOK</span><span id="fifoRisk">KAPSAM</span></div><strong id="fifoPriority">FIFO ve stok kontrolu</strong><p id="fifoPriorityDetail">Kaynak kapsam bilgisi okunuyor.</p><a href="./hasta-bezi/karar-ekrani.html">Karar ekranina git -></a></article></div></section>
+    <article class="card" data-risk="yellow" id="card-kritik">
+      <div class="card-top"><span class="card-title">1 · Kritik Durum</span><span class="card-class">GENEL</span></div>
+      <span class="card-status uyari" id="kritik-status">Hesaplanıyor</span>
+      <span class="card-value" id="kritik-value">Kaynak okunuyor</span>
+      <p class="card-note" id="kritik-note">Bugünkü en yüksek riskli kalem taranıyor.</p>
+      <div class="card-foot"><span>Son kontrol: <span id="kritik-time">--</span></span><span class="evidence yes">Kanıt: Var</span></div>
+      <a class="card-open" href="#card-riskler">Aç →</a>
+    </article>
 
-    <section aria-labelledby="moduleTitle"><div class="section-head"><div><h2 id="moduleTitle">Is alanlari</h2><p>Her alan tek bir soruya hizmet eder. Karttan ac, isini bitir, komuta masasina geri don.</p></div></div><nav class="module-grid" aria-label="AperiON modulleri"><a class="module-card" style="--accent:var(--green)" href="./index.html"><span class="module-no">01 / CFO</span><h3>CFO ve Gelir Tablosu</h3><p>Plan, tahakkuk, nakit, gelir-gider ve donem karsilastirmasi.</p><span class="module-link">Finans gorunumu -></span></a><a class="module-card" style="--accent:var(--coral)" href="./gunluk-banka-karar.html"><span class="module-no">02 / ONAY</span><h3>Gunluk Banka Onayi</h3><p>Hareketi, kaniti, cari veya hedef hesabi gor; sonra tek tek onayla.</p><span class="module-link">Onay havuzu -></span></a><a class="module-card" style="--accent:var(--gold)" href="./hasta-bezi/karar-ekrani.html"><span class="module-no">03 / TICARET</span><h3>Hasta Bezi ve FIFO</h3><p>Urun, kategori, maliyet, stok omru ve siparis kararlarini incele.</p><span class="module-link">Urun karar ekrani -></span></a><a class="module-card" style="--accent:var(--blue)" href="./cari_kart.html"><span class="module-no">04 / CARI</span><h3>Cari ve Tahsilat</h3><p>Musteri ve tedarikci hareketleri, acik bakiye, tahsilat disiplini ve risk.</p><span class="module-link">Cari hafiza -></span></a><a class="module-card" style="--accent:#28c7c1" href="./mail-ekstre-canli.html"><span class="module-no">05 / KAYNAK</span><h3>Mail ve Ekstre</h3><p>Mailden gelen ekstrelere kaynak izi, tekrar kontrolu ve siniflandirma.</p><span class="module-link">Ekstre akisi -></span></a><a class="module-card" style="--accent:var(--violet)" href="./stok_kart.html"><span class="module-no">06 / URUN</span><h3>Urun ve Stok</h3><p>Alis, satis, stok, fiyat ve urun bazli karlilik bilgisini incele.</p><span class="module-link">Urun hafizasi -></span></a><a class="module-card" style="--accent:#ef7d4c" href="./finans-takvimi.html"><span class="module-no">07 / TAKVIM</span><h3>Finans Takvimi</h3><p>Sabit giderler, sozlesmeler, vade, tahsilat ve odeme hatirlatmalari.</p><span class="module-link">Takvime git -></span></a><a class="module-card" style="--accent:#c8d3e2" href="./veri-durumu.html"><span class="module-no">08 / GUVEN</span><h3>Veri Sagligi</h3><p>Hangi kaynagin ne zaman geldigi, nerede eksik kaldigi ve veri guveni.</p><span class="module-link">Kaynak sagligi -></span></a></nav></section>
-    <footer><span>AperiON gorur, siniflandirir, kanitini gosterir; sen onayladiginda resmi kayda alir.</span><a href="./index.html">Ana ekrana git -></a></footer>
-  </main>
-  <script>
-    const currency = new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0});
-    const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
-    const valueOf = (item, keys) => { for (const key of keys) { if (item && item[key] !== undefined && item[key] !== null && item[key] !== '') return Number(item[key]); } return NaN; };
-    const buildCode = () => { const d = new Date(); return [String(d.getHours()).padStart(2,'0'),String(d.getMinutes()).padStart(2,'0'),String(d.getFullYear()).slice(-2),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join(''); };
-    const fmtDate = value => { const d = new Date(value); return Number.isNaN(d.getTime()) ? 'Kaynak tarihi yok' : new Intl.DateTimeFormat('tr-TR',{dateStyle:'short',timeStyle:'short'}).format(d); };
-    const yearRow = (data, year) => (data.year_summary || []).find(row => String(row.Yil || row['Yıl'] || row.year) === String(year));
-    function setSales(row, label) { const net = valueOf(row,['Net','net','sales_net']); const quantity = valueOf(row,['Miktar','miktar','quantity']); if (!Number.isFinite(net)) return false; const display = currency.format(net); setText('salesSignal',display); setText('salesSignalNote',label); setText('salesValue',display); setText('salesSub',Number.isFinite(quantity) ? quantity.toLocaleString('tr-TR') + ' adet' : label); setText('periodLabel',label + ' - satis kaynagi'); return true; }
-    function setCashFlowPeriod(label) { setText('collectionsLabel',label + ' - nakit esasi ve kanal kirilimi'); setText('paymentsLabel',label + ' - nakit esasi ve kanal kirilimi'); ['collectionsTotal','collectionCash','collectionCard','collectionCheque','collectionOther','paymentsTotal','paymentCash','paymentCard','paymentCheque','paymentOther'].forEach(id=>setText(id,'Kaynak bekliyor')); }
-    function showPeriod(period, salesData) { document.querySelectorAll('.period').forEach(button => button.classList.toggle('active',button.dataset.period === period)); const labels = {today:'Bugun',yesterday:'Dun',week:'Bu hafta',month:'Bu ay',lastMonth:'Gecen ay',year:'Bu yil',lastYear:'Gecen yil'}; setCashFlowPeriod(labels[period]); if (period === 'year') { const row = yearRow(salesData, new Date().getFullYear()); if (setSales(row, labels[period] + ' - BizimHesap satis ozeti')) return; } if (period === 'lastYear') { const row = yearRow(salesData, new Date().getFullYear()-1); if (setSales(row, labels[period] + ' - BizimHesap satis ozeti')) return; } setText('salesSignal','Kaynak bekliyor'); setText('salesSignalNote',labels[period] + ' icin detay satis ozeti henuz yayinlanmadi.'); setText('salesValue','Kaynak bekliyor'); setText('salesSub','Donemsel ozet gerekli'); setText('periodLabel',labels[period] + ' - kaynak bagli degil'); }
-    setText('buildCode',buildCode());
-    let salesData = {};
-    fetch('./data/sales_report_summary_2025_2026.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('sales summary');return r.json();}).then(data=>{ salesData=data; showPeriod('year',salesData); const row=yearRow(data,new Date().getFullYear()); const note=(data.report_summary||[]).find(item=>String(item['Dönem']||item.Donem||'').includes(String(new Date().getFullYear()))); setText('sourceLine','Veri durumu: satis ozeti ' + (note ? (note['Dönem']||note.Donem) : 'donem bilgisi yok') + ' kapsamini tasiyor. Maliyet, gider, vergi ve bilanço kaynaklari ayri dogrulanacak.'); document.querySelectorAll('.period').forEach(button=>button.addEventListener('click',()=>showPeriod(button.dataset.period,salesData))); }).catch(()=>{setText('salesSignal','Kaynak okunamadi');setText('salesSignalNote','Satis ozeti bu ortamda yok.');setText('salesValue','Kaynak okunamadi');setText('salesSub','Veri guvenini kontrol et');setText('sourceLine','Veri durumu: satis ozeti okunamadi. Rakam gosterilmedi; kaynak sagligini kontrol et.');});
-    fetch('./data/dealer_statement_finance_calendar_plan.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('dealer plan');return r.json();}).then(data=>{const total=valueOf(data.summary,['future_receivable_total']);const count=valueOf(data.summary,['future_receivable_count']);if(Number.isFinite(total)){setText('receivableValue',currency.format(total));setText('receivableNote',(Number.isFinite(count)?count.toLocaleString('tr-TR'):'')+' planli gelecek tahsilat, kaynak tarihi '+String(data.as_of||'-'));}}).catch(()=>{});
-    fetch('./data/aperion_clone_health.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('clone health');return r.json();}).then(data=>{const counts=data.counts||{};const stamp=(data.last_sync||{}).finishedAt||data.generated_at;const today=Number(counts.sales_today||0);const yesterday=Number(counts.sales_yesterday||0);setText('sourceLine','Veri durumu: BizimHesap clone '+String(data.status||'bilinmiyor')+'; son basarili cekim '+fmtDate(stamp)+'. Bugun '+today.toLocaleString('tr-TR')+', dun '+yesterday.toLocaleString('tr-TR')+' satis kaydi kaynakta dogrulandi. Net kar icin maliyet, gider ve vergi snapshoti ayni tarihte baglanacak.');}).catch(()=>{});
-    fetch('./data/aperion_bank_approval_status.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('bank status');return r.json();}).then(data=>{const s=data.summary||{}, selected=data.selected_candidate||{}, count=Number(s.candidate_count||0), review=Number(s.review_count||0);setText('bankState',count?count+' kayit karar bekliyor':'Onay adayi yok');setText('bankDetail',selected.bank_name?selected.bank_name+' - '+(selected.amount_label||'tutar okunuyor'):'Yeni aday bulunmadi.');setText('bankRisk',count?'ONAY GEREKLI':'TEMIZ');setText('bankPriority',count?count+' banka kaydi karar bekliyor':'Banka onay havuzu temiz');setText('bankPriorityDetail',review?review+' kayit inceleme sinifinda; kayit oncesi kaniti gor.':'Yeni kayit bulunmuyor.');setText('cashSignal',count?count+' banka kaydi onayda':'Onay adayi yok');setText('cashSignalNote','Bu rakam bakiye degil; onay akisi durumudur.');setText('bankCashValue','Bakiye kaynagi bekliyor');setText('bankCashNote','Hesap bakiyesi ayni tarihli ekstreyle dogrulanacak.');}).catch(()=>{setText('bankRisk','KONTROL');setText('bankPriority','Banka kaynagi kontrol edilmeli');setText('bankPriorityDetail','Durum dosyasi okunamadi; karar vermeden once kaynak sagligini ac.');});
-    fetch('./hasta-bezi/fifo_chunks/manifest.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('fifo manifest');return r.json();}).then(data=>{const warnings=Number(data.warningCount||data.warning_count||0);setText('fifoRisk',warnings?'UYARI':'TEMIZ');setText('fifoPriority',warnings?warnings.toLocaleString('tr-TR')+' FIFO kaydi kontrol bekliyor':'FIFO kaynak kapsami temiz');setText('fifoPriorityDetail',warnings?'Acillis stogu, alis kaydi olmayan veya yetersiz lotlar ayri isaretlenir.':'Uyari bulunmuyor.');}).catch(()=>{setText('fifoRisk','KONTROL');setText('fifoPriority','FIFO kaynagi kontrol edilmeli');setText('fifoPriorityDetail','Kaynak okunamadigi icin maliyet karari gosterilmez.');});
-  </script>
+    <article class="card" data-risk="orange" id="card-bankalar">
+      <div class="card-top"><span class="card-title">2 · Bankalar</span><span class="card-class">ALAYLI</span></div>
+      <span class="card-status uyari" id="bank-status">Okunuyor</span>
+      <span class="card-value" id="bank-value">Kaynak okunuyor</span>
+      <p class="card-note" id="bank-note">pending_bank_movements taranıyor.</p>
+      <div class="card-foot"><span>Son kontrol: <span id="bank-time">--</span></span><span class="evidence yes">Kanıt: Var</span></div>
+      <a class="card-open" href="./gunluk-banka-karar.html">Aç →</a>
+    </article>
+
+    <article class="card" data-risk="orange" id="card-bizimhesap">
+      <div class="card-top"><span class="card-title">3 · BizimHesap İşleme</span><span class="card-class">ALAYLI</span></div>
+      <span class="card-status uyari" id="bh-status">Okunuyor</span>
+      <span class="card-value" id="bh-value">Kaynak okunuyor</span>
+      <p class="card-note" id="bh-note">Kanıt → Onay → Queue → Dry-run → Kayıt → Doğrulama</p>
+      <div class="card-foot"><span>Son kontrol: <span id="bh-time">--</span></span><span class="evidence yes" id="bh-evidence">Kanıt: Var</span></div>
+      <a class="card-open" href="./gunluk-banka-karar.html">Aç →</a>
+    </article>
+
+    <article class="card" data-risk="yellow" id="card-gmail">
+      <div class="card-top"><span class="card-title">4 · Gmail Sinyalleri</span><span class="card-class">GENEL</span></div>
+      <span class="card-status bekliyor" id="gmail-status">Kaynak bekliyor</span>
+      <span class="card-value" id="gmail-value">Kaynak bekliyor</span>
+      <p class="card-note" id="gmail-note">bank_mail_inbox kaynağı henüz kayıt taşımıyor.</p>
+      <div class="card-foot"><span>Son kontrol: <span id="gmail-time">--</span></span><span class="evidence no">Kanıt: Yok</span></div>
+      <a class="card-open" href="./mail-ekstre-canli.html">Aç →</a>
+    </article>
+
+    <article class="card" data-risk="yellow" id="card-moka">
+      <div class="card-top"><span class="card-title">5 · Moka / POS</span><span class="card-class">ALAYLI</span></div>
+      <span class="card-status bekliyor" id="moka-status">Kaynak bekliyor</span>
+      <span class="card-value" id="moka-value">Kaynak bekliyor</span>
+      <p class="card-note">Moka bekleyen tahsilat/transfer kaynağı henüz veri taşımıyor.</p>
+      <div class="card-foot"><span>Son kontrol: <span id="moka-time">--</span></span><span class="evidence no">Kanıt: Yok</span></div>
+      <a class="card-open" href="./gunluk-banka-karar.html">Aç →</a>
+    </article>
+
+    <article class="card" data-risk="yellow" id="card-kart">
+      <div class="card-top"><span class="card-title">6 · Kredi Kartları</span><span class="card-class">GENEL</span></div>
+      <span class="card-status bekliyor" id="kart-status">Kaynak bekliyor</span>
+      <span class="card-value" id="kart-value">Kaynak bekliyor</span>
+      <p class="card-note">finance_account_cards kaynağı henüz gerçek limit/borç verisi taşımıyor (yalnız 3 iskelet hesap var).</p>
+      <div class="card-foot"><span>Son kontrol: <span id="kart-time">--</span></span><span class="evidence no">Kanıt: Yok</span></div>
+      <a class="card-open" href="./index.html">Aç →</a>
+    </article>
+
+    <article class="card" data-risk="yellow" id="card-fatura">
+      <div class="card-top"><span class="card-title">7 · Faturalar / Abonelikler</span><span class="card-class">GENEL</span></div>
+      <span class="card-status bekliyor" id="fatura-status">Kaynak bekliyor</span>
+      <span class="card-value" id="fatura-value">Kaynak bekliyor</span>
+      <p class="card-note">fixed_payment_contracts kaynağı henüz kayıt taşımıyor.</p>
+      <div class="card-foot"><span>Son kontrol: <span id="fatura-time">--</span></span><span class="evidence no">Kanıt: Yok</span></div>
+      <a class="card-open" href="./finans-takvimi.html">Aç →</a>
+    </article>
+
+    <article class="card" data-risk="yellow" id="card-sahsi">
+      <div class="card-top"><span class="card-title">8 · Şahsi Finans</span><span class="card-class">ŞAHSİ</span></div>
+      <span class="card-status bekliyor" id="sahsi-status">Kaynak hazır, kayıt yok</span>
+      <span class="card-value" id="sahsi-value">0 kayıt</span>
+      <p class="card-note" id="sahsi-note">Şahsi finans/ikinci beyin arka ucu bugün canlıya alındı; Telegram/manuel giriş bekleniyor.</p>
+      <div class="card-foot"><span>Son kontrol: <span id="sahsi-time">--</span></span><span class="evidence no">Kanıt: Yok</span></div>
+      <a class="card-open" href="./index.html">Aç →</a>
+    </article>
+
+    <article class="card" data-risk="orange" id="card-satis">
+      <div class="card-top"><span class="card-title">9 · Satış / Stok</span><span class="card-class">ALAYLI</span></div>
+      <span class="card-status uyari" id="satis-status">Okunuyor</span>
+      <span class="card-value" id="satis-value">Kaynak okunuyor</span>
+      <p class="card-note" id="satis-note">sales_flow_finance_mini kaynağı okunuyor.</p>
+      <div class="card-foot"><span>Son kontrol: <span id="satis-time">--</span></span><span class="evidence yes">Kanıt: Var</span></div>
+      <a class="card-open" href="./stok_kart.html">Aç →</a>
+    </article>
+
+    <article class="card" data-risk="red" id="card-risk">
+      <div class="card-top"><span class="card-title">10 · Riskler</span><span class="card-class">GENEL</span></div>
+      <span class="card-status kritik" id="risk-status">Okunuyor</span>
+      <span class="card-value" id="risk-value">Kaynak okunuyor</span>
+      <p class="card-note" id="risk-note">Gecikmiş alacak/borç ve onay yükü hesaplanıyor.</p>
+      <div class="card-foot"><span>Son kontrol: <span id="risk-time">--</span></span><span class="evidence yes">Kanıt: Var</span></div>
+      <a class="card-open" href="./cari_kart.html">Aç →</a>
+    </article>
+
+    <article class="card" data-risk="green" id="card-tamam">
+      <div class="card-top"><span class="card-title">11 · Tamamlananlar</span><span class="card-class">GENEL</span></div>
+      <span class="card-status iyi" id="tamam-status">Okunuyor</span>
+      <span class="card-value" id="tamam-value">Kaynak okunuyor</span>
+      <p class="card-note" id="tamam-note">Onaylanmış banka hareketi sayısı.</p>
+      <div class="card-foot"><span>Son kontrol: <span id="tamam-time">--</span></span><span class="evidence yes">Kanıt: Var</span></div>
+      <a class="card-open" href="./gunluk-banka-karar.html">Aç →</a>
+    </article>
+
+    <article class="card" data-risk="yellow" id="card-saglik">
+      <div class="card-top"><span class="card-title">12 · Sistem Sağlığı</span><span class="card-class">GENEL</span></div>
+      <span class="card-status uyari" id="saglik-status">Okunuyor</span>
+      <span class="card-value" id="saglik-value">Kaynak okunuyor</span>
+      <p class="card-note" id="saglik-note">bot_logs ve banka hattı son güncelleme zamanı karşılaştırılıyor.</p>
+      <div class="card-foot"><span>Son kontrol: <span id="saglik-time">--</span></span><span class="evidence yes">Kanıt: Var</span></div>
+      <a class="card-open" href="./veri-durumu.html">Aç →</a>
+    </article>
+
+  </section>
+
+  <footer><span>AperiON görür, sınıflandırır, kanıtını gösterir; sen onayladığında resmi kayda alır.</span><a href="./index.html">Ana ekrana git →</a></footer>
+</main>
+<script>
+const db = window.supabase.createClient('https://iilfwosoroflzubkaryj.supabase.co','sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW');
+const money = v => Number(v||0).toLocaleString('tr-TR',{maximumFractionDigits:0}) + ' TL';
+const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+const setClass = (id, cls) => { const el = document.getElementById(id); if (el) el.className = 'card-status ' + cls; };
+const setRisk = (cardId, risk) => { const el = document.getElementById(cardId); if (el) el.setAttribute('data-risk', risk); };
+const fmtTime = d => d ? new Intl.DateTimeFormat('tr-TR',{dateStyle:'short',timeStyle:'short'}).format(new Date(d)) : 'kayıt yok';
+const nowCode = () => { const d = new Date(); return [String(d.getHours()).padStart(2,'0'),String(d.getMinutes()).padStart(2,'0'),String(d.getFullYear()).slice(-2),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join(''); };
+setText('buildCode', nowCode());
+setText('updatedPill', 'Güncellendi · ' + new Intl.DateTimeFormat('tr-TR',{dateStyle:'short',timeStyle:'short'}).format(new Date()));
+
+const catOrder = ['MEDİKAL AKÜLÜ','MEKİKAL ELEKTRONİK','HASTA ALTI BEZİ','PERİNE VÜCUT TEMİZLEME','KİRALIK','KARYOLA','YÜRÜMEYE YARDIMCI','ORTOPEDİ TEKSTİL','SARF','SONDA','KOLOSTOMİ','AYAKKABI TERLİK','SGK','SOLUNUM','DİĞER'];
+const periodKeys = ['bugun','dun','hafta','ay','gecen_ay','yil','gecen_yil'];
+const qty = v => v ? Number(v).toLocaleString('tr-TR') : '<span style="color:#5c6d84">-</span>';
+function threeCol(satis, adet){
+  return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;border-left:1px solid #1c293c">'+(satis?money(satis):'<span style="color:#5c6d84">-</span>')+'</td>'
+    + '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;color:var(--muted)">'+qty(adet)+'</td>'
+    + '<td style="text-align:right;padding:6px 8px;color:#f6c86a;font-size:10px">kaynak bekliyor</td>';
+}
+db.from('aperion_category_income_matrix_v3_view').select('*').then(({data,error})=>{
+  const salesBody = document.getElementById('catMatrixSalesBody');
+  const cogsBody = document.getElementById('catMatrixCogsBody');
+  if (error || !data) { salesBody.innerHTML = '<tr><td colspan="22" style="padding:10px 12px;color:var(--muted)">Kaynak okunamadı: '+(error?error.message:'boş sonuç')+'</td></tr>'; return; }
+  const byCat = {}; data.forEach(r=>{ byCat[r.kategori_grup]=r; });
+  const totalRow = {}; periodKeys.forEach(p=>{ totalRow['satis_'+p]=0; totalRow['adet_'+p]=0; });
+
+  function catRow(cat, r, indent){
+    r = r || {};
+    const cells = periodKeys.map(p=>{ const s=Number(r['satis_'+p]||0), a=Number(r['adet_'+p]||0); totalRow['satis_'+p]+=s; totalRow['adet_'+p]+=a; return threeCol(s,a); }).join('');
+    const pad = indent ? '28px' : '12px';
+    return '<tr style="border-top:1px solid #23344d"><td style="padding:7px 12px 7px '+pad+';font-weight:'+(indent?600:700)+';position:sticky;left:0;background:var(--surface)">'+cat+'</td>'+cells+'</tr>';
+  }
+  function subtotalRow(label, keys){
+    const sub = {}; periodKeys.forEach(p=>{ sub['satis_'+p]=0; sub['adet_'+p]=0; });
+    keys.forEach(k=>{ const r=byCat[k]||{}; periodKeys.forEach(p=>{ sub['satis_'+p]+=Number(r['satis_'+p]||0); sub['adet_'+p]+=Number(r['adet_'+p]||0); }); });
+    const cells = periodKeys.map(p=>threeCol(sub['satis_'+p],sub['adet_'+p]).replace(/color:#f6c86a/g,'color:#8fa3bd')).join('');
+    return '<tr style="background:#101c2e"><td style="padding:6px 12px 6px 12px;font-weight:800;color:#83e8c1;position:sticky;left:0;background:#101c2e">'+label+'</td>'+cells+'</tr>';
+  }
+  let rowsHtml = '';
+  catOrder.forEach(cat=>{
+    if (cat === 'HASTA ALTI BEZİ') {
+      rowsHtml += subtotalRow('HASTA ALTI BEZİ (ana başlık)', ['HASTA ALTI BEZİ — DİSTRİBÜTÖR','HASTA ALTI BEZİ — PERAKENDE']);
+      rowsHtml += catRow('↳ Distribütör (BizimHesap Sınıflandırma 1)', byCat['HASTA ALTI BEZİ — DİSTRİBÜTÖR'], true);
+      rowsHtml += catRow('↳ Perakende (distribütör değil)', byCat['HASTA ALTI BEZİ — PERAKENDE'], true);
+    } else {
+      rowsHtml += catRow(cat, byCat[cat], false);
+    }
+  });
+  const totalCells = periodKeys.map(p=>threeCol(totalRow['satis_'+p], totalRow['adet_'+p]).replace(/color:#f6c86a/g,'color:#7be7ba')).join('');
+  salesBody.innerHTML = rowsHtml + '<tr style="border-top:2px solid #2c3d56;background:#0f1b2c"><td style="padding:8px 12px;font-weight:850;position:sticky;left:0;background:#0f1b2c">TOPLAM SATIŞ</td>'+totalCells+'</tr>';
+  cogsBody.innerHTML = '<tr style="border-top:1px solid #23344d"><td style="padding:7px 12px;color:var(--muted)">Tüm kategoriler</td><td colspan="21" style="padding:7px 12px;text-align:right;color:#f6c86a">Kaynak bekliyor (ürün kod eşleşmesi doğrulanmadı)</td></tr>';
+  setText('matrixSource', 'Kaynak: sales_raw (ALAYLI) + BizimHesap Sınıflandırma 1 (canlı çekildi, 24 distribütör cari), ' + catOrder.length + ' kategori grubu. Son satış tarihi: ' + (data.reduce((m,r)=>r.son_tarih&&r.son_tarih>m?r.son_tarih:m,'')||'-') + '. Tahsilat kategori bazında henüz bağlı değil, Maliyet: product_raw eşleşmesi doğrulanmadı — ikisi de "kaynak bekliyor".');
+}).catch(e=>{ document.getElementById('catMatrixSalesBody').innerHTML = '<tr><td colspan="22" style="padding:10px 12px;color:var(--muted)">Hata: '+String(e)+'</td></tr>'; });
+
+function normalizeBank(name){
+  const n = String(name||'').toLocaleLowerCase('tr').replace(/i̇/g,'i');
+  if (n.includes('is bank') || n.includes('iş bank') || n.includes('isbank')) return 'İş Bankası';
+  if (n.includes('vakif')) return 'VakıfBank';
+  if (n.includes('akbank')) return 'Akbank';
+  if (n.includes('garanti')) return 'Garanti BBVA';
+  if (n.includes('yapi') || n.includes('yapı')) return 'Yapı Kredi';
+  return name || 'Bilinmeyen banka';
+}
+
+// 2 & 3 & 10 & 11: pending_bank_movements_summary_v1_view — sunucu tarafında gruplanmış (1000 satır limitine takılmaz)
+db.from('pending_bank_movements_summary_v1_view').select('*').then(({data,error})=>{
+  if (error || !data || !data.length) {
+    setText('bank-value','Kaynak okunamadı'); setText('bank-note','pending_bank_movements_summary_v1_view okunamadı: '+(error?error.message:'boş sonuç'));
+    setText('bh-value','Kaynak okunamadı'); setText('risk-value','Kaynak okunamadı'); setText('tamam-value','Kaynak okunamadı');
+    return;
+  }
+  const pendingRows = data.filter(r=>r.status==='pending'||!r.status);
+  const approvedRows = data.filter(r=>r.status==='approved');
+  const sum = (rows,key) => rows.reduce((s,r)=>s+Number(r[key]||0),0);
+  const count = rows => rows.reduce((s,r)=>s+Number(r.row_count||0),0);
+  const pendingCount = count(pendingRows), approvedCount = count(approvedRows);
+  const inTotal = sum(pendingRows,'amount_in_total'), outTotal = sum(pendingRows,'amount_out_total');
+  const byBank = {};
+  pendingRows.forEach(r=>{ const b=normalizeBank(r.bank_name); byBank[b]=(byBank[b]||0)+Number(r.row_count||0); });
+  const topBank = Object.entries(byBank).sort((a,b)=>b[1]-a[1])[0];
+  const lastUpdate = data.reduce((max,r)=> r.last_update_at && r.last_update_at>max ? r.last_update_at : max, '');
+
+  setText('bank-value', pendingCount.toLocaleString('tr-TR') + ' kayıt onay bekliyor');
+  setText('bank-note', 'Pilot: ' + (topBank?topBank[0]:'-') + ' (' + (topBank?topBank[1]:0) + ' kayıt). Giriş bekleyen ' + money(inTotal) + ', çıkış bekleyen ' + money(outTotal) + '.');
+  setText('bank-time', fmtTime(lastUpdate)); setText('kritik-time', fmtTime(lastUpdate));
+  setText('bank-status', pendingCount>0?'KRİTİK':'TEMİZ'); setClass('bank-status', pendingCount>0?'kritik':'iyi'); setRisk('card-bankalar', pendingCount>0?'red':'green');
+
+  setText('bh-value', approvedCount + ' işlendi / ' + pendingCount.toLocaleString('tr-TR') + ' bekliyor');
+  setText('bh-note', 'Kanıt → Onay → Queue → Dry-run → Kayıt → Doğrulama. Şu an zincir "Onay" adımında bekliyor; BizimHesap kaydı 0.');
+  setText('bh-time', fmtTime(lastUpdate));
+  setText('bh-status','ONAY BEKLİYOR'); setClass('bh-status','kritik'); setRisk('card-bizimhesap','red');
+
+  setText('tamam-value', approvedCount + ' kayıt onaylandı');
+  setText('tamam-note', 'Onaylanan tutar: giriş ' + money(sum(approvedRows,'amount_in_total')) + ', çıkış ' + money(sum(approvedRows,'amount_out_total')) + '.');
+  setText('tamam-time', fmtTime(lastUpdate));
+  setText('tamam-status', approvedCount>0?'TAMAMLANDI':'BEKLİYOR'); setClass('tamam-status', approvedCount>0?'iyi':'bekliyor');
+
+  const riskLine = pendingCount.toLocaleString('tr-TR') + ' banka kaydı onay bekliyor (' + money(inTotal+outTotal) + ' toplam hacim). Kanıt eksikliği: cari eşleşmesi tamamlanmadı.';
+  setText('risk-note', riskLine);
+  setText('risk-time', fmtTime(lastUpdate));
+
+  setText('kritik-status','KRİTİK'); setClass('kritik-status','kritik'); setRisk('card-kritik','red');
+  setText('kritik-value', pendingCount.toLocaleString('tr-TR') + ' banka kaydı onay bekliyor');
+  setText('kritik-note', 'En yüksek hacimli açık kalem: banka onay havuzu, ' + money(inTotal+outTotal) + '.');
+}).catch(e=>{ setText('bank-value','Kaynak okunamadı'); setText('bank-note',String(e)); });
+
+// 9 & 10: sales_flow_finance_mini_v47_view — gerçek satış/gecikme verisi
+db.from('sales_flow_finance_mini_v47_view').select('*').eq('company','ALAYLI').maybeSingle().then(({data,error})=>{
+  if (error || !data) { setText('satis-value','Kaynak okunamadı'); setText('satis-note', error?error.message:'Kayıt bulunamadı'); return; }
+  setText('satis-value', money(data.today_sales) + ' bugünkü satış');
+  setText('satis-note', (Number(data.today_qty||0)).toLocaleString('tr-TR') + ' adet · Geciken alacak ' + money(data.overdue_receivable) + ' · Geciken borç ' + money(data.overdue_payable) + ' · ' + (data.urgent_tasks||0) + ' acil görev.');
+  { const st = Number(data.overdue_receivable||0)+Number(data.overdue_payable||0) > 0 ? 'uyari':'iyi'; setText('satis-status', st==='uyari'?'UYARI':'İYİ'); setClass('satis-status', st); }
+  setText('satis-time', fmtTime(new Date().toISOString()));
+
+  const overdueTotal = Number(data.overdue_receivable||0) + Number(data.overdue_payable||0);
+  setText('risk-value', money(overdueTotal) + ' gecikmiş bakiye');
+  setText('risk-status','KRİTİK'); setClass('risk-status','kritik');
+  setText('risk-note', 'Geciken alacak ' + money(data.overdue_receivable) + ', geciken borç ' + money(data.overdue_payable) + '. ' + (data.waiting_approvals||0) + ' onay bekleyen kayıt var.');
+}).catch(e=>{ setText('satis-value','Kaynak okunamadı'); setText('satis-note',String(e)); });
+
+// 8: Şahsi Finans + İkinci Beyin — bugün canlıya alınan personal_finance_* view'ları
+db.from('personal_finance_summary_v53_view').select('*').then(({data,error})=>{
+  if (error) { setText('sahsi-note','personal_finance_summary_v53_view okunamadı: '+error.message); return; }
+  if (!data || !data.length) { setText('sahsi-value','0 kayıt'); setText('sahsi-status','Kaynak hazır, kayıt yok'); return; }
+  const row = data[0];
+  setText('sahsi-value', money(row.month_payable||0) + ' bu ay ödenecek');
+  setText('sahsi-note', (row.overdue_count||0) + ' gecikmiş kalem, ' + money(row.overdue_amount||0) + '. Sabit ' + money(row.month_fixed_payable||0) + ', değişken tahmini ' + money(row.month_variable_estimate||0) + '.');
+  setText('sahsi-status', Number(row.overdue_count||0)>0?'KRİTİK':'İYİ'); setClass('sahsi-status', Number(row.overdue_count||0)>0?'kritik':'iyi');
+  setRisk('card-sahsi', Number(row.overdue_count||0)>0?'red':'green');
+}).catch(()=>{});
+
+db.from('personal_finance_mobile_inbox_v54_view').select('id').then(({data})=>{
+  const n = data ? data.length : 0;
+  setText('sahsi-time', fmtTime(new Date().toISOString()));
+  if (n>0) setText('sahsi-note', document.getElementById('sahsi-note').textContent + ' İkinci beyin gelen kutusunda ' + n + ' bekleyen kayıt var.');
+}).catch(()=>{});
+
+// 4: Gmail sinyalleri
+db.from('bank_mail_inbox').select('id,status,received_at').then(({data,error})=>{
+  if (error) { setText('gmail-note','bank_mail_inbox okunamadı: '+error.message); return; }
+  const n = data ? data.length : 0;
+  setText('gmail-time', fmtTime(new Date().toISOString()));
+  if (n>0){ setText('gmail-value', n + ' mail sinyali'); setText('gmail-status','UYARI'); setClass('gmail-status','uyari'); setRisk('card-gmail','orange'); setText('gmail-note', n + ' mail kaydı okundu, sınıflandırma bekleniyor.'); }
+}).catch(()=>{});
+
+// 5: Moka/POS
+db.from('moka_pos_expected_v57_view').select('*').then(({data,error})=>{
+  if (error) { setText('moka-note','moka_pos_expected_v57_view okunamadı: '+error.message); return; }
+  setText('moka-time', fmtTime(new Date().toISOString()));
+  if (data && data.length){ const total = data.reduce((s,r)=>s+Number(r.expected_remaining_amount||0),0); setText('moka-value', money(total)+' bekleyen'); setText('moka-status','UYARI'); setClass('moka-status','uyari'); }
+}).catch(()=>{});
+
+// 6: Kredi kartları (iskelet hesaplar — henüz gerçek limit/borç yok)
+db.from('finance_account_cards_live_v57_view').select('account_name,account_type,current_balance,credit_limit').then(({data,error})=>{
+  if (error) { setText('kart-note','finance_account_cards_live_v57_view okunamadı: '+error.message); return; }
+  setText('kart-time', fmtTime(new Date().toISOString()));
+  const real = (data||[]).filter(r=>r.credit_limit!==null);
+  if (real.length){ setText('kart-value', real.length+' kart'); setText('kart-status','UYARI'); setClass('kart-status','uyari'); }
+}).catch(()=>{});
+
+// 7: Faturalar/abonelikler
+db.from('fixed_payment_contracts').select('id,amount,payment_day').then(({data,error})=>{
+  if (error) { setText('fatura-note','fixed_payment_contracts okunamadı: '+error.message); return; }
+  setText('fatura-time', fmtTime(new Date().toISOString()));
+  if (data && data.length){ setText('fatura-value', data.length+' sözleşme'); setText('fatura-status','UYARI'); setClass('fatura-status','uyari'); }
+}).catch(()=>{});
+
+// 12: Sistem sağlığı — bot_logs (bilinen: donmuş, son kayıt eski) + banka hattı canlılığı
+db.from('bot_logs').select('firma_id,durum,created_at').order('created_at',{ascending:false}).limit(1).then(({data,error})=>{
+  const botLast = (data && data[0]) ? data[0].created_at : null;
+  const bankLast = document.getElementById('bank-time').textContent;
+  setText('saglik-time', fmtTime(new Date().toISOString()));
+  setText('saglik-value', botLast ? ('bot_logs son kayıt: ' + fmtTime(botLast)) : 'bot_logs kaynağı boş');
+  setText('saglik-note', 'Banka hattı son güncelleme: ' + bankLast + '. bot_logs tablosu güncel görünmüyor, ayrı bir eski log kaynağı olabilir — doğrulanmalı.');
+  setText('saglik-status','UYARI'); setClass('saglik-status','uyari');
+}).catch(()=>{ setText('saglik-value','Kaynak okunamadı'); });
+</script>
 </body>
 </html>
