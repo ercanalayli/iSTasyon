@@ -85,7 +85,7 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
           <th colspan="4" style="text-align:center;padding:6px 8px;color:#a7bad2;font-size:10px;font-weight:900;border-left:1px solid #23344d">GEÇEN YIL</th>
         </tr>
         <tr style="background:#0d1727">
-          <script>document.write('<th style="border-left:1px solid #23344d;padding:5px 6px;color:#7f91a9;font-size:9px;font-weight:800">ADET</th><th style="padding:5px 6px;color:#7f91a9;font-size:9px;font-weight:800">SATIŞ TL</th><th style="padding:5px 6px;color:#c9b676;font-size:9px;font-weight:800">SMM</th><th style="padding:5px 6px;color:#7be7ba;font-size:9px;font-weight:800">KAR</th>'.repeat(7));</script>
+          <script>document.write('<th style="border-left:1px solid #23344d;padding:5px 6px;color:#7f91a9;font-size:9px;font-weight:800" title="satılan/kalan stok">ADET/STOK</th><th style="padding:5px 6px;color:#7f91a9;font-size:9px;font-weight:800">SATIŞ TL</th><th style="padding:5px 6px;color:#c9b676;font-size:9px;font-weight:800">SMM</th><th style="padding:5px 6px;color:#7be7ba;font-size:9px;font-weight:800">KAR</th>'.repeat(7));</script>
         </tr>
       </thead>
       <tbody id="catMatrixBody"></tbody>
@@ -244,7 +244,7 @@ const dash = '<span style="color:#5c6d84">-</span>';
 // Tek birlesik satir: ADET | SATIS TL | SMM | KAR — Satis ve SMM ayri tablolar oldugunda
 // satir hizasi gozle takip edilmek zorundaydi, bu da gercek bir hataya yol acti (2026-08-01).
 // Ercan'in kendi Excel sablonuyla birebir ayni yapida tek tablo: her kategori icin tum hikaye tek satirda.
-function fourCol(adet, satis, cogsR, satisForPct, p){
+function fourCol(adet, satis, cogsR, satisForPct, p, stok){
   const m = cogsR ? Number(cogsR['maliyet_'+p]||0) : 0;
   const ec = cogsR ? Number(cogsR['esl_ciro_'+p]||0) : 0;
   const pct = satisForPct>0 ? Math.round(ec/satisForPct*100) : 0;
@@ -252,7 +252,8 @@ function fourCol(adet, satis, cogsR, satisForPct, p){
   const smmCell = !ec ? dash : money(m) + (pct<100 ? ' <span style="font-size:8px;color:'+pctColor+'">'+pct+'%</span>' : '');
   const kar = ec ? (ec - m) : null;
   const karCell = kar===null ? dash : '<span style="color:'+(kar>=0?'#7be7ba':'#ff9aa7')+'">'+money(kar)+'</span>';
-  return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;color:var(--muted);border-left:1px solid #1c293c">'+qty(adet)+'</td>'
+  const adetCell = qty(adet) + (stok!=null ? ' <span style="color:#5c8dff;font-size:9px">/'+Number(stok).toLocaleString('tr-TR',{maximumFractionDigits:0})+'</span>' : '');
+  return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;color:var(--muted);border-left:1px solid #1c293c" title="satılan/kalan stok">'+adetCell+'</td>'
     + '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums">'+(satis?money(satis):dash)+'</td>'
     + '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;color:#c9b676">'+smmCell+'</td>'
     + '<td style="text-align:right;padding:6px 8px;font-weight:700;font-variant-numeric:tabular-nums">'+karCell+'</td>';
@@ -267,7 +268,8 @@ Promise.all([
   db.from('aperion_category_income_matrix_v3_view').select('*'),
   db.from('aperion_category_cogs_v1_view').select('*'),
   db.from('aperion_gider_ozet_v1_view').select('*'),
-]).then(([matrixRes, cogsRes, giderRes]) => {
+  db.from('aperion_category_stock_v1_view').select('*'),
+]).then(([matrixRes, cogsRes, giderRes, stockRes]) => {
   const catBody = document.getElementById('catMatrixBody');
   const giderBody = document.getElementById('giderBody');
   const data = matrixRes.data, error = matrixRes.error;
@@ -275,36 +277,38 @@ Promise.all([
   const byCat = {}; data.forEach(r=>{ byCat[r.kategori_grup]=r; });
   const cogsData = cogsRes.data;
   const byCogsCat = {}; (cogsData||[]).forEach(r=>{ byCogsCat[r.kategori_grup]=r; });
+  const byStock = {}; (stockRes.data||[]).forEach(r=>{ byStock[r.kategori_grup]=Number(r.stok||0); });
   const totalRow = {}; periodKeys.forEach(p=>{ totalRow['satis_'+p]=0; totalRow['adet_'+p]=0; totalRow['maliyet_'+p]=0; totalRow['esl_ciro_'+p]=0; });
+  let stokToplam = 0; Object.values(byStock).forEach(v=>{ stokToplam+=v; });
 
-  function catRow(cat, salesR, cogsR, indent, keys){
+  function catRow(cat, salesR, cogsR, indent, keys, stok){
     salesR = salesR || {}; keys = keys || [cat];
     const cells = periodKeys.map(p=>{
       const s=Number(salesR['satis_'+p]||0), a=Number(salesR['adet_'+p]||0);
       totalRow['satis_'+p]+=s; totalRow['adet_'+p]+=a;
       totalRow['maliyet_'+p]+=Number(cogsR&&cogsR['maliyet_'+p]||0); totalRow['esl_ciro_'+p]+=Number(cogsR&&cogsR['esl_ciro_'+p]||0);
-      return fourCol(a, s, cogsR, s, p);
+      return fourCol(a, s, cogsR, s, p, stok);
     }).join('');
     const pad = indent ? '28px' : '12px';
     return '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(keys)+'\' style="border-top:1px solid #23344d"><td style="padding:7px 12px 7px '+pad+';font-weight:'+(indent?600:700)+';position:sticky;left:0;background:var(--surface)"><span class="row-btn">'+cat+'</span></td>'+cells+'</tr>';
   }
-  function subtotalRow(label, keys){
+  function subtotalRow(label, keys, stok){
     const sub = {}; periodKeys.forEach(p=>{ sub['satis_'+p]=0; sub['adet_'+p]=0; sub['maliyet_'+p]=0; sub['esl_ciro_'+p]=0; });
     keys.forEach(k=>{ const r=byCat[k]||{}, cr=byCogsCat[k]||{}; periodKeys.forEach(p=>{ sub['satis_'+p]+=Number(r['satis_'+p]||0); sub['adet_'+p]+=Number(r['adet_'+p]||0); sub['maliyet_'+p]+=Number(cr['maliyet_'+p]||0); sub['esl_ciro_'+p]+=Number(cr['esl_ciro_'+p]||0); }); });
-    const cells = periodKeys.map(p=>fourCol(sub['adet_'+p], sub['satis_'+p], sub, sub['satis_'+p], p)).join('');
+    const cells = periodKeys.map(p=>fourCol(sub['adet_'+p], sub['satis_'+p], sub, sub['satis_'+p], p, stok)).join('');
     return '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(keys)+'\' style="background:#101c2e"><td style="padding:6px 12px;font-weight:800;color:#83e8c1;position:sticky;left:0;background:#101c2e"><span class="row-btn">'+label+'</span></td>'+cells+'</tr>';
   }
   let rowsHtml = '';
   catOrder.forEach(cat=>{
     if (cat === 'HASTA ALTI BEZİ') {
-      rowsHtml += subtotalRow('HASTA ALTI BEZİ (ana başlık)', ['HASTA ALTI BEZİ — DİSTRİBÜTÖR','HASTA ALTI BEZİ — PERAKENDE']);
+      rowsHtml += subtotalRow('HASTA ALTI BEZİ (ana başlık)', ['HASTA ALTI BEZİ — DİSTRİBÜTÖR','HASTA ALTI BEZİ — PERAKENDE'], byStock['HASTA ALTI BEZİ']);
       rowsHtml += catRow('↳ Distribütör (BizimHesap Sınıflandırma 1)', byCat['HASTA ALTI BEZİ — DİSTRİBÜTÖR'], byCogsCat['HASTA ALTI BEZİ — DİSTRİBÜTÖR'], true, ['HASTA ALTI BEZİ — DİSTRİBÜTÖR']);
       rowsHtml += catRow('↳ Perakende (distribütör değil)', byCat['HASTA ALTI BEZİ — PERAKENDE'], byCogsCat['HASTA ALTI BEZİ — PERAKENDE'], true, ['HASTA ALTI BEZİ — PERAKENDE']);
     } else {
-      rowsHtml += catRow(cat, byCat[cat], byCogsCat[cat], false, [cat]);
+      rowsHtml += catRow(cat, byCat[cat], byCogsCat[cat], false, [cat], byStock[cat]);
     }
   });
-  const totalCells = periodKeys.map(p=>fourCol(totalRow['adet_'+p], totalRow['satis_'+p], totalRow, totalRow['satis_'+p], p)).join('');
+  const totalCells = periodKeys.map(p=>fourCol(totalRow['adet_'+p], totalRow['satis_'+p], totalRow, totalRow['satis_'+p], p, stokToplam)).join('');
   const allKeys = catOrder.flatMap(c=>c==='HASTA ALTI BEZİ'?['HASTA ALTI BEZİ — DİSTRİBÜTÖR','HASTA ALTI BEZİ — PERAKENDE']:[c]);
   catBody.innerHTML = rowsHtml + '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(allKeys)+'\' style="border-top:2px solid #2c3d56;background:#0f1b2c;cursor:pointer"><td style="padding:8px 12px;position:sticky;left:0;background:#0f1b2c"><span class="row-btn" style="font-weight:850">TOPLAM (Brüt Kâr = eşleşen kısım)</span></td>'+totalCells+'</tr>';
 
@@ -372,13 +376,23 @@ Promise.all([
     loadingTr.innerHTML = '<td colspan="29" style="padding:8px 12px;background:#0c1626;color:var(--muted);font-size:11px">Yükleniyor…</td>';
     tr.after(loadingTr);
     const keys = JSON.parse(tr.getAttribute('data-cat-keys'));
-    const { data: rows, error: derr } = await db.from('aperion_category_product_drilldown_v1_view').select('*').in('kategori_grup', keys).order('satis_yil', { ascending: false, nullsFirst: false }).order('satis_ay', { ascending: false, nullsFirst: false }).order('son_tarih', { ascending: false, nullsFirst: false }).limit(15);
+    const [topRes, missingRes] = await Promise.all([
+      db.from('aperion_category_product_drilldown_v1_view').select('*').in('kategori_grup', keys).order('satis_yil', { ascending: false, nullsFirst: false }).order('satis_ay', { ascending: false, nullsFirst: false }).order('son_tarih', { ascending: false, nullsFirst: false }).limit(15),
+      db.from('aperion_category_product_cost_status_v1_view').select('*').in('kategori_grup', keys).order('satis_yil', { ascending: false, nullsFirst: false }).limit(8),
+    ]);
+    const rows = topRes.data, derr = topRes.error;
     if (derr || !rows || !rows.length) {
       loadingTr.innerHTML = '<td colspan="29" style="padding:8px 12px;background:#0c1626;color:var(--muted);font-size:11px">Bu kategoride satış kaydı bulunamadı.</td>';
       return;
     }
     const detailRows = rows.map(p=>'<tr class="cat-detail-row" style="background:#0c1626"><td style="padding:4px 12px 4px 44px;color:var(--muted);font-size:11px;position:sticky;left:0;background:#0c1626">'+String(p.urun||'-').substring(0,90)+'</td><td colspan="28" style="text-align:right;padding:4px 12px;font-size:11px;color:#c8d6ea">Bu yıl: '+money(p.satis_yil)+' · '+(p.adet_yil?Number(p.adet_yil).toLocaleString('tr-TR'):'0')+' adet · Bu ay: '+money(p.satis_ay)+' · son satış: '+(p.son_tarih||'-')+'</td></tr>').join('');
-    loadingTr.outerHTML = '<tr class="cat-detail-row" style="background:#0c1626"><td colspan="29" style="padding:6px 12px 2px;color:#7f91a9;font-size:10px;font-weight:800;position:sticky;left:0;background:#0c1626">EN ÇOK SATAN ÜRÜNLER — YILLIK CİROYA GÖRE (canlı sales_raw)</td></tr>' + detailRows;
+    const missingRows = missingRes.data;
+    let missingHtml = '';
+    if (missingRows && missingRows.length) {
+      missingHtml = '<tr class="cat-detail-row" style="background:#241a14"><td colspan="29" style="padding:6px 12px 2px;color:#f6c86a;font-size:10px;font-weight:800;position:sticky;left:0;background:#241a14">MALİYETİ EKSİK — BizimHesap ürün kartında Alış Fiyatı doldurulmalı (ciro önceliğine göre)</td></tr>'
+        + missingRows.map(p=>'<tr class="cat-detail-row" style="background:#1c140f"><td style="padding:4px 12px 4px 44px;color:#f6c86a;font-size:11px;position:sticky;left:0;background:#1c140f">'+String(p.urun||'-').substring(0,90)+'</td><td colspan="28" style="text-align:right;padding:4px 12px;font-size:11px;color:#c8d6ea">Bu yıl: '+money(p.satis_yil)+' · '+(p.adet_yil?Number(p.adet_yil).toLocaleString('tr-TR'):'0')+' adet · son satış: '+(p.son_tarih||'-')+'</td></tr>').join('');
+    }
+    loadingTr.outerHTML = '<tr class="cat-detail-row" style="background:#0c1626"><td colspan="29" style="padding:6px 12px 2px;color:#7f91a9;font-size:10px;font-weight:800;position:sticky;left:0;background:#0c1626">EN ÇOK SATAN ÜRÜNLER — YILLIK CİROYA GÖRE (canlı sales_raw)</td></tr>' + detailRows + missingHtml;
   });
 }).catch(e=>{ document.getElementById('catMatrixBody').innerHTML = '<tr><td colspan="29" style="padding:10px 12px;color:var(--muted)">Hata: '+String(e)+'</td></tr>'; });
 
