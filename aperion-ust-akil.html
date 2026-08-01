@@ -303,9 +303,18 @@ Promise.all([
     const pad = indent ? '28px' : '12px';
     return '<tr style="border-top:1px solid #23344d"><td style="padding:6px 12px 6px '+pad+';color:var(--muted);position:sticky;left:0;background:var(--surface)">'+cat+'</td>'+cells+'</tr>';
   }
+  function cogsSubtotalRow(label, cogsKeys, salesKeys){
+    const sub = {}; periodKeys.forEach(p=>{ sub['maliyet_'+p]=0; sub['esl_ciro_'+p]=0; });
+    cogsKeys.forEach(k=>{ const r=byCogsCat[k]||{}; periodKeys.forEach(p=>{ sub['maliyet_'+p]+=Number(r['maliyet_'+p]||0); sub['esl_ciro_'+p]+=Number(r['esl_ciro_'+p]||0); }); });
+    const salesSub = {}; periodKeys.forEach(p=>{ salesSub['satis_'+p]=0; });
+    salesKeys.forEach(k=>{ const r=byCat[k]||{}; periodKeys.forEach(p=>{ salesSub['satis_'+p]+=Number(r['satis_'+p]||0); }); });
+    const cells = periodKeys.map(p=>cogsThreeCol(sub['maliyet_'+p], sub['esl_ciro_'+p], salesSub['satis_'+p])).join('');
+    return '<tr style="background:#101c2e"><td style="padding:6px 12px;font-weight:800;color:#83e8c1;position:sticky;left:0;background:#101c2e">'+label+'</td>'+cells+'</tr>';
+  }
   let cogsRowsHtml = '';
   catOrder.forEach(cat=>{
     if (cat === 'HASTA ALTI BEZİ') {
+      cogsRowsHtml += cogsSubtotalRow('HASTA ALTI BEZİ (ana başlık)', ['HASTA ALTI BEZİ — DİSTRİBÜTÖR','HASTA ALTI BEZİ — PERAKENDE'], ['HASTA ALTI BEZİ — DİSTRİBÜTÖR','HASTA ALTI BEZİ — PERAKENDE']);
       cogsRowsHtml += cogsRow('↳ Distribütör', byCogsCat['HASTA ALTI BEZİ — DİSTRİBÜTÖR'], true, byCat['HASTA ALTI BEZİ — DİSTRİBÜTÖR']);
       cogsRowsHtml += cogsRow('↳ Perakende', byCogsCat['HASTA ALTI BEZİ — PERAKENDE'], true, byCat['HASTA ALTI BEZİ — PERAKENDE']);
     } else {
