@@ -47,6 +47,10 @@ p.subtitle{margin:0 0 18px;color:var(--muted);font-size:14px}
 .card-open{font-size:11px;font-weight:800;color:#a9c7ff}
 tr.cat-clickable:hover,tr.gider-clickable:hover{background:#16243a !important}
 tr.cat-clickable td,tr.gider-clickable td{cursor:pointer}
+.row-btn{display:inline-flex;align-items:center;gap:5px;padding:3px 9px 3px 3px;border-radius:99px;transition:background .15s ease,color .15s ease}
+.row-btn::after{content:'›';font-size:13px;font-weight:900;color:#3d5375;transition:color .15s ease,transform .15s ease}
+tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{background:#1c3a5e;color:#a9c7ff}
+tr.cat-clickable:hover .row-btn::after,tr.gider-clickable:hover .row-btn::after{color:#5c8dff;transform:translateX(2px)}
 .upd{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:800;color:#83e8c1;background:#103528;border:1px solid #25775c;border-radius:99px;padding:2px 8px;margin-left:6px}
 @media (max-width:1180px){.grid12{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){.shell{width:min(100% - 20px,1560px)}.grid12{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}}
@@ -282,13 +286,13 @@ Promise.all([
       return fourCol(a, s, cogsR, s, p);
     }).join('');
     const pad = indent ? '28px' : '12px';
-    return '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(keys)+'\' style="border-top:1px solid #23344d"><td style="padding:7px 12px 7px '+pad+';font-weight:'+(indent?600:700)+';position:sticky;left:0;background:var(--surface)">'+cat+' <span style="font-size:9px;color:#5c8dff;font-weight:700">▸ detay</span></td>'+cells+'</tr>';
+    return '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(keys)+'\' style="border-top:1px solid #23344d"><td style="padding:7px 12px 7px '+pad+';font-weight:'+(indent?600:700)+';position:sticky;left:0;background:var(--surface)"><span class="row-btn">'+cat+'</span></td>'+cells+'</tr>';
   }
   function subtotalRow(label, keys){
     const sub = {}; periodKeys.forEach(p=>{ sub['satis_'+p]=0; sub['adet_'+p]=0; sub['maliyet_'+p]=0; sub['esl_ciro_'+p]=0; });
     keys.forEach(k=>{ const r=byCat[k]||{}, cr=byCogsCat[k]||{}; periodKeys.forEach(p=>{ sub['satis_'+p]+=Number(r['satis_'+p]||0); sub['adet_'+p]+=Number(r['adet_'+p]||0); sub['maliyet_'+p]+=Number(cr['maliyet_'+p]||0); sub['esl_ciro_'+p]+=Number(cr['esl_ciro_'+p]||0); }); });
     const cells = periodKeys.map(p=>fourCol(sub['adet_'+p], sub['satis_'+p], sub, sub['satis_'+p], p)).join('');
-    return '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(keys)+'\' style="background:#101c2e"><td style="padding:6px 12px;font-weight:800;color:#83e8c1;position:sticky;left:0;background:#101c2e">'+label+' <span style="font-size:9px;color:#5c8dff;font-weight:700">▸ detay</span></td>'+cells+'</tr>';
+    return '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(keys)+'\' style="background:#101c2e"><td style="padding:6px 12px;font-weight:800;color:#83e8c1;position:sticky;left:0;background:#101c2e"><span class="row-btn">'+label+'</span></td>'+cells+'</tr>';
   }
   let rowsHtml = '';
   catOrder.forEach(cat=>{
@@ -302,7 +306,7 @@ Promise.all([
   });
   const totalCells = periodKeys.map(p=>fourCol(totalRow['adet_'+p], totalRow['satis_'+p], totalRow, totalRow['satis_'+p], p)).join('');
   const allKeys = catOrder.flatMap(c=>c==='HASTA ALTI BEZİ'?['HASTA ALTI BEZİ — DİSTRİBÜTÖR','HASTA ALTI BEZİ — PERAKENDE']:[c]);
-  catBody.innerHTML = rowsHtml + '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(allKeys)+'\' style="border-top:2px solid #2c3d56;background:#0f1b2c;cursor:pointer"><td style="padding:8px 12px;font-weight:850;position:sticky;left:0;background:#0f1b2c">TOPLAM (Brüt Kâr = eşleşen kısım) <span style="font-size:9px;color:#5c8dff;font-weight:700">▸ detay</span></td>'+totalCells+'</tr>';
+  catBody.innerHTML = rowsHtml + '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(allKeys)+'\' style="border-top:2px solid #2c3d56;background:#0f1b2c;cursor:pointer"><td style="padding:8px 12px;position:sticky;left:0;background:#0f1b2c"><span class="row-btn" style="font-weight:850">TOPLAM (Brüt Kâr = eşleşen kısım)</span></td>'+totalCells+'</tr>';
 
   setText('matrixSource', 'Kaynak: sales_raw (ALAYLI) + BizimHesap Sınıflandırma 1 (canlı çekildi, 24 distribütör cari), ' + catOrder.length + ' kategori grubu. Son satış tarihi: ' + (data.reduce((m,r)=>r.son_tarih&&r.son_tarih>m?r.son_tarih:m,'')||'-') + '. SMM: product_raw.alış_fiyat artık doğru, ama sales_raw.urun_kod boş olduğu için eşleştirme ürün ADI ile yapılıyor — SMM hücresindeki küçük yüzde, o kategorinin cirosunun ne kadarı için maliyet biliniyor demek (küsürat KAR sadece o eşleşen kısım için). Tahsilat kategori bazında henüz bağlı değil. Kategori satırına tıklayınca bu ayın en çok satan ürünleri açılır.');
 
@@ -317,7 +321,7 @@ Promise.all([
     let rowsHtmlG = order.map(([key,label])=>{
       const r = byClass[key] || {};
       const cells = periodKeys.map(p=>{ const v = Number(r['gider_'+p]||0); giderTotal['gider_'+p]+=v; return giderThreeCol(v); }).join('');
-      return '<tr class="gider-clickable" data-sinif="'+key+'" style="border-top:1px solid #23344d;cursor:pointer"><td style="padding:7px 12px;font-weight:700;position:sticky;left:0;background:var(--surface)">'+label+' <span style="color:var(--muted);font-weight:400">('+(r.kayit_sayisi||0)+' kayıt)</span> <span style="font-size:9px;color:#5c8dff;font-weight:700">▸ detay</span></td>'+cells+'</tr>';
+      return '<tr class="gider-clickable" data-sinif="'+key+'" style="border-top:1px solid #23344d;cursor:pointer"><td style="padding:7px 12px;position:sticky;left:0;background:var(--surface)"><span class="row-btn" style="font-weight:700">'+label+' <span style="color:var(--muted);font-weight:400">('+(r.kayit_sayisi||0)+' kayıt)</span></span></td>'+cells+'</tr>';
     }).join('');
     const totalCellsG = periodKeys.map(p=>{
       const v = giderTotal['gider_'+p];
@@ -325,7 +329,7 @@ Promise.all([
         + '<td style="text-align:right;padding:7px 8px;font-weight:850;font-variant-numeric:tabular-nums;color:#ff9aa7">'+money(v)+'</td>'
         + '<td style="text-align:right;padding:7px 8px;color:#f6c86a;font-size:10px">kaynak bekliyor</td>';
     }).join('');
-    giderBody.innerHTML = rowsHtmlG + '<tr class="gider-clickable" data-sinif="TUMU" style="border-top:2px solid #2c3d56;background:#0f1b2c;cursor:pointer"><td style="padding:7px 12px;font-weight:850;position:sticky;left:0;background:#0f1b2c">TOPLAM GİDER (TAHAKKUK) <span style="font-size:9px;color:#5c8dff;font-weight:700">▸ detay</span></td>'+totalCellsG+'</tr>';
+    giderBody.innerHTML = rowsHtmlG + '<tr class="gider-clickable" data-sinif="TUMU" style="border-top:2px solid #2c3d56;background:#0f1b2c;cursor:pointer"><td style="padding:7px 12px;position:sticky;left:0;background:#0f1b2c"><span class="row-btn" style="font-weight:850">TOPLAM GİDER (TAHAKKUK)</span></td>'+totalCellsG+'</tr>';
 
     giderBody.addEventListener('click', async (ev) => {
       const tr = ev.target.closest('tr.gider-clickable');
