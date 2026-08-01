@@ -226,6 +226,7 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
 
   <footer><span>AperiON görür, sınıflandırır, kanıtını gösterir; sen onayladığında resmi kayda alır.</span><a href="./index.html">Ana ekrana git →</a></footer>
 </main>
+<div id="hoverTip" style="display:none;position:fixed;z-index:50;max-width:260px;padding:10px 12px;border:1px solid #2c3d56;border-radius:10px;background:#0e1828;box-shadow:0 8px 24px rgba(0,0,0,.4);font-size:11px;line-height:1.5;pointer-events:none"></div>
 <script>
 const db = window.supabase.createClient('https://iilfwosoroflzubkaryj.supabase.co','sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW');
 const money = v => Number(v||0).toLocaleString('tr-TR',{maximumFractionDigits:0}) + ' TL';
@@ -317,10 +318,11 @@ Promise.all([
   // GİDERLER — TAHAKKUK gerçek (masraf_raw)
   const gdata = giderRes.data, gerror = giderRes.error;
   const giderTotal = {}; periodKeys.forEach(p=>{ giderTotal['gider_'+p]=0; });
+  const byClass = {};
   if (gerror || !gdata) {
     giderBody.innerHTML = '<tr><td colspan="22" style="padding:7px 12px;color:var(--muted)">Kaynak okunamadı: '+(gerror?gerror.message:'boş sonuç')+'</td></tr>';
   } else {
-    const byClass = {}; gdata.forEach(r=>{ byClass[r.sinif]=r; });
+    gdata.forEach(r=>{ byClass[r.sinif]=r; });
     const order = [['SABIT','Sabit giderler'],['DEGISKEN','Değişken giderler'],['SINIFLANDIRILMAMIS','Sınıflandırılmamış (kategori boş)']];
     let rowsHtmlG = order.map(([key,label])=>{
       const r = byClass[key] || {};
@@ -394,6 +396,49 @@ Promise.all([
     }
     loadingTr.outerHTML = '<tr class="cat-detail-row" style="background:#0c1626"><td colspan="29" style="padding:6px 12px 2px;color:#7f91a9;font-size:10px;font-weight:800;position:sticky;left:0;background:#0c1626">EN ÇOK SATAN ÜRÜNLER — YILLIK CİROYA GÖRE (canlı sales_raw)</td></tr>' + detailRows + missingHtml;
   });
+
+  // Masaustu hover-onizleme: sadece gercek fare/pointer cihazlarda ("2055 vizyonu" - dokunmatikte
+  // hover yok, tiklama zaten calisiyor). Elimizdeki veriden anlik dolduruyor, ekstra sorgu yok.
+  const canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (canHover) {
+    const tip = document.getElementById('hoverTip');
+    const showTip = (x, y, html) => { tip.innerHTML = html; tip.style.display = 'block'; positionTip(x, y); };
+    const positionTip = (x, y) => {
+      const w = 260, h = tip.offsetHeight || 90;
+      let left = x + 16, top = y + 16;
+      if (left + w > window.innerWidth) left = x - w - 16;
+      if (top + h > window.innerHeight) top = y - h - 16;
+      tip.style.left = Math.max(8,left) + 'px'; tip.style.top = Math.max(8,top) + 'px';
+    };
+    const hideTip = () => { tip.style.display = 'none'; };
+    catBody.addEventListener('mousemove', (ev) => {
+      const tr = ev.target.closest('tr.cat-clickable');
+      if (!tr) { hideTip(); return; }
+      const keys = JSON.parse(tr.getAttribute('data-cat-keys'));
+      const sum = { satis: 0, maliyet: 0, esl: 0, stok: 0, seen: {} };
+      keys.forEach(k=>{ const r=byCat[k]||{}, cr=byCogsCat[k]||{}; sum.satis+=Number(r['satis_yil']||0); sum.maliyet+=Number(cr['maliyet_yil']||0); sum.esl+=Number(cr['esl_ciro_yil']||0);
+        const bucketKey = k.split(' — ')[0]; if (!sum.seen[bucketKey]) { sum.seen[bucketKey]=1; sum.stok += byStock[bucketKey]||0; } });
+      const kar = sum.esl ? sum.esl - sum.maliyet : null;
+      const label = tr.querySelector('.row-btn')?.textContent?.trim() || '';
+      showTip(ev.clientX, ev.clientY, '<div style="font-weight:800;color:#83e8c1;margin-bottom:4px">'+label+'</div>'
+        + '<div>Bu yıl satış: <b>'+money(sum.satis)+'</b></div>'
+        + (kar!==null ? '<div>Kâr (eşleşen): <b style="color:'+(kar>=0?'#7be7ba':'#ff9aa7')+'">'+money(kar)+'</b></div>' : '<div style="color:var(--muted)">Maliyet eşleşmesi yok</div>')
+        + (sum.stok ? '<div style="color:var(--muted)">Kalan stok: '+sum.stok.toLocaleString('tr-TR')+'</div>' : '')
+        + '<div style="color:#5c8dff;font-size:10px;margin-top:4px">tıkla → ürün bazlı detay</div>');
+    });
+    catBody.addEventListener('mouseleave', hideTip);
+    giderBody.addEventListener('mousemove', (ev) => {
+      const tr = ev.target.closest('tr.gider-clickable');
+      if (!tr) { hideTip(); return; }
+      const sinif = tr.getAttribute('data-sinif');
+      const v = sinif === 'TUMU' ? giderTotal['gider_yil'] : Number((byClass[sinif]||{})['gider_yil']||0);
+      const label = tr.querySelector('.row-btn')?.textContent?.trim() || '';
+      showTip(ev.clientX, ev.clientY, '<div style="font-weight:800;color:#83e8c1;margin-bottom:4px">'+label+'</div>'
+        + '<div>Bu yıl tahakkuk: <b>'+money(v)+'</b></div>'
+        + '<div style="color:#5c8dff;font-size:10px;margin-top:4px">tıkla → kayıt bazlı detay</div>');
+    });
+    giderBody.addEventListener('mouseleave', hideTip);
+  }
 }).catch(e=>{ document.getElementById('catMatrixBody').innerHTML = '<tr><td colspan="29" style="padding:10px 12px;color:var(--muted)">Hata: '+String(e)+'</td></tr>'; });
 
 function normalizeBank(name){
