@@ -200,8 +200,14 @@ async function raporCek(page, tarihTR) {
     await inputs[i].type(tarihTR, { delay: 30 });
   }
 
+  // KOK NEDEN (2026-08-01 canli testle dogrulandi): asagidaki arama stringi bu dosyanin
+  // eski bir bozuk-kodlama gecmisinden kalma mojibake ("HazÄ±rla") - gercek buton metni
+  // "Hazırla" ile HIC eslesmiyordu, btn hep undefined kaliyordu, rapor asla uretilmiyordu.
+  // Bu yuzden --gecmis modu her gun icin "Veri yok" donduruyordu. NFD-normalize edilmis
+  // karsilastirma kullaniyoruz - dosyanin kendi kodlamasindan bagimsiz, canli DOM metnine gore calisir.
   await page.evaluate(() => {
-    const btn = [...document.querySelectorAll('button')].find(b=>b.innerText?.includes('HazÄ±rla'));
+    const norm = s => String(s||'').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/ı/g,'i');
+    const btn = [...document.querySelectorAll('button')].find(b => norm(b.innerText).includes('hazirla'));
     if (btn) btn.click();
   });
 
@@ -217,10 +223,13 @@ async function raporCek(page, tarihTR) {
     const rows = [];
     const tbl = document.querySelector('table');
     if (!tbl) return rows;
+    // Eski mojibake-fix zinciri gercek DOM metnini (duzgun UTF-8 turkce karakterler)
+    // hic yakalamiyordu - "Urun"/"Musteri"/"Aciklama" basliklari "urun"/"musteri"/"aciklama"
+    // (asagidaki enrichedRecords'un aradigi ASCII anahtarlar) yerine "ürün"/"müşteri"/"açıklama"
+    // olarak kaydediliyordu, urun adi hep 'EMPTY' fallback'ine dusuyordu. NFD-normalize +
+    // noktasiz-i duzeltmesiyle canli DOM metnine gore calisan, dosya kodlamasindan bagimsiz hale getirildi.
     const hs = [...tbl.querySelectorAll('thead th')].map(h =>
-      h.innerText.trim().toLowerCase().replace(/\s+/g,'_')
-        .replace(/Ä±/g,'i').replace(/ÅŸ/g,'s').replace(/Ã§/g,'c')
-        .replace(/ÄŸ/g,'g').replace(/Ã¼/g,'u').replace(/Ã¶/g,'o'));
+      h.innerText.trim().toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/ı/g,'i').replace(/\s+/g,'_'));
     for (const tr of tbl.querySelectorAll('tbody tr')) {
       const cells = [...tr.querySelectorAll('td')].map(td=>td.innerText.trim());
       if (!cells.length||cells.every(c=>!c)) continue;
