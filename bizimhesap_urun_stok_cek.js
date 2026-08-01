@@ -199,8 +199,11 @@ async function stokOku(page, firma) {
       urun: cell(o, ['urun'], cells[3] || cells[2] || ''),
       marka: cell(o, ['marka'], ''),
       kategori: cell(o, ['kategori'], ''),
-      alis_fiyat: parseMoney(cell(o, ['alis', 'alis_fiyati'], 0)),
-      satis_fiyat: parseMoney(cell(o, ['satis', 'satis_fiyati'], 0)),
+      // "Alış"/"Satış" basliklari norm() ile NFD+diacritic-strip edilince Turkce noktasiz
+      // "ı" harfini korur ("alıs"/"satıs" olur, "alis"/"satis" DEGIL) — bu yuzden eski anahtar
+      // listesi hic eslesmiyor ve fiyatlar hep 0 kaydediliyordu. Noktasiz-ı varyantlari eklendi.
+      alis_fiyat: parseMoney(cell(o, ['alis', 'alıs', 'alis_fiyati'], 0)),
+      satis_fiyat: parseMoney(cell(o, ['satis', 'satıs', 'satis_fiyati'], 0)),
       kdv: parseNumber(cell(o, ['kdv%', 'kdv'], 0)),
       raf: cell(o, ['raf'], ''),
       miktar: parseNumber(cell(o, ['miktar'], 0)),
