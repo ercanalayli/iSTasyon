@@ -33,4 +33,6 @@ jobs:
           BIZIMHESAP_EMAIL: ${{ secrets.BIZIMHESAP_EMAIL }}
           BIZIMHESAP_PASSWORD: ${{ secrets.BIZIMHESAP_PASSWORD }}
           BIZIMHESAP_HEADLESS: "true"
-        run: node bizimhesap_bot.js --firma alayli --gecmis 2025-08-01 2025-12-31
+        run: |
+          cp bizimhesap_bot.js .__oneoff_bizimhesap_bot.cjs
+          node .__oneoff_bizimhesap_bot.cjs --firma alayli --gecmis 2025-08-01 2025-12-31
