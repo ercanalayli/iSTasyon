@@ -714,6 +714,17 @@ Promise.all([
     }
   });
 
+  // 1b) Banka ekstresi mail hatti durmus mu — Ercan'in 2026-08-02 sorusu: "her gun
+  // mail geliyor, gelmeyeni istemen lazim". Bilinen en TAZE banka verisi bile 2+ gun
+  // eskiyse, tum hat suphelidir (tek tek banka satirlarinin ustune, tek toplu uyari).
+  if ((bankRes.data || []).length) {
+    const enTazeTarih = bankRes.data.reduce((m,r)=> r.son_tarih && r.son_tarih>m ? r.son_tarih : m, '');
+    const gunFarki = enTazeTarih ? Math.round((new Date() - new Date(enTazeTarih)) / 86400000) : null;
+    if (gunFarki !== null && gunFarki >= 2) {
+      bulgular.push({ s: 3, t: '🔴 Banka ekstresi maili <b>' + gunFarki + ' gündür</b> okunmuyor (en taze bilinen veri: ' + enTazeTarih + ') — Gmail bağlantısı kontrol edilmeli' });
+    }
+  }
+
   // 2) En buyuk sessizlesen musteri (>=90 gun, >=50.000 TL gecmis)
   const enBuyukSessiz = (custRes.data || []).filter(r => Number(r.gun_sessiz) >= 90 && Number(r.toplam_ciro) >= 50000).sort((a,b)=>Number(b.toplam_ciro)-Number(a.toplam_ciro))[0];
   if (enBuyukSessiz) {
