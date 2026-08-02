@@ -150,6 +150,8 @@ h1.title::after{content:'';display:block;width:64px;height:3px;margin-top:9px;bo
 
 .card{border-radius:12px;background:linear-gradient(160deg,var(--surface),#0d1826);transition:transform .18s ease,box-shadow .25s ease,border-color .18s ease;opacity:0;animation:cardIn .5s ease forwards;overflow:hidden}
 .card::before{content:'';position:absolute;inset:0;background:radial-gradient(220px circle at 0% 0%,rgba(255,255,255,.05),transparent 60%);pointer-events:none}
+.card::after{content:'';position:absolute;top:0;left:-60%;width:35%;height:100%;background:linear-gradient(115deg,transparent,rgba(255,255,255,.08),transparent);transform:skewX(-15deg);pointer-events:none;transition:left .65s ease}
+.card:hover::after{left:130%}
 .card:nth-child(1){animation-delay:.02s}.card:nth-child(2){animation-delay:.06s}.card:nth-child(3){animation-delay:.10s}.card:nth-child(4){animation-delay:.14s}
 .card:nth-child(5){animation-delay:.18s}.card:nth-child(6){animation-delay:.22s}.card:nth-child(7){animation-delay:.26s}.card:nth-child(8){animation-delay:.30s}
 .card:nth-child(9){animation-delay:.34s}.card:nth-child(10){animation-delay:.38s}.card:nth-child(11){animation-delay:.42s}.card:nth-child(12){animation-delay:.46s}
@@ -292,7 +294,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
   <section class="grid12" id="cardGrid" aria-label="Operasyon kartları">
 
     <article class="card" data-risk="yellow" id="card-kritik">
-      <div class="card-top"><span class="card-title">1 · Kritik Durum</span><span class="card-class">GENEL</span></div>
+      <div class="card-top"><span class="card-title">⚠️ 1 · Kritik Durum</span><span class="card-class">GENEL</span></div>
       <span class="card-status uyari" id="kritik-status">Hesaplanıyor</span>
       <span class="card-value" id="kritik-value">Kaynak okunuyor</span>
       <p class="card-note" id="kritik-note">Bugünkü en yüksek riskli kalem taranıyor.</p>
@@ -301,7 +303,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     </article>
 
     <article class="card" data-risk="orange" id="card-bankalar">
-      <div class="card-top"><span class="card-title">2 · Bankalar</span><span class="card-class">ALAYLI</span></div>
+      <div class="card-top"><span class="card-title">🏦 2 · Bankalar</span><span class="card-class">ALAYLI</span></div>
       <span class="card-status uyari" id="bank-status">Okunuyor</span>
       <span class="card-value" id="bank-value">Kaynak okunuyor</span>
       <p class="card-note" id="bank-note">pending_bank_movements taranıyor.</p>
@@ -310,7 +312,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     </article>
 
     <article class="card" data-risk="orange" id="card-bizimhesap">
-      <div class="card-top"><span class="card-title">3 · BizimHesap İşleme</span><span class="card-class">ALAYLI</span></div>
+      <div class="card-top"><span class="card-title">🔄 3 · BizimHesap İşleme</span><span class="card-class">ALAYLI</span></div>
       <span class="card-status uyari" id="bh-status">Okunuyor</span>
       <span class="card-value" id="bh-value">Kaynak okunuyor</span>
       <p class="card-note" id="bh-note">Kanıt → Onay → Queue → Dry-run → Kayıt → Doğrulama</p>
@@ -319,7 +321,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     </article>
 
     <article class="card" data-risk="yellow" id="card-gmail">
-      <div class="card-top"><span class="card-title">4 · Gmail Sinyalleri</span><span class="card-class">GENEL</span></div>
+      <div class="card-top"><span class="card-title">✉️ 4 · Gmail Sinyalleri</span><span class="card-class">GENEL</span></div>
       <span class="card-status bekliyor" id="gmail-status">Kaynak bekliyor</span>
       <span class="card-value" id="gmail-value">Kaynak bekliyor</span>
       <p class="card-note" id="gmail-note">bank_mail_inbox kaynağı henüz kayıt taşımıyor.</p>
@@ -328,7 +330,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     </article>
 
     <article class="card" data-risk="yellow" id="card-moka">
-      <div class="card-top"><span class="card-title">5 · Moka / POS</span><span class="card-class">ALAYLI</span></div>
+      <div class="card-top"><span class="card-title">📡 5 · Moka / POS</span><span class="card-class">ALAYLI</span></div>
       <span class="card-status bekliyor" id="moka-status">Kaynak bekliyor</span>
       <span class="card-value" id="moka-value">Kaynak bekliyor</span>
       <p class="card-note">Moka bekleyen tahsilat/transfer kaynağı henüz veri taşımıyor.</p>
@@ -337,7 +339,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     </article>
 
     <article class="card" data-risk="yellow" id="card-kart">
-      <div class="card-top"><span class="card-title">6 · Kredi Kartları</span><span class="card-class">GENEL</span></div>
+      <div class="card-top"><span class="card-title">💳 6 · Kredi Kartları</span><span class="card-class">GENEL</span></div>
       <span class="card-status bekliyor" id="kart-status">Kaynak bekliyor</span>
       <span class="card-value" id="kart-value">Kaynak bekliyor</span>
       <p class="card-note">finance_account_cards kaynağı henüz gerçek limit/borç verisi taşımıyor (yalnız 3 iskelet hesap var).</p>
@@ -346,7 +348,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     </article>
 
     <article class="card" data-risk="yellow" id="card-fatura">
-      <div class="card-top"><span class="card-title">7 · Faturalar / Abonelikler</span><span class="card-class">GENEL</span></div>
+      <div class="card-top"><span class="card-title">🧾 7 · Faturalar / Abonelikler</span><span class="card-class">GENEL</span></div>
       <span class="card-status bekliyor" id="fatura-status">Kaynak bekliyor</span>
       <span class="card-value" id="fatura-value">Kaynak bekliyor</span>
       <p class="card-note">fixed_payment_contracts kaynağı henüz kayıt taşımıyor.</p>
@@ -355,7 +357,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     </article>
 
     <article class="card" data-risk="yellow" id="card-sahsi">
-      <div class="card-top"><span class="card-title">8 · Şahsi Finans</span><span class="card-class">ŞAHSİ</span></div>
+      <div class="card-top"><span class="card-title">👤 8 · Şahsi Finans</span><span class="card-class">ŞAHSİ</span></div>
       <span class="card-status bekliyor" id="sahsi-status">Kaynak hazır, kayıt yok</span>
       <span class="card-value" id="sahsi-value">0 kayıt</span>
       <p class="card-note" id="sahsi-note">Şahsi finans/ikinci beyin arka ucu bugün canlıya alındı; Telegram/manuel giriş bekleniyor.</p>
@@ -364,7 +366,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     </article>
 
     <article class="card" data-risk="orange" id="card-satis">
-      <div class="card-top"><span class="card-title">9 · Satış / Stok</span><span class="card-class">ALAYLI</span></div>
+      <div class="card-top"><span class="card-title">📦 9 · Satış / Stok</span><span class="card-class">ALAYLI</span></div>
       <span class="card-status uyari" id="satis-status">Okunuyor</span>
       <span class="card-value" id="satis-value">Kaynak okunuyor</span>
       <p class="card-note" id="satis-note">sales_flow_finance_mini kaynağı okunuyor.</p>
@@ -373,7 +375,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     </article>
 
     <article class="card" data-risk="red" id="card-risk">
-      <div class="card-top"><span class="card-title">10 · Riskler</span><span class="card-class">GENEL</span></div>
+      <div class="card-top"><span class="card-title">🚨 10 · Riskler</span><span class="card-class">GENEL</span></div>
       <span class="card-status kritik" id="risk-status">Okunuyor</span>
       <span class="card-value" id="risk-value">Kaynak okunuyor</span>
       <p class="card-note" id="risk-note">Gecikmiş alacak/borç ve onay yükü hesaplanıyor.</p>
@@ -382,7 +384,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     </article>
 
     <article class="card" data-risk="green" id="card-tamam">
-      <div class="card-top"><span class="card-title">11 · Tamamlananlar</span><span class="card-class">GENEL</span></div>
+      <div class="card-top"><span class="card-title">✅ 11 · Tamamlananlar</span><span class="card-class">GENEL</span></div>
       <span class="card-status iyi" id="tamam-status">Okunuyor</span>
       <span class="card-value" id="tamam-value">Kaynak okunuyor</span>
       <p class="card-note" id="tamam-note">Onaylanmış banka hareketi sayısı.</p>
@@ -391,7 +393,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     </article>
 
     <article class="card" data-risk="yellow" id="card-saglik">
-      <div class="card-top"><span class="card-title">12 · Sistem Sağlığı</span><span class="card-class">GENEL</span></div>
+      <div class="card-top"><span class="card-title">⚙️ 12 · Sistem Sağlığı</span><span class="card-class">GENEL</span></div>
       <span class="card-status uyari" id="saglik-status">Okunuyor</span>
       <span class="card-value" id="saglik-value">Kaynak okunuyor</span>
       <p class="card-note" id="saglik-note">bot_logs ve banka hattı son güncelleme zamanı karşılaştırılıyor.</p>
@@ -526,8 +528,9 @@ function fourCol(adet, satis, cogsR, satisForPct, p, stok, extra){
   const kar = ec ? (ec - m) : null;
   const marginPct = (kar!==null && ec>0) ? Math.round(kar/ec*100) : null;
   const marginColor = marginPct===null ? '' : marginPct>=40 ? '#7be7ba' : marginPct>=15 ? '#f6c86a' : '#ff9aa7';
+  const marginBar = marginPct!==null ? ' <span style="display:inline-block;width:20px;height:4px;border-radius:99px;background:#0d1727;vertical-align:middle;overflow:hidden"><span style="display:block;height:100%;width:'+Math.max(4,Math.min(100,Math.abs(marginPct)))+'%;background:'+marginColor+';box-shadow:0 0 4px '+marginColor+'"></span></span>' : '';
   const karCell = kar===null ? dash : '<span style="color:'+(kar>=0?'#7be7ba':'#ff9aa7')+'">'+money(kar)+'</span>'
-    + (marginPct!==null ? ' <span style="font-size:8px;color:'+marginColor+'" title="brüt kâr marjı (yalnız eşleşen kısım üzerinden)">'+marginPct+'%</span>' : '');
+    + (marginPct!==null ? ' <span style="font-size:8px;color:'+marginColor+'" title="brüt kâr marjı (yalnız eşleşen kısım üzerinden)">'+marginPct+'%</span>' : '') + marginBar;
   const stokBadge = stok!=null ? ' <span style="color:'+(extra.stokColor||'#5c8dff')+';font-size:9px" title="'+(extra.stokTitle||'satılan/kalan stok')+'">/'+Number(stok).toLocaleString('tr-TR',{maximumFractionDigits:0})+'</span>' : '';
   const adetCell = qty(adet) + stokBadge;
   const yoyBadge = extra.yoyPct!=null ? ' <span style="font-size:8px;color:'+(extra.yoyPct>=0?'#7be7ba':'#ff9aa7')+'" title="geçen yıl aynı döneme (yıl başı–bugün) göre büyüme">'+(extra.yoyPct>=0?'▲':'▼')+Math.abs(extra.yoyPct)+'%</span>' : '';
@@ -887,12 +890,18 @@ Promise.all([
     : '<div style="color:#7be7ba">✓ Kritik bir sinyal yok — bilinen eşiklerin hepsi normal aralıkta.</div>';
 
   // STRATEJIK YONETIM OZETI — ayni prensiple, tekrar sorgu yok.
-  const kpi = (baslik, deger, aciklama, renk, pct) => '<div style="padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);position:relative;overflow:hidden">'
-    + (pct != null ? '<div style="position:absolute;left:0;top:0;bottom:0;width:'+Math.max(0,Math.min(100,pct))+'%;background:linear-gradient(90deg,'+(renk||'var(--blue)')+'22,'+(renk||'var(--blue)')+'08);pointer-events:none"></div>' : '')
-    + '<div style="position:relative;font-size:9px;font-weight:800;color:#7f91a9;letter-spacing:.5px;margin-bottom:4px">' + baslik + '</div>'
-    + '<div style="position:relative;font-size:19px;font-weight:850;color:' + (renk || 'var(--text)') + '">' + deger + '</div>'
-    + (pct != null ? '<div style="position:relative;height:5px;border-radius:99px;background:#0d1727;margin-top:7px;overflow:hidden"><div style="height:100%;width:'+Math.max(2,Math.min(100,pct))+'%;border-radius:99px;background:linear-gradient(90deg,'+(renk||'var(--blue)')+',' + (renk||'var(--blue)') + 'aa);box-shadow:0 0 8px '+(renk||'var(--blue)')+'88"></div></div>' : '')
-    + '<div style="position:relative;font-size:10.5px;color:var(--muted);margin-top:6px;line-height:1.4">' + aciklama + '</div></div>';
+  // Dairesel gosterge (radial ring) - conic-gradient ile SVG'siz donut gauge, "2056 HUD"
+  // hissi icin. Ic disk arka planla ayni renkte oldugundan halka gibi gorunur.
+  const ring = (pct, renk) => { const c = renk || 'var(--blue)', p = Math.max(0, Math.min(100, Math.abs(pct)));
+    return '<div style="position:relative;width:40px;height:40px;border-radius:50%;flex:0 0 auto;background:conic-gradient('+c+' 0% '+p+'%,#16243a '+p+'% 100%);box-shadow:0 0 12px '+c+'55">'
+      + '<div style="position:absolute;inset:5px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-size:9px;font-weight:900;color:'+c+'">'+Math.round(pct)+'%</div></div>'; };
+  const kpi = (baslik, deger, aciklama, renk, pct) => '<div style="padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);position:relative;overflow:hidden;display:flex;flex-direction:column;gap:7px">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">'
+      + '<div style="font-size:9px;font-weight:800;color:#7f91a9;letter-spacing:.5px;line-height:1.35">' + baslik + '</div>'
+      + (pct != null ? ring(pct, renk) : '')
+    + '</div>'
+    + '<div style="font-size:19px;font-weight:850;color:' + (renk || 'var(--text)') + '">' + deger + '</div>'
+    + '<div style="font-size:10.5px;color:var(--muted);line-height:1.4">' + aciklama + '</div></div>';
   const stratKpis = [];
 
   const toplamEc = (cogsData||[]).reduce((s,r)=>s+Number(r.esl_ciro_yil||0),0);
