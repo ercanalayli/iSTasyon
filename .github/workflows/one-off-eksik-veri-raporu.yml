@@ -1,0 +1,73 @@
+name: One-off Eksik Veri Raporu (Telegram)
+
+# Tek seferlik: Ercan'in istegi uzerine (PC basinda degil, Telegram'dan gorup
+# sonra PC'de tamamlayacak) 4 eksik-veri listesini (urun alis fiyati, musteri
+# cari karti, tedarikci karti, gider siniflandirmasi) canli Supabase'den
+# cekip Telegram'a dosya olarak gonderiyor. Rapor git'e YAZILMIYOR (musteri
+# isimleri gibi hassas veri icerdigi icin) - workflow runner icinde uretilip
+# gonderiliyor, iz birakmiyor. Is bitince bu dosya silinecek.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/one-off-eksik-veri-raporu.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  rapor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: psql kur
+        run: sudo apt-get install -y postgresql-client
+      - name: Rapor uret
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -X -A -t -q -o rapor.txt <<'SQL'
+          SELECT '=== APERION EKSIK VERI RAPORU (' || to_char(now(),'DD.MM.YYYY HH24:MI') || ') ===' || E'\n';
+
+          SELECT E'\n--- 1) URUN - ALIS FIYATI EKSIK (fiziksel urun, hizmet bedeli haric) ---' || E'\n' ||
+            'Toplam: ' || count(*) || ' urun' || E'\n' ||
+            string_agg(round(satis_yil)::text || ' TL - ' || left(urun,90), E'\n' order by satis_yil desc nulls last)
+          FROM aperion_category_product_cost_status_v1_view
+          WHERE urun !~* 'REÇETE|NAKLİYE.*BEDELİ|EVRAK|PALET' AND satis_yil > 0;
+
+          SELECT E'\n\n--- 2) MUSTERI - CARI KARTI YOK ---' || E'\n' ||
+            'Toplam: ' || count(*) || ' musteri' || E'\n' ||
+            string_agg(round(toplam)::text || ' TL - ' || unvan, E'\n' order by toplam desc)
+          FROM (
+            SELECT s.unvan, sum(s.ciro) toplam
+            FROM sales_raw s WHERE s.firma_id='alayli' AND s.unvan IS NOT NULL AND s.unvan<>'' AND s.unvan<>'Perakende Satışlar'
+              AND NOT EXISTS (SELECT 1 FROM customers c WHERE upper(trim(c.cari_unvan))=upper(trim(s.unvan)))
+            GROUP BY s.unvan
+          ) x;
+
+          SELECT E'\n\n--- 3) TEDARIKCI - HIC KART SISTEMI YOK (tum tedarikciler) ---' || E'\n' ||
+            'Toplam: ' || count(*) || ' tedarikci' || E'\n' ||
+            string_agg(round(toplam)::text || ' TL (' || adet || ' kayit) - ' || tedarikci, E'\n' order by toplam desc)
+          FROM (
+            SELECT tedarikci, count(*) adet, sum(tutar) toplam
+            FROM masraf_raw WHERE firma_id='alayli' AND tedarikci IS NOT NULL AND tedarikci<>''
+            GROUP BY tedarikci
+          ) y;
+
+          SELECT E'\n\n--- 4) GIDER - KATEGORISI BOS ---' || E'\n' ||
+            'Toplam: ' || count(*) || ' kayit' || E'\n' ||
+            string_agg(round(tutar)::text || ' TL - ' || left(aciklama,80) || ' (' || to_char(tarih,'YYYY-MM-DD') || ')', E'\n' order by tutar desc)
+          FROM masraf_raw WHERE firma_id='alayli' AND (kategori IS NULL OR kategori='');
+          SQL
+          wc -l rapor.txt
+      - name: Telegram'a dosya gonder
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -sS -F chat_id="$CHAT_ID" -F document=@rapor.txt \
+            -F caption="AperiON — Eksik Veri Raporu (ürün alış fiyatı, müşteri/tedarikçi kartı, gider sınıflandırması). PC'ye geçince tamamla." \
+            "https://api.telegram.org/bot${TOKEN}/sendDocument"
+          rm -f rapor.txt
