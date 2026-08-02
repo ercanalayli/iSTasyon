@@ -97,6 +97,8 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
   /* Icerik tablosunun ekranin cogunu kaplamamasi icin masaustundekinden daha kisa kutu -
      mobilde kartlara/ozet metne de yer kalsin diye. */
   .table-scroll{max-height:min(50vh,440px) !important}
+  #custSignalsBody{grid-template-columns:1fr !important}
+  #custSignalsBody>div:first-child{border-right:none !important;border-bottom:1px solid var(--line)}
 }
 /* Asagi kaydirinca basliklar ekrandan kaybolmasin - Ercan'in gercek telefon kullanimiyla
    bulundu (2026-08-01). Sutun etiketleri (ADET/SATIS/SMM/KAR ve donem adi) her zaman gorunur. */
@@ -286,6 +288,24 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
       <a class="card-open" href="./veri-durumu.html">Aç →</a>
     </article>
 
+  </section>
+
+  <section aria-labelledby="custSignalsTitle" style="margin-top:22px;border:1px solid var(--line);border-top:3px solid var(--coral);border-radius:10px;background:var(--surface);overflow:hidden">
+    <header style="padding:14px 18px 10px;border-bottom:1px solid var(--line)">
+      <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">MÜŞTERİ SİNYALLERİ</div>
+      <h2 id="custSignalsTitle" style="margin:5px 0 4px;font-size:15px">En büyük cariler ve sessizleşenler</h2>
+      <p style="margin:0;color:var(--muted);font-size:11px" id="custSignalsNote">Kaynak: sales_raw, isim eşleşmesiyle gruplanmış (aynı müşteri farklı yazımla girildiyse ayrı satır olarak görünebilir). "Perakende Satışlar" genel kasa hariç.</p>
+    </header>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0" id="custSignalsBody">
+      <div style="padding:12px 18px;border-right:1px solid var(--line)">
+        <div style="font-size:10px;font-weight:800;color:#7f91a9;margin-bottom:8px">BU YIL EN BÜYÜK 8 CARİ</div>
+        <div id="custTopList">Yükleniyor…</div>
+      </div>
+      <div style="padding:12px 18px">
+        <div style="font-size:10px;font-weight:800;color:#7f91a9;margin-bottom:8px">SESSİZLEŞEN (≥90 gün, geçmişte ≥20.000 TL)</div>
+        <div id="custQuietList">Yükleniyor…</div>
+      </div>
+    </div>
   </section>
 
   <section aria-labelledby="bankBalanceTitle" style="margin-top:22px;border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:10px;background:var(--surface);overflow:hidden">
@@ -629,6 +649,26 @@ function normalizeBank(name){
   if (n.includes('yapi') || n.includes('yapı')) return 'Yapı Kredi';
   return name || 'Bilinmeyen banka';
 }
+
+// Musteri sinyalleri: sales_raw'i unvan bazinda gruplayan sunucu tarafi view
+// (aperion_customer_signals_v1_view) - hem "en buyuk cariler" hem "sessizlesen"
+// (once duzenli alip artik almayan) musterileri gosteriyor. "Ayni musteri farkli
+// yazimla ayri satir olabilir" riski acikca not dusuldu (isim eslesmesi, kod
+// eslesmesi degil - SMM'deki ayni sinirlama).
+db.from('aperion_customer_signals_v1_view').select('*').then(({data,error})=>{
+  const topEl = document.getElementById('custTopList'), quietEl = document.getElementById('custQuietList');
+  if (error || !data) { topEl.innerHTML = quietEl.innerHTML = '<p style="color:var(--muted);font-size:12px">Kaynak okunamadı: '+(error?error.message:'boş sonuç')+'</p>'; return; }
+  const rowHtml = (r, showYear) => '<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid #23344d;font-size:12px">'
+    + '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%" title="'+String(r.unvan).replace(/"/g,'&quot;')+'">'+r.unvan+'</span>'
+    + '<span style="text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap">'+money(showYear?r.ciro_bu_yil:r.toplam_ciro)+'</span></div>';
+  const top = [...data].filter(r=>Number(r.ciro_bu_yil)>0).sort((a,b)=>Number(b.ciro_bu_yil)-Number(a.ciro_bu_yil)).slice(0,8);
+  topEl.innerHTML = top.length ? top.map(r=>rowHtml(r,true)).join('') : '<p style="color:var(--muted);font-size:12px">Bu yıl isimli cari satışı yok.</p>';
+  const quiet = [...data].filter(r=>Number(r.toplam_ciro)>=20000 && Number(r.gun_sessiz)>=90).sort((a,b)=>Number(b.toplam_ciro)-Number(a.toplam_ciro)).slice(0,8);
+  quietEl.innerHTML = quiet.length ? quiet.map(r=>'<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid #23344d;font-size:12px">'
+      + '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:55%" title="'+String(r.unvan).replace(/"/g,'&quot;')+'">'+r.unvan+'</span>'
+      + '<span style="text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap"><span style="color:#ff9aa7;font-size:10px">'+r.gun_sessiz+' gün</span> · '+money(r.toplam_ciro)+'</span></div>').join('')
+    : '<p style="color:var(--muted);font-size:12px">Eşiği geçen sessizleşen cari yok.</p>';
+}).catch(e=>{ document.getElementById('custTopList').innerHTML = document.getElementById('custQuietList').innerHTML = '<p style="color:var(--muted);font-size:12px">Hata: '+String(e)+'</p>'; });
 
 // Bankalar - son bilinen bakiye: finance_account_cards hep 0 TL/hic kullanilmamis
 // sablon (2026-06-02'de olusturulmus, hic guncellenmemis) - gercek bakiye zaten
