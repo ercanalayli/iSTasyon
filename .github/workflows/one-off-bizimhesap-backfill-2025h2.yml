@@ -1,0 +1,36 @@
+name: One-off BizimHesap Backfill 2025 H2
+
+# Tek seferlik: sales_raw'da 2025 Agustos-Aralik arasi gercek gunluk satis verisi
+# yoktu (sadece ayin 1'inde birer yer tutucu kayit vardi). BizimHesap'ta veri var
+# ama rapor tek seferde tum ay/donem cekilemiyor, gun gun yeniden olusturuluyor -
+# bu yuzden ayri, genis zaman asimli bir is olarak calistiriliyor. Is bitince bu
+# dosya silinecek (tek AperiON kurali - tek seferlik isler kalici dosya birakmaz).
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/one-off-bizimhesap-backfill-2025h2.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci --no-audit --no-fund
+      - name: sales_raw 2025-08-01..2025-12-31 backfill
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          BIZIMHESAP_EMAIL: ${{ secrets.BIZIMHESAP_EMAIL }}
+          BIZIMHESAP_PASSWORD: ${{ secrets.BIZIMHESAP_PASSWORD }}
+          BIZIMHESAP_HEADLESS: "true"
+        run: node bizimhesap_bot.js --firma alayli --gecmis 2025-08-01 2025-12-31
