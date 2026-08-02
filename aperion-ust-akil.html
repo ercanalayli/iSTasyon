@@ -121,6 +121,14 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
   <h1 class="title">AperiON iSTasyon – Operasyon Merkezi</h1>
   <p class="subtitle">Bugün ne kritik?<span class="upd" id="updatedPill">Güncellendi · --</span></p>
 
+  <section aria-labelledby="insightTitle" style="margin-bottom:22px;border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;background:linear-gradient(135deg,#151f33,#101a2c);padding:14px 18px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="font-size:16px">🧠</span>
+      <h2 id="insightTitle" style="margin:0;font-size:12px;font-weight:900;letter-spacing:1px;color:#83e8c1">BUGÜN DİKKAT — OTOMATİK BULGULAR</h2>
+    </div>
+    <div id="insightBody" style="display:flex;flex-direction:column;gap:7px;font-size:12.5px">Taranıyor…</div>
+  </section>
+
   <section aria-labelledby="matrixTitle" style="margin-bottom:22px;border:1px solid var(--line);border-top:3px solid var(--gold);border-radius:10px;background:var(--surface);overflow:hidden">
     <header style="padding:16px 18px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
       <div><div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">KATEGORİ BAZLI GELİR TABLOSU</div><h2 id="matrixTitle" style="margin:5px 0 4px;font-size:19px">Satışlar → SMM → Brüt Kar → Giderler → Net Kar</h2><p style="margin:0;color:var(--muted);font-size:12px">Ürün kategorisine göre; Bugün / Dün / Bu Hafta / Bu Ay / Geçen Ay / Bu Yıl / Geçen Yıl</p></div>
@@ -666,6 +674,91 @@ Promise.all([
     giderBody.addEventListener('mouseleave', hideTip);
   }
 }).catch(e=>{ document.getElementById('catMatrixBody').innerHTML = '<tr><td colspan="29" style="padding:10px 12px;color:var(--muted)">Hata: '+String(e)+'</td></tr>'; });
+
+// OTOMATIK BULGU MOTORU (2055 vizyonu, 2026-08-02) — Ercan'in "sistem kendi kendine
+// bulup soylesin, ben elle analiz etmeyeyim" istegi. Diger panellerin fetch sirasina
+// bagli olmamak icin kendi Promise.all'unu yapiyor, ayni gorunum kurallarini (sadece
+// gercek veri, esik altindaysa hic satir uretme - "kritik olay yoksa sessizlik")
+// uyguluyor. En fazla 5 bulgu gosterir, oncelige gore siralar.
+Promise.all([
+  db.from('aperion_bank_last_known_balance_v1_view').select('*'),
+  db.from('aperion_customer_signals_v1_view').select('*'),
+  db.from('pending_bank_movements_summary_v1_view').select('*'),
+  db.from('aperion_category_income_matrix_v3_view').select('kategori_grup,satis_yil,adet_yil'),
+  db.from('aperion_category_cogs_v1_view').select('kategori_grup,maliyet_yil,esl_ciro_yil'),
+  db.from('aperion_category_stock_v1_view').select('*'),
+  db.from('aperion_gider_ozet_v1_view').select('*'),
+]).then(([bankRes, custRes, pendRes, matRes, cogsRes, stockRes, giderRes]) => {
+  const bulgular = []; // {seviye: 3=kritik/2=uyari/1=bilgi, metin}
+
+  // 1) Negatif banka bakiyesi
+  (bankRes.data || []).forEach(r => {
+    const b = normalizeBank(r.bank_name);
+    if (Number(r.son_bakiye) < 0) {
+      bulgular.push({ s: 3, t: '🔴 <b>' + b + '</b> bakiyesi negatif: ' + money(r.son_bakiye) + ' (son bilinen, ' + (r.son_tarih || '-') + ')' });
+    }
+  });
+
+  // 2) En buyuk sessizlesen musteri (>=90 gun, >=50.000 TL gecmis)
+  const enBuyukSessiz = (custRes.data || []).filter(r => Number(r.gun_sessiz) >= 90 && Number(r.toplam_ciro) >= 50000).sort((a,b)=>Number(b.toplam_ciro)-Number(a.toplam_ciro))[0];
+  if (enBuyukSessiz) {
+    bulgular.push({ s: 2, t: '🟠 <b>' + enBuyukSessiz.unvan + '</b> — geçmişte ' + money(enBuyukSessiz.toplam_ciro) + ' aldı, ' + enBuyukSessiz.gun_sessiz + ' gündür sessiz' });
+  }
+
+  // 3) Onay bekleyen kritik yigin
+  const pendingCount = (pendRes.data || []).filter(r => r.status === 'pending' || !r.status).reduce((s,r)=>s+Number(r.row_count||0),0);
+  if (pendingCount >= 500) {
+    bulgular.push({ s: 3, t: '🔴 <b>' + pendingCount.toLocaleString('tr-TR') + '</b> banka kaydı onay bekliyor' });
+  }
+
+  // 4) SMM eslesmesi cok dusuk, ama cirosu buyuk kategori (yaniltici kar riski)
+  if (matRes.data && cogsRes.data) {
+    const cogsByCat = {}; cogsRes.data.forEach(r => { cogsByCat[r.kategori_grup] = r; });
+    let enKotu = null;
+    matRes.data.forEach(r => {
+      const satis = Number(r.satis_yil || 0);
+      if (satis < 200000) return; // kucuk kategorilerde gurultu yapmasin
+      const cr = cogsByCat[r.kategori_grup];
+      const ec = cr ? Number(cr.esl_ciro_yil || 0) : 0;
+      const pct = ec > 0 ? Math.round(ec / satis * 100) : 0;
+      if (pct < 20 && (!enKotu || satis > enKotu.satis)) enKotu = { kategori: r.kategori_grup, pct, satis };
+    });
+    if (enKotu) bulgular.push({ s: 2, t: '🟡 <b>' + enKotu.kategori + '</b> kategorisinde maliyet eşleşmesi sadece %' + enKotu.pct + ' — kâr rakamı bu yıl ' + money(enKotu.satis) + ' cironun çoğu için bilinmiyor' });
+  }
+
+  // 5) Stok tukenme riski: yillik satis hizina gore <=21 gun stok kalan, anlamli cirolu kategori
+  if (matRes.data && stockRes.data) {
+    const stokByCat = {}; stockRes.data.forEach(r => { stokByCat[r.kategori_grup] = Number(r.stok || 0); });
+    const now = new Date(); const yb = new Date(now.getFullYear(), 0, 1);
+    const gunSayisi = Math.max(1, Math.round((now - yb) / 86400000) + 1);
+    let enKritik = null;
+    matRes.data.forEach(r => {
+      const stok = stokByCat[r.kategori_grup];
+      const adetYil = Number(r.adet_yil || 0);
+      if (!stok || adetYil <= 0 || Number(r.satis_yil||0) < 50000) return;
+      const gun = Math.round(stok / (adetYil / gunSayisi));
+      if (gun <= 21 && (!enKritik || gun < enKritik.gun)) enKritik = { kategori: r.kategori_grup, gun };
+    });
+    if (enKritik) bulgular.push({ s: 2, t: '🟠 <b>' + enKritik.kategori + '</b> stoğu bu satış hızıyla yaklaşık ' + enKritik.gun + ' güne biter' });
+  }
+
+  // 6) Bu ayki gider/gelir orani cok yuksek
+  if (matRes.data && giderRes.data) {
+    const satisAy = matRes.data.reduce((s,r)=>s+Number(r.satis_ay||0),0);
+    const giderAy = giderRes.data.reduce((s,r)=>s+Number(r.gider_ay||0),0);
+    if (satisAy > 0 && giderAy > 0) {
+      const oran = Math.round(giderAy / satisAy * 100);
+      if (oran > 80) bulgular.push({ s: 2, t: '🟠 Bu ay gider/satış oranı %' + oran + ' — normalin üzerinde' });
+    }
+  }
+
+  bulgular.sort((a,b) => b.s - a.s);
+  const top = bulgular.slice(0, 5);
+  const el = document.getElementById('insightBody');
+  el.innerHTML = top.length
+    ? top.map(b => '<div>' + b.t + '</div>').join('')
+    : '<div style="color:#7be7ba">✓ Kritik bir sinyal yok — bilinen eşiklerin hepsi normal aralıkta.</div>';
+}).catch(e => { document.getElementById('insightBody').innerHTML = '<div style="color:var(--muted)">Bulgu motoru okunamadı: ' + String(e) + '</div>'; });
 
 function normalizeBank(name){
   // toLocaleLowerCase('tr') dotless-ı kuralini uyguluyor: "Is Bankasi" -> "ıs bankası"
