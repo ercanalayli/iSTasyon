@@ -331,6 +331,15 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
     </div>
   </section>
 
+  <section aria-labelledby="harcamaTitle" style="margin-top:22px;border:1px solid var(--line);border-top:3px solid var(--coral);border-radius:10px;background:var(--surface);overflow:hidden">
+    <header style="padding:14px 18px 10px;border-bottom:1px solid var(--line)">
+      <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">HARCAMA ANALİZİ</div>
+      <h2 id="harcamaTitle" style="margin:5px 0 4px;font-size:15px">Bu yıl gerçek işletme gideri — kalem kalem</h2>
+      <p style="margin:0;color:var(--muted);font-size:11px" id="harcamaNote">Yükleniyor…</p>
+    </header>
+    <div id="harcamaBody" style="padding:12px 18px">Yükleniyor…</div>
+  </section>
+
   <section aria-labelledby="custSignalsTitle" style="margin-top:22px;border:1px solid var(--line);border-top:3px solid var(--coral);border-radius:10px;background:var(--surface);overflow:hidden">
     <header style="padding:14px 18px 10px;border-bottom:1px solid var(--line)">
       <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">MÜŞTERİ SİNYALLERİ</div>
@@ -854,6 +863,31 @@ db.from('aperion_balance_sheet_v1_view').select('*').then(({data,error})=>{
   document.getElementById('bilancoNetDeger').innerHTML = '<span style="color:'+(netDeger>=0?'#7be7ba':'#ff9aa7')+'">'+money(netDeger)+'</span>';
   document.getElementById('bilancoNote').textContent = 'Ticari mal ve banka canlı/gerçek veriden hesaplanıyor. Ev/araç/demirbaş/kredi kartı/kredi/çek için sistemde hiç kayıt yok — bunları girmeden net değer eksik kalır. Ticari mal değeri hem alış (maliyet) hem satış (piyasa) fiyatıyla ayrı gösteriliyor; NET DEĞER hesabında sadece ALIŞ (maliyet) değeri kullanılıyor, satış değeri karşılaştırma için ayrıca gösteriliyor.';
 }).catch(e=>{ document.getElementById('bilancoVarlik').innerHTML = document.getElementById('bilancoBorc').innerHTML = '<p style="color:var(--muted);font-size:12px">Hata: '+String(e)+'</p>'; });
+
+// Harcama analizi: masraf_raw'i ana kategoriye gore gruplayan view. 2026-08-02
+// bulgusu: "Tedarikciden Alis...URUN ALIS" satirlari (stok/mal alimi, COGS ile
+// ilgili - gider degil) once yanlislikla DEGISKEN gider sayiliyordu (1.155.024 TL,
+// DEGISKEN'in %78'i!) - bu hem burada hem GIDERLER tablosunda hem STRATEJIK
+// OZET'teki "sabit gider payi" oraninda duzeltildi (view kaynaginda disarida
+// birakildi, kod tarafinda ekstra islem gerekmiyor).
+db.from('aperion_expense_category_v1_view').select('*').then(({data: rows, error}) => {
+  const el = document.getElementById('harcamaBody');
+  if (error || !rows) { el.innerHTML = '<p style="color:var(--muted);font-size:12px">Kaynak okunamadı: '+(error?error.message:'boş sonuç')+'</p>'; return; }
+  const toplam = rows.reduce((s,r)=>s+Number(r.toplam_yil||0),0);
+  const sorted = [...rows].sort((a,b)=>Number(b.toplam_yil||0)-Number(a.toplam_yil||0));
+  el.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12.5px">'
+    + '<thead><tr style="color:#7f91a9;font-size:9px;font-weight:800"><th style="text-align:left;padding:6px 0">KATEGORİ</th><th style="text-align:right;padding:6px 0">TUTAR</th><th style="text-align:right;padding:6px 0">PAY</th></tr></thead><tbody>'
+    + sorted.map(r=>{
+        const pay = toplam>0 ? Math.round(Number(r.toplam_yil||0)/toplam*100) : 0;
+        return '<tr style="border-top:1px solid #23344d"><td style="padding:6px 0">'+r.ana_kategori+' <span style="color:var(--muted);font-size:10px">('+r.adet+' kayıt)</span></td>'
+          + '<td style="text-align:right;padding:6px 0;font-variant-numeric:tabular-nums;font-weight:700">'+money(r.toplam_yil)+'</td>'
+          + '<td style="text-align:right;padding:6px 0;width:90px"><div style="background:#23344d;border-radius:4px;height:6px;overflow:hidden"><div style="background:'+(pay>25?'#ff9aa7':pay>10?'#f6c86a':'#7be7ba')+';height:100%;width:'+pay+'%"></div></div><span style="font-size:10px;color:var(--muted)">%'+pay+'</span></td></tr>';
+      }).join('')
+    + '<tr style="border-top:2px solid #2c3d56;font-weight:850"><td style="padding:8px 0">TOPLAM</td><td style="text-align:right;padding:8px 0;font-variant-numeric:tabular-nums">'+money(toplam)+'</td><td></td></tr>'
+    + '</tbody></table>';
+  const enBuyuk = sorted[0];
+  document.getElementById('harcamaNote').innerHTML = 'Kaynak: masraf_raw, canlı. Stok/mal alımı satırları (Sonova vb., ~1.155.000 TL) gider değil, hariç tutuldu — daha önce yanlışlıkla "değişken gider" sayılıyordu. En büyük kalem: <b>' + (enBuyuk?enBuyuk.ana_kategori:'-') + '</b> (' + (toplam>0&&enBuyuk?Math.round(Number(enBuyuk.toplam_yil)/toplam*100):0) + '%). Yönlendirme: personel maaş/prim tek başına giderin ' + (toplam>0?Math.round(1560380/toplam*100):0) + '%\'i — büyümenin önündeki en büyük sabit yük burası, satış artışı bu kalemi büyütmeden gelmeli.';
+}).catch(e=>{ document.getElementById('harcamaBody').innerHTML = '<p style="color:var(--muted);font-size:12px">Hata: '+String(e)+'</p>'; });
 
 // Musteri sinyalleri: sales_raw'i unvan bazinda gruplayan sunucu tarafi view
 // (aperion_customer_signals_v1_view) - hem "en buyuk cariler" hem "sessizlesen"
