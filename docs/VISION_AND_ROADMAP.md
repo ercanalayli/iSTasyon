@@ -1,5 +1,12 @@
 # AperiON iSTasyon – Vizyon ve Yol Haritası
 
+> **2026-08-02 güncelleme:** Ercan'ın ChatGPT geçmişinden derlediği çok daha
+> kapsamlı, 50 bölümlük tam özellik envanteri artık `docs/APERION_MASTER_VIZYON.md`
+> dosyasında — bu belge proje boyunca ana referans, değiştirilmeden korunur.
+> Bu dosya (VISION_AND_ROADMAP) onun **karşısında kanıtla doğrulanmış güncel
+> durumu** tutmaya devam ediyor; ikisi çelişirse MASTER_VIZYON "istenen",
+> buradaki "kanıtlanmış mevcut durum" kabul edilir.
+
 Bu dosya `VISION.md` + `ROADMAP.md`'nin, hâlâ açık olan maddeler için de
 `APERION_ERP_UST_AKIL_KAPSAM.md`, `APERION_CFO_MODUL_PLANI.md`,
 `APERION_ANALIZ_RAPOR_GEREKSINIMLERI.md`, `APERION_ISTEKLER_VE_GORSELLER.md`
