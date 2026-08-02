@@ -288,6 +288,15 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
 
   </section>
 
+  <section aria-labelledby="bankBalanceTitle" style="margin-top:22px;border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:10px;background:var(--surface);overflow:hidden">
+    <header style="padding:14px 18px 10px;border-bottom:1px solid var(--line)">
+      <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">BANKALAR — SON BİLİNEN BAKİYE</div>
+      <h2 id="bankBalanceTitle" style="margin:5px 0 4px;font-size:15px">Gerçek zamanlı değil — her bankanın en son işlendiği tarihteki bakiyesi</h2>
+      <p style="margin:0;color:var(--muted);font-size:11px" id="bankBalanceNote">Kaynak: banka ekstresi maillerinden okunan en son bakiye satırı (pending_bank_movements). finance_account_cards'taki "0 TL" hesaplar hiç kullanılmamış şablon kartlar — gerçek bakiye burada.</p>
+    </header>
+    <div style="padding:6px 18px 16px" id="bankBalanceBody">Yükleniyor…</div>
+  </section>
+
   <footer><span>AperiON görür, sınıflandırır, kanıtını gösterir; sen onayladığında resmi kayda alır.</span><a href="./index.html">Ana ekrana git →</a></footer>
 </main>
 <div id="hoverTip" style="display:none;position:fixed;z-index:50;max-width:260px;padding:10px 12px;border:1px solid #2c3d56;border-radius:10px;background:#0e1828;box-shadow:0 8px 24px rgba(0,0,0,.4);font-size:11px;line-height:1.5;pointer-events:none"></div>
@@ -609,14 +618,54 @@ Promise.all([
 }).catch(e=>{ document.getElementById('catMatrixBody').innerHTML = '<tr><td colspan="29" style="padding:10px 12px;color:var(--muted)">Hata: '+String(e)+'</td></tr>'; });
 
 function normalizeBank(name){
-  const n = String(name||'').toLocaleLowerCase('tr').replace(/i̇/g,'i');
-  if (n.includes('is bank') || n.includes('iş bank') || n.includes('isbank')) return 'İş Bankası';
+  // toLocaleLowerCase('tr') dotless-ı kuralini uyguluyor: "Is Bankasi" -> "ıs bankası"
+  // olup "is bank" ile hic eslesmiyordu (2026-08-02 bulgusu, oturumun tekrar eden
+  // Turkce karakter hata deseni). Once I/ı'yi duz ASCII i'ye indirip OYLE kucult.
+  const n = String(name||'').replace(/İ/g,'I').replace(/ı/g,'i').toLowerCase();
+  if (n.includes('is bank') || n.includes('isbank')) return 'İş Bankası';
   if (n.includes('vakif')) return 'VakıfBank';
   if (n.includes('akbank')) return 'Akbank';
   if (n.includes('garanti')) return 'Garanti BBVA';
   if (n.includes('yapi') || n.includes('yapı')) return 'Yapı Kredi';
   return name || 'Bilinmeyen banka';
 }
+
+// Bankalar - son bilinen bakiye: finance_account_cards hep 0 TL/hic kullanilmamis
+// sablon (2026-06-02'de olusturulmus, hic guncellenmemis) - gercek bakiye zaten
+// banka ekstresi maillerinden gecen pending_bank_movements'in balance_after
+// alaninda duruyordu, sadece hic yuzeye cikarilmamisti (2026-08-02 bulgusu).
+// Ayni banka farkli mail formatlarinda farkli yaziliyor (Is Bankasi/Turkiye Is
+// Bankasi/İş Bankası) - normalizeBank() ile birlestirip EN GUNCEL tarihli
+// satiri esas aliyoruz (toplama degil, tekilleştirme).
+db.from('aperion_bank_last_known_balance_v1_view').select('*').then(({data,error})=>{
+  const el = document.getElementById('bankBalanceBody');
+  if (error || !data) { el.innerHTML = '<p style="color:var(--muted);font-size:12px">Kaynak okunamadı: '+(error?error.message:'boş sonuç')+'</p>'; return; }
+  const byBank = {};
+  data.forEach(r=>{
+    const b = normalizeBank(r.bank_name);
+    if (!byBank[b] || (r.son_tarih && r.son_tarih > byBank[b].son_tarih)) byBank[b] = r;
+  });
+  const rows = Object.entries(byBank).sort((a,b)=> (b[1].son_tarih||'').localeCompare(a[1].son_tarih||''));
+  const todayIso = new Date().toISOString().slice(0,10);
+  const daysAgo = d => d ? Math.round((new Date(todayIso) - new Date(d)) / 86400000) : null;
+  const staleColor = g => g===null ? '#5c6d84' : g<=3 ? '#7be7ba' : g<=14 ? '#f6c86a' : '#ff9aa7';
+  const toplam = rows.reduce((s,[,r])=>s+Number(r.son_bakiye||0),0);
+  el.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12.5px">'
+    + '<thead><tr style="color:#7f91a9;font-size:9px;font-weight:800"><th style="text-align:left;padding:6px 0">BANKA</th><th style="text-align:right;padding:6px 0">SON BİLİNEN BAKİYE</th><th style="text-align:right;padding:6px 0">TARİH</th></tr></thead><tbody>'
+    + rows.map(([bank,r])=>{
+        const g = daysAgo(r.son_tarih);
+        const c = staleColor(g);
+        return '<tr style="border-top:1px solid #23344d"><td style="padding:7px 0;font-weight:700">'+bank+'</td>'
+          + '<td style="text-align:right;padding:7px 0;font-variant-numeric:tabular-nums;font-weight:700">'+money(r.son_bakiye)+'</td>'
+          + '<td style="text-align:right;padding:7px 0;color:'+c+'">'+(r.son_tarih||'-')+(g!==null?' <span style="font-size:10px">('+g+' gün önce)</span>':'')+'</td></tr>';
+      }).join('')
+    + '<tr style="border-top:2px solid #2c3d56;font-weight:850"><td style="padding:8px 0">TOPLAM (bilinen)</td><td style="text-align:right;padding:8px 0;font-variant-numeric:tabular-nums">'+money(toplam)+'</td><td></td></tr>'
+    + '</tbody></table>';
+  const oldestGap = Math.max(...rows.map(([,r])=>daysAgo(r.son_tarih)||0));
+  if (oldestGap > 7) {
+    document.getElementById('bankBalanceNote').innerHTML += ' <b style="color:#ff9aa7">Uyarı: bazı bankalar '+oldestGap+' gündür güncellenmiyor — mail-ekstre okuma hattı (Gmail OAuth) şu an kırık, bu yüzden bakiyeler ilerlemiyor.</b>';
+  }
+}).catch(e=>{ document.getElementById('bankBalanceBody').innerHTML = '<p style="color:var(--muted);font-size:12px">Hata: '+String(e)+'</p>'; });
 
 // 2 & 3 & 10 & 11: pending_bank_movements_summary_v1_view — sunucu tarafında gruplanmış (1000 satır limitine takılmaz)
 db.from('pending_bank_movements_summary_v1_view').select('*').then(({data,error})=>{
