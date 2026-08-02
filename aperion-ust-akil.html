@@ -643,8 +643,22 @@ Promise.all([
     const missingRows = missingRes.data;
     let missingHtml = '';
     if (missingRows && missingRows.length) {
-      missingHtml = '<tr class="cat-detail-row" style="background:#241a14"><td colspan="29" style="padding:6px 12px 2px;color:#f6c86a;font-size:10px;font-weight:800;position:sticky;left:0;background:#241a14">MALİYETİ EKSİK — BizimHesap ürün kartında Alış Fiyatı doldurulmalı (ciro önceliğine göre)</td></tr>'
-        + missingRows.map(p=>'<tr class="cat-detail-row" style="background:#1c140f"><td style="padding:4px 12px 4px 44px;color:#f6c86a;font-size:11px;position:sticky;left:0;background:#1c140f">'+String(p.urun||'-').substring(0,90)+'</td><td colspan="28" style="text-align:right;padding:4px 12px;font-size:11px;color:#c8d6ea">Bu yıl: '+money(p.satis_yil)+' · '+(p.adet_yil?Number(p.adet_yil).toLocaleString('tr-TR'):'0')+' adet · son satış: '+(p.son_tarih||'-')+'</td></tr>').join('');
+      // Maliyet bilinmiyorsa gercek kar hesaplanamaz - ama liste (referans) satis
+      // fiyati biliniyorsa, fiili birim fiyat / referans fiyat oranini gosterip
+      // fiyatlama sapmasini/anomalisini isaretleyebiliriz (2026-08-02 istegi).
+      // Isim eslestirmesi genel isimlerde ("YEDEK PARCA" gibi) yaniltici olabilir - acikca not dusuldu.
+      missingHtml = '<tr class="cat-detail-row" style="background:#241a14"><td colspan="29" style="padding:6px 12px 2px;color:#f6c86a;font-size:10px;font-weight:800;position:sticky;left:0;background:#241a14">MALİYETİ EKSİK — BizimHesap ürün kartında Alış Fiyatı doldurulmalı (ciro önceliğine göre). Renk = fiili satış fiyatının liste fiyatına oranı (kâr değil, fiyatlama sapması sinyali — genel isimli ürünlerde eşleşme hatalı olabilir).</td></tr>'
+        + missingRows.map(p=>{
+            const birim = (p.adet_yil>0) ? Number(p.satis_yil)/Number(p.adet_yil) : null;
+            const ref = p.referans_satis_fiyat ? Number(p.referans_satis_fiyat) : null;
+            let sapmaHtml = '';
+            if (birim!=null && ref>0) {
+              const oran = Math.round(birim/ref*100);
+              const renk = oran<60 ? '#ff9aa7' : oran<85 ? '#f6c86a' : '#7be7ba';
+              sapmaHtml = ' · liste fiyatı '+money(ref)+' → fiili birim '+money(birim)+' <span style="color:'+renk+';font-weight:800">(%'+oran+')</span>';
+            }
+            return '<tr class="cat-detail-row" style="background:#1c140f"><td style="padding:4px 12px 4px 44px;color:#f6c86a;font-size:11px;position:sticky;left:0;background:#1c140f">'+String(p.urun||'-').substring(0,90)+'</td><td colspan="28" style="text-align:right;padding:4px 12px;font-size:11px;color:#c8d6ea">Bu yıl: '+money(p.satis_yil)+' · '+(p.adet_yil?Number(p.adet_yil).toLocaleString('tr-TR'):'0')+' adet · son satış: '+(p.son_tarih||'-')+sapmaHtml+'</td></tr>';
+          }).join('');
     }
     loadingTr.outerHTML = '<tr class="cat-detail-row" style="background:#0c1626"><td colspan="29" style="padding:6px 12px 2px;color:#7f91a9;font-size:10px;font-weight:800;position:sticky;left:0;background:#0c1626">EN ÇOK SATAN ÜRÜNLER — YILLIK CİROYA GÖRE (canlı sales_raw)</td></tr>' + detailRows + missingHtml;
   });
@@ -881,7 +895,14 @@ db.from('aperion_balance_sheet_v1_view').select('*').then(({data,error})=>{
 // DEGISKEN'in %78'i!) - bu hem burada hem GIDERLER tablosunda hem STRATEJIK
 // OZET'teki "sabit gider payi" oraninda duzeltildi (view kaynaginda disarida
 // birakildi, kod tarafinda ekstra islem gerekmiyor).
-db.from('aperion_expense_category_v1_view').select('*').then(({data: rows, error}) => {
+// Harcama kategori kirilimi + gider anomalisi (bu ayki kategori harcamasi
+// gecmis aylik ortalamasindan ne kadar sapmis - 2026-08-02 istegi, urunlerdeki
+// fiyat sapmasi mantiginin giderlere uygulanmasi). Tek Promise.all - siralama
+// riskini (iki ayri fetch, harcamaNote'u birbirinin uzerine yazmasi) onlemek icin.
+Promise.all([
+  db.from('aperion_expense_category_v1_view').select('*'),
+  db.from('aperion_expense_anomaly_v1_view').select('*'),
+]).then(([{data: rows, error}, {data: anomRows}]) => {
   const el = document.getElementById('harcamaBody');
   if (error || !rows) { el.innerHTML = '<p style="color:var(--muted);font-size:12px">Kaynak okunamadı: '+(error?error.message:'boş sonuç')+'</p>'; return; }
   const toplam = rows.reduce((s,r)=>s+Number(r.toplam_yil||0),0);
@@ -897,7 +918,16 @@ db.from('aperion_expense_category_v1_view').select('*').then(({data: rows, error
     + '<tr style="border-top:2px solid #2c3d56;font-weight:850"><td style="padding:8px 0">TOPLAM</td><td style="text-align:right;padding:8px 0;font-variant-numeric:tabular-nums">'+money(toplam)+'</td><td></td></tr>'
     + '</tbody></table>';
   const enBuyuk = sorted[0];
-  document.getElementById('harcamaNote').innerHTML = 'Kaynak: masraf_raw, canlı. Stok/mal alımı satırları (Sonova vb., ~1.155.000 TL) gider değil, hariç tutuldu — daha önce yanlışlıkla "değişken gider" sayılıyordu. En büyük kalem: <b>' + (enBuyuk?enBuyuk.ana_kategori:'-') + '</b> (' + (toplam>0&&enBuyuk?Math.round(Number(enBuyuk.toplam_yil)/toplam*100):0) + '%). Yönlendirme: personel maaş/prim tek başına giderin ' + (toplam>0?Math.round(1560380/toplam*100):0) + '%\'i — büyümenin önündeki en büyük sabit yük burası, satış artışı bu kalemi büyütmeden gelmeli.';
+  let noteHtml = 'Kaynak: masraf_raw, canlı. Stok/mal alımı satırları (Sonova vb., ~1.155.000 TL) gider değil, hariç tutuldu — daha önce yanlışlıkla "değişken gider" sayılıyordu. En büyük kalem: <b>' + (enBuyuk?enBuyuk.ana_kategori:'-') + '</b> (' + (toplam>0&&enBuyuk?Math.round(Number(enBuyuk.toplam_yil)/toplam*100):0) + '%). Yönlendirme: personel maaş/prim tek başına giderin ' + (toplam>0?Math.round(1560380/toplam*100):0) + '%\'i — büyümenin önündeki en büyük sabit yük burası, satış artışı bu kalemi büyütmeden gelmeli.';
+  const sapanlar = (anomRows||[]).filter(r => r.oran_yuzde!=null && (r.oran_yuzde >= 150 || r.oran_yuzde <= 50));
+  if (sapanlar.length) {
+    const anomHtml = sapanlar.map(r => {
+      const renk = r.oran_yuzde >= 150 ? '#ff9aa7' : '#f6c86a';
+      return '<b style="color:'+renk+'">' + r.ana_kategori + ' bu ay %' + r.oran_yuzde + '</b> (geçmiş ' + r.gecmis_ay_sayisi + ' ay ortalamasına göre)';
+    }).join(', ');
+    noteHtml += '<br><br>⚠️ <b>Bu ay ortalamadan sapan kategoriler:</b> ' + anomHtml + '.';
+  }
+  document.getElementById('harcamaNote').innerHTML = noteHtml;
 }).catch(e=>{ document.getElementById('harcamaBody').innerHTML = '<p style="color:var(--muted);font-size:12px">Hata: '+String(e)+'</p>'; });
 
 // Musteri sinyalleri: sales_raw'i unvan bazinda gruplayan sunucu tarafi view
