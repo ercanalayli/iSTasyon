@@ -23,41 +23,42 @@ const FIRMA = { id: 'alayli', adi: 'ALAYLI MEDIKAL', arama: 'ALAYLI' };
     await page.goto(accountsUrl, { waitUntil: 'networkidle2', timeout: 30000 }).catch(e => log(`[GOTO HATA] ${e.message}`));
     await new Promise(r => setTimeout(r, 2500));
 
+    // Ilk gecis metin cikartti (KREDI KARTLARI / BANKA HESAPLARI basliklari
+    // gorundu) ama tablo/kart secicileri gercek DOM yapisini bulamadi - bu
+    // gecis "YAPI KREDİ" gibi bilinen bir metni iceren en KUCUK/en DAR
+    // elementi bulup, onun ata zincirini (parent chain) disariya dogru HTML
+    // olarak dokup gercek markup'i gormeye calisiyor.
     const info = await page.evaluate(() => {
       const txt = s => String(s || '').replace(/\s+/g, ' ').trim();
-      const tables = [...document.querySelectorAll('table')].map((t, i) => ({
-        index: i,
-        headers: [...t.querySelectorAll('thead th, tr th')].map(x => txt(x.innerText)),
-        rowCount: t.querySelectorAll('tbody tr, tr').length,
-        firstRows: [...t.querySelectorAll('tbody tr, tr')].slice(0, 8).map(tr =>
-          [...tr.querySelectorAll('td')].map(td => txt(td.innerText))
-        ),
-      }));
-      // Kart/liste bazli gorunumler icin de (tablo degil div bazli olabilir)
-      const cardLike = [...document.querySelectorAll('[class*="card"],[class*="account"],[class*="hesap"]')]
-        .filter(el => txt(el.innerText).length > 5 && txt(el.innerText).length < 500)
-        .slice(0, 20)
-        .map(el => txt(el.innerText));
-      return {
-        url: location.href,
-        title: document.title,
-        tableCount: tables.length,
-        tables,
-        cardLikeCount: cardLike.length,
-        cardLikeSample: cardLike,
-        bodyTextSample: txt(document.body.innerText).slice(0, 3000),
-      };
+      function smallestContaining(needle) {
+        const all = [...document.querySelectorAll('body *')];
+        let best = null;
+        for (const el of all) {
+          const t = el.innerText || '';
+          if (t.includes(needle)) {
+            if (!best || t.length < (best.innerText || '').length) best = el;
+          }
+        }
+        return best;
+      }
+      const anchor = smallestContaining('KK ARTI AKBANK') || smallestContaining('KREDİ KARTLARI');
+      const chain = [];
+      let cur = anchor;
+      for (let i = 0; i < 6 && cur; i++) {
+        chain.push({
+          tag: cur.tagName, cls: (cur.className || '').toString().slice(0, 80),
+          outerHTMLSnippet: (cur.outerHTML || '').slice(0, 1500),
+        });
+        cur = cur.parentElement;
+      }
+      return { chain, anchorFound: !!anchor };
     });
 
-    log(`[SAYFA] url=${info.url} title=${info.title}`);
-    log(`[TABLO SAYISI] ${info.tableCount}`);
-    info.tables.forEach(t => {
-      log(`[TABLO ${t.index}] headers=${JSON.stringify(t.headers)} rowCount=${t.rowCount}`);
-      t.firstRows.forEach((r, i) => log(`  [SATIR ${i}] ${JSON.stringify(r)}`));
+    log(`[ANCHOR BULUNDU] ${info.anchorFound}`);
+    info.chain.forEach((c, i) => {
+      log(`[ZINCIR ${i}] tag=${c.tag} class="${c.cls}"`);
+      log(`  HTML: ${c.outerHTMLSnippet}`);
     });
-    log(`[KART BENZERI ELEMAN SAYISI] ${info.cardLikeCount}`);
-    info.cardLikeSample.forEach((c, i) => log(`  [KART ${i}] ${c.slice(0, 200)}`));
-    log(`[BODY METIN ORNEGI] ${info.bodyTextSample}`);
 
     log('TAMAMLANDI');
   } catch (e) {
