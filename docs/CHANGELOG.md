@@ -17,6 +17,91 @@ mantıksal/temel başlangıcı olduğu için); tarih sırası tam kronolojik de�
 bilerek böyle bırakıldı — bu bir hata değil, kaynaktaki tarih etiketleme
 tutarsızlığının şeffaf şekilde taşınmasıdır.
 
+## 2026-08-02 - İstek defteri: Ercan'ın bugün istediği her şey, ne yapıldı, nasıl doğrulandı
+
+Ercan'ın "bugüne kadar yazdıklarımı listele, istediklerim yapıldı mı, nasıl
+yapıldı — kontrol edeceğim" isteği üzerine, bugünkü tüm istekler ve karşılığı
+tek yerde. Her madde canlıda (localhost + `aperion-ust-akil.html` GitHub Pages
+aynası) test edildi, commit hash'i ile kod tarafında da doğrulanabilir.
+
+1. **"Cep telefonu modunu çok daha kullanışlı hale getir"** → ✅ Dönem sekmeleri
+   29px→38px, tablo satırları 38px→44px (parmak dokunma boyutu), iç scroll
+   kutusu 620px→440px, uzun kaynak notu katlanabilir hale getirildi.
+   (`6b70b89`)
+2. **"Erhan Sevinç'in bunca zamandır sessiz olması hiçbir şey ifade etmiyor,
+   sattığım ürün ticari değildi"** → ✅ Kök neden bulundu: DİĞER kategorisinin
+   %54'ü araç/motosiklet satışıydı (Erhan Sevinç, Suat Ulutaş, Mehmet Memiş).
+   Yeni `aperion_category_bucket_v2()` fonksiyonu bunları "ARAÇ/VARLIK SATIŞI
+   (TİCARİ DEĞİL)" olarak ayırıp TÜM raporlardan (gelir tablosu, müşteri
+   sinyalleri) çıkardı. (`058ee22`, `2789ba7`)
+3. **"Konumuz olan ürünler önemli, profesyonel bir analist gibi bak"** →
+   ✅ Aynı analizde iki gerçek bulgu daha çıktı: Odyoform (ilişkili/grup
+   şirketi, gerçek müşteri değil) ayrı etiketlendi; İşitme Cihazı (Phonak/
+   Signia, ~3,5M TL/yıl) hiç kategorisi olmadığı için DİĞER'e karışıyordu,
+   kendi satırı oldu. (`2789ba7`)
+4. **"Gelir tablosunun yanında tam bilanço istiyorum — ticari mal, ev, araba,
+   demirbaş, nakit, banka, kredi kartı borcu, krediler, çekler, her ay yeniden
+   değerleme"** → ✅ (kısmen) Ticari mal (alış+satış fiyatıyla) ve banka canlı
+   hesaplanıyor. Ev/araba/demirbaş/kredi kartı/kredi/çek için sistemde hiç
+   veri yoktu — yeni `aperion_balance_sheet_items` tablosu hazır, "kaynak
+   bekliyor" olarak açıkça işaretli, veri girilince otomatik dolacak.
+   Aylık piyasa fiyatı araştırması: veri girilmeden hangi varlığın
+   araştırılacağı bilinmiyor, veri geldikten sonra kurulacak. (`bafa3e1`)
+5. **"2055 vizyonu nasıl / senin profesyonel olarak düşüneceğin ne varsa"** →
+   ✅ Sayfa başına otomatik "BUGÜN DİKKAT" bulgu motoru: negatif banka
+   bakiyesi, sessizleşen büyük müşteri, yığılmış onay, düşük maliyet
+   eşleşmesi, biten stok, yüksek gider oranı, banka maili durması — 7 kural,
+   kritik olay yoksa sessiz kalıyor. (`55ff2d3`, sonradan performans hatası
+   düzeltildi `e6bc9e2`, mail-hattı kuralı eklendi `fc22977`)
+6. **"Kaç para kazanıyorum, ne kadar varlığım var, uluslararası standartlarda
+   stratejik yönetim raporu istiyorum"** → ✅ STRATEJİK YÖNETİM ÖZETİ paneli:
+   brüt kâr marjı (%23), en büyük kategori yoğunlaşması (Buffett kuralı
+   referansıyla), müşteri yoğunlaşması (top 2 = %31), sabit gider payı/
+   operasyonel kaldıraç. (`e6bc9e2`)
+7. **"Harcamalarımı analiz et, raporla, yönlendir"** → ✅ HARCAMA ANALİZİ
+   paneli + gerçek bir hata bulundu: "Tedarikçiden Alış...ÜRÜN ALIŞ" satırları
+   (stok alımı, 1.155.024 TL) yanlışlıkla "değişken gider" sayılıyordu — bu
+   madde 6'daki sabit gider oranını da etkiliyordu, düzeltilince %64'ten
+   gerçek değeri olan **%89**'a çıktı; bu düzeltme aynı commit'te önceki
+   rapora açıkça not düşüldü. (`8831165`)
+8. **"Bütün banka/KMH/kredi kartı hesaplarımı listele, günlük hareketleri ve
+   kredi kartı ekstrelerini takip et"** → ⏳ Kısmen — bilinen 4 banka
+   (İş Bankası, VakıfBank, Akbank, Yapı Kredi) son bilinen bakiyeleriyle
+   listeleniyor (`8ccd8ba`). KMH/kredi kartı/hangi hesapların gerçek listesi
+   hiçbir yerde kayıtlı değil — `finance_account_cards` tablosu hazır, gerçek
+   liste Ercan'dan bekleniyor.
+9. **"Son bilinen bakiye ne demek, mail her gün gelmeli, gelmeyeni iste,
+   bildirim gönder"** → ✅ BUGÜN DİKKAT motoruna kural eklendi: bilinen en
+   taze banka verisi 2+ gün eskiyse tek, açık bir uyarı veriyor ("Banka
+   ekstresi maili X gündür okunmuyor"). Kök neden zaten biliniyordu: Gmail
+   OAuth kırık, `gmail-oauth-reauth-helper.yml` ile Ercan'ın PC başında
+   3 adımı tamamlaması bekleniyor. (`fc22977`)
+10. **"Eksiklerin hepsini Telegram'dan gönder"** → ✅ Ürün (alış fiyatı
+    eksik), müşteri (cari kartı yok), tedarikçi (hiç kart sistemi yok),
+    gider (kategorisi boş) — 4 tam liste, dosya olarak Telegram'a
+    gönderildi, iş bitince tek seferlik workflow silindi. (`96094de`,
+    `2d8c4b9`)
+11. **"Sağlığımı da kontrol et, doktor gibi yönlendir, Huawei Watch
+    kullanıyorum"** → ❌ Yapılmadı, bilinçli: Huawei Watch verisine erişim
+    yok (gerçek API/geliştirici kurulumu gerektirir, tek seferlik onay
+    değil). Daha önemlisi: doktor değilim, tanı/tedavi yönlendirmesi
+    yapmam — bu net bir sınır olarak Ercan'a açıkça söylendi, sahte bir
+    "doktor gibi" rol üstlenilmedi.
+12. **Ayrıca istenmeden, denetim sırasında bulunup düzeltilen gerçek
+    hatalar:** `normalizeBank()` Türkçe I/ı hatası (aynı bankanın 3 farklı
+    yazımı ayrı satır gösteriyordu, `8ccd8ba`); `product_raw.alış_fiyat`
+    sessizce sıfırlanması riski (upsert güvenlik trigger'ı eklendi,
+    `2789ba7`); master vizyonun 50 bölümü koda karşı kanıtlı denetlendi,
+    en kritik bulgu BizimHesap'a otomatik yazmanın hiç çalışmamış olması
+    (`18143fa`).
+
+**Doğrulama yöntemi (her madde için tekrarlanan disiplin):** kod değişikliği
+→ localhost'ta canlı Supabase veriyle test → konsol hatası kontrolü → mobil
+görünüm kontrolü → commit+push → GitHub Pages aynasında (`ercanalayli.github.io/
+iSTasyon`) fetch ile canlı doğrulama. Hiçbir madde "yapıldı" denilip
+doğrulanmadan bırakılmadı; madde 4 ve 8 açıkça "kısmi" olarak işaretli çünkü
+gerçekten öyle.
+
 ## 2026-07-31 - Doküman konsolidasyonu ve güvenlik doğrulaması
 
 - Canlı Supabase güvenlik denetimi tekrarlandı: `ingest_mail_bank_movements`,
