@@ -232,6 +232,13 @@ async function debugSayfa(page, rows) {
 
 async function kaydet(rows) {
   if (!rows.length) return 0;
+  // 2026-08-02 bulgusu: upsert firma_id+satir_hash (urun kimligi, fiyat degil) uzerinden
+  // eslesip GUNCELLIYOR - o run'da Alis/Satis kolonlari bos gelirse eskiden dogru olan
+  // fiyat sessizce 0'a dusuyordu (2.028/5.693 -> 0/5.693 tek run'da). Bunu ilk bakista
+  // farkedebilmek icin fiyati olan/olmayan satir sayisini logluyoruz; DB tarafinda da
+  // product_raw_protect_price() trigger'i benzer bir sifirlamayi artik reddediyor.
+  const fiyatliSayisi = rows.filter(r => Number(r.alis_fiyat) > 0).length;
+  console.log(`  [FIYAT KONTROL] ${fiyatliSayisi}/${rows.length} satirda alis_fiyat > 0`);
   const uniqueRows = [...new Map(rows.map(r => [`${r.firma_id}:${r.satir_hash}`, r])).values()];
   const records = uniqueRows.map(r => ({
     firma_id: r.firma_id,

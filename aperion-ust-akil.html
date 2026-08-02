@@ -331,7 +331,13 @@ const nowCode = () => { const d = new Date(); return [String(d.getHours()).padSt
 setText('buildCode', nowCode());
 setText('updatedPill', 'Güncellendi · ' + new Intl.DateTimeFormat('tr-TR',{dateStyle:'short',timeStyle:'short'}).format(new Date()));
 
-const catOrder = ['MEDİKAL AKÜLÜ','MEKİKAL ELEKTRONİK','HASTA ALTI BEZİ','PERİNE VÜCUT TEMİZLEME','KİRALIK','KARYOLA','YÜRÜMEYE YARDIMCI','ORTOPEDİ TEKSTİL','SARF','SONDA','KOLOSTOMİ','AYAKKABI TERLİK','SGK','SOLUNUM','DİĞER'];
+// İŞİTME CİHAZI (2026-08-02'de eklendi - Phonak/Signia satisi hep "DİĞER"e dusuyordu,
+// hic kategori kurali yoktu, ~3,5M TL/yil gercek urun cirosu gizliydi) ve
+// ODYOFORM (İLİŞKİLİ TARAF) (Alayli soyisimli iliskili sirket, gercek 3. taraf
+// musteri degil, ayri gosteriliyor ki karisikliga yol acmasin). ARAÇ/VARLIK
+// SATIŞI (TİCARİ DEĞİL) kasten burada YOK - ticari olmadigi icin TOPLAM'a hic
+// girmiyor (Ercan'in uyarisi: Erhan Sevinc'e satilan urun ticari degildi).
+const catOrder = ['MEDİKAL AKÜLÜ','MEKİKAL ELEKTRONİK','HASTA ALTI BEZİ','PERİNE VÜCUT TEMİZLEME','İŞİTME CİHAZI','KİRALIK','KARYOLA','YÜRÜMEYE YARDIMCI','ORTOPEDİ TEKSTİL','SARF','SONDA','KOLOSTOMİ','AYAKKABI TERLİK','SGK','SOLUNUM','DİĞER','ODYOFORM (İLİŞKİLİ TARAF)'];
 const periodKeys = ['bugun','dun','hafta','ay','gecen_ay','yil','gecen_yil'];
 
 // Alt basliklari (ADET/STOK, SATIS TL, SMM, KAR) her donem icin ayri class ile uret -
