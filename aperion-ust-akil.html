@@ -188,6 +188,19 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
   body::before{animation:none}
   .card{opacity:1;animation:none}
 }
+
+/* 2026-08-02: telefonda pil/performans icin agir efektleri hafiflet - Ercan telefon
+   agirlikli kullaniyor. Aurora hareketi + arka plan grid + camsi blur + kart giris
+   animasyonu + mark/dot nabzi telefonda kapatilir/basitlestirilir, glow renkleri
+   (risk/buton/KPI bari) aynen kalir cunku onlar bilgi tasiyor, dekor degil. */
+@media (max-width:640px){
+  body::before,body::after{display:none}
+  .topbar{backdrop-filter:none;-webkit-backdrop-filter:none;background:#0e1828;position:static}
+  .mark{animation:none}
+  .pill.live::before{animation:none}
+  .card{animation:none;opacity:1}
+  .card-status::before{animation:none}
+}
 </style>
 </head>
 <body>
