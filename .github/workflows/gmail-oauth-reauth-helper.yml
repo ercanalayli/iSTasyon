@@ -1,0 +1,51 @@
+name: Gmail OAuth Re-auth Helper
+
+# Elle tetiklenir (workflow_dispatch). Amac: GOOGLE_REFRESH_TOKEN GitHub secret'i
+# gecersiz/iptal oldugunda (invalid_grant), alaylimedikal@gmail.com icin yeniden
+# izin alip yeni bir refresh token uretmek. Iki adimda calisir:
+#   Adim 1 - "code" kutusunu BOS birak, calistir -> izin linkini basar.
+#   Adim 2 - linki alaylimedikal@gmail.com ile ac, izin ver, tarayicida
+#            http://localhost/?code=...&scope=... adresine yonlenmeye calisilir
+#            (sayfa acilmaz, bu normal) - adres cubugundaki "code=" degerini kopyala,
+#            workflow'u TEKRAR calistir, bu sefer "code" kutusuna yapistir.
+#            -> yeni refresh token'i basar, onu repo Settings > Secrets and
+#            variables > Actions > GOOGLE_REFRESH_TOKEN alanina elle yapistir.
+on:
+  workflow_dispatch:
+    inputs:
+      code:
+        description: 'Adim 2 icin: Google izninden sonra tarayici adresindeki "code=" degeri. Adim 1 icin bos birak.'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  oauth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci --no-audit --no-fund
+      - name: Gmail OAuth adim 1 veya 2
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          OAUTH_CODE: ${{ inputs.code }}
+        run: |
+          if [ -z "$OAUTH_CODE" ]; then
+            echo "=== ADIM 1: Asagidaki linki alaylimedikal@gmail.com ile ac ve izin ver ==="
+            npm run gmail:oauth:start
+            echo ""
+            echo "Izin verdikten sonra tarayici http://localhost/?code=... adresine yonlenmeye calisir (sayfa acilmaz, normal)."
+            echo "Adres cubugundaki 'code=' ile '&scope=' arasindaki degeri kopyala, bu workflow'u TEKRAR calistir ve 'code' kutusuna yapistir."
+          else
+            echo "=== ADIM 2: Refresh token uretiliyor ==="
+            npm run gmail:oauth:finish -- "$OAUTH_CODE"
+            echo ""
+            echo "Yukaridaki refresh token'i kopyala: repo Settings -> Secrets and variables -> Actions -> GOOGLE_REFRESH_TOKEN degerini bununla guncelle."
+          fi
