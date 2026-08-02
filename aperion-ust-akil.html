@@ -109,6 +109,85 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
 #catMatrix .thead-r2 th{top:29px}
 .thead-corner{left:0;z-index:4}
 .table-scroll{overflow:auto;max-height:min(64vh,620px)}
+
+/* ================= 2026-08-02: gorsel/ergonomik yukseltme ("2056 hissi") =================
+   Sadece dekoratif katman - hicbir veri/mantik/JS sorgusu degismedi. Ayni CSS ozgulluguyle
+   yukaridaki kurallarin UZERINE yazarak calisir (kaskad sirasi), boylece orijinal kurallara
+   dokunmadan guvenle eklenebildi. prefers-reduced-motion ile tum animasyonlar kapatilabilir. */
+html{scroll-behavior:smooth}
+body{position:relative;overflow-x:hidden}
+body::before{
+  content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(620px circle at 10% 6%, rgba(92,141,255,.16), transparent 55%),
+    radial-gradient(560px circle at 90% 16%, rgba(167,139,250,.13), transparent 55%),
+    radial-gradient(640px circle at 26% 94%, rgba(32,197,139,.11), transparent 55%),
+    radial-gradient(520px circle at 84% 90%, rgba(237,189,50,.08), transparent 55%);
+  animation:auroraDrift 24s ease-in-out infinite alternate;
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.4;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:36px 36px;
+  -webkit-mask-image:radial-gradient(1200px circle at 50% 0%,#000,transparent 78%);
+  mask-image:radial-gradient(1200px circle at 50% 0%,#000,transparent 78%);
+}
+@keyframes auroraDrift{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(-2.5%,2%,0) scale(1.05)}}
+
+.topbar{background:rgba(14,24,40,.72);backdrop-filter:blur(10px) saturate(140%);-webkit-backdrop-filter:blur(10px) saturate(140%);border-radius:12px;position:sticky;top:8px;z-index:20;box-shadow:0 10px 30px -14px rgba(0,0,0,.65)}
+.mark{background:linear-gradient(135deg,var(--green),#5be0b3);border-radius:9px;box-shadow:0 0 0 1px rgba(32,197,139,.4),0 0 16px rgba(32,197,139,.35);animation:markPulse 3.4s ease-in-out infinite}
+@keyframes markPulse{0%,50%,100%{box-shadow:0 0 0 1px rgba(32,197,139,.4),0 0 12px rgba(32,197,139,.35)}25%,75%{box-shadow:0 0 0 1px rgba(32,197,139,.65),0 0 22px rgba(32,197,139,.5)}}
+.pill{background:rgba(255,255,255,.02);transition:box-shadow .2s ease,border-color .2s ease}
+.pill.live{display:inline-flex;align-items:center;gap:7px;box-shadow:0 0 14px rgba(32,197,139,.25)}
+.pill.live::before{content:'';width:6px;height:6px;border-radius:50%;background:#4be9ab;box-shadow:0 0 8px #4be9ab;animation:dotPulse 1.6s ease-in-out infinite}
+@keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.68)}}
+
+h1.title{position:relative;display:inline-block;background:linear-gradient(90deg,#ffffff,#c3d7ff 45%,#a6c0ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+h1.title::after{content:'';display:block;width:64px;height:3px;margin-top:9px;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--violet),var(--coral));box-shadow:0 0 14px rgba(92,141,255,.55)}
+
+.shell>section{transition:box-shadow .3s ease}
+.shell>section:hover{box-shadow:0 16px 44px -20px rgba(92,141,255,.4)}
+
+.card{border-radius:12px;background:linear-gradient(160deg,var(--surface),#0d1826);transition:transform .18s ease,box-shadow .25s ease,border-color .18s ease;opacity:0;animation:cardIn .5s ease forwards;overflow:hidden}
+.card::before{content:'';position:absolute;inset:0;background:radial-gradient(220px circle at 0% 0%,rgba(255,255,255,.05),transparent 60%);pointer-events:none}
+.card:nth-child(1){animation-delay:.02s}.card:nth-child(2){animation-delay:.06s}.card:nth-child(3){animation-delay:.10s}.card:nth-child(4){animation-delay:.14s}
+.card:nth-child(5){animation-delay:.18s}.card:nth-child(6){animation-delay:.22s}.card:nth-child(7){animation-delay:.26s}.card:nth-child(8){animation-delay:.30s}
+.card:nth-child(9){animation-delay:.34s}.card:nth-child(10){animation-delay:.38s}.card:nth-child(11){animation-delay:.42s}.card:nth-child(12){animation-delay:.46s}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card:hover{transform:translateY(-3px)}
+.card[data-risk="red"]{box-shadow:-3px 0 18px -7px rgba(255,93,108,.4)}
+.card[data-risk="orange"]{box-shadow:-3px 0 18px -7px rgba(242,149,74,.35)}
+.card[data-risk="yellow"]{box-shadow:-3px 0 18px -7px rgba(232,196,69,.28)}
+.card[data-risk="green"]{box-shadow:-3px 0 18px -7px rgba(32,197,139,.35)}
+.card[data-risk="red"]:hover{box-shadow:-3px 0 30px -5px rgba(255,93,108,.55)}
+.card[data-risk="orange"]:hover{box-shadow:-3px 0 30px -5px rgba(242,149,74,.5)}
+.card[data-risk="yellow"]:hover{box-shadow:-3px 0 30px -5px rgba(232,196,69,.45)}
+.card[data-risk="green"]:hover{box-shadow:-3px 0 30px -5px rgba(32,197,139,.5)}
+
+.card-class{background:rgba(255,255,255,.03)}
+.upd{box-shadow:0 0 10px rgba(32,197,139,.25)}
+.card-status{display:inline-flex;align-items:center;gap:6px}
+.card-status::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor}
+.card-status.uyari::before,.card-status.kritik::before{animation:dotPulse 1.4s ease-in-out infinite}
+.card-open{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:99px;border:1px solid #2c3d56;background:rgba(92,141,255,.08);transition:all .18s ease;align-self:flex-start}
+.card-open:hover{background:linear-gradient(135deg,rgba(92,141,255,.28),rgba(167,139,250,.22));border-color:var(--blue);color:#fff;box-shadow:0 0 18px rgba(92,141,255,.45);transform:translateX(2px)}
+
+.period-tab{transition:all .18s ease}
+.period-tab:hover{border-color:#3d5375;color:#dce8ff}
+.period-tab.active{background:linear-gradient(135deg,var(--gold),#f7d774);box-shadow:0 0 16px rgba(237,189,50,.45)}
+
+tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0 10px rgba(92,141,255,.28)}
+
+.table-scroll::-webkit-scrollbar{height:10px;width:10px}
+.table-scroll::-webkit-scrollbar-track{background:#0d1727}
+.table-scroll::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--blue),var(--violet));border-radius:99px;box-shadow:0 0 8px rgba(92,141,255,.4)}
+.table-scroll{scrollbar-color:var(--blue) #0d1727;scrollbar-width:thin}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+  body::before{animation:none}
+  .card{opacity:1;animation:none}
+}
 </style>
 </head>
 <body>
@@ -604,7 +683,8 @@ Promise.all([
       if (!sat || !gid) return '<span class="'+pp+'" style="color:#5c6d84;margin-right:10px">'+periodLabels[p]+': -</span>';
       const oran = Math.round(gid/sat*100);
       const color = oran<=50 ? '#7be7ba' : oran<=80 ? '#f6c86a' : '#ff9aa7';
-      return '<span class="'+pp+'" style="margin-right:10px">'+periodLabels[p]+': <b style="color:'+color+'">%'+oran+'</b></span>';
+      const barPct = Math.max(2, Math.min(100, oran));
+      return '<span class="'+pp+'" style="display:inline-flex;align-items:center;gap:6px;margin-right:12px">'+periodLabels[p]+': <b style="color:'+color+'">%'+oran+'</b><span style="display:inline-block;width:34px;height:5px;border-radius:99px;background:#0d1727;overflow:hidden"><span style="display:block;height:100%;width:'+barPct+'%;background:'+color+';box-shadow:0 0 6px '+color+'"></span></span></span>';
     }).join('');
     document.getElementById('giderOranValue').innerHTML = ratioHtml;
   } else {
@@ -794,24 +874,26 @@ Promise.all([
     : '<div style="color:#7be7ba">✓ Kritik bir sinyal yok — bilinen eşiklerin hepsi normal aralıkta.</div>';
 
   // STRATEJIK YONETIM OZETI — ayni prensiple, tekrar sorgu yok.
-  const kpi = (baslik, deger, aciklama, renk) => '<div style="padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2)">'
-    + '<div style="font-size:9px;font-weight:800;color:#7f91a9;letter-spacing:.5px;margin-bottom:4px">' + baslik + '</div>'
-    + '<div style="font-size:19px;font-weight:850;color:' + (renk || 'var(--text)') + '">' + deger + '</div>'
-    + '<div style="font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.4">' + aciklama + '</div></div>';
+  const kpi = (baslik, deger, aciklama, renk, pct) => '<div style="padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);position:relative;overflow:hidden">'
+    + (pct != null ? '<div style="position:absolute;left:0;top:0;bottom:0;width:'+Math.max(0,Math.min(100,pct))+'%;background:linear-gradient(90deg,'+(renk||'var(--blue)')+'22,'+(renk||'var(--blue)')+'08);pointer-events:none"></div>' : '')
+    + '<div style="position:relative;font-size:9px;font-weight:800;color:#7f91a9;letter-spacing:.5px;margin-bottom:4px">' + baslik + '</div>'
+    + '<div style="position:relative;font-size:19px;font-weight:850;color:' + (renk || 'var(--text)') + '">' + deger + '</div>'
+    + (pct != null ? '<div style="position:relative;height:5px;border-radius:99px;background:#0d1727;margin-top:7px;overflow:hidden"><div style="height:100%;width:'+Math.max(2,Math.min(100,pct))+'%;border-radius:99px;background:linear-gradient(90deg,'+(renk||'var(--blue)')+',' + (renk||'var(--blue)') + 'aa);box-shadow:0 0 8px '+(renk||'var(--blue)')+'88"></div></div>' : '')
+    + '<div style="position:relative;font-size:10.5px;color:var(--muted);margin-top:6px;line-height:1.4">' + aciklama + '</div></div>';
   const stratKpis = [];
 
   const toplamEc = (cogsData||[]).reduce((s,r)=>s+Number(r.esl_ciro_yil||0),0);
   const toplamMaliyet = (cogsData||[]).reduce((s,r)=>s+Number(r.maliyet_yil||0),0);
   if (toplamEc > 0) {
     const marj = Math.round((toplamEc-toplamMaliyet)/toplamEc*100);
-    stratKpis.push(kpi('BRÜT KÂR MARJI (eşleşen kısım)', '%' + marj, 'Sağlıklı medikal perakendede genelde %30-45 aralığı beklenir — bu rakam sadece maliyeti bilinen ' + money(toplamEc) + ' cironun üzerinden.', marj>=30?'#7be7ba':marj>=15?'#f6c86a':'#ff9aa7'));
+    stratKpis.push(kpi('BRÜT KÂR MARJI (eşleşen kısım)', '%' + marj, 'Sağlıklı medikal perakendede genelde %30-45 aralığı beklenir — bu rakam sadece maliyeti bilinen ' + money(toplamEc) + ' cironun üzerinden.', marj>=30?'#7be7ba':marj>=15?'#f6c86a':'#ff9aa7', marj));
   }
   const gercekKategoriler = (data||[]).filter(r => r.kategori_grup !== 'ARAÇ/VARLIK SATIŞI (TİCARİ DEĞİL)' && Number(r.satis_yil||0) > 0);
   const toplamSatis = gercekKategoriler.reduce((s,r)=>s+Number(r.satis_yil||0),0);
   const enBuyukKat = [...gercekKategoriler].sort((a,b)=>Number(b.satis_yil)-Number(a.satis_yil))[0];
   if (enBuyukKat && toplamSatis > 0) {
     const pay = Math.round(Number(enBuyukKat.satis_yil)/toplamSatis*100);
-    stratKpis.push(kpi('EN BÜYÜK KATEGORİ PAYI', '%' + pay, '"' + enBuyukKat.kategori_grup + '" tek başına cironun %' + pay + '\'i. Warren Buffett kuralı: tek kalemin %20-25\'i aşması yoğunlaşma riski sayılır.', pay>30?'#ff9aa7':pay>20?'#f6c86a':'#7be7ba'));
+    stratKpis.push(kpi('EN BÜYÜK KATEGORİ PAYI', '%' + pay, '"' + enBuyukKat.kategori_grup + '" tek başına cironun %' + pay + '\'i. Warren Buffett kuralı: tek kalemin %20-25\'i aşması yoğunlaşma riski sayılır.', pay>30?'#ff9aa7':pay>20?'#f6c86a':'#7be7ba', pay));
   }
 
   if (custRes.data) {
@@ -820,7 +902,7 @@ Promise.all([
     const top2 = [...isimli].sort((a,b)=>Number(b.ciro_bu_yil)-Number(a.ciro_bu_yil)).slice(0,2).reduce((s,r)=>s+Number(r.ciro_bu_yil),0);
     if (toplamIsimli > 0) {
       const pay = Math.round(top2/toplamIsimli*100);
-      stratKpis.push(kpi('MÜŞTERİ YOĞUNLAŞMASI (top 2)', '%' + pay, 'İsimli (perakende hariç) cironun %' + pay + '\'i sadece 2 müşteriden geliyor — bu ikisinden biri kaybedilirse etkisi büyük olur.', pay>40?'#ff9aa7':pay>25?'#f6c86a':'#7be7ba'));
+      stratKpis.push(kpi('MÜŞTERİ YOĞUNLAŞMASI (top 2)', '%' + pay, 'İsimli (perakende hariç) cironun %' + pay + '\'i sadece 2 müşteriden geliyor — bu ikisinden biri kaybedilirse etkisi büyük olur.', pay>40?'#ff9aa7':pay>25?'#f6c86a':'#7be7ba', pay));
     }
   }
 
@@ -831,7 +913,7 @@ Promise.all([
     const degisken = Number((degiskenRow||{}).gider_yil || 0);
     if (sabit + degisken > 0) {
       const sabitPay = Math.round(sabit/(sabit+degisken)*100);
-      stratKpis.push(kpi('SABİT GİDER PAYI (operasyonel kaldıraç)', '%' + sabitPay, 'Giderin %' + sabitPay + '\'i sabit (kira, maaş, abonelik gibi satıştan bağımsız). Yüksek sabit pay = satış düşüşünde kâr daha hızlı erir.', sabitPay>65?'#ff9aa7':sabitPay>50?'#f6c86a':'#7be7ba'));
+      stratKpis.push(kpi('SABİT GİDER PAYI (operasyonel kaldıraç)', '%' + sabitPay, 'Giderin %' + sabitPay + '\'i sabit (kira, maaş, abonelik gibi satıştan bağımsız). Yüksek sabit pay = satış düşüşünde kâr daha hızlı erir.', sabitPay>65?'#ff9aa7':sabitPay>50?'#f6c86a':'#7be7ba', sabitPay));
     }
   }
 
