@@ -144,6 +144,10 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
       <tr><td style="padding:9px 12px;font-weight:800" colspan="22">VERGİ — kaynak bekliyor</td></tr>
     </table>
     </div>
+    <div style="background:#101c2e;padding:9px 18px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line)">
+      <span style="font-weight:850;color:#f6c86a">GİDER / GELİR ORANI <span style="font-weight:400;color:var(--muted);font-size:10px">(giderin satışa oranı — düşük iyi)</span></span>
+      <span id="giderOranValue" style="font-size:12px;text-align:right">Hesaplanıyor…</span>
+    </div>
     <div style="background:#152742;border-left:3px solid var(--green);padding:9px 18px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
       <span style="font-weight:850">NET KAR</span>
       <span id="catNetValue" style="color:var(--muted);font-size:12px;text-align:right">Hesaplanıyor…</span>
@@ -301,20 +305,31 @@ const dash = '<span style="color:#5c6d84">-</span>';
 // Tek birlesik satir: ADET | SATIS TL | SMM | KAR — Satis ve SMM ayri tablolar oldugunda
 // satir hizasi gozle takip edilmek zorundaydi, bu da gercek bir hataya yol acti (2026-08-01).
 // Ercan'in kendi Excel sablonuyla birebir ayni yapida tek tablo: her kategori icin tum hikaye tek satirda.
-function fourCol(adet, satis, cogsR, satisForPct, p, stok){
+// Ortak isi-rengi olcegi: yesil guclu/saglikli, sari orta, kirmizi dikkat gerekiyor —
+// SMM eslesmesi, kar marji, stok gunu ve gider orani hep AYNI esikleri kullanir (70/40).
+function heatColor(pct){ return pct>=70 ? '#7be7ba' : pct>=40 ? '#f6c86a' : '#ff9aa7'; }
+function fourCol(adet, satis, cogsR, satisForPct, p, stok, extra){
+  extra = extra || {};
   const m = cogsR ? Number(cogsR['maliyet_'+p]||0) : 0;
   const ec = cogsR ? Number(cogsR['esl_ciro_'+p]||0) : 0;
   const pct = satisForPct>0 ? Math.round(ec/satisForPct*100) : 0;
-  const pctColor = pct>=70 ? '#7be7ba' : pct>=40 ? '#f6c86a' : '#ff9aa7';
+  const pctColor = heatColor(pct);
+  const heatBg = !ec ? 'transparent' : pct>=70 ? 'rgba(123,231,186,.09)' : pct>=40 ? 'rgba(246,200,106,.09)' : 'rgba(255,154,167,.09)';
   const smmCell = !ec ? dash : money(m) + (pct<100 ? ' <span style="font-size:8px;color:'+pctColor+'">'+pct+'%</span>' : '');
   const kar = ec ? (ec - m) : null;
-  const karCell = kar===null ? dash : '<span style="color:'+(kar>=0?'#7be7ba':'#ff9aa7')+'">'+money(kar)+'</span>';
-  const adetCell = qty(adet) + (stok!=null ? ' <span style="color:#5c8dff;font-size:9px">/'+Number(stok).toLocaleString('tr-TR',{maximumFractionDigits:0})+'</span>' : '');
+  const marginPct = (kar!==null && ec>0) ? Math.round(kar/ec*100) : null;
+  const marginColor = marginPct===null ? '' : marginPct>=40 ? '#7be7ba' : marginPct>=15 ? '#f6c86a' : '#ff9aa7';
+  const karCell = kar===null ? dash : '<span style="color:'+(kar>=0?'#7be7ba':'#ff9aa7')+'">'+money(kar)+'</span>'
+    + (marginPct!==null ? ' <span style="font-size:8px;color:'+marginColor+'" title="brüt kâr marjı (yalnız eşleşen kısım üzerinden)">'+marginPct+'%</span>' : '');
+  const stokBadge = stok!=null ? ' <span style="color:'+(extra.stokColor||'#5c8dff')+';font-size:9px" title="'+(extra.stokTitle||'satılan/kalan stok')+'">/'+Number(stok).toLocaleString('tr-TR',{maximumFractionDigits:0})+'</span>' : '';
+  const adetCell = qty(adet) + stokBadge;
+  const yoyBadge = extra.yoyPct!=null ? ' <span style="font-size:8px;color:'+(extra.yoyPct>=0?'#7be7ba':'#ff9aa7')+'" title="geçen yıl aynı döneme (yıl başı–bugün) göre büyüme">'+(extra.yoyPct>=0?'▲':'▼')+Math.abs(extra.yoyPct)+'%</span>' : '';
+  const shareBadge = extra.sharePct!=null ? ' <span style="font-size:8px;color:#8ea0b8" title="bu kategorinin bu yılki toplam satış içindeki payı">('+extra.sharePct+'%)</span>' : '';
   const pp = 'pp-period pp-'+p;
-  return '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;color:var(--muted);border-left:1px solid #1c293c" title="satılan/kalan stok">'+adetCell+'</td>'
-    + '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums">'+(satis?money(satis):dash)+'</td>'
-    + '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;color:#c9b676">'+smmCell+'</td>'
-    + '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-weight:700;font-variant-numeric:tabular-nums">'+karCell+'</td>';
+  return '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;color:var(--muted);border-left:1px solid #1c293c" title="'+(extra.stokTitle||'satılan/kalan stok')+'">'+adetCell+'</td>'
+    + '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums">'+(satis?money(satis):dash)+yoyBadge+shareBadge+'</td>'
+    + '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;color:#c9b676;background:'+heatBg+'">'+smmCell+'</td>'
+    + '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-weight:700;font-variant-numeric:tabular-nums;background:'+heatBg+'">'+karCell+'</td>';
 }
 function giderThreeCol(v){
   return '<td style="text-align:right;padding:6px 8px;color:#f6c86a;font-size:10px;border-left:1px solid #1c293c">kaynak bekliyor</td>'
@@ -339,13 +354,41 @@ Promise.all([
   const totalRow = {}; periodKeys.forEach(p=>{ totalRow['satis_'+p]=0; totalRow['adet_'+p]=0; totalRow['maliyet_'+p]=0; totalRow['esl_ciro_'+p]=0; });
   let stokToplam = 0; Object.values(byStock).forEach(v=>{ stokToplam+=v; });
 
+  // Yil basindan bugune kac gun gectigi — stok tukenme hizini (adet_yil/gun) dogru
+  // hesaplamak icin sart, /365 kullanmak yilin ortasinda hizi yapay dusuk (stogu yapay
+  // rahatlatici) gosterirdi.
+  const _now = new Date();
+  const daysElapsedYear = Math.max(1, Math.floor((Date.UTC(_now.getFullYear(),_now.getMonth(),_now.getDate()) - Date.UTC(_now.getFullYear(),0,1))/86400000) + 1);
+  // Bu yilki kategori payi (%) icin once tum kategorilerin toplam yillik satisi lazim —
+  // satir uretiminden ONCE, tek gecis.
+  let grandYilSatis = 0;
+  catOrder.forEach(cat=>{
+    if (cat === 'HASTA ALTI BEZİ') { grandYilSatis += Number((byCat['HASTA ALTI BEZİ — DİSTRİBÜTÖR']||{}).satis_yil||0) + Number((byCat['HASTA ALTI BEZİ — PERAKENDE']||{}).satis_yil||0); }
+    else { grandYilSatis += Number((byCat[cat]||{}).satis_yil||0); }
+  });
+  // stok gunu / yil buyume% / kategori payi — satir bazinda tek yerde hesapla, tum donem
+  // hucrelerinde ayni degeri tutarli kullan (donem donem farkli renk kafa karistirir).
+  function rowExtras(salesR, stok, noShare){
+    const adetYil = Number(salesR['adet_yil']||0);
+    const stokGunu = (stok && adetYil>0) ? Math.round(stok/(adetYil/daysElapsedYear)) : null;
+    const stokColor = stokGunu===null ? '#5c8dff' : stokGunu<30 ? '#ff9aa7' : stokGunu<90 ? '#f6c86a' : '#7be7ba';
+    const stokTitle = stokGunu===null ? 'satılan/kalan stok' : ('bu hızla yaklaşık '+stokGunu+' gün stok kalır (yıl başından bugüne satış hızına göre)');
+    const satisYil = Number(salesR['satis_yil']||0), satisGyAyni = Number(salesR['satis_gecen_yil_ayni_donem']||0);
+    const yoyPctYil = satisGyAyni>0 ? Math.round((satisYil-satisGyAyni)/satisGyAyni*100) : null;
+    const sharePctYil = (!noShare && grandYilSatis>0) ? Math.round(satisYil/grandYilSatis*100) : null;
+    return { stokColor, stokTitle, yoyPctYil, sharePctYil };
+  }
+
   function catRow(cat, salesR, cogsR, indent, keys, stok){
     salesR = salesR || {}; keys = keys || [cat];
+    const rx = rowExtras(salesR, stok);
     const cells = periodKeys.map(p=>{
       const s=Number(salesR['satis_'+p]||0), a=Number(salesR['adet_'+p]||0);
       totalRow['satis_'+p]+=s; totalRow['adet_'+p]+=a;
       totalRow['maliyet_'+p]+=Number(cogsR&&cogsR['maliyet_'+p]||0); totalRow['esl_ciro_'+p]+=Number(cogsR&&cogsR['esl_ciro_'+p]||0);
-      return fourCol(a, s, cogsR, s, p, stok);
+      const extra = { stokColor: rx.stokColor, stokTitle: rx.stokTitle };
+      if (p==='yil') { extra.yoyPct = rx.yoyPctYil; extra.sharePct = rx.sharePctYil; }
+      return fourCol(a, s, cogsR, s, p, stok, extra);
     }).join('');
     const pad = indent ? '28px' : '12px';
     return '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(keys)+'\' style="border-top:1px solid #23344d"><td style="padding:7px 12px 7px '+pad+';font-weight:'+(indent?600:700)+';position:sticky;left:0;background:var(--surface)"><span class="row-btn">'+cat+'</span></td>'+cells+'</tr>';
@@ -353,7 +396,13 @@ Promise.all([
   function subtotalRow(label, keys, stok){
     const sub = {}; periodKeys.forEach(p=>{ sub['satis_'+p]=0; sub['adet_'+p]=0; sub['maliyet_'+p]=0; sub['esl_ciro_'+p]=0; });
     keys.forEach(k=>{ const r=byCat[k]||{}, cr=byCogsCat[k]||{}; periodKeys.forEach(p=>{ sub['satis_'+p]+=Number(r['satis_'+p]||0); sub['adet_'+p]+=Number(r['adet_'+p]||0); sub['maliyet_'+p]+=Number(cr['maliyet_'+p]||0); sub['esl_ciro_'+p]+=Number(cr['esl_ciro_'+p]||0); }); });
-    const cells = periodKeys.map(p=>fourCol(sub['adet_'+p], sub['satis_'+p], sub, sub['satis_'+p], p, stok)).join('');
+    sub['satis_gecen_yil_ayni_donem'] = keys.reduce((s,k)=> s + Number((byCat[k]||{}).satis_gecen_yil_ayni_donem||0), 0);
+    const rx = rowExtras(sub, stok);
+    const cells = periodKeys.map(p=>{
+      const extra = { stokColor: rx.stokColor, stokTitle: rx.stokTitle };
+      if (p==='yil') { extra.yoyPct = rx.yoyPctYil; extra.sharePct = rx.sharePctYil; }
+      return fourCol(sub['adet_'+p], sub['satis_'+p], sub, sub['satis_'+p], p, stok, extra);
+    }).join('');
     return '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(keys)+'\' style="background:#101c2e"><td style="padding:6px 12px;font-weight:800;color:#83e8c1;position:sticky;left:0;background:#101c2e"><span class="row-btn">'+label+'</span></td>'+cells+'</tr>';
   }
   let rowsHtml = '';
@@ -366,11 +415,22 @@ Promise.all([
       rowsHtml += catRow(cat, byCat[cat], byCogsCat[cat], false, [cat], byStock[cat]);
     }
   });
-  const totalCells = periodKeys.map(p=>fourCol(totalRow['adet_'+p], totalRow['satis_'+p], totalRow, totalRow['satis_'+p], p, stokToplam)).join('');
+  let grandGyAyni = 0;
+  catOrder.forEach(cat=>{
+    if (cat === 'HASTA ALTI BEZİ') { grandGyAyni += Number((byCat['HASTA ALTI BEZİ — DİSTRİBÜTÖR']||{}).satis_gecen_yil_ayni_donem||0) + Number((byCat['HASTA ALTI BEZİ — PERAKENDE']||{}).satis_gecen_yil_ayni_donem||0); }
+    else { grandGyAyni += Number((byCat[cat]||{}).satis_gecen_yil_ayni_donem||0); }
+  });
+  totalRow['satis_gecen_yil_ayni_donem'] = grandGyAyni;
+  const totalRx = rowExtras(totalRow, stokToplam, true);
+  const totalCells = periodKeys.map(p=>{
+    const extra = { stokColor: totalRx.stokColor, stokTitle: totalRx.stokTitle };
+    if (p==='yil') extra.yoyPct = totalRx.yoyPctYil;
+    return fourCol(totalRow['adet_'+p], totalRow['satis_'+p], totalRow, totalRow['satis_'+p], p, stokToplam, extra);
+  }).join('');
   const allKeys = catOrder.flatMap(c=>c==='HASTA ALTI BEZİ'?['HASTA ALTI BEZİ — DİSTRİBÜTÖR','HASTA ALTI BEZİ — PERAKENDE']:[c]);
   catBody.innerHTML = rowsHtml + '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(allKeys)+'\' style="border-top:2px solid #2c3d56;background:#0f1b2c;cursor:pointer"><td style="padding:8px 12px;position:sticky;left:0;background:#0f1b2c"><span class="row-btn" style="font-weight:850">TOPLAM (Brüt Kâr = eşleşen kısım)</span></td>'+totalCells+'</tr>';
 
-  setText('matrixSource', 'Kaynak: sales_raw (ALAYLI) + BizimHesap Sınıflandırma 1 (canlı çekildi, 24 distribütör cari), ' + catOrder.length + ' kategori grubu. Son satış tarihi: ' + (data.reduce((m,r)=>r.son_tarih&&r.son_tarih>m?r.son_tarih:m,'')||'-') + '. SMM: product_raw.alış_fiyat artık doğru, ama sales_raw.urun_kod boş olduğu için eşleştirme ürün ADI ile yapılıyor — SMM hücresindeki küçük yüzde, o kategorinin cirosunun ne kadarı için maliyet biliniyor demek (küsürat KAR sadece o eşleşen kısım için). Tahsilat kategori bazında henüz bağlı değil. Kategori satırına tıklayınca bu ayın en çok satan ürünleri açılır.');
+  setText('matrixSource', 'Kaynak: sales_raw (ALAYLI) + BizimHesap Sınıflandırma 1 (canlı çekildi, 24 distribütör cari), ' + catOrder.length + ' kategori grubu. Son satış tarihi: ' + (data.reduce((m,r)=>r.son_tarih&&r.son_tarih>m?r.son_tarih:m,'')||'-') + '. SMM: product_raw.alış_fiyat artık doğru, ama sales_raw.urun_kod boş olduğu için eşleştirme ürün ADI ile yapılıyor — SMM hücresindeki küçük yüzde, o kategorinin cirosunun ne kadarı için maliyet biliniyor demek (küsürat KAR sadece o eşleşen kısım için, yanındaki % ise o kısmın marjı). Tahsilat kategori bazında henüz bağlı değil. Kategori satırına tıklayınca bu ayın en çok satan ürünleri açılır. ▲/▼ = geçen yılın AYNI TARİHE KADARki karşılığına göre büyüme (adil kıyas). STOK yanındaki renk: mevcut satış hızıyla kaç gün stok kaldığını gösterir. ÖNEMLİ: "GEÇEN YIL" verisi 2025 Temmuz sonrasında neredeyse boş (sistemde sadece ayın 1\'inde birer yer tutucu kayıt var) — yani geçen yıl aslında ~7 aylık veri, tam 12 ay değil; bu yüzden karşılaştırmalar da o yüzden aynı döneme kadar sınırlandı. Renkler: yeşil güçlü, sarı orta, kırmızı dikkat gerekiyor — SMM eşleşmesi, kâr marjı, stok günü ve gider oranı hep aynı dili kullanır.');
 
   // GİDERLER — TAHAKKUK gerçek (masraf_raw)
   const gdata = giderRes.data, gerror = giderRes.error;
@@ -416,6 +476,23 @@ Promise.all([
       const detailRows = rows.map(r=>'<tr class="gider-detail-row" style="background:#0c1626"><td style="padding:4px 12px 4px 44px;color:var(--muted);font-size:11px;position:sticky;left:0;background:#0c1626">'+String(r.aciklama||r.kategori||'-').substring(0,80)+'</td><td colspan="21" style="text-align:right;padding:4px 12px;font-size:11px;color:#c8d6ea">'+money(r.tutar)+' · '+(r.kategori||'kategori yok')+' · '+(r.tedarikci?r.tedarikci+' · ':'')+(r.tarih||'-')+'</td></tr>').join('');
       loadingTr.outerHTML = '<tr class="gider-detail-row" style="background:#0c1626"><td colspan="22" style="padding:6px 12px 2px;color:#7f91a9;font-size:10px;font-weight:800;position:sticky;left:0;background:#0c1626">SON/EN BÜYÜK GİDER KAYITLARI (canlı masraf_raw)</td></tr>' + detailRows;
     });
+  }
+
+  // GİDER / GELİR ORANI — donem donem: o donemin TAHAKKUK gideri / o donemin toplam satisi.
+  // Ikisi de ayni tarih penceresini kullandigi icin (bugun/bugun, yil/yil...) capraz donem
+  // karsilastirmasi yok, yanlis kiyas riski dusuk.
+  const periodLabels = {bugun:'Bugün',dun:'Dün',hafta:'Hafta',ay:'Ay',gecen_ay:'Geçen Ay',yil:'Yıl',gecen_yil:'Geçen Yıl'};
+  if (!gerror && gdata) {
+    const ratioHtml = periodKeys.map(p=>{
+      const sat = totalRow['satis_'+p], gid = giderTotal['gider_'+p];
+      if (!sat || !gid) return '<span style="color:#5c6d84">'+periodLabels[p]+': -</span>';
+      const oran = Math.round(gid/sat*100);
+      const color = oran<=50 ? '#7be7ba' : oran<=80 ? '#f6c86a' : '#ff9aa7';
+      return '<span>'+periodLabels[p]+': <b style="color:'+color+'">%'+oran+'</b></span>';
+    }).join(' <span style="color:#3d5375">·</span> ');
+    document.getElementById('giderOranValue').innerHTML = ratioHtml;
+  } else {
+    document.getElementById('giderOranValue').textContent = 'Gider verisi okunamadığı için hesaplanamadı';
   }
 
   // NET KAR — Brüt Kâr yalnızca kısmi (eşleşen) satış üzerinden hesaplanabildiği için,
