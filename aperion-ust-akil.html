@@ -185,6 +185,11 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
 .table-scroll::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--blue),var(--violet));border-radius:99px;box-shadow:0 0 8px rgba(92,141,255,.4)}
 .table-scroll{scrollbar-color:var(--blue) #0d1727;scrollbar-width:thin}
 
+/* 2026-08-02: yukleme durumu icin "iskelet" (skeleton) parlama animasyonu -
+   duz "Yukleniyor..." metni yerine, veri gelene kadar JS zaten innerHTML'i
+   degistiriyor, bu sadece o kisa bekleme penceresini daha "2056" gosteriyor. */
+.skel{display:block;border-radius:7px;background:linear-gradient(90deg,#16243a 25%,#223652 37%,#16243a 63%);background-size:400% 100%;animation:skelShine 1.4s ease infinite}
+@keyframes skelShine{0%{background-position:100% 0}100%{background-position:0% 0}}
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
   body::before{animation:none}
@@ -221,7 +226,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
       <h2 id="stratejikTitle" style="margin:5px 0 4px;font-size:15px">Kurumsal standart finansal oranlar</h2>
       <p style="margin:0;color:var(--muted);font-size:11px">Kâr marjı, yoğunlaşma riski, gider yapısı — büyük şirketlerin yönetim kurulu raporlarında izlediği türden oranlar, sizin gerçek verinizle.</p>
     </header>
-    <div id="stratejikBody" style="padding:12px 18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">Hesaplanıyor…</div>
+    <div id="stratejikBody" style="padding:12px 18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px"><span class="skel" style="height:112px"></span><span class="skel" style="height:112px"></span><span class="skel" style="height:112px"></span><span class="skel" style="height:112px"></span></div>
   </section>
 
   <section aria-labelledby="insightTitle" style="margin-bottom:22px;border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;background:linear-gradient(135deg,#151f33,#101a2c);padding:14px 18px">
@@ -229,7 +234,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
       <span style="font-size:16px">🧠</span>
       <h2 id="insightTitle" style="margin:0;font-size:12px;font-weight:900;letter-spacing:1px;color:#83e8c1">BUGÜN DİKKAT — OTOMATİK BULGULAR</h2>
     </div>
-    <div id="insightBody" style="display:flex;flex-direction:column;gap:7px;font-size:12.5px">Taranıyor…</div>
+    <div id="insightBody" style="display:flex;flex-direction:column;gap:7px;font-size:12.5px"><span class="skel" style="height:14px;width:92%"></span><span class="skel" style="height:14px;width:78%"></span><span class="skel" style="height:14px;width:85%"></span></div>
   </section>
 
   <section aria-labelledby="matrixTitle" style="margin-bottom:22px;border:1px solid var(--line);border-top:3px solid var(--gold);border-radius:10px;background:var(--surface);overflow:hidden">
@@ -412,11 +417,11 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0" id="bilancoBody">
       <div style="padding:12px 18px;border-right:1px solid var(--line)">
         <div style="font-size:10px;font-weight:800;color:#7be7ba;margin-bottom:8px">VARLIKLAR</div>
-        <div id="bilancoVarlik">Yükleniyor…</div>
+        <div id="bilancoVarlik" style="display:flex;flex-direction:column;gap:6px"><span class="skel" style="height:13px;width:88%"></span><span class="skel" style="height:13px;width:70%"></span><span class="skel" style="height:13px;width:80%"></span></div>
       </div>
       <div style="padding:12px 18px">
         <div style="font-size:10px;font-weight:800;color:#ff9aa7;margin-bottom:8px">BORÇLAR</div>
-        <div id="bilancoBorc">Yükleniyor…</div>
+        <div id="bilancoBorc" style="display:flex;flex-direction:column;gap:6px"><span class="skel" style="height:13px;width:82%"></span><span class="skel" style="height:13px;width:65%"></span><span class="skel" style="height:13px;width:75%"></span></div>
       </div>
     </div>
     <div style="background:#152742;border-left:3px solid var(--violet);padding:9px 18px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
@@ -431,7 +436,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
       <h2 id="harcamaTitle" style="margin:5px 0 4px;font-size:15px">Bu yıl gerçek işletme gideri — kalem kalem</h2>
       <p style="margin:0;color:var(--muted);font-size:11px" id="harcamaNote">Yükleniyor…</p>
     </header>
-    <div id="harcamaBody" style="padding:12px 18px">Yükleniyor…</div>
+    <div id="harcamaBody" style="padding:12px 18px;display:flex;flex-direction:column;gap:8px"><span class="skel" style="height:16px;width:100%"></span><span class="skel" style="height:16px;width:90%"></span><span class="skel" style="height:16px;width:95%"></span><span class="skel" style="height:16px;width:80%"></span></div>
   </section>
 
   <section aria-labelledby="custSignalsTitle" style="margin-top:22px;border:1px solid var(--line);border-top:3px solid var(--coral);border-radius:10px;background:var(--surface);overflow:hidden">
@@ -443,11 +448,11 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0" id="custSignalsBody">
       <div style="padding:12px 18px;border-right:1px solid var(--line)">
         <div style="font-size:10px;font-weight:800;color:#7f91a9;margin-bottom:8px">BU YIL EN BÜYÜK 8 CARİ</div>
-        <div id="custTopList">Yükleniyor…</div>
+        <div id="custTopList" style="display:flex;flex-direction:column;gap:6px"><span class="skel" style="height:13px;width:90%"></span><span class="skel" style="height:13px;width:74%"></span><span class="skel" style="height:13px;width:82%"></span></div>
       </div>
       <div style="padding:12px 18px">
         <div style="font-size:10px;font-weight:800;color:#7f91a9;margin-bottom:8px">SESSİZLEŞEN (≥90 gün, geçmişte ≥20.000 TL)</div>
-        <div id="custQuietList">Yükleniyor…</div>
+        <div id="custQuietList" style="display:flex;flex-direction:column;gap:6px"><span class="skel" style="height:13px;width:85%"></span><span class="skel" style="height:13px;width:70%"></span><span class="skel" style="height:13px;width:78%"></span></div>
       </div>
     </div>
   </section>
@@ -458,7 +463,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
       <h2 id="bankBalanceTitle" style="margin:5px 0 4px;font-size:15px">Gerçek zamanlı değil — her bankanın en son işlendiği tarihteki bakiyesi</h2>
       <p style="margin:0;color:var(--muted);font-size:11px" id="bankBalanceNote">Kaynak: banka ekstresi maillerinden okunan en son bakiye satırı (pending_bank_movements). finance_account_cards'taki "0 TL" hesaplar hiç kullanılmamış şablon kartlar — gerçek bakiye burada.</p>
     </header>
-    <div style="padding:6px 18px 16px" id="bankBalanceBody">Yükleniyor…</div>
+    <div style="padding:6px 18px 16px;display:flex;flex-direction:column;gap:8px" id="bankBalanceBody"><span class="skel" style="height:15px;width:100%"></span><span class="skel" style="height:15px;width:90%"></span><span class="skel" style="height:15px;width:95%"></span></div>
   </section>
 
   <footer><span>AperiON görür, sınıflandırır, kanıtını gösterir; sen onayladığında resmi kayda alır.</span><a href="./index.html">Ana ekrana git →</a></footer>
