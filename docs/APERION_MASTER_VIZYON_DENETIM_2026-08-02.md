@@ -67,7 +67,7 @@ sonuçları birleştirildi.
 
 ## Öne çıkan somut kanıtlar
 
-- **Onay Merkezi ikiye bölünmüş (çelişkili):** `pending_bank_movements` (2.016 kayıt, 38 onaylı) mail-kaynaklı ekstrelerin GERÇEK, canlı onay hattı — `aperion-ust-akil.html`, `index.html`, 8+ tool script burayı kullanıyor. Ayrı bir `aperion_approval_center` tablosu (0 kayıt) sadece Telegram fotoğraf/görsel ekstre botu (`aperion_bank_image_bot.cjs`) için var ve hiç kullanılmamış. Vizyonun istediği "Telegram onay merkezi ile web onay merkezi aynı kayıtları göstermeli" kuralı şu an **sağlanmıyor** — iki ayrı tablo, birleşik görünüm yok.
+- **Onay Merkezi ikiye bölünmüş, ama biri tamamen ölü (düzeltme, 2026-08-02 devam denetimi):** `pending_bank_movements` (2.016 kayıt, 38 onaylı) mail-kaynaklı ekstrelerin GERÇEK, canlı onay hattı. Ayrı bir `aperion_approval_center` tablosu, Telegram fotoğraf/görsel ekstre botu (`aperion_bank_image_bot.cjs`) için tasarlanmış ama bu bot **hiçbir GH Actions workflow'una bağlı değil**, beslediği `bank_transactions_raw` tablosu da 0 satır — yani bu ikinci kanal hiç tetiklenmemiş, aktif bir çelişki değil, tamamen kullanılmayan/bağlanmamış kod. Vizyonun "Telegram ve web onay merkezi aynı kayıtları göstermeli" kuralı teknik olarak sağlanmıyor ama bunun nedeni aktif çakışma değil — ikinci kanalın hiç devreye alınmamış olması. Düşük risk, acil değil; ileride foto-ekstre kanalı açılırsa o zaman birleştirme kararı gerekir.
 - **BizimHesap yazma yönü hiç çalışmamış:** `bizimhesap_posting_queue` ve `bizimhesap_posting_log` **0 satır**. Okuma yönü (satış/masraf/ürün çekme) bugün dahil defalarca test edilip düzeltildi ve güçlü, ama "onaylanan banka hareketini BizimHesap'a yaz" yönü — vizyonun 14. bölümün can alıcı kuralı — bırakın canlıyı, tek bir test kaydı bile geçmemiş. `card-bizimhesap` panelinin kendi metni bunu doğruluyor: *"Zincir 'Onay' adımında bekliyor; BizimHesap kaydı 0."*
 - **Master Kart sistemi neredeyse hiç yok:** Vizyon 30 kart tipi tanımlıyor (araç, gayrimenkul, kişi, aile üyesi, poliçe, sözleşme, vergi yükümlülüğü...). Gerçek veri seti (`data/master_data_cards_masked.json`) sadece **2 tip** içeriyor: banka hesabı ve abonelik. Araç/gayrimenkul/kişi/aile kartları şemada bile yok.
 - **Gmail OAuth şu an kırık** (bu oturumun kendi hafıza kaydı, `project_gmail_oauth_broken_2026-08-01.md`): mail-ekstre okuma pipeline'ı gün içinde 3 kez OAuth adımında başarısız oldu — Section 12'nin en temel kanıt kaynağı şu an durmuş durumda. Bu, bugüne kadar hiç düzeltilmediyse en yüksek öncelikli arızadır.
@@ -86,14 +86,27 @@ sonuçları birleştirildi.
 
 **Kapsam dışı / muhtemelen hiç başlanmayacak kadar erken:** Aile/Ege modülü, sağlık asistanı, İngilizce öğrenme, sosyal medya otomasyonu, borç optimizasyon motoru, davranışsal harcama koruması, 21 günlük sıfırlama, yan-iş doğrulama motoru — bunların hiçbiri için kod/şema kanıtı yok, hepsi şu an sadece bu vizyon dokümanında var.
 
-## İlk güvenli geliştirme paketi (önerilen)
+## İlk güvenli geliştirme paketi (2026-08-02 devam denetimiyle güncellendi)
 
-Küçük, doğrulanabilir, geri alınabilir — vizyonun 49. bölüm kuralına uygun:
-
-1. **Gmail OAuth tanı ve onar** (tek başına, düşük riskli — sadece okuma izni, yazma yok).
-2. **Onay Merkezi birleştirme kararı** — ya `aperion_approval_center`'ı Telegram foto-akışı için olduğu gibi bırakıp dokümana net not düş, ya da iki tabloyu birleştiren tek bir view yaz (yazma değil, sadece okuma birleştirmesi — düşük risk).
-3. **`audit_logs`'a `approved_by` ve `correlation_id` kolonu ekle** — mevcut trigger'ları bozmadan, sadece iki nullable kolon (düşük risk, geri alınabilir).
-
-Bunların hiçbiri BizimHesap'a veya banka hesabına canlı yazım içermiyor —
-üçü de veri omurgası/kanıt/audit katmanını güçlendiriyor, vizyonun kendi
-öncelik sırasına (1-2-3: omurga, kanıt, audit) birebir uyuyor.
+1. **Gmail OAuth tanı ve onar** — kök neden GH Actions log'undan doğrulandı
+   (`invalid_grant`, `GOOGLE_REFRESH_TOKEN` geçersiz). Yeniden izin akışı için
+   `gmail-oauth-reauth-helper.yml` workflow'u eklendi; Ercan'ın PC başında
+   3 adımlık interaktif onayı gerekiyor — **bu adım kullanıcı bekliyor,
+   otomatikleştirilemez** (Google hesabına giriş gerektirir).
+2. ~~Onay Merkezi birleştirme~~ — **iptal edildi, gerek yok**: incelemede
+   `aperion_approval_center`'ın beslediği Telegram foto-kanalı hiçbir
+   workflow'a bağlı değil ve tamamen boş; aktif bir çelişki yok, sadece
+   kullanılmayan kod. Acil değil.
+3. ~~`audit_logs`'a `approved_by` kolonu~~ — **iptal edildi**: `aperion_users`
+   tablosu tek-operatör rol tablosu (isim/e-posta yok, sadece
+   firma+rol), ve onay ekranlarında (`gunluk-banka-karar.html` vb.) hiç
+   login/oturum sistemi yok — yani "kim onayladı" sorusunun anlamlı bir
+   cevabı şu an teknik olarak yok (her zaman "Ercan" olurdu). Bunu
+   eklemek gerçek bir kimlik/oturum sistemi gerektirir, bu "küçük/düşük
+   riskli" paketin kapsamı dışına taşar — ayrı bir karar/oturum konusu.
+4. **Sıradaki gerçek aday: BizimHesap yazma yönünü devreye almak** (plan
+   zaten onaylı, `robust-booping-bee.md`) — 38 onaylı banka hareketi
+   bekliyor, `bizimhesap_posting_queue`/`log` hâlâ 0 satır. Bu, gerçek
+   muhasebe kaydı yazdığı için önce Ercan'la kapsam teyidi + PC başında
+   canlı doğrulama gerektirir, "otomatik ve sessizce ilerlenecek" bir
+   iş değil.
