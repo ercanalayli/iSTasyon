@@ -79,6 +79,24 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
   #catMatrix[data-active="gecen_ay"] .pp-gecen_ay{display:table-cell}
   #catMatrix[data-active="yil"] .pp-yil{display:table-cell}
   #catMatrix[data-active="gecen_yil"] .pp-gecen_yil{display:table-cell}
+  /* GIDER/GELIR ORANI seridi de ayni donem secimine uysun — 7'sini birden gostermek
+     375px'te satir satir kirilip kalabalik yapiyordu. */
+  #giderOranValue .pp-period{display:none}
+  #giderOranValue[data-active="bugun"] .pp-bugun{display:inline}
+  #giderOranValue[data-active="dun"] .pp-dun{display:inline}
+  #giderOranValue[data-active="hafta"] .pp-hafta{display:inline}
+  #giderOranValue[data-active="ay"] .pp-ay{display:inline}
+  #giderOranValue[data-active="gecen_ay"] .pp-gecen_ay{display:inline}
+  #giderOranValue[data-active="yil"] .pp-yil{display:inline}
+  #giderOranValue[data-active="gecen_yil"] .pp-gecen_yil{display:inline}
+  /* Parmakla dokunulacak alanlar buyusun (donem sekmeleri, tablo satirlari) - eskiden
+     29px/38px yukseklikte idi, telefonda yanlislikla komsu satiri tetikliyordu. */
+  .period-tab{min-height:38px;padding:9px 15px;font-size:12.5px}
+  #catMatrix{font-size:13px}
+  #catMatrix td, #catMatrix th{padding-top:10px !important;padding-bottom:10px !important}
+  /* Icerik tablosunun ekranin cogunu kaplamamasi icin masaustundekinden daha kisa kutu -
+     mobilde kartlara/ozet metne de yer kalsin diye. */
+  .table-scroll{max-height:min(50vh,440px) !important}
 }
 /* Asagi kaydirinca basliklar ekrandan kaybolmasin - Ercan'in gercek telefon kullanimiyla
    bulundu (2026-08-01). Sutun etiketleri (ADET/SATIS/SMM/KAR ve donem adi) her zaman gorunur. */
@@ -86,6 +104,7 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
 #catMatrix .thead-r1 th, #giderTable thead tr:first-child th{top:0}
 #catMatrix .thead-r2 th{top:29px}
 .thead-corner{left:0;z-index:4}
+.table-scroll{overflow:auto;max-height:min(64vh,620px)}
 </style>
 </head>
 <body>
@@ -111,7 +130,7 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
       <button type="button" class="period-tab" data-period="yil">Yıl</button>
       <button type="button" class="period-tab" data-period="gecen_yil">Geçen Yıl</button>
     </div>
-    <div style="overflow:auto;max-height:min(64vh,620px)">
+    <div class="table-scroll">
     <table style="width:100%;border-collapse:collapse;font-size:11.5px;min-width:2200px" id="catMatrix" data-active="bugun">
       <thead>
         <tr class="thead-r1" style="background:#0d1727">
@@ -129,10 +148,13 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
       <tbody id="catMatrixBody"></tbody>
     </table>
     </div>
-    <div style="padding:10px 18px;color:var(--muted);font-size:11px;border-top:1px solid var(--line)" id="matrixSource">Yükleniyor…</div>
+    <div style="padding:10px 18px;border-top:1px solid var(--line)">
+      <button type="button" id="matrixSourceToggle" style="background:none;border:none;color:#5c8dff;font-size:11px;font-weight:800;padding:0;cursor:pointer">Kaynak ve notlar ▾</button>
+      <div id="matrixSource" style="display:none;margin-top:6px;color:var(--muted);font-size:11px">Yükleniyor…</div>
+    </div>
 
     <div style="padding:14px 18px 4px;border-top:2px solid #2c3d56;color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px;background:#0d1727">GİDERLER — TAHAKKUK gerçek veri (masraf_raw), TAHMİNİ ve ÖDENEN kaynak bekliyor</div>
-    <div style="overflow:auto;max-height:min(64vh,620px)">
+    <div class="table-scroll">
     <table style="width:100%;border-collapse:collapse;font-size:11.5px;min-width:2200px" id="giderTable">
       <thead>
         <tr style="background:#0d1727">
@@ -146,7 +168,7 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
     </div>
     <div style="background:#101c2e;padding:9px 18px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line)">
       <span style="font-weight:850;color:#f6c86a">GİDER / GELİR ORANI <span style="font-weight:400;color:var(--muted);font-size:10px">(giderin satışa oranı — düşük iyi)</span></span>
-      <span id="giderOranValue" style="font-size:12px;text-align:right">Hesaplanıyor…</span>
+      <span id="giderOranValue" data-active="bugun" style="font-size:12px;text-align:right">Hesaplanıyor…</span>
     </div>
     <div style="background:#152742;border-left:3px solid var(--green);padding:9px 18px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
       <span style="font-weight:850">NET KAR</span>
@@ -298,7 +320,15 @@ document.getElementById('periodTabs').addEventListener('click', (ev) => {
   if (!btn) return;
   document.querySelectorAll('.period-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('catMatrix').setAttribute('data-active', btn.getAttribute('data-period'));
+  const activePeriod = btn.getAttribute('data-period');
+  document.getElementById('catMatrix').setAttribute('data-active', activePeriod);
+  document.getElementById('giderOranValue').setAttribute('data-active', activePeriod);
+});
+document.getElementById('matrixSourceToggle').addEventListener('click', () => {
+  const el = document.getElementById('matrixSource');
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  document.getElementById('matrixSourceToggle').textContent = open ? 'Kaynak ve notlar ▾' : 'Kaynak ve notlar ▴';
 });
 const qty = v => v ? Number(v).toLocaleString('tr-TR') : '<span style="color:#5c6d84">-</span>';
 const dash = '<span style="color:#5c6d84">-</span>';
@@ -485,11 +515,12 @@ Promise.all([
   if (!gerror && gdata) {
     const ratioHtml = periodKeys.map(p=>{
       const sat = totalRow['satis_'+p], gid = giderTotal['gider_'+p];
-      if (!sat || !gid) return '<span style="color:#5c6d84">'+periodLabels[p]+': -</span>';
+      const pp = 'pp-period pp-'+p;
+      if (!sat || !gid) return '<span class="'+pp+'" style="color:#5c6d84;margin-right:10px">'+periodLabels[p]+': -</span>';
       const oran = Math.round(gid/sat*100);
       const color = oran<=50 ? '#7be7ba' : oran<=80 ? '#f6c86a' : '#ff9aa7';
-      return '<span>'+periodLabels[p]+': <b style="color:'+color+'">%'+oran+'</b></span>';
-    }).join(' <span style="color:#3d5375">·</span> ');
+      return '<span class="'+pp+'" style="margin-right:10px">'+periodLabels[p]+': <b style="color:'+color+'">%'+oran+'</b></span>';
+    }).join('');
     document.getElementById('giderOranValue').innerHTML = ratioHtml;
   } else {
     document.getElementById('giderOranValue').textContent = 'Gider verisi okunamadığı için hesaplanamadı';
