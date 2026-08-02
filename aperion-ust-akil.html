@@ -99,6 +99,8 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
   .table-scroll{max-height:min(50vh,440px) !important}
   #custSignalsBody{grid-template-columns:1fr !important}
   #custSignalsBody>div:first-child{border-right:none !important;border-bottom:1px solid var(--line)}
+  #bilancoBody{grid-template-columns:1fr !important}
+  #bilancoBody>div:first-child{border-right:none !important;border-bottom:1px solid var(--line)}
 }
 /* Asagi kaydirinca basliklar ekrandan kaybolmasin - Ercan'in gercek telefon kullanimiyla
    bulundu (2026-08-01). Sutun etiketleri (ADET/SATIS/SMM/KAR ve donem adi) her zaman gorunur. */
@@ -288,6 +290,28 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
       <a class="card-open" href="./veri-durumu.html">Aç →</a>
     </article>
 
+  </section>
+
+  <section aria-labelledby="bilancoTitle" style="margin-top:22px;border:1px solid var(--line);border-top:3px solid var(--violet);border-radius:10px;background:var(--surface);overflow:hidden">
+    <header style="padding:14px 18px 10px;border-bottom:1px solid var(--line)">
+      <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">BİLANÇO</div>
+      <h2 id="bilancoTitle" style="margin:5px 0 4px;font-size:15px">Varlıklar ve Borçlar — kalem kalem</h2>
+      <p style="margin:0;color:var(--muted);font-size:11px" id="bilancoNote">Yükleniyor…</p>
+    </header>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0" id="bilancoBody">
+      <div style="padding:12px 18px;border-right:1px solid var(--line)">
+        <div style="font-size:10px;font-weight:800;color:#7be7ba;margin-bottom:8px">VARLIKLAR</div>
+        <div id="bilancoVarlik">Yükleniyor…</div>
+      </div>
+      <div style="padding:12px 18px">
+        <div style="font-size:10px;font-weight:800;color:#ff9aa7;margin-bottom:8px">BORÇLAR</div>
+        <div id="bilancoBorc">Yükleniyor…</div>
+      </div>
+    </div>
+    <div style="background:#152742;border-left:3px solid var(--violet);padding:9px 18px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-weight:850">NET DEĞER (yalnız bilinen kalemler)</span>
+      <span id="bilancoNetDeger" style="font-size:13px;font-weight:850">Hesaplanıyor…</span>
+    </div>
   </section>
 
   <section aria-labelledby="custSignalsTitle" style="margin-top:22px;border:1px solid var(--line);border-top:3px solid var(--coral);border-radius:10px;background:var(--surface);overflow:hidden">
@@ -655,6 +679,43 @@ function normalizeBank(name){
   if (n.includes('yapi') || n.includes('yapı')) return 'Yapı Kredi';
   return name || 'Bilinmeyen banka';
 }
+
+// Bilanco: aperion_balance_sheet_v1_view canli hesaplanan kalemleri (ticari mal,
+// banka) + aperion_balance_sheet_items tablosundaki manuel girilen kalemleri
+// (ev/arac/demirbas/kredi karti/kredi/cek) birlestiriyor. Sistemde hicbir yerde
+// ev/arac/demirbas/kredi/kredi karti/cek verisi yok (2026-08-02 denetiminde
+// dogrulandi) - bu kategoriler icin veri girilene kadar "kaynak bekliyor"
+// placeholder satiri gosteriliyor, boylece Ercan tam olarak neyi girmesi
+// gerektigini gorur. Sahte/tahmini deger ASLA gosterilmiyor.
+db.from('aperion_balance_sheet_v1_view').select('*').then(({data,error})=>{
+  const varlikEl = document.getElementById('bilancoVarlik'), borcEl = document.getElementById('bilancoBorc');
+  if (error || !data) { varlikEl.innerHTML = borcEl.innerHTML = '<p style="color:var(--muted);font-size:12px">Kaynak okunamadı: '+(error?error.message:'boş sonuç')+'</p>'; return; }
+  const rowHtml = (ad, deger, not_metni, renk) => '<div style="padding:6px 0;border-top:1px solid #23344d">'
+    + '<div style="display:flex;justify-content:space-between;gap:10px;font-size:12px"><span>'+ad+'</span>'
+    + '<span style="font-weight:700;font-variant-numeric:tabular-nums;color:'+(renk||'var(--text)')+'">'+(deger!=null?money(deger):dash)+'</span></div>'
+    + (not_metni ? '<div style="font-size:10px;color:var(--muted);margin-top:1px">'+not_metni+'</div>' : '')
+    + '</div>';
+  const pendingRow = ad => rowHtml(ad, null, 'kaynak bekliyor — veri girilmedi', '#8fa3bd');
+
+  const varlikRows = data.filter(r=>r.taraf==='varlik');
+  const borcRows = data.filter(r=>r.taraf==='borc');
+  let toplamVarlik = 0, toplamBorc = 0;
+  // ticari_mal_satis (piyasa fiyati) sadece karsilastirma icin gosteriliyor - NET DEGER
+  // toplamina katilmiyor, yoksa ayni stok hem maliyet hem piyasa fiyatiyla cift sayilirdi.
+  let varlikHtml = varlikRows.map(r=>{ if (r.tur !== 'ticari_mal_satis') toplamVarlik += Number(r.deger||0); return rowHtml(r.ad, r.deger, r.not_metni); }).join('');
+  // Sistemde hic kaydi olmayan varlik/borc turleri - bos placeholder (2026-08-02 istegi)
+  ['Ev / Gayrimenkul','Araç','Demirbaş','Nakit (Kasa)'].forEach(t=>{ if (!varlikRows.some(r=>r.ad.startsWith(t))) varlikHtml += pendingRow(t); });
+  let borcHtml = borcRows.map(r=>{ toplamBorc += Number(r.deger||0); return rowHtml(r.ad, r.deger, r.not_metni); }).join('');
+  ['Kredi Kartı Borcu','Krediler','Verilen Çekler'].forEach(t=>{ if (!borcRows.some(r=>r.ad.startsWith(t))) borcHtml += pendingRow(t); });
+  if (!borcRows.length) borcHtml = borcHtml; // no separate total row needed, placeholders already shown
+
+  varlikEl.innerHTML = varlikHtml || '<p style="color:var(--muted);font-size:12px">Kalem yok.</p>';
+  borcEl.innerHTML = borcHtml || '<p style="color:var(--muted);font-size:12px">Kalem yok.</p>';
+
+  const netDeger = toplamVarlik - toplamBorc;
+  document.getElementById('bilancoNetDeger').innerHTML = '<span style="color:'+(netDeger>=0?'#7be7ba':'#ff9aa7')+'">'+money(netDeger)+'</span>';
+  document.getElementById('bilancoNote').textContent = 'Ticari mal ve banka canlı/gerçek veriden hesaplanıyor. Ev/araç/demirbaş/kredi kartı/kredi/çek için sistemde hiç kayıt yok — bunları girmeden net değer eksik kalır. Ticari mal değeri hem alış (maliyet) hem satış (piyasa) fiyatıyla ayrı gösteriliyor; NET DEĞER hesabında sadece ALIŞ (maliyet) değeri kullanılıyor, satış değeri karşılaştırma için ayrıca gösteriliyor.';
+}).catch(e=>{ document.getElementById('bilancoVarlik').innerHTML = document.getElementById('bilancoBorc').innerHTML = '<p style="color:var(--muted);font-size:12px">Hata: '+String(e)+'</p>'; });
 
 // Musteri sinyalleri: sales_raw'i unvan bazinda gruplayan sunucu tarafi view
 // (aperion_customer_signals_v1_view) - hem "en buyuk cariler" hem "sessizlesen"
