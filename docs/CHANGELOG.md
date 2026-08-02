@@ -95,6 +95,17 @@ aynası) test edildi, commit hash'i ile kod tarafında da doğrulanabilir.
     en kritik bulgu BizimHesap'a otomatik yazmanın hiç çalışmamış olması
     (`18143fa`).
 
+13. **"Maliyeti olmayan ürünlerin satışına tıklayınca % kâr göreyim,
+    renklendir, anomali varsa tespit et; aynı oranı giderler/faturalar/alışta
+    da kullan"** → ✅ (kısmi, ürün için mümkün olan yapıldı) Maliyeti bilinmeyen
+    ürünlerde gerçek kâr hesaplanamıyor (maliyet yok ki) — bunun yerine liste
+    (referans) satış fiyatı ile fiili satış fiyatı kıyaslanıp renklendirildi
+    ("MALİYETİ EKSİK" drill-in listesinde). Giderlere de uygulandı: her
+    kategorinin bu ayki tutarı geçmiş aylık ortalamasıyla kıyaslanıp %150+
+    veya %50- sapanlar otomatik işaretleniyor (HARCAMA ANALİZİ panelinde).
+    Fatura/alış tarafı henüz yok — ayrı bir veri kaynağı gerektiriyor.
+    (`6712d24`)
+
 **Doğrulama yöntemi (her madde için tekrarlanan disiplin):** kod değişikliği
 → localhost'ta canlı Supabase veriyle test → konsol hatası kontrolü → mobil
 görünüm kontrolü → commit+push → GitHub Pages aynasında (`ercanalayli.github.io/
