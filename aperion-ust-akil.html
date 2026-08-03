@@ -220,6 +220,18 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
   <h1 class="title">AperiON iSTasyon – Operasyon Merkezi</h1>
   <p class="subtitle">Bugün ne kritik?<span class="upd" id="updatedPill">Güncellendi · --</span></p>
 
+  <section aria-labelledby="istekDefteriTitle" style="margin-bottom:22px;border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:10px;background:var(--surface);overflow:hidden">
+    <header style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">📋 İSTEK DEFTERİ</div>
+        <h2 id="istekDefteriTitle" style="margin:5px 0 4px;font-size:15px">Ercan'ın istediği her şey — ne yapıldı, nasıl doğrulandı</h2>
+        <p style="margin:0;color:var(--muted);font-size:11px">Kaynak: <code>docs/CHANGELOG.md</code> (canlı, repodan çekiliyor) — en yeni istekler en üstte.</p>
+      </div>
+      <button type="button" id="istekDefteriToggle" class="card-open" style="font-size:11px">Göster ▾</button>
+    </header>
+    <div id="istekDefteriBody" style="display:none;padding:0 18px 16px;max-height:60vh;overflow:auto;font-size:12.5px;line-height:1.6;white-space:pre-wrap">Yükleniyor…</div>
+  </section>
+
   <section aria-labelledby="stratejikTitle" style="margin-bottom:22px;border:1px solid var(--line);border-top:3px solid var(--violet);border-radius:10px;background:var(--surface);overflow:hidden">
     <header style="padding:14px 18px 10px;border-bottom:1px solid var(--line)">
       <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">📊 STRATEJİK YÖNETİM ÖZETİ</div>
@@ -479,6 +491,33 @@ const fmtTime = d => d ? new Intl.DateTimeFormat('tr-TR',{dateStyle:'short',time
 const nowCode = () => { const d = new Date(); return [String(d.getHours()).padStart(2,'0'),String(d.getMinutes()).padStart(2,'0'),String(d.getFullYear()).slice(-2),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join(''); };
 setText('buildCode', nowCode());
 setText('updatedPill', 'Güncellendi · ' + new Intl.DateTimeFormat('tr-TR',{dateStyle:'short',timeStyle:'short'}).format(new Date()));
+
+// ISTEK DEFTERI: Ercan'in "istediklerimin listesi nerede, programda gormem
+// lazim" istegi (2026-08-03) - docs/CHANGELOG.md'yi canli fetch edip en yeni
+// 2 bolumu (en guncel istekler) sayfada gosteriyor. GitHub'a gitmesine gerek
+// yok, tek kaynak (CHANGELOG) her zaman guncel kaldigi surece burasi da guncel.
+document.getElementById('istekDefteriToggle').addEventListener('click', () => {
+  const el = document.getElementById('istekDefteriBody');
+  const btn = document.getElementById('istekDefteriToggle');
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  btn.textContent = open ? 'Göster ▾' : 'Gizle ▴';
+});
+fetch('./docs/CHANGELOG.md').then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); }).then(text => {
+  const idxs = [];
+  const re = /\n## /g; let m;
+  while ((m = re.exec(text))) idxs.push(m.index + 1);
+  const start = idxs[0] ?? 0;
+  const end = idxs[2] ?? text.length;
+  let chunk = text.slice(start, end).trim();
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  chunk = esc(chunk)
+    .replace(/^## (.+)$/gm, '<div style="margin:16px 0 8px;font-size:14px;font-weight:900;color:#83e8c1">$1</div>')
+    .replace(/^### (.+)$/gm, '<div style="margin:10px 0 4px;font-size:12.5px;font-weight:800;color:#a9c7ff">$1</div>')
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/`([^`]+)`/g, '<code style="background:#0d1727;padding:1px 5px;border-radius:4px;font-size:11px">$1</code>');
+  document.getElementById('istekDefteriBody').innerHTML = chunk;
+}).catch(e => { document.getElementById('istekDefteriBody').textContent = 'CHANGELOG okunamadı: ' + e.message; });
 
 // İŞİTME CİHAZI (2026-08-02'de eklendi - Phonak/Signia satisi hep "DİĞER"e dusuyordu,
 // hic kategori kurali yoktu, ~3,5M TL/yil gercek urun cirosu gizliydi) ve
