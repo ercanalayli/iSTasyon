@@ -770,9 +770,10 @@ Promise.all([
     loadingTr.innerHTML = '<td colspan="29" style="padding:8px 12px;background:#0c1626;color:var(--muted);font-size:11px">Yükleniyor…</td>';
     tr.after(loadingTr);
     const keys = JSON.parse(tr.getAttribute('data-cat-keys'));
-    const [topRes, missingRes] = await Promise.all([
+    const [topRes, missingRes, salesRowsRes] = await Promise.all([
       db.from('aperion_category_product_drilldown_v1_view').select('*').in('kategori_grup', keys).order('satis_yil', { ascending: false, nullsFirst: false }).order('satis_ay', { ascending: false, nullsFirst: false }).order('son_tarih', { ascending: false, nullsFirst: false }).limit(15),
       db.from('aperion_category_product_cost_status_v1_view').select('*').in('kategori_grup', keys).order('satis_yil', { ascending: false, nullsFirst: false }).limit(8),
+      db.from('aperion_category_sales_rows_v1_view').select('*').in('kategori_grup', keys).order('tarih', { ascending: false }).limit(25),
     ]);
     const rows = topRes.data, derr = topRes.error;
     if (derr || !rows || !rows.length) {
@@ -800,7 +801,19 @@ Promise.all([
             return '<tr class="cat-detail-row" style="background:#1c140f"><td style="padding:4px 12px 4px 44px;color:#f6c86a;font-size:11px;position:sticky;left:0;background:#1c140f">'+String(p.urun||'-').substring(0,90)+'</td><td colspan="28" style="text-align:right;padding:4px 12px;font-size:11px;color:#c8d6ea">Bu yıl: '+money(p.satis_yil)+' · '+(p.adet_yil?Number(p.adet_yil).toLocaleString('tr-TR'):'0')+' adet · son satış: '+(p.son_tarih||'-')+sapmaHtml+'</td></tr>';
           }).join('');
     }
-    loadingTr.outerHTML = '<tr class="cat-detail-row" style="background:#0c1626"><td colspan="29" style="padding:6px 12px 2px;color:#7f91a9;font-size:10px;font-weight:800;position:sticky;left:0;background:#0c1626">EN ÇOK SATAN ÜRÜNLER — YILLIK CİROYA GÖRE (canlı sales_raw)</td></tr>' + detailRows + missingHtml;
+    // Satis kayitlari (fatura/musteri/tarih bazinda, TEK TEK) - Ercan'in istegi
+    // (2026-08-03): "urun ozetini actigimda satislarin listesini gormem lazim,
+    // veri nereden geliyor gormem lazim". aperion_category_sales_rows_v1_view
+    // ayni bucket mantigini (bucket_v2 + bez ayrimi) satir bazinda uyguluyor.
+    const salesRows = salesRowsRes.data;
+    let salesRowsHtml = '';
+    if (salesRows && salesRows.length) {
+      salesRowsHtml = '<tr class="cat-detail-row" style="background:#0d1727"><td colspan="29" style="padding:6px 12px 2px;color:#7f91a9;font-size:10px;font-weight:800;position:sticky;left:0;background:#0d1727">SATIŞ KAYITLARI — SON 25 (KAYNAK: <code style="background:#0d1727;border:1px solid #23344d;border-radius:4px;padding:0 5px">sales_raw</code>, satır satır, filtre: bu kategoriye eşleşen kayıtlar)</td></tr>'
+        + salesRows.map(s => '<tr class="cat-detail-row" style="background:#0c1626"><td style="padding:3px 12px 3px 44px;color:var(--muted);font-size:10.5px;position:sticky;left:0;background:#0c1626">'+(s.tarih||'-')+'</td><td colspan="28" style="text-align:right;padding:3px 12px;font-size:10.5px;color:#c8d6ea">'+String(s.unvan||'-').substring(0,40)+' · '+String(s.urun||'-').substring(0,60)+' · '+(s.adet?Number(s.adet).toLocaleString('tr-TR'):'0')+' adet · '+money(s.ciro)+(s.fatura_no?' · fiş/fatura: '+s.fatura_no:'')+'</td></tr>').join('');
+    } else {
+      salesRowsHtml = '<tr class="cat-detail-row" style="background:#0d1727"><td colspan="29" style="padding:6px 12px;color:var(--muted);font-size:10.5px">Bu kategoride satır bazlı satış kaydı bulunamadı.</td></tr>';
+    }
+    loadingTr.outerHTML = '<tr class="cat-detail-row" style="background:#0c1626"><td colspan="29" style="padding:6px 12px 2px;color:#7f91a9;font-size:10px;font-weight:800;position:sticky;left:0;background:#0c1626">EN ÇOK SATAN ÜRÜNLER — YILLIK CİROYA GÖRE (KAYNAK: <code style="background:#0d1727;border:1px solid #23344d;border-radius:4px;padding:0 5px">sales_raw</code>, ürüne göre toplanmış)</td></tr>' + detailRows + missingHtml + salesRowsHtml;
   });
 
   // Masaustu hover-onizleme: sadece gercek fare/pointer cihazlarda ("2055 vizyonu" - dokunmatikte
