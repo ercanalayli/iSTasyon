@@ -39,6 +39,32 @@ async function tiklaMenu(page, kelime) {
       log(`[TIKLA] "${kelime}" -> ${ok}`);
     }
     await new Promise(r => setTimeout(r, 1500));
+    // "Tumu" sekmesine tikla (varsayilan "Son 3 Ay" gibi dar bir filtre olabilir,
+    // eski/farkli tarihli kayitlari kacirmamak icin) - 2026-08-03 duzeltmesi.
+    const tumuOk = await tiklaMenu(page, 'Tümü');
+    log(`[TIKLA] "Tümü" -> ${tumuOk}`);
+    await new Promise(r => setTimeout(r, 1000));
+    // "Ara:" arama kutusuna yaz - sayfadaki metni degil, BizimHesap'in kendi
+    // sunucu-tarafi aramasini kullanir, tarih filtresinden bagimsiz calisir.
+    const aramaYazildi = await page.evaluate((needle) => {
+      const label = [...document.querySelectorAll('*')].find(x => (x.textContent || '').trim() === 'Ara:' && x.children.length === 0);
+      let input = null;
+      if (label) {
+        let cur = label.parentElement;
+        for (let i = 0; i < 4 && cur && !input; i++) { input = cur.querySelector('input[type="text"],input:not([type])'); cur = cur.parentElement; }
+      }
+      if (!input) input = document.querySelector('input[type="text"],input:not([type])');
+      if (!input) return false;
+      input.focus();
+      input.value = needle;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+      return true;
+    }, SEARCH);
+    log(`[ARAMA KUTUSU] yazildi=${aramaYazildi}`);
+    await new Promise(r => setTimeout(r, 2000));
     const info = await page.evaluate((needle) => {
       const bodyText = document.body.innerText || '';
       const found = bodyText.includes(needle);
