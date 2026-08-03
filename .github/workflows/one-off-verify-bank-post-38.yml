@@ -1,0 +1,47 @@
+name: One-off Verify Bank Post (record 38)
+
+# Tek seferlik, salt-okur: kayit #38'in BizimHesap Masraflar listesinde
+# gercekten olusup olusmadigini kontrol eder (2026-08-03). Hicbir sey yazmaz.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/one-off-verify-bank-post-38.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore BizimHesap session cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .bizimhesap-profile
+          key: bizimhesap-session-alayli-${{ github.run_id }}
+          restore-keys: |
+            bizimhesap-session-alayli-
+      - name: Prepare BizimHesap profile dir
+        run: mkdir -p .bizimhesap-profile
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci --no-audit --no-fund
+      - name: Masraflar listesinde ara
+        env:
+          BIZIMHESAP_EMAIL: ${{ secrets.BIZIMHESAP_EMAIL }}
+          BIZIMHESAP_PASSWORD: ${{ secrets.BIZIMHESAP_PASSWORD }}
+          BIZIMHESAP_HEADLESS: "true"
+          BIZIMHESAP_PROFILE_DIR: .bizimhesap-profile
+        run: node tools/verify_bank_post_v112.cjs --search "APERION AUTO | ID:38"
+      - name: Save BizimHesap session cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .bizimhesap-profile
+          key: bizimhesap-session-alayli-${{ github.run_id }}
