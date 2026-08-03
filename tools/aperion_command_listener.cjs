@@ -55,21 +55,22 @@ function runScript(script, args) {
 }
 
 async function handleCommand(cmd) {
-  log(`Komut alindi: #${cmd.id} tip=${cmd.command_type} payload=${JSON.stringify(cmd.payload)}`);
+  log(`Komut alindi: #${cmd.id} komut=${cmd.command} params=${JSON.stringify(cmd.params)}`);
   await db.from('bot_commands').update({ status: 'processing', started_at: new Date().toISOString() }).eq('id', cmd.id);
 
+  const params = cmd.params || {};
   let outcome;
   try {
-    if (cmd.command_type === 'bizimhesap_verify') {
-      const search = cmd.payload?.search || 'APERION AUTO';
+    if (cmd.command === 'bizimhesap_verify') {
+      const search = params.search || 'APERION AUTO';
       outcome = runScript('tools/verify_bank_post_v112.cjs', ['--search', search]);
-    } else if (cmd.command_type === 'bizimhesap_process') {
-      const args = ['--limit', String(cmd.payload?.limit || 1)];
-      if (cmd.payload?.id) args.push('--id', String(cmd.payload.id));
-      if (cmd.payload?.commit) { args.push('--commit', '--save'); process.env.BIZIMHESAP_POSTING_LIVE = '1'; }
+    } else if (cmd.command === 'bizimhesap_process') {
+      const args = ['--limit', String(params.limit || 1)];
+      if (params.id) args.push('--id', String(params.id));
+      if (params.commit) { args.push('--commit', '--save'); process.env.BIZIMHESAP_POSTING_LIVE = '1'; }
       outcome = runScript('bizimhesap_banka_bot.cjs', args);
     } else {
-      outcome = { ok: false, output: `Bilinmeyen komut_tipi: ${cmd.command_type}` };
+      outcome = { ok: false, output: `Bilinmeyen komut: ${cmd.command}` };
     }
   } catch (e) {
     outcome = { ok: false, output: String(e.message || e) };
