@@ -552,6 +552,8 @@ document.getElementById('periodTabs').addEventListener('click', (ev) => {
   const activePeriod = btn.getAttribute('data-period');
   document.getElementById('catMatrix').setAttribute('data-active', activePeriod);
   document.getElementById('giderOranValue').setAttribute('data-active', activePeriod);
+  if (window.__renderCatRows) window.__renderCatRows(activePeriod);
+  if (window.__renderGiderRows) window.__renderGiderRows(activePeriod);
 });
 document.getElementById('matrixSourceToggle').addEventListener('click', () => {
   const el = document.getElementById('matrixSource');
@@ -584,16 +586,21 @@ function fourCol(adet, satis, cogsR, satisForPct, p, stok, extra){
   const stokBadge = stok!=null ? ' <span style="color:'+(extra.stokColor||'#5c8dff')+';font-size:9px" title="'+(extra.stokTitle||'satılan/kalan stok')+'">/'+Number(stok).toLocaleString('tr-TR',{maximumFractionDigits:0})+'</span>' : '';
   const adetCell = qty(adet) + stokBadge;
   const yoyBadge = extra.yoyPct!=null ? ' <span style="font-size:8px;color:'+(extra.yoyPct>=0?'#7be7ba':'#ff9aa7')+'" title="geçen yıl aynı döneme (yıl başı–bugün) göre büyüme">'+(extra.yoyPct>=0?'▲':'▼')+Math.abs(extra.yoyPct)+'%</span>' : '';
-  const shareBadge = extra.sharePct!=null ? ' <span style="font-size:8px;color:#8ea0b8" title="bu kategorinin bu yılki toplam satış içindeki payı">('+extra.sharePct+'%)</span>' : '';
+  const shareColor = extra.sharePct==null ? '' : extra.sharePct>30 ? '#ff9aa7' : extra.sharePct>15 ? '#f6c86a' : '#7be7ba';
+  const shareBadge = extra.sharePct!=null ? ' <span style="font-size:8px;color:'+shareColor+'" title="bu kategorinin, o dönemin toplam satışı içindeki payı">('+extra.sharePct+'%)</span>' : '';
+  const shareBar = extra.sharePct!=null ? '<span style="display:inline-block;width:20px;height:4px;border-radius:99px;background:#0d1727;vertical-align:middle;overflow:hidden;margin-left:4px"><span style="display:block;height:100%;width:'+Math.max(4,Math.min(100,extra.sharePct))+'%;background:'+shareColor+';box-shadow:0 0 4px '+shareColor+'"></span></span>' : '';
   const pp = 'pp-period pp-'+p;
   return '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;color:var(--muted);border-left:3px solid '+(periodColors[p]||'#1c293c')+'" title="'+(extra.stokTitle||'satılan/kalan stok')+'">'+adetCell+'</td>'
-    + '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums">'+(satis?money(satis):dash)+yoyBadge+shareBadge+'</td>'
+    + '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums">'+(satis?money(satis):dash)+yoyBadge+shareBadge+shareBar+'</td>'
     + '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;color:#c9b676;background:'+heatBg+'">'+smmCell+'</td>'
     + '<td class="'+pp+'" style="text-align:right;padding:6px 8px;font-weight:700;font-variant-numeric:tabular-nums;background:'+heatBg+'">'+karCell+'</td>';
 }
-function giderThreeCol(v, p){
+function giderThreeCol(v, p, sharePct){
+  const shareColor = sharePct==null ? '' : sharePct>30 ? '#ff9aa7' : sharePct>15 ? '#f6c86a' : '#7be7ba';
+  const shareBadge = sharePct!=null ? ' <span style="font-size:8px;color:'+shareColor+'" title="bu giderin, o donemin toplam giderine orani">('+sharePct+'%)</span>' : '';
+  const shareBar = sharePct!=null ? '<span style="display:inline-block;width:20px;height:4px;border-radius:99px;background:#0d1727;vertical-align:middle;overflow:hidden;margin-left:4px"><span style="display:block;height:100%;width:'+Math.max(4,Math.min(100,sharePct))+'%;background:'+shareColor+';box-shadow:0 0 4px '+shareColor+'"></span></span>' : '';
   return '<td style="text-align:right;padding:6px 8px;color:#f6c86a;font-size:10px;border-left:3px solid '+(periodColors[p]||'#1c293c')+'">kaynak bekliyor</td>'
-    + '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums">'+(v?money(v):dash)+'</td>'
+    + '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums">'+(v?money(v):dash)+shareBadge+shareBar+'</td>'
     + '<td style="text-align:right;padding:6px 8px;color:#f6c86a;font-size:10px">kaynak bekliyor</td>';
 }
 
@@ -619,12 +626,17 @@ Promise.all([
   // rahatlatici) gosterirdi.
   const _now = new Date();
   const daysElapsedYear = Math.max(1, Math.floor((Date.UTC(_now.getFullYear(),_now.getMonth(),_now.getDate()) - Date.UTC(_now.getFullYear(),0,1))/86400000) + 1);
-  // Bu yilki kategori payi (%) icin once tum kategorilerin toplam yillik satisi lazim —
-  // satir uretiminden ONCE, tek gecis.
-  let grandYilSatis = 0;
-  catOrder.forEach(cat=>{
-    if (cat === 'HASTA ALTI BEZİ') { grandYilSatis += Number((byCat['HASTA ALTI BEZİ — DİSTRİBÜTÖR']||{}).satis_yil||0) + Number((byCat['HASTA ALTI BEZİ — PERAKENDE']||{}).satis_yil||0); }
-    else { grandYilSatis += Number((byCat[cat]||{}).satis_yil||0); }
+  // Kategori payi (%) HER donem icin lazim (2026-08-03: Ercan'in istegi -
+  // "satislar toplamin yuzde kaci, grafiksel gorunecek") - satir uretiminden
+  // ONCE, tum donemler icin tek gecis.
+  const grandSatisByPeriod = {};
+  periodKeys.forEach(p=>{
+    let g = 0;
+    catOrder.forEach(cat=>{
+      if (cat === 'HASTA ALTI BEZİ') { g += Number((byCat['HASTA ALTI BEZİ — DİSTRİBÜTÖR']||{})['satis_'+p]||0) + Number((byCat['HASTA ALTI BEZİ — PERAKENDE']||{})['satis_'+p]||0); }
+      else { g += Number((byCat[cat]||{})['satis_'+p]||0); }
+    });
+    grandSatisByPeriod[p] = g;
   });
   // stok gunu / yil buyume% / kategori payi — satir bazinda tek yerde hesapla, tum donem
   // hucrelerinde ayni degeri tutarli kullan (donem donem farkli renk kafa karistirir).
@@ -635,8 +647,9 @@ Promise.all([
     const stokTitle = stokGunu===null ? 'satılan/kalan stok' : ('bu hızla yaklaşık '+stokGunu+' gün stok kalır (yıl başından bugüne satış hızına göre)');
     const satisYil = Number(salesR['satis_yil']||0), satisGyAyni = Number(salesR['satis_gecen_yil_ayni_donem']||0);
     const yoyPctYil = satisGyAyni>0 ? Math.round((satisYil-satisGyAyni)/satisGyAyni*100) : null;
-    const sharePctYil = (!noShare && grandYilSatis>0) ? Math.round(satisYil/grandYilSatis*100) : null;
-    return { stokColor, stokTitle, yoyPctYil, sharePctYil };
+    const sharePctByPeriod = {};
+    if (!noShare) periodKeys.forEach(p=>{ const g = grandSatisByPeriod[p]; const s = Number(salesR['satis_'+p]||0); sharePctByPeriod[p] = g>0 ? Math.round(s/g*100) : null; });
+    return { stokColor, stokTitle, yoyPctYil, sharePctByPeriod };
   }
 
   function catRow(cat, salesR, cogsR, indent, keys, stok){
@@ -646,8 +659,8 @@ Promise.all([
       const s=Number(salesR['satis_'+p]||0), a=Number(salesR['adet_'+p]||0);
       totalRow['satis_'+p]+=s; totalRow['adet_'+p]+=a;
       totalRow['maliyet_'+p]+=Number(cogsR&&cogsR['maliyet_'+p]||0); totalRow['esl_ciro_'+p]+=Number(cogsR&&cogsR['esl_ciro_'+p]||0);
-      const extra = { stokColor: rx.stokColor, stokTitle: rx.stokTitle };
-      if (p==='yil') { extra.yoyPct = rx.yoyPctYil; extra.sharePct = rx.sharePctYil; }
+      const extra = { stokColor: rx.stokColor, stokTitle: rx.stokTitle, sharePct: rx.sharePctByPeriod[p] };
+      if (p==='yil') extra.yoyPct = rx.yoyPctYil;
       return fourCol(a, s, cogsR, s, p, stok, extra);
     }).join('');
     const pad = indent ? '28px' : '12px';
@@ -659,20 +672,28 @@ Promise.all([
     sub['satis_gecen_yil_ayni_donem'] = keys.reduce((s,k)=> s + Number((byCat[k]||{}).satis_gecen_yil_ayni_donem||0), 0);
     const rx = rowExtras(sub, stok);
     const cells = periodKeys.map(p=>{
-      const extra = { stokColor: rx.stokColor, stokTitle: rx.stokTitle };
-      if (p==='yil') { extra.yoyPct = rx.yoyPctYil; extra.sharePct = rx.sharePctYil; }
+      const extra = { stokColor: rx.stokColor, stokTitle: rx.stokTitle, sharePct: rx.sharePctByPeriod[p] };
+      if (p==='yil') extra.yoyPct = rx.yoyPctYil;
       return fourCol(sub['adet_'+p], sub['satis_'+p], sub, sub['satis_'+p], p, stok, extra);
     }).join('');
-    return '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(keys)+'\' style="background:#101c2e"><td style="padding:6px 12px;font-weight:800;color:#83e8c1;position:sticky;left:0;background:#101c2e"><span class="row-btn">'+label+'</span></td>'+cells+'</tr>';
+    return { html: '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(keys)+'\' style="background:#101c2e"><td style="padding:6px 12px;font-weight:800;color:#83e8c1;position:sticky;left:0;background:#101c2e"><span class="row-btn">'+label+'</span></td>'+cells+'</tr>', satisByPeriod: sub };
   }
-  let rowsHtml = '';
+  // 2026-08-03 istegi: kategoriler ARTIK satisa gore DINAMIK siralaniyor (en
+  // cok satan en ustte), donem sekmesi degistiginde yeniden siralanir. Hasta
+  // Altı Bezi (ana baslik + 2 alt satiri) bir grup olarak birlikte hareket
+  // eder, siralama anahtari ana basligin satisidir.
+  const rowEntries = [];
   catOrder.forEach(cat=>{
     if (cat === 'HASTA ALTI BEZİ') {
-      rowsHtml += subtotalRow('HASTA ALTI BEZİ (ana başlık)', ['HASTA ALTI BEZİ — DİSTRİBÜTÖR','HASTA ALTI BEZİ — PERAKENDE'], byStock['HASTA ALTI BEZİ']);
-      rowsHtml += catRow('↳ Distribütör (BizimHesap Sınıflandırma 1)', byCat['HASTA ALTI BEZİ — DİSTRİBÜTÖR'], byCogsCat['HASTA ALTI BEZİ — DİSTRİBÜTÖR'], true, ['HASTA ALTI BEZİ — DİSTRİBÜTÖR']);
-      rowsHtml += catRow('↳ Perakende (distribütör değil)', byCat['HASTA ALTI BEZİ — PERAKENDE'], byCogsCat['HASTA ALTI BEZİ — PERAKENDE'], true, ['HASTA ALTI BEZİ — PERAKENDE']);
+      const sub = subtotalRow('HASTA ALTI BEZİ (ana başlık)', ['HASTA ALTI BEZİ — DİSTRİBÜTÖR','HASTA ALTI BEZİ — PERAKENDE'], byStock['HASTA ALTI BEZİ']);
+      const html = sub.html
+        + catRow('↳ Distribütör (BizimHesap Sınıflandırma 1)', byCat['HASTA ALTI BEZİ — DİSTRİBÜTÖR'], byCogsCat['HASTA ALTI BEZİ — DİSTRİBÜTÖR'], true, ['HASTA ALTI BEZİ — DİSTRİBÜTÖR'])
+        + catRow('↳ Perakende (distribütör değil)', byCat['HASTA ALTI BEZİ — PERAKENDE'], byCogsCat['HASTA ALTI BEZİ — PERAKENDE'], true, ['HASTA ALTI BEZİ — PERAKENDE']);
+      rowEntries.push({ html, satisByPeriod: sub.satisByPeriod });
     } else {
-      rowsHtml += catRow(cat, byCat[cat], byCogsCat[cat], false, [cat], byStock[cat]);
+      const salesR = byCat[cat] || {};
+      const html = catRow(cat, salesR, byCogsCat[cat], false, [cat], byStock[cat]);
+      rowEntries.push({ html, satisByPeriod: salesR });
     }
   });
   let grandGyAyni = 0;
@@ -688,7 +709,12 @@ Promise.all([
     return fourCol(totalRow['adet_'+p], totalRow['satis_'+p], totalRow, totalRow['satis_'+p], p, stokToplam, extra);
   }).join('');
   const allKeys = catOrder.flatMap(c=>c==='HASTA ALTI BEZİ'?['HASTA ALTI BEZİ — DİSTRİBÜTÖR','HASTA ALTI BEZİ — PERAKENDE']:[c]);
-  catBody.innerHTML = rowsHtml + '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(allKeys)+'\' style="border-top:2px solid #2c3d56;background:#0f1b2c;cursor:pointer"><td style="padding:8px 12px;position:sticky;left:0;background:#0f1b2c"><span class="row-btn" style="font-weight:850">TOPLAM (Brüt Kâr = eşleşen kısım)</span></td>'+totalCells+'</tr>';
+  const totalRowHtml = '<tr class="cat-clickable" data-cat-keys=\''+JSON.stringify(allKeys)+'\' style="border-top:2px solid #2c3d56;background:#0f1b2c;cursor:pointer"><td style="padding:8px 12px;position:sticky;left:0;background:#0f1b2c"><span class="row-btn" style="font-weight:850">TOPLAM (Brüt Kâr = eşleşen kısım)</span></td>'+totalCells+'</tr>';
+  window.__renderCatRows = (period) => {
+    const sorted = [...rowEntries].sort((a,b) => Number(b.satisByPeriod['satis_'+period]||0) - Number(a.satisByPeriod['satis_'+period]||0));
+    catBody.innerHTML = sorted.map(e=>e.html).join('') + totalRowHtml;
+  };
+  window.__renderCatRows(document.getElementById('catMatrix').getAttribute('data-active') || 'bugun');
 
   setText('matrixSource', 'Kaynak: sales_raw (ALAYLI) + BizimHesap Sınıflandırma 1 (canlı çekildi, 24 distribütör cari), ' + catOrder.length + ' kategori grubu. Son satış tarihi: ' + (data.reduce((m,r)=>r.son_tarih&&r.son_tarih>m?r.son_tarih:m,'')||'-') + '. SMM: product_raw.alış_fiyat artık doğru, ama sales_raw.urun_kod boş olduğu için eşleştirme ürün ADI ile yapılıyor — SMM hücresindeki küçük yüzde, o kategorinin cirosunun ne kadarı için maliyet biliniyor demek (küsürat KAR sadece o eşleşen kısım için, yanındaki % ise o kısmın marjı). Tahsilat kategori bazında henüz bağlı değil. Kategori satırına tıklayınca bu ayın en çok satan ürünleri açılır. ▲/▼ = geçen yılın AYNI TARİHE KADARki karşılığına göre büyüme (adil kıyas). STOK yanındaki renk: mevcut satış hızıyla kaç gün stok kaldığını gösterir. "GEÇEN YIL" artık tam 12 aylık gerçek veri (2026-08-02\'de BizimHesap\'tan geriye dönük dolduruldu — önceden Ağustos-Aralık 2025 boştu). ▲/▼ yine de adil kıyas için geçen yılın AYNI TARİHE KADARki karşılığını kullanmaya devam ediyor (yıl sonuna kadarki fazlayı değil). Renkler: yeşil güçlü, sarı orta, kırmızı dikkat gerekiyor — SMM eşleşmesi, kâr marjı, stok günü ve gider oranı hep aynı dili kullanır.');
 
@@ -701,18 +727,35 @@ Promise.all([
   } else {
     gdata.forEach(r=>{ byClass[r.sinif]=r; });
     const order = [['SABIT','Sabit giderler'],['DEGISKEN','Değişken giderler'],['SINIFLANDIRILMAMIS','Sınıflandırılmamış (kategori boş)']];
-    let rowsHtmlG = order.map(([key,label])=>{
+    // Onceden grand total (2026-08-03: gider satirlarina da SATISLAR gibi
+    // "toplamin yuzde kaci" grafiksel gosterge lazim - once tum donemlerin
+    // toplami hesaplaniyor, sonra her satir kendi payini bilerek render ediliyor.
+    order.forEach(([key])=>{ const r = byClass[key] || {}; periodKeys.forEach(p=>{ giderTotal['gider_'+p] += Number(r['gider_'+p]||0); }); });
+    const giderEntries = order.map(([key,label])=>{
       const r = byClass[key] || {};
-      const cells = periodKeys.map(p=>{ const v = Number(r['gider_'+p]||0); giderTotal['gider_'+p]+=v; return giderThreeCol(v, p); }).join('');
-      return '<tr class="gider-clickable" data-sinif="'+key+'" style="border-top:1px solid #23344d;cursor:pointer"><td style="padding:7px 12px;position:sticky;left:0;background:var(--surface)"><span class="row-btn" style="font-weight:700">'+label+' <span style="color:var(--muted);font-weight:400">('+(r.kayit_sayisi||0)+' kayıt)</span></span></td>'+cells+'</tr>';
-    }).join('');
+      const cells = periodKeys.map(p=>{
+        const v = Number(r['gider_'+p]||0);
+        const g = giderTotal['gider_'+p];
+        const sharePct = g>0 ? Math.round(v/g*100) : null;
+        return giderThreeCol(v, p, sharePct);
+      }).join('');
+      const html = '<tr class="gider-clickable" data-sinif="'+key+'" style="border-top:1px solid #23344d;cursor:pointer"><td style="padding:7px 12px;position:sticky;left:0;background:var(--surface)"><span class="row-btn" style="font-weight:700">'+label+' <span style="color:var(--muted);font-weight:400">('+(r.kayit_sayisi||0)+' kayıt)</span></span></td>'+cells+'</tr>';
+      return { html, r };
+    });
     const totalCellsG = periodKeys.map(p=>{
       const v = giderTotal['gider_'+p];
       return '<td style="text-align:right;padding:7px 8px;color:#f6c86a;font-size:10px;border-left:3px solid '+(periodColors[p]||'#1c293c')+'">kaynak bekliyor</td>'
         + '<td style="text-align:right;padding:7px 8px;font-weight:850;font-variant-numeric:tabular-nums;color:#ff9aa7">'+money(v)+'</td>'
         + '<td style="text-align:right;padding:7px 8px;color:#f6c86a;font-size:10px">kaynak bekliyor</td>';
     }).join('');
-    giderBody.innerHTML = rowsHtmlG + '<tr class="gider-clickable" data-sinif="TUMU" style="border-top:2px solid #2c3d56;background:#0f1b2c;cursor:pointer"><td style="padding:7px 12px;position:sticky;left:0;background:#0f1b2c"><span class="row-btn" style="font-weight:850">TOPLAM GİDER (TAHAKKUK)</span></td>'+totalCellsG+'</tr>';
+    const giderTotalRowHtml = '<tr class="gider-clickable" data-sinif="TUMU" style="border-top:2px solid #2c3d56;background:#0f1b2c;cursor:pointer"><td style="padding:7px 12px;position:sticky;left:0;background:#0f1b2c"><span class="row-btn" style="font-weight:850">TOPLAM GİDER (TAHAKKUK)</span></td>'+totalCellsG+'</tr>';
+    // 2026-08-03 istegi: gider siniflari da (Sabit/Degisken/Siniflandirilmamis)
+    // donem sekmesine gore en yuksek tutarli en ustte olacak sekilde dinamik siralanir.
+    window.__renderGiderRows = (period) => {
+      const sorted = [...giderEntries].sort((a,b) => Number(b.r['gider_'+period]||0) - Number(a.r['gider_'+period]||0));
+      giderBody.innerHTML = sorted.map(e=>e.html).join('') + giderTotalRowHtml;
+    };
+    window.__renderGiderRows(document.getElementById('catMatrix').getAttribute('data-active') || 'bugun');
 
     giderBody.addEventListener('click', async (ev) => {
       const tr = ev.target.closest('tr.gider-clickable');
