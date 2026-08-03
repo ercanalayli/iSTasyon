@@ -1,4 +1,7 @@
 node_modules/
+local-secrets/
+banka_*_dryrun.json
+banka_islem_dryrun.json
 *.log
 *_log.txt
 debug_*.png
