@@ -11,7 +11,7 @@ function valueArg(name, fallback) {
 }
 
 function runBot() {
-  const botArgs = ['bizimhesap_banka_bot.js', '--firma', FIRMA, '--limit', LIMIT];
+  const botArgs = ['bizimhesap_banka_bot.cjs', '--firma', FIRMA, '--limit', LIMIT];
   if (COMMIT) botArgs.push('--commit', '--save');
   const result = spawnSync(process.execPath, botArgs, {
     cwd: __dirname,

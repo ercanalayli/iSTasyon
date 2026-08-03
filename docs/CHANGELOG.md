@@ -113,6 +113,65 @@ iSTasyon`) fetch ile canlı doğrulama. Hiçbir madde "yapıldı" denilip
 doğrulanmadan bırakılmadı; madde 4 ve 8 açıkça "kısmi" olarak işaretli çünkü
 gerçekten öyle.
 
+## 2026-08-02/03 devamı - İstek defteri madde 14+ (aynı gün, gece yarısını aşan tek oturum)
+
+14. **"Grafiksel ve ergonomik olarak 2056 yılında hissiyat veren, renkli
+    ışıklı butonlar, çizgiler, balonlar, daha teknolojik bir sistem yap"**
+    → ✅ Çok aşamalı: aurora arka plan, camsı topbar, gradyanlı başlık, glow'lu
+    risk kartları, ışıklı "Aç" butonları, giriş animasyonu, KPI'larda
+    conic-gradient radyal gösterge (donut ring), kâr marjı hücrelerine mini
+    renkli bar, 12 kart + 6 bölüm başlığına ikon, kart hover'ında ışık
+    taraması, yükleme durumunda "iskelet" (skeleton) parlama animasyonu,
+    müşteri/banka/harcama listelerine büyüklük barı. Hepsi gerçek Supabase
+    veriyle beslendi, masaüstü+mobilde konsol hatasız doğrulandı.
+    (`6c21b6d`, `e0a04ac`, `f49d0c8`, `e67e983`, `fac8ba2`, `c65fc3c`)
+15. **"Masaüstü ve mobil için ayrı mühendislik yapıyor musun?"** → ✅ Dürüst
+    cevap verildi: layout (kart grid'i, tablo dönem sekmeleri, dokunma
+    alanları) önceki oturumlardan zaten ayrı; yeni glow/animasyon katmanı
+    tek kod, cihaza göre değişmiyor. Ardından mobilde pil/performans için
+    ağır efektler (blur, aurora, logo nabzı, sticky topbar) 640px altında
+    kapatıldı, bilgi taşıyan glow'lar (risk rengi, barlar) korundu.
+16. **ALAYLI-Erhan ortaklık ayrılığı PDF'i paylaşıldı** ("böyle bir şirket
+    ayrılığı yaşadık erhan kardeşim ile") → ✅ Belgenin tam, doğrulanmış
+    (13.05.2026 tarihli, net değer 50.527.404,82 TL) içeriği hassas hafıza
+    dosyasına kaydedildi (yayınlanmadı, sadece ilgili konularda kullanılacak).
+    BizimHesap'ta bugün bulunan KK ERCAN/ERHAN, HİSSE hesaplarının bu
+    ayrılığın izleri olduğu teyit edildi.
+17. **"Mailden ekstre alınması bitti mi?"** → ❌ Hayır, hâlâ kırık — canlı
+    veritabanı sorgusuyla doğrulandı: `pending_bank_movements`'a son kayıt
+    15 Temmuz, 18 gündür yeni kayıt yok. Kök neden: Gmail OAuth
+    (`GOOGLE_REFRESH_TOKEN`) geçersiz. Ercan'ın kendisinin yapması gereken
+    3 adımlık `gmail-oauth-reauth-helper.yml` süreci adım adım anlatıldı
+    (henüz tamamlanmadı).
+18. **"Alaylimedikal mailini ercanalayli@gmail'e yönlendireyim mi?"** → ✅
+    Cevaplandı: yönlendirme OAuth adımını atlatmaz, gereksiz karmaşıklık —
+    "basit yol" (doğrudan alaylimedikal@gmail için OAuth yenile) önerildi ve
+    Ercan onayladı.
+19. **"Benimle yaşayan AperiON nasıl iletişim kuracak, kusursuz şekilde?"**
+    → ✅ Dürüst araştırma yapıldı, önce yanlış bir ön-bilgiyle "Telegram
+    bağlı değil" dendi, sonra Ercan'ın gönderdiği ekran görüntüsüyle bunun
+    **yanlış** olduğu anlaşıldı ve düzeltildi: canlı bir "AperiON" Telegram
+    botu zaten aylardır banka onay mesajı gönderiyormuş (`banka_onay_bildir.js`
+    → Telegram). Ayrıca gerçek, çalışan bir zamanlanmış hatırlatma
+    mekanizması (scheduled task → bildirim) test edildi.
+20. **"BizimHesap'a gir, her şeyini öğren, artık sen kontrol edeceksin —
+    %100 güvendiklerini carilere/kasaya işle, güvenmediklerini emanet
+    kasaya at"** → 🔶 Devam ediyor. Bulunanlar: altyapının çoğu zaten
+    kuruluydu (Telegram onay akışı, güven skorlaması, Emanet hesabı config'de
+    tanımlı ve BizimHesap'ta doğrulanmış). Şu an gerçek, bekleyen bir yığın
+    var: 20 kayıt/130.888,84 TL %100 güvenli, 48 kayıt %100 altı. Otomatik
+    onay scripti yazıldı (`tools/auto_approve_high_confidence_bank_v111.cjs`,
+    dry-run + commit modlu), gerçek bir Node/ES-module hatası bulunup
+    düzeltildi (`bizimhesap_banka_bot.js` → `.cjs`, muhtemelen hiç
+    çalışmıyordu). Tek kayıtla (#38, 48,23 TL banka masrafı) canlı test
+    Ercan'ın kendi PowerShell'inden başlatıldı, BizimHesap şifresi yerel
+    ortamda olmadığı için (sadece GitHub secret'ta var) şu an tamamlanmadı —
+    GH Actions one-off workflow ile devam edilecek. Emanet'e otomatik
+    yönlendirme (güven<100) parçası henüz canlı denenmedi, ayrı adım olarak
+    planlandı.
+21. **"Başlıkların hepsi tıklanabilir olacak, veri kaynağı listelenecek"**
+    → ❌ Henüz yapılmadı — bankacılık otomasyonu araya girdi, sıradaki iş.
+
 ## 2026-07-31 - Doküman konsolidasyonu ve güvenlik doğrulaması
 
 - Canlı Supabase güvenlik denetimi tekrarlandı: `ingest_mail_bank_movements`,
