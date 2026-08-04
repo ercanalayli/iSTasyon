@@ -38,6 +38,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Diagnose secret (sifreyi acmadan uzunluk/ilk-son karakter)
+        run: |
+          node -e "
+          const id = process.env.GOOGLE_CLIENT_ID || '';
+          const sec = process.env.GOOGLE_CLIENT_SECRET || '';
+          console.log('CLIENT_ID uzunluk=' + id.length + ' ilk10=' + id.slice(0,10) + ' son10=' + id.slice(-10));
+          console.log('CLIENT_ID .apps.googleusercontent.com ile bitiyor mu: ' + id.endsWith('.apps.googleusercontent.com'));
+          console.log('CLIENT_SECRET uzunluk=' + sec.length + ' ilk6=' + sec.slice(0,6));
+          console.log('CLIENT_SECRET GOCSPX- ile basliyor mu: ' + sec.startsWith('GOCSPX-'));
+          "
+
       - name: Gmail OAuth helper
         run: node automation/gmail-oauth-refresh-helper.cjs "${{ inputs.mode }}"
 
