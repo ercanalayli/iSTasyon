@@ -1,10 +1,10 @@
 name: Gmail OAuth Re-auth Helper
 
 # Elle tetiklenir (workflow_dispatch). Amac: GOOGLE_REFRESH_TOKEN GitHub secret'i
-# gecersiz/iptal oldugunda (invalid_grant), alaylimedikal@gmail.com icin yeniden
+# gecersiz/iptal oldugunda (invalid_grant), ercanalayli@gmail.com icin yeniden
 # izin alip yeni bir refresh token uretmek. Iki adimda calisir:
 #   Adim 1 - "code" kutusunu BOS birak, calistir -> izin linkini basar.
-#   Adim 2 - linki alaylimedikal@gmail.com ile ac, izin ver, tarayicida
+#   Adim 2 - linki ercanalayli@gmail.com ile ac, izin ver, tarayicida
 #            http://localhost/?code=...&scope=... adresine yonlenmeye calisilir
 #            (sayfa acilmaz, bu normal) - adres cubugundaki "code=" degerini kopyala,
 #            workflow'u TEKRAR calistir, bu sefer "code" kutusuna yapistir.
@@ -38,7 +38,7 @@ jobs:
           OAUTH_CODE: ${{ inputs.code }}
         run: |
           if [ -z "$OAUTH_CODE" ]; then
-            echo "=== ADIM 1: Asagidaki linki alaylimedikal@gmail.com ile ac ve izin ver ==="
+            echo "=== ADIM 1: Asagidaki linki ercanalayli@gmail.com ile ac ve izin ver ==="
             npm run gmail:oauth:start
             echo ""
             echo "Izin verdikten sonra tarayici http://localhost/?code=... adresine yonlenmeye calisir (sayfa acilmaz, normal)."

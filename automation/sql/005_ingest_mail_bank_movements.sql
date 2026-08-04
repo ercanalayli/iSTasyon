@@ -59,7 +59,7 @@ begin
     ) values (
       coalesce(v_item->>'company_id', 'alayli'),
       coalesce(v_item->>'source', 'gmail_bank_statement'),
-      coalesce(v_item->>'mailbox', 'alaylimedikal@gmail.com'),
+      coalesce(v_item->>'mailbox', 'ercanalayli@gmail.com'),
       coalesce(v_item->>'bank_name', ''),
       coalesce(v_item->>'mail_id', ''),
       coalesce(v_item->>'mail_subject', ''),

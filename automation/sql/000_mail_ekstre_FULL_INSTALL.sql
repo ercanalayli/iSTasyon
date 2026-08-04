@@ -117,7 +117,7 @@ begin
     ) values (
       coalesce(v_item->>'company_id', 'alayli'),
       coalesce(v_item->>'source', 'gmail_bank_statement'),
-      coalesce(v_item->>'mailbox', 'alaylimedikal@gmail.com'),
+      coalesce(v_item->>'mailbox', 'ercanalayli@gmail.com'),
       coalesce(v_item->>'bank_name', ''),
       coalesce(v_item->>'account_name', ''),
       coalesce(v_item->>'iban_or_account_no', ''),

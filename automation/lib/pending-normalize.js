@@ -3,7 +3,7 @@ export function normalizePending(row){
   return {
     company_id: row.company_id || 'alayli',
     source: text(row.source || 'gmail_bank_statement'),
-    mailbox: text(row.mailbox || 'alaylimedikal@gmail.com'),
+    mailbox: text(row.mailbox || 'ercanalayli@gmail.com'),
     bank_name: text(row.bank_name),
     account_name: text(row.account_name),
     iban_or_account_no: text(row.iban_or_account_no),

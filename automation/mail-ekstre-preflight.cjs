@@ -29,7 +29,7 @@ const cfgPath = path.join(root, 'mail-ekstre-config.json');
 const cfg = fs.existsSync(cfgPath) ? JSON.parse(fs.readFileSync(cfgPath, 'utf8')) : null;
 
 add('config', 'mail-ekstre-config.json', Boolean(cfg), cfgPath);
-add('config', 'mailbox', cfg?.mailbox === 'alaylimedikal@gmail.com', cfg?.mailbox || 'eksik');
+add('config', 'mailbox', cfg?.mailbox === 'ercanalayli@gmail.com', cfg?.mailbox || 'eksik');
 add('config', 'company_id', cfg?.company_id === 'alayli', cfg?.company_id || 'eksik');
 add('config', 'Google client id', Boolean(process.env.GOOGLE_CLIENT_ID), process.env.GOOGLE_CLIENT_ID ? 'var' : 'eksik');
 add('config', 'Google client secret', Boolean(process.env.GOOGLE_CLIENT_SECRET), process.env.GOOGLE_CLIENT_SECRET ? 'var' : 'eksik');

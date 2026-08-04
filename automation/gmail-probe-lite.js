@@ -3,7 +3,7 @@ import { google } from 'googleapis';
 const id = process.env.GOOGLE_CLIENT_ID;
 const secret = process.env.GOOGLE_CLIENT_SECRET;
 const token = process.env.GOOGLE_REFRESH_TOKEN;
-const mailbox = process.env.GMAIL_MAILBOX || 'alaylimedikal@gmail.com';
+const mailbox = process.env.GMAIL_MAILBOX || 'ercanalayli@gmail.com';
 
 if (!id || !secret || !token) throw new Error('Google OAuth env eksik');
 

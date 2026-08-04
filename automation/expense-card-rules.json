@@ -1,7 +1,7 @@
 {
   "company_id": "alayli",
   "source_file_expected": "automation/input/masraf.xlsx",
-  "single_valid_google_account": "alaylimedikal@gmail.com",
+  "single_valid_google_account": "ercanalayli@gmail.com",
   "forbidden_accounts": ["alkammaliyonetim@gmail.com"],
   "rule": "BizimHesap kayıt yeri, AperiON karar ve kontrol merkezidir. Onay Merkezi olmadan canlı kayıt açılmaz.",
   "card_fields": [

@@ -21,7 +21,7 @@ export function parseIsbank(text,meta={}){
     let desc=clean(joined.replace(moneyRe,'').replace(cur.date,'').replace(cur.time||'',''));
     desc=desc.replace(/\b(TARIH|SAAT|ACIKLAMA|TUTAR|BAKIYE)\b/gi,'').trim();
     if(!desc)return;
-    const tx={company_id:meta.company_id||'alayli',source:meta.source||'gmail_bank_statement',mailbox:meta.mailbox||'alaylimedikal@gmail.com',bank_name:'Is Bankasi',mail_id:meta.mail_id||'',mail_subject:meta.mail_subject||'',mail_from:meta.mail_from||'',mail_date:meta.mail_date||'',attachment_name:meta.attachment_name||'',statement_id:sid,transaction_date:isoDate(cur.date),transaction_time:cur.time||'',description:desc,amount_in:amount>0?amount:0,amount_out:amount<0?Math.abs(amount):0,balance_after:balance,detected_type:typeOf(desc,amount),suggested_counterparty:'',confidence_score:80,status:'pending',duplicate_key:'',created_at:new Date().toISOString()};
+    const tx={company_id:meta.company_id||'alayli',source:meta.source||'gmail_bank_statement',mailbox:meta.mailbox||'ercanalayli@gmail.com',bank_name:'Is Bankasi',mail_id:meta.mail_id||'',mail_subject:meta.mail_subject||'',mail_from:meta.mail_from||'',mail_date:meta.mail_date||'',attachment_name:meta.attachment_name||'',statement_id:sid,transaction_date:isoDate(cur.date),transaction_time:cur.time||'',description:desc,amount_in:amount>0?amount:0,amount_out:amount<0?Math.abs(amount):0,balance_after:balance,detected_type:typeOf(desc,amount),suggested_counterparty:'',confidence_score:80,status:'pending',duplicate_key:'',created_at:new Date().toISOString()};
     tx.duplicate_key=duplicate(tx);
     rows.push(tx);
   }

@@ -329,7 +329,7 @@ function baseTx(meta, bankName, sid, fields) {
   return {
     company_id: meta.company_id || 'alayli',
     source: meta.source || 'gmail_bank_statement',
-    mailbox: meta.mailbox || 'alaylimedikal@gmail.com',
+    mailbox: meta.mailbox || 'ercanalayli@gmail.com',
     bank_name: bankName,
     mail_id: meta.mail_id || '',
     mail_subject: meta.mail_subject || '',

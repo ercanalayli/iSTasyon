@@ -7,7 +7,7 @@ const code = process.argv[3] || process.env.GOOGLE_OAUTH_CODE || '';
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost';
-const mailbox = process.env.GMAIL_MAILBOX || 'alaylimedikal@gmail.com';
+const mailbox = process.env.GMAIL_MAILBOX || 'ercanalayli@gmail.com';
 
 function fail(message) {
   console.error(message);
@@ -16,7 +16,7 @@ function fail(message) {
 
 if (!clientId) fail('GOOGLE_CLIENT_ID GitHub secret eksik.');
 if (!clientSecret) fail('GOOGLE_CLIENT_SECRET GitHub secret eksik.');
-if (mailbox !== 'alaylimedikal@gmail.com') fail(`Yanlis Gmail hesabi: ${mailbox}`);
+if (mailbox !== 'ercanalayli@gmail.com') fail(`Yanlis Gmail hesabi: ${mailbox}`);
 
 const oauth2 = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 const scopes = ['https://www.googleapis.com/auth/gmail.readonly'];
@@ -34,7 +34,7 @@ async function start() {
   console.log(url);
   console.log('GMAIL_OAUTH_URL_END');
   fs.writeFileSync(path.join(outDir, 'gmail-oauth-url.txt'), `${url}\n`, 'utf8');
-  console.log('Bu linki ac, sadece alaylimedikal@gmail.com ile izin ver, Google code degerini kopyala.');
+  console.log('Bu linki ac, sadece ercanalayli@gmail.com ile izin ver, Google code degerini kopyala.');
   console.log('Sonra workflowu mode=finish ve google_oauth_code=CODE ile tekrar calistir.');
 }
 
@@ -42,7 +42,7 @@ async function finish() {
   if (!code) fail('GOOGLE_OAUTH_CODE gerekli. Workflow input google_oauth_code alanina Google code girilmeli.');
   const { tokens } = await oauth2.getToken(code);
   if (!tokens.refresh_token) {
-    fail('Refresh token gelmedi. Start modunu tekrar calistir; izin ekraninda alaylimedikal@gmail.com secili ve prompt=consent olmali.');
+    fail('Refresh token gelmedi. Start modunu tekrar calistir; izin ekraninda ercanalayli@gmail.com secili ve prompt=consent olmali.');
   }
   console.log('GOOGLE_REFRESH_TOKEN_BEGIN');
   console.log(tokens.refresh_token);

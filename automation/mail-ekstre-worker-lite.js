@@ -13,7 +13,7 @@ const DEFAULT_SUPABASE_URL = 'https://iilfwosoroflzubkaryj.supabase.co';
 const DEFAULT_SUPABASE_KEY = 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
 const sourceMode = process.env.EKSTRE_SOURCE || 'gmail';
 const gmail = sourceMode === 'gmail' ? makeGmail() : null;
-const mailbox = process.env.GMAIL_MAILBOX || cfg.mailbox || 'alaylimedikal@gmail.com';
+const mailbox = process.env.GMAIL_MAILBOX || cfg.mailbox || 'ercanalayli@gmail.com';
 const lookback = process.env.LOOKBACK_DAYS || cfg.lookback_days || 7;
 const maxMessagesPerBank = Number(process.env.GMAIL_MAX_MESSAGES_PER_BANK || cfg.gmail_max_messages_per_bank || 25);
 const dryRun = process.env.DRY_RUN === '1';

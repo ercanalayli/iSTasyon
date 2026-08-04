@@ -44,7 +44,7 @@ function classify(error) {
   if (/invalid_grant/i.test(message)) {
     return {
       code: 'invalid_grant',
-      action: 'GOOGLE_REFRESH_TOKEN gecersiz/iptal olmus. alaylimedikal@gmail.com icin yeni Gmail OAuth refresh token uretilip GitHub secret olarak guncellenmeli.',
+      action: 'GOOGLE_REFRESH_TOKEN gecersiz/iptal olmus. ercanalayli@gmail.com icin yeni Gmail OAuth refresh token uretilip GitHub secret olarak guncellenmeli.',
     };
   }
   if (/invalid_client/i.test(message)) {
@@ -69,7 +69,7 @@ async function main() {
   loadEnv(path.join(root, '.env'));
   loadEnv(path.join(root, '..', '.env'));
 
-  const mailbox = process.env.GMAIL_MAILBOX || 'alaylimedikal@gmail.com';
+  const mailbox = process.env.GMAIL_MAILBOX || 'ercanalayli@gmail.com';
   const report = {
     checked_at: new Date().toISOString(),
     mailbox,
@@ -84,7 +84,7 @@ async function main() {
     if (!process.env.GOOGLE_CLIENT_ID) throw new Error('GOOGLE_CLIENT_ID eksik');
     if (!process.env.GOOGLE_CLIENT_SECRET) throw new Error('GOOGLE_CLIENT_SECRET eksik');
     if (!process.env.GOOGLE_REFRESH_TOKEN) throw new Error('GOOGLE_REFRESH_TOKEN eksik');
-    if (mailbox !== 'alaylimedikal@gmail.com') throw new Error(`Yanlis mailbox: ${mailbox}`);
+    if (mailbox !== 'ercanalayli@gmail.com') throw new Error(`Yanlis mailbox: ${mailbox}`);
 
     const auth = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
