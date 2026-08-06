@@ -109,19 +109,23 @@ async function bizimhesapPostExpense(row) {
     const fieldText = x => { const box = x.getBoundingClientRect(); const labels = [...document.querySelectorAll('label,.control-label,td,th,div,span')].filter(visible).filter(y => { const b = y.getBoundingClientRect(); return (b.right <= box.left + 10 && Math.abs((b.top + b.bottom) / 2 - (box.top + box.bottom) / 2) < 40) || (b.bottom <= box.top + 10 && Math.abs((b.left + b.right) / 2 - (box.left + box.right) / 2) < 180); }).map(y => y.innerText || '').join(' '); return norm2([x.name, x.id, x.placeholder, x.getAttribute('aria-label'), x.closest('label')?.innerText, labels].join(' ')); };
     const setValue = (el, value) => { el.focus(); el.value = value == null ? '' : String(value); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); el.blur(); return true; };
     const setByHint = (hints, value) => { const hs = hints.map(norm2); const el = [...document.querySelectorAll('input,textarea')].filter(visible).find(x => hs.some(h => fieldText(x).includes(h))); return el ? setValue(el, value) : false; };
-    const kalemOk = setSelectByText(['mali gider']);
+    // Ilk select (Proje) opsiyonel, dokunulmuyor. Ikinci select (Masraf Kalemi)
+    // ve hesap select'i zorunlu. Hesap icin ONCE tam hesap adi denenir; sadece
+    // hareket.hesap YOKSA genel "is bankasi" yedegine dusulur - yoksa yanlis
+    // (ilk sirada gorunen) banka secilebiliyordu (2026-08-06 bulundu).
     const masrafOk = setSelectByText(['banka masraf']);
     const odemeOk = setSelectByText(['odendi', 'ödendi']);
-    const hesapOk = setSelectByText([hareket.hesap || '*is bankasi', '*iş bankası', 'is bankasi', 'iş bankası']);
+    const hesapHints = hareket.hesap ? [hareket.hesap] : ['*is bankasi', '*iş bankası', 'is bankasi', 'iş bankası'];
+    const hesapOk = setSelectByText(hesapHints);
     const t1 = setByHint(['tarih'], hareket.tarih);
     const t2 = setByHint(['odeme tarihi', 'ödeme tarihi'], hareket.tarih);
     const tutarOk = setByHint(['tutar', 'amount', 'meblag'], hareket.tutar);
     const aciklamaOk = setByHint(['aciklama', 'not', 'description'], hareket.aciklama);
     const selectDump = [...document.querySelectorAll('select')].filter(visible).map(s => ({ secili: s.selectedOptions[0]?.text || '(yok)', ilkSecenekler: [...s.options].slice(0, 4).map(o => o.text) }));
-    return { tarih: t1 || t2, tutar: tutarOk, aciklama: aciklamaOk, kalemOk, masrafOk, odemeOk, hesapOk, selectDump };
+    return { tarih: t1 || t2, tutar: tutarOk, aciklama: aciklamaOk, masrafOk, odemeOk, hesapOk, selectDump };
   }, row);
 
-  if (!dolduruldu.tarih || !dolduruldu.tutar || !dolduruldu.aciklama || !dolduruldu.kalemOk || !dolduruldu.masrafOk || !dolduruldu.hesapOk) {
+  if (!dolduruldu.tarih || !dolduruldu.tutar || !dolduruldu.aciklama || !dolduruldu.masrafOk || !dolduruldu.hesapOk) {
     return { ok: false, mesaj: 'Form alanlari eksik: ' + JSON.stringify(dolduruldu) };
   }
 
