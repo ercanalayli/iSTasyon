@@ -235,7 +235,9 @@ async function bizimhesapFetch(params) {
     const tables = [...document.querySelectorAll('table')].map(t =>
       [...t.querySelectorAll('tr')].map(tr => [...tr.querySelectorAll('td,th')].map(td => (td.innerText || '').trim()))
     );
-    return { url: location.href, metin: (document.body.innerText || '').replace(/\s+/g, ' ').trim(), tablolar: tables };
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const linkler = [...document.querySelectorAll('a[href]')].filter(visible).map(a => ({ metin: (a.innerText || '').trim(), href: a.getAttribute('href') })).filter(l => l.metin);
+    return { url: location.href, metin: (document.body.innerText || '').replace(/\s+/g, ' ').trim(), tablolar: tables, linkler };
   });
   return sonuc;
 }
