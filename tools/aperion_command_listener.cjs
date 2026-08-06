@@ -136,6 +136,30 @@ async function bizimhesapPostExpense(row) {
     return { ok: false, mesaj: 'Form alanlari eksik: ' + JSON.stringify(dolduruldu) };
   }
 
+  // Gercek tani: Kaydet click'i sirasinda network cevaplarini, konsol
+  // hatalarini ve olasi alert/confirm dialoglarini Puppeteer seviyesinde
+  // yakala - page.evaluate() icinden bunlar gorulemiyor (2026-08-06,
+  // native-setter fix de sorunu cozmedi, kok neden hala bilinmiyor).
+  const agListesi = [];
+  const konsolListesi = [];
+  const dialogListesi = [];
+  const onResponse = async (res) => {
+    try {
+      const url = res.url();
+      if (!/bizimhesap\.com/i.test(url)) return;
+      const method = res.request().method();
+      if (method === 'GET' && res.status() < 400) return;
+      let govde = '';
+      try { govde = (await res.text()).slice(0, 500); } catch {}
+      agListesi.push(`${method} ${res.status()} ${url.replace('https://bizimhesap.com', '')} :: ${govde}`);
+    } catch {}
+  };
+  const onConsole = (msg) => { if (['error', 'warning'].includes(msg.type())) konsolListesi.push(`[${msg.type()}] ${msg.text()}`); };
+  const onDialog = async (dialog) => { dialogListesi.push(`${dialog.type()}: ${dialog.message()}`); await dialog.dismiss().catch(() => {}); };
+  page.on('response', onResponse);
+  page.on('console', onConsole);
+  page.on('dialog', onDialog);
+
   const tiklandi = await page.evaluate(() => {
     const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
     const btn = [...document.querySelectorAll('button,a,input[type="submit"],input[type="button"]')]
@@ -147,16 +171,21 @@ async function bizimhesapPostExpense(row) {
     btn.click();
     return true;
   });
-  if (!tiklandi) return { ok: false, mesaj: 'Kaydet butonu bulunamadi' };
-  await new Promise(r => setTimeout(r, 800));
-  const hemenSonra = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 600)).catch(() => '');
+  if (!tiklandi) { page.off('response', onResponse); page.off('console', onConsole); page.off('dialog', onDialog); return { ok: false, mesaj: 'Kaydet butonu bulunamadi' }; }
+  await new Promise(r => setTimeout(r, 2500));
+  const hemenSonra = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 400)).catch(() => '');
   await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {});
-  await new Promise(r => setTimeout(r, 1500));
+  await new Promise(r => setTimeout(r, 1000));
   const urlSonra = page.url();
+  page.off('response', onResponse);
+  page.off('console', onConsole);
+  page.off('dialog', onDialog);
+
+  const tani = `AG:[${agListesi.join(' | ') || 'yok'}] KONSOL:[${konsolListesi.join(' | ') || 'yok'}] DIALOG:[${dialogListesi.join(' | ') || 'yok'}]`;
 
   // DOGRULAMA: tikladim demek yetmez, GERCEKTEN listede goruyor muyum kontrol et.
   const dogrulama = await bizimhesapVerify('APERION AUTO | ID:' + (row.id || ''));
-  return { ok: dogrulama.found, mesaj: dogrulama.found ? 'Kaydedildi ve listede dogrulandi.' : `Kaydet sonrasi (${urlSonra}): ${hemenSonra} | DOGRULAMA: ${dogrulama.ozet}` };
+  return { ok: dogrulama.found, mesaj: dogrulama.found ? 'Kaydedildi ve listede dogrulandi.' : `Kaydet sonrasi (${urlSonra}): ${hemenSonra.slice(0,200)} | TANI: ${tani}` };
 }
 
 // Genel amacli sayfa okuma: bir menu yoluna tikla (opsiyonel), bir URL'e git,
