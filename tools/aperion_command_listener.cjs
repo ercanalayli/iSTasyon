@@ -274,10 +274,23 @@ async function handleCommand(cmd) {
   log(`Komut bitti: #${cmd.id} -> ${outcome.ok ? 'completed' : 'failed'}`);
 }
 
+let tickCalisiyor = false;
 async function tick() {
-  const { data, error } = await db.from('bot_commands').select('*').eq('status', 'pending').order('created_at', { ascending: true }).limit(1).maybeSingle();
-  if (error) { log(`HATA (sorgu): ${error.message}`); return; }
-  if (data) await handleCommand(data);
+  // 2026-08-06: setInterval onceki tick'in handleCommand'i (page.goto/
+  // waitForNavigation ile 15sn'den uzun surebiliyor) hala calisirken yeni
+  // tick'i tetikliyordu - iki komut AYNI Puppeteer page'i es zamanli
+  // kullanip birbirinin form doldurma/navigasyonunu bozuyordu (6 komutluk
+  // toplu kuyruk 2026-08-06'da hepsi "form alanlari eksik" ile patladi).
+  // Basit kilit: bir onceki komut tam bitmeden yeni tick calismaz.
+  if (tickCalisiyor) return;
+  tickCalisiyor = true;
+  try {
+    const { data, error } = await db.from('bot_commands').select('*').eq('status', 'pending').order('created_at', { ascending: true }).limit(1).maybeSingle();
+    if (error) { log(`HATA (sorgu): ${error.message}`); return; }
+    if (data) await handleCommand(data);
+  } finally {
+    tickCalisiyor = false;
+  }
 }
 
 (async () => {
