@@ -205,6 +205,14 @@ function typeOf(desc, amount) {
   if (u.includes('POS') || u.includes('UYE ISYERI') || u.includes('UYE IS YERI') || u.includes('PESIN SATIS') || u.includes('PESINSATIS')) return amount >= 0 ? 'pos_tahsilat' : 'pos_masraf';
   if (u.includes('SGK')) return 'sgk';
   if (u.includes('VERGI')) return 'vergi';
+  // 2026-08-06: "Gelen FAST Anlik Odeme - ... STOMA UCRETI (...)" gibi
+  // GERCEK bir musteri tahsilati, aciklamanin devaminda gecen alakasiz bir
+  // "ucret" kelimesi (hizmet bedeli anlaminda) yuzunden asagidaki genel
+  // BSMV/UCRET/MASRAF kontrolune takilip "banka_masrafi" saniliyordu -
+  // 13.421 TL'lik gercek bir tahsilat boylece gider gibi isaretlenmisti.
+  // "Gelen/Giden FAST|EFT|HAVALE" anlatim kalibi acikca yonlendirilmis bir
+  // odeme bildirimidir, bu kontrol digerlerinden ONCE calismali.
+  if (/GELEN (FAST|EFT|HAVALE)|GIDEN (FAST|EFT|HAVALE)/.test(u)) return amount >= 0 ? 'tahsilat' : 'odeme';
   if (u.includes('BSMV') || u.includes('UCRET') || u.includes('MASRAF')) return 'banka_masrafi';
   if (u.includes('FAST') || u.includes('EFT') || u.includes('HAVALE')) return amount >= 0 ? 'tahsilat' : 'odeme';
   if (u.includes('HGS')) return 'hgs';

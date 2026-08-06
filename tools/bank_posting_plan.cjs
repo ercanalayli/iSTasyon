@@ -366,7 +366,14 @@ function classifyBankMovement(row = {}) {
     confidence = Math.max(confidence, 88);
     reasons.push('POS banka aktarimi');
   }
-  if (kind !== 'non_bank_summary_review' && (/KOMISYON|BSMV|BANKA MASRAF|FON TRANSFERI.*UCRET|EFT.*UCRET|FAST.*UCRET|HAVALE.*UCRET|KATKI PAYI/.test(text) || (amountOut(row) > 0 && /POS|KREDI KART|UYE ISYERI/.test(text)))) {
+  // 2026-08-06: ".*" sinirsiz araliktaydi - "Gelen FAST Anlik Odeme - SONDA
+  // VE STOMA UCRETI (...)" gibi GERCEK bir musteri tahsilatinda, aciklamanin
+  // sonlarindaki alakasiz "ucret" kelimesi (hizmet bedeli anlaminda) "FAST"
+  // ile hatali eslesip 13.421 TL'lik tahsilati banka masrafi sanmisti -
+  // Ercan bunu "kabul edilemez" diye isaretledi. Fix: FAST/EFT/HAVALE/FON
+  // TRANSFERI ile UCRET arasinda en fazla ~20 karakter olsun (gercek banka
+  // masrafi ifadeleri hep bitisik: "FAST Ucreti", "EFT Ucreti BSMV" gibi).
+  if (kind !== 'non_bank_summary_review' && (/KOMISYON|BSMV|BANKA MASRAF|FON TRANSFERI.{0,20}UCRET|EFT.{0,20}UCRET|FAST.{0,20}UCRET|HAVALE.{0,20}UCRET|KATKI PAYI/.test(text) || (amountOut(row) > 0 && /POS|KREDI KART|UYE ISYERI/.test(text)))) {
     kind = 'bank_fee_expense';
     type = 'Banka/POS masrafi';
     target = 'BizimHesap gider/masraf kaydi';
