@@ -105,9 +105,16 @@ async function bizimhesapPostExpense(row) {
   const dolduruldu = await page.evaluate((hareket) => {
     const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
     const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
-    const setSelectByText = texts => { const wants = texts.map(norm2); for (const s of [...document.querySelectorAll('select')].filter(visible)) { const opt = [...s.options].find(o => wants.some(w => norm2(o.text).includes(w))); if (opt) { s.value = opt.value; s.dispatchEvent(new Event('change', { bubbles: true })); return true; } } return false; };
+    // React/Angular gibi framework'ler value'yu native setter'i override edip
+    // izliyor - dogrudan el.value=... atamasi onlarin ic state'ini GUNCELLEMEZ,
+    // gorsel olarak doluymus gibi gorunse bile "Kaydet" validasyonu bos sayar.
+    // Cozum: native prototype setter'i cagirip GERCEK degisikligi tetiklemek
+    // (React'in programatik value degisikligini fark etmesi icin bilinen teknik).
+    const nativeInputSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    const nativeSelectSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+    const setSelectByText = texts => { const wants = texts.map(norm2); for (const s of [...document.querySelectorAll('select')].filter(visible)) { const opt = [...s.options].find(o => wants.some(w => norm2(o.text).includes(w))); if (opt) { nativeSelectSetter.call(s, opt.value); s.dispatchEvent(new Event('input', { bubbles: true })); s.dispatchEvent(new Event('change', { bubbles: true })); return true; } } return false; };
     const fieldText = x => { const box = x.getBoundingClientRect(); const labels = [...document.querySelectorAll('label,.control-label,td,th,div,span')].filter(visible).filter(y => { const b = y.getBoundingClientRect(); return (b.right <= box.left + 10 && Math.abs((b.top + b.bottom) / 2 - (box.top + box.bottom) / 2) < 40) || (b.bottom <= box.top + 10 && Math.abs((b.left + b.right) / 2 - (box.left + box.right) / 2) < 180); }).map(y => y.innerText || '').join(' '); return norm2([x.name, x.id, x.placeholder, x.getAttribute('aria-label'), x.closest('label')?.innerText, labels].join(' ')); };
-    const setValue = (el, value) => { el.focus(); el.value = value == null ? '' : String(value); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); el.blur(); return true; };
+    const setValue = (el, value) => { el.focus(); nativeInputSetter.call(el, value == null ? '' : String(value)); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); el.blur(); return true; };
     const setByHint = (hints, value) => { const hs = hints.map(norm2); const el = [...document.querySelectorAll('input,textarea')].filter(visible).find(x => hs.some(h => fieldText(x).includes(h))); return el ? setValue(el, value) : false; };
     // Ilk select (Proje) opsiyonel, dokunulmuyor. Ikinci select (Masraf Kalemi)
     // ve hesap select'i zorunlu. Hesap icin ONCE tam hesap adi denenir; sadece
