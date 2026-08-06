@@ -109,8 +109,8 @@ async function bizimhesapPostExpense(row) {
     const fieldText = x => { const box = x.getBoundingClientRect(); const labels = [...document.querySelectorAll('label,.control-label,td,th,div,span')].filter(visible).filter(y => { const b = y.getBoundingClientRect(); return (b.right <= box.left + 10 && Math.abs((b.top + b.bottom) / 2 - (box.top + box.bottom) / 2) < 40) || (b.bottom <= box.top + 10 && Math.abs((b.left + b.right) / 2 - (box.left + box.right) / 2) < 180); }).map(y => y.innerText || '').join(' '); return norm2([x.name, x.id, x.placeholder, x.getAttribute('aria-label'), x.closest('label')?.innerText, labels].join(' ')); };
     const setValue = (el, value) => { el.focus(); el.value = value == null ? '' : String(value); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); el.blur(); return true; };
     const setByHint = (hints, value) => { const hs = hints.map(norm2); const el = [...document.querySelectorAll('input,textarea')].filter(visible).find(x => hs.some(h => fieldText(x).includes(h))); return el ? setValue(el, value) : false; };
-    setSelectByText(['mali giderler']);
-    setSelectByText(['banka masrafi', 'banka masrafı']);
+    setSelectByText(['mali gider']);
+    setSelectByText(['banka masraf']);
     setSelectByText(['odendi', 'ödendi']);
     setSelectByText([hareket.hesap || '*is bankasi', '*iş bankası', 'is bankasi', 'iş bankası']);
     const t1 = setByHint(['tarih'], hareket.tarih);
@@ -139,6 +139,44 @@ async function bizimhesapPostExpense(row) {
   return { ok: dogrulama.found, mesaj: dogrulama.found ? 'Kaydedildi ve listede dogrulandi.' : 'Kaydet tiklandi ama listede DOGRULANAMADI: ' + dogrulama.ozet };
 }
 
+// Genel amacli sayfa okuma: bir menu yoluna tikla (opsiyonel), bir URL'e git,
+// opsiyonel arama yap, sayfanin tam metnini ve varsa tablo satirlarini dondur.
+// Bunun icin: params.url (tam URL) VEYA params.menu (["Tedarikçiler"] gibi tiklanacak menu adlari dizisi),
+// params.search (opsiyonel arama kutusuna yazilacak metin).
+async function bizimhesapFetch(params) {
+  if (params.url) {
+    await page.goto(params.url, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+  } else if (Array.isArray(params.menu)) {
+    for (const kelime of params.menu) {
+      await tiklaMenu(kelime);
+      await new Promise(r => setTimeout(r, 600));
+    }
+  }
+  await new Promise(r => setTimeout(r, 1000));
+
+  if (params.search) {
+    await page.evaluate((needle) => {
+      const input = document.querySelector('input[type="text"],input:not([type])');
+      if (!input) return false;
+      input.focus(); input.value = needle;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+      return true;
+    }, params.search);
+    await new Promise(r => setTimeout(r, 1500));
+  }
+
+  const sonuc = await page.evaluate(() => {
+    const tables = [...document.querySelectorAll('table')].map(t =>
+      [...t.querySelectorAll('tr')].map(tr => [...tr.querySelectorAll('td,th')].map(td => (td.innerText || '').trim()))
+    );
+    return { url: location.href, metin: (document.body.innerText || '').replace(/\s+/g, ' ').trim(), tablolar: tables };
+  });
+  return sonuc;
+}
+
 async function handleCommand(cmd) {
   log(`Komut alindi: #${cmd.id} komut=${cmd.command} params=${JSON.stringify(cmd.params)}`);
   await db.from('bot_commands').update({ status: 'processing', started_at: new Date().toISOString() }).eq('id', cmd.id);
@@ -149,6 +187,9 @@ async function handleCommand(cmd) {
     if (cmd.command === 'bizimhesap_verify') {
       const r = await bizimhesapVerify(params.search || 'APERION AUTO');
       outcome = { ok: true, output: `bulundu=${r.found} | ${r.ozet}` };
+    } else if (cmd.command === 'bizimhesap_fetch') {
+      const r = await bizimhesapFetch(params);
+      outcome = { ok: true, output: JSON.stringify(r).slice(0, 7900) };
     } else if (cmd.command === 'bizimhesap_process') {
       const { data: row, error } = await db.from(BANK_TABLE).select('*').eq('id', params.id).single();
       if (error || !row) { outcome = { ok: false, output: `Kayit bulunamadi: ${error?.message || params.id}` }; }
