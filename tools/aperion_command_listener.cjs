@@ -136,12 +136,15 @@ async function bizimhesapPostExpense(row) {
     return true;
   });
   if (!tiklandi) return { ok: false, mesaj: 'Kaydet butonu bulunamadi' };
+  await new Promise(r => setTimeout(r, 800));
+  const hemenSonra = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 600)).catch(() => '');
   await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {});
   await new Promise(r => setTimeout(r, 1500));
+  const urlSonra = page.url();
 
   // DOGRULAMA: tikladim demek yetmez, GERCEKTEN listede goruyor muyum kontrol et.
-  const dogrulama = await bizimhesapVerify(row.aciklama);
-  return { ok: dogrulama.found, mesaj: dogrulama.found ? 'Kaydedildi ve listede dogrulandi.' : 'Kaydet tiklandi ama listede DOGRULANAMADI: ' + dogrulama.ozet };
+  const dogrulama = await bizimhesapVerify('APERION AUTO | ID:' + (row.id || ''));
+  return { ok: dogrulama.found, mesaj: dogrulama.found ? 'Kaydedildi ve listede dogrulandi.' : `Kaydet sonrasi (${urlSonra}): ${hemenSonra} | DOGRULAMA: ${dogrulama.ozet}` };
 }
 
 // Genel amacli sayfa okuma: bir menu yoluna tikla (opsiyonel), bir URL'e git,
@@ -200,7 +203,7 @@ async function handleCommand(cmd) {
       if (error || !row) { outcome = { ok: false, output: `Kayit bulunamadi: ${error?.message || params.id}` }; }
       else {
         const aciklama = `APERION AUTO | ID:${row.id} | TIP:${row.tur} | FIRMA:${row.firma_id} | ${(row.aciklama || '').slice(0, 150)}`;
-        const r = await bizimhesapPostExpense({ tarih: row.tarih, tutar: para(row.tutar), aciklama, hesap: row.hesap });
+        const r = await bizimhesapPostExpense({ id: row.id, tarih: row.tarih, tutar: para(row.tutar), aciklama, hesap: row.hesap });
         outcome = { ok: r.ok, output: r.mesaj };
         if (r.ok) await db.from(BANK_TABLE).update({ bizimhesap_durumu: 'kaydedildi', bizimhesap_mesaj: r.mesaj, bizimhesap_islem_tarihi: new Date().toISOString() }).eq('id', row.id);
       }
