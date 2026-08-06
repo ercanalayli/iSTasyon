@@ -10,5 +10,8 @@ export async function readAttachmentBuffer(gmail, messageId, attachmentId){
 
 export function isReadableBankAttachment(file){
   const name = String(file?.filename || '').toLowerCase();
-  return name.endsWith('.pdf') || name.endsWith('.txt') || name.endsWith('.csv') || name.endsWith('.zip');
+  // 2026-08-06: .xlsx/.xls buraya hic eklenmemisti - lib/pdf-text.js xlsx
+  // okuyabilir hale getirilse bile bu kapidan gecemedigi icin ekler hic
+  // indirilmiyordu (Vakifbank gunluk ekstresi tam olarak bu formatta).
+  return name.endsWith('.pdf') || name.endsWith('.txt') || name.endsWith('.csv') || name.endsWith('.zip') || name.endsWith('.xlsx') || name.endsWith('.xls');
 }

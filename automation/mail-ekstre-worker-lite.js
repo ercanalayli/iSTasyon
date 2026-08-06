@@ -221,6 +221,12 @@ async function filterAlreadyStoredRows(db, rows, report){
   }
   const keys = new Set((data || []).map(r => r.duplicate_key).filter(Boolean));
   const signatures = new Map((data || []).map(r => [rowSignature(r), r.id]));
+  if(process.env.DEBUG_PREFILTER){
+    console.error('DEBUG existing_count=' + (data||[]).length + ' keys_size=' + keys.size + ' sig_size=' + signatures.size);
+    console.error('DEBUG from=' + from + ' to=' + to);
+    (data||[]).forEach(r => console.error('DEBUG_EXISTING dup_key=[' + r.duplicate_key + '] sig=[' + rowSignature(r) + ']'));
+    rows.slice(0,3).forEach(r => console.error('DEBUG_NEWROW dup_key=[' + r.duplicate_key + '] sig=[' + rowSignature(r) + ']'));
+  }
   const fresh = [];
   const skipped = [];
   for(const row of rows){

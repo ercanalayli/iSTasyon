@@ -17,8 +17,15 @@ export function detectBank(text, meta = {}) {
   return String(meta.bank_hint || 'unknown').toLowerCase();
 }
 
+const XLSX_JSON_PREFIX = 'APERION_XLSX_JSON_V1:';
+
 export function parseBankStatement(text, meta = {}) {
   if (isNonBankMail(text, meta)) return [];
+  if (String(text || '').startsWith(XLSX_JSON_PREFIX)) {
+    const rows = parseXlsxTableRows(text, meta);
+    if (rows.length) return qualityGate(rows);
+    return [];
+  }
   const bank = detectBank(text, meta);
   const isNotification = meta.source === 'gmail_bank_notification' || meta.attachment_name === 'mail_body';
   if (isNotification) {
@@ -28,6 +35,73 @@ export function parseBankStatement(text, meta = {}) {
   const rows = bank === 'isbank' || bank.includes('is') ? parseIsbank(text, meta) : parseGenericBank(text, { ...meta, bank_name: bank });
   const notificationRows = rows.length ? rows : parseBankNotification(text, { ...meta, bank_name: bank });
   return qualityGate(notificationRows);
+}
+
+// 2026-08-06: Vakifbank (ve benzeri) xlsx hesap ekstreleri gercek bir tablo -
+// HESAP NO,FIS NO,HAREKET TARIH,ISLEM TARIHI,KART NO,ISLEM,TUTAR,BAKIYE,
+// KANAL,ISLEM NO,REFERANS,HAVALE,REF NO,TCKN,VKN,B/A,ACIKLAMA seklinde
+// sutunlari var. Bunu metin regex'iyle taramak yerine baslik satirindan
+// sutun index'lerini bulup dogrudan satir satir okuyoruz - TUTAR zaten
+// B/A ile tutarli isaretli (A=pozitif/gelen, B=negatif/giden) JS number
+// olarak geliyor, hicbir binlik-ayiraci/virgul belirsizligi yok.
+function parseXlsxTableRows(text, meta = {}) {
+  let sheets;
+  try {
+    sheets = JSON.parse(text.slice(XLSX_JSON_PREFIX.length));
+  } catch {
+    return [];
+  }
+  const bank = detectBank('', meta);
+  const bankName = bankLabel(meta, bank);
+  const out = [];
+  for (const rows2d of sheets) {
+    if (!Array.isArray(rows2d) || !rows2d.length) continue;
+    const headerIdx = rows2d.findIndex(r => Array.isArray(r) && r.some(c => key(c) === 'HESAP_NO') && r.some(c => key(c) === 'ACIKLAMA'));
+    if (headerIdx < 0) continue;
+    const header = rows2d[headerIdx].map(h => key(h));
+    const col = name => header.indexOf(name);
+    const cIslemTarihi = col('ISLEM_TARIHI');
+    const cHareketTarih = col('HAREKET_TARIH');
+    const cIslem = col('ISLEM');
+    const cTutar = col('TUTAR');
+    const cBakiye = col('BAKIYE');
+    const cAciklama = col('ACIKLAMA');
+    const cFisNo = col('FIS_NO');
+    if (cTutar < 0 || cAciklama < 0) continue;
+    const sid = statementId(meta) || key(`${meta.mail_id || ''} ${meta.mail_subject || ''}`);
+    for (let i = headerIdx + 1; i < rows2d.length; i++) {
+      const row = rows2d[i];
+      if (!Array.isArray(row) || !row.length) continue;
+      const tutar = Number(row[cTutar]);
+      if (!Number.isFinite(tutar) || tutar === 0) continue;
+      const hareketRaw = String(row[cHareketTarih] || '');
+      const tarihStr = String(row[cIslemTarihi] || hareketRaw);
+      const dateMatch = tarihStr.match(/(\d{2})[\.\/](\d{2})[\.\/](\d{4})/);
+      if (!dateMatch) continue;
+      const transaction_date = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
+      const timeMatch = hareketRaw.match(/(\d{2}):(\d{2})/);
+      const islemLabel = clean(row[cIslem]);
+      const aciklama = clean(row[cAciklama]);
+      const description = clean([islemLabel, aciklama].filter(Boolean).join(' - ')).slice(0, 700);
+      if (!description) continue;
+      const balanceVal = cBakiye >= 0 ? Number(row[cBakiye]) : null;
+      const tx = baseTx(meta, bankName, sid, {
+        transaction_date,
+        transaction_time: timeMatch ? `${timeMatch[1]}:${timeMatch[2]}` : '',
+        value_date: '',
+        description,
+        amount_in: tutar > 0 ? tutar : 0,
+        amount_out: tutar < 0 ? Math.abs(tutar) : 0,
+        balance_after: Number.isFinite(balanceVal) ? balanceVal : null,
+        detected_type: typeOf(description, tutar),
+        suggested_counterparty: '',
+        confidence_score: 90
+      });
+      tx.duplicate_key = cFisNo >= 0 && row[cFisNo] ? `${key(bankName)}:${meta.statement_id || sid}:${row[cFisNo]}` : duplicate(bankName, tx);
+      out.push(tx);
+    }
+  }
+  return out;
 }
 
 export function parseBankNotification(text, meta = {}) {

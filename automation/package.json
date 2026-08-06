@@ -14,8 +14,9 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
-    "googleapis": "latest",
     "adm-zip": "latest",
-    "pdf-parse": "latest"
+    "googleapis": "latest",
+    "pdf-parse": "latest",
+    "xlsx": "^0.18.5"
   }
 }
