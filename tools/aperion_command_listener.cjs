@@ -109,18 +109,19 @@ async function bizimhesapPostExpense(row) {
     const fieldText = x => { const box = x.getBoundingClientRect(); const labels = [...document.querySelectorAll('label,.control-label,td,th,div,span')].filter(visible).filter(y => { const b = y.getBoundingClientRect(); return (b.right <= box.left + 10 && Math.abs((b.top + b.bottom) / 2 - (box.top + box.bottom) / 2) < 40) || (b.bottom <= box.top + 10 && Math.abs((b.left + b.right) / 2 - (box.left + box.right) / 2) < 180); }).map(y => y.innerText || '').join(' '); return norm2([x.name, x.id, x.placeholder, x.getAttribute('aria-label'), x.closest('label')?.innerText, labels].join(' ')); };
     const setValue = (el, value) => { el.focus(); el.value = value == null ? '' : String(value); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); el.blur(); return true; };
     const setByHint = (hints, value) => { const hs = hints.map(norm2); const el = [...document.querySelectorAll('input,textarea')].filter(visible).find(x => hs.some(h => fieldText(x).includes(h))); return el ? setValue(el, value) : false; };
-    setSelectByText(['mali gider']);
-    setSelectByText(['banka masraf']);
-    setSelectByText(['odendi', 'ödendi']);
-    setSelectByText([hareket.hesap || '*is bankasi', '*iş bankası', 'is bankasi', 'iş bankası']);
+    const kalemOk = setSelectByText(['mali gider']);
+    const masrafOk = setSelectByText(['banka masraf']);
+    const odemeOk = setSelectByText(['odendi', 'ödendi']);
+    const hesapOk = setSelectByText([hareket.hesap || '*is bankasi', '*iş bankası', 'is bankasi', 'iş bankası']);
     const t1 = setByHint(['tarih'], hareket.tarih);
     const t2 = setByHint(['odeme tarihi', 'ödeme tarihi'], hareket.tarih);
     const tutarOk = setByHint(['tutar', 'amount', 'meblag'], hareket.tutar);
     const aciklamaOk = setByHint(['aciklama', 'not', 'description'], hareket.aciklama);
-    return { tarih: t1 || t2, tutar: tutarOk, aciklama: aciklamaOk };
+    const selectDump = [...document.querySelectorAll('select')].filter(visible).map(s => ({ secili: s.selectedOptions[0]?.text || '(yok)', ilkSecenekler: [...s.options].slice(0, 4).map(o => o.text) }));
+    return { tarih: t1 || t2, tutar: tutarOk, aciklama: aciklamaOk, kalemOk, masrafOk, odemeOk, hesapOk, selectDump };
   }, row);
 
-  if (!dolduruldu.tarih || !dolduruldu.tutar || !dolduruldu.aciklama) {
+  if (!dolduruldu.tarih || !dolduruldu.tutar || !dolduruldu.aciklama || !dolduruldu.kalemOk || !dolduruldu.masrafOk || !dolduruldu.hesapOk) {
     return { ok: false, mesaj: 'Form alanlari eksik: ' + JSON.stringify(dolduruldu) };
   }
 
