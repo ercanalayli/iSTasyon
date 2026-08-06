@@ -102,34 +102,35 @@ async function bizimhesapPostExpense(row) {
   await new Promise(r => setTimeout(r, 1200));
   await page.waitForSelector('input,textarea,select,button', { timeout: 15000 });
 
+  // 2026-08-06: bulanik label-yakinlik eslestirmesi (fieldText/setByHint)
+  // alanlari BIRBIRINE KARISTIRIYORDU - tutar degeri "Odeme Tarihi"
+  // (txtDueDate) alanina, aciklama ise "Islem Tarihi" (txtDocumentDate)
+  // alanina yaziliyordu; gercek txtAmount/txtNote BOS kaliyordu. Sunucunun
+  // gercek POST cevabini diske dump edip alan haritasini id'leriyle net
+  // tespit ettik (ASP.NET WebForms, id'ler sabit): txtDocumentDate=Islem
+  // Tarihi, txtDueDate=Odeme Tarihi(Vade), txtAmount=Tutar, txtNote=Aciklama,
+  // ddlCostAccounts=Masraf Kalemi, ddlPaymentOption=Odeme Durumu,
+  // ddlCashierNew=Hesap. Artik ID ile DOGRUDAN hedefleniyor, fuzzy yok.
   const dolduruldu = await page.evaluate((hareket) => {
     const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
-    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
-    // React/Angular gibi framework'ler value'yu native setter'i override edip
-    // izliyor - dogrudan el.value=... atamasi onlarin ic state'ini GUNCELLEMEZ,
-    // gorsel olarak doluymus gibi gorunse bile "Kaydet" validasyonu bos sayar.
-    // Cozum: native prototype setter'i cagirip GERCEK degisikligi tetiklemek
-    // (React'in programatik value degisikligini fark etmesi icin bilinen teknik).
     const nativeInputSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
     const nativeSelectSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
-    const setSelectByText = texts => { const wants = texts.map(norm2); for (const s of [...document.querySelectorAll('select')].filter(visible)) { const opt = [...s.options].find(o => wants.some(w => norm2(o.text).includes(w))); if (opt) { nativeSelectSetter.call(s, opt.value); s.dispatchEvent(new Event('input', { bubbles: true })); s.dispatchEvent(new Event('change', { bubbles: true })); return true; } } return false; };
-    const fieldText = x => { const box = x.getBoundingClientRect(); const labels = [...document.querySelectorAll('label,.control-label,td,th,div,span')].filter(visible).filter(y => { const b = y.getBoundingClientRect(); return (b.right <= box.left + 10 && Math.abs((b.top + b.bottom) / 2 - (box.top + box.bottom) / 2) < 40) || (b.bottom <= box.top + 10 && Math.abs((b.left + b.right) / 2 - (box.left + box.right) / 2) < 180); }).map(y => y.innerText || '').join(' '); return norm2([x.name, x.id, x.placeholder, x.getAttribute('aria-label'), x.closest('label')?.innerText, labels].join(' ')); };
-    const setValue = (el, value) => { el.focus(); nativeInputSetter.call(el, value == null ? '' : String(value)); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); el.blur(); return true; };
-    const setByHint = (hints, value) => { const hs = hints.map(norm2); const el = [...document.querySelectorAll('input,textarea')].filter(visible).find(x => hs.some(h => fieldText(x).includes(h))); return el ? setValue(el, value) : false; };
-    // Ilk select (Proje) opsiyonel, dokunulmuyor. Ikinci select (Masraf Kalemi)
-    // ve hesap select'i zorunlu. Hesap icin ONCE tam hesap adi denenir; sadece
-    // hareket.hesap YOKSA genel "is bankasi" yedegine dusulur - yoksa yanlis
-    // (ilk sirada gorunen) banka secilebiliyordu (2026-08-06 bulundu).
-    const masrafOk = setSelectByText(['banka masraf']);
-    const odemeOk = setSelectByText(['odendi', 'ödendi']);
+    const nativeTextareaSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+    const byId = id => document.getElementById(id);
+    const setInput = (id, value) => { const el = byId(id); if (!el) return false; el.focus(); nativeInputSetter.call(el, value == null ? '' : String(value)); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); el.blur(); return el.value === String(value); };
+    const setTextarea = (id, value) => { const el = byId(id); if (!el) return false; el.focus(); nativeTextareaSetter.call(el, value == null ? '' : String(value)); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); el.blur(); return el.value === String(value); };
+    const setSelect = (id, texts) => { const s = byId(id); if (!s) return false; const wants = texts.map(norm2); const opt = [...s.options].find(o => wants.some(w => norm2(o.text).includes(w))); if (!opt) return false; nativeSelectSetter.call(s, opt.value); s.dispatchEvent(new Event('input', { bubbles: true })); s.dispatchEvent(new Event('change', { bubbles: true })); return true; };
+
+    const tarihOk = setInput('txtDocumentDate', hareket.tarih);
+    const vadeOk = setInput('txtDueDate', hareket.tarih);
+    const tutarOk = setInput('txtAmount', hareket.tutar);
+    const aciklamaOk = setTextarea('txtNote', hareket.aciklama);
+    const masrafOk = setSelect('ddlCostAccounts', ['banka masraf']);
+    const odemeOk = setSelect('ddlPaymentOption', ['odendi', 'ödendi']);
     const hesapHints = hareket.hesap ? [hareket.hesap] : ['*is bankasi', '*iş bankası', 'is bankasi', 'iş bankası'];
-    const hesapOk = setSelectByText(hesapHints);
-    const t1 = setByHint(['tarih'], hareket.tarih);
-    const t2 = setByHint(['odeme tarihi', 'ödeme tarihi'], hareket.tarih);
-    const tutarOk = setByHint(['tutar', 'amount', 'meblag'], hareket.tutar);
-    const aciklamaOk = setByHint(['aciklama', 'not', 'description'], hareket.aciklama);
-    const selectDump = [...document.querySelectorAll('select')].filter(visible).map(s => ({ secili: s.selectedOptions[0]?.text || '(yok)', ilkSecenekler: [...s.options].slice(0, 4).map(o => o.text) }));
-    return { tarih: t1 || t2, tutar: tutarOk, aciklama: aciklamaOk, masrafOk, odemeOk, hesapOk, selectDump };
+    const hesapOk = setSelect('ddlCashierNew', hesapHints);
+    const selectDump = ['ddlCostAccounts', 'ddlPaymentOption', 'ddlCashierNew'].map(id => { const s = byId(id); return { id, secili: s?.selectedOptions[0]?.text || '(yok)' }; });
+    return { tarih: tarihOk && vadeOk, tutar: tutarOk, aciklama: aciklamaOk, masrafOk, odemeOk, hesapOk, selectDump };
   }, row);
 
   if (!dolduruldu.tarih || !dolduruldu.tutar || !dolduruldu.aciklama || !dolduruldu.masrafOk || !dolduruldu.hesapOk) {
@@ -150,8 +151,21 @@ async function bizimhesapPostExpense(row) {
       const method = res.request().method();
       if (method === 'GET' && res.status() < 400) return;
       let govde = '';
-      try { govde = (await res.text()).slice(0, 500); } catch {}
-      agListesi.push(`${method} ${res.status()} ${url.replace('https://bizimhesap.com', '')} :: ${govde}`);
+      try { govde = await res.text(); } catch {}
+      const kisaUrl = url.replace('https://bizimhesap.com', '');
+      let gercekBizimHesapPost = false;
+      try { const u = new URL(url); gercekBizimHesapPost = u.hostname === 'bizimhesap.com' && /\/ngncostentry/i.test(u.pathname); } catch {}
+      if (gercekBizimHesapPost && method === 'POST') {
+        // Bu, Kaydet'in gercek POST cevabi - DB'nin 8000 karakter siniri ve
+        // kelime-eslesmeli kirpma yaniltici oldugu icin (websocket JS
+        // boilerplate'i "error" kelimesiyle yanlis eslesip gercek hatayi
+        // gizledi) TAM govdeyi diske yaz, ozet olarak sadece uzunluk dondur.
+        try { fs.writeFileSync(path.join(__dirname, '..', 'local-secrets', 'kaydet_response.html'), govde); } catch {}
+        govde = `TAM_GOVDE_DISKE_YAZILDI uzunluk=${govde.length} local-secrets/kaydet_response.html`;
+      } else {
+        govde = govde.slice(0, 200);
+      }
+      agListesi.push(`${method} ${res.status()} ${kisaUrl} :: ${govde}`);
     } catch {}
   };
   const onConsole = (msg) => { if (['error', 'warning'].includes(msg.type())) konsolListesi.push(`[${msg.type()}] ${msg.text()}`); };
