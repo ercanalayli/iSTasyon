@@ -130,8 +130,13 @@ async function bizimhesapPostExpense(row) {
   }
 
   const tiklandi = await page.evaluate(() => {
-    const btn = [...document.querySelectorAll('button,a,input[type="submit"]')].find(x => (x.innerText || x.value || '').toLowerCase().includes('kaydet'));
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const btn = [...document.querySelectorAll('button,a,input[type="submit"],input[type="button"]')]
+      .filter(visible)
+      .filter(x => !x.disabled)
+      .find(x => (x.innerText || x.value || '').trim().toLowerCase().includes('kaydet'));
     if (!btn) return false;
+    btn.scrollIntoView({ block: 'center' });
     btn.click();
     return true;
   });
