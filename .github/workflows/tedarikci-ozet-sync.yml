@@ -1,0 +1,27 @@
+name: AperiON Tedarikci Ozet Sync
+
+# Gunde bir kez BizimHesap Alislar listesindeki tedarikci bazli satin alma
+# hacmini (son 3 ay) tarayip public.supplier_purchase_summary tablosuna
+# yazan komutu kuyruga ekler. Gercek tarama isini yerel dinleyici yapar.
+on:
+  workflow_dispatch: {}
+  schedule:
+    # 06:40 Europe/Istanbul (UTC+3) - cari senkrondan 10 dk sonra
+    - cron: '40 3 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm run tedarikci:ozet:sync:queue

@@ -804,6 +804,77 @@ async function bizimhesapCariBakiyeSync() {
   return { filtreTiklandi, toplamSatir: satirlar.length, bakiyesiOlan: kayitlar.length, yazilan };
 }
 
+// 2026-08-07: Ercan'in istegi - "tedarikci fiyat analizi". product_raw'da
+// urun basina TEK guncel alis_fiyat var ama farkli tedarikcilerin AYNI
+// urune verdigi fiyati karsilastirmiyor; bunun icin her faturanin satir
+// detayina inmek gerekir (cok daha buyuk bir tarama). Onun yerine daha
+// gerceklestirilebilir bir versiyon: BizimHesap Alislar listesinden
+// tedarikci bazli SATIN ALMA HACMI ozeti (kac fatura, toplam tutar, ilk/
+// son tarih) - "hangi tedarikciye ne kadar bagimliyiz" sorusuna cevap
+// verir, ayni ".search-results" sanal-kaydirma deseni kullanilir.
+const PURCHASES_URL = 'https://bizimhesap.com/web/ngn/doc/ngnretailpurchases';
+
+async function bizimhesapTedarikciOzetSync() {
+  await page.goto(PURCHASES_URL, { waitUntil: 'networkidle2', timeout: 30000 });
+  await new Promise(r => setTimeout(r, 1000));
+
+  let oncekiSayi = -1, sabitTur = 0;
+  for (let i = 0; i < 400 && sabitTur < 3; i++) {
+    const suankiSayi = await page.evaluate(() => document.querySelectorAll('table tbody tr, tr').length);
+    if (suankiSayi === oncekiSayi) sabitTur++; else sabitTur = 0;
+    oncekiSayi = suankiSayi;
+    await page.evaluate(() => {
+      const kapsayici = document.querySelector('.search-results') ||
+        [...document.querySelectorAll('*')].find(el => { const s = getComputedStyle(el); return (s.overflowY === 'auto' || s.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 10; });
+      if (kapsayici) kapsayici.scrollTop = kapsayici.scrollHeight;
+      else window.scrollTo(0, document.body.scrollHeight);
+    });
+    await new Promise(r => setTimeout(r, 350));
+  }
+
+  const satirlar = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('table tbody tr')];
+    return rows.map(tr => [...tr.querySelectorAll('td')].map(td => (td.innerText || '').trim()));
+  });
+
+  const tarihSayi = t => {
+    const m = String(t || '').match(/(\d{2})\.(\d{2})\.(\d{4})/);
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
+  };
+
+  const ozet = {};
+  for (const r of satirlar) {
+    if (r.length < 4) continue;
+    const [tarihTxt, unvan, , tutarTxt] = r;
+    const unv = (unvan || '').trim();
+    const tutar = paraSayi(tutarTxt);
+    const tarih = tarihSayi(tarihTxt);
+    if (!unv || !tutar) continue;
+    if (!ozet[unv]) ozet[unv] = { adet: 0, toplam: 0, ilk: tarih, son: tarih };
+    const o = ozet[unv];
+    o.adet++;
+    o.toplam += tutar;
+    if (tarih && (!o.ilk || tarih < o.ilk)) o.ilk = tarih;
+    if (tarih && (!o.son || tarih > o.son)) o.son = tarih;
+  }
+
+  let yazilan = 0;
+  for (const [unv, o] of Object.entries(ozet)) {
+    const { error } = await db.from('supplier_purchase_summary').upsert({
+      company_id: COMPANY_ID,
+      tedarikci_unvan: unv,
+      fatura_sayisi: o.adet,
+      toplam_tutar: o.toplam,
+      ilk_tarih: o.ilk,
+      son_tarih: o.son,
+      guncelleme: new Date().toISOString(),
+    }, { onConflict: 'company_id,tedarikci_unvan' });
+    if (!error) yazilan++;
+  }
+
+  return { toplamSatir: satirlar.length, tedarikciSayisi: Object.keys(ozet).length, yazilan };
+}
+
 async function bizimhesapFetch(params) {
   if (params.url) {
     await page.goto(params.url, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
@@ -870,6 +941,9 @@ async function handleCommand(cmd) {
       outcome = { ok: true, output: r.slice(0, 7900) };
     } else if (cmd.command === 'bizimhesap_cari_bakiye_sync') {
       const r = await bizimhesapCariBakiyeSync();
+      outcome = { ok: true, output: JSON.stringify(r) };
+    } else if (cmd.command === 'bizimhesap_tedarikci_ozet_sync') {
+      const r = await bizimhesapTedarikciOzetSync();
       outcome = { ok: true, output: JSON.stringify(r) };
     } else if (cmd.command === 'bizimhesap_scroll_diag') {
       const r = await page.evaluate(() => {

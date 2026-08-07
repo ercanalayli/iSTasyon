@@ -90,6 +90,7 @@
     "mail:ekstre:run": "cd automation && node mail-ekstre-worker-lite.js",
     "verify:mail-bank-notifications": "node tools/verify_mail_body_bank_notifications.mjs",
     "cari:bakiye:sync:queue": "node tools/kuyruk_cari_bakiye_sync.cjs",
+    "tedarikci:ozet:sync:queue": "node tools/kuyruk_tedarikci_ozet_sync.cjs",
     "bank:approval:preview": "node tools/preview_pending_bank_to_bizimhesap_plan.cjs --firma alayli --limit 25",
     "bank:approval:candidates": "npm run bank:approval:preview && node tools/select_bank_approval_candidate_v69.cjs",
     "bank:approval:candidate:dry": "npm run bank:approval:candidates && node tools/approve_bank_candidate_v70.cjs --dry-check",
