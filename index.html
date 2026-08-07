@@ -3622,6 +3622,16 @@ DATA_SOURCES.alayli=[
   ,{id:'telegramReminders',n:'Telegram Not / Hatirlatma',t:'telegram_reminders',kind:'table',date:'hatirlatma_zamani',mode:'aktif'}
 ];
 let RAW=[],cM='month',cF=PILOT_FIRMA,sK='ciro',sD=-1,yMode='year',tC=null,pC=null,yTC=null,yKC=null,PROD_MAP=[];
+let CARI_BAKIYE={},cariBakiyeYuklendi=false;
+const AL_COMPANY_ID='9e9003b8-2721-4940-a4e9-a1b9a898a4a3';
+function cariAdiNormalize(s){return (s||'').toString().trim().toUpperCase();}
+async function loadCariBakiye(){
+  if(cariBakiyeYuklendi)return;
+  try{
+    const{data,error}=await db.from('customers').select('cari_unvan,acik_bakiye,cek_senet_bakiyesi,bakiye_guncelleme').eq('company_id',AL_COMPANY_ID);
+    if(!error&&data){CARI_BAKIYE={};data.forEach(r=>{CARI_BAKIYE[cariAdiNormalize(r.cari_unvan)]={acikBakiye:Number(r.acik_bakiye||0),cekSenet:Number(r.cek_senet_bakiyesi||0),guncelleme:r.bakiye_guncelleme};});cariBakiyeYuklendi=true;}
+  }catch(e){}
+}
 const pad=n=>String(n).padStart(2,'0');
 const fmt=n=>Math.round(n).toLocaleString('tr');
 const fD=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -3684,7 +3694,7 @@ function gP(id,el){
   const p=PT[id]||{t:id,s:''};
   const tbT=document.getElementById('tbT'),tbS=document.getElementById('tbS');
   if(tbT)tbT.textContent=p.t;if(tbS)tbS.textContent=p.s;
-  if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler')rC();if(id==='finans')rA();if(id==='veri'){bUFG();lVD();loadSyncHealth();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();
+  if(id==='dashboard')showKarts();if(id==='satis')rU();if(id==='cariler'){rC();loadCariBakiye().then(rC);}if(id==='finans')rA();if(id==='veri'){bUFG();lVD();loadSyncHealth();}if(id==='stok')loadStok();if(id==='hedef')loadHedef();if(id==='gorevler')loadGorevler();
   if(requested==='banka')setTimeout(()=>fT('banka'),0);
 }
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="fT('${t}'"]`).forEach(x=>x.classList.add('on'));document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';const fp=document.getElementById('fplan');if(fp)fp.style.display=t==='plan'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();if(t==='plan')loadFinancePlans();}
@@ -6094,6 +6104,10 @@ function rC(){
     c.ilkT=c.tarihler[0]||'';
     c.gunFarki=c.sonT?Math.floor((today-new Date(c.sonT))/86400000):9999;
     c.openMonths=Object.values(c.months).filter(v=>v>0).length;
+    const gercekBakiye=CARI_BAKIYE[cariAdiNormalize(c.n)];
+    c.acikBakiye=gercekBakiye?gercekBakiye.acikBakiye:null;
+    c.cekSenet=gercekBakiye?gercekBakiye.cekSenet:null;
+    c.bakiyeGuncelleme=gercekBakiye?gercekBakiye.guncelleme:null;
     c.tahsilatVar=false;
     c.skor=cariSkor(c);
     c.risk=cariRiskTag(c);
@@ -6149,7 +6163,7 @@ function rC(){
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
         <div style="background:var(--s2);border-radius:7px;padding:8px"><div style="font-size:9px;color:var(--t3)">Tahsilat</div><div style="font-size:12px;font-weight:900;color:var(--orange)">eksik veri</div></div>
-        <div style="background:var(--s2);border-radius:7px;padding:8px"><div style="font-size:9px;color:var(--t3)">Bakiye A</div><div style="font-size:12px;font-weight:900;color:var(--orange)">eksik veri</div></div>
+        <div style="background:var(--s2);border-radius:7px;padding:8px"><div style="font-size:9px;color:var(--t3)">Açık Bakiye</div><div style="font-size:12px;font-weight:900;color:${c.acikBakiye===null?'var(--orange)':(c.acikBakiye>0?'var(--red)':'var(--green)')}">${c.acikBakiye===null?'veri yok':dynMoney(c.acikBakiye)}</div></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:9px">
         <div style="background:#F8FAFC;border:1px solid var(--b1);border-radius:7px;padding:7px"><div style="font-size:8px;color:var(--t3)">Bugün</div><div style="font-family:var(--mono);font-size:11px;font-weight:900;color:var(--green)">${dynMoney(c.todayTah)}</div></div>
@@ -6167,7 +6181,7 @@ function rC(){
       <div class="kpi r"><div class="kpi-l">Risk / Takip</div><div class="kpi-v">${fmt(riskli)}</div><div class="kpi-s">kontrol gereken cari</div></div>
       <div class="kpi o"><div class="kpi-l">En Büyük Cari</div><div class="kpi-v" style="font-size:15px">${escHtml((topCari?.n||'veri yok').substring(0,28))}</div><div class="kpi-s">${topCari?dynMoney(topCari.bakiye):'veri yok'}</div></div>
     </div>
-    <div class="customer-proof">Kaynak: sales_raw · Tahsilat ve Bakiye A alanları eksik veri olarak işaretlenir · Son 30 gün aktif cari: ${fmt(son30)} · Toplam tahakkuk: ${dynMoney(totalBakiye)}</div>
+    <div class="customer-proof">Tahakkuk kaynağı: sales_raw · Açık bakiye kaynağı: BizimHesap müşteri listesi (günlük otomatik senkron) · Tahsilat alanı henüz eksik veri · Son 30 gün aktif cari: ${fmt(son30)} · Toplam tahakkuk: ${dynMoney(totalBakiye)}</div>
     <div class="customer-grid">${cards}</div>`;
 }
 
@@ -6190,7 +6204,7 @@ function cariDetay(jsonStr){
     </div>
 
     <div class="dyn-grid" style="margin-bottom:20px">
-      ${dynBox('Cari adı',c.n)}${dynBox('Firma',fc.n||c.firma_id)}${dynBox('Son tahsilat tarihi','eksik veri','Tahsilat kaynağı bağlanınca dolar')}${dynBox('Son tahakkuk tarihi',c.sonT||'veri yok')}${dynBox('Güncel bakiye',dynMoney(c.bakiye),'Satış/tahakkuk verisinden hesaplandı')}${dynBox('Bakiye B',dynMoney(c.bakiye))}${dynBox('Bakiye A','eksik veri')}${dynBox('Açık ay sayısı',dynNum(c.openMonths))}${dynBox('Ödeme düzeni skoru',dynNum(c.skor))}${dynBox('Risk etiketi',c.risk.t)}
+      ${dynBox('Cari adı',c.n)}${dynBox('Firma',fc.n||c.firma_id)}${dynBox('Son tahsilat tarihi','eksik veri','Tahsilat kaynağı bağlanınca dolar')}${dynBox('Son tahakkuk tarihi',c.sonT||'veri yok')}${dynBox('Toplam tahakkuk (sales_raw)',dynMoney(c.bakiye),'Satış/tahakkuk verisinden hesaplandı')}${dynBox('Açık bakiye (BizimHesap)',c.acikBakiye===null?'veri yok':dynMoney(c.acikBakiye),c.bakiyeGuncelleme?('Güncelleme: '+new Date(c.bakiyeGuncelleme).toLocaleString('tr-TR')):'Bu caride BizimHesap kaydı bulunamadı')}${dynBox('Çek/Senet bakiyesi',c.cekSenet===null?'veri yok':dynMoney(c.cekSenet))}${dynBox('Açık ay sayısı',dynNum(c.openMonths))}${dynBox('Ödeme düzeni skoru',dynNum(c.skor))}${dynBox('Risk etiketi',c.risk.t)}
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
