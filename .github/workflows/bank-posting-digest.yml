@@ -1,0 +1,44 @@
+name: AperiON Bank Posting Digest
+
+on:
+  workflow_dispatch:
+    inputs:
+      send:
+        description: Send the Telegram digest (otherwise preview only)
+        required: true
+        default: false
+        type: boolean
+  schedule:
+    # 20:00 Europe/Istanbul (UTC+3). GitHub cron can be delayed.
+    - cron: '0 17 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  bank-posting-digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TELEGRAM_ALLOWED_CHAT_ID: ${{ secrets.TELEGRAM_ALLOWED_CHAT_ID }}
+      TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Preview digest
+        if: github.event_name == 'workflow_dispatch' && inputs.send != true
+        run: npm run bank:posting-digest:preview
+
+      - name: Send scheduled digest
+        if: github.event_name == 'schedule' || inputs.send == true
+        run: npm run bank:posting-digest:send
