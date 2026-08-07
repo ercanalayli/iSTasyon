@@ -466,6 +466,90 @@ async function bizimhesapRowMenu(hesapIpucu, esleme) {
   return { ...sonuc, menu };
 }
 
+// 2026-08-07: Ercan'in "hepsini sil tekrar yap" talimatiyla bulundu. Bir
+// satirin "Islem" menusundeki "Sil" linki javascript:$('#myModalDelete
+// TransactionConfirmation').modal('show'); $('#hdnIdTransaction').val('X')
+// seklinde - yani id'yi gizli alana yazip onay penceresini aciyor. Bu
+// fonksiyon: hesabi ac, "Bul:" ile filtrele, ILK eslesen satiri sil, onay
+// penceresindeki onayla butonuna tikla. TEK bir kayit siler - coklu silme
+// icin bizimhesapTumEslesenleriSil bunu dongude cagirir (silinince liste
+// yeniden render oldugu icin her seferinde bastan aranmali).
+async function bizimhesapBirKaydiSil(hesapIpucu, esleme) {
+  const acildi = await hesapAc(hesapIpucu);
+  if (!acildi) return { ok: false, mesaj: 'Hesap acilamadi' };
+  await new Promise(r => setTimeout(r, 800));
+  await page.evaluate((needle) => {
+    const label = [...document.querySelectorAll('*')].find(x => (x.textContent || '').trim() === 'Bul:' && x.children.length === 0);
+    let input = null;
+    if (label) { let cur = label.parentElement; for (let i = 0; i < 4 && cur && !input; i++) { input = cur.querySelector('input[type="text"],input:not([type])'); cur = cur.parentElement; } }
+    if (!input) input = document.querySelector('input[type="text"],input:not([type])');
+    if (!input) return false;
+    input.focus(); input.value = needle;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+    return true;
+  }, esleme);
+  await new Promise(r => setTimeout(r, 1500));
+
+  const acildiMenu = await page.evaluate((esleme) => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
+    const rows = [...document.querySelectorAll('tr')].filter(tr => visible(tr) && tr.innerText.includes(esleme));
+    if (!rows.length) return { bulundu: false };
+    const dropBtn = [...rows[0].querySelectorAll('a,button')].find(x => visible(x) && norm2(x.innerText || '').includes('islem'));
+    if (!dropBtn) return { bulundu: true, menuYok: true };
+    dropBtn.click();
+    return { bulundu: true };
+  }, esleme);
+  if (!acildiMenu.bulundu) return { ok: true, kalmadi: true, mesaj: `"${esleme}" icin baska kayit kalmadi` };
+  if (acildiMenu.menuYok) return { ok: false, mesaj: 'Islem menusu bulunamadi' };
+  await new Promise(r => setTimeout(r, 500));
+
+  const silTiklandi = await page.evaluate(() => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
+    const menus = [...document.querySelectorAll('.dropdown-menu,ul.dropdown-menu')].filter(visible);
+    for (const m of menus) {
+      const link = [...m.querySelectorAll('a,button')].find(x => norm2(x.innerText || '').trim() === 'sil');
+      if (link) { link.click(); return true; }
+    }
+    return false;
+  });
+  if (!silTiklandi) return { ok: false, mesaj: 'Sil linki bulunamadi' };
+  await new Promise(r => setTimeout(r, 800));
+
+  const onaylandi = await page.evaluate(() => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
+    const modal = document.getElementById('myModalDeleteTransactionConfirmation');
+    if (!modal) return false;
+    const btn = [...modal.querySelectorAll('a,button')].filter(visible).find(x => ['evet', 'sil', 'onayla', 'tamam', 'kaldir'].some(k => norm2(x.innerText || x.value || '').includes(k)));
+    if (!btn) return false;
+    btn.click();
+    return true;
+  });
+  if (!onaylandi) return { ok: false, mesaj: 'Silme onay butonu bulunamadi' };
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 1500));
+  return { ok: true, mesaj: 'Kayit silindi' };
+}
+
+// Ayni eslesme metni gecen TUM kayitlari silene kadar dongu (guvenlik icin
+// maxSayi ile sinirli). Her tur basinda bastan arar cunku silme sonrasi
+// liste yeniden render olur ve DOM referanslari gecersiz olur.
+async function bizimhesapTumEslesenleriSil(hesapIpucu, esleme, maxSayi) {
+  const sonuclar = [];
+  for (let i = 0; i < (maxSayi || 30); i++) {
+    const r = await bizimhesapBirKaydiSil(hesapIpucu, esleme);
+    sonuclar.push(r);
+    if (r.kalmadi) break;
+    if (!r.ok) break;
+  }
+  return { toplamSilinen: sonuclar.filter(r => r.ok && !r.kalmadi).length, detay: sonuclar };
+}
+
 async function bizimhesapFetch(params) {
   if (params.url) {
     await page.goto(params.url, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
@@ -518,6 +602,12 @@ async function handleCommand(cmd) {
     } else if (cmd.command === 'bizimhesap_row_menu') {
       const r = await bizimhesapRowMenu(params.hesap, params.esleme);
       outcome = { ok: true, output: JSON.stringify(r).slice(0, 7900) };
+    } else if (cmd.command === 'bizimhesap_sil_bir') {
+      const r = await bizimhesapBirKaydiSil(params.hesap, params.esleme);
+      outcome = { ok: r.ok, output: r.mesaj };
+    } else if (cmd.command === 'bizimhesap_sil_tumu') {
+      const r = await bizimhesapTumEslesenleriSil(params.hesap, params.esleme, params.maxSayi);
+      outcome = { ok: true, output: `Silinen: ${r.toplamSilinen} | ${JSON.stringify(r.detay).slice(0, 7500)}` };
     } else if (cmd.command === 'bizimhesap_process') {
       const { data: row, error } = await db.from(BANK_TABLE).select('*').eq('id', params.id).single();
       if (error || !row) { outcome = { ok: false, output: `Kayit bulunamadi: ${error?.message || params.id}` }; }
