@@ -345,6 +345,46 @@ async function bizimhesapPostIncome(row) {
 // opsiyonel arama yap, sayfanin tam metnini ve varsa tablo satirlarini dondur.
 // Bunun icin: params.url (tam URL) VEYA params.menu (["Tedarikçiler"] gibi tiklanacak menu adlari dizisi),
 // params.search (opsiyonel arama kutusuna yazilacak metin).
+// Bir hesap sayfasinda, aciklamasinda "esleme" gecen satirin "Islem"
+// acilir menusune tiklayip icindeki secenekleri (Duzenle/Sil vb.) dokup
+// donduren tanı komutu - silme mekanizmasini kesfetmek icin.
+async function bizimhesapRowMenu(hesapIpucu, esleme) {
+  const acildi = await hesapAc(hesapIpucu);
+  if (!acildi) return { ok: false, mesaj: 'Hesap acilamadi' };
+  await new Promise(r => setTimeout(r, 800));
+  // Satir listesi uzun oldugundan once "Ara:" kutusuna eslesme metnini
+  // yazip listeyi filtrelemek gerekiyor - filtrelenmeden dogrudan taramak
+  // (2026-08-07'de oldugu gibi) satiri gormeden "bulunamadi" donduruyordu.
+  await page.evaluate((needle) => {
+    const input = document.querySelector('input[type="text"],input:not([type])');
+    if (!input) return false;
+    input.focus(); input.value = needle;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+    return true;
+  }, esleme);
+  await new Promise(r => setTimeout(r, 1500));
+  const sonuc = await page.evaluate((esleme) => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const rows = [...document.querySelectorAll('tr')].filter(tr => visible(tr) && tr.innerText.includes(esleme));
+    if (!rows.length) return { bulundu: false };
+    const row = rows[0];
+    const dropBtn = [...row.querySelectorAll('a,button')].find(x => visible(x) && /islem/i.test(x.innerText || ''));
+    if (!dropBtn) return { bulundu: true, dropdownYok: true, rowHtml: row.outerHTML.slice(0, 500) };
+    dropBtn.click();
+    return { bulundu: true, tiklandi: true };
+  }, esleme);
+  await new Promise(r => setTimeout(r, 600));
+  const menu = await page.evaluate(() => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const menus = [...document.querySelectorAll('.dropdown-menu,ul.dropdown-menu,div[role="menu"]')].filter(visible);
+    return menus.map(m => [...m.querySelectorAll('a,button')].map(a => ({ metin: (a.innerText || '').trim(), href: a.getAttribute('href'), onclick: a.getAttribute('onclick') })));
+  });
+  return { ...sonuc, menu };
+}
+
 async function bizimhesapFetch(params) {
   if (params.url) {
     await page.goto(params.url, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
@@ -393,6 +433,9 @@ async function handleCommand(cmd) {
       outcome = { ok: true, output: `bulundu=${r.found} | ${r.ozet}` };
     } else if (cmd.command === 'bizimhesap_fetch') {
       const r = await bizimhesapFetch(params);
+      outcome = { ok: true, output: JSON.stringify(r).slice(0, 7900) };
+    } else if (cmd.command === 'bizimhesap_row_menu') {
+      const r = await bizimhesapRowMenu(params.hesap, params.esleme);
       outcome = { ok: true, output: JSON.stringify(r).slice(0, 7900) };
     } else if (cmd.command === 'bizimhesap_process') {
       const { data: row, error } = await db.from(BANK_TABLE).select('*').eq('id', params.id).single();
