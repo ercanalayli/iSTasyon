@@ -218,7 +218,34 @@ async function bizimhesapPostExpense(row) {
 // gondermeden ONCE hedef hesabin HESAP HAREKETLERI listesinde ayni
 // tarih+tutar var mi diye bakiliyor - varsa atlaniyor (mukerrer onlenir).
 
+// 2026-08-07: Ercan'in talebiyle TAM hesap listesi cikarilip kesin guid'leri
+// config/bizimhesap_account_map.json'a kaydedildi. Once bu haritada TAM
+// eslesme aranir - bulunursa DOGRUDAN guid ile o hesabin sayfasina gidilir,
+// hicbir bulanik/alt-dizge eslestirme riski kalmaz (bugunku "POS POS POS
+// KREDI KARTI" aranirken "*MOCA SONOVA POS KREDI KARTI"ye giden hatanin kok
+// nedeni buydu). Haritada yoksa eski bulanik-tiklama yontemine (yedek) duser.
+const ACCOUNT_MAP_FILE = path.join(__dirname, '..', 'config', 'bizimhesap_account_map.json');
+let ACCOUNT_MAP = {};
+try { ACCOUNT_MAP = JSON.parse(fs.readFileSync(ACCOUNT_MAP_FILE, 'utf8')).accounts || {}; } catch { ACCOUNT_MAP = {}; }
+function normHesapAdi(s) {
+  return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/^\*+/, '').trim();
+}
+function guidBul(hesapIpucu) {
+  const hedef = normHesapAdi(hesapIpucu);
+  for (const [ad, guid] of Object.entries(ACCOUNT_MAP)) {
+    if (normHesapAdi(ad) === hedef) return guid;
+  }
+  return null;
+}
+
 async function hesapAc(hesapIpucu) {
+  const guid = guidBul(hesapIpucu);
+  if (guid) {
+    await page.goto(`https://bizimhesap.com/web/ngn/acc/ngnaccount?rc=1&guid=${guid}`, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+    await new Promise(r => setTimeout(r, 1000));
+    return true;
+  }
+  log(`UYARI: "${hesapIpucu}" hesap haritasinda bulunamadi, bulanik tiklama yedegine dusuluyor.`);
   await page.goto(ACCOUNTS_URL, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
   await new Promise(r => setTimeout(r, 800));
   const tiklandi = await page.evaluate((ipucu) => {
@@ -307,9 +334,20 @@ async function bizimhesapPostTransfer(row) {
     // aranirken "*MOCA SONOVA POS KREDİ KARTI" - ortak "POS/KREDI/KARTI"
     // kelimeleri nedeniyle) transfer yapiyordu. Dogrusu: dropdown'da HEDEF
     // (p.hesap) aranmali, cunku KAYNAK zaten acik olan hesap.
-    const wanted = fold(p.hesap).split(' ').filter(t => t.length > 2);
+    // 2026-08-07 guvenilirlik yukseltmesi: alt-dizge eslestirmesi ("her
+    // token gecsin mi") kisa/ortak kelimeli hesap adlarinda (POS, KREDI,
+    // KARTI gibi) yanlis hesaba secim yapabiliyordu. Once TAM esitlik
+    // deneniyor (bakiye parantezini atip): sadece bulunamazsa eski
+    // alt-dizge yontemine yedek olarak dusuluyor.
+    const coreFold = s => fold(String(s || '').replace(/\([^)]*\)\s*$/, '')).replace(/^\*+/, ' ').trim();
+    const hedefTam = coreFold(p.hesap);
     const select = document.getElementById('ddlOtherAccount');
-    const opt = select && [...select.options].find(o => wanted.length && wanted.every(t => fold(o.text).includes(t)));
+    let opt = select && [...select.options].find(o => coreFold(o.text) === hedefTam);
+    let tamEslesme = Boolean(opt);
+    if (!opt) {
+      const wanted = fold(p.hesap).split(' ').filter(t => t.length > 2);
+      opt = select && [...select.options].find(o => wanted.length && wanted.every(t => fold(o.text).includes(t)));
+    }
     if (opt) { select.value = opt.value; select.dispatchEvent(new Event('change', { bubbles: true })); }
     const [yil, ay, gun] = String(p.tarih || '').split('-');
     return {
@@ -318,8 +356,12 @@ async function bizimhesapPostTransfer(row) {
       aciklama: set('txtTransferDescription', p.aciklama),
       hedefHesap: Boolean(opt),
       secilenHedef: opt ? opt.text : '(bulunamadi)',
+      tamEslesme,
     };
   }, { ...row, tutarText: para(row.tutar) });
+  if (dolduruldu.hedefHesap && !dolduruldu.tamEslesme) {
+    log(`UYARI: transfer hedef hesabi TAM eslesmeyle degil, alt-dizge yedegiyle bulundu: "${row.hesap}" -> "${dolduruldu.secilenHedef}" (ID:${row.id})`);
+  }
 
   if (!dolduruldu.tarih || !dolduruldu.tutar || !dolduruldu.aciklama || !dolduruldu.hedefHesap) {
     return { ok: false, mesaj: 'Transfer formu eksik: ' + JSON.stringify(dolduruldu) };
