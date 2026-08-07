@@ -1,0 +1,42 @@
+name: AperiON Bank Movements Promote
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: Actually write to bank_transactions (otherwise dry-run preview)
+        required: true
+        default: false
+        type: boolean
+  schedule:
+    # Her saat basi (mail pipeline gun boyu yeni ekstre cekiyor, promote
+    # adimi da ayni gun icinde bunlari bank_transactions'a + BizimHesap
+    # yazma kuyruguna aktarsin diye sik calisir). GitHub cron can be delayed.
+    - cron: '20 * * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  bank-movements-promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Preview
+        if: github.event_name == 'workflow_dispatch' && inputs.commit != true
+        run: node tools/process_pending_bank_movements_v113.cjs
+
+      - name: Promote + queue for BizimHesap
+        if: github.event_name == 'schedule' || inputs.commit == true
+        run: node tools/process_pending_bank_movements_v113.cjs --commit

@@ -37,6 +37,10 @@ function log(msg) { console.log(`[${new Date().toISOString()}] ${msg}`); }
 function norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
   .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o'); }
 const para = n => Math.abs(Number(n || 0)).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// bizimhesapPostExpense'e row.tutar zaten para() ile formatlanmis ("3.070,80")
+// gelir - elleGirisSuphesi() gibi ham sayi bekleyen fonksiyonlara vermeden
+// once bunu geri sayiya cevirir.
+const trToNumber = s => Number(String(s || '').replace(/\./g, '').replace(',', '.')) || 0;
 
 async function ensureSession() {
   if (browser && page && !page.isClosed()) {
@@ -94,6 +98,10 @@ async function bizimhesapPostExpense(row) {
   // row: {tarih, tutar, aciklama, hesap}
   await page.goto(GIDER_URL, { waitUntil: 'networkidle2', timeout: 30000 });
   await page.waitForSelector('a,button,input,select,textarea', { timeout: 15000 });
+  await tiklaMenu('Tümü');
+  await new Promise(r => setTimeout(r, 800));
+  const supheli = await elleGirisSuphesi(row.tarih, trToNumber(row.tutar));
+  if (supheli.supheli) return { ok: true, insanKontroluGerekli: true, mesaj: `Olasi elle-giris suphesi (masraf listesinde AperiON etiketsiz benzer kayit bulundu) - ${supheli.ozet}` };
   await page.evaluate(() => {
     const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
     const el = [...document.querySelectorAll('a,button')].find(x => ['yeni masraf gir', 'yeni masraf', 'masraf gir', 'masraf ekle'].some(k => norm2(x.innerText || x.value || '').includes(k)));
@@ -270,27 +278,42 @@ async function hesapAc(hesapIpucu) {
 // kaydi DOGRULAMAK icin YETERSIZ, cunku tarih+tutar baska bir kayitla
 // TESADUFEN eslesebilir (2026-08-07'de tam bunun yuzunden birkac transfer
 // YANLIS hesaba gitmisken "dogrulandi" diye raporlandi - Ercan yakaladi).
-async function mukerrerVarMi(tarihIso, tutar) {
-  // 2026-08-07 duzeltme: eskiden tarih VE tutarin sayfanin HERHANGI bir
-  // yerinde (birbirinden bagimsiz, uzak) gecmesi yeterliydi - bu, cok
-  // hareketli hesaplarda (gunde onlarca satis/tahsilat) tesadufen es
-  // gecen tarih+tutar ciftleri yuzunden YANLIS "mukerrer" sonucu verip
-  // gercekte hic islenmemis kayitlari sessizce atlatiyordu (ID:165'te
-  // yakalandi). Simdi tarihin her gectigi yerin YAKIN cevresinde (150
-  // karakter) tutarin da gecmesi araniyor - proximity kontrolu.
+// 2026-08-07: Ercan'in talebi - "benim girdigim kayitlar var, onlarin
+// haricinde de sen gireceksin, mukerrer olmamasi cok onemli". AperiON'un
+// KENDI mukerrer kontrolu (idIleDogrula, asagida) sadece kendi ID
+// etiketini arar - bu, AperiON'un AYNI kaydi IKINCI KEZ postalamasini
+// onler ama Ercan'in AYNI hareketi ELLE (etiketsiz) zaten girmis olmasini
+// YAKALAYAMAZ. Bunun icin ayri bir supheli-mukerrer kontrolu: tarihin
+// yakin cevresinde (150 karakter) tutar da geciyor AMA "APERION AUTO"
+// etiketi YOK - bu, Ercan'in (ya da BizimHesap'in kendi otomatik
+// eslestirmesinin) ayni hareketi zaten elle girmis olabilecegini
+// gosterir. Boyle bir durumda otomatik POSTLAMA YAPILMAZ, insan
+// kontrolune birakilir (yanlislikla ikinci kez girmektense atlamak
+// tercih edilir - tersi cok daha tehlikeli).
+async function elleGirisSuphesi(tarihIso, tutar) {
   const gg = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' '));
   const [yil, ay, gun] = String(tarihIso || '').split('-');
-  if (!yil) return { kontrolEdildi: false };
+  if (!yil) return { supheli: false };
   const trTarih = `${gun}.${ay}.${yil}`;
   const trTutar = para(tutar);
-  let varMi = false, ozet = '';
+  // 2026-08-07: cevre.includes(trTutar) alt-dizge kontrolu YANLIS pozitif
+  // veriyordu - "500,00" arandiginda "1.500,00" icindeki "500,00" da
+  // eslesiyordu (POS POS POS gibi yogun hesaplarda cok sayida yuvarlak
+  // tutar oldugu icin canli ortamda yakalandi, ID:176). Simdi tutarin
+  // hemen oncesinde rakam/nokta (buyuk sayinin devami), hemen sonrasinda
+  // rakam OLMADIGI - yani tutarin TAM/BAGIMSIZ bir sayi oldugu - garanti
+  // ediliyor.
+  const escTutar = trTutar.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const tutarRe = new RegExp(`(?<![\\d.])${escTutar}(?!\\d)`);
   let idx = gg.indexOf(trTarih);
   while (idx !== -1) {
     const cevre = gg.slice(Math.max(0, idx - 20), idx + 150);
-    if (cevre.includes(trTutar)) { varMi = true; ozet = `Bulundu (yakin eslesme): ${cevre.slice(0, 200)}`; break; }
+    if (tutarRe.test(cevre) && !cevre.includes('APERION AUTO')) {
+      return { supheli: true, ozet: cevre.slice(0, 220) };
+    }
     idx = gg.indexOf(trTarih, idx + trTarih.length);
   }
-  return { kontrolEdildi: true, varMi, ozet };
+  return { supheli: false };
 }
 
 // KENDI yazdigim kaydi dogrulamak icin GERCEK yontem: her kayda zaten
@@ -327,6 +350,8 @@ async function bizimhesapPostTransfer(row) {
   // guvenilir yontem - baska hicbir kayitla tesadufen eslesemez.
   const mukerrer = await idIleDogrula(row.id, row.tutar);
   if (mukerrer.varMi) return { ok: true, zatenVardi: true, mesaj: `Mukerrer onlendi (ID etiketiyle) - ${mukerrer.ozet}` };
+  const supheli = await elleGirisSuphesi(row.tarih, row.tutar);
+  if (supheli.supheli) return { ok: true, insanKontroluGerekli: true, mesaj: `Olasi elle-giris suphesi (kaynak hesapta AperiON etiketsiz benzer kayit bulundu) - ${supheli.ozet}` };
 
   const acildi2 = await page.evaluate(() => {
     const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
@@ -406,6 +431,8 @@ async function bizimhesapPostIncome(row) {
   if (!acildi) return { ok: false, mesaj: `Hedef hesap acilamadi: ${row.hesap}` };
   const mukerrer = await idIleDogrula(row.id, row.tutar);
   if (mukerrer.varMi) return { ok: true, zatenVardi: true, mesaj: `Mukerrer onlendi (ID etiketiyle) - ${mukerrer.ozet}` };
+  const supheli = await elleGirisSuphesi(row.tarih, row.tutar);
+  if (supheli.supheli) return { ok: true, insanKontroluGerekli: true, mesaj: `Olasi elle-giris suphesi (hedef hesapta AperiON etiketsiz benzer kayit bulundu) - ${supheli.ozet}` };
 
   const acildi2 = await page.evaluate(() => { const b = document.getElementById('btnIncome'); if (!b) return false; b.click(); return true; });
   if (!acildi2) return { ok: false, mesaj: 'Hesaba Para Girisi Yap dugmesi bulunamadi' };
@@ -569,6 +596,60 @@ async function bizimhesapTumEslesenleriSil(hesapIpucu, esleme, maxSayi) {
   return { toplamSilinen: sonuclar.filter(r => r.ok && !r.kalmadi).length, detay: sonuclar };
 }
 
+// 2026-08-07: Ercan'in istegi - "hergun banka hesaplarim ile bizim
+// hesaptaki gorunen banka hesaplarim kontrol edilmis ve 100/100 ayni
+// olmasi gerekiyor". Her gercek banka hesabi icin: (a) BizimHesap'in o an
+// gosterdigi "Bakiye : X" degerini dogrudan sayfadan oku, (b) o bankaya ait
+// en son mail-ekstre kaydinin balance_after (bankanin KENDI bildirdigi
+// bakiye) degerini pending_bank_movements'tan cek, (c) karsilastir. Kaynak
+// verisi eski (>3 gun) ise "dogrulanamiyor" diye ACIKCA belirtilir - sahte
+// "eslesti" iddiasi asla verilmez (bkz. 100/100 guvenilirlik mandati).
+const MUTABAKAT_HESAPLARI = [
+  { bankName: 'Akbank', hesap: 'AKBANK SIRKET' },
+  { bankName: 'VakifBank', hesap: 'VAKIF SIRKET' },
+  { bankName: 'Yapi Kredi', hesap: 'YAPI KREDI SIRKET' },
+  { bankName: 'İş Bankası', hesap: 'IS BANKASI' },
+];
+
+async function bizimhesapBakiyeOku(hesapIpucu) {
+  const acildi = await hesapAc(hesapIpucu);
+  if (!acildi) return null;
+  const metin = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' '));
+  const m = metin.match(/Bakiye\s*:\s*(-?[\d.,]+)/);
+  if (!m) return null;
+  return trToNumber(m[1]);
+}
+
+async function gunlukBakiyeMutabakati() {
+  const satirlar = [`AperiON - Gunluk banka bakiye mutabakati (${new Date().toLocaleDateString('tr-TR')})`, ''];
+  for (const { bankName, hesap } of MUTABAKAT_HESAPLARI) {
+    let bhBakiye = null, hata = null;
+    try { bhBakiye = await bizimhesapBakiyeOku(hesap); } catch (e) { hata = e.message; }
+    const { data: son } = await db.from('pending_bank_movements')
+      .select('balance_after,transaction_date,transaction_time')
+      .eq('bank_name', bankName)
+      .not('balance_after', 'is', null)
+      .order('transaction_date', { ascending: false })
+      .order('transaction_time', { ascending: false })
+      .limit(1);
+    const kaynak = son && son[0];
+    if (hata) { satirlar.push(`❌ ${hesap}: BizimHesap bakiyesi okunamadi (${hata})`); continue; }
+    if (bhBakiye == null) { satirlar.push(`❌ ${hesap}: BizimHesap sayfasinda "Bakiye" bulunamadi`); continue; }
+    if (!kaynak) { satirlar.push(`⚠️ ${hesap}: BizimHesap bakiye ${para(bhBakiye)} TL - gercek banka bakiyesi icin mail-ekstre verisi hic yok, DOGRULANAMIYOR`); continue; }
+    const gunFarki = Math.floor((Date.now() - new Date(kaynak.transaction_date).getTime()) / 86400000);
+    const taze = gunFarki <= 3;
+    const fark = Math.abs(bhBakiye - Number(kaynak.balance_after));
+    const eslesti = fark < 0.02;
+    const tazeUyari = taze ? '' : ` (UYARI: kaynak veri ${gunFarki} gun eski, guncelligi supheli)`;
+    if (eslesti) {
+      satirlar.push(`✅ ${hesap}: ${para(bhBakiye)} TL - eslesti (kaynak: ${kaynak.transaction_date})${tazeUyari}`);
+    } else {
+      satirlar.push(`❌ ${hesap}: UYUSMUYOR - BizimHesap ${para(bhBakiye)} TL, banka ekstresi ${para(kaynak.balance_after)} TL (fark ${para(fark)} TL, kaynak: ${kaynak.transaction_date})${tazeUyari}`);
+    }
+  }
+  return satirlar.join('\n');
+}
+
 async function bizimhesapFetch(params) {
   if (params.url) {
     await page.goto(params.url, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
@@ -627,6 +708,9 @@ async function handleCommand(cmd) {
     } else if (cmd.command === 'bizimhesap_sil_tumu') {
       const r = await bizimhesapTumEslesenleriSil(params.hesap, params.esleme, params.maxSayi);
       outcome = { ok: true, output: `Silinen: ${r.toplamSilinen} | ${JSON.stringify(r.detay).slice(0, 7500)}` };
+    } else if (cmd.command === 'gunluk_mutabakat') {
+      const r = await gunlukBakiyeMutabakati();
+      outcome = { ok: true, output: r.slice(0, 7900) };
     } else if (cmd.command === 'bizimhesap_process') {
       const { data: row, error } = await db.from(BANK_TABLE).select('*').eq('id', params.id).single();
       if (error || !row) { outcome = { ok: false, output: `Kayit bulunamadi: ${error?.message || params.id}` }; }
@@ -654,7 +738,14 @@ async function handleCommand(cmd) {
           r = await bizimhesapPostExpense({ id: row.id, tarih: row.tarih, tutar: para(row.tutar), aciklama, hesap: row.hesap });
         }
         outcome = { ok: r.ok, output: r.mesaj };
-        if (r.ok) await db.from(BANK_TABLE).update({ bizimhesap_durumu: r.zatenVardi ? 'zaten_vardi' : 'kaydedildi', bizimhesap_mesaj: r.mesaj, bizimhesap_islem_tarihi: new Date().toISOString() }).eq('id', row.id);
+        if (r.ok) {
+          // 2026-08-07: Ercan'in talebi - elle girisiyle catisma suphesi
+          // varsa 'kaydedildi' DENMEZ (yanlislikla ikinci kez girilmis
+          // sanilmasin), ayri bir statude birakilir ki gunluk bildirimde
+          // "insan kontrolu gerekiyor" olarak gorunsun, sessizce kaybolmasin.
+          const durum = r.insanKontroluGerekli ? 'insan_kontrolu_gerekli' : (r.zatenVardi ? 'zaten_vardi' : 'kaydedildi');
+          await db.from(BANK_TABLE).update({ bizimhesap_durumu: durum, bizimhesap_mesaj: r.mesaj, bizimhesap_islem_tarihi: new Date().toISOString() }).eq('id', row.id);
+        }
       }
     } else {
       outcome = { ok: false, output: `Bilinmeyen komut: ${cmd.command}` };
@@ -687,6 +778,14 @@ async function tick() {
 
 (async () => {
   log('AperiON yerel dinleyici (v2, kalici oturum) baslatiliyor...');
+  // 2026-08-07: dinleyici bir komut isleme ORTASINDA (status='processing')
+  // durdurulup yeniden baslatilirsa (kod guncellemesi icin sik sik
+  // yapiliyor), o komut sonsuza kadar 'processing'de takili kaliyordu -
+  // bir daha ASLA islenmiyordu (#209/ID:179'da yakalandi). Baslangicta
+  // yarim kalmis (processing) komutlar 'pending'e geri alinir, otomatik
+  // yeniden denenir.
+  const { data: yarimKalanlar } = await db.from('bot_commands').update({ status: 'pending' }).eq('status', 'processing').select('id');
+  if (yarimKalanlar && yarimKalanlar.length) log(`UYARI: ${yarimKalanlar.length} yarim kalmis komut (onceki calistirmadan) yeniden kuyruga alindi: ${yarimKalanlar.map(r => r.id).join(',')}`);
   await ensureSession();
   log('Oturum hazir. Komut bekleniyor (her 15 saniyede bir kontrol)...');
   tick();

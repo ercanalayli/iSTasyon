@@ -52,7 +52,7 @@ async function main() {
   let ok = 0, fail = 0;
   for (const { row, plan } of [...autoPost, ...emanet]) {
     const tutar = plan.amount * (row.amount_out > 0 ? -1 : 1);
-    const { error: insErr } = await db.from('bank_transactions').insert({
+    const { data: insData, error: insErr } = await db.from('bank_transactions').insert({
       firma_id: 'alayli',
       banka: plan.bank_name,
       hesap: plan.account,
@@ -67,12 +67,22 @@ async function main() {
       sinif_kaynak: 'bank_posting_plan_v113',
       emanet_routed: plan.emanet_routed,
       kaynak: 'pending_bank_movements_v113',
-    });
+    }).select('id');
     if (insErr) { console.log(`HATA #${row.id}: ${insErr.message}`); fail++; continue; }
     await db.from('pending_bank_movements').update({ status: 'promoted', approval_note: 'AperiON otomatik (Telegram atlandi, v113)' }).eq('id', row.id);
+    // 2026-08-07: Ercan'in istegiyle - promote adimi artik BizimHesap'a
+    // yazma kuyruguna da otomatik ekliyor (bot_commands), boylece yerel
+    // dinleyici (tools/aperion_command_listener.cjs) elle tetiklenmeden
+    // otomatik isleyebiliyor. Yeni yazilan bank_transactions satirinin
+    // ID'sini almak icin insert'e .select() eklendi.
+    const yeniId = insData && insData[0] && insData[0].id;
+    if (yeniId) {
+      const { error: kuyrukErr } = await db.from('bot_commands').insert({ command: 'bizimhesap_process', params: { id: yeniId } });
+      if (kuyrukErr) console.log(`Kuyruk hatasi #${row.id} (bank_transactions #${yeniId}): ${kuyrukErr.message}`);
+    }
     ok++;
   }
-  console.log(`\nBank_transactions'a yazildi: ${ok}, hata: ${fail}. Simdi bizimhesap_banka_bot.cjs bunlari gercek BizimHesap'a isleyebilir.`);
+  console.log(`\nBank_transactions'a yazildi: ${ok}, hata: ${fail}. Yerel dinleyici (aperion_command_listener.cjs) calisiyorsa bunlari otomatik BizimHesap'a isleyecek.`);
 }
 
 main().catch(e => { console.error('GENEL HATA:', e.message); process.exitCode = 1; });

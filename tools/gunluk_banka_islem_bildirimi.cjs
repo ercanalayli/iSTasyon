@@ -23,8 +23,8 @@ function tl(n) {
 
 async function bekleyenleriAl() {
   const { data, error } = await db.from(TABLE)
-    .select('id,tarih,tutar,hesap,tur,aciklama')
-    .eq('bizimhesap_durumu', 'kaydedildi')
+    .select('id,tarih,tutar,hesap,tur,aciklama,bizimhesap_durumu')
+    .in('bizimhesap_durumu', ['kaydedildi', 'insan_kontrolu_gerekli'])
     .or('bildirim_durumu.is.null,bildirim_durumu.neq.gonderildi')
     .order('tarih', { ascending: true });
   if (error) throw new Error(error.message);
@@ -35,24 +35,33 @@ async function bekleyenleriAl() {
 }
 
 function mesajOlustur(rows) {
+  const islenen = rows.filter(r => r.bizimhesap_durumu === 'kaydedildi');
+  const supheli = rows.filter(r => r.bizimhesap_durumu === 'insan_kontrolu_gerekli');
   const grup = new Map();
-  for (const r of rows) {
+  for (const r of islenen) {
     const k = r.hesap || '-';
     if (!grup.has(k)) grup.set(k, { adet: 0, toplam: 0 });
     const g = grup.get(k);
     g.adet += 1;
     g.toplam += Number(r.tutar || 0);
   }
-  const satirlar = [`AperiON - BizimHesap'a islenen ${rows.length} banka hareketi`, ''];
+  const satirlar = [`AperiON - BizimHesap'a islenen ${islenen.length} banka hareketi`, ''];
   for (const [hesap, g] of grup) {
     satirlar.push(`${hesap}: ${g.adet} kayit, net ${tl(g.toplam)} TL`);
   }
   satirlar.push('');
   satirlar.push('Detay:');
-  for (const r of rows.slice(0, 40)) {
+  for (const r of islenen.slice(0, 40)) {
     satirlar.push(`#${r.id} ${r.tarih} ${r.tur} ${tl(r.tutar)} TL - ${r.hesap} - ${(r.aciklama || '').slice(0, 60)}`);
   }
-  if (rows.length > 40) satirlar.push(`... ve ${rows.length - 40} kayit daha`);
+  if (islenen.length > 40) satirlar.push(`... ve ${islenen.length - 40} kayit daha`);
+  if (supheli.length) {
+    satirlar.push('');
+    satirlar.push(`⚠️ ELLE KONTROL GEREKIYOR (${supheli.length} kayit - AperiON bu hareketleri BizimHesap'ta etiketsiz, muhtemelen elle girilmis benzer kayitlarla karsilastigi icin OTOMATIK ISLEMEDI, mukerrer olmasin diye):`);
+    for (const r of supheli) {
+      satirlar.push(`#${r.id} ${r.tarih} ${r.tur} ${tl(r.tutar)} TL - ${r.hesap} - ${(r.aciklama || '').slice(0, 60)}`);
+    }
+  }
   return satirlar.join('\n');
 }
 

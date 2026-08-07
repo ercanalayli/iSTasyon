@@ -1,0 +1,62 @@
+name: AperiON Bank Balance Reconcile
+
+# Iki asamali: (1) 'gunluk_mutabakat' komutunu bot_commands'e ekler - yerel
+# dinleyici (Ercan'in PC'sinde surekli calisan aperion_command_listener.cjs)
+# bunu alip her banka hesabinin BizimHesap bakiyesini gercek banka
+# ekstresiyle karsilastirir, sonucu ayni komut satirina yazar. (2) 20 dakika
+# sonra ikinci is bu sonucu okuyup Telegram'a gonderir - yerel islemenin
+# tamamlanmasi icin bosluk birakiyor.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: queue (komutu ekle) veya send (sonucu gonder)
+        required: true
+        default: queue
+        type: choice
+        options: [queue, send]
+  # 2026-08-07: schedule KASITLI OLARAK KAPALI. Ilk canli testte
+  # pending_bank_movements.balance_after'in banka hesabinin TAM bakiyesi
+  # degil, POS/uye isyeri alt-akisinin bakiyesi oldugu ortaya cikti - bu
+  # yuzden karsilastirma su an anlamsiz/yanlis-alarm veriyor. Dogru bakiye
+  # kaynagi bulunup dogrulanmadan gunluk otomatik alarm ACILMAYACAK. Elle
+  # test icin workflow_dispatch hala kullanilabilir.
+  # schedule:
+  #   - cron: '0 18 * * *'
+  #   - cron: '20 18 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  queue:
+    if: github.event.schedule == '0 18 * * *' || (github.event_name == 'workflow_dispatch' && inputs.action == 'queue')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm run bank:reconcile:queue
+
+  send:
+    if: github.event.schedule == '20 18 * * *' || (github.event_name == 'workflow_dispatch' && inputs.action == 'send')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TELEGRAM_ALLOWED_CHAT_ID: ${{ secrets.TELEGRAM_ALLOWED_CHAT_ID }}
+      TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm run bank:reconcile:send
