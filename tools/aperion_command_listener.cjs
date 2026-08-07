@@ -271,13 +271,26 @@ async function hesapAc(hesapIpucu) {
 // TESADUFEN eslesebilir (2026-08-07'de tam bunun yuzunden birkac transfer
 // YANLIS hesaba gitmisken "dogrulandi" diye raporlandi - Ercan yakaladi).
 async function mukerrerVarMi(tarihIso, tutar) {
+  // 2026-08-07 duzeltme: eskiden tarih VE tutarin sayfanin HERHANGI bir
+  // yerinde (birbirinden bagimsiz, uzak) gecmesi yeterliydi - bu, cok
+  // hareketli hesaplarda (gunde onlarca satis/tahsilat) tesadufen es
+  // gecen tarih+tutar ciftleri yuzunden YANLIS "mukerrer" sonucu verip
+  // gercekte hic islenmemis kayitlari sessizce atlatiyordu (ID:165'te
+  // yakalandi). Simdi tarihin her gectigi yerin YAKIN cevresinde (150
+  // karakter) tutarin da gecmesi araniyor - proximity kontrolu.
   const gg = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' '));
   const [yil, ay, gun] = String(tarihIso || '').split('-');
   if (!yil) return { kontrolEdildi: false };
   const trTarih = `${gun}.${ay}.${yil}`;
   const trTutar = para(tutar);
-  const varMi = gg.includes(trTarih) && gg.includes(trTutar);
-  return { kontrolEdildi: true, varMi, ozet: varMi ? `Bulundu: ${trTarih} ${trTutar} TL` : '' };
+  let varMi = false, ozet = '';
+  let idx = gg.indexOf(trTarih);
+  while (idx !== -1) {
+    const cevre = gg.slice(Math.max(0, idx - 20), idx + 150);
+    if (cevre.includes(trTutar)) { varMi = true; ozet = `Bulundu (yakin eslesme): ${cevre.slice(0, 200)}`; break; }
+    idx = gg.indexOf(trTarih, idx + trTarih.length);
+  }
+  return { kontrolEdildi: true, varMi, ozet };
 }
 
 // KENDI yazdigim kaydi dogrulamak icin GERCEK yontem: her kayda zaten
@@ -306,8 +319,14 @@ async function bizimhesapPostTransfer(row) {
   // alan) sec.
   const acildi = await hesapAc(row.kaynakHesap);
   if (!acildi) return { ok: false, mesaj: `Kaynak hesap acilamadi: ${row.kaynakHesap}` };
-  const mukerrer = await mukerrerVarMi(row.tarih, row.tutar);
-  if (mukerrer.kontrolEdildi && mukerrer.varMi) return { ok: true, zatenVardi: true, mesaj: `Mukerrer onlendi - ${mukerrer.ozet}` };
+  // 2026-08-07 uctuncu duzeltme: tarih+tutar mukerrer-onleme kontrolu
+  // (proximity ile bile) yogun hareketli hesaplarda (gunde onlarca ayni
+  // tutarli Tahsilat, ör. "400,00 TL") tesadufen eslesip GERCEKTE HIC
+  // ISLENMEMIS kayitlari "zaten var" diye yanlislikla atliyordu (ID:168'de
+  // yakalandi). Kendi kaydimizin benzersiz "ID:X" etiketini aramak tek
+  // guvenilir yontem - baska hicbir kayitla tesadufen eslesemez.
+  const mukerrer = await idIleDogrula(row.id, row.tutar);
+  if (mukerrer.varMi) return { ok: true, zatenVardi: true, mesaj: `Mukerrer onlendi (ID etiketiyle) - ${mukerrer.ozet}` };
 
   const acildi2 = await page.evaluate(() => {
     const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
@@ -385,8 +404,8 @@ async function bizimhesapPostIncome(row) {
   // row: {id, tarih, tutar, aciklama, hesap (para giren hesap)}
   const acildi = await hesapAc(row.hesap);
   if (!acildi) return { ok: false, mesaj: `Hedef hesap acilamadi: ${row.hesap}` };
-  const mukerrer = await mukerrerVarMi(row.tarih, row.tutar);
-  if (mukerrer.kontrolEdildi && mukerrer.varMi) return { ok: true, zatenVardi: true, mesaj: `Mukerrer onlendi - ${mukerrer.ozet}` };
+  const mukerrer = await idIleDogrula(row.id, row.tutar);
+  if (mukerrer.varMi) return { ok: true, zatenVardi: true, mesaj: `Mukerrer onlendi (ID etiketiyle) - ${mukerrer.ozet}` };
 
   const acildi2 = await page.evaluate(() => { const b = document.getElementById('btnIncome'); if (!b) return false; b.click(); return true; });
   if (!acildi2) return { ok: false, mesaj: 'Hesaba Para Girisi Yap dugmesi bulunamadi' };
