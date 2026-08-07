@@ -237,7 +237,12 @@ async function hesapAc(hesapIpucu) {
 }
 
 // Hesap sayfasi acikken (hesapAc sonrasi), HESAP HAREKETLERI listesinde
-// verilen tarih (YYYY-MM-DD) + tutar zaten var mi kontrol eder.
+// verilen tarih (YYYY-MM-DD) + tutar zaten var mi kontrol eder. SADECE
+// on-kontrol (yeni kayittan ONCE, BizimHesap'in kendi/baska bir yoldan
+// zaten yazmis olabilecegi kayitlari yakalamak icin) - kendi yazdigim
+// kaydi DOGRULAMAK icin YETERSIZ, cunku tarih+tutar baska bir kayitla
+// TESADUFEN eslesebilir (2026-08-07'de tam bunun yuzunden birkac transfer
+// YANLIS hesaba gitmisken "dogrulandi" diye raporlandi - Ercan yakaladi).
 async function mukerrerVarMi(tarihIso, tutar) {
   const gg = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' '));
   const [yil, ay, gun] = String(tarihIso || '').split('-');
@@ -246,6 +251,21 @@ async function mukerrerVarMi(tarihIso, tutar) {
   const trTutar = para(tutar);
   const varMi = gg.includes(trTarih) && gg.includes(trTutar);
   return { kontrolEdildi: true, varMi, ozet: varMi ? `Bulundu: ${trTarih} ${trTutar} TL` : '' };
+}
+
+// KENDI yazdigim kaydi dogrulamak icin GERCEK yontem: her kayda zaten
+// eklenen benzersiz "APERION AUTO | ID:X" etiketini hesap sayfasinda ara.
+// Bu etiket baska HICBIR kayitla tesadufen eslesemez (tarih+tutar'in aksine).
+async function idIleDogrula(rowId, tutar) {
+  const etiket = 'ID:' + rowId + ' ';
+  const gg = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' '));
+  const varMi = gg.includes(etiket);
+  // Ek guvence: etiketin hemen etrafinda beklenen tutar da gecsin (yanlislikla
+  // baska bir ID'nin metnini yakalamadigimizdan emin olmak icin).
+  const idx = gg.indexOf(etiket);
+  const cevre = idx >= 0 ? gg.slice(Math.max(0, idx - 200), idx + 200) : '';
+  const tutarUyumlu = tutar == null || cevre.includes(para(tutar));
+  return { varMi: varMi && tutarUyumlu, ozet: varMi ? cevre.slice(0, 250) : `"${etiket}" bulunamadi` };
 }
 
 async function bizimhesapPostTransfer(row) {
@@ -309,9 +329,14 @@ async function bizimhesapPostTransfer(row) {
   await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
   await new Promise(r => setTimeout(r, 1800));
 
+  // 2026-08-07: tarih+tutar eslesmesi YETERSIZDI - baska bir kayitla
+  // tesadufen ayni tarih/tutar paylasip YANLIS hesaba giden transferler
+  // "dogrulandi" diye raporlanmisti (Ercan aktivite loguyla yakaladi).
+  // Simdi benzersiz "APERION AUTO | ID:X" etiketini HEDEF hesap sayfasinda
+  // arıyoruz - bu hicbir zaman baska bir kayitla tesadufen eslesemez.
   const acildi3 = await hesapAc(row.hesap);
-  const dogrulama = acildi3 ? await mukerrerVarMi(row.tarih, row.tutar) : { kontrolEdildi: false };
-  return { ok: dogrulama.varMi === true, mesaj: dogrulama.varMi ? `Transfer kaydedildi ve dogrulandi (hedef: ${dolduruldu.secilenHedef}).` : `Transfer sonrasi dogrulanamadi (hedef secimi: ${dolduruldu.secilenHedef})` };
+  const dogrulama = acildi3 ? await idIleDogrula(row.id, row.tutar) : { varMi: false, ozet: 'hedef hesap acilamadi' };
+  return { ok: dogrulama.varMi === true, mesaj: dogrulama.varMi ? `Transfer kaydedildi ve ID etiketiyle dogrulandi (hedef: ${dolduruldu.secilenHedef}).` : `Transfer sonrasi ID ile dogrulanamadi (hedef secimi: ${dolduruldu.secilenHedef}) - ${dogrulama.ozet}` };
 }
 
 async function bizimhesapPostIncome(row) {
@@ -345,8 +370,8 @@ async function bizimhesapPostIncome(row) {
   await new Promise(r => setTimeout(r, 1800));
 
   const acildi3 = await hesapAc(row.hesap);
-  const dogrulama = acildi3 ? await mukerrerVarMi(row.tarih, row.tutar) : { kontrolEdildi: false };
-  return { ok: dogrulama.varMi === true, mesaj: dogrulama.varMi ? 'Para girisi kaydedildi ve dogrulandi.' : 'Para girisi sonrasi dogrulanamadi' };
+  const dogrulama = acildi3 ? await idIleDogrula(row.id, row.tutar) : { varMi: false, ozet: 'hedef hesap acilamadi' };
+  return { ok: dogrulama.varMi === true, mesaj: dogrulama.varMi ? 'Para girisi kaydedildi ve ID etiketiyle dogrulandi.' : `Para girisi sonrasi ID ile dogrulanamadi - ${dogrulama.ozet}` };
 }
 
 // Genel amacli sayfa okuma: bir menu yoluna tikla (opsiyonel), bir URL'e git,
