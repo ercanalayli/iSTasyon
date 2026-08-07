@@ -352,11 +352,16 @@ async function bizimhesapRowMenu(hesapIpucu, esleme) {
   const acildi = await hesapAc(hesapIpucu);
   if (!acildi) return { ok: false, mesaj: 'Hesap acilamadi' };
   await new Promise(r => setTimeout(r, 800));
-  // Satir listesi uzun oldugundan once "Ara:" kutusuna eslesme metnini
-  // yazip listeyi filtrelemek gerekiyor - filtrelenmeden dogrudan taramak
-  // (2026-08-07'de oldugu gibi) satiri gormeden "bulunamadi" donduruyordu.
+  // Satir listesi uzun oldugundan once "Bul:" kutusuna eslesme metnini
+  // yazip listeyi filtrelemek gerekiyor. Sayfada baska input'lar da oldugundan
+  // (tarih araligi vb.) rastgele ilk input'u degil, "Bul:" etiketine bagli
+  // olani hedefliyoruz - Ercan'in kendi ekraninda "aperi" yazip filtreledigini
+  // dogruladigi ayni yontem (bizimhesapVerify'daki "Ara:" ile ayni kalip).
   await page.evaluate((needle) => {
-    const input = document.querySelector('input[type="text"],input:not([type])');
+    const label = [...document.querySelectorAll('*')].find(x => (x.textContent || '').trim() === 'Bul:' && x.children.length === 0);
+    let input = null;
+    if (label) { let cur = label.parentElement; for (let i = 0; i < 4 && cur && !input; i++) { input = cur.querySelector('input[type="text"],input:not([type])'); cur = cur.parentElement; } }
+    if (!input) input = document.querySelector('input[type="text"],input:not([type])');
     if (!input) return false;
     input.focus(); input.value = needle;
     input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -371,7 +376,8 @@ async function bizimhesapRowMenu(hesapIpucu, esleme) {
     const rows = [...document.querySelectorAll('tr')].filter(tr => visible(tr) && tr.innerText.includes(esleme));
     if (!rows.length) return { bulundu: false };
     const row = rows[0];
-    const dropBtn = [...row.querySelectorAll('a,button')].find(x => visible(x) && /islem/i.test(x.innerText || ''));
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
+    const dropBtn = [...row.querySelectorAll('a,button')].find(x => visible(x) && norm2(x.innerText || '').includes('islem'));
     if (!dropBtn) return { bulundu: true, dropdownYok: true, rowHtml: row.outerHTML.slice(0, 500) };
     dropBtn.click();
     return { bulundu: true, tiklandi: true };
