@@ -804,7 +804,7 @@ async function handleCommand(cmd) {
         // (fuzzy eslesme "MOCA SONOVA POS KREDI KARTI"ye gitti). Kredi
         // karti borc odemesinin tum yaygin ifade bicimlerini kapsayacak
         // sekilde genisletildi.
-        const anaparaKaynakli = /kredi geri odemesi|kredi kartina odenen|kre ?\.? ?kart(i|a)? borc ode/.test(rowAciklama);
+        const anaparaKaynakli = /kredi geri odemesi|kredi kartina odenen|kre ?(di)? ?\.? ?kart(i|a)? borc/.test(rowAciklama);
         const krediFaizi = /kredi faizi/.test(rowAciklama);
         // 2026-08-07 KRITIK bulgu: process_pending_bank_movements_v113.cjs
         // karsi taraf bilinmeyen kayitlari emanet_routed=true diye

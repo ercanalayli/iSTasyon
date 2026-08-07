@@ -352,14 +352,21 @@ function classifyBankMovement(row = {}) {
     confidence = Math.max(confidence, 88);
     reasons.push('Moka banka aktarimi');
   }
+  // 2026-08-07: eskiden bunu bank_transfer olarak, kmhAccount() ile
+  // uydurulmus "X KMH / Ek Hesap" adinda GERCEK OLMAYAN bir hedef hesaba
+  // isaretliyordu - BizimHesap'ta boyle bir hesap yok (KMH/Ek Hesap gercek
+  // bankadaki ayni hesaba bagli bir kredi limiti, ayri bir BizimHesap
+  // hesabi degil). 22 kayitta canli ortamda "hedef hesap bulunamadi" diye
+  // sistemik olarak basarisiz oldu, elle duzeltildi. Artik dogrudan
+  // GERCEK hesaba gider olarak isleniyor (bank_fee_expense kalibiyla ayni).
   if (kind !== 'non_bank_summary_review' && amountOut(row) > 0 && /KMH|EK HESAP|ANAPARA BORCU TAHSILATI/.test(text)) {
-    kind = 'bank_transfer';
+    kind = 'bank_fee_expense';
     type = 'KMH ana para kapama';
-    target = 'BizimHesap banka/KMH virmani';
+    target = 'BizimHesap gider/masraf kaydi';
     category = 'KMH ana para kapama';
-    sourceAccount = targetBankAccount(row);
-    targetAccount = kmhAccount(row);
-    counterparty = `${sourceAccount} -> ${targetAccount}`;
+    counterparty = bankName(row);
+    sourceAccount = '';
+    targetAccount = targetBankAccount(row);
     confidence = Math.max(confidence, 90);
     reasons.push('KMH ana para kapama');
   }
@@ -411,14 +418,22 @@ function classifyBankMovement(row = {}) {
     confidence = Math.max(confidence, companyTarget ? 90 : 84);
     reasons.push(companyTarget ? 'aciklamada iki sirket bankasi ve virman bulundu' : 'virman');
   }
+  // 2026-08-07: targetAccount eskiden literal 'Kredi karti' string'iydi -
+  // BizimHesap'ta boyle bir hesap yok, fuzzy eslesme yanlislikla alakasiz
+  // bir hesaba (ör. MOCA SONOVA POS KREDI KARTI) gitti (ID:180/206 canli
+  // yakalandi - ikisi de aslinda Ercan'in zaten elle girdigi kayitlarmis).
+  // Artik gercek kaynak hesap hedef olarak yaziliyor - dinleyicideki
+  // (aperion_command_listener.cjs) aciklama-regex'i bu metni yakalayip
+  // otomatik Emanet'e yonlendiriyor; regex eslesmezse bile GERCEK bir
+  // hesaba gider olarak duser, uydurma hesaba degil.
   if (kind !== 'non_bank_summary_review' && /KREDI KART BORC|KART BORC/.test(text)) {
     kind = 'credit_card_payment';
     type = 'Kredi karti odemesi';
     target = 'BizimHesap banka/kredi karti virmani';
     category = 'Kredi karti borc odemesi';
-    counterparty = 'Kredi karti';
-    sourceAccount = targetBankAccount(row);
-    targetAccount = 'Kredi karti';
+    sourceAccount = '';
+    targetAccount = targetBankAccount(row);
+    counterparty = bankName(row);
     confidence = Math.max(confidence, 86);
     reasons.push('kart borcu');
   }
