@@ -722,6 +722,88 @@ async function gunlukBakiyeMutabakati() {
   return satirlar.join('\n');
 }
 
+// 2026-08-07: Ercan'in istegi - "cari acik bakiye takibi". BizimHesap'in
+// musteri listesi (ngncustomers) her cari icin "Acik Bakiye" ve "Cek/Senet
+// Bakiyesi" sutunlarini zaten gosteriyor - resmi B2B API (customers/
+// abstract endpointleri) 401 donuyor (henuz yetkili degil), bu yuzden ayni
+// ekrani Puppeteer ile okuyoruz. 5734 musterinin cogu 0 bakiyeli oldugu
+// icin "Bakiyesi olanlari goster" filtresi denenir (basarisiz olursa TUM
+// liste kaydirilarak taranir, sadece bakiyesi <>0 olanlar veritabanina
+// yazilir).
+const CUSTOMERS_URL = 'https://bizimhesap.com/web/ngn/pos/ngncustomers';
+const COMPANY_ID = '9e9003b8-2721-4940-a4e9-a1b9a898a4a3';
+
+function paraSayi(s) {
+  return Number(String(s || '0').replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+}
+
+async function bizimhesapCariBakiyeSync() {
+  await page.goto(CUSTOMERS_URL, { waitUntil: 'networkidle2', timeout: 30000 });
+  await new Promise(r => setTimeout(r, 1000));
+
+  const filtreTiklandi = await page.evaluate(() => {
+    const norm2 = s => (s || '').toLowerCase().replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
+    const el = [...document.querySelectorAll('a,button,span,div,label,input')].find(x => norm2(x.innerText || x.value || '').includes('bakiyesi olanlari goster'));
+    if (!el) return false;
+    const tiklanacak = el.closest('a') || el.closest('button') || el.closest('label') || el;
+    tiklanacak.click();
+    return true;
+  });
+  await new Promise(r => setTimeout(r, 2500));
+
+  // 2026-08-07: liste window/body degil, ".search-results" sinifli ic ice
+  // bir div icinde sanal-kaydirmali (virtual scroll) - scrollTo(window) hic
+  // etkisi yoktu (canli teste yakalandi, tanı komutuyla dogrulandi:
+  // .search-results scrollHeight=3570 clientHeight=514). O div'in kendisi
+  // kaydirilmali.
+  let oncekiSayi = -1, sabitTur = 0;
+  for (let i = 0; i < 400 && sabitTur < 3; i++) {
+    const suankiSayi = await page.evaluate(() => document.querySelectorAll('table tbody tr, tr').length);
+    if (suankiSayi === oncekiSayi) sabitTur++; else sabitTur = 0;
+    oncekiSayi = suankiSayi;
+    await page.evaluate(() => {
+      const kapsayici = document.querySelector('.search-results') ||
+        [...document.querySelectorAll('*')].find(el => { const s = getComputedStyle(el); return (s.overflowY === 'auto' || s.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 10; });
+      if (kapsayici) kapsayici.scrollTop = kapsayici.scrollHeight;
+      else window.scrollTo(0, document.body.scrollHeight);
+    });
+    await new Promise(r => setTimeout(r, 350));
+  }
+
+  const satirlar = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('table tbody tr')];
+    return rows.map(tr => [...tr.querySelectorAll('td')].map(td => (td.innerText || '').trim()));
+  });
+
+  const kayitlar = [];
+  for (const r of satirlar) {
+    if (r.length < 3) continue;
+    const [isimSinif, acikBakiyeTxt, cekSenetTxt] = r;
+    const satirlarIsim = isimSinif.split('\n').map(s => s.trim()).filter(Boolean);
+    const isim = satirlarIsim[0] || '';
+    const sinif = satirlarIsim.length > 1 ? satirlarIsim[satirlarIsim.length - 1] : '';
+    const acikBakiye = paraSayi(acikBakiyeTxt);
+    const cekSenet = paraSayi(cekSenetTxt);
+    if (!isim || (acikBakiye === 0 && cekSenet === 0)) continue;
+    kayitlar.push({ cari_unvan: isim, sinif, acik_bakiye: acikBakiye, cek_senet_bakiyesi: cekSenet });
+  }
+
+  let yazilan = 0;
+  for (const k of kayitlar) {
+    const { error } = await db.from('customers').upsert({
+      company_id: COMPANY_ID,
+      cari_unvan: k.cari_unvan,
+      sinif: k.sinif,
+      acik_bakiye: k.acik_bakiye,
+      cek_senet_bakiyesi: k.cek_senet_bakiyesi,
+      bakiye_guncelleme: new Date().toISOString(),
+    }, { onConflict: 'company_id,cari_unvan' });
+    if (!error) yazilan++;
+  }
+
+  return { filtreTiklandi, toplamSatir: satirlar.length, bakiyesiOlan: kayitlar.length, yazilan };
+}
+
 async function bizimhesapFetch(params) {
   if (params.url) {
     await page.goto(params.url, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
@@ -786,6 +868,18 @@ async function handleCommand(cmd) {
     } else if (cmd.command === 'gunluk_mutabakat') {
       const r = await gunlukBakiyeMutabakati();
       outcome = { ok: true, output: r.slice(0, 7900) };
+    } else if (cmd.command === 'bizimhesap_cari_bakiye_sync') {
+      const r = await bizimhesapCariBakiyeSync();
+      outcome = { ok: true, output: JSON.stringify(r) };
+    } else if (cmd.command === 'bizimhesap_scroll_diag') {
+      const r = await page.evaluate(() => {
+        const aday = [...document.querySelectorAll('*')].filter(el => {
+          const s = getComputedStyle(el);
+          return (s.overflowY === 'auto' || s.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 10;
+        }).slice(0, 10).map(el => ({ tag: el.tagName, cls: (el.className || '').toString().slice(0, 60), scrollHeight: el.scrollHeight, clientHeight: el.clientHeight }));
+        return { adaylar: aday, satirSayisi: document.querySelectorAll('table tbody tr').length };
+      });
+      outcome = { ok: true, output: JSON.stringify(r) };
     } else if (cmd.command === 'bizimhesap_process') {
       const { data: row, error } = await db.from(BANK_TABLE).select('*').eq('id', params.id).single();
       if (error || !row) { outcome = { ok: false, output: `Kayit bulunamadi: ${error?.message || params.id}` }; }

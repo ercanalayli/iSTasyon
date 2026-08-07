@@ -1,0 +1,28 @@
+name: AperiON Cari Bakiye Sync
+
+# Gunde bir kez BizimHesap musteri listesindeki acik bakiyeleri (5700+
+# cari) tarayip public.customers tablosuna yazan komutu kuyruga ekler.
+# Gercek tarama isini yerel dinleyici (Ercan'in PC'sinde surekli calisan
+# aperion_command_listener.cjs) yapar - bu is sadece komutu kuyruklar.
+on:
+  workflow_dispatch: {}
+  schedule:
+    # 06:30 Europe/Istanbul (UTC+3)
+    - cron: '30 3 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm run cari:bakiye:sync:queue
