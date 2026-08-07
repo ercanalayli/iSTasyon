@@ -1,0 +1,27 @@
+name: AperiON Cari Odeme Gecmisi Sync
+
+# Gunde bir kez en yuksek acik bakiyeli ilk 30 carinin son tahsilat
+# gecmisini tarayip public.customer_payments tablosuna yazan komutu
+# kuyruga ekler. Gercek tarama isini yerel dinleyici yapar.
+on:
+  workflow_dispatch: {}
+  schedule:
+    # 06:50 Europe/Istanbul (UTC+3) - tedarikci sync'ten 10 dk sonra
+    - cron: '50 3 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm run cari:odeme:sync:queue

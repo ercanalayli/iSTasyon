@@ -875,6 +875,96 @@ async function bizimhesapTedarikciOzetSync() {
   return { toplamSatir: satirlar.length, tedarikciSayisi: Object.keys(ozet).length, yazilan };
 }
 
+// 2026-08-07: Ercan'in istegi - cari acik bakiyeye tahsilat gecmisi ekle.
+// Musteri detay sayfasinda (ngncustomer?guid=X) zaten "ONCEKI ODEMELERI"
+// tablosu var (tarih/tutar/sekli, son ~10 kayit) - tum 5734 cariyi degil,
+// en riskli (en yuksek acik bakiyeli) ilk N cariyi tarar (varsayilan 30) -
+// tam tarama saatler surer, bu, en cok onem tasiyan carilere odaklaniyor.
+async function bizimhesapCariGuidBul(cariAdi) {
+  // 2026-08-07: bazi cari adlari sonunda telefon numarasi tasiyor ("ADI
+  // (530) 693 1341") - bu tam haliyle arama kutusuna yazilinca eslesme
+  // basarisiz oluyordu (canli teste yakalandi). Arama icin sadece
+  // telefon/parantez ONCESI kismi kullan.
+  const aramaTerimi = cariAdi.split(/\s{2,}\(/)[0].trim() || cariAdi;
+  await page.goto(CUSTOMERS_URL, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 800));
+  await page.evaluate((needle) => {
+    const input = document.querySelector('input[type="text"],input:not([type])');
+    if (!input) return false;
+    input.focus(); input.value = needle;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+    return true;
+  }, aramaTerimi);
+  await new Promise(r => setTimeout(r, 1500));
+  const href = await page.evaluate((needle) => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const link = [...document.querySelectorAll('a[href*="ngncustomer?"]')].find(a => visible(a) && a.innerText.trim().startsWith(needle.slice(0, 30)));
+    return link ? link.getAttribute('href') : null;
+  }, aramaTerimi);
+  if (!href) return null;
+  const m = href.match(/guid=([A-F0-9]+)/i);
+  return m ? m[1] : null;
+}
+
+async function bizimhesapCariOdemeGecmisiSync(limit) {
+  const { data: topCariler } = await db.from('customers')
+    .select('cari_unvan')
+    .eq('company_id', COMPANY_ID)
+    .not('acik_bakiye', 'is', null)
+    .neq('acik_bakiye', 0)
+    .order('acik_bakiye', { ascending: false })
+    .limit(limit || 30);
+
+  let taranan = 0, yazilan = 0, bulunamayan = 0;
+  for (const c of (topCariler || [])) {
+    const guid = await bizimhesapCariGuidBul(c.cari_unvan);
+    if (!guid) { bulunamayan++; continue; }
+    await page.goto(`https://bizimhesap.com/web/ngn/pos/ngncustomer?rc=1&guid=${guid}`, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+    await new Promise(r => setTimeout(r, 800));
+    const odemeler = await page.evaluate(() => {
+      const tables = [...document.querySelectorAll('table')];
+      for (const t of tables) {
+        const headerText = (t.querySelector('tr')?.innerText || '');
+        if (/tarih/i.test(headerText) && /tutar/i.test(headerText) && /şekli|sekli/i.test(headerText)) {
+          // 2026-08-07: satirlarda tarihten ONCE gizli/bos hucreler var (dahili
+          // id sutunlari, ekrandan gorunmuyor) - r[0] tarih SANMAK yanlisti,
+          // sonuc her zaman bos donuyordu (canli teste yakalandi). Artik
+          // TARIH DESENINE UYAN ilk hucreyi buluyor, ondan sonraki 2 hucreyi
+          // tutar/sekli olarak alıyor.
+          return [...t.querySelectorAll('tbody tr, tr')].slice(1).map(tr => {
+            const hucreler = [...tr.querySelectorAll('td')].map(td => td.innerText.trim());
+            const ti = hucreler.findIndex(h => /^\d{2}\.\d{2}\.\d{4}$/.test(h));
+            if (ti === -1) return null;
+            return [hucreler[ti], hucreler[ti + 1], hucreler[ti + 2]];
+          }).filter(Boolean);
+        }
+      }
+      return [];
+    });
+    taranan++;
+    for (const r of odemeler) {
+      const [tarihTxt, tutarTxt, sekli] = r;
+      const m = tarihTxt.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+      if (!m) continue;
+      const tarih = `${m[3]}-${m[2]}-${m[1]}`;
+      const tutar = paraSayi(tutarTxt);
+      const { error } = await db.from('customer_payments').upsert({
+        company_id: COMPANY_ID,
+        cari_unvan: c.cari_unvan,
+        odeme_tarihi: tarih,
+        tutar,
+        sekli: (sekli || '').trim(),
+        guncelleme: new Date().toISOString(),
+      }, { onConflict: 'company_id,cari_unvan,odeme_tarihi,tutar,sekli' });
+      if (!error) yazilan++;
+    }
+  }
+  return { taranan, yazilan, bulunamayan, hedefCariSayisi: (topCariler || []).length };
+}
+
 async function bizimhesapFetch(params) {
   if (params.url) {
     await page.goto(params.url, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
@@ -945,6 +1035,9 @@ async function handleCommand(cmd) {
     } else if (cmd.command === 'bizimhesap_tedarikci_ozet_sync') {
       const r = await bizimhesapTedarikciOzetSync();
       outcome = { ok: true, output: JSON.stringify(r) };
+    } else if (cmd.command === 'bizimhesap_cari_odeme_gecmisi_sync') {
+      const r = await bizimhesapCariOdemeGecmisiSync(params.limit);
+      outcome = { ok: true, output: JSON.stringify(r) };
     } else if (cmd.command === 'bizimhesap_scroll_diag') {
       const r = await page.evaluate(() => {
         const aday = [...document.querySelectorAll('*')].filter(el => {
@@ -952,6 +1045,12 @@ async function handleCommand(cmd) {
           return (s.overflowY === 'auto' || s.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 10;
         }).slice(0, 10).map(el => ({ tag: el.tagName, cls: (el.className || '').toString().slice(0, 60), scrollHeight: el.scrollHeight, clientHeight: el.clientHeight }));
         return { adaylar: aday, satirSayisi: document.querySelectorAll('table tbody tr').length };
+      });
+      outcome = { ok: true, output: JSON.stringify(r) };
+    } else if (cmd.command === 'bizimhesap_table_diag') {
+      const r = await page.evaluate(() => {
+        const tables = [...document.querySelectorAll('table')];
+        return tables.map((t, i) => ({ idx: i, header: (t.querySelector('tr')?.innerText || '').replace(/\s+/g, ' ').slice(0, 100), satir: t.querySelectorAll('tr').length }));
       });
       outcome = { ok: true, output: JSON.stringify(r) };
     } else if (cmd.command === 'bizimhesap_process') {
