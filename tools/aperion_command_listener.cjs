@@ -249,9 +249,16 @@ async function mukerrerVarMi(tarihIso, tutar) {
 }
 
 async function bizimhesapPostTransfer(row) {
-  // row: {id, tarih, tutar, aciklama, hesap (hedef, ör. "*VAKIF ŞİRKET"), kaynakHesap}
-  const acildi = await hesapAc(row.hesap);
-  if (!acildi) return { ok: false, mesaj: `Hedef hesap acilamadi: ${row.hesap}` };
+  // row: {id, tarih, tutar, aciklama, hesap (PARA GIREN/hedef hesap), kaynakHesap (PARA CIKAN/kaynak)}
+  // 2026-08-07: Ercan ekran goruntusuyle yakaladi - "Hesaplar Arasi Transfer"
+  // ACILAN hesaptan PARA CIKISI olarak kaydediyor, dropdown'da secilen hesaba
+  // DEGIL. Ilk versiyon bunu tersten varsaymisti (hedefi acip kaynagi
+  // dropdown'a koymustu) - sonuc: Batch Yatan gibi PARA GIREN hareketler bile
+  // "Para Cikisi" olarak kaydedildi (13 kayit etkilendi, hepsi duzeltildi).
+  // Dogrusu: KAYNAK hesabi ac (parayi cikaran), dropdown'a HEDEFİ (parayi
+  // alan) sec.
+  const acildi = await hesapAc(row.kaynakHesap);
+  if (!acildi) return { ok: false, mesaj: `Kaynak hesap acilamadi: ${row.kaynakHesap}` };
   const mukerrer = await mukerrerVarMi(row.tarih, row.tutar);
   if (mukerrer.kontrolEdildi && mukerrer.varMi) return { ok: true, zatenVardi: true, mesaj: `Mukerrer onlendi - ${mukerrer.ozet}` };
 
