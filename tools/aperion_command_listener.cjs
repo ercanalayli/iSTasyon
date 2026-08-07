@@ -582,6 +582,78 @@ async function bizimhesapBirKaydiSil(hesapIpucu, esleme) {
   return { ok: true, mesaj: 'Kayit silindi' };
 }
 
+// bizimhesapBirKaydiSil ile ayni mantik ama hesap sayfasi yerine Masraflar
+// listesinde (GIDER_URL) arar - yanlis siniflanan/yanlis hesaba giden
+// masraf kayitlarini silmek icin (ID:180 canli ortamda yanlis hesaba
+// gitmisti, bu fonksiyonla temizlendi).
+async function bizimhesapMasrafSil(esleme) {
+  await page.goto(GIDER_URL, { waitUntil: 'networkidle2', timeout: 30000 });
+  await tiklaMenu('Tümü');
+  await new Promise(r => setTimeout(r, 800));
+  await page.evaluate((needle) => {
+    const label = [...document.querySelectorAll('*')].find(x => (x.textContent || '').trim() === 'Ara:' && x.children.length === 0);
+    let input = null;
+    if (label) { let cur = label.parentElement; for (let i = 0; i < 4 && cur && !input; i++) { input = cur.querySelector('input[type="text"],input:not([type])'); cur = cur.parentElement; } }
+    if (!input) input = document.querySelector('input[type="text"],input:not([type])');
+    if (!input) return false;
+    input.focus(); input.value = needle;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+    return true;
+  }, esleme);
+  await new Promise(r => setTimeout(r, 1500));
+
+  const acildiMenu = await page.evaluate((esleme) => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
+    const rows = [...document.querySelectorAll('tr')].filter(tr => visible(tr) && tr.innerText.includes(esleme));
+    if (!rows.length) return { bulundu: false };
+    const dropBtn = [...rows[0].querySelectorAll('a,button')].find(x => visible(x) && norm2(x.innerText || '').includes('islem'));
+    if (!dropBtn) return { bulundu: true, menuYok: true };
+    dropBtn.click();
+    return { bulundu: true };
+  }, esleme);
+  if (!acildiMenu.bulundu) return { ok: true, kalmadi: true, mesaj: `"${esleme}" icin kayit bulunamadi` };
+  if (acildiMenu.menuYok) return { ok: false, mesaj: 'Islem menusu bulunamadi' };
+  await new Promise(r => setTimeout(r, 500));
+
+  const silTiklandi = await page.evaluate(() => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
+    const menus = [...document.querySelectorAll('.dropdown-menu,ul.dropdown-menu')].filter(visible);
+    for (const m of menus) {
+      const link = [...m.querySelectorAll('a,button')].find(x => norm2(x.innerText || '').trim() === 'sil');
+      if (link) { link.click(); return true; }
+    }
+    return false;
+  });
+  if (!silTiklandi) return { ok: false, mesaj: 'Sil linki bulunamadi' };
+  await new Promise(r => setTimeout(r, 800));
+
+  // Hesap sayfasindaki sabit #myModalDeleteTransactionConfirmation ID'si
+  // Masraflar listesinde YOK (canli testte yakalandi) - herhangi bir
+  // GORUNUR modal/dialog icinde onay-benzeri metinli butonu ariyoruz.
+  const onaylandi = await page.evaluate(() => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
+    const modaller = [...document.querySelectorAll('.modal,[class*="modal"],[id*="odal"]')].filter(visible);
+    for (const modal of modaller) {
+      const btn = [...modal.querySelectorAll('a,button')].filter(visible).find(x => ['evet', 'sil', 'onayla', 'tamam', 'kaldir'].some(k => norm2(x.innerText || x.value || '').includes(k)));
+      if (btn) { btn.click(); return true; }
+    }
+    return false;
+  });
+  if (!onaylandi) {
+    const tani = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 300));
+    return { ok: false, mesaj: `Silme onay butonu bulunamadi. Sayfa: ${tani}` };
+  }
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 1500));
+  return { ok: true, mesaj: 'Masraf kaydi silindi' };
+}
+
 // Ayni eslesme metni gecen TUM kayitlari silene kadar dongu (guvenlik icin
 // maxSayi ile sinirli). Her tur basinda bastan arar cunku silme sonrasi
 // liste yeniden render olur ve DOM referanslari gecersiz olur.
@@ -705,6 +777,9 @@ async function handleCommand(cmd) {
     } else if (cmd.command === 'bizimhesap_sil_bir') {
       const r = await bizimhesapBirKaydiSil(params.hesap, params.esleme);
       outcome = { ok: r.ok, output: r.mesaj };
+    } else if (cmd.command === 'bizimhesap_masraf_sil') {
+      const r = await bizimhesapMasrafSil(params.esleme);
+      outcome = { ok: r.ok, output: r.mesaj };
     } else if (cmd.command === 'bizimhesap_sil_tumu') {
       const r = await bizimhesapTumEslesenleriSil(params.hesap, params.esleme, params.maxSayi);
       outcome = { ok: true, output: `Silinen: ${r.toplamSilinen} | ${JSON.stringify(r.detay).slice(0, 7500)}` };
@@ -723,7 +798,13 @@ async function handleCommand(cmd) {
         // hesabina transfer olarak yonlendiriliyor (kaynak: gercek banka
         // hesabi, hedef: Emanet - hesapta gorunur ama gider gibi
         // kategorize edilmez, sonradan elle netlestirilir).
-        const anaparaKaynakli = /kredi geri odemesi|kredi kartina odenen/.test(rowAciklama);
+        // 2026-08-07: "KRE.KART BORÇ ÖDEME" (bankanin kendi ekstresindeki
+        // kisaltilmis ifadesi) bu kalibi yakalamiyordu - ID:180/206 canli
+        // ortamda "Kredi karti" diye anlamsiz bir hesaba yanlis islendi
+        // (fuzzy eslesme "MOCA SONOVA POS KREDI KARTI"ye gitti). Kredi
+        // karti borc odemesinin tum yaygin ifade bicimlerini kapsayacak
+        // sekilde genisletildi.
+        const anaparaKaynakli = /kredi geri odemesi|kredi kartina odenen|kre ?\.? ?kart(i|a)? borc ode/.test(rowAciklama);
         const krediFaizi = /kredi faizi/.test(rowAciklama);
         if (row.tur === 'transfer') {
           const kaynakHesap = String(row.karsi_taraf || '').split('->')[0].trim() || 'POS POS POS KREDI KARTI';
