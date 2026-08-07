@@ -6054,17 +6054,24 @@ function cariName(r){return (r.unvan||r.cari_unvan||r.musteri||'Bilinmiyor').toS
 function cariMonthKey(t){return (t||'').substring(0,7);}
 function cariRiskTag(c){
   if(!c.sonT)return{t:'eksik veri',c:'var(--orange)',bg:'rgba(255,140,0,.12)'};
+  // Gercek acik bakiye varsa (BizimHesap'tan), risk degerlendirmesinde
+  // tahakkuk toplami (c.bakiye) yerine bunu esas al - tahakkuk odendiyse
+  // bile eski mantik hala "yuksek hacim" diyebiliyordu.
+  const bk=c.acikBakiye!=null?c.acikBakiye:c.bakiye;
+  if(c.acikBakiye!=null&&c.acikBakiye>200000)return{t:'yüksek açık bakiye',c:'var(--red)',bg:'rgba(255,71,87,.12)'};
   if(c.gunFarki>120)return{t:'pasif / riskli',c:'var(--red)',bg:'rgba(255,71,87,.12)'};
   if(c.gunFarki>45)return{t:'takip gerekli',c:'var(--orange)',bg:'rgba(255,140,0,.12)'};
-  if(c.bakiye>100000)return{t:'yüksek hacim',c:'var(--accent)',bg:'rgba(99,91,255,.12)'};
+  if(bk>100000)return{t:'yüksek hacim',c:'var(--accent)',bg:'rgba(99,91,255,.12)'};
   return{t:'düzenli',c:'var(--green)',bg:'rgba(0,201,107,.12)'};
 }
 function cariSkor(c){
   let s=100;
+  const bk=c.acikBakiye!=null?c.acikBakiye:c.bakiye;
   if(c.gunFarki>30)s-=18;
   if(c.gunFarki>90)s-=27;
   if(c.openMonths>3)s-=12;
-  if(c.bakiye>200000)s-=10;
+  if(bk>200000)s-=10;
+  if(c.acikBakiye!=null&&c.acikBakiye>500000)s-=15;
   if(!c.tahsilatVar)s-=20;
   return Math.max(0,Math.min(100,s));
 }
