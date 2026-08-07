@@ -806,7 +806,19 @@ async function handleCommand(cmd) {
         // sekilde genisletildi.
         const anaparaKaynakli = /kredi geri odemesi|kredi kartina odenen|kre ?\.? ?kart(i|a)? borc ode/.test(rowAciklama);
         const krediFaizi = /kredi faizi/.test(rowAciklama);
-        if (row.tur === 'transfer') {
+        // 2026-08-07 KRITIK bulgu: process_pending_bank_movements_v113.cjs
+        // karsi taraf bilinmeyen kayitlari emanet_routed=true diye
+        // isaretliyordu ama bu bayrak burada HIC OKUNMUYORDU - 19 kayit
+        // (ATM para yatirma, KMH tahsilati gibi belirsiz kaynakli girisler)
+        // Emanet yerine dogrudan GERCEK banka hesabina "Para Girisi" olarak
+        // islenmis oldu (Ercan'in sorusuyla yakalandi). emanet_routed en
+        // BASTA kontrol edilmeli - tur'a gore yonlendirmeden once.
+        if (row.emanet_routed) {
+          // 2026-08-07: yon (gercek hesaba mi dusmeli, dogrudan Emanet'e mi
+          // girmeli) Ercan ile netlesmeden TAHMIN YURUTULMEYECEK - gercek
+          // banka bakiyesini etkileyen bir karar. Insan kontrolune birakiliyor.
+          r = { ok: true, insanKontroluGerekli: true, mesaj: 'Emanet yonlendirmesi bekliyor - kaynak/hedef yonu netlesmeden otomatik islenmedi (bkz. ID:286-304 duzeltmesi)' };
+        } else if (row.tur === 'transfer') {
           const kaynakHesap = String(row.karsi_taraf || '').split('->')[0].trim() || 'POS POS POS KREDI KARTI';
           r = await bizimhesapPostTransfer({ id: row.id, tarih: row.tarih, tutar: row.tutar, aciklama, hesap: row.hesap, kaynakHesap });
         } else if (row.tur === 'cari_tahsilat' || row.tur === 'tahsilat') {
