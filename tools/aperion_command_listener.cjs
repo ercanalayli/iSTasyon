@@ -29,6 +29,7 @@ process.env.BIZIMHESAP_HEADLESS = process.env.BIZIMHESAP_HEADLESS || 'true';
 
 const FIRMA = { id: 'alayli', adi: 'ALAYLI MEDIKAL', arama: 'ALAYLI' };
 const GIDER_URL = 'https://bizimhesap.com/web/ngn/acc/ngncostss';
+const ACCOUNTS_URL = 'https://bizimhesap.com/web/ngn/acc/ngnaccounts';
 
 let browser, page;
 
@@ -202,6 +203,137 @@ async function bizimhesapPostExpense(row) {
   return { ok: dogrulama.found, mesaj: dogrulama.found ? 'Kaydedildi ve listede dogrulandi.' : `Kaydet sonrasi (${urlSonra}): ${hemenSonra.slice(0,200)} | TANI: ${tani}` };
 }
 
+// 2026-08-06: Ercan "sadece masraf yeterli degil, bizim hesabin
+// yapabilecegi herseyi yap - banka hareketlerinin hepsi banka masrafi
+// degil" dedi. Eski bizimhesap_queue_worker.cjs'te (her calistirmada YENI
+// tarayici acan, captcha riski yaratan eski mimari) zaten CALISAN alan
+// ID'leri bulundu - ayni ID'ler bu kalici-oturum dinleyicisine tasindi:
+// Hesaplar Arasi Transfer (#ddlOtherAccount/#txtTransferDate/Amount/
+// Description, #btnSaveTransfer) ve Hesaba Para Girisi (#txtTransactionDate/
+// #txtAmount/#txtDefinition, #myModalCashEntry #btnSave).
+//
+// KRITIK bulunan risk: BizimHesap'in KENDI cari eslestirme/banka entegrasyonu
+// bazi hareketleri (ornek: #172, YÜKSEL DEMİREL 13.421 TL Tahsilat) AperiON
+// hic gondermeden zaten olusturabiliyor. Bu yuzden transfer/tahsilat
+// gondermeden ONCE hedef hesabin HESAP HAREKETLERI listesinde ayni
+// tarih+tutar var mi diye bakiliyor - varsa atlaniyor (mukerrer onlenir).
+
+async function hesapAc(hesapIpucu) {
+  await page.goto(ACCOUNTS_URL, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 800));
+  const tiklandi = await page.evaluate((ipucu) => {
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
+    const hedef = norm2(ipucu);
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const el = [...document.querySelectorAll('a')].filter(visible).find(x => norm2(x.innerText || '').includes(hedef));
+    if (!el) return false;
+    el.click();
+    return true;
+  }, hesapIpucu);
+  if (!tiklandi) return false;
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 1000));
+  return true;
+}
+
+// Hesap sayfasi acikken (hesapAc sonrasi), HESAP HAREKETLERI listesinde
+// verilen tarih (YYYY-MM-DD) + tutar zaten var mi kontrol eder.
+async function mukerrerVarMi(tarihIso, tutar) {
+  const gg = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' '));
+  const [yil, ay, gun] = String(tarihIso || '').split('-');
+  if (!yil) return { kontrolEdildi: false };
+  const trTarih = `${gun}.${ay}.${yil}`;
+  const trTutar = para(tutar);
+  const varMi = gg.includes(trTarih) && gg.includes(trTutar);
+  return { kontrolEdildi: true, varMi, ozet: varMi ? `Bulundu: ${trTarih} ${trTutar} TL` : '' };
+}
+
+async function bizimhesapPostTransfer(row) {
+  // row: {id, tarih, tutar, aciklama, hesap (hedef, ör. "*VAKIF ŞİRKET"), kaynakHesap}
+  const acildi = await hesapAc(row.hesap);
+  if (!acildi) return { ok: false, mesaj: `Hedef hesap acilamadi: ${row.hesap}` };
+  const mukerrer = await mukerrerVarMi(row.tarih, row.tutar);
+  if (mukerrer.kontrolEdildi && mukerrer.varMi) return { ok: true, zatenVardi: true, mesaj: `Mukerrer onlendi - ${mukerrer.ozet}` };
+
+  const acildi2 = await page.evaluate(() => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const toggle = [...document.querySelectorAll('button.dropdown-toggle')].find(visible);
+    if (!toggle) return false;
+    toggle.click();
+    return true;
+  });
+  if (!acildi2) return { ok: false, mesaj: 'Transfer dropdown butonu bulunamadi' };
+  await new Promise(r => setTimeout(r, 500));
+  const transferAcildi = await page.evaluate(() => { const b = document.getElementById('btnTransfer'); if (!b) return false; b.click(); return true; });
+  if (!transferAcildi) return { ok: false, mesaj: 'Hesaplar Arasi Transfer secenegi bulunamadi' };
+  await page.waitForSelector('#myModalTransferTo[style*="display: block"] #txtTransferAmount', { timeout: 8000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 500));
+
+  const dolduruldu = await page.evaluate((p) => {
+    const fold = s => (s || '').toLocaleUpperCase('tr-TR').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Z0-9]+/g, ' ').trim();
+    const set = (id, v) => { const el = document.getElementById(id); if (!el) return false; el.focus(); el.value = String(v || ''); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); el.blur(); return true; };
+    const wanted = fold(p.kaynakHesap).split(' ').filter(t => t.length > 2);
+    const select = document.getElementById('ddlOtherAccount');
+    const opt = select && [...select.options].find(o => wanted.length && wanted.every(t => fold(o.text).includes(t)));
+    if (opt) { select.value = opt.value; select.dispatchEvent(new Event('change', { bubbles: true })); }
+    const [yil, ay, gun] = String(p.tarih || '').split('-');
+    return {
+      tarih: set('txtTransferDate', `${gun}.${ay}.${yil}`),
+      tutar: set('txtTransferAmount', p.tutarText),
+      aciklama: set('txtTransferDescription', p.aciklama),
+      kaynakHesap: Boolean(opt),
+      secilenKaynak: opt ? opt.text : '(bulunamadi)',
+    };
+  }, { ...row, tutarText: para(row.tutar) });
+
+  if (!dolduruldu.tarih || !dolduruldu.tutar || !dolduruldu.aciklama || !dolduruldu.kaynakHesap) {
+    return { ok: false, mesaj: 'Transfer formu eksik: ' + JSON.stringify(dolduruldu) };
+  }
+  const kaydedildi = await page.evaluate(() => { const b = document.querySelector('#myModalTransferTo #btnSaveTransfer'); if (!b) return false; b.click(); return true; });
+  if (!kaydedildi) return { ok: false, mesaj: 'Transfer kaydet butonu bulunamadi' };
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 1800));
+
+  const acildi3 = await hesapAc(row.hesap);
+  const dogrulama = acildi3 ? await mukerrerVarMi(row.tarih, row.tutar) : { kontrolEdildi: false };
+  return { ok: dogrulama.varMi === true, mesaj: dogrulama.varMi ? 'Transfer kaydedildi ve dogrulandi.' : `Transfer sonrasi dogrulanamadi (${dolduruldu.secilenKaynak})` };
+}
+
+async function bizimhesapPostIncome(row) {
+  // row: {id, tarih, tutar, aciklama, hesap (para giren hesap)}
+  const acildi = await hesapAc(row.hesap);
+  if (!acildi) return { ok: false, mesaj: `Hedef hesap acilamadi: ${row.hesap}` };
+  const mukerrer = await mukerrerVarMi(row.tarih, row.tutar);
+  if (mukerrer.kontrolEdildi && mukerrer.varMi) return { ok: true, zatenVardi: true, mesaj: `Mukerrer onlendi - ${mukerrer.ozet}` };
+
+  const acildi2 = await page.evaluate(() => { const b = document.getElementById('btnIncome'); if (!b) return false; b.click(); return true; });
+  if (!acildi2) return { ok: false, mesaj: 'Hesaba Para Girisi Yap dugmesi bulunamadi' };
+  await page.waitForSelector('#myModalCashEntry[style*="display: block"] #txtAmount', { timeout: 8000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 500));
+
+  const dolduruldu = await page.evaluate((p) => {
+    const set = (id, v) => { const el = document.getElementById(id); if (!el) return false; el.focus(); el.value = String(v || ''); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); el.blur(); return true; };
+    const [yil, ay, gun] = String(p.tarih || '').split('-');
+    return {
+      tarih: set('txtTransactionDate', `${gun}.${ay}.${yil}`),
+      tutar: set('txtAmount', p.tutarText),
+      aciklama: set('txtDefinition', p.aciklama),
+    };
+  }, { ...row, tutarText: para(row.tutar) });
+
+  if (!dolduruldu.tarih || !dolduruldu.tutar || !dolduruldu.aciklama) {
+    return { ok: false, mesaj: 'Para girisi formu eksik: ' + JSON.stringify(dolduruldu) };
+  }
+  const kaydedildi = await page.evaluate(() => { const b = document.querySelector('#myModalCashEntry #btnSave'); if (!b) return false; b.click(); return true; });
+  if (!kaydedildi) return { ok: false, mesaj: 'Para girisi kaydet butonu bulunamadi' };
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 1800));
+
+  const acildi3 = await hesapAc(row.hesap);
+  const dogrulama = acildi3 ? await mukerrerVarMi(row.tarih, row.tutar) : { kontrolEdildi: false };
+  return { ok: dogrulama.varMi === true, mesaj: dogrulama.varMi ? 'Para girisi kaydedildi ve dogrulandi.' : 'Para girisi sonrasi dogrulanamadi' };
+}
+
 // Genel amacli sayfa okuma: bir menu yoluna tikla (opsiyonel), bir URL'e git,
 // opsiyonel arama yap, sayfanin tam metnini ve varsa tablo satirlarini dondur.
 // Bunun icin: params.url (tam URL) VEYA params.menu (["Tedarikçiler"] gibi tiklanacak menu adlari dizisi),
@@ -260,9 +392,17 @@ async function handleCommand(cmd) {
       if (error || !row) { outcome = { ok: false, output: `Kayit bulunamadi: ${error?.message || params.id}` }; }
       else {
         const aciklama = `APERION AUTO | ID:${row.id} | TIP:${row.tur} | FIRMA:${row.firma_id} | ${(row.aciklama || '').slice(0, 150)}`;
-        const r = await bizimhesapPostExpense({ id: row.id, tarih: row.tarih, tutar: para(row.tutar), aciklama, hesap: row.hesap });
+        let r;
+        if (row.tur === 'transfer') {
+          const kaynakHesap = String(row.karsi_taraf || '').split('->')[0].trim() || 'POS POS POS KREDI KARTI';
+          r = await bizimhesapPostTransfer({ id: row.id, tarih: row.tarih, tutar: row.tutar, aciklama, hesap: row.hesap, kaynakHesap });
+        } else if (row.tur === 'cari_tahsilat' || row.tur === 'tahsilat') {
+          r = await bizimhesapPostIncome({ id: row.id, tarih: row.tarih, tutar: row.tutar, aciklama, hesap: row.hesap });
+        } else {
+          r = await bizimhesapPostExpense({ id: row.id, tarih: row.tarih, tutar: para(row.tutar), aciklama, hesap: row.hesap });
+        }
         outcome = { ok: r.ok, output: r.mesaj };
-        if (r.ok) await db.from(BANK_TABLE).update({ bizimhesap_durumu: 'kaydedildi', bizimhesap_mesaj: r.mesaj, bizimhesap_islem_tarihi: new Date().toISOString() }).eq('id', row.id);
+        if (r.ok) await db.from(BANK_TABLE).update({ bizimhesap_durumu: r.zatenVardi ? 'zaten_vardi' : 'kaydedildi', bizimhesap_mesaj: r.mesaj, bizimhesap_islem_tarihi: new Date().toISOString() }).eq('id', row.id);
       }
     } else {
       outcome = { ok: false, output: `Bilinmeyen komut: ${cmd.command}` };

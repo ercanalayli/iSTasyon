@@ -271,7 +271,15 @@ function hasVerifiedBankMovement(row, text) {
   const hasReferenceOrBalance = hasReference || hasNonZeroBalance;
   const hasMovementLanguage = /GELEN|GIDEN|FAST|EFT|HAVALE|POS|BATCH|ISLEM NO|REFERANS|HESABINIZA|HESABINIZDAN/.test(text);
   const looksLikeAnnouncement = /HALKA ARZ|BULTEN|KAMPANYA|DUYURU|BILGI:|BILGILENDIRME:/.test(text) && !hasReferenceOrBalance;
-  return !looksLikeAnnouncement && (hasReferenceOrBalance || hasMovementLanguage);
+  // 2026-08-06: Iş Bankasi'nin "Maximiles Black Kart... 2.500 TL Indirim"
+  // reklam maili gercek bir 500 TL banka transferi sanilip bank_transactions'a
+  // kadar sizmisti - "500" degeri aslinda "2.500 TL indirim" ifadesinin
+  // yanlis parse edilmis parcasiydi. Bu tur pazarlama e-postalari kesin
+  // imzalarla (opt-out metni, "indirim/firsati yakala" dili) her zaman
+  // dislanmali, hasReferenceOrBalance'a bakilmaksizin - referans/bakiye
+  // gorunmesi bunlari gercek yapmiyor.
+  const looksLikePromoMail = /INDIRIM|KAZANMA FIRSATINI|URUN VE HIZMET TANITIMINA|MAXIMILES/.test(text);
+  return !looksLikeAnnouncement && !looksLikePromoMail && (hasReferenceOrBalance || hasMovementLanguage);
 }
 
 function hasBankNameConflict(row, text) {
