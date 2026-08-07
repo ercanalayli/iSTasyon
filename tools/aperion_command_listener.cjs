@@ -279,7 +279,15 @@ async function bizimhesapPostTransfer(row) {
   const dolduruldu = await page.evaluate((p) => {
     const fold = s => (s || '').toLocaleUpperCase('tr-TR').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Z0-9]+/g, ' ').trim();
     const set = (id, v) => { const el = document.getElementById(id); if (!el) return false; el.focus(); el.value = String(v || ''); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); el.blur(); return true; };
-    const wanted = fold(p.kaynakHesap).split(' ').filter(t => t.length > 2);
+    // 2026-08-07 ikinci hata: hesap/kaynakHesap yon duzeltmesi yapilirken
+    // burada YANLISLIKLA hala p.kaynakHesap araniyordu - yani zaten acik
+    // olan hesabin kendi adini dropdown'da ariyorduk. Bu bazen "bulunamadi"
+    // (dogru cikti ama islem eksik kaliyordu) bazen de fold() alt-dizge
+    // eslesmesi yuzunden YANLIS bir hesaba (ör. "POS POS POS KREDİ KARTI"
+    // aranirken "*MOCA SONOVA POS KREDİ KARTI" - ortak "POS/KREDI/KARTI"
+    // kelimeleri nedeniyle) transfer yapiyordu. Dogrusu: dropdown'da HEDEF
+    // (p.hesap) aranmali, cunku KAYNAK zaten acik olan hesap.
+    const wanted = fold(p.hesap).split(' ').filter(t => t.length > 2);
     const select = document.getElementById('ddlOtherAccount');
     const opt = select && [...select.options].find(o => wanted.length && wanted.every(t => fold(o.text).includes(t)));
     if (opt) { select.value = opt.value; select.dispatchEvent(new Event('change', { bubbles: true })); }
@@ -288,12 +296,12 @@ async function bizimhesapPostTransfer(row) {
       tarih: set('txtTransferDate', `${gun}.${ay}.${yil}`),
       tutar: set('txtTransferAmount', p.tutarText),
       aciklama: set('txtTransferDescription', p.aciklama),
-      kaynakHesap: Boolean(opt),
-      secilenKaynak: opt ? opt.text : '(bulunamadi)',
+      hedefHesap: Boolean(opt),
+      secilenHedef: opt ? opt.text : '(bulunamadi)',
     };
   }, { ...row, tutarText: para(row.tutar) });
 
-  if (!dolduruldu.tarih || !dolduruldu.tutar || !dolduruldu.aciklama || !dolduruldu.kaynakHesap) {
+  if (!dolduruldu.tarih || !dolduruldu.tutar || !dolduruldu.aciklama || !dolduruldu.hedefHesap) {
     return { ok: false, mesaj: 'Transfer formu eksik: ' + JSON.stringify(dolduruldu) };
   }
   const kaydedildi = await page.evaluate(() => { const b = document.querySelector('#myModalTransferTo #btnSaveTransfer'); if (!b) return false; b.click(); return true; });
@@ -303,7 +311,7 @@ async function bizimhesapPostTransfer(row) {
 
   const acildi3 = await hesapAc(row.hesap);
   const dogrulama = acildi3 ? await mukerrerVarMi(row.tarih, row.tutar) : { kontrolEdildi: false };
-  return { ok: dogrulama.varMi === true, mesaj: dogrulama.varMi ? 'Transfer kaydedildi ve dogrulandi.' : `Transfer sonrasi dogrulanamadi (${dolduruldu.secilenKaynak})` };
+  return { ok: dogrulama.varMi === true, mesaj: dogrulama.varMi ? `Transfer kaydedildi ve dogrulandi (hedef: ${dolduruldu.secilenHedef}).` : `Transfer sonrasi dogrulanamadi (hedef secimi: ${dolduruldu.secilenHedef})` };
 }
 
 async function bizimhesapPostIncome(row) {
