@@ -126,7 +126,7 @@ async function bizimhesapPostExpense(row) {
     const vadeOk = setInput('txtDueDate', hareket.tarih);
     const tutarOk = setInput('txtAmount', hareket.tutar);
     const aciklamaOk = setTextarea('txtNote', hareket.aciklama);
-    const masrafOk = setSelect('ddlCostAccounts', ['banka masraf']);
+    const masrafOk = setSelect('ddlCostAccounts', hareket.masrafKalemi ? [hareket.masrafKalemi] : ['banka masraf']);
     const odemeOk = setSelect('ddlPaymentOption', ['odendi', 'ödendi']);
     const hesapHints = hareket.hesap ? [hareket.hesap] : ['*is bankasi', '*iş bankası', 'is bankasi', 'iş bankası'];
     const hesapOk = setSelect('ddlCashierNew', hesapHints);
@@ -393,11 +393,23 @@ async function handleCommand(cmd) {
       else {
         const aciklama = `APERION AUTO | ID:${row.id} | TIP:${row.tur} | FIRMA:${row.firma_id} | ${(row.aciklama || '').slice(0, 150)}`;
         let r;
+        const rowAciklama = norm(row.aciklama || '');
+        // 2026-08-07: "Kredi Geri Odemesi" / "Kredi Kartina Odenen" anapara
+        // hareketleridir, gider degildir - Ercan'in talimatiyla Emanet
+        // hesabina transfer olarak yonlendiriliyor (kaynak: gercek banka
+        // hesabi, hedef: Emanet - hesapta gorunur ama gider gibi
+        // kategorize edilmez, sonradan elle netlestirilir).
+        const anaparaKaynakli = /kredi geri odemesi|kredi kartina odenen/.test(rowAciklama);
+        const krediFaizi = /kredi faizi/.test(rowAciklama);
         if (row.tur === 'transfer') {
           const kaynakHesap = String(row.karsi_taraf || '').split('->')[0].trim() || 'POS POS POS KREDI KARTI';
           r = await bizimhesapPostTransfer({ id: row.id, tarih: row.tarih, tutar: row.tutar, aciklama, hesap: row.hesap, kaynakHesap });
         } else if (row.tur === 'cari_tahsilat' || row.tur === 'tahsilat') {
           r = await bizimhesapPostIncome({ id: row.id, tarih: row.tarih, tutar: row.tutar, aciklama, hesap: row.hesap });
+        } else if (anaparaKaynakli) {
+          r = await bizimhesapPostTransfer({ id: row.id, tarih: row.tarih, tutar: row.tutar, aciklama, hesap: 'EMANET', kaynakHesap: row.hesap });
+        } else if (krediFaizi) {
+          r = await bizimhesapPostExpense({ id: row.id, tarih: row.tarih, tutar: para(row.tutar), aciklama, hesap: row.hesap, masrafKalemi: 'Faiz' });
         } else {
           r = await bizimhesapPostExpense({ id: row.id, tarih: row.tarih, tutar: para(row.tutar), aciklama, hesap: row.hesap });
         }
