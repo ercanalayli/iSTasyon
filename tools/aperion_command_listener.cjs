@@ -917,6 +917,133 @@ async function bizimhesapTedarikciOzetSync() {
   return { toplamSatir: satirlar.length, tedarikciSayisi: Object.keys(ozet).length, yazilan };
 }
 
+// 2026-08-10: Ercan'in istegi - VAKIF SIRKET (ve gerekirse baska) BizimHesap
+// banka hesabinin TUM hareket gecmisini (yil bazinda) cekip gercek banka
+// ekstresiyle satir satir karsilastirmak icin. Hesap sayfasindaki "HESAP
+// HAREKETLERI" tablosu da virtual-scroll'lu (musteri listesiyle ayni
+// pattern). Odeme gecmisi tablosunda daha once yakalanan "gizli sutun"
+// tuzagina dusmemek icin, sabit indeks yerine TARIH hucresini bulup
+// digerlerini ona GORE (relative) okuyoruz.
+async function bizimhesapHesapEkstreDump(guid, hesapAdi) {
+  await page.goto(`https://bizimhesap.com/web/ngn/acc/ngnaccount?rc=1&guid=${guid}`, { waitUntil: 'networkidle2', timeout: 30000 });
+
+  // 2026-08-10: canli teste yakalandi - sayfada AYNI basligi tasiyan IKI
+  // tablo var (biri sabit 1 satirlik "sticky" baslik klonu, digeri gercek
+  // veri tablosu). Genel "table tbody tr, tr" sayaci ilk tabloda takilip
+  // gercek tablo hic yuklenmeden "durgunlasti" saniyordu (0 satir okundu).
+  // Her evaluate cagrisinda hedef tabloyu (Tarih/Islem/Bakiye basligi
+  // tasiyan, en cok satirli tablo) ACIKCA yeniden secen fonksiyon icinde
+  // tekrarlaniyor (page.evaluate() icine kucuk yardimciyi ayni fonksiyon
+  // govdesinde tutmak, string-eval'e gore Puppeteer'da daha guvenilir).
+  function hedefTabloSatirSayisi() {
+    const adaylar = [...document.querySelectorAll('table')].filter(t => {
+      const h = (t.querySelector('tr') && t.querySelector('tr').innerText) || '';
+      return h.includes('Tarih') && h.includes('lem') && h.includes('Bakiye');
+    });
+    if (!adaylar.length) return 0;
+    const t = adaylar.reduce((best, x) => x.querySelectorAll('tr').length > best.querySelectorAll('tr').length ? x : best, adaylar[0]);
+    return t.querySelectorAll('tr').length;
+  }
+
+  // Gercek veri tablosu ilk anda 0 satir olabilir (ayri bir XHR ile geliyor) -
+  // en az 2 satir gorene kadar (veya 15sn dolana kadar) bekle, sonra kaydirmaya basla.
+  for (let i = 0; i < 50; i++) {
+    const n = await page.evaluate(hedefTabloSatirSayisi);
+    if (n >= 2) break;
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  function tabloSatirlariniOku() {
+    const adaylar = [...document.querySelectorAll('table')].filter(t => {
+      const h = (t.querySelector('tr') && t.querySelector('tr').innerText) || '';
+      return h.includes('Tarih') && h.includes('lem') && h.includes('Bakiye');
+    });
+    if (!adaylar.length) return [];
+    const t = adaylar.reduce((best, x) => x.querySelectorAll('tr').length > best.querySelectorAll('tr').length ? x : best, adaylar[0]);
+    const rows = [...t.querySelectorAll('tr')];
+    return rows.map(tr => [...tr.querySelectorAll('td')].map(td => (td.innerText || '').trim()));
+  }
+
+  const tarihRe = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+  function satirlariAyristir(satirlar) {
+    const out = [];
+    for (const r of satirlar) {
+      const dateIdx = r.findIndex(c => tarihRe.test(c));
+      if (dateIdx === -1) continue;
+      const m = r[dateIdx].match(tarihRe);
+      const tarih = `${m[3]}-${m[2]}-${m[1]}`;
+      const islem = r[dateIdx + 1] || '';
+      const kullanici = r[dateIdx + 2] || '';
+      const hesap = r[dateIdx + 3] || '';
+      const aciklama = r[dateIdx + 4] || '';
+      const borc = paraSayi(r[dateIdx + 5]);
+      const alacak = paraSayi(r[dateIdx + 6]);
+      const bakiye = paraSayi(r[dateIdx + 7]);
+      if (!borc && !alacak && !bakiye) continue;
+      const tutar = alacak || -borc;
+      const yon = alacak ? 'alacak' : 'borc';
+      const satir_hash = `${tarih}|${islem}|${aciklama}|${tutar}|${bakiye}`;
+      out.push({ tarih, islem, kullanici, hesap, aciklama, tutar, yon, bakiye, satir_hash });
+    }
+    return out;
+  }
+
+  // 2026-08-10: bu tablo "sonsuz kaydirma" (biriken) degil, SABIT PENCERELI
+  // sanal liste - kaydirdikca ONCEKI gorunen satirlar DOM'dan silinip
+  // YENILERI ekleniyor (satir SAYISI hep ayni ~110-120 kaliyor). Onceki
+  // versiyon sadece EN SON kaydirma konumundaki pencereyi okuyordu, bu
+  // yuzden sadece ortadaki bir tarih araligi yakalandi (2025-07/10, ne en
+  // yeni ne en eski). Duzeltme: HER kaydirma adiminda o anki pencereyi oku
+  // ve bir Map'te satir_hash ile biriktir (dogal tekillestirme), pencere
+  // icerigi degismemeye baslayana (gercekten dibe vurulana) kadar devam et.
+  const birikenMap = new Map();
+  let oncekiPencereImza = '', sabitTur = 0;
+  for (let i = 0; i < 1200 && sabitTur < 5; i++) {
+    const satirlar = await page.evaluate(tabloSatirlariniOku);
+    const parsed = satirlariAyristir(satirlar);
+    parsed.forEach(k => birikenMap.set(k.satir_hash, k));
+    const pencereImza = parsed.length ? (parsed[0].satir_hash + '|' + parsed[parsed.length - 1].satir_hash) : '';
+    if (pencereImza === oncekiPencereImza) sabitTur++; else sabitTur = 0;
+    oncekiPencereImza = pencereImza;
+    await page.evaluate(() => {
+      const adaylar = [...document.querySelectorAll('table')].filter(t => {
+        const h = (t.querySelector('tr') && t.querySelector('tr').innerText) || '';
+        return h.includes('Tarih') && h.includes('lem') && h.includes('Bakiye');
+      });
+      const t = adaylar.length ? adaylar.reduce((best, x) => x.querySelectorAll('tr').length > best.querySelectorAll('tr').length ? x : best, adaylar[0]) : null;
+      const kapsayici = (t && (t.closest('.search-results') || t.closest('[style*="overflow"]'))) ||
+        [...document.querySelectorAll('*')].find(el => { const s = getComputedStyle(el); return (s.overflowY === 'auto' || s.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 10; });
+      if (kapsayici) kapsayici.scrollTop += (kapsayici.clientHeight * 0.6);
+      else window.scrollBy(0, 400);
+    });
+    await new Promise(r => setTimeout(r, 280));
+  }
+
+  const kayitlar = [...birikenMap.values()];
+
+  let yazilan = 0, hata = 0;
+  for (const k of kayitlar) {
+    const { error } = await db.from('bizimhesap_hesap_hareketleri').upsert({
+      company_id: COMPANY_ID,
+      hesap_guid: guid,
+      hesap_adi: hesapAdi,
+      tarih: k.tarih,
+      islem: k.islem,
+      kullanici: k.kullanici,
+      hesap: k.hesap,
+      aciklama: k.aciklama,
+      tutar: k.tutar,
+      yon: k.yon,
+      bakiye: k.bakiye,
+      satir_hash: k.satir_hash,
+      guncelleme: new Date().toISOString(),
+    }, { onConflict: 'company_id,hesap_guid,satir_hash' });
+    if (error) hata++; else yazilan++;
+  }
+
+  return { pencereTaramaTuru: sabitTur >= 5 ? 'dibe_ulasti' : 'iterasyon_limiti', ayristirilan: kayitlar.length, yazilan, hata };
+}
+
 // 2026-08-07: Ercan'in istegi - cari acik bakiyeye tahsilat gecmisi ekle.
 // Musteri detay sayfasinda (ngncustomer?guid=X) zaten "ONCEKI ODEMELERI"
 // tablosu var (tarih/tutar/sekli, son ~10 kayit) - tum 5734 cariyi degil,
@@ -1079,6 +1206,9 @@ async function handleCommand(cmd) {
       outcome = { ok: true, output: JSON.stringify(r) };
     } else if (cmd.command === 'bizimhesap_cari_odeme_gecmisi_sync') {
       const r = await bizimhesapCariOdemeGecmisiSync(params.limit);
+      outcome = { ok: true, output: JSON.stringify(r) };
+    } else if (cmd.command === 'bizimhesap_hesap_ekstre_dump') {
+      const r = await bizimhesapHesapEkstreDump(params.guid, params.hesapAdi || params.guid);
       outcome = { ok: true, output: JSON.stringify(r) };
     } else if (cmd.command === 'bizimhesap_scroll_diag') {
       const r = await page.evaluate(() => {
