@@ -33,3 +33,7 @@ Bu dosya operasyon kurallarıdır. Kullanıcı açıkça "değiştir" veya "sil"
 - Fatura + sevk tarihi olmadan sipariş kapanmaz.
 - Serme = Yatak Koruyucu Örtü.
 - Bel Bantlı = Bağlama.
+
+## 6. Ödeme vadesi kuralı
+- Bütün distribütör hasta bezi satışlarında ödeme vadesi 30 gündür.
+- Kullanıcı açıkça farklı bir vade söylemediği sürece bu varsayılan uygulanır.
