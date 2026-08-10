@@ -29,8 +29,8 @@ button{font:inherit;cursor:pointer}
 .meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}
 .pill{border:1px solid var(--line);border-radius:99px;padding:6px 10px;white-space:nowrap}
 .pill.live{color:#a8f5d4;border-color:#25775c;background:#103528}
-h1.title{margin:20px 0 2px;font-size:24px}
-p.subtitle{margin:0 0 18px;color:var(--muted);font-size:14px}
+h1.title{margin:14px 0 2px;font-size:24px}
+p.subtitle{margin:0 0 12px;color:var(--muted);font-size:14px}
 .grid12{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .card{position:relative;display:flex;flex-direction:column;gap:9px;min-height:172px;padding:15px 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);border-left:4px solid var(--blue);transition:transform .14s ease,border-color .14s ease}
 .card:hover{transform:translateY(-2px)}
@@ -62,7 +62,7 @@ tr.cat-clickable:hover .row-btn::after,tr.gider-clickable:hover .row-btn::after{
 .upd{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:800;color:#83e8c1;background:#103528;border:1px solid #25775c;border-radius:99px;padding:2px 8px;margin-left:6px}
 @media (max-width:1180px){.grid12{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){.shell{width:min(100% - 20px,1560px)}.grid12{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}}
-footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color:#7f91a9;font-size:11px;flex-wrap:wrap}
+footer{display:flex;justify-content:space-between;gap:12px;margin-top:14px;color:#7f91a9;font-size:11px;flex-wrap:wrap}
 .period-tabs{display:none;gap:6px;padding:0 18px 10px;overflow-x:auto}
 .period-tab{flex:0 0 auto;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);font-size:11px;font-weight:800;white-space:nowrap}
 .period-tab.active{background:var(--gold);color:#241a04;border-color:var(--gold)}
@@ -220,7 +220,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
   <h1 class="title">AperiON iSTasyon – Operasyon Merkezi</h1>
   <p class="subtitle">Bugün ne kritik?<span class="upd" id="updatedPill">Güncellendi · --</span></p>
 
-  <section aria-labelledby="istekDefteriTitle" style="margin-bottom:22px;border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:10px;background:var(--surface);overflow:hidden">
+  <section aria-labelledby="istekDefteriTitle" style="margin-bottom:14px;border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:10px;background:var(--surface);overflow:hidden">
     <header style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <div>
         <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">📋 İSTEK DEFTERİ</div>
@@ -232,7 +232,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     <div id="istekDefteriBody" style="display:none;padding:0 18px 16px;max-height:60vh;overflow:auto;font-size:12.5px;line-height:1.6;white-space:pre-wrap">Yükleniyor…</div>
   </section>
 
-  <section aria-labelledby="stratejikTitle" style="margin-bottom:22px;border:1px solid var(--line);border-top:3px solid var(--violet);border-radius:10px;background:var(--surface);overflow:hidden">
+  <section aria-labelledby="stratejikTitle" style="margin-bottom:14px;border:1px solid var(--line);border-top:3px solid var(--violet);border-radius:10px;background:var(--surface);overflow:hidden">
     <header style="padding:14px 18px 10px;border-bottom:1px solid var(--line)">
       <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">📊 STRATEJİK YÖNETİM ÖZETİ</div>
       <h2 id="stratejikTitle" style="margin:5px 0 4px;font-size:15px">Kurumsal standart finansal oranlar</h2>
@@ -241,7 +241,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     <div id="stratejikBody" style="padding:12px 18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px"><span class="skel" style="height:112px"></span><span class="skel" style="height:112px"></span><span class="skel" style="height:112px"></span><span class="skel" style="height:112px"></span></div>
   </section>
 
-  <section aria-labelledby="insightTitle" style="margin-bottom:22px;border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;background:linear-gradient(135deg,#151f33,#101a2c);padding:14px 18px">
+  <section aria-labelledby="insightTitle" style="margin-bottom:14px;border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;background:linear-gradient(135deg,#151f33,#101a2c);padding:14px 18px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
       <span style="font-size:16px">🧠</span>
       <h2 id="insightTitle" style="margin:0;font-size:12px;font-weight:900;letter-spacing:1px;color:#83e8c1">BUGÜN DİKKAT — OTOMATİK BULGULAR</h2>
@@ -249,7 +249,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     <div id="insightBody" style="display:flex;flex-direction:column;gap:7px;font-size:12.5px"><span class="skel" style="height:14px;width:92%"></span><span class="skel" style="height:14px;width:78%"></span><span class="skel" style="height:14px;width:85%"></span></div>
   </section>
 
-  <section aria-labelledby="matrixTitle" style="margin-bottom:22px;border:1px solid var(--line);border-top:3px solid var(--gold);border-radius:10px;background:var(--surface);overflow:hidden">
+  <section aria-labelledby="matrixTitle" style="margin-bottom:14px;border:1px solid var(--line);border-top:3px solid var(--gold);border-radius:10px;background:var(--surface);overflow:hidden">
     <header style="padding:16px 18px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
       <div><div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">📈 KATEGORİ BAZLI GELİR TABLOSU</div><h2 id="matrixTitle" style="margin:5px 0 4px;font-size:19px">Satışlar → SMM → Brüt Kar → Giderler → Net Kar</h2><p style="margin:0;color:var(--muted);font-size:12px">Ürün kategorisine göre; Bugün / Dün / Bu Hafta / Bu Ay / Geçen Ay / Bu Yıl / Geçen Yıl</p></div>
     </header>
@@ -431,7 +431,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
 
   </section>
 
-  <section aria-labelledby="bilancoTitle" style="margin-top:22px;border:1px solid var(--line);border-top:3px solid var(--violet);border-radius:10px;background:var(--surface);overflow:hidden">
+  <section aria-labelledby="bilancoTitle" style="margin-top:14px;border:1px solid var(--line);border-top:3px solid var(--violet);border-radius:10px;background:var(--surface);overflow:hidden">
     <header style="padding:14px 18px 10px;border-bottom:1px solid var(--line)">
       <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">⚖️ BİLANÇO</div>
       <h2 id="bilancoTitle" style="margin:5px 0 4px;font-size:15px">Varlıklar ve Borçlar — kalem kalem</h2>
@@ -453,7 +453,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     </div>
   </section>
 
-  <section aria-labelledby="harcamaTitle" style="margin-top:22px;border:1px solid var(--line);border-top:3px solid var(--coral);border-radius:10px;background:var(--surface);overflow:hidden">
+  <section aria-labelledby="harcamaTitle" style="margin-top:14px;border:1px solid var(--line);border-top:3px solid var(--coral);border-radius:10px;background:var(--surface);overflow:hidden">
     <header style="padding:14px 18px 10px;border-bottom:1px solid var(--line)">
       <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">🧾 HARCAMA ANALİZİ</div>
       <h2 id="harcamaTitle" style="margin:5px 0 4px;font-size:15px">Bu yıl gerçek işletme gideri — kalem kalem</h2>
@@ -462,7 +462,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     <div id="harcamaBody" style="padding:12px 18px;display:flex;flex-direction:column;gap:8px"><span class="skel" style="height:16px;width:100%"></span><span class="skel" style="height:16px;width:90%"></span><span class="skel" style="height:16px;width:95%"></span><span class="skel" style="height:16px;width:80%"></span></div>
   </section>
 
-  <section aria-labelledby="custSignalsTitle" style="margin-top:22px;border:1px solid var(--line);border-top:3px solid var(--coral);border-radius:10px;background:var(--surface);overflow:hidden">
+  <section aria-labelledby="custSignalsTitle" style="margin-top:14px;border:1px solid var(--line);border-top:3px solid var(--coral);border-radius:10px;background:var(--surface);overflow:hidden">
     <header style="padding:14px 18px 10px;border-bottom:1px solid var(--line)">
       <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">👥 MÜŞTERİ SİNYALLERİ</div>
       <h2 id="custSignalsTitle" style="margin:5px 0 4px;font-size:15px">En büyük cariler ve sessizleşenler</h2>
@@ -480,7 +480,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     </div>
   </section>
 
-  <section aria-labelledby="bankBalanceTitle" style="margin-top:22px;border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:10px;background:var(--surface);overflow:hidden">
+  <section aria-labelledby="bankBalanceTitle" style="margin-top:14px;border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:10px;background:var(--surface);overflow:hidden">
     <header style="padding:14px 18px 10px;border-bottom:1px solid var(--line)">
       <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">🏦 BANKALAR — SON BİLİNEN BAKİYE</div>
       <h2 id="bankBalanceTitle" style="margin:5px 0 4px;font-size:15px">Gerçek zamanlı değil — her bankanın en son işlendiği tarihteki bakiyesi</h2>
