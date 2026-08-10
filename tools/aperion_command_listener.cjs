@@ -86,10 +86,19 @@ async function ensureSession() {
     throw new Error(`BizimHesap giris SOGUMADA (${cooldown.reason}) - ${cooldown.until} tarihine kadar deneme yapilmiyor.`);
   }
   if (browser && page && !page.isClosed()) {
-    // Oturum hala canli mi kontrol et - login sayfasina dusmus mu bak.
-    const url = page.url();
-    if (!/bhlogin|account\/login/i.test(url)) return;
-    log('Oturum dusmus gorunuyor, yeniden giris deneniyor...');
+    // Oturum hala canli mi kontrol et. Sadece login sayfasina dusmus mu bakmak
+    // yetersiz - bir onceki komut (ornegin menu tiklamasi) yanlislikla herkese
+    // acik pazarlama sayfasina (bizimhesap.com/) navigate edebilir; bu URL
+    // bhlogin/account/login'e uymaz ama gercekte oturum dusmus olabilir.
+    // 2026-08-11: tam olarak bu sekilde yakalandi - "web/" altinda olmayan
+    // her sayfayi supheli sayip gercek oturum durumunu dogrula.
+    let url = page.url();
+    if (!/\/web\//i.test(url)) {
+      await page.goto('https://bizimhesap.com/web/ngn/newportal', { waitUntil: 'networkidle2', timeout: 20000 }).catch(() => {});
+      url = page.url();
+    }
+    if (!/bhlogin|account\/login/i.test(url) && /\/web\//i.test(url)) return;
+    log(`Oturum dusmus gorunuyor (son URL: ${url}), yeniden giris deneniyor...`);
   }
   if (browser) await browser.close().catch(() => {});
   browser = await puppeteer.launch(launchOptions({ headless: process.env.BIZIMHESAP_HEADLESS !== 'false', width: 1366, height: 768 }));
