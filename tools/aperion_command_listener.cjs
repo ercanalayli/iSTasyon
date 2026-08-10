@@ -976,12 +976,21 @@ async function bizimhesapHesapEkstreDump(guid, hesapAdi) {
       const kullanici = r[dateIdx + 2] || '';
       const hesap = r[dateIdx + 3] || '';
       const aciklama = r[dateIdx + 4] || '';
-      const borc = paraSayi(r[dateIdx + 5]);
-      const alacak = paraSayi(r[dateIdx + 6]);
+      const sutun1 = paraSayi(r[dateIdx + 5]);
+      const sutun2 = paraSayi(r[dateIdx + 6]);
       const bakiye = paraSayi(r[dateIdx + 7]);
-      if (!borc && !alacak && !bakiye) continue;
-      const tutar = alacak || -borc;
-      const yon = alacak ? 'alacak' : 'borc';
+      if (!sutun1 && !sutun2 && !bakiye) continue;
+      // 2026-08-10: canli teste yakalandi - sutun POZISYONU (Borc/Alacak)
+      // bekledigimin TERSIYMIS (07.08.2026'daki bilinen 7.245 TL Para Girisi
+      // ve 50.000 TL Para Cikisi ornekleriyle dogrulandi: bakiye sutunu
+      // dogru ve tutarli, ama tutar isaretini sutun konumundan degil,
+      // ISLEM METNINDEN turetmek cok daha guvenilir - sutun sirasi hesap
+      // turune gore degisebilir, islem adi (Para Girisi/Tahsilat = giren,
+      // Para Cikisi/Odeme = cikan) her zaman ayni anlama gelir.
+      const buyukluk = sutun1 || sutun2;
+      const giren = /Girişi|Tahsilat/i.test(islem);
+      const tutar = giren ? buyukluk : -buyukluk;
+      const yon = giren ? 'alacak' : 'borc';
       const satir_hash = `${tarih}|${islem}|${aciklama}|${tutar}|${bakiye}`;
       out.push({ tarih, islem, kullanici, hesap, aciklama, tutar, yon, bakiye, satir_hash });
     }
