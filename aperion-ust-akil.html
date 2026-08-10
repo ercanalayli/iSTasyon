@@ -104,7 +104,7 @@ footer{display:flex;justify-content:space-between;gap:12px;margin-top:22px;color
 }
 /* Asagi kaydirinca basliklar ekrandan kaybolmasin - Ercan'in gercek telefon kullanimiyla
    bulundu (2026-08-01). Sutun etiketleri (ADET/SATIS/SMM/KAR ve donem adi) her zaman gorunur. */
-#catMatrix thead th, #giderTable thead th{position:sticky;z-index:3}
+#catMatrix thead th, #giderTable thead th{position:sticky;z-index:3;background:#0d1727}
 #catMatrix .thead-r1 th, #giderTable thead tr:first-child th{top:0}
 #catMatrix .thead-r2 th{top:29px}
 .thead-corner{left:0;z-index:4}
@@ -283,6 +283,17 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     <div style="padding:10px 18px;border-top:1px solid var(--line)">
       <button type="button" id="matrixSourceToggle" style="background:none;border:none;color:#5c8dff;font-size:11px;font-weight:800;padding:0;cursor:pointer">Kaynak ve notlar ▾</button>
       <div id="matrixSource" style="display:none;margin-top:6px;color:var(--muted);font-size:11px">Yükleniyor…</div>
+    </div>
+
+    <div style="padding:14px 18px 6px;border-top:2px solid #2c3d56;background:#0d1727">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">KATEGORİ RADARI — BU AY vs GEÇEN AY (ciro payı, eksen bazlı ölçek)</div>
+        <div style="display:flex;gap:12px;font-size:10px;font-weight:800;color:var(--muted)">
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:2px;background:#5c8dff;display:inline-block"></span>BU AY</span>
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:2px;background:#3d5375;display:inline-block"></span>GEÇEN AY</span>
+        </div>
+      </div>
+      <div id="catRadarWrap" style="display:flex;justify-content:center;padding:6px 0 4px">Yükleniyor…</div>
     </div>
 
     <div style="padding:14px 18px 4px;border-top:2px solid #2c3d56;color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px;background:#0d1727">GİDERLER — TAHAKKUK gerçek veri (masraf_raw), TAHMİNİ ve ÖDENEN kaynak bekliyor</div>
@@ -526,6 +537,66 @@ fetch('./docs/CHANGELOG.md').then(r => { if (!r.ok) throw new Error('HTTP ' + r.
 // SATIŞI (TİCARİ DEĞİL) kasten burada YOK - ticari olmadigi icin TOPLAM'a hic
 // girmiyor (Ercan'in uyarisi: Erhan Sevinc'e satilan urun ticari degildi).
 const catOrder = ['MEDİKAL AKÜLÜ','MEKİKAL ELEKTRONİK','HASTA ALTI BEZİ','PERİNE VÜCUT TEMİZLEME','İŞİTME CİHAZI','KİRALIK','KARYOLA','YÜRÜMEYE YARDIMCI','ORTOPEDİ TEKSTİL','SARF','SONDA','KOLOSTOMİ','AYAKKABI TERLİK','SGK','SOLUNUM','DİĞER','ODYOFORM (İLİŞKİLİ TARAF)'];
+
+// 2026-08-10: Ercan'in Anthropic Economic Index tarzi radar/star grafik referansiyla
+// istegi - "bu ekrana 2. grafigi uygulayabilirsin". Kategori basina BU AY vs GECEN AY
+// ciroyu tek bakista kiyaslar. Eksen-bazli normalizasyon (her eksen kendi iki degerinin
+// maksimumuna gore 0-100%) kullanildi cunku kategoriler arasi ciro farki cok buyuk
+// (ornegin Medikal Akulu vs Sarf) - ortak lineer olcek kucuk kategorileri gorunmez yapardi.
+function renderCatRadar(byCat, catOrder){
+  const wrap = document.getElementById('catRadarWrap');
+  if (!wrap) return;
+  const xesc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const axes = catOrder.map(cat=>{
+    let cur, prev;
+    if (cat === 'HASTA ALTI BEZİ') {
+      const d = byCat['HASTA ALTI BEZİ — DİSTRİBÜTÖR']||{}, p = byCat['HASTA ALTI BEZİ — PERAKENDE']||{};
+      cur = Number(d.satis_ay||0) + Number(p.satis_ay||0);
+      prev = Number(d.satis_gecen_ay||0) + Number(p.satis_gecen_ay||0);
+    } else {
+      const r = byCat[cat]||{};
+      cur = Number(r.satis_ay||0); prev = Number(r.satis_gecen_ay||0);
+    }
+    return { label: cat, cur, prev };
+  });
+  const n = axes.length;
+  if (!n) { wrap.innerHTML = '<div style="color:var(--muted);font-size:11px">Veri yok</div>'; return; }
+  const size = 560, cx = size/2, cy = size/2, R = size/2 - 96;
+  let svg = '<svg viewBox="0 0 '+size+' '+size+'" style="width:100%;max-width:660px;height:auto">';
+  [0.25,0.5,0.75,1].forEach(f=>{
+    const pts = axes.map((a,i)=>{
+      const ang = -Math.PI/2 + i*(2*Math.PI/n);
+      return (cx+R*f*Math.cos(ang)).toFixed(1)+','+(cy+R*f*Math.sin(ang)).toFixed(1);
+    }).join(' ');
+    svg += '<polygon points="'+pts+'" fill="none" stroke="#23344d" stroke-width="1"/>';
+  });
+  axes.forEach((a,i)=>{
+    const ang = -Math.PI/2 + i*(2*Math.PI/n);
+    const x2 = cx+R*Math.cos(ang), y2 = cy+R*Math.sin(ang);
+    svg += '<line x1="'+cx+'" y1="'+cy+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="#1c2c44" stroke-width="1"/>';
+    const lx = cx+(R+38)*Math.cos(ang), ly = cy+(R+38)*Math.sin(ang);
+    const anchor = Math.cos(ang)>0.15 ? 'start' : Math.cos(ang)<-0.15 ? 'end' : 'middle';
+    svg += '<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" fill="#a7bad2" font-size="9.5" font-weight="800" text-anchor="'+anchor+'" dominant-baseline="middle">'+xesc(a.label)+'</text>';
+  });
+  function seriesPoints(key){
+    return axes.map((a,i)=>{
+      const max = Math.max(a.cur, a.prev, 1);
+      const f = a[key] / max;
+      const ang = -Math.PI/2 + i*(2*Math.PI/n);
+      return { x: cx+R*f*Math.cos(ang), y: cy+R*f*Math.sin(ang), val: a[key], label: a.label };
+    });
+  }
+  function poly(pts, fill, stroke){
+    return '<polygon points="'+pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="2"/>';
+  }
+  const prevPts = seriesPoints('prev'), curPts = seriesPoints('cur');
+  svg += poly(prevPts, 'rgba(61,83,117,.28)', '#3d5375');
+  svg += poly(curPts, 'rgba(92,141,255,.22)', '#5c8dff');
+  prevPts.forEach(p=>{ svg += '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="2.5" fill="#3d5375"><title>'+xesc(p.label)+' — geçen ay: '+money(p.val)+'</title></circle>'; });
+  curPts.forEach(p=>{ svg += '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3" fill="#5c8dff"><title>'+xesc(p.label)+' — bu ay: '+money(p.val)+'</title></circle>'; });
+  svg += '</svg>';
+  wrap.innerHTML = svg;
+}
 const periodKeys = ['bugun','dun','hafta','ay','gecen_ay','yil','gecen_yil'];
 // Ercan'in istegi (2026-08-03): donem bloklari arasi kalin, RENKLI ayrac -
 // Bugun ve Dun birbirinden ve digerlerinden farkli renkte, her donem kendi
@@ -717,6 +788,8 @@ Promise.all([
   window.__renderCatRows(document.getElementById('catMatrix').getAttribute('data-active') || 'bugun');
 
   setText('matrixSource', 'Kaynak: sales_raw (ALAYLI) + BizimHesap Sınıflandırma 1 (canlı çekildi, 24 distribütör cari), ' + catOrder.length + ' kategori grubu. Son satış tarihi: ' + (data.reduce((m,r)=>r.son_tarih&&r.son_tarih>m?r.son_tarih:m,'')||'-') + '. SMM: product_raw.alış_fiyat artık doğru, ama sales_raw.urun_kod boş olduğu için eşleştirme ürün ADI ile yapılıyor — SMM hücresindeki küçük yüzde, o kategorinin cirosunun ne kadarı için maliyet biliniyor demek (küsürat KAR sadece o eşleşen kısım için, yanındaki % ise o kısmın marjı). Tahsilat kategori bazında henüz bağlı değil. Kategori satırına tıklayınca bu ayın en çok satan ürünleri açılır. ▲/▼ = geçen yılın AYNI TARİHE KADARki karşılığına göre büyüme (adil kıyas). STOK yanındaki renk: mevcut satış hızıyla kaç gün stok kaldığını gösterir. "GEÇEN YIL" artık tam 12 aylık gerçek veri (2026-08-02\'de BizimHesap\'tan geriye dönük dolduruldu — önceden Ağustos-Aralık 2025 boştu). ▲/▼ yine de adil kıyas için geçen yılın AYNI TARİHE KADARki karşılığını kullanmaya devam ediyor (yıl sonuna kadarki fazlayı değil). Renkler: yeşil güçlü, sarı orta, kırmızı dikkat gerekiyor — SMM eşleşmesi, kâr marjı, stok günü ve gider oranı hep aynı dili kullanır.');
+
+  renderCatRadar(byCat, catOrder);
 
   // GİDERLER — TAHAKKUK gerçek (masraf_raw)
   const gdata = giderRes.data, gerror = giderRes.error;
