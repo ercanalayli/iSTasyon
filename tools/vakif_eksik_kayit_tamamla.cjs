@@ -8,8 +8,16 @@
 //
 // Kaynak kalip (id:168,170,174,175,177,179 - zaten basariyla islenmis gercek
 // kayitlardan cikarildi):
-//   transfer turu   -> karsi_taraf: "POS POS POS KREDI KARTI -> *VAKIF SIRKET"
-//   banka_gider turu -> karsi_taraf: "VakifBank"
+//   banka_gider turu -> karsi_taraf: "VakifBank" (VAKIF SIRKET'e dogrudan, calisiyor)
+//
+// 2026-08-10 (Ercan onayi): "transfer" turu (Batch Yatan/Gelen FAST/Gelen EFT,
+// yani POS -> VAKIF SIRKET) icin "Hesaplar Arasi Transfer" formu 24 Haziran -
+// 4 Temmuz araligindaki 20 kayitta TUTARLI sekilde basarisiz oldu (kok neden
+// tam netlesmedi - Kaydet sonrasi gercek bir kaydetme istegi bile
+// yakalanamadi). Ercan'in talimatiyla artik TUM "transfer" turu kayitlar
+// dogrudan EMANET hesabina, DAHA GUVENILIR "Hesaba Para Girisi" formuyla
+// (bizimhesapPostIncome, tur='tahsilat') giriliyor - "SINIFLANDIRMA BEKLEYEN"
+// zaten bu hesabin amaci, Ercan sonradan VAKIF SIRKET'e tasir.
 const fs = require('fs');
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config({ path: 'local-secrets/bizimhesap.local.env' });
@@ -31,21 +39,24 @@ async function main() {
   let eklenen = 0, atlanmis = 0, kuyruklanan = 0;
   for (const r of onayli) {
     if (eklenen >= LIMIT) break;
-    const tur = TRANSFER_TURLERI.has(r.tip) ? 'transfer' : 'banka_gider';
-    const karsiTaraf = tur === 'transfer' ? 'POS POS POS KREDI KARTI -> *VAKIF SIRKET' : 'VakifBank';
+    const isTransfer = TRANSFER_TURLERI.has(r.tip);
+    const hesap = isTransfer ? 'EMANET' : '*VAKIF SIRKET';
+    const tur = isTransfer ? 'tahsilat' : 'banka_gider';
+    const karsiTaraf = isTransfer ? 'VakifBank (SINIFLANDIRMA BEKLIYOR - gercek hedef: VAKIF SIRKET)' : 'VakifBank';
 
-    // cift-islem korumasi: ayni tarih + yuvarlak tutar + hesap zaten var mi?
+    // cift-islem korumasi: ayni tarih + yuvarlak tutar + (VAKIF SIRKET veya EMANET) zaten var mi?
     const { data: mevcut, error: sorguHata } = await db.from('bank_transactions')
-      .select('id').eq('hesap', '*VAKIF SIRKET').eq('tarih', r.tarih)
+      .select('id').in('hesap', ['*VAKIF SIRKET', 'EMANET']).eq('tarih', r.tarih)
       .gte('tutar', r.tutar - 1).lte('tutar', r.tutar + 1).limit(1);
     if (sorguHata) { console.error('Sorgu hatasi:', sorguHata.message); continue; }
     if (mevcut && mevcut.length) { atlanmis++; continue; }
 
-    const aciklama = `${r.tip} - VakifBank ekstresi (ref:${r.ref}) - AperiON gecmis tamamlama 2026-08-10`;
+    const aciklamaEk = isTransfer ? ' | EMANET yonlendirmesi: gercek hedef VAKIF SIRKET, sonradan siniflandirilmali' : '';
+    const aciklama = `${r.tip} - VakifBank ekstresi (ref:${r.ref}) - AperiON gecmis tamamlama 2026-08-10${aciklamaEk}`;
     const { data: yeni, error: insertHata } = await db.from('bank_transactions').insert({
       firma_id: 'alayli',
       banka: 'VakifBank',
-      hesap: '*VAKIF SIRKET',
+      hesap,
       tarih: r.tarih,
       aciklama,
       karsi_taraf: karsiTaraf,

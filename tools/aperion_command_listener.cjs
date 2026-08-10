@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
-const { launchOptions, loginBizimHesap, selectFirma, checkLoginCooldown } = require('../bizimhesap_common.cjs');
+const { launchOptions, loginBizimHesap, selectFirma, checkLoginCooldown, savePageDiagnostics } = require('../bizimhesap_common.cjs');
 
 const ENV_FILE = path.join(__dirname, '..', 'local-secrets', 'bizimhesap.local.env');
 if (!fs.existsSync(ENV_FILE)) { console.error('HATA: local-secrets/bizimhesap.local.env yok.'); process.exit(1); }
@@ -476,10 +476,53 @@ async function bizimhesapPostTransfer(row) {
   if (!dolduruldu.tarih || !dolduruldu.tutar || !dolduruldu.aciklama || !dolduruldu.hedefHesap) {
     return { ok: false, mesaj: 'Transfer formu eksik: ' + JSON.stringify(dolduruldu) };
   }
+  // 2026-08-10: "Basarili" modal her zaman gorunuyordu ama kayit hicbir
+  // zaman hesapta cikmiyordu - istemci tarafi iyimser (optimistic) mesaj
+  // olabilir, GERCEK sunucu cevabini yakalamadan bilinemez. bizimhesapPostExpense
+  // ile ayni yontem: kaydet POST cevabini tam govdesiyle diske yaz.
+  const transferAgListesi = [];
+  const onTransferResponse = async (res) => {
+    try {
+      const url = res.url();
+      if (!/bizimhesap\.com/i.test(url)) return;
+      if (res.request().method() !== 'POST') return;
+      let govde = '';
+      try { govde = await res.text(); } catch {}
+      transferAgListesi.push(`${res.status()} ${url.replace('https://bizimhesap.com', '')} :: ${govde.slice(0, 600)}`);
+    } catch {}
+  };
+  page.on('response', onTransferResponse);
   const kaydedildi = await page.evaluate(() => { const b = document.querySelector('#myModalTransferTo #btnSaveTransfer'); if (!b) return false; b.click(); return true; });
-  if (!kaydedildi) return { ok: false, mesaj: 'Transfer kaydet butonu bulunamadi' };
+  if (!kaydedildi) { page.off('response', onTransferResponse); return { ok: false, mesaj: 'Transfer kaydet butonu bulunamadi' }; }
   await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
   await new Promise(r => setTimeout(r, 1800));
+  page.off('response', onTransferResponse);
+  if (process.env.APERION_TRANSFER_DEBUG === '1') {
+    fs.writeFileSync(path.join(__dirname, '..', 'local-secrets', `transfer_response_ID${row.id}.txt`), transferAgListesi.join('\n\n---\n\n'));
+    log(`TRANSFER_AG_ISTEK_SAYISI ID:${row.id} adet=${transferAgListesi.length}`);
+  }
+  // 2026-08-10: canli teste (ID:966 debug yakalamasi) yakalandi - kaydet
+  // sonrasi "Basarili / Para transferi kaydedildi / Tamam" onay penceresi
+  // ACIK KALIYORDU, kod hemen dogrulamaya geciyordu. Onay penceresi
+  // kapatilmadan hedef hesap sayfasi acilinca liste henuz tazelenmemis
+  // gorunuyor, "ID:X bulunamadi" YANLIS SONUCU uretiyordu - halbuki para
+  // GERCEKTEN transfer edilmisti. Once bu pencereyi kapat.
+  await page.evaluate(() => {
+    const gorunur = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const norm2 = s => (s || '').toLocaleLowerCase('tr-TR').trim();
+    const btn = [...document.querySelectorAll('button,a')].filter(gorunur).find(x => norm2(x.innerText) === 'tamam');
+    if (btn) btn.click();
+  });
+  await new Promise(r => setTimeout(r, 800));
+  if (process.env.APERION_TRANSFER_DEBUG === '1') {
+    const hataMetni = await page.evaluate(() => {
+      const gorunur = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+      const adaylar = [...document.querySelectorAll('.toast,.alert,.modal.show,.swal2-popup,[class*="error"],[class*="danger"],[role="alert"]')].filter(gorunur);
+      return adaylar.map(x => (x.innerText || '').trim()).filter(Boolean).join(' || ') || '(gorunur hata/toast yok)';
+    });
+    await savePageDiagnostics(page, `transfer_debug_ID${row.id}`);
+    log(`TRANSFER_DEBUG ID:${row.id} sayfa_url=${page.url()} hata_alani="${hataMetni}"`);
+  }
 
   // 2026-08-07: tarih+tutar eslesmesi YETERSIZDI - baska bir kayitla
   // tesadufen ayni tarih/tutar paylasip YANLIS hesaba giden transferler
