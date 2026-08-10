@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
-const { launchOptions, loginBizimHesap, selectFirma } = require('../bizimhesap_common.cjs');
+const { launchOptions, loginBizimHesap, selectFirma, checkLoginCooldown } = require('../bizimhesap_common.cjs');
 
 const ENV_FILE = path.join(__dirname, '..', 'local-secrets', 'bizimhesap.local.env');
 if (!fs.existsSync(ENV_FILE)) { console.error('HATA: local-secrets/bizimhesap.local.env yok.'); process.exit(1); }
@@ -27,6 +27,29 @@ fs.mkdirSync(PROFILE_DIR, { recursive: true });
 process.env.BIZIMHESAP_PROFILE_DIR = PROFILE_DIR;
 process.env.BIZIMHESAP_HEADLESS = process.env.BIZIMHESAP_HEADLESS || 'true';
 
+// 2026-08-10: watchdog (5dk'da bir tetiklenir) ile elle/manuel baslatma
+// yarisa girip AYNI ANDA IKI dinleyici sureci acabiliyordu (canli olarak
+// yakalandi) - ikisi de kendi Puppeteer oturumunu acip bizimhesap.com'a
+// BAGIMSIZ istek atardi, tam da bizi banlatan "ayni IP'den cok sayida
+// esamanli giris" desenini yeniden yaratirdi. PID kilit dosyasi: baska bir
+// canli instance varsa bu process sessizce (hata degil) kendini kapatir.
+const LOCK_FILE = path.join(__dirname, '..', 'local-secrets', 'aperion_listener.lock');
+function baskaInstanceCalisiyorMu() {
+  if (!fs.existsSync(LOCK_FILE)) return false;
+  const pid = Number(fs.readFileSync(LOCK_FILE, 'utf8').trim());
+  if (!pid || pid === process.pid) return false;
+  try { process.kill(pid, 0); return true; } catch { return false; }
+}
+if (baskaInstanceCalisiyorMu()) {
+  console.log(`[${new Date().toISOString()}] Baska bir dinleyici instance'i zaten calisiyor (kilit: ${LOCK_FILE}), bu process sessizce kapaniyor.`);
+  process.exit(0);
+}
+fs.writeFileSync(LOCK_FILE, String(process.pid), 'utf8');
+function kilidiKaldir() { try { if (Number(fs.readFileSync(LOCK_FILE, 'utf8').trim()) === process.pid) fs.unlinkSync(LOCK_FILE); } catch {} }
+process.on('exit', kilidiKaldir);
+process.on('SIGINT', () => { kilidiKaldir(); process.exit(0); });
+process.on('SIGTERM', () => { kilidiKaldir(); process.exit(0); });
+
 const FIRMA = { id: 'alayli', adi: 'ALAYLI MEDIKAL', arama: 'ALAYLI' };
 const GIDER_URL = 'https://bizimhesap.com/web/ngn/acc/ngncostss';
 const ACCOUNTS_URL = 'https://bizimhesap.com/web/ngn/acc/ngnaccounts';
@@ -34,6 +57,14 @@ const ACCOUNTS_URL = 'https://bizimhesap.com/web/ngn/acc/ngnaccounts';
 let browser, page;
 
 function log(msg) { console.log(`[${new Date().toISOString()}] ${msg}`); }
+// 2026-08-10: son savunma hatti - herhangi bir yerde yakalanmamis bir promise
+// reddi Node v25'te varsayilan olarak process'i cokertiyor (bkz. baslangic
+// ensureSession() cokme kaydi ayni gun). Dinleyici saatlerce/gunlerce acik
+// kalmasi gereken bir servis oldugu icin, beklenmeyen bir hata process'i asla
+// sessizce oldurmemeli - loglayip ayakta kalsin, watchdog'un 5dk'lik
+// yeniden-baslatma dongusune girmesin.
+process.on('unhandledRejection', (reason) => { log(`YAKALANMAMIS HATA (unhandledRejection): ${reason && reason.stack || reason}`); });
+process.on('uncaughtException', (err) => { log(`YAKALANMAMIS HATA (uncaughtException): ${err && err.stack || err}`); });
 function norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
   .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o'); }
 const para = n => Math.abs(Number(n || 0)).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -43,6 +74,17 @@ const para = n => Math.abs(Number(n || 0)).toLocaleString('tr-TR', { minimumFrac
 const trToNumber = s => Number(String(s || '').replace(/\./g, '').replace(',', '.')) || 0;
 
 async function ensureSession() {
+  // 2026-08-10: bu kontrol ONCE "browser && page zaten var mi" hizli-yolundan
+  // ONCE calismaliydi - onceki siralamada, oturum dusmus (login sayfasinda)
+  // bir page zaten varsa devre kesici HIC KONTROL EDILMEDEN dogrudan
+  // tryExistingBizimHesapSession() ile YENI network istekleri atiliyordu.
+  // Gercek sonuc: az once bunu bu sekilde yakaladik - soguma aktifken bir
+  // komut geldi, "oturum dusmus" hizli-yoluna girdi, cooldown kontrolune hic
+  // ugramadan bizimhesap.com'a tekrar istek atti. Now UNKOSULSUZ en basta.
+  const cooldown = checkLoginCooldown();
+  if (cooldown.blocked) {
+    throw new Error(`BizimHesap giris SOGUMADA (${cooldown.reason}) - ${cooldown.until} tarihine kadar deneme yapilmiyor.`);
+  }
   if (browser && page && !page.isClosed()) {
     // Oturum hala canli mi kontrol et - login sayfasina dusmus mu bak.
     const url = page.url();
@@ -1146,8 +1188,19 @@ async function tick() {
   // yeniden denenir.
   const { data: yarimKalanlar } = await db.from('bot_commands').update({ status: 'pending' }).eq('status', 'processing').select('id');
   if (yarimKalanlar && yarimKalanlar.length) log(`UYARI: ${yarimKalanlar.length} yarim kalmis komut (onceki calistirmadan) yeniden kuyruga alindi: ${yarimKalanlar.map(r => r.id).join(',')}`);
-  await ensureSession();
-  log('Oturum hazir. Komut bekleniyor (her 15 saniyede bir kontrol)...');
+  // 2026-08-10: baslangic girisi try/catch DISINDA idi - BizimHesap giris
+  // sayfasi gecici yavas yanit verince (12sn timeout) ensureSession() reddedip
+  // butun process'i cokertiyordu, watchdog her 5dk'da yeni Chrome acip ayni
+  // sekilde cokuyordu (crash-loop, otomasyon saatlerce tamamen durdu).
+  // handleCommand() zaten kendi ensureSession() cagrisini try/catch icinde
+  // yapiyor (komut basarisiz isaretlenir, process ayakta kalir) - baslangicta
+  // da ayni toleransi uygula: hata varsa logla, process'i tick dongusune birak.
+  try {
+    await ensureSession();
+    log('Oturum hazir. Komut bekleniyor (her 15 saniyede bir kontrol)...');
+  } catch (e) {
+    log(`UYARI: baslangic oturumu basarisiz (${e.message || e}) - process ayakta kaliyor, sonraki komutla tekrar denenecek.`);
+  }
   tick();
   setInterval(tick, 15000);
 })();

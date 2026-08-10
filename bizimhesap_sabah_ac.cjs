@@ -5,12 +5,25 @@
 const puppeteer = require('puppeteer');
 const { writeFileSync } = require('fs');
 const path = require('path');
-const { launchOptions } = require('./bizimhesap_common.cjs');
+const { launchOptions, checkLoginCooldown } = require('./bizimhesap_common.cjs');
 
 const targetUrl = process.env.BIZIMHESAP_HOME_URL || 'https://bizimhesap.com/web/ngn/newportal';
 const statusPath = path.join(__dirname, 'data', 'bizimhesap_sabah_ac_status.json');
 
 async function main() {
+  // 2026-08-10: bu script de bagimsiz bir bizimhesap.com istegi atiyordu,
+  // paylasilan devre kesiciyi HIC kontrol etmiyordu - Cloudflare soguma
+  // suresince tarayici penceresi acip ekstra istek uretmesin diye once bak.
+  const cooldown = checkLoginCooldown();
+  if (cooldown.blocked) {
+    writeFileSync(statusPath, JSON.stringify({
+      ok: false,
+      checkedAt: new Date().toISOString(),
+      note: `Atlandi: BizimHesap giris sogumada (${cooldown.reason}), ${cooldown.until} tarihine kadar istek atilmiyor.`,
+    }, null, 2), 'utf8');
+    console.log(`ATLANDI: soguma aktif (${cooldown.until}).`);
+    return;
+  }
   const browser = await puppeteer.launch(launchOptions({ headless: false, width: 1400, height: 900 }));
   const page = await browser.newPage();
   await page.setExtraHTTPHeaders({ 'Accept-Language': 'tr-TR,tr;q=0.9' });

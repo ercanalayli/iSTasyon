@@ -52,6 +52,72 @@ function ensureDiagnosticsDir() {
   return DIAGNOSTICS_DIR;
 }
 
+// 2026-08-10: bizimhesap.com bu IP'yi Cloudflare Error 1015 ("rate limited /
+// temporarily banned") ile gecici olarak engelledi. Kok neden: coken
+// dinleyiciyi her 5 dakikada bir yeniden baslatan watchdog + (o zamanlar
+// hala aktif olan) eski ErpaltH sistemi, ayni IP'den kisa surede cok sayida
+// giris denemesi yapti - Cloudflare'in bot/rate-limit korumasini tetikledi.
+// Bu paylasilan "devre kesici" dosyasi TUM giris yapan scriptler (dinleyici,
+// sabah-ac, vs.) tarafindan kontrol edilir: bir kez rate-limit sinyali
+// gorulunce, sure dolana kadar HICBIR script bizimhesap.com'a tek bir istek
+// bile atmaz (uzun soğuma + ust uste rate-limit'lerde ustel artis + rastgele
+// jitter - "her 5 dakikada bir tam saatinde" gibi bot imzasi birakmamak icin).
+const LOGIN_BREAKER_FILE = path.join(__dirname, 'local-secrets', 'bizimhesap_login_breaker.json');
+const RATE_LIMIT_COOLDOWN_BASE_MIN = 45;
+const RATE_LIMIT_COOLDOWN_MAX_MIN = 6 * 60;
+const OTHER_FAILURE_COOLDOWN_MIN = 10;
+
+function readBreaker() {
+  try {
+    return JSON.parse(fs.readFileSync(LOGIN_BREAKER_FILE, 'utf8'));
+  } catch {
+    return { consecutiveRateLimitFailures: 0, cooldownUntil: null, lastFailureType: null, lastFailureAt: null, lastSuccessAt: null };
+  }
+}
+
+function writeBreaker(state) {
+  fs.mkdirSync(path.dirname(LOGIN_BREAKER_FILE), { recursive: true });
+  fs.writeFileSync(LOGIN_BREAKER_FILE, JSON.stringify(state, null, 2), 'utf8');
+}
+
+function isRateLimitText(text) {
+  const norm = normalizeText(text);
+  return norm.includes('ERROR 1015') || norm.includes('RATE LIMIT') || norm.includes('TEMPORARILY BANNED') || norm.includes('CLOUDFLARE');
+}
+
+// Aktif bir soguma varsa {blocked:true, until, reason} doner - cagiran bunu
+// gorunce AGA HIC ISTEK ATMAMALI (page.goto dahil sifir network cagrisi).
+function checkLoginCooldown() {
+  const state = readBreaker();
+  if (state.cooldownUntil && new Date(state.cooldownUntil).getTime() > Date.now()) {
+    return { blocked: true, until: state.cooldownUntil, reason: state.lastFailureType || 'bilinmiyor', failures: state.consecutiveRateLimitFailures };
+  }
+  return { blocked: false };
+}
+
+function recordLoginFailure(reasonText) {
+  const state = readBreaker();
+  const rateLimit = isRateLimitText(reasonText);
+  const jitterMin = Math.random() * 5;
+  if (rateLimit) {
+    state.consecutiveRateLimitFailures = (state.consecutiveRateLimitFailures || 0) + 1;
+    const minutes = Math.min(RATE_LIMIT_COOLDOWN_BASE_MIN * Math.pow(2, state.consecutiveRateLimitFailures - 1), RATE_LIMIT_COOLDOWN_MAX_MIN) + jitterMin;
+    state.cooldownUntil = new Date(Date.now() + minutes * 60000).toISOString();
+    state.lastFailureType = 'rate_limit';
+  } else {
+    state.cooldownUntil = new Date(Date.now() + (OTHER_FAILURE_COOLDOWN_MIN + jitterMin) * 60000).toISOString();
+    state.lastFailureType = 'other';
+  }
+  state.lastFailureAt = new Date().toISOString();
+  state.lastFailureText = String(reasonText || '').slice(0, 300);
+  writeBreaker(state);
+  return state;
+}
+
+function recordLoginSuccess() {
+  writeBreaker({ consecutiveRateLimitFailures: 0, cooldownUntil: null, lastFailureType: null, lastFailureAt: null, lastFailureText: null, lastSuccessAt: new Date().toISOString() });
+}
+
 function getBizimHesapConfig() {
   return {
     email: process.env.BIZIMHESAP_EMAIL || process.env.BIZIMHESAP_USER || 'alaylimedikal@gmail.com',
@@ -260,6 +326,23 @@ async function selectFirma(page, firma = {}, log = () => {}) {
 }
 
 async function loginBizimHesap(page, log = () => {}) {
+  const cooldown = checkLoginCooldown();
+  if (cooldown.blocked) {
+    const msg = `BizimHesap giris SOGUMADA (${cooldown.reason}, ${cooldown.failures || 0} ardisik hata) - ${cooldown.until} tarihine kadar HICBIR istek atilmiyor.`;
+    log(`  -> ${msg}`);
+    throw new Error(msg);
+  }
+  try {
+    await loginBizimHesapInner(page, log);
+    recordLoginSuccess();
+  } catch (e) {
+    const pageText = page ? await bodyText(page).catch(() => '') : '';
+    recordLoginFailure(pageText || e.message || String(e));
+    throw e;
+  }
+}
+
+async function loginBizimHesapInner(page, log = () => {}) {
   const config = getBizimHesapConfig();
   log('[LOGIN] BizimHesap');
   if (await tryExistingBizimHesapSession(page, log)) return;
@@ -290,7 +373,16 @@ async function loginBizimHesap(page, log = () => {}) {
   }
 
   await assertNotPasswordRequest(page);
-  await page.waitForSelector('#txtPassword, input[type="password"]', { timeout: 12000 });
+  try {
+    await page.waitForSelector('#txtPassword, input[type="password"]', { timeout: 12000 });
+  } catch (e) {
+    // 2026-08-10: bu adimda kok neden hicbir zaman kayit altina alinmiyordu -
+    // sadece "timeout" hatasi goruluyordu, ekranda gercekte ne oldugu (captcha,
+    // degisen sayfa yapisi, "once e-posta sonra sifre" iki adimli akis) hic
+    // bilinmiyordu. Rethrow etmeden once ekran goruntusu + metin kaydet.
+    await savePageDiagnostics(page, 'bizimhesap_login_sifre_alani_bulunamadi');
+    throw e;
+  }
   const emailEl = await page.$('#txtEmail') || await page.$('input[type="email"]') || await page.$('input[type="text"]');
   if (!emailEl) throw new Error('BizimHesap e-posta alani bulunamadi');
 
@@ -325,11 +417,14 @@ async function loginBizimHesap(page, log = () => {}) {
 
 module.exports = {
   assertNotPasswordRequest,
+  checkLoginCooldown,
   getBizimHesapConfig,
   launchOptions,
   leavePasswordRequestIfPossible,
   loginBizimHesap,
   normalizeText,
+  recordLoginFailure,
+  recordLoginSuccess,
   requireBizimHesapPassword,
   savePageDiagnostics,
   selectFirma,
