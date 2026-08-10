@@ -121,6 +121,7 @@ async function loadRowsFromGmail(report){
           if(rows.length === 0) mailInfo.body_parser_probe = buildParserProbe(bodyText);
           report.body_parsed_rows += rows.length;
           report.parsed_rows += rows.length;
+          rows.forEach(r => { r.scope = bank.scope || 'sirket'; });
           parsed.push(...rows);
         }
         for(const a of msg.attachments){
@@ -145,6 +146,7 @@ async function loadRowsFromGmail(report){
                 inner.parsed_rows = rows.length;
                 if(rows.length === 0) inner.parser_probe = buildParserProbe(text);
                 report.parsed_rows += rows.length;
+                rows.forEach(r => { r.scope = bank.scope || 'sirket'; });
                 parsed.push(...rows);
               }
               att.inner_files.push(inner);
@@ -247,6 +249,31 @@ async function filterAlreadyStoredRows(db, rows, report){
   return fresh;
 }
 
+// Kisisel (sirket-disi) banka hareketlerini AperiON kisisel finans tablosuna yazar.
+// Sirketin bank_transactions / pending_bank_movements / BizimHesap kuyruguna HIC dokunmaz.
+async function ingestPersonalRows(db, rows, report){
+  let inserted = 0, failed = 0;
+  for(const r of rows){
+    const amount = Number(r.amount_out || 0) > 0 ? -Number(r.amount_out) : Number(r.amount_in || 0);
+    const { error } = await db.from('personal_finance_documents').insert({
+      owner: 'ercan',
+      company: null,
+      scope: 'kisisel',
+      document_type: 'banka_hareketi',
+      source_type: 'gmail_bank_statement',
+      extracted_text: r.description || '',
+      parsed_amount: amount,
+      parsed_date: r.transaction_date || null,
+      parsed_vendor: r.bank_name || 'TEB',
+      ai_category: r.detected_type || null,
+      status: 'kontrol_bekliyor',
+      note: `Otomatik ayristirildi: ${r.bank_name || 'TEB'} sahsi hesap, sirket defterine islenmedi. Mail: ${r.mail_subject || ''}`
+    });
+    if(error) failed++; else inserted++;
+  }
+  return { input: rows.length, inserted, failed };
+}
+
 async function main(){
   const report = {
     run_at: new Date().toISOString(),
@@ -276,22 +303,35 @@ async function main(){
     report.errors.push({ area: sourceMode, error: err.message || String(err) });
   }
 
+  // Kisisel hesaplar (ör. TEB) sirket (BizimHesap) defterine ASLA islenmez -
+  // ayri tutulup AperiON kisisel finans tablosuna yazilir. bank.scope='kisisel'
+  // mail-ekstre-config.json'da tanimli.
+  const personalRows = parsed.filter(r => r.scope === 'kisisel');
+  const companyRows = parsed.filter(r => r.scope !== 'kisisel');
+  report.personal_rows_excluded = personalRows.length;
+
   if(dryRun){
-    report.ingest = { dry_run: true, input: parsed.length, inserted: 0, duplicate: 0, failed: 0 };
-  }else if(parsed.length){
+    report.ingest = { dry_run: true, input: companyRows.length, inserted: 0, duplicate: 0, failed: 0 };
+    report.personal_ingest = { dry_run: true, input: personalRows.length, inserted: 0 };
+  }else{
     const db = openDb();
     if(!db){
       report.errors.push({ area: 'supabase', error: 'SUPABASE_URL veya SUPABASE_SERVICE_ROLE_KEY eksik' });
     }else{
-      const freshRows = await filterAlreadyStoredRows(db, parsed, report);
-      const res = freshRows.length
-        ? await db.rpc('ingest_mail_bank_movements', { p_rows: freshRows })
-        : { data: { input: parsed.length, inserted: 0, duplicate: report.prefilter?.skipped_existing || 0, failed: 0, prefiltered: true }, error: null };
-      if(res.error) report.errors.push({ area: 'ingest_rpc', error: res.error.message });
-      report.ingest = res.data || null;
+      if(companyRows.length){
+        const freshRows = await filterAlreadyStoredRows(db, companyRows, report);
+        const res = freshRows.length
+          ? await db.rpc('ingest_mail_bank_movements', { p_rows: freshRows })
+          : { data: { input: companyRows.length, inserted: 0, duplicate: report.prefilter?.skipped_existing || 0, failed: 0, prefiltered: true }, error: null };
+        if(res.error) report.errors.push({ area: 'ingest_rpc', error: res.error.message });
+        report.ingest = res.data || null;
+      }else{
+        report.ingest = { input: 0, inserted: 0, duplicate: 0, failed: 0 };
+      }
+      if(personalRows.length){
+        report.personal_ingest = await ingestPersonalRows(db, personalRows, report);
+      }
     }
-  }else{
-    report.ingest = { input: 0, inserted: 0, duplicate: 0, failed: 0 };
   }
 
   await fs.mkdir(LOG_DIR,{recursive:true});
@@ -333,6 +373,8 @@ function buildConsoleSummary(report){
     parsed_rows_unique: report.parsed_rows_unique,
     duplicates_inside_run: report.duplicates_inside_run,
     ingest: report.ingest,
+    personal_rows_excluded: report.personal_rows_excluded || 0,
+    personal_ingest: report.personal_ingest || null,
     errors: report.errors
   };
 }

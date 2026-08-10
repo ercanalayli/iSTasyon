@@ -72,6 +72,13 @@
       "query": "Fibabanka OR Fiba Banka OR Hesap Ekstresi"
     },
     {
+      "bank": "teb",
+      "label": "TEB",
+      "scope": "kisisel",
+      "not": "Ercan'in sahsi TEB hesabi - sirket (BizimHesap) defterine ASLA islenmez, AperiON kisisel finans tablosuna gider.",
+      "query": "TEB OR \"Türk Ekonomi Bankası\" OR \"Turk Ekonomi Bankasi\" OR TEBCep OR from:bilgi.teb.com.tr"
+    },
+    {
       "bank": "generic",
       "label": "Genel ekstre",
       "query": "\"Hesap Hareketleri\" OR \"Hesap Özeti\" OR \"Hesap Ozeti\" OR \"Banka Ekstresi\" OR \"Ekstre\" OR \"E-Ekstre\" OR \"Banka Hareketleri\""
