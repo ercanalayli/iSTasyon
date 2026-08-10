@@ -5,6 +5,9 @@
   "rows": [
     {
       "id": "order-zeybek-20260810",
+      "siparis_no": "SIP-2026-0810-ZEYBEK",
+      "para_birimi": "TRY",
+      "odeme_vadesi": null,
       "cari_unvan": "ZEYBEK MEDİKAL",
       "yetkili": "Hüseyin Zeybek",
       "sehir": "Kütahya",
@@ -36,6 +39,9 @@
     },
     {
       "id": "order-kent-20260810",
+      "siparis_no": "SIP-2026-0810-KENT",
+      "para_birimi": "TRY",
+      "odeme_vadesi": null,
       "cari_unvan": "KENT MEDİKAL",
       "sehir": "Orhangazi",
       "siparis_tarihi": "2026-08-10",
@@ -65,6 +71,9 @@
     },
     {
       "id": "order-seton-20260803",
+      "siparis_no": "SIP-2026-0803-SETON",
+      "para_birimi": "TRY",
+      "odeme_vadesi": null,
       "cari_unvan": "SETON BİYOMEDİKAL",
       "sehir": "Eskişehir",
       "siparis_tarihi": "2026-08-03",
@@ -95,6 +104,9 @@
     },
     {
       "id": "order-sercan-20260803",
+      "siparis_no": "SIP-2026-0803-SERCAN",
+      "para_birimi": "TRY",
+      "odeme_vadesi": null,
       "cari_unvan": "SERCAN MEDİKAL",
       "sehir": "Eskişehir",
       "rota": "Eskişehir / Bilecik / Kütahya",
