@@ -288,11 +288,35 @@ function guidBul(hesapIpucu) {
   return null;
 }
 
+async function hesapDegerAgacayaYuklendiMi() {
+  // 2026-08-10: canli teste yakalandi - hesap sayfasindaki HESAP HAREKETLERI
+  // tablosu ayri bir XHR ile geliyor, sabit 1000ms bekleme yeterli
+  // gelmiyordu (ozellikle hesap 1000+ kayida ulasinca) - idIleDogrula()
+  // tablo hala bos/eski haliyken calisip YANLIS "bulunamadi" sonucu
+  // uretiyordu (18 kayitlik gercek dogrulama hatasi - para gercekte
+  // gitmisti, bakiye her denemede degisiyordu, sadece dogrulama erken
+  // calismisti). En az 2 satirli veri tablosu gorene kadar bekle.
+  for (let i = 0; i < 20; i++) {
+    const n = await page.evaluate(() => {
+      const adaylar = [...document.querySelectorAll('table')].filter(t => {
+        const h = (t.querySelector('tr') && t.querySelector('tr').innerText) || '';
+        return h.includes('Tarih') && h.includes('lem') && h.includes('Bakiye');
+      });
+      if (!adaylar.length) return 0;
+      return adaylar.reduce((best, x) => x.querySelectorAll('tr').length > best.querySelectorAll('tr').length ? x : best, adaylar[0]).querySelectorAll('tr').length;
+    }).catch(() => 0);
+    if (n >= 2) return true;
+    await new Promise(r => setTimeout(r, 300));
+  }
+  return false;
+}
+
 async function hesapAc(hesapIpucu) {
   const guid = guidBul(hesapIpucu);
   if (guid) {
     await page.goto(`https://bizimhesap.com/web/ngn/acc/ngnaccount?rc=1&guid=${guid}`, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
-    await new Promise(r => setTimeout(r, 1000));
+    await hesapDegerAgacayaYuklendiMi();
+    await new Promise(r => setTimeout(r, 500));
     return true;
   }
   log(`UYARI: "${hesapIpucu}" hesap haritasinda bulunamadi, bulanik tiklama yedegine dusuluyor.`);
@@ -1219,6 +1243,15 @@ async function handleCommand(cmd) {
     } else if (cmd.command === 'bizimhesap_hesap_ekstre_dump') {
       const r = await bizimhesapHesapEkstreDump(params.guid, params.hesapAdi || params.guid);
       outcome = { ok: true, output: JSON.stringify(r) };
+    } else if (cmd.command === 'bizimhesap_id_dogrula') {
+      // 2026-08-10: "Transfer sonrasi ID ile dogrulanamadi" hatasi alan
+      // kayitlari YENIDEN POSTALAMADAN, sadece hesapAc() (artik duzeltilmis
+      // bekleme ile) + idIleDogrula() ile tekrar kontrol eder. Cift kayit
+      // riskine girmeden, gercekte postalanmis mi yoksa gercekten
+      // basarisiz mi oldugunu netlestirmek icin.
+      const acildi = await hesapAc(params.hesap);
+      const r = acildi ? await idIleDogrula(params.id, params.tutar) : { varMi: false, ozet: 'hesap acilamadi' };
+      outcome = { ok: true, output: JSON.stringify({ gercektenVarMi: r.varMi, detay: r.ozet }) };
     } else if (cmd.command === 'bizimhesap_scroll_diag') {
       const r = await page.evaluate(() => {
         const aday = [...document.querySelectorAll('*')].filter(el => {
