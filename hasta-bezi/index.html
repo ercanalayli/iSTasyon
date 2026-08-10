@@ -33,7 +33,8 @@
   </section>
   <nav class="nav" aria-label="Ana ekranlar"><button class="active" data-view="command">Komuta</button><button data-view="products">Ürün / FIFO</button><button data-view="customers">Cari</button><button data-view="orders">Siparişler</button><button data-view="prices">Fiyat Geçmişi</button><button data-view="audit">Kontrol</button><a class="btn" href="operasyon-legacy.html">Mevcut Operasyon</a><a class="btn" href="../aperion-ust-akil/">AperiON iSTasyon</a></nav>
   <section class="panel">
-    <div class="view active" id="view-command"><div class="section-head"><div><h2>Bugün ne sattım, maliyeti ne, ne kazandım?</h2><div class="muted">Kesin FIFO kanıtı olmayan kâr rakamı gösterilmez.</div></div></div><div class="kpis" id="kpis"></div><div class="smart-grid"><div class="flow"><b>Ürün yaşam çizgisi</b><div class="flow-line"></div><div class="chips"><span class="chip blue">Liste fiyatı</span><span class="chip orange">Alış / FIFO</span><span class="chip green">Satış / kâr</span><span class="chip red">Hata / eksik</span><span class="chip purple">Akıllı uyarı</span></div></div><div class="alerts"><b>Akıllı kontrol</b><div id="alertList"></div></div></div></div>
+    <div class="view active" id="view-command"><div class="section-head"><div><h2>Bugün ne sattım, maliyeti ne, ne kazandım?</h2><div class="muted">Kesin FIFO kanıtı olmayan kâr rakamı gösterilmez.</div></div></div><div class="kpis" id="kpis"></div><div class="smart-grid"><div class="flow"><b>Ürün yaşam çizgisi</b><div class="flow-line"></div><div class="chips"><span class="chip blue">Liste fiyatı</span><span class="chip orange">Alış / FIFO</span><span class="chip green">Satış / kâr</span><span class="chip red">Hata / eksik</span><span class="chip purple">Akıllı uyarı</span></div></div><div class="alerts"><b>Akıllı kontrol</b><div id="alertList"></div></div></div>
+    <div class="section-head" style="margin-top:22px"><div><h2>En çok satılan (perakende)</h2><div class="muted">Yaklaşık ayrım: bilinen distribütör/toptan carileri hariç tutuldu — "tip" alanı BizimHesap kaynağında henüz dolu değil, kesin değil.</div></div><div class="nav" id="topPeriodNav" style="padding:0"><button class="active" data-period="bugun">Bugün</button><button data-period="dun">Dün</button><button data-period="hafta">Hafta</button><button data-period="ay">Ay</button><button data-period="yil">Yıl</button></div></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Ürün</th><th>Adet</th><th>Satış Tutarı</th><th>Fatura Sayısı</th></tr></thead><tbody id="topSellersRows"></tbody></table></div></div>
     <div class="view" id="view-products"><div class="section-head"><h2>Ürün / FIFO hafızası</h2><input class="search" id="productSearch" placeholder="Ürün, barkod, kategori ara"></div><div class="table-wrap"><table><thead><tr><th>Ürün</th><th>Kategori</th><th>Stok</th><th>Liste satış</th><th>Alış referansı</th><th>Satış</th><th>Alış</th><th>Durum</th></tr></thead><tbody id="productRows"></tbody></table></div></div>
     <div class="view" id="view-customers"><div class="section-head"><h2>Cari hafızası</h2><input class="search" id="customerSearch" placeholder="Cari adı veya kod ara"></div><div class="cards" id="customerCards"></div></div>
     <div class="view" id="view-orders"><div class="section-head"><h2>Açık siparişler</h2><span class="muted">En yeni sipariş en üstte · fatura no + sevk tarihi olmadan kapanmaz</span></div><div class="cards" id="orderCards"></div></div>
@@ -64,7 +65,40 @@ function render(){
   const today=new Date().toISOString().slice(0,10),todaySales=D.sales.filter(x=>x.tarih===today),net=todaySales.reduce((a,b)=>a+(+b.satis_kdv_haric||0),0),qty=todaySales.reduce((a,b)=>a+(+b.adet||0),0),known=todaySales.filter(x=>x.toplam_kar!==null),profit=known.reduce((a,b)=>a+(+b.toplam_kar||0),0);
   kpis.innerHTML=[['Bugün satış',money(net),'Satış KDV hariç','var(--blue)'],['Bugün adet',num(qty),`${todaySales.length} satış satırı`,'var(--cyan)'],['FIFO maliyet',known.length?money(todaySales.reduce((a,b)=>a+(+b.fifo_toplam_maliyet||0),0)):'KONTROL','Alış lot kanıtı','var(--orange)'],['Net kâr',known.length?money(profit):'KONTROL','Satış - FIFO - nakliye','var(--green)'],['Stok değeri',money(D.stock.reduce((a,b)=>a+(+b.stok_degeri_referans||0),0)),'Alış referansıyla','var(--purple)']].map(x=>`<article class="kpi" style="--tone:${x[3]}"><label>${x[0]}</label><strong>${x[1]}</strong><small>${x[2]}</small></article>`).join('');
   alertList.innerHTML=(D.audit.issues||[]).slice(0,5).map(x=>`<div class="alert">${esc(x)}</div>`).join('')||'<div class="alert green">Kaynak denetimi temiz.</div>';
-  renderProducts();renderCustomers();renderPrices();renderAudit();renderOrders();
+  renderProducts();renderCustomers();renderPrices();renderAudit();renderOrders();renderTopSellers(currentPeriod);
+}
+// Bilinen distributor/toptan cariler - "tip" alani BizimHesap kaynaginda bos oldugu icin
+// perakende ayrimi burada isimle yapiliyor (yaklasik, kesin degil).
+const DISTRIBUTOR_NAMES=['ZEYBEK','SETON','SERCAN','KENT MEDİKAL','FEYZA MEDİKAL','GÖRÜKLE','LABORAL','ADA TIP','MURAT ÇOBAN','IŞIK MEDİKAL','ŞİFAM'].map(norm);
+let currentPeriod='bugun';
+function periodRange(period){
+  const now=new Date(),start=new Date(now);start.setHours(0,0,0,0);
+  if(period==='dun'){start.setDate(start.getDate()-1);const end=new Date(start);end.setDate(end.getDate()+1);return [start,end]}
+  if(period==='hafta')start.setDate(start.getDate()-7);
+  else if(period==='ay')start.setDate(start.getDate()-30);
+  else if(period==='yil')start.setDate(start.getDate()-365);
+  const end=new Date(now);end.setHours(23,59,59,999);
+  return [start,end];
+}
+function renderTopSellers(period){
+  currentPeriod=period;
+  document.querySelectorAll('#topPeriodNav button').forEach(b=>b.classList.toggle('active',b.dataset.period===period));
+  const [start,end]=periodRange(period);
+  const HASTA_BEZI_RE=/HASTA\s*BEZ|MESANE\s*PED|YATAK\s*KORUYUCU|EMİCİ\s*KÜLOT|GECE\s*BEZ/i;
+  const rows=D.sales.filter(x=>{
+    const t=new Date(x.tarih+'T00:00:00');
+    if(Number.isNaN(t.getTime())||t<start||t>end)return false;
+    if(!HASTA_BEZI_RE.test(`${x.kategori||''} ${x.urun||''}`)||/BEBEK/i.test(x.kategori||''))return false;
+    return !DISTRIBUTOR_NAMES.some(d=>norm(x.musteri||'').includes(d));
+  });
+  const byUrun={};
+  for(const s of rows){
+    const key=s.urun_id||s.urun||'?';
+    if(!byUrun[key])byUrun[key]={urun:s.urun||key,adet:0,tutar:0,faturalar:new Set()};
+    byUrun[key].adet+=+s.adet||0;byUrun[key].tutar+=+s.satis_kdv_haric||0;byUrun[key].faturalar.add(s.fatura_no||s.id);
+  }
+  const list=Object.values(byUrun).sort((a,b)=>b.adet-a.adet).slice(0,20);
+  topSellersRows.innerHTML=list.map((x,i)=>`<tr><td>${i+1}</td><td><button class="link" data-product-name="${esc(x.urun)}">${esc(x.urun)}</button></td><td>${num(x.adet)}</td><td class="green">${money(x.tutar)}</td><td>${x.faturalar.size}</td></tr>`).join('')||'<tr><td colspan="5">Bu dönemde perakende satış bulunamadı.</td></tr>';
 }
 function fmtD(v){if(!v)return null;const d=new Date(v+'T00:00:00');return Number.isNaN(d.getTime())?v:d.toLocaleDateString('tr-TR')}
 function renderOrders(){
@@ -109,9 +143,31 @@ function openProduct(id){
 }
 function salesTable(rows){return `<div class="table-wrap"><table><thead><tr><th>Tarih</th><th>Cari</th><th>Fatura</th><th>Adet</th><th>Birim fiyat</th><th>KDV hariç</th><th>FIFO</th><th>Kâr</th><th>Stok sonrası</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(x.tarih)}</td><td><button class="link" data-customer-name="${esc(x.musteri)}">${esc(x.musteri)}</button></td><td><button class="link" data-invoice="${esc(x.fatura_no)}">${esc(x.fatura_no)}</button></td><td>${num(x.adet)}</td><td class="green">${money(x.satis_birim_fiyat)}</td><td>${money(x.satis_kdv_haric)}</td><td class="orange">${money(x.fifo_toplam_maliyet)}</td><td><button class="link" data-profit="${esc(x.id)}">${money(x.toplam_kar)}</button></td><td>${x.satis_sonrasi_stok??'KONTROL'}</td></tr>`).join('')||'<tr><td colspan="9">Satış geçmişi yok.</td></tr>'}</tbody></table></div>`}
 function purchaseTable(rows){return `<div class="table-wrap"><table><thead><tr><th>Tarih</th><th>Tedarikçi</th><th>Fatura</th><th>Gelen</th><th>KDV hariç</th><th>KDV dahil</th><th>FIFO</th><th>Kalan</th><th>Kanıt</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(x.tarih)}</td><td>${esc(x.tedarikci)}</td><td><button class="link" data-invoice="${esc(x.fatura_no)}">${esc(x.fatura_no)}</button></td><td>${num(x.gelen_adet)} ${esc(x.birim)}</td><td class="orange">${money(x.net_alis_kdv_haric)}</td><td>${money(x.net_alis_kdv_dahil)}</td><td>${x.fifo_sirasi}</td><td>${num(x.kalan_stok)}</td><td>${x.pdf_kanit?`<a class="link" href="${esc(x.pdf_kanit)}" target="_blank">PDF</a>`:'KONTROL'}</td></tr>`).join('')||'<tr><td colspan="9">Alış geçmişi yok; FIFO kesinleştirilemez.</td></tr>'}</tbody></table></div>`}
+function customerInsights(sales){
+  const withDate=sales.filter(x=>x.tarih).map(x=>({...x,d:new Date(x.tarih+'T00:00:00')})).sort((a,b)=>a.d-b.d);
+  if(!withDate.length)return null;
+  const first=withDate[0].d,last=withDate[withDate.length-1].d,now=new Date();
+  const gunFark=(a,b)=>Math.round((b-a)/86400000);
+  const musteriYasi=gunFark(first,now),sonAlistanGun=gunFark(last,now);
+  const faturaSet=new Set(withDate.map(x=>x.fatura_no||x.id));
+  const faturaSayisi=faturaSet.size||1;
+  const toplamTutar=withDate.reduce((a,b)=>a+(+b.satis_kdv_haric||0),0);
+  const aov=toplamTutar/faturaSayisi;
+  const siparisSikligi=faturaSayisi>1?Math.round(gunFark(first,last)/(faturaSayisi-1)):null;
+  const byUrun={};
+  for(const s of withDate){
+    const key=s.urun||'?';
+    if(!byUrun[key])byUrun[key]={urun:key,adet:0,tutar:0,tarihler:[]};
+    byUrun[key].adet+=+s.adet||0;byUrun[key].tutar+=+s.satis_kdv_haric||0;byUrun[key].tarihler.push(s.tarih);
+  }
+  const urunler=Object.values(byUrun).sort((a,b)=>b.adet-a.adet);
+  return {ilkAlis:first,sonAlis:last,musteriYasi,sonAlistanGun,faturaSayisi,aov,siparisSikligi,enCokUrun:urunler[0],urunler};
+}
 function openCustomer(id){
   const c=byId(D.customers,id);if(!c)return;const sales=c.satislar.map(id=>byId(D.sales,id)).filter(Boolean);
-  customerDrawer.innerHTML=`<div class="drawer-head"><div><div class="muted">CARİ KARTI · BİZİMHESAP</div><h2>${esc(c.cari_unvan)}</h2><div class="muted">${esc(c.cari_kod)} · ${esc(c.tip)}</div></div><button class="close">×</button></div><div class="metric-row"><div class="metric"><small>Toplam adet</small><b>${num(c.toplam_aldigi_adet)}</b></div><div class="metric"><small>Toplam satış</small><b class="green">${money(c.toplam_satis)}</b></div><div class="metric"><small>Toplam kâr</small><b>${money(c.toplam_kar)}</b></div><div class="metric"><small>Bakiye</small><b>${money(c.bakiye)}</b></div></div><h3>Aldığı ürünler</h3><div class="chips">${c.aldigi_urunler.map(name=>`<button class="chip link" data-product-name="${esc(name)}">${esc(name)}</button>`).join('')||'Kayıt yok'}</div><h3>Satış kayıtları</h3>${salesTable(sales)}<h3>Uyarılar</h3>${c.uyarilar.map(x=>`<div class="proof">${esc(x)}</div>`).join('')||'<div class="proof green">Açık uyarı yok.</div>'}`;
+  const ins=customerInsights(sales);
+  const insightHtml=ins?`<h3>Müşteri zekası</h3><div class="metric-row"><div class="metric"><small>Fatura sayısı</small><b>${ins.faturaSayisi}</b></div><div class="metric"><small>Ort. sipariş değeri (AOV)</small><b class="blue">${money(ins.aov)}</b></div><div class="metric"><small>Sipariş sıklığı</small><b>${ins.siparisSikligi!=null?`~${ins.siparisSikligi} günde bir`:'tek sipariş'}</b></div><div class="metric"><small>Son alıştan bu yana</small><b class="${ins.sonAlistanGun>60?'red':'green'}">${ins.sonAlistanGun} gün</b></div></div><div class="metric-row"><div class="metric"><small>İlk alış tarihi</small><b>${fmtD(ins.ilkAlis.toISOString().slice(0,10))}</b></div><div class="metric"><small>Son alış tarihi</small><b>${fmtD(ins.sonAlis.toISOString().slice(0,10))}</b></div><div class="metric"><small>Müşteri yaşı</small><b>${ins.musteriYasi} gün</b></div><div class="metric"><small>En çok aldığı ürün</small><b>${ins.enCokUrun?esc(ins.enCokUrun.urun):'—'}</b></div></div>${ins.enCokUrun?`<div class="proof">En çok aldığı ürün: <b>${esc(ins.enCokUrun.urun)}</b> — ${num(ins.enCokUrun.adet)} adet, ${money(ins.enCokUrun.tutar)}<br>Alış tarihleri: ${ins.enCokUrun.tarihler.map(fmtD).join(', ')}</div>`:''}`:'<div class="empty">Tarihli satış kaydı yok, müşteri zekası hesaplanamadı.</div>';
+  customerDrawer.innerHTML=`<div class="drawer-head"><div><div class="muted">CARİ KARTI · BİZİMHESAP</div><h2>${esc(c.cari_unvan)}</h2><div class="muted">${esc(c.cari_kod)} · ${esc(c.tip)}</div></div><button class="close">×</button></div><div class="metric-row"><div class="metric"><small>Toplam adet</small><b>${num(c.toplam_aldigi_adet)}</b></div><div class="metric"><small>Toplam satış</small><b class="green">${money(c.toplam_satis)}</b></div><div class="metric"><small>Toplam kâr</small><b>${money(c.toplam_kar)}</b></div><div class="metric"><small>Bakiye</small><b>${money(c.bakiye)}</b></div></div>${insightHtml}<h3>Aldığı ürünler</h3><div class="chips">${c.aldigi_urunler.map(name=>`<button class="chip link" data-product-name="${esc(name)}">${esc(name)}</button>`).join('')||'Kayıt yok'}</div><h3>Satış kayıtları</h3>${salesTable(sales)}<h3>Uyarılar</h3>${c.uyarilar.map(x=>`<div class="proof">${esc(x)}</div>`).join('')||'<div class="proof green">Açık uyarı yok.</div>'}`;
   showDrawer(customerDrawer);
 }
 function openDetail(title,body){detailDrawer.innerHTML=`<div class="drawer-head"><h2>${esc(title)}</h2><button class="close">×</button></div>${body}`;showDrawer(detailDrawer)}
@@ -123,6 +179,7 @@ document.addEventListener('click',e=>{
   const pn=e.target.closest('[data-product-name]');if(pn){const product=D.products.find(x=>norm(x.urun)===norm(pn.dataset.productName));if(product)openProduct(product.id)}
   const c=e.target.closest('[data-customer]');if(c)openCustomer(c.dataset.customer);
   const ord=e.target.closest('[data-order]');if(ord)openOrder(ord.dataset.order);
+  const per=e.target.closest('[data-period]');if(per)renderTopSellers(per.dataset.period);
   const cn=e.target.closest('[data-customer-name]');if(cn){const customer=D.customers.find(x=>norm(x.cari_unvan)===norm(cn.dataset.customerName));if(customer)openCustomer(customer.id)}
   const inv=e.target.closest('[data-invoice]');if(inv)openDetail(`Fatura ${inv.dataset.invoice}`,`<div class="proof">BizimHesap fatura kanıtı: ${esc(inv.dataset.invoice)}<br>${inv.dataset.invoice==='KONTROL'?'Fatura numarası kaynakta eksik; kesin kayıt değildir.':'Fatura numarası BizimHesap kaynağından geldi.'}</div>`);
   const profit=e.target.closest('[data-profit]');if(profit){const x=byId(D.sales,profit.dataset.profit);if(x)openDetail('Kâr hesabı',`<div class="metric-row"><div class="metric"><small>Satış KDV hariç</small><b>${money(x.satis_kdv_haric)}</b></div><div class="metric"><small>FIFO maliyet</small><b>${money(x.fifo_toplam_maliyet)}</b></div><div class="metric"><small>Nakliye</small><b>${money(x.nakliye)}</b></div><div class="metric"><small>Net kâr</small><b>${money(x.toplam_kar)}</b></div></div><div class="proof">Net Kâr = Satış KDV Hariç - FIFO Maliyet - Nakliye<br>Kâr Marjı = Kâr / Satış KDV Hariç<br>Kâr Oranı = Kâr / FIFO Maliyet</div>`)}
