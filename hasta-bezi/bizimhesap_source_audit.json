@@ -24,15 +24,15 @@
     "jender_xxl_ilkbahar_matches": 0
   },
   "rules": {
-    "net_kar": "SatÄ±ÅŸ KDV HariÃ§ - FIFO Maliyet - Nakliye",
-    "kar_marji": "KÃ¢r / SatÄ±ÅŸ KDV HariÃ§",
-    "kar_orani": "KÃ¢r / FIFO Maliyet",
+    "net_kar": "Satış KDV Hariç - FIFO Maliyet - Nakliye",
+    "kar_marji": "Kâr / Satış KDV Hariç",
+    "kar_orani": "Kâr / FIFO Maliyet",
     "order_close": "Fatura no + sevk tarihi zorunlu",
-    "purchase_invoice": "AlÄ±ÅŸ fatura no boÅŸsa KONTROL"
+    "purchase_invoice": "Alış fatura no boşsa KONTROL"
   },
   "issues": [
-    "sales_raw fatura numarasÄ± taÅŸÄ±mÄ±yor: satÄ±ÅŸ faturasÄ± alanlarÄ± KONTROL.",
-    "SatÄ±ÅŸ-FIFO lot eÅŸleÅŸtirmesi eksik: kÃ¢r alanÄ± kesinleÅŸtirilmedi.",
-    "Kabul kontrolÃ¼ bekliyor: Jender XXL / Ä°lkbahar Eczanesi satÄ±ÅŸÄ± BizimHesap kaynaÄŸÄ±nda bulunamadÄ±."
+    "sales_raw fatura numarası taşımıyor: satış faturası alanları KONTROL.",
+    "Satış-FIFO lot eşleştirmesi eksik: kâr alanı kesinleştirilmedi.",
+    "Kabul kontrolü bekliyor: Jender XXL / İlkbahar Eczanesi satışı BizimHesap kaynağında bulunamadı."
   ]
 }
