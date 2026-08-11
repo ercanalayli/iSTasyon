@@ -136,14 +136,16 @@ function openOrder(id){
   // orantili dagitilir. Kurumlar vergisi payi, navlun dusulmus net kardan %25.
   const toplamPaketOrder=(o.kalemler||[]).reduce((a,k)=>a+(k.paket||0),0)||1;
   const profitRows=hasKar?(o.kalemler||[]).map(k=>{
-    if(k.maliyet==null||k.kar==null)return `<tr><td>${esc(k.urun)}</td><td colspan="5" class="muted">Maliyet KONTROL - kârlılık hesaplanamadı</td></tr>`;
+    const liste2=k.liste||o.kaynak_liste||'?';
+    const listeChip=`<span class="chip ${/mayıs/i.test(liste2)?'purple':'blue'}" style="font-size:9px;padding:1px 5px;margin-right:3px">${esc(liste2)}</span>`;
+    if(k.maliyet==null||k.kar==null)return `<tr><td>${listeChip}<br>${esc(k.urun)}</td><td colspan="5" class="muted">Maliyet KONTROL - kârlılık hesaplanamadı</td></tr>`;
     const karMarji=k.toplam_hric?k.kar/k.toplam_hric:null;
     const karOrani=(k.maliyet*k.paket)?k.kar/(k.maliyet*k.paket):null;
     const navlunPayi=o.nakliye!=null?o.nakliye*(k.paket/toplamPaketOrder):null;
     const karNavlunSonrasi=navlunPayi!=null?k.kar-navlunPayi:k.kar;
     const kvPayi=karNavlunSonrasi>0?karNavlunSonrasi*KV_ORANI:0;
     const netVergiSonrasi=karNavlunSonrasi-kvPayi;
-    return `<tr><td>${esc(k.urun)}</td><td class="green">${pct(karMarji)}</td><td class="blue">${pct(karOrani)}</td><td>${navlunPayi==null?'teyit bekliyor':moneyC(navlunPayi)}</td><td class="orange">${moneyC(kvPayi)}</td><td class="green">${moneyC(netVergiSonrasi)}</td></tr>`;
+    return `<tr><td>${listeChip}<br>${esc(k.urun)}</td><td class="green">${pct(karMarji)}</td><td class="blue">${pct(karOrani)}</td><td>${navlunPayi==null?'teyit bekliyor':moneyC(navlunPayi)}</td><td class="orange">${moneyC(kvPayi)}</td><td class="green">${moneyC(netVergiSonrasi)}</td></tr>`;
   }).join(''):'';
   const toplamKarMarji=o.mal_hizmet_hric?o.net_kar/o.mal_hizmet_hric:null;
   const toplamKarOrani=o.fifo_maliyet?o.net_kar/o.fifo_maliyet:null;
