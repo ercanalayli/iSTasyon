@@ -930,18 +930,21 @@ Promise.all([
       return '<tr style="border-top:1px solid #23344d'+(s.kalin?';background:#0f1b2c':'')+'"><td style="padding:7px 12px;font-weight:'+(s.kalin?850:700)+';position:sticky;left:0;background:'+(s.kalin?'#0f1b2c':'var(--surface)')+'">'+s.etiket+'</td>'+hucreler+'</tr>';
     }).join('');
 
-    // Tahmini ortalama: son 8 haftanin GERCEK haftalik net'ini simdi bilmiyoruz
-    // (view sadece bugun/dun/hafta/ay/gecen_ay/yil/gecen_yil veriyor, kayan
-    // pencere yok) - bu yuzden en dogru, ELIMIZDE OLAN tahmin: "Bu Ay" ile
-    // "Geçen Ay" gerceklesen net'inin ortalamasi, haftaya bolunmus hali.
-    const buAyNet = Number(totalRow['satis_ay']||0) - Number(giderTotal['gider_ay']||0);
-    const gecenAyNet = Number(totalRow['satis_gecen_ay']||0) - Number(giderTotal['gider_gecen_ay']||0);
-    const varAyData = totalRow['satis_ay'] != null || giderTotal['gider_ay'] != null;
+    // 2026-08-11 duzeltme: Ercan "ne kadar para gelme ihtimali var" icin
+    // AYRI bir rakam istedi - once yanlislikla Net'in icine gomulmustu.
+    // Simdi Giren ve Cikan tahminleri AYRI AYRI gosteriliyor. Yontem: Bu Ay
+    // ile Gecen Ay'in gerceklesen toplaminin ortalamasi (elimizdeki tek
+    // gercek 2-nokta veri), aylik ve haftalik olarak.
+    const buAyGiren = Number(totalRow['satis_ay']||0), gecenAyGiren = Number(totalRow['satis_gecen_ay']||0);
+    const buAyCikan = Number(giderTotal['gider_ay']||0), gecenAyCikan = Number(giderTotal['gider_gecen_ay']||0);
     const not = document.getElementById('nakitTahminNote');
-    if (varAyData && (buAyNet || gecenAyNet)) {
-      const ortalamaAylik = (buAyNet + gecenAyNet) / 2;
-      const ortalamaHaftalik = ortalamaAylik / 4.33;
-      not.innerHTML = '📊 <b>Tahmini ortalama</b> (Bu Ay + Geçen Ay net ortalaması): aylık <b style="color:'+(ortalamaAylik<0?'#ff9aa7':'#7be7ba')+'">'+money(ortalamaAylik)+'</b> · haftalık <b style="color:'+(ortalamaHaftalik<0?'#ff9aa7':'#7be7ba')+'">'+money(ortalamaHaftalik)+'</b> — bu bir tahmin, kesin taahhüt değil, sadece son 2 ayın gerçek gidişatına dayanıyor.';
+    if (buAyGiren || gecenAyGiren || buAyCikan || gecenAyCikan) {
+      const tahminGirenAy = (buAyGiren + gecenAyGiren) / 2, tahminGirenHafta = tahminGirenAy / 4.33;
+      const tahminCikanAy = (buAyCikan + gecenAyCikan) / 2, tahminCikanHafta = tahminCikanAy / 4.33;
+      not.innerHTML = '📊 <b>Tahmini ortalama</b> (Bu Ay + Geçen Ay gerçekleşenin ortalaması — kesin taahhüt değil):<br>'
+        + '&nbsp;&nbsp;• Gelme ihtimali olan para: aylık <b style="color:#7be7ba">'+money(tahminGirenAy)+'</b> · haftalık <b style="color:#7be7ba">'+money(tahminGirenHafta)+'</b><br>'
+        + '&nbsp;&nbsp;• Muhtemel gider: aylık <b style="color:#ff9aa7">'+money(tahminCikanAy)+'</b> · haftalık <b style="color:#ff9aa7">'+money(tahminCikanHafta)+'</b><br>'
+        + '<span style="color:#f6c86a">⚠️ "Ne kadar ödeme YAPACAĞIM" (vadesi gelecek, henüz ödenmemiş borçlar) için gerçek/güncel bir kaynağım yok — sistemdeki vade takvimi (finance_calendar) Haziran\'dan beri güncellenmiyor. Yukarıdaki "Çıkan" ve bu tahmin GEÇMİŞTE ne harcadığını gösterir, YAKLAŞAN borcu değil.</span>';
     } else {
       not.textContent = 'Tahmini ortalama için yeterli geçmiş veri yok.';
     }
