@@ -18,10 +18,10 @@
       "siparis_tarihi": "2026-08-10",
       "kaynak_liste": "Mayıs 2026",
       "iskonto_aciklama": "%11 (tüm kalemler)",
-      "fatura_no": null,
-      "fatura_tarihi": null,
-      "sevk_tarihi": null,
-      "durum": "AÇIK — fatura bekliyor",
+      "fatura_no": "M012026000000181",
+      "fatura_tarihi": "2026-08-11",
+      "sevk_tarihi": "2026-08-11",
+      "durum": "SEVK EDİLDİ — FATURA KESİLDİ",
       "kalemler": [
         {
           "urun": "Jender bel bantlı S 30'lu",
@@ -270,10 +270,10 @@
       "siparis_tarihi": "2026-08-03",
       "kaynak_liste": "Nisan (18.04.2025)",
       "iskonto_aciklama": "Yok / 0%",
-      "fatura_no": null,
-      "fatura_tarihi": null,
-      "sevk_tarihi": null,
-      "durum": "AÇIK — fatura bekliyor",
+      "fatura_no": "M012026000000179",
+      "fatura_tarihi": "2026-08-11",
+      "sevk_tarihi": "2026-08-11",
+      "durum": "SEVK EDİLDİ — FATURA KESİLDİ",
       "kalemler": [
         {
           "urun": "Jender normal emici külot XL 30'lu",
@@ -407,11 +407,11 @@
       "siparis_tarihi": "2026-08-03",
       "kaynak_liste": "Nisan (18.04.2025)",
       "iskonto_aciklama": "Yok / 0%",
-      "fatura_no": null,
-      "fatura_tarihi": null,
-      "sevk_tarihi": null,
+      "fatura_no": "M012026000000178",
+      "fatura_tarihi": "2026-08-11",
+      "sevk_tarihi": "2026-08-11",
       "nakliye": 1500,
-      "durum": "AÇIK — fatura bekliyor",
+      "durum": "SEVK EDİLDİ — FATURA KESİLDİ",
       "duzeltme_notu": "11.08.2026: IKI AYRI HATA duzeltildi. (1) Bu kaydin urunleri once yanlis kurulmustu (GPT/Foro aktariminin hatali yorumlanmasi) - Ercan gercek 03.08.2026 siparisini verdi, urunler dogru olarak yeniden hesaplandi. (2) O yanlis urun listesi tesadufen M012026000000155 faturasiyla (GERCEKTE 03.07.2026 tarihli, TAMAMEN AYRI ve ONCEKI bir Sercan siparisi) ayni tutarda ciktigi icin bu siparisi 'zaten faturalanmis' sanip yanlislikla kapatmistim. Iki farkli siparis birbirine karismisti - simdi ayristirildi: M012026000000155 kendi (03.07) siparisine ait, ayri takip edilmeli; bu kayit (03.08) hala AÇIK ve faturasiz.",
       "kalemler": [
         {
@@ -544,11 +544,11 @@
       "siparis_tarihi": "2026-08-11",
       "kaynak_liste": "Nisan (18.04.2025) — Lorina mesane pedi kural gereği Mayıs 2026",
       "iskonto_aciklama": "Yok / 0%",
-      "fatura_no": null,
-      "fatura_tarihi": null,
-      "sevk_tarihi": null,
+      "fatura_no": "M012026000000180",
+      "fatura_tarihi": "2026-08-11",
+      "sevk_tarihi": "2026-08-11",
       "nakliye": null,
-      "durum": "AÇIK — fatura bekliyor, nakliye tutarı teyit bekliyor",
+      "durum": "SEVK EDİLDİ — FATURA KESİLDİ, nakliye tutarı teyit bekliyor",
       "kalemler": [
         {
           "urun": "Coverdry normal emici külot M 30'lu",

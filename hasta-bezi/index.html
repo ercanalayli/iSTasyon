@@ -31,13 +31,14 @@
     <div class="source-head"><div><div class="source-title">Ana veri kaynağı: BizimHesap</div><div class="muted" id="syncText">Kaynak dosyaları okunuyor…</div></div><span class="chip" id="healthChip">KAYNAK KONTROLÜ</span></div>
     <div class="stats"><div class="stat"><span>Son senkron</span><b id="lastSync">—</b></div><div class="stat"><span>Satış satırı</span><b id="salesCount">0</b></div><div class="stat"><span>Alış satırı</span><b id="purchaseCount">0</b></div><div class="stat"><span>Ürün sayısı</span><b id="productCount">0</b></div><div class="stat"><span>Cari sayısı</span><b id="customerCount">0</b></div><div class="stat"><span>Stok satırı</span><b id="stockCount">0</b></div></div>
   </section>
-  <nav class="nav" aria-label="Ana ekranlar"><button class="active" data-view="command">Komuta</button><button data-view="products">Ürün / FIFO</button><button data-view="customers">Cari</button><button data-view="orders">Siparişler</button><button data-view="prices">Fiyat Geçmişi</button><button data-view="audit">Kontrol</button><a class="btn" href="operasyon-legacy.html">Mevcut Operasyon</a><a class="btn" href="../aperion-ust-akil/">AperiON iSTasyon</a></nav>
+  <nav class="nav" aria-label="Ana ekranlar"><button class="active" data-view="command">Komuta</button><button data-view="products">Ürün / FIFO</button><button data-view="customers">Cari</button><button data-view="orders">Siparişler</button><button data-view="completed">Tamamlanan</button><button data-view="prices">Fiyat Geçmişi</button><button data-view="audit">Kontrol</button><a class="btn" href="operasyon-legacy.html">Mevcut Operasyon</a><a class="btn" href="../aperion-ust-akil/">AperiON iSTasyon</a></nav>
   <section class="panel">
     <div class="view active" id="view-command"><div class="section-head"><div><h2>Bugün ne sattım, maliyeti ne, ne kazandım?</h2><div class="muted">Kesin FIFO kanıtı olmayan kâr rakamı gösterilmez.</div></div></div><div class="kpis" id="kpis"></div><div class="smart-grid"><div class="flow"><b>Ürün yaşam çizgisi</b><div class="flow-line"></div><div class="chips"><span class="chip blue">Liste fiyatı</span><span class="chip orange">Alış / FIFO</span><span class="chip green">Satış / kâr</span><span class="chip red">Hata / eksik</span><span class="chip purple">Akıllı uyarı</span></div></div><div class="alerts"><b>Akıllı kontrol</b><div id="alertList"></div></div></div>
     <div class="section-head" style="margin-top:22px"><div><h2>En çok satılan (perakende)</h2><div class="muted">Yaklaşık ayrım: bilinen distribütör/toptan carileri hariç tutuldu — "tip" alanı BizimHesap kaynağında henüz dolu değil, kesin değil.</div></div><div class="nav" id="topPeriodNav" style="padding:0"><button class="active" data-period="bugun">Bugün</button><button data-period="dun">Dün</button><button data-period="hafta">Hafta</button><button data-period="ay">Ay</button><button data-period="yil">Yıl</button></div></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Ürün</th><th>Adet</th><th>Satış Tutarı</th><th>Fatura Sayısı</th></tr></thead><tbody id="topSellersRows"></tbody></table></div></div>
     <div class="view" id="view-products"><div class="section-head"><h2>Ürün / FIFO hafızası</h2><input class="search" id="productSearch" placeholder="Ürün, barkod, kategori ara"></div><div class="table-wrap"><table><thead><tr><th>Ürün</th><th>Kategori</th><th>Stok</th><th>Liste satış</th><th>Alış referansı</th><th>Satış</th><th>Alış</th><th>Durum</th></tr></thead><tbody id="productRows"></tbody></table></div></div>
     <div class="view" id="view-customers"><div class="section-head"><h2>Cari hafızası</h2><input class="search" id="customerSearch" placeholder="Cari adı veya kod ara"></div><div class="cards" id="customerCards"></div></div>
     <div class="view" id="view-orders"><div class="section-head"><h2>Açık siparişler</h2><span class="muted">En yeni sipariş en üstte · fatura no + sevk tarihi olmadan kapanmaz</span></div><div class="cards" id="orderCards"></div></div>
+    <div class="view" id="view-completed"><div class="section-head"><h2>Tamamlanan siparişler</h2><span class="muted">Fatura kesilmiş + sevk edilmiş (kapanmış) siparişler — en yeni en üstte</span></div><div class="cards" id="completedCards"></div></div>
     <div class="view" id="view-prices"><div class="section-head"><h2>Liste fiyatı geçmişi</h2><span class="muted">Mavi liste fiyatları, turuncu maliyetlerden ayrıdır.</span></div><div class="cards" id="priceCards"></div></div>
     <div class="view" id="view-audit"><div class="section-head"><h2>BizimHesap kaynak denetimi</h2></div><div id="auditBody"></div></div>
   </section>
@@ -106,9 +107,9 @@ function renderTopSellers(period){
   topSellersRows.innerHTML=list.map((x,i)=>`<tr><td>${i+1}</td><td><button class="link" data-product-name="${esc(x.urun)}">${esc(x.urun)}</button></td><td>${num(x.adet)}</td><td class="green">${money(x.tutar)}</td><td>${x.faturalar.size}</td></tr>`).join('')||'<tr><td colspan="5">Bu dönemde perakende satış bulunamadı.</td></tr>';
 }
 function fmtD(v){if(!v)return null;const d=new Date(v+'T00:00:00');return Number.isNaN(d.getTime())?v:d.toLocaleDateString('tr-TR')}
-function renderOrders(){
-  const rows=[...D.orders].sort((a,b)=>(b.siparis_tarihi||'').localeCompare(a.siparis_tarihi||''));
-  orderCards.innerHTML=rows.map(o=>`<article class="card" style="--tone:${o.duzeltme_notu?'var(--red)':o.fatura_no?'var(--green)':'var(--orange)'}" data-order="${esc(o.id)}"><h3>${esc(o.cari_unvan)} · ${esc(o.sehir||'')}</h3><div class="muted">${esc(o.siparis_no||o.id)} · ${esc(o.kaynak_liste)} · İskonto ${esc(o.iskonto_aciklama)}</div>${o.duzeltme_notu?'<div class="chip red" style="margin-bottom:6px">⚠️ Düzeltildi — detayı gör</div>':''}<div class="chips">
+function isOrderCompleted(o){return !!(o.fatura_no&&o.sevk_tarihi)}
+function orderCardHtml(o){
+  return `<article class="card" style="--tone:${o.duzeltme_notu?'var(--red)':o.fatura_no?'var(--green)':'var(--orange)'}" data-order="${esc(o.id)}"><h3>${esc(o.cari_unvan)} · ${esc(o.sehir||'')}</h3><div class="muted">${esc(o.siparis_no||o.id)} · ${esc(o.kaynak_liste)} · İskonto ${esc(o.iskonto_aciklama)}</div>${o.duzeltme_notu?'<div class="chip red" style="margin-bottom:6px">⚠️ Düzeltildi — detayı gör</div>':''}<div class="chips">
     <span class="chip">📅 Sipariş: ${esc(fmtD(o.siparis_tarihi)||'—')}</span>
     <span class="chip ${o.fatura_no?'green':'red'}">🧾 Fatura: ${o.fatura_no?`${esc(o.fatura_no)} · ${esc(fmtD(o.fatura_tarihi)||'—')}`:'Bekliyor'}</span>
     <span class="chip ${o.sevk_tarihi?'green':'red'}">🚚 Sevk: ${o.sevk_tarihi?esc(fmtD(o.sevk_tarihi)):'Bekliyor'}</span>
@@ -118,7 +119,14 @@ function renderOrders(){
     <span class="chip ${o.net_kar==null?'red':'green'}">${o.net_kar==null?'Kâr KONTROL':`Kâr ${money(o.net_kar)} (${pct(o.net_kar/o.mal_hizmet_hric)})`}</span>
     <span class="chip">💳 Vade: ${esc(o.odeme_vadesi||'30 gün')}</span>
     <span class="chip">${esc(o.para_birimi||'TRY')}</span>
-  </div></article>`).join('')||'<div class="empty">Açık sipariş yok.</div>';
+  </div></article>`;
+}
+function renderOrders(){
+  const sorted=[...D.orders].sort((a,b)=>(b.siparis_tarihi||'').localeCompare(a.siparis_tarihi||''));
+  const open=sorted.filter(o=>!isOrderCompleted(o));
+  const completed=sorted.filter(isOrderCompleted).sort((a,b)=>(b.sevk_tarihi||'').localeCompare(a.sevk_tarihi||''));
+  orderCards.innerHTML=open.map(orderCardHtml).join('')||'<div class="empty">Açık sipariş yok.</div>';
+  completedCards.innerHTML=completed.map(orderCardHtml).join('')||'<div class="empty">Tamamlanan sipariş yok.</div>';
 }
 function openOrder(id){
   const o=byId(D.orders,id);if(!o)return;
