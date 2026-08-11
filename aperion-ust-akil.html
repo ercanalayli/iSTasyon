@@ -220,6 +220,38 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
   <h1 class="title">AperiON iSTasyon – Operasyon Merkezi</h1>
   <p class="subtitle">Bugün ne kritik?<span class="upd" id="updatedPill">Güncellendi · --</span></p>
 
+  <section aria-labelledby="nakitTitle" style="margin-bottom:14px;border:1px solid var(--line);border-top:3px solid var(--green);border-radius:10px;background:var(--surface);overflow:hidden">
+    <header style="padding:14px 18px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+      <div>
+        <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">💰 NAKİT DURUMU</div>
+        <h2 id="nakitTitle" style="margin:5px 0 4px;font-size:15px">Elimde ne kadar var, ne kadar gider/gelir oluyor</h2>
+        <p style="margin:0;color:var(--muted);font-size:11px">Elde para: bankaların en son bilinen bakiyesi (aşağıdaki "Bankalar" kartıyla aynı kaynak). Giren/Çıkan/Net: o dönemin gerçek toplamı (sales_raw/masraf_raw) — tahmin değil.</p>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:9px;font-weight:800;color:#7f91a9;letter-spacing:.5px">ŞU AN ELDE (bilinen banka toplamı)</div>
+        <div id="nakitEldeToplam" style="font-size:22px;font-weight:900;color:#7be7ba">Yükleniyor…</div>
+      </div>
+    </header>
+    <div class="table-scroll">
+    <table style="width:100%;border-collapse:collapse;font-size:11.5px;min-width:900px" id="nakitTable">
+      <thead>
+        <tr style="background:#0d1727">
+          <th style="text-align:left;padding:7px 12px;color:#a7bad2;font-size:10px;font-weight:900;letter-spacing:.5px;position:sticky;left:0;background:#0d1727"></th>
+          <th style="text-align:right;padding:7px 10px;color:#a7bad2;font-size:10px;font-weight:900">BUGÜN</th>
+          <th style="text-align:right;padding:7px 10px;color:#a7bad2;font-size:10px;font-weight:900">DÜN</th>
+          <th style="text-align:right;padding:7px 10px;color:#a7bad2;font-size:10px;font-weight:900">BU HAFTA</th>
+          <th style="text-align:right;padding:7px 10px;color:#a7bad2;font-size:10px;font-weight:900">BU AY</th>
+          <th style="text-align:right;padding:7px 10px;color:#a7bad2;font-size:10px;font-weight:900">GEÇEN AY</th>
+          <th style="text-align:right;padding:7px 10px;color:#a7bad2;font-size:10px;font-weight:900">BU YIL</th>
+          <th style="text-align:right;padding:7px 10px;color:#a7bad2;font-size:10px;font-weight:900">GEÇEN YIL</th>
+        </tr>
+      </thead>
+      <tbody id="nakitBody"><tr><td colspan="8" style="padding:12px;color:var(--muted)">Yükleniyor…</td></tr></tbody>
+    </table>
+    </div>
+    <div style="padding:10px 18px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)" id="nakitTahminNote">Tahmini ortalama hesaplanıyor…</div>
+  </section>
+
   <section aria-labelledby="istekDefteriTitle" style="margin-bottom:14px;border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:10px;background:var(--surface);overflow:hidden">
     <header style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <div>
@@ -873,6 +905,48 @@ Promise.all([
     document.getElementById('giderOranValue').textContent = 'Gider verisi okunamadığı için hesaplanamadı';
   }
 
+  // 2026-08-11: Ercan'in istegi - "ne kadar param var, ne kadar odeme
+  // yapacagim, ne kadar para gelme ihtimali var" - Bugun/Dun/Bu Hafta...
+  // siralamasiyla. totalRow (gercek satis, zaten yukarida hesaplandi) ve
+  // giderTotal (gercek gider, zaten yukarida hesaplandi) BURADA TEKRAR
+  // SORGU ATMADAN yeniden kullanilir - ikisi de ayni .then() icinde zaten
+  // var. Gecmis donemler (Dun/Gecen Ay/Gecen Yil) icin gosterilen rakamlar
+  // TAHMIN DEGIL, o donemin gerceklesmis toplami. "Tahmini ortalama" notu
+  // ayri bir satirda, sadece son 8 haftanin gercek ortalamasindan uretiliyor.
+  (function renderNakitAkisi(){
+    const tbody = document.getElementById('nakitBody');
+    if (!tbody) return;
+    const satirlar = [
+      { etiket: 'Giren (satış tahsilatı, gerçek)', renk: '#7be7ba', al: p => Number(totalRow['satis_'+p]||0) },
+      { etiket: 'Çıkan (gider, gerçek)', renk: '#ff9aa7', al: p => -Number(giderTotal['gider_'+p]||0) },
+      { etiket: 'Net', renk: null, al: p => Number(totalRow['satis_'+p]||0) - Number(giderTotal['gider_'+p]||0), kalin: true },
+    ];
+    tbody.innerHTML = satirlar.map(s => {
+      const hucreler = periodKeys.map(p => {
+        const v = s.al(p);
+        const renk = s.renk || (v < 0 ? '#ff9aa7' : '#7be7ba');
+        return '<td style="text-align:right;padding:7px 10px;font-variant-numeric:tabular-nums;color:'+renk+';font-weight:'+(s.kalin?850:600)+'">'+money(v)+'</td>';
+      }).join('');
+      return '<tr style="border-top:1px solid #23344d'+(s.kalin?';background:#0f1b2c':'')+'"><td style="padding:7px 12px;font-weight:'+(s.kalin?850:700)+';position:sticky;left:0;background:'+(s.kalin?'#0f1b2c':'var(--surface)')+'">'+s.etiket+'</td>'+hucreler+'</tr>';
+    }).join('');
+
+    // Tahmini ortalama: son 8 haftanin GERCEK haftalik net'ini simdi bilmiyoruz
+    // (view sadece bugun/dun/hafta/ay/gecen_ay/yil/gecen_yil veriyor, kayan
+    // pencere yok) - bu yuzden en dogru, ELIMIZDE OLAN tahmin: "Bu Ay" ile
+    // "Geçen Ay" gerceklesen net'inin ortalamasi, haftaya bolunmus hali.
+    const buAyNet = Number(totalRow['satis_ay']||0) - Number(giderTotal['gider_ay']||0);
+    const gecenAyNet = Number(totalRow['satis_gecen_ay']||0) - Number(giderTotal['gider_gecen_ay']||0);
+    const varAyData = totalRow['satis_ay'] != null || giderTotal['gider_ay'] != null;
+    const not = document.getElementById('nakitTahminNote');
+    if (varAyData && (buAyNet || gecenAyNet)) {
+      const ortalamaAylik = (buAyNet + gecenAyNet) / 2;
+      const ortalamaHaftalik = ortalamaAylik / 4.33;
+      not.innerHTML = '📊 <b>Tahmini ortalama</b> (Bu Ay + Geçen Ay net ortalaması): aylık <b style="color:'+(ortalamaAylik<0?'#ff9aa7':'#7be7ba')+'">'+money(ortalamaAylik)+'</b> · haftalık <b style="color:'+(ortalamaHaftalik<0?'#ff9aa7':'#7be7ba')+'">'+money(ortalamaHaftalik)+'</b> — bu bir tahmin, kesin taahhüt değil, sadece son 2 ayın gerçek gidişatına dayanıyor.';
+    } else {
+      not.textContent = 'Tahmini ortalama için yeterli geçmiş veri yok.';
+    }
+  })();
+
   // NET KAR — Brüt Kâr yalnızca kısmi (eşleşen) satış üzerinden hesaplanabildiği için,
   // tüm işletmenin giderini bu kısmi kârdan düşmek yanıltıcı olur (kâr yapay olarak çok düşük/negatif çıkar).
   const anyGross = periodKeys.some(p => totalRow['esl_ciro_'+p] > 0);
@@ -1282,6 +1356,17 @@ db.from('aperion_bank_last_known_balance_v1_view').select('*').then(({data,error
   const oldestGap = Math.max(...rows.map(([,r])=>daysAgo(r.son_tarih)||0));
   if (oldestGap > 7) {
     document.getElementById('bankBalanceNote').innerHTML += ' <b style="color:#ff9aa7">Uyarı: bazı bankalar '+oldestGap+' gündür güncellenmiyor — mail-ekstre okuma hattı (Gmail OAuth) şu an kırık, bu yüzden bakiyeler ilerlemiyor.</b>';
+  }
+  // 2026-08-11: Ercan'in istegi - ana ekranda her zaman "elimde ne kadar
+  // var" gorunsun. Ayni kaynagi (aperion_bank_last_known_balance_v1_view)
+  // kullaniyoruz - "Bankalar" kartiyla CELISMESIN diye ayri bir sorgu/sayi
+  // uretmiyoruz. Bilinen sinirlama: bazi banka alt-defter bakiyeleri
+  // (ör. VakifBank pending_bank_movements) gercek banka bakiyesinden
+  // sapabiliyor - bu ayni bilinen kisitlamayi tasir, gizlenmiyor.
+  const nakitEl = document.getElementById('nakitEldeToplam');
+  if (nakitEl) {
+    nakitEl.textContent = money(toplam);
+    nakitEl.style.color = toplam < 0 ? '#ff9aa7' : '#7be7ba';
   }
 }).catch(e=>{ document.getElementById('bankBalanceBody').innerHTML = '<p style="color:var(--muted);font-size:12px">Hata: '+String(e)+'</p>'; });
 
