@@ -323,9 +323,19 @@ async function main(){
   // Kisisel hesaplar (ör. TEB) sirket (BizimHesap) defterine ASLA islenmez -
   // ayri tutulup AperiON kisisel finans tablosuna yazilir. bank.scope='kisisel'
   // mail-ekstre-config.json'da tanimli.
+  // scope "sirket" (veya bos/tanimsiz - varsayilan) disindaki HER SEY ALAYLI
+  // defterine islenmez. Sadece "kisisel" degil - baska bir sirkete (ör. ALKAM
+  // Mali Musavirlik) ait hesaplar da ayni sekilde disarida tutulmali; onlarin
+  // kendi company_id ayrimi henuz yok, o yuzden simdilik sadece raporlanip
+  // hicbir deftere yazilmiyorlar (ne ALAYLI'ya ne yanlislikla kisisele).
   const personalRows = parsed.filter(r => r.scope === 'kisisel');
-  const companyRows = parsed.filter(r => r.scope !== 'kisisel');
+  const otherCompanyRows = parsed.filter(r => r.scope && r.scope !== 'kisisel' && r.scope !== 'sirket');
+  const companyRows = parsed.filter(r => !r.scope || r.scope === 'sirket');
   report.personal_rows_excluded = personalRows.length;
+  report.other_company_rows_excluded = otherCompanyRows.length;
+  if(otherCompanyRows.length){
+    report.other_company_scopes = [...new Set(otherCompanyRows.map(r => r.scope))];
+  }
 
   if(dryRun){
     report.ingest = { dry_run: true, input: companyRows.length, inserted: 0, duplicate: 0, failed: 0 };
