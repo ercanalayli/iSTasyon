@@ -875,11 +875,11 @@
       "siparis_tarihi": "2026-07-02",
       "kaynak_liste": "Sermeler Nisan / Diğerleri Mayıs",
       "iskonto_aciklama": "Yok / 0%",
-      "fatura_no": null,
-      "fatura_tarihi": null,
-      "sevk_tarihi": null,
+      "fatura_no": "M012026000000158",
+      "fatura_tarihi": "2026-07-08",
+      "sevk_tarihi": "2026-07-08",
       "nakliye": 1250,
-      "durum": "AÇIK — fatura bekliyor, sevk edilmedi",
+      "durum": "SEVK EDİLDİ — FATURA KESİLDİ",
       "kaynak_not": "operasyon-legacy.html'den 11.08.2026'da tasindi (gorukle_ilave.js kaynak verisi; 02.07.2026 siparişi + 07.07.2026 Moly ilavesi birleşik).",
       "kalemler": [
         {
