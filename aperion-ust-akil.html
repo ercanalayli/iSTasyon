@@ -225,7 +225,7 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
       <div>
         <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">💰 NAKİT DURUMU</div>
         <h2 id="nakitTitle" style="margin:5px 0 4px;font-size:15px">Elimde ne kadar var, ne kadar gider/gelir oluyor</h2>
-        <p style="margin:0;color:var(--muted);font-size:11px">Elde para: bankaların en son bilinen bakiyesi (aşağıdaki "Bankalar" kartıyla aynı kaynak). Giren/Çıkan/Net: o dönemin gerçek toplamı (sales_raw/masraf_raw) — tahmin değil.</p>
+        <p style="margin:0;color:var(--muted);font-size:11px">Elde para: bankaların en son bilinen bakiyesi (aşağıdaki "Bankalar" kartıyla aynı kaynak). Satış/Gider/Net: o dönemin gerçek TAHAKKUK toplamı (sales_raw/masraf_raw — fatura kesildi/gider yazıldı anında, henüz kasaya girmemiş/çıkmamış olabilir). <b style="color:#f6c86a">Bu, nakit tahsilatı DEĞİL</b> — özellikle açık hesap/veresiye distribütör satışları için o gün kasaya para girmemiş olabilir.</p>
       </div>
       <div style="text-align:right">
         <div style="font-size:9px;font-weight:800;color:#7f91a9;letter-spacing:.5px">ŞU AN ELDE (bilinen banka toplamı)</div>
@@ -426,12 +426,12 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     </article>
 
     <article class="card" data-risk="orange" id="card-satis">
-      <div class="card-top"><span class="card-title">📦 9 · Satış / Stok</span><span class="card-class">ALAYLI</span></div>
+      <div class="card-top"><span class="card-title">📦 9 · Hasta Bezi Karar Merkezi</span><span class="card-class">ALAYLI</span></div>
       <span class="card-status uyari" id="satis-status">Okunuyor</span>
       <span class="card-value" id="satis-value">Kaynak okunuyor</span>
-      <p class="card-note" id="satis-note">sales_flow_finance_mini kaynağı okunuyor.</p>
+      <p class="card-note" id="satis-note">Sipariş · fatura · FIFO kâr · stok — tek canlı kaynak (BizimHesap).</p>
       <div class="card-foot"><span>Son kontrol: <span id="satis-time">--</span></span><span class="evidence yes">Kanıt: Var</span></div>
-      <a class="card-open" href="./stok_kart.html">Aç →</a>
+      <a class="card-open" href="./hasta-bezi/index.html">Aç →</a>
     </article>
 
     <article class="card" data-risk="red" id="card-risk">
@@ -916,10 +916,17 @@ Promise.all([
   (function renderNakitAkisi(){
     const tbody = document.getElementById('nakitBody');
     if (!tbody) return;
+    // 2026-08-11 kritik duzeltme: bu satirlar SATIS/GIDER TAHAKKUKU
+    // (sales_raw/masraf_raw, fatura/kayit anindaki tutar) - Ercan canli
+    // ornekle yakaladi: gunun en buyuk 3 carisi (Seton/Zeybek/Sercan)
+    // acik hesap DISTRIBUTOR, gercek acik_bakiye'leri var (60K/142K/28K TL)
+    // - yani o gun kesilen fatura o gun kasaya girmis PARA DEGIL. "Tahsilat"
+    // veya "nakit girisi" DENMEYECEK, acikca "Satis (ciro)" ve "Gider
+    // (tahakkuk)" denecek - muhasebe kurali: tahakkuk =/= nakit esasi.
     const satirlar = [
-      { etiket: 'Giren (satış tahsilatı, gerçek)', renk: '#7be7ba', al: p => Number(totalRow['satis_'+p]||0) },
-      { etiket: 'Çıkan (gider, gerçek)', renk: '#ff9aa7', al: p => -Number(giderTotal['gider_'+p]||0) },
-      { etiket: 'Net', renk: null, al: p => Number(totalRow['satis_'+p]||0) - Number(giderTotal['gider_'+p]||0), kalin: true },
+      { etiket: 'Satış (ciro, tahakkuk — kasaya girdi demek değil)', renk: '#7be7ba', al: p => Number(totalRow['satis_'+p]||0) },
+      { etiket: 'Gider (tahakkuk — ödendi demek değil)', renk: '#ff9aa7', al: p => -Number(giderTotal['gider_'+p]||0) },
+      { etiket: 'Net (tahakkuk farkı)', renk: null, al: p => Number(totalRow['satis_'+p]||0) - Number(giderTotal['gider_'+p]||0), kalin: true },
     ];
     tbody.innerHTML = satirlar.map(s => {
       const hucreler = periodKeys.map(p => {
@@ -941,10 +948,10 @@ Promise.all([
     if (buAyGiren || gecenAyGiren || buAyCikan || gecenAyCikan) {
       const tahminGirenAy = (buAyGiren + gecenAyGiren) / 2, tahminGirenHafta = tahminGirenAy / 4.33;
       const tahminCikanAy = (buAyCikan + gecenAyCikan) / 2, tahminCikanHafta = tahminCikanAy / 4.33;
-      not.innerHTML = '📊 <b>Tahmini ortalama</b> (Bu Ay + Geçen Ay gerçekleşenin ortalaması — kesin taahhüt değil):<br>'
-        + '&nbsp;&nbsp;• Gelme ihtimali olan para: aylık <b style="color:#7be7ba">'+money(tahminGirenAy)+'</b> · haftalık <b style="color:#7be7ba">'+money(tahminGirenHafta)+'</b><br>'
-        + '&nbsp;&nbsp;• Muhtemel gider: aylık <b style="color:#ff9aa7">'+money(tahminCikanAy)+'</b> · haftalık <b style="color:#ff9aa7">'+money(tahminCikanHafta)+'</b><br>'
-        + '<span style="color:#f6c86a">⚠️ "Ne kadar ödeme YAPACAĞIM" (vadesi gelecek, henüz ödenmemiş borçlar) için gerçek/güncel bir kaynağım yok — sistemdeki vade takvimi (finance_calendar) Haziran\'dan beri güncellenmiyor. Yukarıdaki "Çıkan" ve bu tahmin GEÇMİŞTE ne harcadığını gösterir, YAKLAŞAN borcu değil.</span>';
+      not.innerHTML = '📊 <b>Tahmini ortalama</b> (Bu Ay + Geçen Ay gerçekleşen SATIŞ/GİDER tahakkukunun ortalaması — kesin taahhüt değil, nakit girişi/çıkışı değil):<br>'
+        + '&nbsp;&nbsp;• Beklenen satış (ciro): aylık <b style="color:#7be7ba">'+money(tahminGirenAy)+'</b> · haftalık <b style="color:#7be7ba">'+money(tahminGirenHafta)+'</b><br>'
+        + '&nbsp;&nbsp;• Beklenen gider (tahakkuk): aylık <b style="color:#ff9aa7">'+money(tahminCikanAy)+'</b> · haftalık <b style="color:#ff9aa7">'+money(tahminCikanHafta)+'</b><br>'
+        + '<span style="color:#f6c86a">⚠️ Bunlar SATIŞ tahmini, "ne zaman kasaya gireceği" değil — açık hesap/veresiye satışlarda para günler/haftalar sonra gelir. "Ne kadar ödeme YAPACAĞIM" (vadesi gelecek borç) için de gerçek/güncel bir kaynağım yok — vade takvimi (finance_calendar) Haziran\'dan beri güncellenmiyor.</span>';
     } else {
       not.textContent = 'Tahmini ortalama için yeterli geçmiş veri yok.';
     }
