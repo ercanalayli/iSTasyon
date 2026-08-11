@@ -6,9 +6,11 @@ import { searchMessages, mailboxQuery } from './lib/gmail-search.js';
 import { readMessageSummary } from './lib/gmail-message.js';
 import { readAttachmentBuffer, isReadableBankAttachment } from './lib/gmail-attachment.js';
 import { extractTextItemsFromAttachment, hasEnoughText } from './lib/pdf-text.js';
-import { parseBankStatement } from './parsers/index.js';
+import { parseBankStatement, detectBank } from './parsers/index.js';
 
 const cfg = JSON.parse(await fs.readFile(new URL('./mail-ekstre-config.json', import.meta.url), 'utf8'));
+const SCOPE_BY_BANK = Object.fromEntries((cfg.banks || []).map(b => [b.bank, b.scope || 'sirket']));
+function scopeForBank(bankKey){ return SCOPE_BY_BANK[bankKey] || 'sirket'; }
 const DEFAULT_SUPABASE_URL = 'https://iilfwosoroflzubkaryj.supabase.co';
 const DEFAULT_SUPABASE_KEY = 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW';
 const sourceMode = process.env.EKSTRE_SOURCE || 'gmail';
@@ -53,11 +55,13 @@ async function loadRowsFromDrive(report){
       if(item.error) att.error = item.error;
       if(att.text_ok){
         report.extracted_texts++;
-        const rows = parseBankStatement(text, { company_id: cfg.company_id || 'alayli', source: 'google_drive_bank_statement', mailbox: 'google_drive', bank_hint: `${f.name} ${item.filename}`, statement_id: f.id, attachment_name: item.container_name ? `${item.container_name}/${item.filename}` : item.filename });
+        const driveMeta = { company_id: cfg.company_id || 'alayli', source: 'google_drive_bank_statement', mailbox: 'google_drive', bank_hint: `${f.name} ${item.filename}`, statement_id: f.id, attachment_name: item.container_name ? `${item.container_name}/${item.filename}` : item.filename };
+        const rows = parseBankStatement(text, driveMeta);
         att.parsed_rows = rows.length;
         if(rows.length === 0) att.parser_probe = buildParserProbe(text);
         report.parsed_rows += rows.length;
-        parsed.push(...rows.map(r => ({ ...r, source: 'google_drive_bank_statement', mailbox: 'google_drive', attachment_name: item.container_name ? `${item.container_name}/${item.filename}` : item.filename, statement_id: f.id })));
+        const driveScope = scopeForBank(detectBank(text, driveMeta));
+        parsed.push(...rows.map(r => ({ ...r, source: 'google_drive_bank_statement', mailbox: 'google_drive', attachment_name: item.container_name ? `${item.container_name}/${item.filename}` : item.filename, statement_id: f.id, scope: driveScope })));
       }
       attachments.push(att);
     }
@@ -106,7 +110,7 @@ async function loadRowsFromGmail(report){
         if(bodyText.trim()){
           report.body_texts++;
           mailInfo.body_text_length = bodyText.length;
-          const rows = parseBankStatement(bodyText, {
+          const bodyMeta = {
             company_id: cfg.company_id || 'alayli',
             source: 'gmail_bank_notification',
             mailbox,
@@ -116,12 +120,17 @@ async function loadRowsFromGmail(report){
             mail_from: msg.from,
             mail_date: msg.date,
             attachment_name: 'mail_body'
-          });
+          };
+          const rows = parseBankStatement(bodyText, bodyMeta);
           mailInfo.body_parsed_rows = rows.length;
           if(rows.length === 0) mailInfo.body_parser_probe = buildParserProbe(bodyText);
           report.body_parsed_rows += rows.length;
           report.parsed_rows += rows.length;
-          rows.forEach(r => { r.scope = bank.scope || 'sirket'; });
+          // Scope, mesayi HANGI banka sorgusunun yakaladigina degil, icerigin
+          // GERCEKTEN hangi bankaya ait oldugu tespitine gore atanir - yoksa
+          // TEB eki "Akbank" sorgusuyla eslesen bir mailde gelirse (orijinal
+          // hata tam buydu) yine sirkete gider.
+          rows.forEach(r => { r.scope = scopeForBank(detectBank(bodyText, bodyMeta)); });
           parsed.push(...rows);
         }
         for(const a of msg.attachments){
@@ -142,11 +151,13 @@ async function loadRowsFromGmail(report){
               if(inner.text_ok){
                 report.extracted_texts++;
                 const attachmentName = item.container_name ? `${item.container_name}/${item.filename}` : item.filename;
-                const rows = parseBankStatement(text, { company_id: cfg.company_id || 'alayli', mailbox, bank_hint: `${bank.bank} ${msg.from || ''} ${msg.subject || ''} ${attachmentName || ''}`, mail_id: msg.id, mail_subject: msg.subject, mail_from: msg.from, mail_date: msg.date, attachment_name: attachmentName });
+                const attMeta = { company_id: cfg.company_id || 'alayli', mailbox, bank_hint: `${bank.bank} ${msg.from || ''} ${msg.subject || ''} ${attachmentName || ''}`, mail_id: msg.id, mail_subject: msg.subject, mail_from: msg.from, mail_date: msg.date, attachment_name: attachmentName };
+                const rows = parseBankStatement(text, attMeta);
                 inner.parsed_rows = rows.length;
                 if(rows.length === 0) inner.parser_probe = buildParserProbe(text);
                 report.parsed_rows += rows.length;
-                rows.forEach(r => { r.scope = bank.scope || 'sirket'; });
+                // bank.scope DEGIL - eklentinin gercek icerigine gore tespit (asagidaki not).
+                rows.forEach(r => { r.scope = scopeForBank(detectBank(text, attMeta)); });
                 parsed.push(...rows);
               }
               att.inner_files.push(inner);
@@ -253,11 +264,15 @@ async function filterAlreadyStoredRows(db, rows, report){
 // Sirketin bank_transactions / pending_bank_movements / BizimHesap kuyruguna HIC dokunmaz.
 async function ingestPersonalRows(db, rows, report){
   let inserted = 0, failed = 0;
+  const failDetails = [];
   for(const r of rows){
     const amount = Number(r.amount_out || 0) > 0 ? -Number(r.amount_out) : Number(r.amount_in || 0);
+    // company/owner NOT NULL - 'kisisel' skoru şirket adı degil, sirket-disi
+    // oldugunu isaretler. status, personal_finance_documents CHECK kisitina
+    // uymak zorunda: received|parsed|matched|approved|rejected|archived.
     const { error } = await db.from('personal_finance_documents').insert({
       owner: 'ercan',
-      company: null,
+      company: 'kisisel',
       scope: 'kisisel',
       document_type: 'banka_hareketi',
       source_type: 'gmail_bank_statement',
@@ -266,11 +281,13 @@ async function ingestPersonalRows(db, rows, report){
       parsed_date: r.transaction_date || null,
       parsed_vendor: r.bank_name || 'TEB',
       ai_category: r.detected_type || null,
-      status: 'kontrol_bekliyor',
+      status: 'received',
       note: `Otomatik ayristirildi: ${r.bank_name || 'TEB'} sahsi hesap, sirket defterine islenmedi. Mail: ${r.mail_subject || ''}`
     });
-    if(error) failed++; else inserted++;
+    if(error){ failed++; failDetails.push({ error: error.message, row: { tarih: r.transaction_date, tutar: amount, aciklama: r.description } }); }
+    else inserted++;
   }
+  if(failDetails.length) report.personal_ingest_errors = failDetails.slice(0, 10);
   return { input: rows.length, inserted, failed };
 }
 

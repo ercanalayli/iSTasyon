@@ -6,7 +6,10 @@ export function detectBank(text, meta = {}) {
   // TEB kontrolu AKBANK'tan ONCE yapilmali - TEB, sahsi hesap oldugu icin sirket
   // (BizimHesap) defterine asla islenmemeli. Attachment adinda "TEB_" gecebiliyor,
   // bu daha once yanlislikla Akbank sayilip sirkete islenmisti (kok neden duzeltmesi).
-  if (sourceKey.includes('TEB') || sourceKey.includes('TURKIYE_EKONOMI_BANKASI') || sourceKey.includes('TURK_EKONOMI_BANKASI') || sourceKey.includes('TEBCEP')) return 'teb';
+  // "TEB" tek basina TAM KELIME olarak aranir (includes degil) - yoksa "MUTEBER",
+  // "TEBLIGAT", "TEBRIK" gibi TEB gecen her kelime yanlislikla TEB sayilirdi.
+  const sourceTokens = sourceKey.split('_');
+  if (sourceTokens.includes('TEB') || sourceTokens.includes('TEBCEP') || sourceKey.includes('TURKIYE_EKONOMI_BANKASI') || sourceKey.includes('TURK_EKONOMI_BANKASI')) return 'teb';
   if (sourceKey.includes('IS_BANKASI') || sourceKey.includes('ISBANK') || sourceKey.includes('TURKIYE_IS_BANKASI') || sourceKey.includes('TURKIYE_IS')) return 'isbank';
   if (sourceKey.includes('AKBANK') || sourceKey.includes('AXESS')) return 'akbank';
   if (sourceKey.includes('VAKIFBANK') || sourceKey.includes('VAKIF_BANK')) return 'vakifbank';
@@ -225,7 +228,7 @@ function typeOf(desc, amount) {
 
 function bankLabel(meta, bank) {
   const s = key(`${meta.bank_hint || ''} ${meta.bank_name || ''} ${meta.mail_subject || ''} ${meta.attachment_name || ''}`);
-  if (bank === 'teb' || s.includes('TEB')) return 'TEB';
+  if (bank === 'teb' || s.split('_').includes('TEB')) return 'TEB';
   if (bank === 'isbank' || s.includes('ISBANK') || s.includes('IS_BANKASI') || s.includes('TURKIYE_IS')) return 'Turkiye Is Bankasi';
   if (bank === 'yapikredi' || s.includes('YAPI')) return 'Yapi Kredi';
   if (bank === 'akbank' || s.includes('AKBANK') || s.includes('AXESS')) return 'Akbank';
