@@ -559,6 +559,47 @@
       "fifo_maliyet_kaynagi": "Gerçek Kar-Dağ alış faturalarından FIFO ile hesaplandı (fiyat farkı faturaları dahil). Kaynak fatura no her ürün satırında gösteriliyor.",
       "net_kar": 4456.35,
       "kar_marji": 0.1549
+    },
+    {
+      "id": "order-akin-20260811",
+      "siparis_no": "SIP-2026-0811-AKIN",
+      "para_birimi": "TRY",
+      "odeme_vadesi": "30 gün",
+      "cari_unvan": "AKIN MEDİKAL",
+      "sehir": "Eskişehir",
+      "rota": "Eskişehir / Bilecik / Kütahya",
+      "siparis_tarihi": "2026-08-11",
+      "kaynak_liste": "Nisan (18.04.2025) — Lorina mesane pedi kural gereği Mayıs 2026",
+      "iskonto_aciklama": "Yok / 0%",
+      "fatura_no": null,
+      "fatura_tarihi": null,
+      "sevk_tarihi": null,
+      "nakliye": null,
+      "durum": "AÇIK — fatura bekliyor, nakliye tutarı teyit bekliyor",
+      "kalemler": [
+        {"urun":"Coverdry normal emici külot M 30'lu","balya":1,"paket":4,"liste_hric":307.13,"isk_hric":307.13,"isk_dhl":337.843,"toplam_hric":1228.52,"toplam_dhl":1351.37,"maliyet":260.33,"alis_tarihi":"2026-04-30","alis_fatura_no":"IST2026000000281","kalan_adet":128,"kar":187.22},
+        {"urun":"Coverdry normal emici külot L 30'lu","balya":3,"paket":12,"liste_hric":338.96,"isk_hric":338.96,"isk_dhl":372.856,"toplam_hric":4067.52,"toplam_dhl":4474.27,"maliyet":287.31,"alis_tarihi":"2026-04-30","alis_fatura_no":"IST2026000000281","kalan_adet":120,"kar":619.79},
+        {"urun":"Coverdry normal emici külot XL 30'lu","balya":3,"paket":12,"liste_hric":374.54,"isk_hric":374.54,"isk_dhl":411.994,"toplam_hric":4494.48,"toplam_dhl":4943.93,"maliyet":317.47,"alis_tarihi":"2026-04-30","alis_fatura_no":"IST2026000000281","kalan_adet":140,"kar":684.83},
+        {"urun":"Jender normal emici külot M 30'lu","balya":2,"paket":8,"liste_hric":397.46,"isk_hric":397.46,"isk_dhl":437.206,"toplam_hric":3179.68,"toplam_dhl":3497.65,"maliyet":301.34,"alis_tarihi":"2025-12-19","alis_fatura_no":"IST2025000001606","kalan_adet":68,"kar":769.00},
+        {"urun":"Jender normal emici külot XL 30'lu","balya":1,"paket":4,"liste_hric":484.70,"isk_hric":484.70,"isk_dhl":533.17,"toplam_hric":1938.80,"toplam_dhl":2132.68,"maliyet":361.91,"alis_tarihi":"2025-12-19","alis_fatura_no":"IST2025000001606","kalan_adet":52,"kar":491.16},
+        {"urun":"Jender normal emici külot 8'li Medium","balya":1,"paket":6,"liste_hric":122.28,"isk_hric":122.28,"isk_dhl":134.508,"toplam_hric":733.68,"toplam_dhl":807.05,"maliyet":29.73,"alis_tarihi":"2026-01-31","alis_fatura_no":"IST2026000000084","kalan_adet":54,"kar":555.30},
+        {"urun":"Jender normal emici külot 7'li Large","balya":1,"paket":6,"liste_hric":122.28,"isk_hric":122.28,"isk_dhl":134.508,"toplam_hric":733.68,"toplam_dhl":807.05,"maliyet":29.73,"alis_tarihi":"2026-01-31","alis_fatura_no":"IST2026000000084","kalan_adet":54,"kar":555.30},
+        {"urun":"Jender normal emici külot 6'lı XLarge","balya":1,"paket":6,"liste_hric":122.28,"isk_hric":122.28,"isk_dhl":134.508,"toplam_hric":733.68,"toplam_dhl":807.05,"maliyet":29.73,"alis_tarihi":"2026-01-31","alis_fatura_no":"IST2026000000084","kalan_adet":54,"kar":555.30},
+        {"urun":"Coverdry bel bantlı M 30'lu","balya":1,"paket":4,"liste_hric":271.54,"isk_hric":271.54,"isk_dhl":298.694,"toplam_hric":1086.16,"toplam_dhl":1194.78,"maliyet":214.92,"alis_tarihi":"2025-12-19","alis_fatura_no":"IST2025000001606","kalan_adet":128,"kar":226.48},
+        {"urun":"Coverdry bel bantlı L 30'lu","balya":3,"paket":12,"liste_hric":322.11,"isk_hric":322.11,"isk_dhl":354.321,"toplam_hric":3865.32,"toplam_dhl":4251.85,"maliyet":255.34,"alis_tarihi":"2025-07-31","alis_fatura_no":"PDE2025000001241","kalan_adet":160,"kar":801.26},
+        {"urun":"Coverdry bel bantlı XL 30'lu","balya":3,"paket":12,"liste_hric":338.49,"isk_hric":338.49,"isk_dhl":372.339,"toplam_hric":4061.88,"toplam_dhl":4468.07,"maliyet":267.26,"alis_tarihi":"2025-12-19","alis_fatura_no":"IST2025000001606","kalan_adet":140,"kar":854.70},
+        {"urun":"Jender yatak koruyucu örtü 90x180 (serme)","balya":1,"paket":6,"liste_hric":213.38,"isk_hric":213.38,"isk_dhl":234.718,"toplam_hric":1280.28,"toplam_dhl":1408.31,"maliyet":187.77,"alis_tarihi":"2026-04-30","alis_fatura_no":"IST2026000000285","kalan_adet":84,"kar":153.66,"liste":"Nisan (18.04.2025)"},
+        {"urun":"Lorina mesane pedi 30'lu x6","balya":1,"paket":6,"liste_hric":395.28,"isk_hric":395.28,"isk_dhl":434.808,"toplam_hric":2371.68,"toplam_dhl":2608.85,"maliyet":316.22,"alis_tarihi":"2026-05-16","alis_fatura_no":"IHK2026000000003","kalan_adet":114,"kar":474.34,"liste":"Mayıs 2026","isk":"Yok"}
+      ],
+      "toplam_balya": 22,
+      "toplam_paket": 98,
+      "mal_hizmet_hric": 29775.36,
+      "kdv": 2977.54,
+      "toplam_dhl": 32752.90,
+      "fifo_maliyet": 22847.02,
+      "fifo_maliyet_kaynagi": "Gerçek Kar-Dağ alış faturalarından FIFO ile hesaplandı, önceki açık siparişlerin (Zeybek/Kent/Seton/Sercan) tükettiği lot miktarları düşülerek devam ettirildi. Lorina mesane pedi hariç tüm ürünler Nisan liste; mesane pedi kilitli kural gereği Mayıs liste.",
+      "net_kar": 6928.34,
+      "kar_marji": 0.2327
     }
   ]
 }
