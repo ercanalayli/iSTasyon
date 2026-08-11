@@ -18,6 +18,7 @@
       "siparis_tarihi": "2026-08-10",
       "kaynak_liste": "Mayıs 2026",
       "iskonto_aciklama": "%11 (tüm kalemler)",
+      "nakliye": 1500,
       "fatura_no": "M012026000000181",
       "fatura_tarihi": "2026-08-11",
       "sevk_tarihi": "2026-08-11",
@@ -153,6 +154,7 @@
       "fatura_no": null,
       "fatura_tarihi": null,
       "sevk_tarihi": null,
+      "nakliye": 1500,
       "durum": "AÇIK — fatura bekliyor",
       "kalemler": [
         {
@@ -273,6 +275,7 @@
       "fatura_no": "M012026000000179",
       "fatura_tarihi": "2026-08-11",
       "sevk_tarihi": "2026-08-11",
+      "nakliye": 1500,
       "durum": "SEVK EDİLDİ — FATURA KESİLDİ",
       "kalemler": [
         {
@@ -547,8 +550,8 @@
       "fatura_no": "M012026000000180",
       "fatura_tarihi": "2026-08-11",
       "sevk_tarihi": "2026-08-11",
-      "nakliye": null,
-      "durum": "SEVK EDİLDİ — FATURA KESİLDİ, nakliye tutarı teyit bekliyor",
+      "nakliye": 1500,
+      "durum": "SEVK EDİLDİ — FATURA KESİLDİ",
       "kalemler": [
         {
           "urun": "Coverdry normal emici külot M 30'lu",
@@ -770,11 +773,12 @@
       "siparis_tarihi": "2026-07-29",
       "kaynak_liste": "Nisan 2026",
       "iskonto_aciklama": "Yok / 0%",
-      "fatura_no": null,
-      "fatura_tarihi": null,
-      "sevk_tarihi": null,
-      "nakliye": 0,
-      "durum": "AÇIK — fatura kesilecek, sevk tarihi girilecek",
+      "fatura_no": "M012026000000163",
+      "fatura_tarihi": "2026-07-30",
+      "sevk_tarihi": "2026-07-30",
+      "nakliye": 1500,
+      "durum": "SEVK EDİLDİ — FATURA KESİLDİ",
+      "duzeltme_notu": "11.08.2026: Ercan sevk/fatura tamamlandığını onayladı. Gerçek fatura M012026000000163 (30.07.2026) BizimHesap ekstresinde tarih olarak en yakın eşleşme (sipariş 29.07 -> fatura 30.07). ANCAK tutar tutmuyor: bizim kayıt 4.249,43 TL KDV dahil, gerçek fatura 4.013,36 TL — 236,07 TL fark. Muhtemelen legacy'den tasinan urun/fiyat rekonstruksiyonunda hata var, kesin dogrulanmadi.",
       "kaynak_not": "operasyon-legacy.html'den 11.08.2026'da tasindi (isk_dahil_patch.js kaynak verisi).",
       "kalemler": [
         {
@@ -814,11 +818,12 @@
       "siparis_tarihi": "2026-07-17",
       "kaynak_liste": "Mayıs 2026",
       "iskonto_aciklama": "Karışık (Jender %12,59 / Moly %13,05)",
-      "fatura_no": null,
-      "fatura_tarihi": null,
-      "sevk_tarihi": null,
-      "nakliye": 0,
-      "durum": "AÇIK — fatura bekliyor, sevk edilmedi",
+      "fatura_no": "M012026000000165",
+      "fatura_tarihi": "2026-07-31",
+      "sevk_tarihi": "2026-07-31",
+      "nakliye": 1500,
+      "durum": "SEVK EDİLDİ — FATURA KESİLDİ",
+      "duzeltme_notu": "11.08.2026: Ercan sevk/fatura tamamlandığını onayladı. Gerçek fatura M012026000000165 (31.07.2026) BizimHesap ekstresinde tarih olarak en yakın eşleşme (sipariş 17.07 -> fatura 31.07). ANCAK tutar tutmuyor: bizim kayıt 7.320,00 TL KDV dahil, gerçek fatura 8.052,00 TL — 732,00 TL fark. Muhtemelen legacy'den tasinan urun/fiyat rekonstruksiyonunda hata var, kesin dogrulanmadi.",
       "kaynak_not": "operasyon-legacy.html'den 11.08.2026'da tasindi (isk_dahil_patch.js kaynak verisi).",
       "kalemler": [
         {
@@ -878,7 +883,7 @@
       "fatura_no": "M012026000000158",
       "fatura_tarihi": "2026-07-08",
       "sevk_tarihi": "2026-07-08",
-      "nakliye": 1250,
+      "nakliye": 1500,
       "durum": "SEVK EDİLDİ — FATURA KESİLDİ",
       "kaynak_not": "operasyon-legacy.html'den 11.08.2026'da tasindi (gorukle_ilave.js kaynak verisi; 02.07.2026 siparişi + 07.07.2026 Moly ilavesi birleşik).",
       "kalemler": [
