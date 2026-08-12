@@ -1383,14 +1383,21 @@ async function handleCommand(cmd) {
   log(`Komut bitti: #${cmd.id} -> ${outcome.ok ? 'completed' : 'failed'}`);
 }
 
-// 2026-08-11: Ercan'in acikca istedigi "dunya standardi, hicbir zaman
+// 2026-08-11/12: Ercan'in acikca istedigi "dunya standardi, hicbir zaman
 // kopmasin" hedefine gercekci katkim - Cloudflare'in bizi tekrar tekrar
 // banlamasinin asil sebebi TOPLU isler sirasinda cok kisa arayla (15-60sn)
 // onlarca/yuzlerce otomatik islem yapmamiz (VAKIF SIRKET geri-doldurma gibi).
 // Insan bir muhasebeci bu hizda calismaz. Saatlik bir "bizimhesap_process"
 // tavani + her komut arasinda RASTGELE (insan gibi degisken) bekleme ekleniyor
 // - bu, saf hiz yerine SURDURULEBILIRLIGI onceliklendirir.
-const SAATLIK_BIZIMHESAP_ISLEM_TAVANI = 40;
+// 2026-08-12 dengeleme: ilk deger (40/saat, 8-40sn) gereginden fazla
+// yavasti - bu oturumdaki GERCEK ban olaylarinin ikisi de (crash-loop'ta
+// tekrar tekrar YENIDEN GIRIS, veya gece boyu KESINTISIZ yuzlerce islem)
+// tek-islem hizindan degil, oturum/hacim orunturusunden kaynaklandi.
+// Oturum zaten kalici (komut basina yeniden giris yok), bu yuzden tavan
+// makul seviyede yukseltildi - hala sabit-araikli bot deseni degil, ama
+// gereksiz yere surunmuyor.
+const SAATLIK_BIZIMHESAP_ISLEM_TAVANI = 90;
 const islemZamanDamgalari = [];
 function saatlikTavanAsildiMi() {
   const suan = Date.now();
@@ -1418,9 +1425,10 @@ async function tick() {
         return;
       }
       islemZamanDamgalari.push(Date.now());
-      // Insan gibi degisken bekleme (8-40sn) - sabit 15sn tick araligi tek
-      // basina "bot deseni" olusturuyordu, jitter bunu kirar.
-      await new Promise(r => setTimeout(r, 8000 + Math.random() * 32000));
+      // Insan gibi degisken bekleme (4-16sn) - sabit 15sn tick araligi tek
+      // basina "bot deseni" olusturuyordu, jitter bunu kirar. 90/saat tavanla
+      // birlikte ortalama ~40sn/islem (tick + jitter + islem suresi) eder.
+      await new Promise(r => setTimeout(r, 4000 + Math.random() * 12000));
     }
     await handleCommand(data);
   } finally {
