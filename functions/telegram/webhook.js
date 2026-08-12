@@ -42,6 +42,73 @@ async function sendMessage(env, chatId, text) {
   return r.json();
 }
 
+async function saveQuickNote(env, { chatId, messageId, rawText, parsed }) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
+    return { ok: false, error: 'missing_supabase_env' };
+  }
+  const url = env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '') + '/rest/v1/quick_notes';
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: {
+      apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+      authorization: 'Bearer ' + env.SUPABASE_SERVICE_ROLE_KEY,
+      'content-type': 'application/json',
+      prefer: 'return=representation'
+    },
+    body: JSON.stringify({
+      source: 'telegram',
+      chat_id: chatId,
+      telegram_message_id: messageId,
+      raw_text: rawText,
+      parsed_type: parsed.type,
+      payment_method: parsed.payment_method,
+      status: 'captured',
+      needs_review: true
+    })
+  });
+  if (!r.ok) {
+    const errText = await r.text();
+    return { ok: false, error: 'storage_failed', detail: errText };
+  }
+  const rows = await r.json();
+  return { ok: true, id: rows && rows[0] && rows[0].id };
+}
+
+async function queryBalance(env) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return null;
+  const base = env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
+  const url = base + '/rest/v1/aperion_bank_last_known_balance_v1_view?select=bank_name,balance';
+  const r = await fetch(url, {
+    headers: {
+      apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+      authorization: 'Bearer ' + env.SUPABASE_SERVICE_ROLE_KEY
+    }
+  });
+  if (!r.ok) return null;
+  return r.json();
+}
+
+function money(n) {
+  const v = Math.round(Number(n) || 0);
+  return v.toLocaleString('tr-TR') + ' TL';
+}
+
+async function handleBalanceIntent(env, chatId) {
+  const rows = await queryBalance(env);
+  if (!rows) {
+    await sendMessage(env, chatId, 'Bakiye verisine şu an ulaşamadım (Supabase bağlantı sorunu).');
+    return;
+  }
+  let toplam = 0;
+  const lines = rows.map(r => {
+    toplam += Number(r.balance) || 0;
+    return '• ' + r.bank_name + ': ' + money(r.balance);
+  });
+  await sendMessage(env, chatId,
+    '💰 Şu an elde (bilinen banka toplamı): ' + money(toplam) + '\n' + lines.join('\n')
+  );
+}
+
 export async function onRequestGet({ env }) {
   return json({
     ok: true,
@@ -59,19 +126,29 @@ export async function onRequestPost({ request, env }) {
 
     const chatId = msg.chat.id;
     const text = clean(msg.text);
+    const lower = lowerTR(text);
 
     if (text.startsWith('/start')) {
-      await sendMessage(env, chatId, 'AperiON Telegram canlı. Hızlı not modu açıldı. Düz yaz: Sena Medikal 10 Temmuz 100 bin ödeme kredi kartı');
+      await sendMessage(env, chatId, 'AperiON Telegram canlı. Hızlı not modu açıldı. Düz yaz: Sena Medikal 10 Temmuz 100 bin ödeme kredi kartı\nYa da sor: "bakiye" / "ne kadar param var"');
+      return json({ ok: true });
+    }
+
+    if (lower.includes('bakiye') || lower.includes('ne kadar param var') || lower.includes('nakit durum')) {
+      await handleBalanceIntent(env, chatId);
       return json({ ok: true });
     }
 
     const parsed = parseBasic(text);
+    const saved = await saveQuickNote(env, { chatId, messageId: msg.message_id, rawText: text, parsed });
+
     await sendMessage(env, chatId,
       'Aldım.\n' +
       'Tip: ' + parsed.type + '\n' +
       'Ödeme yöntemi: ' + parsed.payment_method + '\n' +
       'Not: ' + parsed.raw_text + '\n' +
-      'Durum: Telegram hattı çalışıyor. Kalıcı kayıt bağlantısı sıradaki adımda bağlanacak.'
+      (saved.ok
+        ? '✅ AperiON kaydı açıldı (id: ' + saved.id + '). İnceleyip doğru hesaba/kategoriye ben taşıyacağım.'
+        : '⚠️ Not alındı ama kalıcı kayıt başarısız oldu (' + (saved.error || 'bilinmeyen hata') + '). Tekrar dene veya bana söyle.')
     );
     return json({ ok: true });
   } catch (e) {
