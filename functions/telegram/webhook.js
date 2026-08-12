@@ -77,7 +77,7 @@ async function saveQuickNote(env, { chatId, messageId, rawText, parsed }) {
 async function queryBalance(env) {
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return null;
   const base = env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
-  const url = base + '/rest/v1/aperion_bank_last_known_balance_v1_view?select=bank_name,balance';
+  const url = base + '/rest/v1/aperion_bank_last_known_balance_v1_view?select=bank_name,son_bakiye';
   const r = await fetch(url, {
     headers: {
       apikey: env.SUPABASE_SERVICE_ROLE_KEY,
@@ -101,8 +101,8 @@ async function handleBalanceIntent(env, chatId) {
   }
   let toplam = 0;
   const lines = rows.map(r => {
-    toplam += Number(r.balance) || 0;
-    return '• ' + r.bank_name + ': ' + money(r.balance);
+    toplam += Number(r.son_bakiye) || 0;
+    return '• ' + r.bank_name + ': ' + money(r.son_bakiye);
   });
   await sendMessage(env, chatId,
     '💰 Şu an elde (bilinen banka toplamı): ' + money(toplam) + '\n' + lines.join('\n')
