@@ -252,6 +252,19 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
     <div style="padding:10px 18px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)" id="nakitTahminNote">Tahmini ortalama hesaplanıyor…</div>
   </section>
 
+  <section aria-labelledby="urunAraTitle" style="margin-bottom:14px;border:1px solid var(--line);border-top:3px solid var(--gold);border-radius:10px;background:var(--surface);overflow:hidden">
+    <header style="padding:14px 18px 10px;border-bottom:1px solid var(--line)">
+      <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">🔍 ÜRÜN ARA</div>
+      <h2 id="urunAraTitle" style="margin:5px 0 4px;font-size:15px">Bir ürünü ara, satış performansını Bugün/Dün/... gör</h2>
+      <p style="margin:0;color:var(--muted);font-size:11px" id="urunAraNote">Kaynak: sales_raw (satış tahakkuku). Ürün adının bir kısmını yaz, Enter'a bas veya Ara'ya tıkla.</p>
+    </header>
+    <div style="padding:12px 18px;display:flex;gap:8px;flex-wrap:wrap">
+      <input id="urunAraInput" type="text" placeholder="Ürün adı yaz… (ör. hasta bezi, alkol, terlik)" style="flex:1;min-width:220px;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-size:13px">
+      <button type="button" id="urunAraBtn" style="padding:9px 18px;border-radius:8px;border:none;background:var(--gold);color:#241a04;font-weight:800;cursor:pointer">Ara</button>
+    </div>
+    <div id="urunAraSonuc" style="padding:0 18px 16px"></div>
+  </section>
+
   <section aria-labelledby="istekDefteriTitle" style="margin-bottom:14px;border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:10px;background:var(--surface);overflow:hidden">
     <header style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <div>
@@ -1492,6 +1505,93 @@ db.from('bot_logs').select('firma_id,durum,created_at').order('created_at',{asce
   setText('saglik-note', 'Banka hattı son güncelleme: ' + bankLast + '. bot_logs tablosu güncel görünmüyor, ayrı bir eski log kaynağı olabilir — doğrulanmalı.');
   setText('saglik-status','UYARI'); setClass('saglik-status','uyari');
 }).catch(()=>{ setText('saglik-value','Kaynak okunamadı'); });
+
+// 2026-08-12: Ercan'in istegi - "ana ekranda urun arama olmali, bugun-dun...
+// verilerini gormeliyim". Kategori matrisi gibi onceden hesaplanmis bir view
+// urun bazinda YOK (binlerce urun icin cok agir olurdu) - bu yuzden arama
+// TALEP UZERINE (kullanici Ara'ya basinca) sales_raw'i dogrudan sorgular,
+// donem sepetlerini (Bugun/Dun/Bu Hafta/Bu Ay/Gecen Ay/Bu Yil/Gecen Yil)
+// CLIENT-SIDE hesaplar - sayfa yuklenirken hicbir ek yuk getirmez.
+(function urunAramaKur(){
+  const input = document.getElementById('urunAraInput');
+  const btn = document.getElementById('urunAraBtn');
+  const sonucEl = document.getElementById('urunAraSonuc');
+  if (!input || !btn || !sonucEl) return;
+
+  function donemSiniri() {
+    const bugun = new Date(); bugun.setHours(0,0,0,0);
+    const iso = d => d.toISOString().slice(0,10);
+    const dun = new Date(bugun); dun.setDate(dun.getDate()-1);
+    const haftaBasi = new Date(bugun); const gun = (haftaBasi.getDay()+6)%7; haftaBasi.setDate(haftaBasi.getDate()-gun);
+    const ayBasi = new Date(bugun.getFullYear(), bugun.getMonth(), 1);
+    const gecenAyBasi = new Date(bugun.getFullYear(), bugun.getMonth()-1, 1);
+    const gecenAySonu = new Date(bugun.getFullYear(), bugun.getMonth(), 0);
+    const yilBasi = new Date(bugun.getFullYear(), 0, 1);
+    const gecenYilBasi = new Date(bugun.getFullYear()-1, 0, 1);
+    const gecenYilSonu = new Date(bugun.getFullYear()-1, 11, 31);
+    return {
+      bugun: [iso(bugun), iso(bugun)],
+      dun: [iso(dun), iso(dun)],
+      hafta: [iso(haftaBasi), iso(bugun)],
+      ay: [iso(ayBasi), iso(bugun)],
+      gecen_ay: [iso(gecenAyBasi), iso(gecenAySonu)],
+      yil: [iso(yilBasi), iso(bugun)],
+      gecen_yil: [iso(gecenYilBasi), iso(gecenYilSonu)],
+    };
+  }
+
+  async function ara() {
+    const terim = (input.value || '').trim();
+    if (!terim) { sonucEl.innerHTML = '<p style="color:var(--muted);font-size:12px;padding-top:10px">Bir ürün adı yazın.</p>'; return; }
+    sonucEl.innerHTML = '<p style="color:var(--muted);font-size:12px;padding-top:10px">Aranıyor…</p>';
+    const sinirlar = donemSiniri();
+    const enEskiTarih = sinirlar.gecen_yil[0];
+    const { data, error } = await db.from('sales_raw').select('urun,urun_kod,kategori,tarih,adet,ciro')
+      .ilike('urun', '%'+terim+'%').gte('tarih', enEskiTarih).limit(20000);
+    if (error) { sonucEl.innerHTML = '<p style="color:#ff9aa7;font-size:12px;padding-top:10px">Hata: '+error.message+'</p>'; return; }
+    if (!data || !data.length) { sonucEl.innerHTML = '<p style="color:var(--muted);font-size:12px;padding-top:10px">"'+terim+'" için satış kaydı bulunamadı.</p>'; return; }
+
+    // Ayni urun adi altinda birden fazla varyant/kategori olabilir - urun+kategori'ye gore grupla.
+    const gruplar = {};
+    data.forEach(r => {
+      const anahtar = (r.urun||'(isimsiz)') + '||' + (r.kategori||'');
+      if (!gruplar[anahtar]) gruplar[anahtar] = { urun: r.urun||'(isimsiz)', kategori: r.kategori||'-', urun_kod: r.urun_kod||'', periods: {} };
+      Object.keys(sinirlar).forEach(p => {
+        if (!gruplar[anahtar].periods[p]) gruplar[anahtar].periods[p] = { adet: 0, ciro: 0 };
+      });
+      Object.entries(sinirlar).forEach(([p, [bas, son]]) => {
+        if (r.tarih >= bas && r.tarih <= son) {
+          gruplar[anahtar].periods[p].adet += Number(r.adet||0);
+          gruplar[anahtar].periods[p].ciro += Number(r.ciro||0);
+        }
+      });
+    });
+
+    const periodKeysLocal = ['bugun','dun','hafta','ay','gecen_ay','yil','gecen_yil'];
+    const periodLabelsLocal = {bugun:'BUGÜN',dun:'DÜN',hafta:'BU HAFTA',ay:'BU AY',gecen_ay:'GEÇEN AY',yil:'BU YIL',gecen_yil:'GEÇEN YIL'};
+    const satirlar = Object.values(gruplar).sort((a,b) => b.periods.yil.ciro - a.periods.yil.ciro).slice(0, 30);
+    const toplamKayit = data.length;
+
+    let html = '<div style="padding-top:8px;font-size:11px;color:var(--muted)">"'+terim+'" için '+toplamKayit+' satır, '+Object.keys(gruplar).length+' ürün/varyant bulundu'+(Object.keys(gruplar).length>30?' (ciroya göre ilk 30 gösteriliyor)':'')+'.</div>';
+    html += '<div class="table-scroll" style="margin-top:8px"><table style="width:100%;border-collapse:collapse;font-size:11.5px;min-width:1000px">';
+    html += '<thead><tr style="background:#0d1727"><th style="text-align:left;padding:7px 12px;color:#a7bad2;font-size:10px;font-weight:900;position:sticky;left:0;background:#0d1727">ÜRÜN</th>'
+      + periodKeysLocal.map(p=>'<th style="text-align:right;padding:7px 8px;color:#a7bad2;font-size:9px;font-weight:900">'+periodLabelsLocal[p]+'<br><span style="font-weight:700;color:#5c6d84">ADET · CİRO</span></th>').join('') + '</tr></thead><tbody>';
+    satirlar.forEach(g => {
+      html += '<tr style="border-top:1px solid #23344d"><td style="padding:7px 12px;position:sticky;left:0;background:var(--surface)"><span style="font-weight:700">'+g.urun+'</span><br><span style="font-size:10px;color:var(--muted)">'+g.kategori+(g.urun_kod?' · '+g.urun_kod:'')+'</span></td>'
+        + periodKeysLocal.map(p => {
+            const v = g.periods[p];
+            const renk = v.ciro > 0 ? '#7be7ba' : '#5c6d84';
+            return '<td style="text-align:right;padding:7px 8px;font-variant-numeric:tabular-nums;color:'+renk+'">'+(v.adet||0)+' · '+money(v.ciro)+'</td>';
+          }).join('')
+        + '</tr>';
+    });
+    html += '</tbody></table></div>';
+    sonucEl.innerHTML = html;
+  }
+
+  btn.addEventListener('click', ara);
+  input.addEventListener('keydown', ev => { if (ev.key === 'Enter') ara(); });
+})();
 </script>
 </body>
 </html>
