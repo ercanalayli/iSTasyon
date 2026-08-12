@@ -1419,7 +1419,15 @@ async function tick() {
     const { data, error } = await db.from('bot_commands').select('*').eq('status', 'pending').order('created_at', { ascending: true }).limit(1).maybeSingle();
     if (error) { log(`HATA (sorgu): ${error.message}`); return; }
     if (!data) return;
-    if (data.command === 'bizimhesap_process') {
+    if (data.command.startsWith('bizimhesap_')) {
+      // 2026-08-12: throttle/jitter ONCE sadece 'bizimhesap_process'e
+      // uygulaniyordu - id_dogrula/scroll_diag/table_diag gibi diger canli
+      // tarayici komutlari (ozellikle saatlerce bos kuyruktan sonra art
+      // arda kuyruklanan dogrulama komutlari) sifir gecikmeyle art arda
+      // calisiyordu. Bu tam olarak bot-deseni: uzun sessizlik + ani patlama.
+      // Ercan'a "girisim pazarlama sayfasina yonlendirildi" (bot korumasi)
+      // seklinde geri donen bir engelle sonuclandi. Artik TUM canli
+      // bizimhesap_* komutlari ayni insan-temposu jitter'ini paylasiyor.
       if (saatlikTavanAsildiMi()) {
         log(`TOPLU ISLEM YAVASLATMA: son 1 saatte ${SAATLIK_BIZIMHESAP_ISLEM_TAVANI} islem tavanina ulasildi, #${data.id} bir sonraki uygun tur'a birakiliyor.`);
         return;
@@ -1428,7 +1436,16 @@ async function tick() {
       // Insan gibi degisken bekleme (4-16sn) - sabit 15sn tick araligi tek
       // basina "bot deseni" olusturuyordu, jitter bunu kirar. 90/saat tavanla
       // birlikte ortalama ~40sn/islem (tick + jitter + islem suresi) eder.
-      await new Promise(r => setTimeout(r, 4000 + Math.random() * 12000));
+      let bekleme = 4000 + Math.random() * 12000;
+      // Uzun sessizlik sonrasi ilk komut icin ekstra "isinma" bekleme -
+      // saatlerce hicbir istek gitmemisken aniden hizli art arda istek
+      // gitmesi tek basina supheli bir desen.
+      const sonIslem = islemZamanDamgalari.length >= 2 ? islemZamanDamgalari[islemZamanDamgalari.length - 2] : null;
+      if (sonIslem && Date.now() - sonIslem > 20 * 60 * 1000) {
+        bekleme += 15000 + Math.random() * 15000;
+        log(`ISINMA BEKLEMESI: son islemden ${Math.round((Date.now() - sonIslem) / 60000)} dk gecmis, ekstra gecikme ekleniyor.`);
+      }
+      await new Promise(r => setTimeout(r, bekleme));
     }
     await handleCommand(data);
   } finally {
