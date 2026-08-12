@@ -221,34 +221,17 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
   <p class="subtitle">Bugün ne kritik?<span class="upd" id="updatedPill">Güncellendi · --</span></p>
 
   <section aria-labelledby="nakitTitle" style="margin-bottom:14px;border:1px solid var(--line);border-top:3px solid var(--green);border-radius:10px;background:var(--surface);overflow:hidden">
-    <header style="padding:14px 18px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+    <header style="padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
       <div>
         <div style="color:#83e8c1;font-size:10px;font-weight:900;letter-spacing:1px">💰 NAKİT DURUMU</div>
-        <h2 id="nakitTitle" style="margin:5px 0 4px;font-size:15px">Elimde ne kadar var, ne kadar gider/gelir oluyor</h2>
-        <p style="margin:0;color:var(--muted);font-size:11px">Elde para: bankaların en son bilinen bakiyesi (aşağıdaki "Bankalar" kartıyla aynı kaynak). Satış/Gider/Net: o dönemin gerçek TAHAKKUK toplamı (sales_raw/masraf_raw — fatura kesildi/gider yazıldı anında, henüz kasaya girmemiş/çıkmamış olabilir). <b style="color:#f6c86a">Bu, nakit tahsilatı DEĞİL</b> — özellikle açık hesap/veresiye distribütör satışları için o gün kasaya para girmemiş olabilir.</p>
+        <h2 id="nakitTitle" style="margin:5px 0 4px;font-size:15px">Elimde ne kadar var</h2>
+        <p style="margin:0;color:var(--muted);font-size:11px">Bankaların en son bilinen bakiyesi (aşağıdaki "Bankalar" kartıyla aynı kaynak). Dönemsel satış/gider dökümü için aşağıdaki "Kategori Bazlı Gelir Tablosu"ndaki TOPLAM satırına bakın — burada tekrar edilmiyor.</p>
       </div>
       <div style="text-align:right">
         <div style="font-size:9px;font-weight:800;color:#7f91a9;letter-spacing:.5px">ŞU AN ELDE (bilinen banka toplamı)</div>
         <div id="nakitEldeToplam" style="font-size:22px;font-weight:900;color:#7be7ba">Yükleniyor…</div>
       </div>
     </header>
-    <div class="table-scroll">
-    <table style="width:100%;border-collapse:collapse;font-size:11.5px;min-width:900px" id="nakitTable">
-      <thead>
-        <tr style="background:#0d1727">
-          <th style="text-align:left;padding:7px 12px;color:#a7bad2;font-size:10px;font-weight:900;letter-spacing:.5px;position:sticky;left:0;background:#0d1727"></th>
-          <th style="text-align:right;padding:7px 10px;color:#a7bad2;font-size:10px;font-weight:900">BUGÜN</th>
-          <th style="text-align:right;padding:7px 10px;color:#a7bad2;font-size:10px;font-weight:900">DÜN</th>
-          <th style="text-align:right;padding:7px 10px;color:#a7bad2;font-size:10px;font-weight:900">BU HAFTA</th>
-          <th style="text-align:right;padding:7px 10px;color:#a7bad2;font-size:10px;font-weight:900">BU AY</th>
-          <th style="text-align:right;padding:7px 10px;color:#a7bad2;font-size:10px;font-weight:900">GEÇEN AY</th>
-          <th style="text-align:right;padding:7px 10px;color:#a7bad2;font-size:10px;font-weight:900">BU YIL</th>
-          <th style="text-align:right;padding:7px 10px;color:#a7bad2;font-size:10px;font-weight:900">GEÇEN YIL</th>
-        </tr>
-      </thead>
-      <tbody id="nakitBody"><tr><td colspan="8" style="padding:12px;color:var(--muted)">Yükleniyor…</td></tr></tbody>
-    </table>
-    </div>
     <div style="padding:10px 18px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)" id="nakitTahminNote">Tahmini ortalama hesaplanıyor…</div>
   </section>
 
@@ -920,36 +903,13 @@ Promise.all([
 
   // 2026-08-11: Ercan'in istegi - "ne kadar param var, ne kadar odeme
   // yapacagim, ne kadar para gelme ihtimali var" - Bugun/Dun/Bu Hafta...
-  // siralamasiyla. totalRow (gercek satis, zaten yukarida hesaplandi) ve
-  // giderTotal (gercek gider, zaten yukarida hesaplandi) BURADA TEKRAR
-  // SORGU ATMADAN yeniden kullanilir - ikisi de ayni .then() icinde zaten
-  // var. Gecmis donemler (Dun/Gecen Ay/Gecen Yil) icin gosterilen rakamlar
-  // TAHMIN DEGIL, o donemin gerceklesmis toplami. "Tahmini ortalama" notu
-  // ayri bir satirda, sadece son 8 haftanin gercek ortalamasindan uretiliyor.
+  // siralamasiyla. totalRow/giderTotal BURADA TEKRAR SORGU ATMADAN
+  // yeniden kullanilir - ikisi de ayni .then() icinde zaten var.
+  // 2026-08-12: Ercan haklı olarak yakaladi - donem donem Satis/Gider/Net
+  // tablosu asagidaki Kategori Bazli Gelir Tablosu'nun TOPLAM satiriyla
+  // AYNI VERIYI tekrar ediyordu. O tablo kaldirildi, sadece BURADA
+  // OLMAYAN kisim (tahmini ortalama) kaldi.
   (function renderNakitAkisi(){
-    const tbody = document.getElementById('nakitBody');
-    if (!tbody) return;
-    // 2026-08-11 kritik duzeltme: bu satirlar SATIS/GIDER TAHAKKUKU
-    // (sales_raw/masraf_raw, fatura/kayit anindaki tutar) - Ercan canli
-    // ornekle yakaladi: gunun en buyuk 3 carisi (Seton/Zeybek/Sercan)
-    // acik hesap DISTRIBUTOR, gercek acik_bakiye'leri var (60K/142K/28K TL)
-    // - yani o gun kesilen fatura o gun kasaya girmis PARA DEGIL. "Tahsilat"
-    // veya "nakit girisi" DENMEYECEK, acikca "Satis (ciro)" ve "Gider
-    // (tahakkuk)" denecek - muhasebe kurali: tahakkuk =/= nakit esasi.
-    const satirlar = [
-      { etiket: 'Satış (ciro, tahakkuk — kasaya girdi demek değil)', renk: '#7be7ba', al: p => Number(totalRow['satis_'+p]||0) },
-      { etiket: 'Gider (tahakkuk — ödendi demek değil)', renk: '#ff9aa7', al: p => -Number(giderTotal['gider_'+p]||0) },
-      { etiket: 'Net (tahakkuk farkı)', renk: null, al: p => Number(totalRow['satis_'+p]||0) - Number(giderTotal['gider_'+p]||0), kalin: true },
-    ];
-    tbody.innerHTML = satirlar.map(s => {
-      const hucreler = periodKeys.map(p => {
-        const v = s.al(p);
-        const renk = s.renk || (v < 0 ? '#ff9aa7' : '#7be7ba');
-        return '<td style="text-align:right;padding:7px 10px;font-variant-numeric:tabular-nums;color:'+renk+';font-weight:'+(s.kalin?850:600)+'">'+money(v)+'</td>';
-      }).join('');
-      return '<tr style="border-top:1px solid #23344d'+(s.kalin?';background:#0f1b2c':'')+'"><td style="padding:7px 12px;font-weight:'+(s.kalin?850:700)+';position:sticky;left:0;background:'+(s.kalin?'#0f1b2c':'var(--surface)')+'">'+s.etiket+'</td>'+hucreler+'</tr>';
-    }).join('');
-
     // 2026-08-11 duzeltme: Ercan "ne kadar para gelme ihtimali var" icin
     // AYRI bir rakam istedi - once yanlislikla Net'in icine gomulmustu.
     // Simdi Giren ve Cikan tahminleri AYRI AYRI gosteriliyor. Yontem: Bu Ay
