@@ -77,7 +77,7 @@ async function saveQuickNote(env, { chatId, messageId, rawText, parsed }) {
 async function queryBalance(env) {
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return null;
   const base = env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
-  const url = base + '/rest/v1/aperion_bank_last_known_balance_v1_view?select=bank_name,son_bakiye';
+  const url = base + '/rest/v1/aperion_bank_last_known_balance_v1_view?select=bank_name,son_bakiye,son_tarih';
   const r = await fetch(url, {
     headers: {
       apikey: env.SUPABASE_SERVICE_ROLE_KEY,
@@ -93,6 +93,12 @@ function money(n) {
   return v.toLocaleString('tr-TR') + ' TL';
 }
 
+function trTarih(iso) {
+  if (!iso) return 'tarih bilinmiyor';
+  const [y, m, d] = String(iso).split('-');
+  return d + '.' + m + '.' + y;
+}
+
 async function handleBalanceIntent(env, chatId) {
   const rows = await queryBalance(env);
   if (!rows) {
@@ -100,13 +106,22 @@ async function handleBalanceIntent(env, chatId) {
     return;
   }
   let toplam = 0;
+  let enEskiTarih = null;
   const lines = rows.map(r => {
     toplam += Number(r.son_bakiye) || 0;
-    return '• ' + r.bank_name + ': ' + money(r.son_bakiye);
+    if (r.son_tarih && (!enEskiTarih || r.son_tarih < enEskiTarih)) enEskiTarih = r.son_tarih;
+    return '• ' + r.bank_name + ': ' + money(r.son_bakiye) + ' (' + trTarih(r.son_tarih) + ' itibarıyla)';
   });
-  await sendMessage(env, chatId,
-    '💰 Şu an elde (bilinen banka toplamı): ' + money(toplam) + '\n' + lines.join('\n')
-  );
+  const suan = new Date();
+  const suanStr = String(suan.getDate()).padStart(2, '0') + '.' + String(suan.getMonth() + 1).padStart(2, '0') + '.' + suan.getFullYear() + ' ' + String(suan.getHours()).padStart(2, '0') + ':' + String(suan.getMinutes()).padStart(2, '0');
+  let mesaj = '💰 Şu an elde (bilinen banka toplamı, ' + suanStr + ' sorgu anı): ' + money(toplam) + '\n' + lines.join('\n');
+  if (enEskiTarih) {
+    const gunFarki = Math.floor((suan - new Date(enEskiTarih)) / 86400000);
+    if (gunFarki >= 2) {
+      mesaj += '\n\n⚠️ En eski bakiye verisi ' + gunFarki + ' gün önceye ait (' + trTarih(enEskiTarih) + ') — o bankanın ekstresi güncellenmemiş olabilir.';
+    }
+  }
+  await sendMessage(env, chatId, mesaj);
 }
 
 export async function onRequestGet({ env }) {
