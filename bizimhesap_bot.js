@@ -241,7 +241,33 @@ async function raporCek(page, tarihTR) {
 }
 
 // â”€â”€ SUPABASE KAYDET â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// 2026-08-12: Ercan canli BizimHesap ekraninda yakaladi - "Taslak" (kesilmemis/
+// onaylanmamis) satis belgeleri, sales_raw'a GERCEK ciro gibi hic filtrelenmeden
+// yaziliyordu (dogrulandi: raporCek/kaydet zincirinde hicbir durum/status kontrolu
+// yoktu). Rapor tablosunun hangi kolon adiyla durum bilgisi tasidigini canli
+// gormeden kesin bilemedigimiz icin, olasi tum yaygin kolon adlarini kontrol
+// eden savunmaci bir filtre: herhangi biri "taslak" iceriyorsa o satir ATLANIR.
+// Kolon hic yoksa (rapor durum bilgisi tasimiyorsa) filtre no-op kalir - bu durumda
+// TASLAK_KOLONU_BULUNAMADI logu, bunun canli dogrulanmasi gerektigini hatirlatir.
+const TASLAK_DURUM_ANAHTARLARI = ['durum', 'durumu', 'belge_durumu', 'status'];
+function taslakMi(row) {
+  for (const k of TASLAK_DURUM_ANAHTARLARI) {
+    const v = row[k];
+    if (v && String(v).toLocaleLowerCase('tr-TR').includes('taslak')) return true;
+  }
+  return false;
+}
+
 async function kaydet(rows, firma, tarihISO) {
+  const durumKolonuVarMi = rows.some(r => TASLAK_DURUM_ANAHTARLARI.some(k => r[k] !== undefined));
+  if (!durumKolonuVarMi && rows.length) {
+    log('  [UYARI] TASLAK_KOLONU_BULUNAMADI: rapor tablosunda durum/status kolonu yok gibi gorunuyor - taslak filtresi bu calistirmada etkisiz, canli dogrulanmali.');
+  }
+  const oncekiSayi = rows.length;
+  rows = rows.filter(r => !taslakMi(r));
+  const atlanan = oncekiSayi - rows.length;
+  if (atlanan > 0) log(`  [UYARI] ${atlanan} TASLAK belge atlandi (gercek ciro sayilmadi).`);
+
   if (!rows.length) { log('  âš  Veri yok'); return 0; }
   if (DRY_RUN) {
     log(`  [DRY-RUN] ${rows.length} satir yazilmayacak (${firma.id} ${tarihISO})`);
