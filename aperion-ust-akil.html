@@ -277,6 +277,38 @@ body.aperion-os>.shell{display:none}
   document.querySelectorAll('[data-os-open-approvals]').forEach(function(b){b.addEventListener('click',function(){openView('approvals')})});
 })();
 </script>
+<script>
+(async function hydrateAperionFromD1(){
+  function cardByLabel(label){return Array.from(document.querySelectorAll('.os-card')).find(function(card){return (card.querySelector('.label')||{}).textContent===label})}
+  function esc(value){return String(value==null?'':value).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
+  function dateText(value){if(!value)return 'Tarih yok';var d=new Date(value);return isNaN(d)?value:d.toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'})}
+  try{
+    var response=await fetch('/api/session-bootstrap',{cache:'no-store'});
+    var data=await response.json();
+    if(!response.ok||!data.ok)throw new Error(data.message||data.error||'Başlangıç verisi alınamadı');
+
+    var approvalCard=cardByLabel('ONAY BEKLEYEN');
+    if(approvalCard){approvalCard.querySelector('.value').textContent=data.pending_approvals.length;approvalCard.querySelector('.state').textContent=data.pending_approvals.length?'İncelenmesi gereken işlem var':'Onay kuyruğu boş'}
+    var healthy=(data.source_health||[]).filter(function(x){return x.status==='healthy'||x.status==='ok'}).length;
+    var sourceCard=cardByLabel('ÇALIŞAN KAYNAK');
+    if(sourceCard){sourceCard.querySelector('.value').textContent=healthy;sourceCard.querySelector('.state').textContent='Canlı sağlık kaydına göre'}
+    var readiness=Math.min(100,Math.round(((data.connectors||[]).filter(function(x){return ['verified','actionable','automated','monitored'].includes(x.maturity)}).length/Math.max(1,(data.connectors||[]).length))*100));
+    var score=document.querySelector('.os-score strong');if(score)score.textContent=readiness+'%';
+
+    var approvalsView=document.querySelector('[data-view="approvals"] .os-empty');
+    if(approvalsView&&data.pending_approvals.length){approvalsView.className='os-list';approvalsView.innerHTML=data.pending_approvals.map(function(x){return '<div class="os-row"><div class="os-row-icon">✓</div><div><strong>'+esc(x.action_type)+'</strong><small>'+dateText(x.created_at)+'</small></div><span class="os-status">BEKLİYOR</span></div>'}).join('')}
+
+    var timelineView=document.querySelector('[data-view="timeline"]');
+    if(timelineView){var items=data.commitments||[];var holder=document.createElement('div');holder.className=items.length?'os-list':'os-empty';holder.style.marginTop='14px';holder.innerHTML=items.length?items.map(function(x){var blocked=x.time_bucket==='overdue';return '<div class="os-row"><div class="os-row-icon">◷</div><div><strong>'+esc(x.title)+'</strong><small>'+esc(x.commitment_type)+' · '+dateText(x.due_at||x.expected_at)+'</small></div><span class="os-status '+(blocked?'blocked':'')+'">'+esc(x.time_bucket).toUpperCase()+'</span></div>'}).join(''):'Canlı D1 akışında henüz tarihli taahhüt yok.';timelineView.appendChild(holder)}
+
+    var goalsView=document.querySelector('[data-view="goals"] .os-empty');
+    if(goalsView&&data.objectives.length){goalsView.className='os-list';goalsView.innerHTML=data.objectives.map(function(x){return '<div class="os-row"><div class="os-row-icon">◎</div><div><strong>'+esc(x.title)+'</strong><small>'+esc(x.desired_outcome)+'</small></div><span class="os-status">'+esc(x.status).toUpperCase()+'</span></div>'}).join('')}
+  }catch(error){
+    var score=document.querySelector('.os-score strong');if(score)score.textContent='—';
+    var note=document.querySelector('.os-score span');if(note)note.textContent='Canlı D1 verisi alınamadı: '+error.message;
+  }
+})();
+</script>
 <main class="shell">
   <header class="topbar">
     <a class="brand" href="./index.html" aria-label="AperiON ana ekran"><span class="mark">AP</span><span><strong>AperiON iSTasyon</strong><small>Operasyon Merkezi</small></span></a>
