@@ -315,7 +315,7 @@ body.aperion-os>.shell{display:none}
 <main class="shell">
   <header class="topbar">
     <a class="brand" href="./index.html" aria-label="AperiON ana ekran"><span class="mark">AP</span><span><strong>AperiON iSTasyon</strong><small>Operasyon Merkezi</small></span></a>
-    <div class="meta"><span class="pill live">KAYNAK: SUPABASE CANLI</span><span class="pill">GÜNCELLEME <span id="buildCode">--</span></span></div>
+      <div class="meta"><span class="pill" id="primarySourceHealth">KAYNAK DENETLENİYOR</span><span class="pill">GÜNCELLEME <span id="buildCode">--</span></span></div>
   </header>
 
   <h1 class="title">AperiON iSTasyon – Operasyon Merkezi</h1>
@@ -631,6 +631,44 @@ const fmtTime = d => d ? new Intl.DateTimeFormat('tr-TR',{dateStyle:'short',time
 const nowCode = () => { const d = new Date(); return [String(d.getHours()).padStart(2,'0'),String(d.getMinutes()).padStart(2,'0'),String(d.getFullYear()).slice(-2),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join(''); };
 setText('buildCode', nowCode());
 setText('updatedPill', 'Güncellendi · ' + new Intl.DateTimeFormat('tr-TR',{dateStyle:'short',timeStyle:'short'}).format(new Date()));
+
+// Kaynak guvenligi: Supabase kota engeli varken ekran kendini "canli" diye
+// tanitmaz ve ayni teknik hatayi onlarca kartta tekrar etmez. Son dogrulanmis
+// cekim tarihi bir finansal toplam degildir; yalnizca veri tazeliginin kanitidir.
+const SUPABASE_LAST_VERIFIED = '10.08.2026 09:24 TSİ';
+const SUPABASE_RESTRICTED_TEXT = 'Veri güncel değil — Supabase kota engelli. Son doğrulanmış çekim: ' + SUPABASE_LAST_VERIFIED + '.';
+const isSupabaseQuotaError = value => /exceed_db_size_quota|project is restricted|restricted due to/i.test(String(value||''));
+function markSupabaseRestricted(){
+  const source = document.getElementById('primarySourceHealth');
+  if (source) {
+    source.textContent = 'SUPABASE · KOTA ENGELLİ';
+    source.className = 'pill';
+    source.style.color = '#f6c86a';
+    source.style.borderColor = '#725c24';
+  }
+  document.querySelectorAll('.card-value').forEach(el=>{
+    if (/Kaynak okunuyor|Yükleniyor/i.test(el.textContent||'')) el.textContent = 'Güncel veri yok';
+  });
+  document.querySelectorAll('.card-status').forEach(el=>{
+    if (/Kaynak okunuyor/i.test(el.textContent||'')) { el.textContent='VERİ ESKİ'; el.className='card-status uyari'; }
+  });
+  const cash = document.getElementById('nakitEldeToplam');
+  if (cash && /Yükleniyor/i.test(cash.textContent||'')) { cash.textContent='Güncel veri yok'; cash.style.color='#f6c86a'; }
+  document.querySelectorAll('body *').forEach(el=>{
+    if (el.children.length===0 && (isSupabaseQuotaError(el.textContent) || /^Kaynak okunamadı$/i.test((el.textContent||'').trim()))) {
+      el.textContent = SUPABASE_RESTRICTED_TEXT;
+    }
+  });
+}
+const sourceSafetyObserver = new MutationObserver(mutations=>{
+  if (mutations.some(m=>isSupabaseQuotaError(m.target && m.target.textContent))) markSupabaseRestricted();
+});
+sourceSafetyObserver.observe(document.body,{subtree:true,childList:true,characterData:true});
+db.from('aperion_category_income_matrix_v3_view').select('*').limit(1).then(({error})=>{
+  const source = document.getElementById('primarySourceHealth');
+  if (error && isSupabaseQuotaError(error.message)) { markSupabaseRestricted(); return; }
+  if (source) { source.textContent='KAYNAK: SUPABASE CANLI'; source.className='pill live'; }
+}).catch(error=>{ if (isSupabaseQuotaError(error)) markSupabaseRestricted(); });
 
 // ISTEK DEFTERI: Ercan'in "istediklerimin listesi nerede, programda gormem
 // lazim" istegi (2026-08-03) - docs/CHANGELOG.md'yi canli fetch edip en yeni
