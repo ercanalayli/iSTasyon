@@ -147,7 +147,8 @@
     "bank:reconcile:queue": "node tools/kuyruk_gunluk_mutabakat.cjs",
     "bank:reconcile:send": "node tools/gonder_mutabakat_bildirimi.cjs --send",
     "verify:payment-reminders": "node tools/verify_payment_reminder_candidates_v88.cjs",
-    "verify:cloudflare-d1-control-plane": "node tools/verify_cloudflare_d1_control_plane_v128.cjs"
+    "verify:cloudflare-d1-control-plane": "node tools/verify_cloudflare_d1_control_plane_v128.cjs",
+    "verify:google-bridge": "node tools/verify_google_bridge_v129.cjs"
     ,"hasta-bezi:source-audit": "node tools/audit_hasta_bezi_source_reports_v91.cjs"
     ,"verify:hasta-bezi:source-audit": "node tools/verify_hasta_bezi_source_reports_v91.cjs"
     ,"hasta-bezi:fifo:build": "node tools/build_hasta_bezi_fifo_chunks_v92.cjs"
