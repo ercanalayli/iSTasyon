@@ -226,8 +226,8 @@ body.aperion-os>.shell{display:none}
 @media(max-width:680px){.os-app{display:block}.os-side{position:sticky;height:auto;z-index:5;padding:9px;flex-direction:row;overflow:auto}.os-logo{display:none}.os-nav{display:flex}.os-nav button{white-space:nowrap}.os-nav button span{display:inline}.os-main{padding:16px}.os-hero,.os-grid{grid-template-columns:1fr}.os-actions{display:none}}
 </style>
 </head>
-<body class="aperion-os">
-<div class="os-app" id="aperionApp">
+<body>
+<div class="os-app" id="aperionApp" hidden aria-hidden="true">
   <aside class="os-side">
     <div class="os-logo"><div class="os-logo-badge">AP</div><span><strong>AperiON</strong><small>Hayat ve Şirket İşletim Sistemi</small></span></div>
     <nav class="os-nav" aria-label="Ana menü">
@@ -266,6 +266,7 @@ body.aperion-os>.shell{display:none}
 </div>
 <script>
 (function(){
+  if(document.getElementById('aperionApp')?.hidden) return;
   if(new URLSearchParams(location.search).get('legacy')==='1'){
     document.body.classList.remove('aperion-os');
     var app=document.getElementById('aperionApp'); if(app) app.remove();
@@ -279,6 +280,7 @@ body.aperion-os>.shell{display:none}
 </script>
 <script>
 (async function hydrateAperionFromD1(){
+  if(document.getElementById('aperionApp')?.hidden) return;
   function cardByLabel(label){return Array.from(document.querySelectorAll('.os-card')).find(function(card){return (card.querySelector('.label')||{}).textContent===label})}
   function esc(value){return String(value==null?'':value).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
   function dateText(value){if(!value)return 'Tarih yok';var d=new Date(value);return isNaN(d)?value:d.toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'})}
