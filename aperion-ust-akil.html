@@ -1535,7 +1535,9 @@ db.from('pending_bank_movements_summary_v1_view').select('*').then(({data,error}
 }).catch(e=>{ setText('bank-value','Kaynak okunamadı'); setText('bank-note',String(e)); });
 
 // 9 & 10: sales_flow_finance_mini_v47_view — gerçek satış/gecikme verisi
+let d1SalesLive = false;
 db.from('sales_flow_finance_mini_v47_view').select('*').eq('company','ALAYLI').maybeSingle().then(({data,error})=>{
+  if (d1SalesLive) return;
   if (error || !data) { setText('satis-value','Kaynak okunamadı'); setText('satis-note', error?error.message:'Kayıt bulunamadı'); return; }
   setText('satis-value', money(data.today_sales) + ' bugünkü satış');
   setText('satis-note', (Number(data.today_qty||0)).toLocaleString('tr-TR') + ' adet · Geciken alacak ' + money(data.overdue_receivable) + ' · Geciken borç ' + money(data.overdue_payable) + ' · ' + (data.urgent_tasks||0) + ' acil görev.');
@@ -1546,7 +1548,40 @@ db.from('sales_flow_finance_mini_v47_view').select('*').eq('company','ALAYLI').m
   setText('risk-value', money(overdueTotal) + ' gecikmiş bakiye');
   setText('risk-status','KRİTİK'); setClass('risk-status','kritik');
   setText('risk-note', 'Geciken alacak ' + money(data.overdue_receivable) + ', geciken borç ' + money(data.overdue_payable) + '. ' + (data.waiting_approvals||0) + ' onay bekleyen kayıt var.');
-}).catch(e=>{ setText('satis-value','Kaynak okunamadı'); setText('satis-note',String(e)); });
+}).catch(e=>{ if (!d1SalesLive) { setText('satis-value','Kaynak okunamadı'); setText('satis-note',String(e)); } });
+
+// BizimHesap satışları artık Supabase kotasından bağımsız olarak Cloudflare D1'den okunur.
+fetch('/api/bizimhesap-sales-summary', { cache: 'no-store' }).then(response=>{
+  if (!response.ok) throw new Error('D1 satış özeti hazır değil');
+  return response.json();
+}).then(result=>{
+  if (!result || !result.ok) throw new Error('D1 satış özeti doğrulanamadı');
+  d1SalesLive = true;
+  const todayKey = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
+  const today = (result.summary || []).find(row=>row.sale_date === todayKey);
+  const source = document.getElementById('primarySourceHealth');
+  if (source) {
+    source.textContent = 'SATIŞ: BİZİMHESAP → D1 CANLI · DİĞER: KISITLI';
+    source.className = 'pill live';
+    source.style.color = '';
+    source.style.borderColor = '';
+  }
+  if (!today) {
+    setText('satis-value','D1 bağlantısı hazır');
+    setText('satis-note','BizimHesap satış köprüsü çalışıyor; bugünkü ilk doğrulanmış kayıt bekleniyor.');
+    setText('satis-status','HAZIR'); setClass('satis-status','iyi'); setRisk('card-satis','green');
+  } else {
+    setText('satis-value', money(today.revenue) + ' bugünkü satış');
+    setText('satis-note', Number(today.record_count||0).toLocaleString('tr-TR') + ' doğrulanmış satış kaydı · Kaynak: açık BizimHesap → Cloudflare D1.');
+    setText('satis-status','CANLI'); setClass('satis-status','iyi'); setRisk('card-satis','green');
+  }
+  setText('satis-time', fmtTime((result.health && result.health.last_success_at) || result.generated_at));
+}).catch(()=>{
+  // Diğer finans kartlarının kısıtlı durumunu koru; satış kartında doğrulanmamış toplam gösterme.
+  setText('satis-value','D1 satış kaynağı bekleniyor');
+  setText('satis-note','BizimHesap satış toplamı doğrulanmadan gösterilmeyecek.');
+  setText('satis-status','BEKLİYOR'); setClass('satis-status','uyari'); setRisk('card-satis','orange');
+});
 
 // 8: Şahsi Finans + İkinci Beyin — bugün canlıya alınan personal_finance_* view'ları
 db.from('personal_finance_summary_v53_view').select('*').then(({data,error})=>{
