@@ -42,7 +42,25 @@ async function count(table, filters = []) {
   let q = db.from(table).select('*', { count: 'exact', head: true });
   for (const f of filters) q = q[f.op](f.col, f.val);
   const { count: c, error } = await q;
-  return { count: c || 0, error: error?.message || null };
+  return { count: c || 0, error: error?.message || null, code: error?.code || null };
+}
+
+function classifySourceFailure(results) {
+  const raw = results.map(x => `${x?.code || ''} ${x?.error || ''}`).join(' ');
+  if (/exceed_db_size_quota|database size|quota/i.test(raw)) {
+    return {
+      status: 'blocked',
+      code: 'SUPABASE_DB_SIZE_QUOTA',
+      message: 'Supabase veritabani kota kisitlamasi nedeniyle canli veri okunamiyor.',
+    };
+  }
+  if (/jwt|permission|row.level.security|rls|unauthorized|forbidden/i.test(raw)) {
+    return { status: 'blocked', code: 'SOURCE_AUTHORIZATION', message: 'Supabase erisim veya RLS kontrolu basarisiz.' };
+  }
+  if (results.some(x => x?.error)) {
+    return { status: 'blocked', code: 'SOURCE_READ_FAILED', message: results.find(x => x?.error)?.error || 'Kaynak okunamadi.' };
+  }
+  return { status: 'ok', code: 'SOURCE_OK', message: 'Supabase okunabilir.' };
 }
 
 async function distinctDates(table, from, to) {
@@ -93,6 +111,7 @@ async function main() {
   const events = await count('bizimhesap_events', [
     { op: 'eq', col: 'firma_id', val: 'alayli' },
   ]);
+  const sourceHealth = classifySourceFailure([sales15, salesToday, salesYesterday, salesDates, masraf2026, productRaw, events]);
 
   const expectedDates = [];
   for (let d = new Date(from15); isoDate(d) <= today; d = addDays(d, 1)) expectedDates.push(isoDate(d));
@@ -112,7 +131,8 @@ async function main() {
   const report = {
     generated_at: now.toISOString(),
     firma_id: 'alayli',
-    status: checks.every(c => c.ok) ? 'saglikli' : 'kontrol_gerekli',
+    status: sourceHealth.status === 'blocked' ? 'blocked' : checks.every(c => c.ok) ? 'saglikli' : 'kontrol_gerekli',
+    source_health: sourceHealth,
     checks,
     counts: {
       sales_last_15_days: sales15.count,
@@ -131,6 +151,7 @@ async function main() {
   const lines = [
     `AperiON klon saglik: ${report.status}`,
     `Tarih: ${report.generated_at}`,
+    `Kaynak: ${sourceHealth.code} - ${sourceHealth.message}`,
     ...checks.map(c => `${c.ok ? 'OK' : 'KONTROL'} - ${c.name}: ${c.detail}`),
   ];
 

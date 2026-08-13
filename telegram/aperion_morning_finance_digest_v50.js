@@ -16,6 +16,8 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const COMPANY = process.env.COMPANY || 'ALAYLI';
+const fs = require('fs');
+const path = require('path');
 
 const { formatRiskRows } = require('./aperion_risk_formatter_v49.js');
 
@@ -30,6 +32,43 @@ function requireEnv(){
 
 function money(n){
   return Number(n || 0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 });
+}
+
+function readLastSync(){
+  try{
+    return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'aperion_last_sync.json'), 'utf8'));
+  }catch(_error){
+    return null;
+  }
+}
+
+function classifySourceError(error){
+  const raw = String(error?.message || error || '');
+  if(/exceed_db_size_quota|database size|quota/i.test(raw)){
+    return { code: 'SUPABASE_DB_SIZE_QUOTA', message: 'Supabase veritabani kota kisitlamasinda.' };
+  }
+  if(/jwt|permission|row.level.security|rls|unauthorized|forbidden/i.test(raw)){
+    return { code: 'SOURCE_AUTHORIZATION', message: 'Supabase erisim veya RLS kontrolu basarisiz.' };
+  }
+  return { code: 'SOURCE_READ_FAILED', message: 'Canli veri kaynagi okunamadi.' };
+}
+
+function formatBlockedMorningDigest(error, company = COMPANY, lastSync = readLastSync()){
+  const source = classifySourceError(error);
+  const lastSuccess = lastSync?.ok && lastSync?.finishedAt
+    ? new Date(lastSync.finishedAt).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })
+    : 'dogrulanamadi';
+  return `<b>AperiON Sabah Ozeti / ${company}</b>\n` +
+    `Durum: <b>CANLI VERI ENGELLI</b>\n` +
+    `Kod: <code>${source.code}</code>\n` +
+    `Kaynak: ${source.message}\n` +
+    `Son basarili senkron: <b>${lastSuccess}</b>\n\n` +
+    `<b>Guvenlik karari</b>\n` +
+    `Eksik veri sifir kabul edilmedi. Finansal toplam, otomatik karar ve BizimHesap kaydi uretilmedi.\n\n` +
+    `<b>Gerekli aksiyon</b>\n` +
+    `1. Supabase kota/plan kisitini kaldir.\n` +
+    `2. BizimHesap klon senkronunu yeniden calistir.\n` +
+    `3. Yeni cekim zamanini ve kaynak sayimlarini dogrula.`;
 }
 
 async function telegramSend(text){
@@ -109,8 +148,13 @@ function formatMorningDigest(data, company = COMPANY){
 
 async function main(){
   requireEnv();
-  const data = await loadDigestData(COMPANY);
-  const text = formatMorningDigest(data, COMPANY);
+  let text;
+  try{
+    const data = await loadDigestData(COMPANY);
+    text = formatMorningDigest(data, COMPANY);
+  }catch(error){
+    text = formatBlockedMorningDigest(error, COMPANY);
+  }
   await telegramSend(text);
   console.log('RESULT: OK - morning finance digest sent.');
 }
@@ -122,4 +166,4 @@ if(require.main === module){
   });
 }
 
-module.exports = { requireEnv, loadDigestData, formatMorningDigest, telegramSend, main };
+module.exports = { requireEnv, loadDigestData, formatMorningDigest, formatBlockedMorningDigest, classifySourceError, telegramSend, main };

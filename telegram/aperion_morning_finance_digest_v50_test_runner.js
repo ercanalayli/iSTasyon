@@ -1,4 +1,4 @@
-const { formatMorningDigest } = require('./aperion_morning_finance_digest_v50.js');
+const { formatMorningDigest, formatBlockedMorningDigest } = require('./aperion_morning_finance_digest_v50.js');
 
 const sample = {
   finance: {
@@ -33,6 +33,11 @@ console.log('AperiON Morning Finance Digest v50 Test');
 console.log('---------------------------------------');
 
 const text = formatMorningDigest(sample, 'ALAYLI');
+const blockedText = formatBlockedMorningDigest(
+  new Error('Service restricted: exceed_db_size_quota'),
+  'ALAYLI',
+  { ok: true, finishedAt: '2026-08-10T06:24:18.617Z' }
+);
 let failed = 0;
 const checks = [
   { name: 'includes digest title', ok: text.includes('AperiON Sabah Finans Özeti') },
@@ -45,6 +50,10 @@ const checks = [
   { name: 'includes risk item', ok: text.includes('Nakit Akışı') },
   { name: 'includes critical icon', ok: text.includes('🚨') },
   { name: 'is not empty', ok: text.length > 200 }
+  ,{ name: 'blocked digest exposes quota code', ok: blockedText.includes('SUPABASE_DB_SIZE_QUOTA') }
+  ,{ name: 'blocked digest does not invent totals', ok: !blockedText.includes('Tahsil:') && !blockedText.includes('Odeme:') }
+  ,{ name: 'blocked digest stops automatic records', ok: blockedText.includes('BizimHesap kaydi uretilmedi') }
+  ,{ name: 'blocked digest includes last success', ok: blockedText.includes('10.08.2026') }
 ];
 
 for(const c of checks){
