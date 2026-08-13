@@ -280,6 +280,13 @@ async function tabloOku(page, firma) {
       kaynak: 'bizimhesap_masraf',
       kaynak_satir: i + 1,
       raw: r,
+      // 2026-08-12: bizimhesap_bot.js'deki (satis) taslak-filtresiyle ayni
+      // kok neden sinifi masraf tarafinda da bulundu - sales_raw'i besleyen
+      // kod hicbir durum/status kontrolu yapmiyordu, masraf_raw'i besleyen
+      // bu kod da ayni sekilde yapmiyordu. Kolon adi bilinmiyor (pozisyonel
+      // hucre parse'i), bu yuzden satir metninin tamaminda "taslak" kelimesini
+      // ariyoruz - kaba ama guvenli bir yedek.
+      _taslakSuphesi: /taslak/i.test(r.text || ''),
     };
     row.hash = hashRow(row);
     return row;
@@ -312,6 +319,11 @@ async function debugSayfa(page, rows) {
 }
 
 async function kaydet(rows) {
+  if (!rows.length) return 0;
+  const oncekiSayi = rows.length;
+  rows = rows.filter(r => !r._taslakSuphesi);
+  const atlanan = oncekiSayi - rows.length;
+  if (atlanan > 0) console.log(`  [UYARI] ${atlanan} TASLAK supheli gider satiri atlandi (gercek gider sayilmadi).`);
   if (!rows.length) return 0;
   const dates = rows.map(r => r.tarih).filter(Boolean).sort();
   const from = dates[0], to = dates[dates.length - 1];
