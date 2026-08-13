@@ -152,7 +152,8 @@
     "verify:finance-nervous-system": "node tools/verify_finance_nervous_system_v130.cjs",
     "verify:universal-goal-engine": "node tools/verify_universal_goal_engine_v131.cjs",
     "verify:connector-fabric": "node tools/verify_connector_fabric_v132.cjs",
-    "verify:commitment-engine": "node tools/verify_commitment_engine_v133.cjs"
+    "verify:commitment-engine": "node tools/verify_commitment_engine_v133.cjs",
+    "verify:session-memory": "node tools/verify_session_memory_v134.cjs"
     ,"hasta-bezi:source-audit": "node tools/audit_hasta_bezi_source_reports_v91.cjs"
     ,"verify:hasta-bezi:source-audit": "node tools/verify_hasta_bezi_source_reports_v91.cjs"
     ,"hasta-bezi:fifo:build": "node tools/build_hasta_bezi_fifo_chunks_v92.cjs"
