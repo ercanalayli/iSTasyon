@@ -854,6 +854,8 @@ body.sales-mode .content{overflow:hidden}
 }
 
 .command-hero{position:relative;overflow:hidden;border:1px solid rgba(15,23,42,.08);border-radius:20px;background:#FFFFFF;box-shadow:0 22px 60px rgba(15,23,42,.09);padding:18px;margin-bottom:14px}
+.source-blocker{display:none;margin:0 0 16px;padding:14px 16px;border:1px solid #fecaca;border-left:5px solid #dc2626;border-radius:14px;background:#fff1f2;color:#881337;box-shadow:0 10px 28px rgba(190,24,93,.08)}
+.source-blocker.open{display:block}.source-blocker-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:900}.source-blocker-code{font-family:var(--mono);font-size:9px;padding:4px 7px;border-radius:999px;background:#fecdd3;color:#9f1239}.source-blocker-detail{margin-top:5px;font-size:11px;line-height:1.5;color:#9f1239}.source-blocker-action{margin-top:8px;font-size:10px;font-weight:800;color:#be123c}
 .command-hero::before{content:'';position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,#0F766E,#2563EB,#F59E0B)}
 .command-hero-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
 .command-eyebrow{font-family:var(--mono);font-size:10px;font-weight:950;letter-spacing:.12em;text-transform:uppercase;color:#2563EB}
@@ -2946,6 +2948,7 @@ body.dashboard-mode .zone-title{font-size:15px!important}.zone-sub{font-size:10p
   </div>
   <div class="content">
     <div id="pg-dashboard" class="page on">
+      <div id="sourceBlocker" class="source-blocker" role="alert" aria-live="assertive"></div>
       <div id="incomeStatementCard" class="income-card">
         <div id="incomeStatementTop"><div class="dashboard-income-fallback"><div class="income-op-title">Gelir Tablosu ve Bilanço</div><div class="dash-income-big">hesaplanıyor</div><div class="dash-income-note">Planlanan / tahakkuk / gerçekleşen finans görünümü hazırlanıyor.</div></div></div>
       </div>
@@ -3534,6 +3537,25 @@ const DATA_SOURCES={
   ]
 };
 let LAST_SYNC_STATUS=null,LAST_CLONE_HEALTH=null,LAST_BANK_APPROVAL_STATUS=null;
+let PRIMARY_SOURCE_STATE={status:'unknown',code:'SOURCE_NOT_CHECKED',message:'Ana veri kaynağı henüz kontrol edilmedi.',checkedAt:null};
+function classifySourceError(error){
+  const raw=`${error?.code||''} ${error?.message||''} ${error?.details||''} ${error?.hint||''}`.trim();
+  if(/exceed_db_size_quota|database size|quota/i.test(raw))return{status:'blocked',code:'SUPABASE_DB_SIZE_QUOTA',message:'Supabase veritabanı kota sınırında; canlı veriler okunamıyor.'};
+  if(/jwt|permission|row.level.security|rls|unauthorized|forbidden/i.test(raw))return{status:'blocked',code:'SOURCE_AUTHORIZATION',message:'Ana veri kaynağı erişim veya RLS kontrolünde engellendi.'};
+  if(/network|fetch|timeout|failed to fetch/i.test(raw))return{status:'blocked',code:'SOURCE_NETWORK',message:'Ana veri kaynağına ağ üzerinden ulaşılamadı.'};
+  return{status:'blocked',code:error?.code||'SOURCE_READ_FAILED',message:error?.message||'Ana veri kaynağı okunamadı.'};
+}
+function setPrimarySourceState(next){
+  PRIMARY_SOURCE_STATE={...PRIMARY_SOURCE_STATE,...next,checkedAt:new Date().toISOString()};
+  renderSourceBlocker();
+}
+function renderSourceBlocker(){
+  const el=document.getElementById('sourceBlocker');if(!el)return;
+  const state=PRIMARY_SOURCE_STATE||{};
+  if(state.status!=='blocked'){el.classList.remove('open');el.innerHTML='';return;}
+  el.classList.add('open');
+  el.innerHTML=`<div class="source-blocker-head"><span>CANLI VERİ ENGELLİ — KARAR ÜRETME DURDURULDU</span><span class="source-blocker-code">${escHtml(state.code||'SOURCE_BLOCKED')}</span></div><div class="source-blocker-detail">${escHtml(state.message||'Ana veri kaynağı okunamadı.')} Bu durum “0 kayıt” veya “işlem yok” anlamına gelmez; aşağıdaki tutarlar eksik/eski olabilir.</div><div class="source-blocker-action">Aksiyon: kaynak kotasını/erişimini düzelt, senkronu yeniden çalıştır ve son başarılı çekimi doğrula. Kontrol: ${escHtml(trDateTime(state.checkedAt)||'-')}</div>`;
+}
 const BUILD_CLONE_HEALTH={status:'saglikli',firma_id:'alayli',generated_at:'2026-05-21T06:51:12.700Z',checks:[
   {name:'sales_last_15_days',ok:true,detail:'841 kayit'},
   {name:'sales_dates_complete',ok:true,detail:'15 gun tamam'},
@@ -3698,7 +3720,22 @@ function gP(id,el){
   if(requested==='banka')setTimeout(()=>fT('banka'),0);
 }
 function fT(t,el){document.querySelectorAll('.ft-tab').forEach(x=>x.classList.remove('on'));if(el)el.classList.add('on');else document.querySelectorAll(`[onclick*="fT('${t}'"]`).forEach(x=>x.classList.add('on'));document.getElementById('fg').style.display=t==='genel'?'block':'none';document.getElementById('fm').style.display=t==='masraf'?'block':'none';const fb=document.getElementById('fbanka');if(fb)fb.style.display=t==='banka'?'block':'none';const fp=document.getElementById('fplan');if(fp)fp.style.display=t==='plan'?'block':'none';if(t==='masraf')rMasraf();if(t==='banka')rBankaOnay();if(t==='plan')loadFinancePlans();}
-async function loadData(){const{from,to}=getR(cM);try{let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);if(from)q=q.gte('tarih',from).lte('tarih',to);const{data,error}=await q.limit(10000);if(error)return[];return applyProductRules(data||[]).filter(isAlayliRow);}catch(e){return[];}}
+async function loadData(){
+  const{from,to}=getR(cM);
+  try{
+    let q=db.from('sales_raw').select('*').eq('firma_id',PILOT_FIRMA);
+    if(from)q=q.gte('tarih',from).lte('tarih',to);
+    const{data,error}=await q.limit(10000);
+    if(error)throw error;
+    setPrimarySourceState({status:'ok',code:'SOURCE_OK',message:`sales_raw okundu: ${(data||[]).length} kayıt.`});
+    return applyProductRules(data||[]).filter(isAlayliRow);
+  }catch(error){
+    const failure=classifySourceError(error);
+    setPrimarySourceState(failure);
+    console.error('[AperiON source health]',failure.code,error);
+    return[];
+  }
+}
 async function refresh(){cF=PILOT_FIRMA;RAW=(await loadData()).filter(isAlayliRow);await loadSyncHealth();buildDD();rKPI();rTr();rPi();rAl();rAct();rTop5();renderExecutiveBrief();renderIncomeStatementTop();loadBankCommandCenter();renderHomeDiaperDecision();renderReportHub();loadFinanceHome();renderMainFinanceFlow();renderDataAudit();renderSalesReconciliation();renderSourceMatrix();pSels();if(document.getElementById('prodMapPanel')?.style.display==='block')renderProdMapPanel();if(document.getElementById('pg-stok')?.classList.contains('on'))loadStok();if(document.getElementById('pg-hedef')?.classList.contains('on'))loadHedef();const el=document.getElementById('lupd');if(el)el.textContent=buildLabel();const bc=document.getElementById('buildCode');if(bc)bc.textContent=buildLabel();genAI();}
 function sM(m,btn,all){
   cM=m;
@@ -4143,9 +4180,10 @@ async function renderExecutiveBrief(){
   const failed=queueRows.filter(r=>String(r.status||'')==='failed').length;
   const skipped=queueRows.filter(r=>['skipped','cancelled'].includes(String(r.status||''))).length;
   const latest=pendingRows.map(r=>r.created_at||r.transaction_date||'').filter(Boolean).sort().at(-1)||'';
-  const stateClass=(!model||issues.length)?'state-warn':(cashNet<0||accrualNet<0?'state-bad':(pending||cashGap?'state-warn':'state-good'));
-  const stateText=pending?'BizimHesap onayı bekliyor':!model?'Kurulum kontrolü':cashNet<0?'Nakit negatif':accrualNet<0?'Tahakkuk zararı':cashGap?'Tahsilat takibi':'Kontrol altında';
-  const stateNote=pending?`${fmt(pending)} banka hareketi BizimHesap banka kaydı için onay bekliyor. Onaylanınca kayıt kuyruğa alınır.`:cashGap?`Tahakkuk var, ${dynMoney(cashGap)} tahsilat bekliyor.`:'Kritik akışlar aynı ekranda izleniyor.';
+  const sourceBlocked=PRIMARY_SOURCE_STATE?.status==='blocked';
+  const stateClass=sourceBlocked?'state-bad':(!model||issues.length)?'state-warn':(cashNet<0||accrualNet<0?'state-bad':(pending||cashGap?'state-warn':'state-good'));
+  const stateText=sourceBlocked?'Veri kaynağı engelli':pending?'BizimHesap onayı bekliyor':!model?'Kurulum kontrolü':cashNet<0?'Nakit negatif':accrualNet<0?'Tahakkuk zararı':cashGap?'Tahsilat takibi':'Kontrol altında';
+  const stateNote=sourceBlocked?'Rakamlar sıfır kabul edilmedi. Kaynak düzelip son başarılı çekim doğrulanana kadar karar ve otomatik kayıt durduruldu.':pending?`${fmt(pending)} banka hareketi BizimHesap banka kaydı için onay bekliyor. Onaylanınca kayıt kuyruğa alınır.`:cashGap?`Tahakkuk var, ${dynMoney(cashGap)} tahsilat bekliyor.`:'Kritik akışlar aynı ekranda izleniyor.';
   const metricCls=v=>v<0?'bad':'good';
   el.innerHTML=`<div class="command-hero-head">
     <div><div class="command-eyebrow">AperiON Üst Akıl</div><div class="command-title">Komuta Merkezi</div><div class="command-sub">Bankadan gelen hareket AperiON'da kontrol edilir, sen onaylarsın, BizimHesap banka/kasa kaydına işlenir.</div></div>
