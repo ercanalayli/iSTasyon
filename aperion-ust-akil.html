@@ -209,8 +209,68 @@ tr.cat-clickable:hover .row-btn,tr.gider-clickable:hover .row-btn{box-shadow:0 0
   .card-status::before{animation:none}
 }
 </style>
+<style>
+/* AperiON OS application shell v1 */
+body.aperion-os{background:#07101b;color:#edf4ff;overflow-x:hidden}
+body.aperion-os>.shell{display:none}
+.os-app{min-height:100vh;display:grid;grid-template-columns:250px 1fr;background:radial-gradient(circle at 75% 0,#132b47 0,transparent 34%),#07101b}
+.os-side{position:sticky;top:0;height:100vh;padding:22px 16px;border-right:1px solid #20334a;background:rgba(7,16,27,.96);display:flex;flex-direction:column;gap:20px}
+.os-logo{display:flex;align-items:center;gap:12px;padding:0 8px}.os-logo-badge{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#20c58b,#5c8dff);color:#041018;font-weight:950}.os-logo strong{display:block}.os-logo small{color:#8da3bd}
+.os-nav{display:grid;gap:5px}.os-nav button{border:0;background:transparent;color:#9fb0c5;text-align:left;padding:11px 12px;border-radius:10px;font-weight:700}.os-nav button:hover,.os-nav button.active{background:#14263b;color:#fff}.os-nav button.active{box-shadow:inset 3px 0 #20c58b}
+.os-side-foot{margin-top:auto;padding:12px;border:1px solid #24415a;background:#0e2030;border-radius:12px;font-size:11px;color:#9fb0c5}.os-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#20c58b;margin-right:6px}
+.os-main{min-width:0;padding:22px 28px 44px}.os-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}.os-top h1{margin:0;font-size:24px}.os-top p{margin:5px 0 0;color:#8da3bd;font-size:12px}.os-actions{display:flex;gap:8px}.os-btn{border:1px solid #2b4661;background:#11243a;color:#eaf2ff;padding:9px 13px;border-radius:9px;font-weight:800}.os-btn.primary{background:#20c58b;border-color:#20c58b;color:#031611}
+.os-view{display:none}.os-view.active{display:block}.os-hero{display:grid;grid-template-columns:1.55fr .9fr;gap:14px;margin-bottom:14px}.os-panel{border:1px solid #21364e;background:linear-gradient(145deg,rgba(18,35,55,.98),rgba(11,25,40,.98));border-radius:16px;padding:18px}.os-kicker{font-size:10px;letter-spacing:1.2px;color:#6fe0b5;font-weight:900}.os-hero h2{font-size:25px;margin:8px 0}.os-muted{color:#91a6bd;font-size:12px;line-height:1.55}.os-chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}.os-chip{border:1px solid #2b4661;border-radius:99px;padding:6px 9px;font-size:10px;color:#b9c9da}.os-chip.warn{border-color:#8b6723;color:#ffd675;background:#33260f}
+.os-score{display:grid;place-items:center;text-align:center}.os-score strong{font-size:48px;color:#ffd675}.os-score span{color:#91a6bd;font-size:11px}.os-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.os-card{border:1px solid #21364e;background:#0e1d2e;border-radius:14px;padding:15px;min-height:145px}.os-card .label{font-size:10px;color:#91a6bd;font-weight:850;letter-spacing:.7px}.os-card .value{font-size:21px;font-weight:900;margin:12px 0 5px}.os-card .state{font-size:11px;color:#91a6bd}.os-card.danger{border-color:#64333d}.os-card.good{border-color:#245d4b}
+.os-section-head{display:flex;justify-content:space-between;align-items:end;margin:24px 0 10px}.os-section-head h3{margin:0;font-size:15px}.os-section-head span{color:#8197af;font-size:10px}.os-list{display:grid;gap:8px}.os-row{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;border:1px solid #21364e;background:#0d1b2b;padding:12px;border-radius:12px}.os-row-icon{width:34px;height:34px;border-radius:10px;background:#172b42;display:grid;place-items:center}.os-row strong{display:block;font-size:12px}.os-row small{color:#8da3bd}.os-status{font-size:10px;font-weight:900;border-radius:99px;padding:5px 8px;background:#14283e;color:#9fb7cf}.os-status.blocked{background:#3b2026;color:#ff9daa}.os-status.ready{background:#12372c;color:#7de6bd}.os-empty{padding:34px;text-align:center;border:1px dashed #2a425b;border-radius:14px;color:#8da3bd}.os-legacy-frame{width:100%;height:78vh;border:1px solid #21364e;border-radius:14px;background:#fff}
+@media(max-width:1050px){.os-app{grid-template-columns:78px 1fr}.os-logo span,.os-nav button span,.os-side-foot{display:none}.os-nav button{text-align:center}.os-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){.os-app{display:block}.os-side{position:sticky;height:auto;z-index:5;padding:9px;flex-direction:row;overflow:auto}.os-logo{display:none}.os-nav{display:flex}.os-nav button{white-space:nowrap}.os-nav button span{display:inline}.os-main{padding:16px}.os-hero,.os-grid{grid-template-columns:1fr}.os-actions{display:none}}
+</style>
 </head>
-<body>
+<body class="aperion-os">
+<div class="os-app" id="aperionApp">
+  <aside class="os-side">
+    <div class="os-logo"><div class="os-logo-badge">AP</div><span><strong>AperiON</strong><small>Şirket İşletim Sistemi</small></span></div>
+    <nav class="os-nav" aria-label="Ana menü">
+      <button class="active" data-os-view="command">⌂ <span>Komuta Merkezi</span></button>
+      <button data-os-view="approvals">✓ <span>Onay Kutusu</span></button>
+      <button data-os-view="finance">₺ <span>Finans</span></button>
+      <button data-os-view="communications">◉ <span>İletişim</span></button>
+      <button data-os-view="tasks">▣ <span>Görevler</span></button>
+      <button data-os-view="decisions">◆ <span>Kararlar</span></button>
+      <button data-os-view="health">⚙ <span>Sistem Sağlığı</span></button>
+      <button data-os-view="analysis">▥ <span>Analizler</span></button>
+    </nav>
+    <div class="os-side-foot"><span class="os-dot"></span>Cloudflare D1 bağlı<br><small>Finansal işlemler onay gerektirir</small></div>
+  </aside>
+  <main class="os-main">
+    <header class="os-top"><div><h1 id="osTitle">Komuta Merkezi</h1><p id="osSubtitle">Bugün ne önemli, hangi karar bekliyor?</p></div><div class="os-actions"><button class="os-btn" onclick="location.reload()">Yenile</button><button class="os-btn primary" data-os-open-approvals>Onayları Aç</button></div></header>
+    <section class="os-view active" data-view="command">
+      <div class="os-hero"><article class="os-panel"><div class="os-kicker">GERÇEKLİK ŞİMDİ</div><h2>Altyapı çalışıyor; eski finans kaynağı güncel değil.</h2><p class="os-muted">AperiON ücretsiz Cloudflare D1'e taşındı. Supabase kota nedeniyle engelli olduğundan eski finans toplamları karar için kullanılmayacak. Yeni akışlar D1 üzerinde doğrulanarak açılacak.</p><div class="os-chips"><span class="os-chip">D1 · AKTİF</span><span class="os-chip">Drive · AKTİF</span><span class="os-chip warn">Supabase · ENGELLİ</span></div></article><article class="os-panel os-score"><div><div class="os-kicker">SİSTEM HAZIRLIK</div><strong>62%</strong><br><span>Çekirdek bağlı · veri akışları sırada</span></div></article></div>
+      <div class="os-grid"><article class="os-card danger"><div class="label">KRİTİK RİSK</div><div class="value">1</div><div class="state">Supabase verisi 10.08.2026'dan beri güncel değil</div></article><article class="os-card"><div class="label">ONAY BEKLEYEN</div><div class="value">0</div><div class="state">D1 onay kuyruğu hazır</div></article><article class="os-card good"><div class="label">ÇALIŞAN KAYNAK</div><div class="value">2</div><div class="state">Cloudflare D1 ve Google Drive</div></article><article class="os-card"><div class="label">BUGÜNÜN ODAĞI</div><div class="value">Veri Akışı</div><div class="state">WhatsApp → D1 → BizimHesap</div></article></div>
+      <div class="os-section-head"><h3>Bugünün öncelikleri</h3><span>ETKİ × ACİLİYET × GÜVEN</span></div><div class="os-list"><div class="os-row"><div class="os-row-icon">1</div><div><strong>BizimHesap gerçek veri çekimini D1'e bağla</strong><small>Son başarılı veriyi ve hata durumunu görünür kıl</small></div><span class="os-status ready">SIRADAKİ</span></div><div class="os-row"><div class="os-row-icon">2</div><div><strong>WhatsApp belge gelen kutusunu kur</strong><small>Çek ve makbuzları kanıt kimliğiyle onay kuyruğuna al</small></div><span class="os-status">PLANLANDI</span></div><div class="os-row"><div class="os-row-icon">3</div><div><strong>Sabah brifini otomatik üret</strong><small>Yalnız doğrulanmış ve taze kaynakları kullan</small></div><span class="os-status">PLANLANDI</span></div></div>
+    </section>
+    <section class="os-view" data-view="approvals"><div class="os-panel"><div class="os-kicker">ONAY KUTUSU</div><h2>Hazırlanan işlemler burada bekler</h2><p class="os-muted">Finansal kayıt, mesaj, ödeme ve dış sistem değişikliği siz onaylamadan uygulanmaz.</p></div><div class="os-section-head"><h3>Bekleyen işlemler</h3><span>D1 · approval_queue</span></div><div class="os-empty">Şu anda onay bekleyen işlem yok.</div></section>
+    <section class="os-view" data-view="finance"><div class="os-panel"><div class="os-kicker">FİNANS KONTROLÜ</div><h2>Kanıt → doğrulama → onay → kayıt</h2><p class="os-muted">Müşteri ve tedarikçi carileri ayrıştırılır; her ekonomik olay yalnız bir kez kaydedilir.</p><div class="os-chips"><a class="os-chip" href="/finans-komuta-merkezi.html">Finans Komuta Merkezi</a><a class="os-chip" href="/banka_onay.html">Banka Onayları</a><a class="os-chip" href="/aperion-finans-takvimi-live.html">Finans Takvimi</a></div></div></section>
+    <section class="os-view" data-view="communications"><div class="os-panel"><div class="os-kicker">İLETİŞİM MERKEZİ</div><h2>WhatsApp, Gmail ve Telegram sinyalleri</h2><p class="os-muted">Belgeler ve önemli mesajlar kaynak bağlantısıyla gelen kutusuna düşecek. Gönderim gerektiren mesajlar ayrıca onaylanacak.</p></div></section>
+    <section class="os-view" data-view="tasks"><div class="os-panel"><div class="os-kicker">GÖREV MERKEZİ</div><h2>Gözlemden doğrulamaya tek akış</h2><p class="os-muted">observe → decide → delegate → approve → execute → verify</p></div></section>
+    <section class="os-view" data-view="decisions"><div class="os-panel"><div class="os-kicker">KARAR GÜNLÜĞÜ</div><h2>Tezler, karşı tezler ve sonuçlar</h2><p class="os-muted">Her önemli karar; kanıt, karşı argüman, başarısızlık koşulu, sorumlu ve doğrulama tarihiyle saklanır.</p></div></section>
+    <section class="os-view" data-view="health"><div class="os-list"><div class="os-row"><div class="os-row-icon">D1</div><div><strong>Cloudflare D1</strong><small>Ana kontrol veritabanı · aperion-control-plane</small></div><span class="os-status ready">SAĞLIKLI</span></div><div class="os-row"><div class="os-row-icon">GD</div><div><strong>Google Drive</strong><small>Kanıt, dışa aktarım ve yedek alanı</small></div><span class="os-status ready">SAĞLIKLI</span></div><div class="os-row"><div class="os-row-icon">SB</div><div><strong>Supabase</strong><small>Son başarılı veri: 10.08.2026 09:24 TSİ</small></div><span class="os-status blocked">KOTA ENGELLİ</span></div></div></section>
+    <section class="os-view" data-view="analysis"><iframe class="os-legacy-frame" title="Eski ayrıntılı analiz ekranı" src="/aperion-ust-akil.html?legacy=1"></iframe></section>
+  </main>
+</div>
+<script>
+(function(){
+  if(new URLSearchParams(location.search).get('legacy')==='1'){
+    document.body.classList.remove('aperion-os');
+    var app=document.getElementById('aperionApp'); if(app) app.remove();
+    return;
+  }
+  var labels={command:['Komuta Merkezi','Bugün ne önemli, hangi karar bekliyor?'],approvals:['Onay Kutusu','Hazırlanan işlemleri inceleyin ve yönetin'],finance:['Finans','Nakit, tahsilat, ödeme ve cari işlemleri'],communications:['İletişim','Önemli mesajlar ve belgeler'],tasks:['Görevler','İşlerin sahibi, tarihi ve doğrulaması'],decisions:['Kararlar','Tezler, karşı tezler ve sonuçlar'],health:['Sistem Sağlığı','Kaynakların gerçek ve güncel durumu'],analysis:['Analizler','Eski ayrıntılı rapor ekranı']};
+  function openView(name){document.querySelectorAll('.os-view').forEach(function(x){x.classList.toggle('active',x.dataset.view===name)});document.querySelectorAll('[data-os-view]').forEach(function(x){x.classList.toggle('active',x.dataset.osView===name)});document.getElementById('osTitle').textContent=labels[name][0];document.getElementById('osSubtitle').textContent=labels[name][1];}
+  document.querySelectorAll('[data-os-view]').forEach(function(b){b.addEventListener('click',function(){openView(b.dataset.osView)})});
+  document.querySelectorAll('[data-os-open-approvals]').forEach(function(b){b.addEventListener('click',function(){openView('approvals')})});
+})();
+</script>
 <main class="shell">
   <header class="topbar">
     <a class="brand" href="./index.html" aria-label="AperiON ana ekran"><span class="mark">AP</span><span><strong>AperiON iSTasyon</strong><small>Operasyon Merkezi</small></span></a>
