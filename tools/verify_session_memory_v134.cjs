@@ -6,6 +6,7 @@ ok('last checkpoint',a.includes('ORDER BY created_at DESC LIMIT 1'));
 ok('objectives',a.includes('objectives'));
 ok('commitments',a.includes('commitment_timeline'));
 ok('approvals',a.includes('approval_queue'));
+ok('live approval schema',a.includes('item_type AS action_type')&&a.includes('needs_review'));
 ok('health first data',a.includes('source_health'));
 ok('connectors',a.includes('connector_registry'));
 console.log('Session memory verification passed.');
