@@ -43,6 +43,12 @@ async function sendMessage(env, chatId, text) {
 }
 
 async function saveQuickNote(env, { chatId, messageId, rawText, parsed }) {
+  if (env.APERION_DB) {
+    try {
+      const row = await env.APERION_DB.prepare(`INSERT INTO quick_notes (source,source_message_id,chat_id,raw_text,parsed_type,payment_method,status,needs_review) VALUES ('telegram',?,?,?,?,?,'captured',1) ON CONFLICT(source,source_message_id) DO UPDATE SET updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') RETURNING id`).bind(String(messageId),String(chatId),rawText,parsed.type,parsed.payment_method).first();
+      return { ok:true, id:row?.id, duplicate_safe:true, store:'cloudflare_d1' };
+    } catch (error) { return { ok:false, error:'d1_storage_failed', detail:error.message }; }
+  }
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
     return { ok: false, error: 'missing_supabase_env' };
   }
@@ -75,6 +81,12 @@ async function saveQuickNote(env, { chatId, messageId, rawText, parsed }) {
 }
 
 async function queryBalance(env) {
+  if (env.APERION_DB) {
+    try {
+      const rows=await env.APERION_DB.prepare('SELECT bank_name,balance AS son_bakiye,balance_date AS son_tarih FROM last_bank_balances ORDER BY bank_name').all();
+      return rows.results||[];
+    } catch (_error) { return null; }
+  }
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return null;
   const base = env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
   const url = base + '/rest/v1/aperion_bank_last_known_balance_v1_view?select=bank_name,son_bakiye,son_tarih';

@@ -60,7 +60,14 @@ async function checkTelegram(env){
   };
 }
 
-async function checkSupabase(env){
+async function checkD1(env){
+  if(!env.APERION_DB)return{ok:false,status:'missing_d1_binding',message:'Cloudflare D1 APERION_DB binding tanimli degil.'};
+  try{
+    const row=await env.APERION_DB.prepare('SELECT 1 AS ok').first();
+    return{ok:row?.ok===1,status:row?.ok===1?'ok':'d1_query_failed',message:row?.ok===1?'Cloudflare D1 erisilebilir.':'Cloudflare D1 sorgusu beklenen sonucu vermedi.'};
+  }catch(error){return{ok:false,status:'d1_query_failed',message:error.message};}
+  /* D1 is the primary store. Supabase remains configured only as a rollback path in the webhook. */
+  /*
   if(!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY){
     return {
       ok: false,
@@ -91,6 +98,7 @@ async function checkSupabase(env){
     status: 'ok',
     message: 'Supabase quick_notes erişilebilir.'
   };
+  */
 }
 
 async function checkWebhookEndpoint(){
@@ -108,9 +116,9 @@ export async function onRequestGet({ env }){
   const checkedAt = new Date().toISOString();
   const webhook_endpoint = await checkWebhookEndpoint().catch(e => ({ ok:false, status:'error', message:e.message }));
   const telegram = await checkTelegram(env).catch(e => ({ ok:false, status:'error', message:e.message }));
-  const supabase = await checkSupabase(env).catch(e => ({ ok:false, status:'error', message:e.message }));
+  const d1 = await checkD1(env).catch(e => ({ ok:false, status:'error', message:e.message }));
 
-  const ok = webhook_endpoint.ok && telegram.ok && supabase.ok;
+  const ok = webhook_endpoint.ok && telegram.ok && d1.ok;
   return json({
     service: 'aperion_telegram_quick_capture_preflight',
     checked_at: checkedAt,
@@ -122,7 +130,7 @@ export async function onRequestGet({ env }){
     checks: {
       webhook_endpoint,
       telegram,
-      supabase
+      d1
     }
   }, ok ? 200 : 503);
 }

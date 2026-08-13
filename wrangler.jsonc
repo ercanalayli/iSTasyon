@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "aperion-istasyon",
+  "compatibility_date": "2026-08-13",
+  "pages_build_output_dir": ".",
+  "d1_databases": [
+    {
+      "binding": "APERION_DB",
+      "database_name": "aperion-control-plane",
+      "database_id": "8f32b3b1-5451-4c9e-9bd2-5d3626e4a561",
+      "migrations_dir": "migrations"
+    }
+  ]
+}
