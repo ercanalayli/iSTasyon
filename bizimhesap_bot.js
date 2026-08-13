@@ -70,6 +70,10 @@ const SUPABASE = {
   key:   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_MmvLmFVEDXXmGQS4xMCe0Q_MgDwftIW',
   table: 'sales_raw',
 };
+const D1_BRIDGE = {
+  url: process.env.APERION_BRIDGE_URL || 'https://aperion-istasyon.pages.dev/api/bizimhesap-sales-sync',
+  secret: process.env.APERION_BRIDGE_SECRET || '',
+};
 
 // â”€â”€ WHATSAPP KÄ°ÅÄ°LER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const WP = [
@@ -78,6 +82,26 @@ const WP = [
 ];
 
 const db = createClient(SUPABASE.url, SUPABASE.key, { auth: { persistSession: false } });
+
+async function d1SalesWrite(records, evidenceRef) {
+  if (!D1_BRIDGE.secret) return null;
+  let accepted = 0;
+  for (let offset = 0; offset < records.length; offset += 400) {
+    const batch = records.slice(offset, offset + 400);
+    const response = await fetch(D1_BRIDGE.url, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${D1_BRIDGE.secret}`,
+      },
+      body: JSON.stringify({ records: batch, evidence_ref: evidenceRef }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.ok) throw new Error(`D1 bridge ${response.status}: ${result.message || result.error || 'bilinmeyen hata'}`);
+    accepted += Number(result.accepted || 0);
+  }
+  return accepted;
+}
 
 // â”€â”€ LOG â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function log(msg) {
@@ -302,6 +326,15 @@ async function kaydet(rows, firma, tarihISO) {
     raw: r,
   }));
   capturedSales.push(...enrichedRecords);
+  const d1Accepted = await d1SalesWrite(
+    enrichedRecords,
+    `bizimhesap:sales-report:${firma.id}:${tarihISO}`
+  );
+  if (d1Accepted !== null) {
+    log(`  [D1] ${d1Accepted} kayıt Cloudflare D1'e yazıldı.`);
+    return d1Accepted;
+  }
+  log('  [UYARI] APERION_BRIDGE_SECRET yok; geçici Supabase uyumluluk yolu kullanılıyor.');
   const records = enrichedRecords.map(({
     satis_kdv_haric, satis_kdv_dahil, kaynak_satir, raw, ...record
   }) => record);
