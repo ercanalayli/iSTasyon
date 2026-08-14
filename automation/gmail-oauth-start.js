@@ -10,7 +10,10 @@ if (!clientId || !clientSecret) {
 }
 
 const oauth2 = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
-const scopes = ['https://www.googleapis.com/auth/gmail.readonly'];
+const scopes = [
+  'https://www.googleapis.com/auth/gmail.readonly',
+  'https://www.googleapis.com/auth/calendar.events'
+];
 const url = oauth2.generateAuthUrl({ access_type: 'offline', prompt: 'consent', scope: scopes });
 
 console.log('\nAşağıdaki linki aç, ercanalayli@gmail.com ile izin ver.\n');
