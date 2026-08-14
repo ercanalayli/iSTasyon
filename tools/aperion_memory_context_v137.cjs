@@ -36,11 +36,11 @@ function classifyMemoryCandidate(text, metadata = {}) {
     memoryType = 'preference';
     decision = 'candidate';
   }
-  if (/\b(kural|zorunlu|muhakkak|asla|onaysiz|gerektirir|yapilmaz)\b/.test(normalized)) {
+  if (/\b(kural|zorunlu|muhakkak|asla|onaysiz|onaysız|gerektirir|yapilmaz|yapılmaz)\b/.test(normalized)) {
     memoryType = 'business_rule';
     decision = 'needs_review';
   }
-  if (/\b(cari|firma|tedarikci|musteri|hesap|adres)\b/.test(normalized)) {
+  if (/\b(cari|firma|tedarikci|tedarikçi|musteri|müşteri|hesap|adres)\b/.test(normalized)) {
     memoryType = 'entity_fact';
     decision = 'needs_review';
   }
