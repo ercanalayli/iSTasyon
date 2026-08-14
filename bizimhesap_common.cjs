@@ -355,6 +355,26 @@ async function loginBizimHesapInner(page, log = () => {}) {
     return;
   }
 
+  // Kalici Chrome profilinde alanlar tarayici tarafindan doldurulmus olabilir.
+  // Kullanici icin calisan yol bu alanlara dokunmadan Enter'a basmaktir.
+  const savedLoginReady = await page.evaluate(() => {
+    const email = document.querySelector('#txtEmail, input[type="email"], input[type="text"]');
+    const password = document.querySelector('#txtPassword, input[type="password"]');
+    return Boolean(email && password && String(email.value || '').trim() && String(password.value || ''));
+  }).catch(() => false);
+  if (savedLoginReady) {
+    log('  -> Chrome profilindeki kayitli giris Enter ile deneniyor');
+    const savedPassword = await page.$('#txtPassword') || await page.$('input[type="password"]');
+    await savedPassword.focus();
+    await page.keyboard.press('Enter');
+    await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 20000 }).catch(() => {});
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    if (await isBizimHesapAppPage(page)) {
+      log('  -> kayitli Chrome oturumu acildi: ' + page.url());
+      return;
+    }
+  }
+
   if (!config.password) {
     await savePageDiagnostics(page, 'bizimhesap_sifre_gerekli');
     throw new Error('BIZIMHESAP_PASSWORD ortam degiskeni/GitHub secret icinde yok');
@@ -392,16 +412,25 @@ async function loginBizimHesapInner(page, log = () => {}) {
   await pwEl.click({ clickCount: 3 });
   await pwEl.type(config.password, { delay: 25 });
 
-  const clicked = await page.evaluate(() => {
-    const norm = s => String(s || '').toLocaleLowerCase('tr-TR');
-    const b = document.querySelector('#btnLogin')
-      || [...document.querySelectorAll('button')].find(x => norm(x.innerText || x.value).includes('giriş yap') || norm(x.innerText || x.value).includes('giris yap'));
-    if (b) { b.click(); return true; }
-    return false;
-  });
-  if (!clicked) throw new Error('BizimHesap giris butonu bulunamadi');
+  // Bu hesapta tarayici kimlik bilgileri kayitli ve calisan giris akisi parola
+  // alanindayken Enter ile formu gonderiyor. Enter'i birinci yontem yap; yeni
+  // arayuz Enter'i kabul etmezse mevcut buton tiklamasini yedek olarak kullan.
+  log('  -> giris formu Enter ile gonderiliyor');
+  await page.keyboard.press('Enter');
   await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 20000 }).catch(() => {});
   await new Promise(resolve => setTimeout(resolve, 2500));
+  if (await isLoginPage(page)) {
+    const clicked = await page.evaluate(() => {
+      const norm = s => String(s || '').toLocaleLowerCase('tr-TR');
+      const b = document.querySelector('#btnLogin')
+        || [...document.querySelectorAll('button')].find(x => norm(x.innerText || x.value).includes('giriş yap') || norm(x.innerText || x.value).includes('giris yap'));
+      if (b) { b.click(); return true; }
+      return false;
+    });
+    if (!clicked) throw new Error('BizimHesap giris formu Enter veya butonla gonderilemedi');
+    await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 20000 }).catch(() => {});
+    await new Promise(resolve => setTimeout(resolve, 2500));
+  }
   await leavePasswordRequestIfPossible(page, log);
   if (await isLoginPage(page)) {
     log('  -> giris sonrasi oturum URLleri tekrar deneniyor');
