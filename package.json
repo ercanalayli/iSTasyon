@@ -154,7 +154,8 @@
     "verify:connector-fabric": "node tools/verify_connector_fabric_v132.cjs",
     "verify:commitment-engine": "node tools/verify_commitment_engine_v133.cjs",
     "verify:session-memory": "node tools/verify_session_memory_v134.cjs",
-    "verify:bizimhesap:d1-bridge": "node tools/verify_bizimhesap_d1_bridge_v135.cjs"
+    "verify:bizimhesap:d1-bridge": "node tools/verify_bizimhesap_d1_bridge_v135.cjs",
+    "verify:spec-kit-memory": "node tools/verify_aperion_spec_kit_v136.cjs"
     ,"hasta-bezi:source-audit": "node tools/audit_hasta_bezi_source_reports_v91.cjs"
     ,"verify:hasta-bezi:source-audit": "node tools/verify_hasta_bezi_source_reports_v91.cjs"
     ,"hasta-bezi:fifo:build": "node tools/build_hasta_bezi_fifo_chunks_v92.cjs"
