@@ -5,7 +5,7 @@ function json(data, status = 200) {
 export async function onRequestGet({ env }) {
   if (!env.APERION_DB) return json({ ok: false, error: 'missing_d1_binding' }, 503);
   try {
-    const [summary, recent, health] = await env.APERION_DB.batch([
+    const [summary, recent, sales, health] = await env.APERION_DB.batch([
       env.APERION_DB.prepare(
         `SELECT substr(occurred_at,1,10) AS sale_date,
                 COUNT(*) AS record_count,
@@ -22,6 +22,11 @@ export async function onRequestGet({ env }) {
           ORDER BY occurred_at DESC,received_at DESC LIMIT 50`
       ),
       env.APERION_DB.prepare(
+        `SELECT occurred_at,payload_json FROM canonical_events
+          WHERE event_type='sale.invoice' AND truth_state='confirmed'
+          ORDER BY occurred_at DESC LIMIT 5000`
+      ),
+      env.APERION_DB.prepare(
         `SELECT source_key,status,last_success_at,checked_at,error_code,message,evidence_ref
            FROM source_health WHERE source_key='bizimhesap' LIMIT 1`
       )
@@ -32,6 +37,7 @@ export async function onRequestGet({ env }) {
       source: 'cloudflare_d1.canonical_events',
       summary: summary.results || [],
       recent: (recent.results || []).map(row => ({ ...row, payload: JSON.parse(row.payload_json || '{}'), payload_json: undefined })),
+      sales: (sales.results || []).map(row => ({ occurred_at: row.occurred_at, ...JSON.parse(row.payload_json || '{}') })),
       health: health.results?.[0] || null
     });
   } catch (error) {

@@ -1,0 +1,36 @@
+[
+  {
+    "name": "latest open work",
+    "input": "devam et",
+    "expectedWorkKey": "work-memory-implementation"
+  },
+  {
+    "name": "same supplier role",
+    "input": "aynı tedarikçi cariden devam et",
+    "expectedEntityRef": "party-laboral",
+    "expectedRole": "supplier"
+  },
+  {
+    "name": "same customer role",
+    "input": "aynı müşteri için onu değiştir",
+    "expectedEntityRef": "party-laboral",
+    "expectedRole": "customer"
+  },
+  {
+    "name": "previous freight price",
+    "input": "geçen ay konuştuğumuz nakliye fiyatı neydi",
+    "expectedMemoryKey": "memory-freight-july"
+  },
+  {
+    "name": "explicit project wins",
+    "input": "AperiON hafıza motoruna devam et",
+    "expectedObjectiveKey": "objective-aperion-memory",
+    "expectedWorkKey": "work-memory-implementation"
+  },
+  {
+    "name": "closed work is not resumed",
+    "input": "önceki işi devam ettir",
+    "expectedWorkKey": "work-memory-implementation"
+  }
+]
+

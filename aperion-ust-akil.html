@@ -637,10 +637,11 @@ setText('updatedPill', 'Güncellendi · ' + new Intl.DateTimeFormat('tr-TR',{dat
 // cekim tarihi bir finansal toplam degildir; yalnizca veri tazeliginin kanitidir.
 const SUPABASE_LAST_VERIFIED = '10.08.2026 09:24 TSİ';
 const SUPABASE_RESTRICTED_TEXT = 'Veri güncel değil — Supabase kota engelli. Son doğrulanmış çekim: ' + SUPABASE_LAST_VERIFIED + '.';
+let PRIMARY_FINANCE_SOURCE = 'checking';
 const isSupabaseQuotaError = value => /exceed_db_size_quota|project is restricted|restricted due to/i.test(String(value||''));
 function markSupabaseRestricted(){
   const source = document.getElementById('primarySourceHealth');
-  if (source) {
+  if (source && PRIMARY_FINANCE_SOURCE !== 'd1') {
     source.textContent = 'SUPABASE · KOTA ENGELLİ';
     source.className = 'pill';
     source.style.color = '#f6c86a';
@@ -842,12 +843,51 @@ function giderThreeCol(v, p, sharePct){
     + '<td style="text-align:right;padding:6px 8px;color:#f6c86a;font-size:10px">kaynak bekliyor</td>';
 }
 
-Promise.all([
-  db.from('aperion_category_income_matrix_v3_view').select('*'),
-  db.from('aperion_category_cogs_v1_view').select('*'),
-  db.from('aperion_gider_ozet_v1_view').select('*'),
-  db.from('aperion_category_stock_v1_view').select('*'),
-]).then(([matrixRes, cogsRes, giderRes, stockRes]) => {
+function d1PeriodMatrix(rows){
+  const now=new Date(), today=now.toISOString().slice(0,10);
+  const day=d=>new Date(d+'T12:00:00+03:00');
+  const startOfDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const yesterday=new Date(startOfDay); yesterday.setDate(yesterday.getDate()-1);
+  const week=new Date(startOfDay); week.setDate(week.getDate()-((week.getDay()+6)%7));
+  const month=new Date(now.getFullYear(),now.getMonth(),1), prevMonth=new Date(now.getFullYear(),now.getMonth()-1,1);
+  const year=new Date(now.getFullYear(),0,1), prevYear=new Date(now.getFullYear()-1,0,1), prevYearEnd=new Date(now.getFullYear(),0,1);
+  const out={};
+  rows.forEach(r=>{
+    const cat=String(r.kategori||'DİĞER').trim()||'DİĞER', d=day(String(r.tarih||r.occurred_at||'').slice(0,10));
+    if(Number.isNaN(d.getTime())) return;
+    const x=out[cat]||(out[cat]={kategori_grup:cat,son_tarih:''});
+    const add=p=>{x['satis_'+p]=(x['satis_'+p]||0)+Number(r.ciro||0);x['adet_'+p]=(x['adet_'+p]||0)+Number(r.adet||0)};
+    const ds=String(r.tarih||r.occurred_at||'').slice(0,10); if(ds>x.son_tarih)x.son_tarih=ds;
+    if(ds===today)add('bugun');
+    if(d>=yesterday&&d<startOfDay)add('dun');
+    if(d>=week)add('hafta');
+    if(d>=month)add('ay');
+    if(d>=prevMonth&&d<month)add('gecen_ay');
+    if(d>=year)add('yil');
+    if(d>=prevYear&&d<prevYearEnd)add('gecen_yil');
+    const pySame=new Date(now.getFullYear()-1,now.getMonth(),now.getDate(),23,59,59); if(d>=prevYear&&d<=pySame)x.satis_gecen_yil_ayni_donem=(x.satis_gecen_yil_ayni_donem||0)+Number(r.ciro||0);
+  });
+  return Object.values(out);
+}
+async function loadCategoryIncomeSources(){
+  try{
+    const payload=await fetch('/api/bizimhesap-sales-summary',{cache:'no-store'}).then(r=>r.json());
+    if(payload.ok&&Array.isArray(payload.sales)&&payload.sales.length){
+      PRIMARY_FINANCE_SOURCE='d1';
+      const source=document.getElementById('primarySourceHealth');
+      if(source){source.textContent='D1 SATIŞ · CANLI';source.className='pill live';}
+      return [{data:d1PeriodMatrix(payload.sales),error:null},{data:[],error:null},{data:[],error:null},{data:[],error:null}];
+    }
+  }catch(_){ }
+  PRIMARY_FINANCE_SOURCE='supabase';
+  return Promise.all([
+    db.from('aperion_category_income_matrix_v3_view').select('*'),
+    db.from('aperion_category_cogs_v1_view').select('*'),
+    db.from('aperion_gider_ozet_v1_view').select('*'),
+    db.from('aperion_category_stock_v1_view').select('*')
+  ]);
+}
+loadCategoryIncomeSources().then(([matrixRes, cogsRes, giderRes, stockRes]) => {
   const catBody = document.getElementById('catMatrixBody');
   const giderBody = document.getElementById('giderBody');
   const data = matrixRes.data, error = matrixRes.error;
@@ -954,7 +994,9 @@ Promise.all([
   };
   window.__renderCatRows(document.getElementById('catMatrix').getAttribute('data-active') || 'bugun');
 
-  setText('matrixSource', 'Kaynak: sales_raw (ALAYLI) + BizimHesap Sınıflandırma 1 (canlı çekildi, 24 distribütör cari), ' + catOrder.length + ' kategori grubu. Son satış tarihi: ' + (data.reduce((m,r)=>r.son_tarih&&r.son_tarih>m?r.son_tarih:m,'')||'-') + '. SMM: product_raw.alış_fiyat artık doğru, ama sales_raw.urun_kod boş olduğu için eşleştirme ürün ADI ile yapılıyor — SMM hücresindeki küçük yüzde, o kategorinin cirosunun ne kadarı için maliyet biliniyor demek (küsürat KAR sadece o eşleşen kısım için, yanındaki % ise o kısmın marjı). Tahsilat kategori bazında henüz bağlı değil. Kategori satırına tıklayınca bu ayın en çok satan ürünleri açılır. ▲/▼ = geçen yılın AYNI TARİHE KADARki karşılığına göre büyüme (adil kıyas). STOK yanındaki renk: mevcut satış hızıyla kaç gün stok kaldığını gösterir. "GEÇEN YIL" artık tam 12 aylık gerçek veri (2026-08-02\'de BizimHesap\'tan geriye dönük dolduruldu — önceden Ağustos-Aralık 2025 boştu). ▲/▼ yine de adil kıyas için geçen yılın AYNI TARİHE KADARki karşılığını kullanmaya devam ediyor (yıl sonuna kadarki fazlayı değil). Renkler: yeşil güçlü, sarı orta, kırmızı dikkat gerekiyor — SMM eşleşmesi, kâr marjı, stok günü ve gider oranı hep aynı dili kullanır.');
+  setText('matrixSource', PRIMARY_FINANCE_SOURCE === 'd1'
+    ? 'Kaynak: Cloudflare D1 canonical_events — BizimHesap satışları. Son satış tarihi: ' + (data.reduce((m,r)=>r.son_tarih&&r.son_tarih>m?r.son_tarih:m,'')||'-') + '. Satış ve adet D1 verisidir. SMM, gider, stok ve net kâr D1 kaynağına henüz bağlanmadığından boş gösterilir; tahmin edilmez.'
+    : 'Kaynak: sales_raw (ALAYLI). Son satış tarihi: ' + (data.reduce((m,r)=>r.son_tarih&&r.son_tarih>m?r.son_tarih:m,'')||'-') + '.');
 
   renderCatRadar(byCat, catOrder);
 
