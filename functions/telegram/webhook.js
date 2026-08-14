@@ -97,64 +97,6 @@ async function sendMessage(env, chatId, text) {
   return r.json();
 }
 
-async function saveQuickNote(env, { chatId, messageId, rawText, parsed }) {
-  if (env.APERION_DB) {
-    try {
-      const row = await env.APERION_DB.prepare(`INSERT INTO quick_notes (source,source_message_id,chat_id,raw_text,parsed_type,payment_method,status,needs_review) VALUES ('telegram',?,?,?,?,?,'captured',1) ON CONFLICT(source,source_message_id) DO UPDATE SET updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') RETURNING id`).bind(String(messageId),String(chatId),rawText,parsed.type,parsed.payment_method).first();
-      return { ok:true, id:row?.id, duplicate_safe:true, store:'cloudflare_d1' };
-    } catch (error) { return { ok:false, error:'d1_storage_failed', detail:error.message }; }
-  }
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
-    return { ok: false, error: 'missing_supabase_env' };
-  }
-  const url = env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '') + '/rest/v1/quick_notes';
-  const r = await fetch(url, {
-    method: 'POST',
-    headers: {
-      apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-      authorization: 'Bearer ' + env.SUPABASE_SERVICE_ROLE_KEY,
-      'content-type': 'application/json',
-      prefer: 'return=representation'
-    },
-    body: JSON.stringify({
-      source: 'telegram',
-      chat_id: chatId,
-      telegram_message_id: messageId,
-      raw_text: rawText,
-      parsed_type: parsed.type,
-      payment_method: parsed.payment_method,
-      status: 'captured',
-      needs_review: true
-    })
-  });
-  if (!r.ok) {
-    const errText = await r.text();
-    return { ok: false, error: 'storage_failed', detail: errText };
-  }
-  const rows = await r.json();
-  return { ok: true, id: rows && rows[0] && rows[0].id };
-}
-
-async function queryBalance(env) {
-  if (env.APERION_DB) {
-    try {
-      const rows=await env.APERION_DB.prepare('SELECT bank_name,balance AS son_bakiye,balance_date AS son_tarih FROM last_bank_balances ORDER BY bank_name').all();
-      return rows.results||[];
-    } catch (_error) { return null; }
-  }
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return null;
-  const base = env.SUPABASE_URL.replace(/\/rest\/v1\/?$/i, '');
-  const url = base + '/rest/v1/aperion_bank_last_known_balance_v1_view?select=bank_name,son_bakiye,son_tarih';
-  const r = await fetch(url, {
-    headers: {
-      apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-      authorization: 'Bearer ' + env.SUPABASE_SERVICE_ROLE_KEY
-    }
-  });
-  if (!r.ok) return null;
-  return r.json();
-}
-
 function money(n) {
   const v = Math.round(Number(n) || 0);
   return v.toLocaleString('tr-TR') + ' TL';
@@ -269,6 +211,12 @@ function classifyNote(lower) {
 }
 
 async function saveQuickNote(env, { chatId, messageId, rawText, parsedType, paymentMethod, needsReview }) {
+  if (env.APERION_DB) {
+    try {
+      const row = await env.APERION_DB.prepare(`INSERT INTO quick_notes (source,source_message_id,chat_id,raw_text,parsed_type,payment_method,status,needs_review) VALUES ('telegram',?,?,?,?,?,'captured',?) ON CONFLICT(source,source_message_id) DO UPDATE SET updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') RETURNING id`).bind(String(messageId),String(chatId),rawText,parsedType,paymentMethod,needsReview?1:0).first();
+      return { ok:true, id:row?.id, store:'cloudflare_d1' };
+    } catch (error) { /* D1 yoksa/hata varsa Supabase'e dus */ }
+  }
   const r = await sbFetch(env, '/rest/v1/quick_notes', {
     method: 'POST',
     headers: { prefer: 'return=representation' },
@@ -318,6 +266,12 @@ async function zatenKayitliMi(env, messageId, chatId) {
 }
 
 async function queryBalance(env) {
+  if (env.APERION_DB) {
+    try {
+      const rows = await env.APERION_DB.prepare('SELECT bank_name,balance AS son_bakiye,balance_date AS son_tarih FROM last_bank_balances ORDER BY bank_name').all();
+      if (rows.results && rows.results.length) return rows.results;
+    } catch (_error) { /* D1 yoksa/hata varsa Supabase'e dus */ }
+  }
   const r = await sbFetch(env, '/rest/v1/aperion_bank_last_known_balance_v1_view?select=bank_name,son_bakiye,son_tarih');
   if (!r.ok) return null;
   return r.data;
