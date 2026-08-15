@@ -1779,5 +1779,13 @@ db.from('bot_logs').select('firma_id,durum,created_at').order('created_at',{asce
   input.addEventListener('keydown', ev => { if (ev.key === 'Enter') ara(); });
 })();
 </script>
+   <script>
+      if('serviceWorker' in navigator){
+           window.addEventListener('load',()=>{
+                  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+           });
+      }
+         </script>
+   </script>
 </body>
 </html>
