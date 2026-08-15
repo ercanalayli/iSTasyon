@@ -870,6 +870,15 @@ function d1PeriodMatrix(rows){
   return Object.values(out);
 }
 async function loadCategoryIncomeSources(){
+     try{
+            const snap=await fetch('/api/gelir-tablosu',{cache:'no-store'}).then(r=>r.json());
+            if(snap.ok){
+                     PRIMARY_FINANCE_SOURCE='d1_snapshot';
+                     const source=document.getElementById('primarySourceHealth');
+                     if(source){source.textContent='D1 GELİR TABLOSU · ÖNBELLEK ('+String(snap.refreshed_at||'').slice(0,10)+')';source.className='pill live';}
+                     return [{data:snap.income,error:null},{data:snap.cogs,error:null},{data:snap.gider,error:null},{data:snap.stok,error:null}];
+            }
+     }catch(_){ }
   try{
     const payload=await fetch('/api/bizimhesap-sales-summary',{cache:'no-store'}).then(r=>r.json());
     if(payload.ok&&Array.isArray(payload.sales)&&payload.sales.length){
