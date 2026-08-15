@@ -70,6 +70,7 @@ jobs:
           BIZIMHESAP_PASSWORD: ${{ secrets.BIZIMHESAP_PASSWORD }}
           BIZIMHESAP_HEADLESS: "true"
           BIZIMHESAP_PROFILE_DIR: .bizimhesap-profile
+          APERION_BRIDGE_SECRET: ${{ secrets.APERION_BRIDGE_SECRET }}
         run: npm run sync:bizimhesap -- --firma alayli
       - name: Save BizimHesap session cache
         if: always()
