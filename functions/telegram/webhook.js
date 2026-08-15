@@ -348,6 +348,52 @@ await sendMessage(env, chatId, lines.join('\n'));
 }
 // ---------------------------------------------------------------------------
 
+async function getTelegramFileUrl(env, fileId) {
+    if (!env.TELEGRAM_BOT_TOKEN || !fileId) return null;
+    try {
+          const r = await fetch('https://api.telegram.org/bot' + env.TELEGRAM_BOT_TOKEN + '/getFile?file_id=' + encodeURIComponent(fileId));
+          const j = await r.json();
+          if (!j.ok || !j.result || !j.result.file_path) return null;
+          return 'https://api.telegram.org/file/bot' + env.TELEGRAM_BOT_TOKEN + '/' + j.result.file_path;
+    } catch (_e) { return null; }
+}
+
+async function ensureCapturesTable(env) {
+    await env.APERION_DB.prepare(
+          "CREATE TABLE IF NOT EXISTS telegram_captures (id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL, message_id TEXT NOT NULL, kind TEXT NOT NULL, file_id TEXT NOT NULL, mime_type TEXT, caption TEXT, status TEXT NOT NULL DEFAULT 'pending_review', created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(chat_id, message_id))"
+        ).run();
+}
+
+async function handleMediaCapture(env, msg) {
+    const chatId = msg.chat.id;
+    let fileId = null, kind = null, mimeType = null;
+    if (msg.photo && msg.photo.length) { const best = msg.photo[msg.photo.length - 1]; fileId = best.file_id; kind = 'photo'; }
+    else if (msg.document) { fileId = msg.document.file_id; kind = 'document'; mimeType = msg.document.mime_type || null; }
+    else if (msg.video) { fileId = msg.video.file_id; kind = 'video'; mimeType = msg.video.mime_type || null; }
+    if (!fileId) return json({ ok: true, ignored: true });
+  
+    const caption = clean(msg.caption || '');
+    let savedOk = false;
+    if (env.APERION_DB) {
+          try {
+                  await ensureCapturesTable(env);
+                  await env.APERION_DB.prepare(
+                            'INSERT INTO telegram_captures (chat_id,message_id,kind,file_id,mime_type,caption) VALUES (?,?,?,?,?,?) ON CONFLICT(chat_id,message_id) DO NOTHING'
+                          ).bind(String(chatId), String(msg.message_id), kind, fileId, mimeType, caption).run();
+                  savedOk = true;
+          } catch (_e) { savedOk = false; }
+    }
+  
+    const etiket = kind === 'photo' ? '📸 Fotoğrafı' : kind === 'video' ? '🎥 Videoyu' : '📎 Dosyayı';
+    const satirlar = [
+          etiket + ' aldım' + (caption ? (' — not: "' + caption + '"') : '') + '.',
+          savedOk ? '✅ Kuyruğa alındı (durum: onay bekliyor).' : '⚠️ Aldım ama kalıcı kayıt başarısız oldu.',
+          'Bu fatura/fiş görselinden bilgi çıkarma ve BizimHesap\'a onaylı yazma adımı şu an geliştiriliyor — hazır olunca burada onayına sunacağım.'
+        ];
+    await sendMessage(env, chatId, satirlar.join('\n'));
+    return json({ ok: true, captured: kind });
+}
+
 export async function onRequestGet({ env }) {
 return json({
 ok: true,
@@ -362,6 +408,7 @@ export async function onRequestPost({ request, env }) {
 try {
 const update = await request.json();
 const msg = update.message;
+      if (msg && msg.chat && (msg.photo || msg.document || msg.video)) { return await handleMediaCapture(env, msg); }
 if (!msg || !msg.chat || !msg.text) return json({ ok: true, ignored: true });
 
 const chatId = msg.chat.id;
@@ -375,7 +422,8 @@ await sendMessage(env, chatId,
 'Bakiye sorgusu: "bakiye"\n' +
 'Durum: /durum\n' +
 'Stok sorgusu: /stok <ürün adı>\n' +
-'Herhangi bir not: düz yaz, kaydederim.'
+'Fatura/fiş fotoğrafı: gönder, kuyruğa alırım (BizimHesap\'a onaylı yazma yakında).\n' +
+                      'Herhangi bir not: düz yaz, kaydederim.'
 );
 return json({ ok: true });
 }
