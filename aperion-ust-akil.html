@@ -1434,6 +1434,7 @@ db.from('aperion_balance_sheet_v1_view').select('*').then(({data,error})=>{
   db.from('aperion_expense_category_v1_view').select('*'),
   db.from('aperion_expense_anomaly_v1_view').select('*'),
   ]); })().then(([{data: rows, error}, {data: anomRows}]) => {
+     const el = document.getElementById('harcamaBody');
   if (error || !rows) { el.innerHTML = '<p style="color:var(--muted);font-size:12px">Kaynak okunamadı: '+(error?error.message:'boş sonuç')+'</p>'; return; }
   const toplam = rows.reduce((s,r)=>s+Number(r.toplam_yil||0),0);
   const sorted = [...rows].sort((a,b)=>Number(b.toplam_yil||0)-Number(a.toplam_yil||0));
