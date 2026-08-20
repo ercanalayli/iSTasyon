@@ -155,7 +155,7 @@
     "verify:connector-fabric": "node tools/verify_connector_fabric_v132.cjs",
     "verify:commitment-engine": "node tools/verify_commitment_engine_v133.cjs",
     "verify:session-memory": "node tools/verify_session_memory_v134.cjs",
-    "verify:session-memory-v138": "node tools/verify_session_memory_v138.cjs && node tools/test_session_checkpoint_api.mjs",
+    "verify:session-memory-v138": "node tools/verify_session_memory_v138.cjs && node tools/test_session_checkpoint_api.mjs && node tools/test_session_bootstrap_degraded_v142.mjs",
     "memory:checkpoint": "node tools/save_aperion_session_checkpoint.cjs",
     "verify:bizimhesap:d1-bridge": "node tools/verify_bizimhesap_d1_bridge_v135.cjs",
     "verify:spec-kit-memory": "node tools/verify_aperion_spec_kit_v136.cjs",
