@@ -1,5 +1,6 @@
 import { getMobileSecurityStatus, handleMobileCommand, verifyTelegramRequest } from './mobile-command-center.js';
 import { DESKTOP_TARGETS, desktopTargetSummary, parseUniversalCommand } from './universal-command-router.js';
+import { deviceHealth, queueDeviceCommand } from './device-bridge.js';
 
 // AperiON Telegram Webhook - ikinci beyin / hizli yakalama
 // Route: /telegram/webhook
@@ -319,6 +320,13 @@ SET status=?,result_summary=?,external_queue_id=?,updated_at=datetime('now') WHE
 
 async function queueDesktopCommand(env, identity, message, intent) {
 if (!DESKTOP_TARGETS[intent.target]) return { ok: false, error: 'desktop_target_not_allowed' };
+const deviceResult = await queueDeviceCommand(env, {
+commandKey: `telegram:${identity.chatId}:${message.message_id}:desktop:${intent.target}`,
+chatId: identity.chatId,
+command: 'desktop_open_url',
+target: intent.target
+});
+if (deviceResult.ok) return deviceResult;
 const result = await sbFetch(env, '/rest/v1/bot_commands', {
 method: 'POST',
 headers: { prefer: 'return=representation' },
@@ -636,12 +644,16 @@ async function handleMediaCapture(env, msg) {
 
 export async function onRequestGet({ env }) {
 const security = await getMobileSecurityStatus(env);
+const desktopBridge = await deviceHealth(env);
 return json({
 ok: true,
 service: 'aperion-telegram-webhook',
 mode: 'mobile-command-center-v2',
 command_router_version: 'v140',
 desktop_target_count: Object.keys(DESKTOP_TARGETS).length,
+desktop_bridge_configured: desktopBridge.configured,
+desktop_bridge_active_device_count: desktopBridge.activeDeviceCount,
+desktop_bridge_pending_command_count: desktopBridge.pendingCommandCount,
 telegram_token_configured: Boolean(env.TELEGRAM_BOT_TOKEN),
 supabase_configured: Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
 identity_guard_configured: security.identityGuard,
