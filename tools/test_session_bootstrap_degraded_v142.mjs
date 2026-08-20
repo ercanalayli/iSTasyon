@@ -38,4 +38,13 @@ assert.equal(body.work_items[0].work_key, 'work-1');
 assert.equal(body.last_checkpoint.checkpoint_key, 'cp-1');
 assert.equal(body.last_working_state.state.step, 'verify');
 
+const healthResponse = await onRequestGet({
+  request: new Request('https://example.test/api/session-bootstrap?health=1'),
+  env: { APERION_DB: db },
+});
+const health = await healthResponse.json();
+assert.equal(healthResponse.status, 200);
+assert.equal(health.version, 'v142');
+assert.equal(health.data_access, 'protected');
+
 console.log('AperiON degraded session bootstrap v142 testi geçti.');

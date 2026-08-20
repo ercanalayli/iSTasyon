@@ -49,6 +49,9 @@ function sourceStatus(result) {
 
 export async function onRequestGet({ request, env }) {
   if (!env.APERION_DB) return json({ ok: false, error: 'missing_d1_binding' }, 503);
+  if (new URL(request.url).searchParams.get('health') === '1') {
+    return json({ ok: true, service: 'aperion-session-bootstrap', version: 'v142', data_access: 'protected' });
+  }
   if (!await authorized(request, env)) return json({ ok: false, error: 'unauthorized' }, 401);
 
   const results = await Promise.all([
