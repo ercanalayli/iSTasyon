@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AperiON Cihaz Eşleştirme</title>
+  <style>
+    body{font-family:system-ui,sans-serif;background:#0b1220;color:#e5edf8;margin:0;padding:32px}
+    main{max-width:640px;margin:auto;background:#111b2e;border:1px solid #263653;border-radius:16px;padding:24px}
+    label{display:block;margin:12px 0 4px;color:#a9b8d0}input{width:100%;box-sizing:border-box;padding:10px;border-radius:8px;border:1px solid #344766;background:#0a1323;color:#fff}
+    button{margin-top:18px;padding:11px 18px;border:0;border-radius:9px;background:#4f8cff;color:#fff;font-weight:700;cursor:pointer}
+    pre{white-space:pre-wrap;word-break:break-all;background:#07101e;padding:12px;border-radius:8px;min-height:48px}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>AperiON Cihaz Eşleştirme</h1>
+    <p>Bu sayfa yalnızca kısa süreli, imzalı eşleştirme kanıtını kabul eder.</p>
+    <form id="form">
+      <label for="device_id">Cihaz ID</label><input id="device_id" required>
+      <label for="device_name">Cihaz adı</label><input id="device_name" required>
+      <label for="timestamp">Zaman damgası</label><input id="timestamp" required>
+      <label for="nonce">Tek kullanımlık değer</label><input id="nonce" required>
+      <label for="proof">İmzalı kanıt</label><input id="proof" required>
+      <button type="submit">Cihazı eşleştir</button>
+    </form>
+    <pre id="result" aria-live="polite"></pre>
+  </main>
+  <script>
+    document.getElementById('form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const result = document.getElementById('result');
+      result.textContent = 'Eşleştiriliyor…';
+      const body = Object.fromEntries(['device_id','device_name','timestamp','nonce','proof'].map((key) => [key, document.getElementById(key).value]));
+      body.timestamp = Number(body.timestamp);
+      try {
+        const response = await fetch('/api/device/enroll', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(body) });
+        result.textContent = JSON.stringify(await response.json());
+      } catch (error) {
+        result.textContent = JSON.stringify({ok:false,error:String(error.message || error)});
+      }
+    });
+  </script>
+</body>
+</html>
