@@ -20,6 +20,8 @@ assert.match(source, /enrollment_replay_rejected/);
 assert.match(webhook, /queueDeviceCommand/);
 assert.match(webhook, /desktop_bridge_configured/);
 assert.match(localBridge, /const TARGETS = Object\.freeze/);
+assert.match(localBridge, /--prepare-enroll/);
+assert.match(localBridge, /--enroll-from-request/);
 assert.doesNotMatch(localBridge, /SUPABASE_SERVICE_ROLE_KEY/);
 assert.doesNotMatch(localBridge, /writeFileSync\([\s\S]*TELEGRAM_BOT_TOKEN/);
 

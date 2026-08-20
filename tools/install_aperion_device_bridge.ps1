@@ -8,8 +8,8 @@ $taskName = 'AperiON_Device_Bridge'
 
 New-Item -ItemType Directory -Path $logsDir -Force | Out-Null
 
-& node $bridgeScript --enroll
-if ($LASTEXITCODE -ne 0) { throw 'AperiON cihaz eşleştirmesi başarısız oldu.' }
+& node $bridgeScript --prepare-enroll
+if ($LASTEXITCODE -ne 0) { throw 'AperiON tek kullanımlık eşleştirme isteği hazırlanamadı.' }
 
 $action = New-ScheduledTaskAction -Execute $env:ComSpec -Argument ('/c ""{0}""' -f $runner)
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME

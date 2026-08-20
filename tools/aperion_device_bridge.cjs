@@ -9,6 +9,7 @@ const { spawn } = require('node:child_process');
 const ROOT = path.resolve(__dirname, '..');
 const SECRET_DIR = path.join(ROOT, 'local-secrets');
 const SECRET_FILE = path.join(SECRET_DIR, 'aperion-device.env');
+const ENROLL_REQUEST_FILE = path.join(SECRET_DIR, 'aperion-enroll-request.json');
 const DEFAULT_BASE_URL = 'https://aperion-istasyon.pages.dev';
 const POLL_INTERVAL_MS = 3000;
 
@@ -55,7 +56,7 @@ async function readJson(response) {
   }
 }
 
-async function enroll() {
+function prepareEnrollmentRequest() {
   const bootstrapSecret = process.env.TELEGRAM_BOT_TOKEN || '';
   if (!bootstrapSecret) throw new Error('TELEGRAM_BOT_TOKEN yalnızca ilk eşleştirme için bu işlem ortamında bulunmalı.');
 
@@ -67,15 +68,31 @@ async function enroll() {
     .update(enrollmentPayload(deviceId, timestamp, nonce))
     .digest('hex');
   const baseUrl = process.env.APERION_BASE_URL || existing.APERION_BASE_URL || DEFAULT_BASE_URL;
+  fs.mkdirSync(SECRET_DIR, { recursive: true });
+  fs.writeFileSync(ENROLL_REQUEST_FILE, JSON.stringify({
+    base_url: baseUrl,
+    device_id: deviceId,
+    device_name: `${os.hostname()} / Windows`,
+    timestamp,
+    nonce,
+    proof
+  }), { encoding: 'utf8', mode: 0o600 });
+  console.log(`Tek kullanımlık AperiON eşleştirme isteği hazırlandı: ${deviceId}`);
+}
+
+async function enrollFromRequest() {
+  if (!fs.existsSync(ENROLL_REQUEST_FILE)) throw new Error('Tek kullanımlık eşleştirme isteği bulunamadı.');
+  const request = JSON.parse(fs.readFileSync(ENROLL_REQUEST_FILE, 'utf8'));
+  const baseUrl = request.base_url || DEFAULT_BASE_URL;
   const response = await fetch(`${baseUrl}/api/device/enroll`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
-      device_id: deviceId,
-      device_name: `${os.hostname()} / Windows`,
-      timestamp,
-      nonce,
-      proof
+      device_id: request.device_id,
+      device_name: request.device_name,
+      timestamp: request.timestamp,
+      nonce: request.nonce,
+      proof: request.proof
     })
   });
   const result = await readJson(response);
@@ -93,6 +110,7 @@ async function enroll() {
     ].join('\n'),
     { encoding: 'utf8', mode: 0o600 }
   );
+  fs.rmSync(ENROLL_REQUEST_FILE, { force: true });
   console.log(`AperiON cihazı eşleştirildi: ${result.device_id}`);
   console.log(`Yetki kapsamı: ${(result.scopes || []).join(', ')}`);
 }
@@ -148,8 +166,17 @@ async function tick(config) {
 
 async function run() {
   const args = new Set(process.argv.slice(2));
+  if (args.has('--prepare-enroll')) {
+    prepareEnrollmentRequest();
+    return;
+  }
+  if (args.has('--enroll-from-request')) {
+    await enrollFromRequest();
+    return;
+  }
   if (args.has('--enroll')) {
-    await enroll();
+    prepareEnrollmentRequest();
+    await enrollFromRequest();
     return;
   }
   if (args.has('--self-test')) {
