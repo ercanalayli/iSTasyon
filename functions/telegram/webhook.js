@@ -1,3 +1,5 @@
+import { handleMobileCommand, verifyTelegramRequest } from './mobile-command-center.js';
+
 // AperiON Telegram Webhook - ikinci beyin / hizli yakalama
 // Route: /telegram/webhook
 
@@ -513,15 +515,19 @@ export async function onRequestGet({ env }) {
 return json({
 ok: true,
 service: 'aperion-telegram-webhook',
-mode: 'quick-capture-v2',
+mode: 'mobile-command-center-v1',
 telegram_token_configured: Boolean(env.TELEGRAM_BOT_TOKEN),
-supabase_configured: Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY)
+supabase_configured: Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
+identity_guard_configured: Boolean(env.TELEGRAM_ALLOWED_CHAT_IDS),
+webhook_secret_configured: Boolean(env.TELEGRAM_WEBHOOK_SECRET)
 });
 }
 
 export async function onRequestPost({ request, env }) {
 try {
 const update = await request.json();
+const identity = await verifyTelegramRequest(request, env, update);
+if (!identity.ok) return json({ ok: false, error: 'unauthorized_telegram_update' }, identity.status || 403);
 if (update.callback_query) {
 const handled = await handleTransferCallback(env, update.callback_query);
 return json({ ok: true, callback_handled: handled });
@@ -533,6 +539,9 @@ if (!msg || !msg.chat || !msg.text) return json({ ok: true, ignored: true });
 const chatId = msg.chat.id;
 const text = clean(msg.text);
 const lower = lowerTR(text);
+
+const mobileResult = await handleMobileCommand({ env, message: msg, identity, sendMessage });
+if (mobileResult.handled) return json({ ok: true, mobile_command: mobileResult.code, status: mobileResult.status });
 
 if (text.startsWith('/start')) {
 await sendMessage(env, chatId,

@@ -159,7 +159,8 @@
     "memory:checkpoint": "node tools/save_aperion_session_checkpoint.cjs",
     "verify:bizimhesap:d1-bridge": "node tools/verify_bizimhesap_d1_bridge_v135.cjs",
     "verify:spec-kit-memory": "node tools/verify_aperion_spec_kit_v136.cjs",
-    "test:memory-context": "node tools/aperion_memory_context_v137_test.cjs"
+    "test:memory-context": "node tools/aperion_memory_context_v137_test.cjs",
+    "verify:telegram-mobile-command-center": "node --check functions/telegram/mobile-command-center.js && node --check functions/telegram/webhook.js && node tools/test_telegram_mobile_command_center_v139.mjs"
     ,"hasta-bezi:source-audit": "node tools/audit_hasta_bezi_source_reports_v91.cjs"
     ,"verify:hasta-bezi:source-audit": "node tools/verify_hasta_bezi_source_reports_v91.cjs"
     ,"hasta-bezi:fifo:build": "node tools/build_hasta_bezi_fifo_chunks_v92.cjs"
