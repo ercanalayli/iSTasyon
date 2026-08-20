@@ -11,15 +11,20 @@ assert.equal(normalizeTurkish('  GÜNAYDIN   APERİON '), 'günaydın aperion');
 assert.equal(parseMobileCommand('Günaydın AperiON').code, 'morning');
 assert.equal(parseMobileCommand('/menu').code, 'menu');
 assert.equal(parseMobileCommand('/sistem').code, 'system');
+assert.equal(parseMobileCommand('/onemli').code, 'priority_status');
 assert.equal(parseMobileCommand('/onaylar').code, 'approvals');
 assert.equal(parseMobileCommand('/görevler').code, 'tasks');
 assert.equal(parseMobileCommand('/hafıza').code, 'memory');
 assert.equal(parseMobileCommand('/komutlar').code, 'command_catalog');
 assert.equal(parseMobileCommand('/komutdurum').code, 'command_status');
+assert.equal(parseMobileCommand('/cihazdurum').code, 'device_status');
+assert.equal(parseMobileCommand('cihaz durumu').code, 'device_status');
 assert.deepEqual(parseMobileCommand('/gorev Faturaları kontrol et'), { code: 'task_capture', payload: 'Faturaları kontrol et' });
 assert.equal(parseMobileCommand('bakiye'), null);
 assert.equal(MOBILE_COMMANDS.task_capture.risk, 'low_risk');
 assert.equal(MOBILE_COMMANDS.command_catalog.risk, 'read');
+assert.equal(MOBILE_COMMANDS.device_status.risk, 'read');
+assert.equal(MOBILE_COMMANDS.priority_status.risk, 'read');
 assert.equal(await __test.constantTimeEqual(await __test.hashHex('secret'), await __test.hashHex('secret')), true);
 assert.equal(await __test.constantTimeEqual(await __test.hashHex('secret'), await __test.hashHex('wrong')), false);
 
@@ -47,5 +52,63 @@ const wrongChat = await verifyTelegramRequest(
 );
 assert.equal(wrongChat.ok, false);
 assert.equal(wrongChat.reason, 'chat_not_allowed');
+
+function fakeDeviceDb({ devices = [], commandCounts = {} } = {}) {
+  return {
+    prepare(sql) {
+      return {
+        bind() { return this; },
+        async all() {
+          if (sql.includes('FROM aperion_devices')) return { results: devices };
+          throw new Error(`Unexpected all query: ${sql}`);
+        },
+        async first() {
+          if (sql.includes('FROM aperion_device_commands')) return commandCounts;
+          throw new Error(`Unexpected first query: ${sql}`);
+        }
+      };
+    }
+  };
+}
+
+const offlineDeviceText = await __test.buildDeviceStatusText(fakeDeviceDb({
+  devices: [{ device_id: 'desktop-1', device_name: 'AperiON Windows', status: 'active', last_seen_at: null }],
+  commandCounts: { total: 2, pending: 1, processing: 0, completed: 1, failed: 0 }
+}), Date.parse('2026-08-20T09:00:00Z'));
+assert.match(offlineDeviceText, /İLK BAĞLANTI BEKLENİYOR/);
+assert.match(offlineDeviceText, /Bekleyen komut: 1/);
+
+const onlineDeviceText = await __test.buildDeviceStatusText(fakeDeviceDb({
+  devices: [{ device_id: 'desktop-1', device_name: 'AperiON Windows', status: 'active', last_seen_at: '2026-08-20 08:59:30' }],
+  commandCounts: { total: 1, pending: 0, processing: 0, completed: 1, failed: 0 }
+}), Date.parse('2026-08-20T09:00:00Z'));
+assert.match(onlineDeviceText, /ÇEVRİMİÇİ/);
+
+const priorityDb = {
+  prepare(sql) {
+    return {
+      bind() { return this; },
+      async all() {
+        if (sql.includes('FROM commitment_timeline')) return { results: [
+          { commitment_type: 'sales_order', amount: 1500, time_bucket: 'approaching' },
+          { commitment_type: 'purchase_order', amount: 900, time_bucket: 'overdue' },
+          { commitment_type: 'payable', amount: 700, time_bucket: 'approaching' },
+          { commitment_type: 'receivable', amount: 1200, time_bucket: 'overdue' }
+        ] };
+        throw new Error(`Unexpected all query: ${sql}`);
+      },
+      async first() {
+        if (sql.includes('FROM work_items')) return { count: 6 };
+        throw new Error(`Unexpected first query: ${sql}`);
+      }
+    };
+  }
+};
+const priorityText = await __test.buildPriorityStatusText(priorityDb);
+assert.match(priorityText, /Alınan siparişler: 1/);
+assert.match(priorityText, /Verilen siparişler: 1/);
+assert.match(priorityText, /Ödemeler: 1/);
+assert.match(priorityText, /Tahsilatlar: 1/);
+assert.match(priorityText, /Yapılacaklar: 6/);
 
 console.log('Telegram mobile command center tests passed.');
