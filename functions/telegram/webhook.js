@@ -521,7 +521,8 @@ telegram_token_configured: Boolean(env.TELEGRAM_BOT_TOKEN),
 supabase_configured: Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
 identity_guard_configured: security.identityGuard,
 webhook_secret_configured: security.webhookSecret,
-security_source: security.source
+security_source: security.source,
+webhook_bootstrap_status: security.bootstrapStatus || (security.webhookSecret ? 'ready' : 'pending')
 });
 }
 
@@ -531,11 +532,15 @@ const update = await request.json();
 const identity = await verifyTelegramRequest(request, env, update);
 if (!identity.ok) return json({ ok: false, error: 'unauthorized_telegram_update' }, identity.status || 403);
 if (update.callback_query) {
+if (!identity.hardened) return json({ ok: false, error: 'security_bootstrap_pending' }, 503);
 const handled = await handleTransferCallback(env, update.callback_query);
 return json({ ok: true, callback_handled: handled });
 }
 const msg = update.message;
-      if (msg && msg.chat && (msg.photo || msg.document || msg.video)) { return await handleMediaCapture(env, msg); }
+      if (msg && msg.chat && (msg.photo || msg.document || msg.video)) {
+      if (!identity.hardened) return json({ ok: false, error: 'security_bootstrap_pending' }, 503);
+      return await handleMediaCapture(env, msg);
+      }
 if (!msg || !msg.chat || !msg.text) return json({ ok: true, ignored: true });
 
 const chatId = msg.chat.id;
@@ -544,6 +549,11 @@ const lower = lowerTR(text);
 
 const mobileResult = await handleMobileCommand({ env, message: msg, identity, sendMessage });
 if (mobileResult.handled) return json({ ok: true, mobile_command: mobileResult.code, status: mobileResult.status });
+
+if (!identity.hardened && !lower.startsWith('/durum') && !lower.startsWith('/stok') && !lower.includes('bakiye')) {
+await sendMessage(env, chatId, '🔒 Güvenlik eşleştirmesi tamamlanıyor. Şimdilik /menu, /sistem, /gorevler, /onaylar, /hafiza, /durum, /stok ve bakiye sorguları kullanılabilir; kayıt oluşturan komutlar kapalıdır.');
+return json({ ok: true, security_bootstrap_pending: true });
+}
 
 if (text.startsWith('/start')) {
 await sendMessage(env, chatId,

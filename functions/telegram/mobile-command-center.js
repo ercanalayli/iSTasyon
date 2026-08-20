@@ -137,7 +137,7 @@ function randomSecret() {
 }
 
 async function registerTelegramWebhook(env, secret) {
-  if (!env.TELEGRAM_BOT_TOKEN) return false;
+  if (!env.TELEGRAM_BOT_TOKEN) return { ok: false, code: 'missing_bot_token' };
   const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/setWebhook`;
   const body = new URLSearchParams({
     url: env.TELEGRAM_WEBHOOK_URL || 'https://aperion-istasyon.pages.dev/telegram/webhook',
@@ -146,9 +146,11 @@ async function registerTelegramWebhook(env, secret) {
   try {
     const response = await fetch(url, { method: 'POST', body });
     const result = await response.json();
-    return Boolean(response.ok && result?.ok);
+    return response.ok && result?.ok
+      ? { ok: true, code: 'ready' }
+      : { ok: false, code: `telegram_api_${response.status || 'rejected'}` };
   } catch (_error) {
-    return false;
+    return { ok: false, code: 'telegram_fetch_failed' };
   }
 }
 
@@ -169,9 +171,14 @@ async function verifyD1Security(request, env, identity) {
   let storedHash = await readSecurityConfig(env.APERION_DB, 'webhook_secret_sha256');
   if (!storedHash) {
     const secret = randomSecret();
-    if (!(await registerTelegramWebhook(env, secret))) return { ok: false, status: 503, reason: 'webhook_bootstrap_failed' };
+    const registration = await registerTelegramWebhook(env, secret);
+    if (!registration.ok) {
+      await writeSecurityConfig(env.APERION_DB, 'webhook_bootstrap_status', registration.code);
+      return { ok: true, ...identity, hardened: false, bootstrapped: false, bootstrapPending: true };
+    }
     storedHash = await hashHex(secret);
     await writeSecurityConfig(env.APERION_DB, 'webhook_secret_sha256', storedHash);
+    await writeSecurityConfig(env.APERION_DB, 'webhook_bootstrap_status', 'ready');
     return { ok: true, ...identity, hardened: true, bootstrapped: true };
   }
 
@@ -217,7 +224,8 @@ export async function getMobileSecurityStatus(env) {
     readSecurityConfig(env.APERION_DB, 'allowed_chat_id'),
     readSecurityConfig(env.APERION_DB, 'webhook_secret_sha256')
   ]);
-  return { identityGuard: Boolean(chat), webhookSecret: Boolean(secretHash), source: 'd1' };
+  const bootstrapStatus = await readSecurityConfig(env.APERION_DB, 'webhook_bootstrap_status');
+  return { identityGuard: Boolean(chat), webhookSecret: Boolean(secretHash), source: 'd1', bootstrapStatus: bootstrapStatus || 'pending' };
 }
 
 async function safeAll(db, sql, bindings = []) {
