@@ -148,7 +148,11 @@ async function registerTelegramWebhook(env, secret) {
     const result = await response.json();
     return response.ok && result?.ok
       ? { ok: true, code: 'ready' }
-      : { ok: false, code: `telegram_api_${response.status || 'rejected'}` };
+      : {
+          ok: false,
+          code: `telegram_api_${response.status || 'rejected'}`,
+          retryAfter: Math.max(30, Number(result?.parameters?.retry_after) || 60)
+        };
   } catch (_error) {
     return { ok: false, code: 'telegram_fetch_failed' };
   }
@@ -170,15 +174,21 @@ async function verifyD1Security(request, env, identity) {
   const supplied = request.headers.get('x-telegram-bot-api-secret-token') || '';
   let storedHash = await readSecurityConfig(env.APERION_DB, 'webhook_secret_sha256');
   if (!storedHash) {
+    const retryAt = await readSecurityConfig(env.APERION_DB, 'webhook_retry_at');
+    if (retryAt && Date.parse(retryAt) > Date.now()) {
+      return { ok: true, ...identity, hardened: false, bootstrapped: false, bootstrapPending: true };
+    }
     const secret = randomSecret();
     const registration = await registerTelegramWebhook(env, secret);
     if (!registration.ok) {
       await writeSecurityConfig(env.APERION_DB, 'webhook_bootstrap_status', registration.code);
+      await writeSecurityConfig(env.APERION_DB, 'webhook_retry_at', new Date(Date.now() + (registration.retryAfter || 60) * 1000).toISOString());
       return { ok: true, ...identity, hardened: false, bootstrapped: false, bootstrapPending: true };
     }
     storedHash = await hashHex(secret);
     await writeSecurityConfig(env.APERION_DB, 'webhook_secret_sha256', storedHash);
     await writeSecurityConfig(env.APERION_DB, 'webhook_bootstrap_status', 'ready');
+    await writeSecurityConfig(env.APERION_DB, 'webhook_retry_at', '');
     return { ok: true, ...identity, hardened: true, bootstrapped: true };
   }
 
