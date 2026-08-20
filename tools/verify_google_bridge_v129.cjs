@@ -8,6 +8,7 @@ ok('shared key required', api.includes('APERION_GOOGLE_BRIDGE_KEY') && api.inclu
 ok('Drive check', gas.includes('DriveApp.getFolderById'));
 ok('Sheets check', gas.includes('SpreadsheetApp.openById'));
 ok('daily trigger', gas.includes("atHour(8)") && gas.includes("nearMinute(30)"));
+ok('daily memory backup', gas.includes('aperionMemoryBackup') && gas.includes('03_SISTEM_YEDEKLERI'));
 ok('no Gmail permission', !manifest.oauthScopes.some(x => x.includes('gmail')));
 ok('no financial adapter', !gas.includes('BizimHesap'));
 console.log('Google bridge verification passed.');

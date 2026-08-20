@@ -3,6 +3,7 @@
  * Phase 1: no Gmail scope, no financial writes, no outbound messaging.
  */
 const APERION_ENDPOINT = 'https://aperion-istasyon.pages.dev/api/google-bridge';
+const APERION_MEMORY_EXPORT_ENDPOINT = 'https://aperion-istasyon.pages.dev/api/session-export';
 
 function aperionHealthCheck() {
   const props = PropertiesService.getScriptProperties();
@@ -53,14 +54,50 @@ function checkResource_(name, fn) {
 
 function installAperionMorningTrigger() {
   ScriptApp.getProjectTriggers().filter(function (trigger) {
-    return trigger.getHandlerFunction() === 'aperionHealthCheck';
+    return ['aperionHealthCheck', 'aperionDailyMaintenance'].indexOf(trigger.getHandlerFunction()) >= 0;
   }).forEach(function (trigger) { ScriptApp.deleteTrigger(trigger); });
 
-  ScriptApp.newTrigger('aperionHealthCheck')
+  ScriptApp.newTrigger('aperionDailyMaintenance')
     .timeBased()
     .atHour(8)
     .nearMinute(30)
     .everyDays(1)
     .inTimezone('Europe/Istanbul')
     .create();
+}
+
+function aperionDailyMaintenance() {
+  const health = aperionHealthCheck();
+  const backup = aperionMemoryBackup();
+  return { health: health, backup: backup };
+}
+
+function aperionMemoryBackup() {
+  const props = PropertiesService.getScriptProperties();
+  const secret = props.getProperty('APERION_BRIDGE_SECRET');
+  const rootFolderId = props.getProperty('APERION_DRIVE_ROOT_ID');
+  if (!secret) throw new Error('APERION_BRIDGE_SECRET tanimli degil.');
+  if (!rootFolderId) throw new Error('APERION_DRIVE_ROOT_ID tanimli degil.');
+
+  const response = UrlFetchApp.fetch(APERION_MEMORY_EXPORT_ENDPOINT, {
+    method: 'get',
+    headers: { authorization: 'Bearer ' + secret },
+    muteHttpExceptions: true
+  });
+  if (response.getResponseCode() >= 300) {
+    throw new Error('AperiON memory export HTTP ' + response.getResponseCode() + ': ' + response.getContentText());
+  }
+
+  const root = DriveApp.getFolderById(rootFolderId);
+  const folders = root.getFoldersByName('03_SISTEM_YEDEKLERI');
+  const backupFolder = folders.hasNext() ? folders.next() : root.createFolder('03_SISTEM_YEDEKLERI');
+  const today = Utilities.formatDate(new Date(), 'Europe/Istanbul', 'yyyy-MM-dd');
+  const fileName = 'AperiON_Hafiza_Yedegi_' + today + '.json';
+  const existing = backupFolder.getFilesByName(fileName);
+  if (existing.hasNext()) {
+    const file = existing.next();
+    return { ok: true, duplicate: true, file_id: file.getId(), file_name: fileName };
+  }
+  const file = backupFolder.createFile(fileName, response.getContentText(), 'application/json');
+  return { ok: true, duplicate: false, file_id: file.getId(), file_name: fileName };
 }
