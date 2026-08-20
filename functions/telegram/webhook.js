@@ -639,7 +639,9 @@ const security = await getMobileSecurityStatus(env);
 return json({
 ok: true,
 service: 'aperion-telegram-webhook',
-mode: 'mobile-command-center-v1',
+mode: 'mobile-command-center-v2',
+command_router_version: 'v140',
+desktop_target_count: Object.keys(DESKTOP_TARGETS).length,
 telegram_token_configured: Boolean(env.TELEGRAM_BOT_TOKEN),
 supabase_configured: Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
 identity_guard_configured: security.identityGuard,
