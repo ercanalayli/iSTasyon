@@ -14,9 +14,12 @@ assert.equal(parseMobileCommand('/sistem').code, 'system');
 assert.equal(parseMobileCommand('/onaylar').code, 'approvals');
 assert.equal(parseMobileCommand('/görevler').code, 'tasks');
 assert.equal(parseMobileCommand('/hafıza').code, 'memory');
+assert.equal(parseMobileCommand('/komutlar').code, 'command_catalog');
+assert.equal(parseMobileCommand('/komutdurum').code, 'command_status');
 assert.deepEqual(parseMobileCommand('/gorev Faturaları kontrol et'), { code: 'task_capture', payload: 'Faturaları kontrol et' });
 assert.equal(parseMobileCommand('bakiye'), null);
 assert.equal(MOBILE_COMMANDS.task_capture.risk, 'low_risk');
+assert.equal(MOBILE_COMMANDS.command_catalog.risk, 'read');
 assert.equal(await __test.constantTimeEqual(await __test.hashHex('secret'), await __test.hashHex('secret')), true);
 assert.equal(await __test.constantTimeEqual(await __test.hashHex('secret'), await __test.hashHex('wrong')), false);
 

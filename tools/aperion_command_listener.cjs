@@ -8,6 +8,7 @@
 // (login sayfasina geri atarsa) yeniden giris dene.
 const fs = require('fs');
 const path = require('path');
+const { spawn } = require('child_process');
 const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
 const { launchOptions, loginBizimHesap, selectFirma, checkLoginCooldown, savePageDiagnostics } = require('../bizimhesap_common.cjs');
@@ -58,6 +59,47 @@ const ACCOUNTS_URL = 'https://bizimhesap.com/web/ngn/acc/ngnaccounts';
 let browser, page;
 
 function log(msg) { console.log(`[${new Date().toISOString()}] ${msg}`); }
+
+const DESKTOP_TARGETS = Object.freeze({
+  bizimhesap: { title: 'BizimHesap', url: 'https://bizimhesap.com/web/ngn/newportal' },
+  gmail: { title: 'Gmail', url: 'https://mail.google.com/mail/u/0/#inbox' },
+  drive: { title: 'Google Drive', url: 'https://drive.google.com/drive/my-drive' },
+  calendar: { title: 'Google Takvim', url: 'https://calendar.google.com/calendar/u/0/r' },
+  telegram: { title: 'Telegram Web', url: 'https://web.telegram.org/k/' },
+  whatsapp: { title: 'WhatsApp Web', url: 'https://web.whatsapp.com/' },
+  aperion: { title: 'AperiON', url: 'https://aperion-istasyon.pages.dev/aperion-ust-akil' },
+});
+
+async function openDesktopTarget(targetKey) {
+  const target = DESKTOP_TARGETS[String(targetKey || '').toLowerCase()];
+  if (!target) return { ok: false, output: 'Masaustu hedefi izin listesinde degil.' };
+  try {
+    const child = spawn('rundll32.exe', ['url.dll,FileProtocolHandler', target.url], {
+      detached: true,
+      windowsHide: true,
+      stdio: 'ignore',
+    });
+    child.unref();
+    return { ok: true, output: `${target.title} varsayilan tarayicida acma istegi gonderildi.` };
+  } catch (error) {
+    return { ok: false, output: `${target.title} acilamadi: ${error.message || error}` };
+  }
+}
+
+async function sendTelegramCommandResult(chatId, text) {
+  if (!chatId || !process.env.TELEGRAM_BOT_TOKEN) return { ok: false, skipped: true };
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ chat_id: String(chatId), text: String(text || '').slice(0, 3500) }),
+    });
+    const result = await response.json();
+    return { ok: response.ok && Boolean(result?.ok) };
+  } catch (_error) {
+    return { ok: false };
+  }
+}
 // 2026-08-10: son savunma hatti - herhangi bir yerde yakalanmamis bir promise
 // reddi Node v25'te varsayilan olarak process'i cokertiyor (bkz. baslangic
 // ensureSession() cokme kaydi ayni gun). Dinleyici saatlerce/gunlerce acik
@@ -1262,6 +1304,9 @@ async function handleCommand(cmd) {
   const params = cmd.params || {};
   let outcome;
   try {
+    if (cmd.command === 'desktop_open_url') {
+      outcome = await openDesktopTarget(params.target);
+    } else {
     await ensureSession();
     if (cmd.command === 'bizimhesap_verify') {
       const r = await bizimhesapVerify(params.search || 'APERION AUTO');
@@ -1413,10 +1458,15 @@ async function handleCommand(cmd) {
     } else {
       outcome = { ok: false, output: `Bilinmeyen komut: ${cmd.command}` };
     }
+    }
   } catch (e) {
     outcome = { ok: false, output: String(e.message || e) };
   }
   await db.from('bot_commands').update({ status: outcome.ok ? 'completed' : 'failed', result: outcome.output.slice(0, 8000), completed_at: new Date().toISOString() }).eq('id', cmd.id);
+  if (cmd.command === 'desktop_open_url' && params.chat_id) {
+    const icon = outcome.ok ? '✅' : '⚠️';
+    await sendTelegramCommandResult(params.chat_id, `${icon} Masaüstü komut sonucu\n${outcome.output}`);
+  }
   log(`Komut bitti: #${cmd.id} -> ${outcome.ok ? 'completed' : 'failed'}`);
 }
 

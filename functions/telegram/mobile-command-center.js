@@ -7,6 +7,8 @@ export const MOBILE_COMMANDS = Object.freeze({
   approvals: { risk: 'read', title: 'Onay kuyruğu' },
   tasks: { risk: 'read', title: 'Görevler' },
   memory: { risk: 'read', title: 'Hafıza özeti' },
+  command_catalog: { risk: 'read', title: 'Komut kataloğu' },
+  command_status: { risk: 'read', title: 'Son komutlar' },
   task_capture: { risk: 'low_risk', title: 'Görev yakalama' },
   help: { risk: 'read', title: 'Yardım' }
 });
@@ -30,6 +32,8 @@ export function parseMobileCommand(text) {
   if (/^\/(gorevler|görevler)(?:@\w+)?\b/.test(normalized)) return { code: 'tasks' };
   if (/^\/hafiza(?:@\w+)?\b/.test(normalized) || /^\/hafıza(?:@\w+)?\b/.test(normalized)) return { code: 'memory' };
   if (/^\/(yardim|yardım)(?:@\w+)?\b/.test(normalized)) return { code: 'help' };
+  if (/^\/(komutlar|commands)(?:@\w+)?\b/.test(normalized)) return { code: 'command_catalog' };
+  if (/^\/(komutdurum|sonuclar|sonuçlar)(?:@\w+)?\b/.test(normalized)) return { code: 'command_status' };
   const task = raw.match(/^\/(?:gorev|görev)(?:@\w+)?\s+([\s\S]+)$/iu);
   if (task && task[1].trim()) return { code: 'task_capture', payload: task[1].trim() };
   return null;
@@ -295,9 +299,50 @@ function menuText(hardened) {
     '📦 Stok: /stok ürün adı',
     '💰 Bakiye: bakiye',
     '📎 Belge/fotoğraf: doğrudan gönder',
+    '🧭 Tüm komutlar: /komutlar',
+    '🕘 Son komutlar: /komutdurum',
+    '🖥️ Uygulama aç: “BizimHesap aç”, “Gmail aç”, “Drive aç”',
+    '💬 Serbest emir: /komut yapılacak iş',
     '',
     'Gerçek mali işlemler yalnızca tek kullanımlık açık onaydan sonra yürütülür.',
-    hardened ? '🔒 Telegram kimliği ve webhook doğrulaması etkin.' : '⚠️ Güvenlik anahtarları tam yapılandırılmamış; yazma işlemleri kapalı kalır.'
+    hardened ? '🔒 Telegram kimliği ve webhook doğrulaması etkin.' : '⚠️ Webhook anahtarı tamamlanıyor: mali/iletişim işlemleri kapalı; sabit uygulama açma ve iç kayıt komutları kullanılabilir.'
+  ].join('\n');
+}
+
+function commandCatalogText() {
+  return [
+    '🧭 AperiON Komut Kataloğu',
+    '',
+    'OTOMATİK / SALT OKUNUR',
+    '• /sabah · /sistem · /onaylar · /gorevler · /hafiza',
+    '• /stok ürün · bakiye · /durum',
+    '',
+    'MASAÜSTÜ — SABİT VE GÜVENLİ HEDEFLER',
+    '• BizimHesap aç · Gmail aç · Drive aç · Takvim aç',
+    '• Telegram aç · WhatsApp aç · AperiON aç',
+    '',
+    'KAYIT / PLANLAMA',
+    '• /gorev yapılacak iş',
+    '• /komut serbest metinli emir',
+    '• Belge veya fotoğrafı doğrudan gönder',
+    '',
+    'TEK KULLANIMLIK ONAY GEREKTİRİR',
+    '• Para, ödeme, transfer, fatura, satınalma ve tahsilat',
+    '• Mesaj/e-posta gönderme, paylaşma veya yayınlama',
+    '• Silme, iptal, yetki ve erişim değişiklikleri',
+    '',
+    'AperiON tanımadığı emri kaybetmez: inceleme kuyruğuna alır ve hiçbir dış işlemi uydurmaz.'
+  ].join('\n');
+}
+
+async function buildCommandStatusText(db) {
+  const result = await safeAll(db, 'SELECT raw_text,status,risk_class,created_at,result_summary FROM telegram_command_requests ORDER BY created_at DESC LIMIT 8');
+  if (!result.available) return '⚠️ Komut geçmişi henüz hazır değil.';
+  if (!result.rows.length) return '🕘 Henüz kayıtlı bir serbest komut yok.';
+  return [
+    '🕘 Son AperiON komutları:',
+    '',
+    ...result.rows.map((row) => `• ${String(row.raw_text || '').slice(0, 80)}\n  ${row.status} · ${row.risk_class}${row.result_summary ? ` · ${row.result_summary}` : ''}`)
   ].join('\n');
 }
 
@@ -386,6 +431,8 @@ export async function handleMobileCommand({ env, message, identity, sendMessage 
   else if (parsed.code === 'approvals') reply = await buildApprovalsText(env.APERION_DB);
   else if (parsed.code === 'tasks') reply = await buildTasksText(env.APERION_DB);
   else if (parsed.code === 'memory') reply = await buildMemoryText(env.APERION_DB);
+  else if (parsed.code === 'command_catalog') reply = commandCatalogText();
+  else if (parsed.code === 'command_status') reply = await buildCommandStatusText(env.APERION_DB);
   else if (parsed.code === 'task_capture') {
     const saved = await captureTask(env.APERION_DB, identity, message.message_id, parsed.payload);
     reply = saved.text;

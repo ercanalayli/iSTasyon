@@ -1,4 +1,5 @@
 import { getMobileSecurityStatus, handleMobileCommand, verifyTelegramRequest } from './mobile-command-center.js';
+import { DESKTOP_TARGETS, desktopTargetSummary, parseUniversalCommand } from './universal-command-router.js';
 
 // AperiON Telegram Webhook - ikinci beyin / hizli yakalama
 // Route: /telegram/webhook
@@ -259,6 +260,128 @@ needs_review: needsReview
 });
 if (!r.ok) return { ok: false, error: r.error, detail: r.detail };
 return { ok: true, id: r.data && r.data[0] && r.data[0].id };
+}
+
+async function ensureUniversalCommandSchema(env) {
+if (!env.APERION_DB) return false;
+try {
+await env.APERION_DB.prepare(`CREATE TABLE IF NOT EXISTS telegram_command_requests (
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+command_key TEXT NOT NULL UNIQUE,
+chat_id TEXT NOT NULL,
+user_id TEXT,
+message_id TEXT NOT NULL,
+raw_text TEXT NOT NULL,
+intent_code TEXT NOT NULL,
+category TEXT NOT NULL,
+target TEXT,
+risk_class TEXT NOT NULL,
+approval_policy TEXT NOT NULL,
+execution_mode TEXT NOT NULL,
+status TEXT NOT NULL,
+external_queue_id TEXT,
+result_summary TEXT,
+created_at TEXT NOT NULL DEFAULT (datetime('now')),
+updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+)`).run();
+return true;
+} catch (_error) {
+return false;
+}
+}
+
+async function claimUniversalCommand(env, identity, message, intent) {
+if (!(await ensureUniversalCommandSchema(env))) return { ok: false, error: 'command_store_unavailable' };
+const commandKey = `telegram:${identity.chatId}:${message.message_id}:universal`;
+try {
+const row = await env.APERION_DB.prepare(`INSERT INTO telegram_command_requests
+(command_key,chat_id,user_id,message_id,raw_text,intent_code,category,target,risk_class,approval_policy,execution_mode,status)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,'accepted')
+ON CONFLICT(command_key) DO NOTHING RETURNING id`)
+.bind(commandKey,identity.chatId,identity.userId || null,String(message.message_id),intent.rawText,intent.code,intent.category,intent.target || null,intent.risk,intent.approvalPolicy,intent.executionMode)
+.first();
+if (row?.id) return { ok: true, id: row.id, duplicate: false };
+const existing = await env.APERION_DB.prepare('SELECT id,status,result_summary FROM telegram_command_requests WHERE command_key=?').bind(commandKey).first();
+return { ok: true, id: existing?.id, duplicate: true, status: existing?.status, resultSummary: existing?.result_summary };
+} catch (error) {
+return { ok: false, error: error?.message || 'command_claim_failed' };
+}
+}
+
+async function updateUniversalCommand(env, id, status, summary, externalQueueId = null) {
+if (!env.APERION_DB || !id) return;
+try {
+await env.APERION_DB.prepare(`UPDATE telegram_command_requests
+SET status=?,result_summary=?,external_queue_id=?,updated_at=datetime('now') WHERE id=?`)
+.bind(status,summary || null,externalQueueId == null ? null : String(externalQueueId),id).run();
+} catch (_error) { /* Command response still reports the durable-store failure. */ }
+}
+
+async function queueDesktopCommand(env, identity, message, intent) {
+if (!DESKTOP_TARGETS[intent.target]) return { ok: false, error: 'desktop_target_not_allowed' };
+const result = await sbFetch(env, '/rest/v1/bot_commands', {
+method: 'POST',
+headers: { prefer: 'return=representation' },
+body: JSON.stringify({
+command: 'desktop_open_url',
+status: 'pending',
+params: {
+target: intent.target,
+source: 'telegram',
+chat_id: String(identity.chatId),
+telegram_message_id: String(message.message_id)
+}
+})
+});
+if (!result.ok) return result;
+return { ok: true, id: result.data?.[0]?.id || null };
+}
+
+async function handleUniversalCommand(env, message, identity, intent) {
+const claimed = await claimUniversalCommand(env, identity, message, intent);
+if (!claimed.ok) {
+await sendMessage(env, identity.chatId, '⚠️ Komut kalıcı kuyruğa alınamadı. Hiçbir dış işlem yapılmadı.');
+return { handled: true, status: 'failed', error: claimed.error };
+}
+if (claimed.duplicate) {
+await sendMessage(env, identity.chatId, `♻️ Bu komut daha önce alındı. Durum: ${claimed.status || 'bilinmiyor'}.`);
+return { handled: true, status: claimed.status || 'duplicate', duplicate: true };
+}
+
+if (intent.code === 'desktop_open') {
+const queued = await queueDesktopCommand(env, identity, message, intent);
+if (!queued.ok) {
+await updateUniversalCommand(env, claimed.id, 'blocked', 'Masaüstü dinleyici kuyruğuna erişilemedi');
+await sendMessage(env, identity.chatId, `⚠️ ${intent.targetTitle} açma komutu kaydedildi fakat masaüstü kuyruğuna bağlanamadı. Bilgisayarda işlem yapılmadı.`);
+return { handled: true, status: 'blocked', error: queued.error };
+}
+await updateUniversalCommand(env, claimed.id, 'queued', `${intent.targetTitle} masaüstü kuyruğuna alındı`, queued.id);
+await sendMessage(env, identity.chatId, `🖥️ ${intent.targetTitle} açma komutu masaüstü kuyruğuna alındı. Bilgisayar ve AperiON dinleyicisi açıksa sonuç Telegram’a bildirilecek.`);
+return { handled: true, status: 'queued', queueId: queued.id };
+}
+
+const parsedType = intent.risk === 'approval_required' ? 'approval_required_command' : 'unmapped_command';
+const saved = await saveQuickNote(env, {
+chatId: identity.chatId,
+messageId: message.message_id,
+rawText: intent.rawText,
+parsedType,
+paymentMethod: null,
+needsReview: true,
+status: intent.risk === 'approval_required' ? 'approval_required' : 'needs_review'
+});
+if (!saved.ok) {
+await updateUniversalCommand(env, claimed.id, 'failed', 'İnceleme kaydı oluşturulamadı');
+await sendMessage(env, identity.chatId, '⚠️ Emri kalıcı inceleme kuyruğuna alamadım. Hiçbir dış işlem yapılmadı.');
+return { handled: true, status: 'failed' };
+}
+const status = intent.risk === 'approval_required' ? 'approval_required' : 'needs_review';
+await updateUniversalCommand(env, claimed.id, status, `quick_note:${saved.id || 'saved'}`);
+const reply = intent.risk === 'approval_required'
+? `🛡️ Emri aldım ve onay gerektiren “${intent.category}” işlemi olarak hazırlık kuyruğuna koydum. Bu kayıt işlem onayı değildir; hiçbir dış işlem yapılmadı.`
+  : `📥 Emri aldım ve yetenek eşleştirme kuyruğuna koydum. Henüz otomatik uygulayamadığım için hiçbir sonucu uydurmadım.\n\nKullanılabilir masaüstü hedefleri: ${desktopTargetSummary()}.`;
+await sendMessage(env, identity.chatId, reply);
+return { handled: true, status, requestId: claimed.id };
 }
 
 async function createTransferApproval(env, { chatId, messageId, quickNoteId, intent }) {
@@ -550,8 +673,14 @@ const lower = lowerTR(text);
 const mobileResult = await handleMobileCommand({ env, message: msg, identity, sendMessage });
 if (mobileResult.handled) return json({ ok: true, mobile_command: mobileResult.code, status: mobileResult.status });
 
+const universalIntent = parseUniversalCommand(text);
+if (universalIntent) {
+const universalResult = await handleUniversalCommand(env, msg, identity, universalIntent);
+return json({ ok: true, universal_command: universalIntent.code, status: universalResult.status, duplicate: Boolean(universalResult.duplicate) });
+}
+
 if (!identity.hardened && !lower.startsWith('/durum') && !lower.startsWith('/stok') && !lower.includes('bakiye')) {
-await sendMessage(env, chatId, '🔒 Güvenlik eşleştirmesi tamamlanıyor. Şimdilik /menu, /sistem, /gorevler, /onaylar, /hafiza, /durum, /stok ve bakiye sorguları kullanılabilir; kayıt oluşturan komutlar kapalıdır.');
+await sendMessage(env, chatId, '🔒 Güvenlik eşleştirmesi tamamlanıyor. Şimdilik rapor/sorgular, iç görev kayıtları ve izin listesindeki sabit uygulama açma komutları kullanılabilir; mali, iletişim, silme ve erişim işlemleri kapalıdır.');
 return json({ ok: true, security_bootstrap_pending: true });
 }
 
