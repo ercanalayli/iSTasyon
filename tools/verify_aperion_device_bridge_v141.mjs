@@ -10,6 +10,8 @@ const webhook = fs.readFileSync(path.join(root, 'functions/telegram/webhook.js')
 const localBridge = fs.readFileSync(path.join(root, 'tools/aperion_device_bridge.cjs'), 'utf8');
 const enrollmentPage = fs.readFileSync(path.join(root, 'aperion-device-enroll.html'), 'utf8');
 const saveEnrollment = fs.readFileSync(path.join(root, 'tools/save_aperion_device_enrollment.ps1'), 'utf8');
+const installer = fs.readFileSync(path.join(root, 'tools/install_aperion_device_bridge.ps1'), 'utf8');
+const installerLauncher = fs.readFileSync(path.join(root, 'aperion_device_bridge_install.cmd'), 'utf8');
 
 assert.equal(
   enrollmentPayload('windows-test', 123, 'nonce-value'),
@@ -29,5 +31,8 @@ assert.doesNotMatch(localBridge, /writeFileSync\([\s\S]*TELEGRAM_BOT_TOKEN/);
 assert.match(enrollmentPage, /\/api\/device\/enroll/);
 assert.match(saveEnrollment, /Set-Clipboard -Value ''/);
 assert.doesNotMatch(saveEnrollment, /TELEGRAM_BOT_TOKEN/);
+assert.match(installer, /HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run/);
+assert.match(installer, /AperiON_Device_Bridge/);
+assert.match(installerLauncher, /install_aperion_device_bridge\.ps1/);
 
 console.log('AperiON cihaz köprüsü v141 doğrulaması geçti.');
