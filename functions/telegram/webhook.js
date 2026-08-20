@@ -86,13 +86,24 @@ const j = await r.json();
 return { ok: true, eventId: j.id, link: j.htmlLink };
 }
 
-async function sendMessage(env, chatId, text) {
+async function sendMessage(env, chatId, text, replyMarkup) {
 if (!env.TELEGRAM_BOT_TOKEN) return { ok: false, error: 'missing_telegram_token' };
 const url = 'https://api.telegram.org/bot' + env.TELEGRAM_BOT_TOKEN + '/sendMessage';
 const r = await fetch(url, {
 method: 'POST',
 headers: { 'content-type': 'application/json' },
-body: JSON.stringify({ chat_id: chatId, text })
+body: JSON.stringify({ chat_id: chatId, text, ...(replyMarkup ? { reply_markup: replyMarkup } : {}) })
+});
+return r.json();
+}
+
+async function answerCallbackQuery(env, callbackQueryId, text) {
+if (!env.TELEGRAM_BOT_TOKEN) return { ok: false, error: 'missing_telegram_token' };
+const url = 'https://api.telegram.org/bot' + env.TELEGRAM_BOT_TOKEN + '/answerCallbackQuery';
+const r = await fetch(url, {
+method: 'POST',
+headers: { 'content-type': 'application/json' },
+body: JSON.stringify({ callback_query_id: callbackQueryId, text, show_alert: false })
 });
 return r.json();
 }
@@ -171,6 +182,25 @@ if (!Number.isFinite(sayi)) return { amount: null, currency: 'TRY', matched: nul
 return { amount: Math.round(sayi * carpan * 100) / 100, currency: 'TRY', matched: m[0] };
 }
 
+export function parseCashTransferIntent(text) {
+const rawText = clean(text).replace(/\s+/g, ' ');
+const match = rawText.match(/^(.+?)\s+(?:kasadan|hesaptan)\s+(.+?)\s+(?:kasaya|hesaba)\s+([\d.,]+)\s*(?:tl|try|₺)\s*(?:transfer(?:\s+et)?|aktar)?$/iu);
+if (!match) return null;
+const amountResult = parseAmount(match[3] + ' TL', null);
+if (!clean(match[1]) || !clean(match[2]) || amountResult.amount === null || amountResult.amount <= 0) return null;
+return {
+type: 'cash_transfer_command',
+source_account_candidate: clean(match[1]),
+target_account_candidate: clean(match[2]),
+amount: amountResult.amount,
+currency: 'TRY',
+raw_text: rawText,
+requires_approval: true,
+creates_finance_record: false,
+sends_to_bizimhesap: false
+};
+}
+
 // ---- karsi taraf tahmini: tarih/tutar/anahtar kelimelerden once gelen kisim ----
 const DUZ_KELIMELER = ['ödeme', 'odeme', 'kredi', 'kart', 'kartı', 'kartı', 'havale', 'eft', 'fast', 'nakit', 'çek', 'cek', 'senet', 'tl', 'lira', 'try', 'bin', 'milyon', 'milyar', 'bugün', 'yarın', ...AYLAR];
 function guessCounterparty(text, dueDateMatchedStr, amountMatchedStr) {
@@ -204,10 +234,10 @@ if (/yapacaksın|hatırlat|unutma|yap\b/.test(lower)) return 'yapilacak_is';
 return 'genel_not';
 }
 
-async function saveQuickNote(env, { chatId, messageId, rawText, parsedType, paymentMethod, needsReview }) {
+async function saveQuickNote(env, { chatId, messageId, rawText, parsedType, paymentMethod, needsReview, status = 'captured' }) {
 if (env.APERION_DB) {
 try {
-const row = await env.APERION_DB.prepare(`INSERT INTO quick_notes (source,source_message_id,chat_id,raw_text,parsed_type,payment_method,status,needs_review) VALUES ('telegram',?,?,?,?,?,'captured',?) ON CONFLICT(source,source_message_id) DO UPDATE SET updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') RETURNING id`).bind(String(messageId),String(chatId),rawText,parsedType,paymentMethod,needsReview?1:0).first();
+const row = await env.APERION_DB.prepare(`INSERT INTO quick_notes (source,source_message_id,chat_id,raw_text,parsed_type,payment_method,status,needs_review) VALUES ('telegram',?,?,?,?,?,?,?) ON CONFLICT(source,source_message_id) DO UPDATE SET updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') RETURNING id`).bind(String(messageId),String(chatId),rawText,parsedType,paymentMethod,status,needsReview?1:0).first();
 return { ok:true, id:row?.id, store:'cloudflare_d1' };
 } catch (error) { /* D1 yoksa/hata varsa Supabase'e dus */ }
 }
@@ -221,12 +251,97 @@ telegram_message_id: messageId,
 raw_text: rawText,
 parsed_type: parsedType,
 payment_method: paymentMethod,
-status: 'captured',
+status,
 needs_review: needsReview
 })
 });
 if (!r.ok) return { ok: false, error: r.error, detail: r.detail };
 return { ok: true, id: r.data && r.data[0] && r.data[0].id };
+}
+
+async function createTransferApproval(env, { chatId, messageId, quickNoteId, intent }) {
+if (!env.APERION_DB) return { ok: false, error: 'd1_required_for_safe_approval' };
+const approvalId = crypto.randomUUID();
+const idempotencyKey = `telegram:cash-transfer:${chatId}:${messageId}`;
+const payload = {
+...intent,
+quick_note_id: quickNoteId,
+chat_id: String(chatId),
+telegram_message_id: String(messageId),
+test_mode: true,
+live_write_enabled: false
+};
+try {
+await env.APERION_DB.prepare(`INSERT INTO approval_queue (id,item_type,status,payload_json,evidence_ref,idempotency_key) VALUES (?,'cash_transfer_test','needs_review',?,?,?)`).bind(
+approvalId,
+JSON.stringify(payload),
+`telegram:${chatId}:${messageId}`,
+idempotencyKey
+).run();
+return { ok: true, id: approvalId, duplicate: false };
+} catch (error) {
+const existing = await env.APERION_DB.prepare('SELECT id,status FROM approval_queue WHERE idempotency_key=?').bind(idempotencyKey).first();
+if (existing?.id) return { ok: true, id: existing.id, duplicate: true, status: existing.status };
+return { ok: false, error: 'approval_queue_failed', detail: error.message };
+}
+}
+
+function transferApprovalText(intent) {
+return [
+'🧪 TEST MODU — BizimHesap kaydı yapılmayacak',
+'',
+'Kaynak hesap adayı: ' + intent.source_account_candidate,
+'Hedef hesap adayı: ' + intent.target_account_candidate,
+'Tutar: ' + Number(intent.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TL',
+'İşlem: Kasalar arası transfer',
+'Durum: Hesap adları BizimHesap’ta henüz doğrulanmadı'
+].join('\n');
+}
+
+function transferApprovalButtons(approvalId) {
+return {
+inline_keyboard: [
+[
+{ text: 'ONAYLA (TEST)', callback_data: `ct:a:${approvalId}` },
+{ text: 'REDDET', callback_data: `ct:r:${approvalId}` }
+],
+[{ text: 'HESAP DÜZELT', callback_data: `ct:e:${approvalId}` }]
+]
+};
+}
+
+async function handleTransferCallback(env, callback) {
+const match = String(callback.data || '').match(/^ct:([are]):([0-9a-f-]{36})$/i);
+if (!match || !env.APERION_DB) return false;
+const chatId = callback.message?.chat?.id;
+const row = await env.APERION_DB.prepare('SELECT id,status,payload_json FROM approval_queue WHERE id=?').bind(match[2]).first();
+if (!row) {
+await answerCallbackQuery(env, callback.id, 'Test onayı bulunamadı.');
+return true;
+}
+const payload = JSON.parse(row.payload_json || '{}');
+if (String(payload.chat_id) !== String(chatId)) {
+await answerCallbackQuery(env, callback.id, 'Bu onay size ait değil.');
+return true;
+}
+if (row.status !== 'needs_review') {
+await answerCallbackQuery(env, callback.id, 'Daha önce işlendi: ' + row.status);
+return true;
+}
+const status = { a: 'test_approved', r: 'rejected', e: 'needs_account_edit' }[match[1]];
+await env.APERION_DB.prepare(`UPDATE approval_queue SET status=?,decided_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),decided_by=? WHERE id=? AND status='needs_review'`).bind(
+status,
+`telegram:${chatId}`,
+row.id
+).run();
+const message = status === 'test_approved'
+? '✅ Kuru test onaylandı. BizimHesap’a kayıt yapılmadı.'
+: status === 'rejected'
+? '❌ Kuru test reddedildi. Kayıt yapılmadı.'
+: '✏️ Hesap düzeltme istendi. Kayıt yapılmadı.';
+await answerCallbackQuery(env, callback.id, message);
+await sendMessage(env, chatId, message);
+return true;
 }
 
 async function savePaymentPromise(env, { chatId, quickNoteId, rawText, counterparty, matchedCustomerId, amount, dueDate, paymentMethod }) {
@@ -407,6 +522,10 @@ supabase_configured: Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY)
 export async function onRequestPost({ request, env }) {
 try {
 const update = await request.json();
+if (update.callback_query) {
+const handled = await handleTransferCallback(env, update.callback_query);
+return json({ ok: true, callback_handled: handled });
+}
 const msg = update.message;
       if (msg && msg.chat && (msg.photo || msg.document || msg.video)) { return await handleMediaCapture(env, msg); }
 if (!msg || !msg.chat || !msg.text) return json({ ok: true, ignored: true });
@@ -450,6 +569,41 @@ return json({ ok: true });
 
 if (await zatenKayitliMi(env, msg.message_id, chatId)) {
 return json({ ok: true, deduped: true });
+}
+
+const transferIntent = parseCashTransferIntent(text);
+if (transferIntent) {
+const saved = await saveQuickNote(env, {
+chatId,
+messageId: msg.message_id,
+rawText: text,
+parsedType: transferIntent.type,
+paymentMethod: 'nakit',
+needsReview: true,
+status: 'approval_pending'
+});
+if (!saved.ok) {
+await sendMessage(env, chatId, '⚠️ Transfer emri güvenli kuyruğa alınamadı. Hiçbir kayıt yapılmadı.');
+return json({ ok: false, error: saved.error || 'quick_note_failed' }, 503);
+}
+const approval = await createTransferApproval(env, {
+chatId,
+messageId: msg.message_id,
+quickNoteId: saved.id,
+intent: transferIntent
+});
+if (!approval.ok) {
+await sendMessage(env, chatId, '⚠️ Onay kartı oluşturulamadı. Hiçbir BizimHesap kaydı yapılmadı.');
+return json({ ok: false, error: approval.error || 'approval_queue_failed' }, 503);
+}
+await sendMessage(env, chatId, transferApprovalText(transferIntent), transferApprovalButtons(approval.id));
+return json({
+ok: true,
+intent: 'cash_transfer_test',
+approval_id: approval.id,
+duplicate: approval.duplicate,
+live_write_enabled: false
+});
 }
 
 const paymentMethod = parsePaymentMethod(lower);
