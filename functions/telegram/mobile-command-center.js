@@ -44,6 +44,11 @@ async function sha256(value) {
   return new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
 }
 
+async function hashHex(value) {
+  const bytes = await sha256(value);
+  return Array.from(bytes).map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 async function constantTimeEqual(left, right) {
   const [a, b] = await Promise.all([sha256(left), sha256(right)]);
   let different = a.length ^ b.length;
@@ -60,7 +65,124 @@ function updateIdentity(update) {
   };
 }
 
+async function ensureSecuritySchema(db) {
+  if (!db) return false;
+  try {
+    await db.prepare(
+      `CREATE TABLE IF NOT EXISTS telegram_security_config (
+        config_key TEXT PRIMARY KEY,
+        config_value TEXT NOT NULL,
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`
+    ).run();
+    await db.prepare(
+      `CREATE TABLE IF NOT EXISTS telegram_command_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        command_key TEXT NOT NULL UNIQUE,
+        chat_id TEXT NOT NULL,
+        user_id TEXT,
+        message_id TEXT NOT NULL,
+        command_code TEXT NOT NULL,
+        risk_class TEXT NOT NULL,
+        content_hash TEXT NOT NULL,
+        status TEXT NOT NULL,
+        result_summary TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        completed_at TEXT
+      )`
+    ).run();
+    return true;
+  } catch (_error) {
+    return false;
+  }
+}
+
+async function readSecurityConfig(db, key) {
+  try {
+    const row = await db.prepare('SELECT config_value FROM telegram_security_config WHERE config_key=?').bind(key).first();
+    return row?.config_value || '';
+  } catch (_error) {
+    return '';
+  }
+}
+
+async function writeSecurityConfig(db, key, value) {
+  await db.prepare(
+    `INSERT INTO telegram_security_config (config_key,config_value,updated_at)
+     VALUES (?,?,datetime('now'))
+     ON CONFLICT(config_key) DO UPDATE SET config_value=excluded.config_value,updated_at=datetime('now')`
+  ).bind(key, value).run();
+}
+
+async function resolveLegacyOwnerChat(db) {
+  try {
+    const row = await db.prepare(
+      `SELECT chat_id,COUNT(*) AS message_count
+       FROM quick_notes
+       WHERE chat_id IS NOT NULL AND chat_id<>''
+       GROUP BY chat_id
+       ORDER BY message_count DESC
+       LIMIT 1`
+    ).first();
+    return row?.chat_id == null ? '' : String(row.chat_id);
+  } catch (_error) {
+    return '';
+  }
+}
+
+function randomSecret() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function registerTelegramWebhook(env, secret) {
+  if (!env.TELEGRAM_BOT_TOKEN) return false;
+  const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/setWebhook`;
+  const body = new URLSearchParams({
+    url: env.TELEGRAM_WEBHOOK_URL || 'https://aperion-istasyon.pages.dev/telegram/webhook',
+    secret_token: secret
+  });
+  try {
+    const response = await fetch(url, { method: 'POST', body });
+    const result = await response.json();
+    return Boolean(response.ok && result?.ok);
+  } catch (_error) {
+    return false;
+  }
+}
+
+async function verifyD1Security(request, env, identity) {
+  if (!env.APERION_DB || !(await ensureSecuritySchema(env.APERION_DB))) {
+    return { ok: false, status: 503, reason: 'security_store_unavailable' };
+  }
+
+  let allowedChat = await readSecurityConfig(env.APERION_DB, 'allowed_chat_id');
+  if (!allowedChat) {
+    allowedChat = await resolveLegacyOwnerChat(env.APERION_DB);
+    if (!allowedChat || identity.chatId !== allowedChat) return { ok: false, status: 403, reason: 'bootstrap_identity_failed' };
+    await writeSecurityConfig(env.APERION_DB, 'allowed_chat_id', allowedChat);
+  }
+  if (!identity.chatId || identity.chatId !== allowedChat) return { ok: false, status: 403, reason: 'chat_not_allowed' };
+
+  const supplied = request.headers.get('x-telegram-bot-api-secret-token') || '';
+  let storedHash = await readSecurityConfig(env.APERION_DB, 'webhook_secret_sha256');
+  if (!storedHash) {
+    const secret = randomSecret();
+    if (!(await registerTelegramWebhook(env, secret))) return { ok: false, status: 503, reason: 'webhook_bootstrap_failed' };
+    storedHash = await hashHex(secret);
+    await writeSecurityConfig(env.APERION_DB, 'webhook_secret_sha256', storedHash);
+    return { ok: true, ...identity, hardened: true, bootstrapped: true };
+  }
+
+  if (!supplied || !(await constantTimeEqual(await hashHex(supplied), storedHash))) {
+    return { ok: false, status: 403, reason: 'invalid_webhook_secret' };
+  }
+  return { ok: true, ...identity, hardened: true, bootstrapped: false };
+}
+
 export async function verifyTelegramRequest(request, env, update) {
+  const identity = updateIdentity(update);
   const expectedSecret = String(env.TELEGRAM_WEBHOOK_SECRET || '');
   if (expectedSecret) {
     const supplied = request.headers.get('x-telegram-bot-api-secret-token') || '';
@@ -69,9 +191,12 @@ export async function verifyTelegramRequest(request, env, update) {
     }
   }
 
-  const { chatId, userId } = updateIdentity(update);
+  const { chatId, userId } = identity;
   const allowedChats = listFromEnv(env.TELEGRAM_ALLOWED_CHAT_IDS);
   const allowedUsers = listFromEnv(env.TELEGRAM_ALLOWED_USER_IDS);
+  if (!expectedSecret && !allowedChats.size && !allowedUsers.size) {
+    return verifyD1Security(request, env, identity);
+  }
   if (allowedChats.size && (!chatId || !allowedChats.has(chatId))) return { ok: false, status: 403, reason: 'chat_not_allowed' };
   if (allowedUsers.size && (!userId || !allowedUsers.has(userId))) return { ok: false, status: 403, reason: 'user_not_allowed' };
   return {
@@ -80,6 +205,19 @@ export async function verifyTelegramRequest(request, env, update) {
     userId,
     hardened: Boolean(expectedSecret && allowedChats.size)
   };
+}
+
+export async function getMobileSecurityStatus(env) {
+  const configuredByEnvironment = Boolean(env.TELEGRAM_WEBHOOK_SECRET && env.TELEGRAM_ALLOWED_CHAT_IDS);
+  if (configuredByEnvironment) return { identityGuard: true, webhookSecret: true, source: 'environment' };
+  if (!env.APERION_DB || !(await ensureSecuritySchema(env.APERION_DB))) {
+    return { identityGuard: false, webhookSecret: false, source: 'unavailable' };
+  }
+  const [chat, secretHash] = await Promise.all([
+    readSecurityConfig(env.APERION_DB, 'allowed_chat_id'),
+    readSecurityConfig(env.APERION_DB, 'webhook_secret_sha256')
+  ]);
+  return { identityGuard: Boolean(chat), webhookSecret: Boolean(secretHash), source: 'd1' };
 }
 
 async function safeAll(db, sql, bindings = []) {
@@ -247,4 +385,4 @@ export async function handleMobileCommand({ env, message, identity, sendMessage 
   return { handled: true, code: parsed.code, status };
 }
 
-export const __test = { constantTimeEqual, updateIdentity, CLOSED_STATUSES };
+export const __test = { constantTimeEqual, hashHex, updateIdentity, CLOSED_STATUSES };

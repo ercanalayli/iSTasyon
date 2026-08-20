@@ -18,6 +18,12 @@ CREATE TABLE IF NOT EXISTS telegram_command_log (
 CREATE INDEX IF NOT EXISTS idx_telegram_command_status_created
   ON telegram_command_log(status, created_at DESC);
 
+CREATE TABLE IF NOT EXISTS telegram_security_config (
+  config_key TEXT PRIMARY KEY,
+  config_value TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS telegram_capability_registry (
   capability_key TEXT PRIMARY KEY,
   title TEXT NOT NULL,

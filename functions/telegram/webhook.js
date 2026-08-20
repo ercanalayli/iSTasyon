@@ -1,4 +1,4 @@
-import { handleMobileCommand, verifyTelegramRequest } from './mobile-command-center.js';
+import { getMobileSecurityStatus, handleMobileCommand, verifyTelegramRequest } from './mobile-command-center.js';
 
 // AperiON Telegram Webhook - ikinci beyin / hizli yakalama
 // Route: /telegram/webhook
@@ -512,14 +512,16 @@ async function handleMediaCapture(env, msg) {
 }
 
 export async function onRequestGet({ env }) {
+const security = await getMobileSecurityStatus(env);
 return json({
 ok: true,
 service: 'aperion-telegram-webhook',
 mode: 'mobile-command-center-v1',
 telegram_token_configured: Boolean(env.TELEGRAM_BOT_TOKEN),
 supabase_configured: Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
-identity_guard_configured: Boolean(env.TELEGRAM_ALLOWED_CHAT_IDS),
-webhook_secret_configured: Boolean(env.TELEGRAM_WEBHOOK_SECRET)
+identity_guard_configured: security.identityGuard,
+webhook_secret_configured: security.webhookSecret,
+security_source: security.source
 });
 }
 
