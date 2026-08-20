@@ -11,6 +11,7 @@ const path = require('path');
 const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
 const { launchOptions, loginBizimHesap, selectFirma, checkLoginCooldown, savePageDiagnostics } = require('../bizimhesap_common.cjs');
+const { sendFinanceResult } = require('./telegram_finance_result.cjs');
 
 const ENV_FILE = path.join(__dirname, '..', 'local-secrets', 'bizimhesap.local.env');
 if (!fs.existsSync(ENV_FILE)) { console.error('HATA: local-secrets/bizimhesap.local.env yok.'); process.exit(1); }
@@ -1325,6 +1326,10 @@ async function handleCommand(cmd) {
       else {
         const aciklama = `APERION AUTO | ID:${row.id} | TIP:${row.tur} | FIRMA:${row.firma_id} | ${(row.aciklama || '').slice(0, 150)}`;
         let r;
+        let bildirimHesaplari = {
+          sourceAccount: row.hesap || '-',
+          targetAccount: row.karsi_taraf || row.tur || '-',
+        };
         const rowAciklama = norm(row.aciklama || '');
         // 2026-08-07: "Kredi Geri Odemesi" / "Kredi Kartina Odenen" anapara
         // hareketleridir, gider degildir - Ercan'in talimatiyla Emanet
@@ -1353,14 +1358,19 @@ async function handleCommand(cmd) {
           r = { ok: true, insanKontroluGerekli: true, mesaj: 'Emanet yonlendirmesi bekliyor - kaynak/hedef yonu netlesmeden otomatik islenmedi (bkz. ID:286-304 duzeltmesi)' };
         } else if (row.tur === 'transfer') {
           const kaynakHesap = String(row.karsi_taraf || '').split('->')[0].trim() || 'POS POS POS KREDI KARTI';
+          bildirimHesaplari = { sourceAccount: kaynakHesap, targetAccount: row.hesap };
           r = await bizimhesapPostTransfer({ id: row.id, tarih: row.tarih, tutar: row.tutar, aciklama, hesap: row.hesap, kaynakHesap });
         } else if (row.tur === 'cari_tahsilat' || row.tur === 'tahsilat') {
+          bildirimHesaplari = { sourceAccount: row.karsi_taraf || 'Cari', targetAccount: row.hesap };
           r = await bizimhesapPostIncome({ id: row.id, tarih: row.tarih, tutar: row.tutar, aciklama, hesap: row.hesap });
         } else if (anaparaKaynakli) {
+          bildirimHesaplari = { sourceAccount: row.hesap, targetAccount: 'EMANET' };
           r = await bizimhesapPostTransfer({ id: row.id, tarih: row.tarih, tutar: row.tutar, aciklama, hesap: 'EMANET', kaynakHesap: row.hesap });
         } else if (krediFaizi) {
+          bildirimHesaplari = { sourceAccount: row.hesap, targetAccount: 'Faiz gideri' };
           r = await bizimhesapPostExpense({ id: row.id, tarih: row.tarih, tutar: para(row.tutar), aciklama, hesap: row.hesap, masrafKalemi: 'Faiz' });
         } else {
+          bildirimHesaplari = { sourceAccount: row.hesap, targetAccount: row.karsi_taraf || 'BizimHesap gideri' };
           r = await bizimhesapPostExpense({ id: row.id, tarih: row.tarih, tutar: para(row.tutar), aciklama, hesap: row.hesap });
         }
         outcome = { ok: r.ok, output: r.mesaj };
@@ -1371,6 +1381,33 @@ async function handleCommand(cmd) {
           // "insan kontrolu gerekiyor" olarak gorunsun, sessizce kaybolmasin.
           const durum = r.insanKontroluGerekli ? 'insan_kontrolu_gerekli' : (r.zatenVardi ? 'zaten_vardi' : 'kaydedildi');
           await db.from(BANK_TABLE).update({ bizimhesap_durumu: durum, bizimhesap_mesaj: r.mesaj, bizimhesap_islem_tarihi: new Date().toISOString() }).eq('id', row.id);
+          if (durum === 'kaydedildi') {
+            const kanitAdi = `bizimhesap_result_ID${row.id}`;
+            await savePageDiagnostics(page, kanitAdi);
+            const kanitYolu = path.join(__dirname, '..', 'diagnostics', `${kanitAdi}.png`);
+            try {
+              const bildirim = await sendFinanceResult({
+                verified: true,
+                transactionId: `bizimhesap:${row.firma_id || 'alayli'}:${row.id}`,
+                status: 'BAŞARILI',
+                date: row.tarih,
+                sourceAccount: bildirimHesaplari.sourceAccount,
+                targetAccount: bildirimHesaplari.targetAccount,
+                amount: Number(row.tutar),
+                currency: 'TRY',
+                description: r.mesaj,
+                proofPath: kanitYolu,
+              });
+              r.mesaj += bildirim.duplicate
+                ? ' Telegram sonuç bildirimi daha önce gönderilmişti.'
+                : ` Telegram sonuç ve görsel kanıt gönderildi (mesaj:${bildirim.messageId}).`;
+              outcome.output = r.mesaj;
+            } catch (bildirimHatasi) {
+              log(`TELEGRAM_BILDIRIM_HATASI ID:${row.id} ${bildirimHatasi.message}`);
+              r.mesaj += ` Telegram bildirimi gönderilemedi: ${bildirimHatasi.message}`;
+              outcome.output = r.mesaj;
+            }
+          }
         }
       }
     } else {
