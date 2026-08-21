@@ -370,11 +370,953 @@ await sendMessage(env, identity.chatId, `ğŸ–¥ï¸ ${intent.targetTitle} aÃ§ma kom
 return { handled: true, status: 'queued', queueId: queued.id };
 }
 
-const parsedType = intent.risk ==×nöîÚ$z{-®éÜj×ö–â‚uÆâr’“°¦v—B6VæDÖW76vR†VçbÂ6†D–BÂ	ù8¢r²FVf–æ—F–öâçF—FÆR²‡6V&6‚òr(	Br²6V&6‚¢rr’²uÆäÆæÆ#¢r²f–VÆG2æ¦ö–â‚rÂr’²uÆåÆâr²6&G2æ¦ö–â‚uÆåÆâr’“°§Ğ ¦7–æ2gVæ7F–öâ†æFÆU&W÷'Df–VÆG4–çFVçB†VçbÂ6†D–BÂW6W$–BÂFW‡B’°¦6öç7B–ÆöBÒ7G&–ær‡FW‡BÇÂrr’ç&WÆ6R‚õåÂ÷&÷&ÆæÆ&•Ç2¢ö’Ârr’çG&–Ò‚“°¦–b‚–ÆöB’°¦6öç7B&öGV7BÒv—B&VE&W÷'Df–VÆG2†VçbÂw&öGV7Br“°¦6öç7B7W7FöÖW"Òv—B&VE&W÷'Df–VÆG2†VçbÂv7W7FöÖW"r“°¦v—B6VæDÖW76vR†VçbÂ6†D–BÂ~)©ûˆò&÷"ÆæÆ,KÆî(
-"9Ç,;Æã¢r²&öGV7Bæ¦ö–â‚rÂr’²uÆî(
-"6&“¢r²7W7FöÖW"æ¦ö–â‚rÂr’²uÆåÆäF\IöœY÷F—#¢÷&÷&ÆæÆ&’W'Vã§W'VâÆÖ–·F"ÇF&–‚r“°§&WGW&ã°§Ğ ¦7–æ2gVæ7F–öâ†æFÆTF–Ç•7FFVÖVçD–çFVçB†VçbÂ6†D–BÂ7FFVÖVçEG—R’°¦6öç7B&W÷'BÒv—B'V–ÆDF–Ç”f–ææ6–Å7FFVÖVçG2†VçbÂVçbäU$”ôåôD"ÂæWrFFR‚’“°¦6öç7B'G2Ò&W÷'Bç7Æ—B‚uÆä|9ÄäÌ9Ä²,KÄì8tò(	B´•4ÜK|9e,9Äì9ÄÒr“°¦6öç7BFW‡BÒ7FFVÖVçEG—RÓÓÒv&Ææ6U÷6†VWBp£òt|9ÄäÌ9Ä²,KÄì8tò(	B´•4ÜK|9e,9Äì9ÄÒr²‡'G5³ÒÇÂuÆî(
-"´”ä²ôµTäÔD’r£¢'G5³Ó°¦v—B6VæDÖW76vR†VçbÂ6†D–BÂFW‡B“°§Ğ¦6öç7BÖF6‚Ò–ÆöBæÖF6‚‚õâ‡W'VçÌ;Ç,;ÆçÆ6&’•Ç2£¥Ç2¢‚â²’Bö’“°¦–b‚ÖF6‚’°¦v—B6VæDÖW76vR†VçbÂ6†D–BÂt·VÆÆìKÓ¢÷&÷&ÆæÆ&’W'Vã§W'VâÆÖ–·F"Æ&—&–ÒÇF&–‚r“°§&WGW&ã°§Ğ¦6öç7B&W÷'D¶W’Òö6&’ö’çFW7B†ÖF6…³Ò’òv7W7FöÖW"r¢w&öGV7Bs°¦6öç7B6fVBÒv—B6fU&W÷'Df–VÆG2†VçbÂ&W÷'D¶W’ÂÖF6…³%Òç7Æ—B‚rÂr’ÂW6W$–B“°¦v—B6VæDÖW76vR†VçbÂ6†D–BÂ6fVBæö²ò~)ÈRr²$Uõ%EôDTd”ä•D”ôå5·&W÷'D¶W•ÒçF—FÆR²rÆæÆ,K|;Ææ6VÆÆVæF“¢r²6fVBæf–VÆG2æ¦ö–â‚rÂr’¢~)ªûˆòr²6fVBæW'&÷"“°§Ğ Ğ¦W‡÷'B7–æ2gVæ7F–öâöå&WVW7E÷7B‡²&WVW7BÂVçbÒ’°Ğ§G'’°¦6öç7BWFFRÒv—B&WVW7Bæ§6öâ‚“°¦6öç7B–FVçF—G’Òv—BfW&–g•FVÆVw&Õ&WVW7B‡&WVW7BÂVçbÂWFFR“°¦–b‚–FVçF—G’æö²’&WGW&â§6öâ‡²ö³¢fÇ6RÂW'&÷#¢wVæWF†÷&—¦VE÷FVÆVw&Õ÷WFFRrÒÂ–FVçF—G’ç7FGW2ÇÂC2“°¦–b‡WFFRæ6ÆÆ&6µ÷VW'’’°¦–b‚–FVçF—G’æ†&FVæVB’&WGW&â§6öâ‡²ö³¢fÇ6RÂW'&÷#¢w6V7W&—G•ö&ö÷G7G&÷VæF–ærrÒÂS2“°¦6öç7B†æFÆVBÒv—B†æFÆT66„W‡Vç6T6ÆÆ&6´Æ—fR†VçbÂWFFRæ6ÆÆ&6µ÷VW'’’ÇÂv—B†æFÆUG&ç6fW$6ÆÆ&6²†VçbÂWFFRæ6ÆÆ&6µ÷VW'’“°§&WGW&â§6öâ‡²ö³¢G'VRÂ6ÆÆ&6µö†æFÆVC¢†æFÆVBÒ“°§Ğ¦6öç7B×6rÒWFFRæÖW76vS°¢–b†×6rbb×6ræ6†Bbb†×6rç†÷FòÇÂ×6ræFö7VÖVçBÇÂ×6rçf–FVò’’°¢–b‚–FVçF—G’æ†&FVæVB’&WGW&â§6öâ‡²ö³¢fÇ6RÂW'&÷#¢w6V7W&—G•ö&ö÷G7G&÷VæF–ærrÒÂS2“°¢&WGW&âv—B†æFÆTÖVF–6GW&R†VçbÂ×6r“°¢Ğ¦–b‚×6rÇÂ×6ræ6†BÇÂ×6rçFW‡B’&WGW&â§6öâ‡²ö³¢G'VRÂ–væ÷&VC¢G'VRÒ“°Ğ Ğ¦6öç7B6†D–BÒ×6ræ6†Bæ–C°Ğ¦6öç7BFW‡BÒ6ÆVâ†×6rçFW‡B“°¦6öç7BÆ÷vW"ÒÆ÷vW%E"‡FW‡B“° ¦6öç7B&–÷&—G”66„W‡Vç6T–çFVçBÒ'6T66„W‡Vç6T–çFVçB‡FW‡B“°¦–b‡&–÷&—G”66„W‡Vç6T–çFVçB’°¦–b‚–FVçF—G’æ†&FVæVB’²v—B6VæDÖW76vR†VçbÂ6†D–BÂ	ùI"vW,:vV²v–FW"V×&’œ:v–âFVÆVw&Ò|;ÇfVæÆ–²\YöÆ\Y÷F—&ÖW6’FÖÖÆæÖÌKLK"â†œ:v&—"¶œKB–KÆÖLKâr“²&WGW&â§6öâ‡²ö³¢G'VRÂ6V7W&—G•ö&ö÷G7G&÷VæF–æs¢G'VRÒ“²Ğ¦6öç7B6fVBÒv—B6fUV–6´æ÷FR†VçbÂ²6†D–BÂÖW76vT–C¢×6ræÖW76vUö–BÂ&uFW‡C¢FW‡BÂ'6VEG—S¢&–÷&—G”66„W‡Vç6T–çFVçBçG—RÂ–ÖVçDÖWF†öC¢væ¶—BrÂæVVG5&Wf–Ws¢G'VRÂ7FGW3¢v&÷fÅ÷VæF–ærrÒ“°¦–b‚6fVBæö²’²v—B6VæDÖW76vR†VçbÂ6†D–BÂ~)ªûˆòv–FW"V×&’|;ÇfVæÆ’·W—'\IöÌKæÖLKâ†œ:v&—"¶œKB–KÆÖLKâr“²&WGW&â§6öâ‡²ö³¢fÇ6RÂW'&÷#¢6fVBæW'&÷"ÇÂwV–6µöæ÷FUöf–ÆVBrÒÂS2“²Ğ¦6öç7B&÷fÂÒv—B7&VFT66„W‡Vç6T&÷fÄÆ—fR†VçbÂ²6†D–BÂÖW76vT–C¢×6ræÖW76vUö–BÂV–6´æ÷FT–C¢6fVBæ–BÂ–çFVçC¢&–÷&—G”66„W‡Vç6T–çFVçBÒ“°¦–b‚&÷fÂæö²’²v—B6VæDÖW76vR†VçbÂ6†D–BÂ~)ªûˆòöæ’¶'LKöÇ\Y÷GW'VÆÖLKâ†œ:v&—"&—¦–Ô†W6¶–LK–KÆÖLKâr“²&WGW&â§6öâ‡²ö³¢fÇ6RÂW'&÷#¢&÷fÂæW'&÷"ÇÂv&÷fÅ÷VWVUöf–ÆVBrÒÂS2“²Ğ¦v—B6VæDÖW76vR†VçbÂ6†D–BÂ66„W‡Vç6T&÷fÅFW‡DÆ—fR‡&–÷&—G”66„W‡Vç6T–çFVçB’Â66„W‡Vç6T&÷fÄ'WGFöç4Æ—fR†&÷fÂæ–B’Â²'6UöÖöFS¢t…DÔÂrÒ“°§&WGW&â§6öâ‡²ö³¢G'VRÂ–çFVçC¢v66…öW‡Vç6RrÂ&÷fÅö–C¢&÷fÂæ–BÂGWÆ–6FS¢&÷fÂæGWÆ–6FRÂÆ—fU÷w&—FUöVæ&ÆVC¢fÇ6RÒ“°§Ğ ¦6öç7BÖö&–ÆU&W7VÇBÒv—B†æFÆTÖö&–ÆT6öÖÖæB‡²VçbÂÖW76vS¢×6rÂ–FVçF—G’Â6VæDÖW76vRÒ“°¦–b†Öö&–ÆU&W7VÇBæ†æFÆVB’&WGW&â§6öâ‡²ö³¢G'VRÂÖö&–ÆUö6öÖÖæC¢Öö&–ÆU&W7VÇBæ6öFRÂ7FGW3¢Öö&–ÆU&W7VÇBç7FGW2Ò“° ¦6öç7BV&Ç”66„W‡Vç6T–çFVçBÒ'6T66„W‡Vç6T–çFVçB‡FW‡B“°¦–b†V&Ç”66„W‡Vç6T–çFVçB’°¦–b‚–FVçF—G’æ†&FVæVB’°¦v—B6VæDÖW76vR†VçbÂ6†D–BÂ	ùI"vW,:vV²v–FW"V×&’œ:v–âFVÆVw&Ò|;ÇfVæÆ–²\YöÆ\Y÷F—&ÖW6’FÖÖÆæÖÌKLK"â†œ:v&—"¶œKB–KÆÖLKâr“°§&WGW&â§6öâ‡²ö³¢G'VRÂ6V7W&—G•ö&ö÷G7G&÷VæF–æs¢G'VRÒ“°§Ğ¦6öç7B6fVBÒv—B6fUV–6´æ÷FR†VçbÂ²6†D–BÂÖW76vT–C¢×6ræÖW76vUö–BÂ&uFW‡C¢FW‡BÂ'6VEG—S¢V&Ç”66„W‡Vç6T–çFVçBçG—RÂ–ÖVçDÖWF†öC¢væ¶—BrÂæVVG5&Wf–Ws¢G'VRÂ7FGW3¢v&÷fÅ÷VæF–ærrÒ“°¦–b‚6fVBæö²’²v—B6VæDÖW76vR†VçbÂ6†D–BÂ~)ªûˆòv–FW"V×&’|;ÇfVæÆ’·W—'\IöÌKæÖLKâ†œ:v&—"¶œKB–KÆÖLKâr“²&WGW&â§6öâ‡²ö³¢fÇ6RÂW'&÷#¢6fVBæW'&÷"ÇÂwV–6µöæ÷FUöf–ÆVBrÒÂS2“²Ğ¦6öç7B&÷fÂÒv—B7&VFT66„W‡Vç6T&÷fÄÆ—fR†VçbÂ²6†D–BÂÖW76vT–C¢×6ræÖW76vUö–BÂV–6´æ÷FT–C¢6fVBæ–BÂ–çFVçC¢V&Ç”66„W‡Vç6T–çFVçBÒ“°¦–b‚&÷fÂæö²’²v—B6VæDÖW76vR†VçbÂ6†D–BÂ~)ªûˆòöæ’¶'LKöÇ\Y÷GW'VÆÖLKâ†œ:v&—"&—¦–Ô†W6¶–LK–KÆÖLKâr“²&WGW&â§6öâ‡²ö³¢fÇ6RÂW'&÷#¢&÷fÂæW'&÷"ÇÂv&÷fÅ÷VWVUöf–ÆVBrÒÂS2“²Ğ¦v—B6VæDÖW76vR†VçbÂ6†D–BÂ66„W‡Vç6T&÷fÅFW‡DÆ—fR†V&Ç”66„W‡Vç6T–çFVçB’Â66„W‡Vç6T&÷fÄ'WGFöç4Æ—fR†&÷fÂæ–B’Â²'6UöÖöFS¢t…DÔÂrÒ“°§&WGW&â§6öâ‡²ö³¢G'VRÂ–çFVçC¢v66…öW‡Vç6RrÂ&÷fÅö–C¢&÷fÂæ–BÂGWÆ–6FS¢&÷fÂæGWÆ–6FRÂÆ—fU÷w&—FUöVæ&ÆVC¢fÇ6RÒ“°§Ğ ¦6öç7BVæ—fW'6Ä–çFVçBÒ'6UVæ—fW'6Ä6öÖÖæB‡FW‡B“°¦–b‡Væ—fW'6Ä–çFVçB’°¦6öç7BVæ—fW'6Å&W7VÇBÒv—B†æFÆUVæ—fW'6Ä6öÖÖæB†VçbÂ×6rÂ–FVçF—G’ÂVæ—fW'6Ä–çFVçB“°§&WGW&â§6öâ‡²ö³¢G'VRÂVæ—fW'6Åö6öÖÖæC¢Væ—fW'6Ä–çFVçBæ6öFRÂ7FGW3¢Væ—fW'6Å&W7VÇBç7FGW2ÂGWÆ–6FS¢&ööÆVâ‡Væ—fW'6Å&W7VÇBæGWÆ–6FR’Ò“°§Ğ ¦–b‚–FVçF—G’æ†&FVæVBbbÆ÷vW"ç7F'G5v—F‚‚röGW'VÒr’bbÆ÷vW"ç7F'G5v—F‚‚r÷7Fö²r’bbÆ÷vW"ç7F'G5v—F‚‚r÷W'Vç&÷'Rr’bbÆ÷vW"ç7F'G5v—F‚‚rü;Ç,;Æç&÷'Rr’bbÆ÷vW"ç7F'G5v—F‚‚rö6&—&÷'Rr’bbÆ÷vW"ç7F'G5v—F‚‚r÷&÷&ÆæÆ&’r’bbÆ÷vW"ç7F'G5v—F‚‚rövVÆ—'F&Æ÷7Rr’bbÆ÷vW"ç7F'G5v—F‚‚rö&–Ææ6òr’bbÆ÷vW"ç7F'G5v—F‚‚rö&–Æì:vòr’bbÆ÷vW"æ–æ6ÇVFW2‚v&¶—–Rr’’°¦v—B6VæDÖW76vR†VçbÂ6†D–BÂ	ùI"|;ÇfVæÆ–²\YöÆ\Y÷F—&ÖW6’FÖÖÆìK–÷"âYæ–ÖF–Æ–²&÷"÷6÷&wVÆ"Âœ:r|;g&Wb¶œKFÆ,KfR—¦–âÆ—7FW6–æFV¶’6&—BW–wVÆÖ:vÖ¶ö×WFÆ,K·VÆÆìKÆ&–Æ—#²ÖÆ’Â–ÆWFœYö–ÒÂ6–ÆÖRfRW&œYö–ÒœYöÆVÖÆW&’¶ÌKLK"âr“°§&WGW&â§6öâ‡²ö³¢G'VRÂ6V7W&—G•ö&ö÷G7G&÷VæF–æs¢G'VRÒ“°§Ğ ¦–b‡FW‡Bç7F'G5v—F‚‚r÷7F'Br’’°¦v—B6VæDÖW76vR†VçbÂ6†D–BÀĞ¢tW&”ôâFVÆVw&Ò6æÌKâK¶–æ6’&W––âÖöGR:|K²åÆåÆâr°Ğ¢|9fFVÖR<;g¬;Ã¢%6VæÖVF–¶ÂFVÖ×W¢&–â;fFVÖR·&VF’¶'LK%Æâr°Ğ¢t&¶—–R6÷&wW7S¢&&¶—–R%Æâr°Ğ¢tGW'VÓ¢öGW'VÕÆâr°Ğ¢u7Fö²6÷&wW7S¢÷7Fö²Ì;Ç,;ÆâLKåÆâr°Ğ¢tfGW&öfœYòf÷FüI÷&lK¢|;fæFW"Â·W—'\IöÌK,KÒ„&—¦–Ô†W6Âvöæ–ÌK–¦Ö–¼KæF’åÆâr°Ğ¢t†W&†æv’&—"æ÷C¢L;Ç¢–¢Â¶–FVFW&–ÒâpĞ¢“°Ğ§&WGW&â§6öâ‡²ö³¢G'VRÒ“°Ğ§ĞĞ Ğ¦–b†Æ÷vW"ç7F'G5v—F‚‚röGW'VÒr’’°Ğ¦v—B†æFÆTGW'VÔ–çFVçB†VçbÂ6†D–B“°Ğ§&WGW&â§6öâ‡²ö³¢G'VRÒ“°Ğ§ĞĞ Ğ¦–b†Æ÷vW"ç7F'G5v—F‚‚r÷7Fö²r’’°¦v—B†æFÆU7Fö´–çFVçB†VçbÂ6†D–BÂFW‡Bç6Æ–6RƒR’çG&–Ò‚’“°§&WGW&â§6öâ‡²ö³¢G'VRÒ“°§Ğ ¦–b†Æ÷vW"ç7F'G5v—F‚‚r÷W'Vç&÷'Rr’ÇÂÆ÷vW"ç7F'G5v—F‚‚rü;Ç,;Æç&÷'Rr’’°¦v—B†æFÆT6öæf–wW&VE&W÷'B†VçbÂ6†D–BÂw&öGV7BrÂFW‡Bç&WÆ6R‚õåÂòƒó§W'Vç&÷'WÌ;Ç,;Æç&÷'R•Ç2¢ö’Ârr’“°§&WGW&â§6öâ‡²ö³¢G'VRÂ&W÷'C¢w&öGV7BrÒ“°§Ğ ¦–b†Æ÷vW"ç7F'G5v—F‚‚rö6&—&÷'Rr’’°¦v—B†æFÆT6öæf–wW&VE&W÷'B†VçbÂ6†D–BÂv7W7FöÖW"rÂFW‡Bç&WÆ6R‚õåÂö6&—&÷'UÇ2¢ö’Ârr’“°§&WGW&â§6öâ‡²ö³¢G'VRÂ&W÷'C¢v7W7FöÖW"rÒ“°§Ğ ¦–b†Æ÷vW"ç7F'G5v—F‚‚r÷&÷&ÆæÆ&’r’’°¦v—B†æFÆU&W÷'Df–VÆG4–çFVçB†VçbÂ6†D–BÂ×6ræg&öÓòæ–BÂFW‡B“°§&WGW&â§6öâ‡²ö³¢G'VRÂ&W÷'E÷&öf–ÆS¢G'VRÒ“°§Ğ ¦–b†Æ÷vW"ç7F'G5v—F‚‚rövVÆ—'F&Æ÷7Rr’ÇÂÆ÷vW"æ–æ6ÇVFW2‚vvVÆ—"F&Æ÷7Rr’’°¦v—B†æFÆTF–Ç•7FFVÖVçD–çFVçB†VçbÂ6†D–BÂv–æ6öÖU÷7FFVÖVçBr“°§&WGW&â§6öâ‡²ö³¢G'VRÂ&W÷'C¢v–æ6öÖU÷7FFVÖVçBrÒ“°§Ğ ¦–b†Æ÷vW"ç7F'G5v—F‚‚rö&–Ææ6òr’ÇÂÆ÷vW"ç7F'G5v—F‚‚rö&–Æì:vòr’ÇÂÆ÷vW"ÓÓÒv&–Æì:vòrÇÂÆ÷vW"ÓÓÒv&–Ææ6òr’°¦v—B†æFÆTF–Ç•7FFVÖVçD–çFVçB†VçbÂ6†D–BÂv&Ææ6U÷6†VWBr“°§&WGW&â§6öâ‡²ö³¢G'VRÂ&W÷'C¢v&Ææ6U÷6†VWBrÒ“°§Ğ Ğ¦–b†Æ÷vW"ç7F'G5v—F‚‚r÷6Væ·&öâr’ÇÂÆ÷vW"ç7F'G5v—F‚‚rö÷GW'VÒr’’°Ğ¦v—B6VæDÖW76vR†VçbÂ6†D–BÂt'R¶ö×WBY÷Râ&–Æv—6–,KìK¦&IöÌKF\Iö–Â‡–W&VÂF–æÆW––6’:vÌKYöÜK–÷"ÂVâ6öâ"I÷W7F÷5ÂwF·F–gF’’â&IöÆìKæ6†&W"fW&V6\Iö–Òâr“°Ğ§&WGW&â§6öâ‡²ö³¢G'VRÒ“°Ğ§ĞĞ Ğ¦–b†Æ÷vW"æ–æ6ÇVFW2‚v&¶—–Rr’ÇÂÆ÷vW"æ–æ6ÇVFW2‚væR¶F"&Òf"r’ÇÂÆ÷vW"æ–æ6ÇVFW2‚væ¶—BGW'VÒr’’°Ğ¦v—B†æFÆT&Ææ6T–çFVçB†VçbÂ6†D–B“°Ğ§&WGW&â§6öâ‡²ö³¢G'VRÒ“°Ğ§ĞĞ Ğ¦–b†v—B¦FVä¶–—FÆ”Ö’†VçbÂ×6ræÖW76vUö–BÂ6†D–B’’°§&WGW&â§6öâ‡²ö³¢G'VRÂFVGWVC¢G'VRÒ“°§Ğ ¦6öç7BG&ç6fW$–çFVçBÒ'6T66…G&ç6fW$–çFVçB‡FW‡B“°¦–b‡G&ç6fW$–çFVçB’°¦6öç7B6fVBÒv—B6fUV–6´æ÷FR†VçbÂ°¦6†D–BÀ¦ÖW76vT–C¢×6ræÖW76vUö–BÀ§&uFW‡C¢FW‡BÀ§'6VEG—S¢G&ç6fW$–çFVçBçG—RÀ§–ÖVçDÖWF†öC¢væ¶—BrÀ¦æVVG5&Wf–Ws¢G'VRÀ§7FGW3¢v&÷fÅ÷VæF–ærp§Ò“°¦–b‚6fVBæö²’°¦v—B6VæDÖW76vR†VçbÂ6†D–BÂ~)ªûˆòG&ç6fW"V×&’|;ÇfVæÆ’·W—'\IöÌKæÖLKâ†œ:v&—"¶œKB–KÆÖLKâr“°§&WGW&â§6öâ‡²ö³¢fÇ6RÂW'&÷#¢6fVBæW'&÷"ÇÂwV–6µöæ÷FUöf–ÆVBrÒÂS2“°§Ğ ¢ò¢44…ôU…Tå4Uô”åDTåEôÔõdT@¦6öç7B66„W‡Vç6T–çFVçBÒ'6T66„W‡Vç6T–çFVçB‡FW‡B“°¦–b†66„W‡Vç6T–çFVçB’°¦6öç7B6fVBÒv—B6fUV–6´æ÷FR†VçbÂ²6†D–BÂÖW76vT–C¢×6ræÖW76vUö–BÂ&uFW‡C¢FW‡BÂ'6VEG—S¢66„W‡Vç6T–çFVçBçG—RÂ–ÖVçDÖWF†öC¢væ¶—BrÂæVVG5&Wf–Ws¢G'VRÂ7FGW3¢v&÷fÅ÷VæF–ærrÒ“°¦–b‚6fVBæö²’°¦v—B6VæDÖW76vR†VçbÂ6†D–BÂ~)ªûˆòv–FW"V×&’|;ÇfVæÆ’·W—'\IöÌKæÖLKâ†œ:v&—"¶œKB–KÆÖLKâr“°§&WGW&â§6öâ‡²ö³¢fÇ6RÂW'&÷#¢6fVBæW'&÷"ÇÂwV–6µöæ÷FUöf–ÆVBrÒÂS2“°§Ğ¦6öç7B&÷fÂÒv—B7&VFT66„W‡Vç6T&÷fÂ†VçbÂ²6†D–BÂÖW76vT–C¢×6ræÖW76vUö–BÂV–6´æ÷FT–C¢6fVBæ–BÂ–çFVçC¢66„W‡Vç6T–çFVçBÒ“°¦–b‚&÷fÂæö²’°¦v—B6VæDÖW76vR†VçbÂ6†D–BÂ~)ªûˆòöæ’¶'LKöÇ\Y÷GW'VÆÖLKâ†œ:v&—"&—¦–Ô†W6¶–LK–KÆÖLKâr“°§&WGW&â§6öâ‡²ö³¢fÇ6RÂW'&÷#¢&÷fÂæW'&÷"ÇÂv&÷fÅ÷VWVUöf–ÆVBrÒÂS2“°§Ğ¦v—B6VæDÖW76vR†VçbÂ6†D–BÂ66„W‡Vç6T&÷fÅFW‡B†66„W‡Vç6T–çFVçB’Â66„W‡Vç6T&÷fÄ'WGFöç2†&÷fÂæ–B’Â²'6UöÖöFS¢t…DÔÂrÒ“°§&WGW&â§6öâ‡²ö³¢G'VRÂ–çFVçC¢v66…öW‡Vç6RrÂ&÷fÅö–C¢&÷fÂæ–BÂGWÆ–6FS¢&÷fÂæGWÆ–6FRÂÆ—fU÷w&—FUöVæ&ÆVC¢fÇ6RÒ“°§Ğ¤44…ôU…Tå4Uô”åDTåEôÔõdTEôTäB¢ğ¦6öç7B&÷fÂÒv—B7&VFUG&ç6fW$&÷fÂ†VçbÂ°¦6†D–BÀ¦ÖW76vT–C¢×6ræÖW76vUö–BÀ§V–6´æ÷FT–C¢6fVBæ–BÀ¦–çFVçC¢G&ç6fW$–çFVç@§Ò“°¦–b‚&÷fÂæö²’°¦v—B6VæDÖW76vR†VçbÂ6†D–BÂ~)ªûˆòöæ’¶'LKöÇ\Y÷GW'VÆÖLKâ†œ:v&—"&—¦–Ô†W6¶–LK–KÆÖLKâr“°§&WGW&â§6öâ‡²ö³¢fÇ6RÂW'&÷#¢&÷fÂæW'&÷"ÇÂv&÷fÅ÷VWVUöf–ÆVBrÒÂS2“°§Ğ¦v—B6VæDÖW76vR†VçbÂ6†D–BÂG&ç6fW$&÷fÅFW‡B‡G&ç6fW$–çFVçB’ÂG&ç6fW$&÷fÄ'WGFöç2†&÷fÂæ–B’“°§&WGW&â§6öâ‡°¦ö³¢G'VRÀ¦–çFVçC¢v66…÷G&ç6fW%÷FW7BrÀ¦&÷fÅö–C¢&÷fÂæ–BÀ¦GWÆ–6FS¢&÷fÂæGWÆ–6FRÀ¦Æ—fU÷w&—FUöVæ&ÆVC¢fÇ6P§Ò“°§Ğ ¦6öç7B66„W‡Vç6T–çFVçBÒ'6T66„W‡Vç6T–çFVçB‡FW‡B“°¦–b†66„W‡Vç6T–çFVçB’°¦6öç7B6fVBÒv—B6fUV–6´æ÷FR†VçbÂ²6†D–BÂÖW76vT–C¢×6ræÖW76vUö–BÂ&uFW‡C¢FW‡BÂ'6VEG—S¢66„W‡Vç6T–çFVçBçG—RÂ–ÖVçDÖWF†öC¢væ¶—BrÂæVVG5&Wf–Ws¢G'VRÂ7FGW3¢v&÷fÅ÷VæF–ærrÒ“°¦–b‚6fVBæö²’²v—B6VæDÖW76vR†VçbÂ6†D–BÂ~)ªûˆòv–FW"V×&’|;ÇfVæÆ’·W—'\IöÌKæÖLKâ†œ:v&—"¶œKB–KÆÖLKâr“²&WGW&â§6öâ‡²ö³¢fÇ6RÂW'&÷#¢6fVBæW'&÷"ÇÂwV–6µöæ÷FUöf–ÆVBrÒÂS2“²Ğ¦6öç7B&÷fÂÒv—B7&VFT66„W‡Vç6T&÷fÄÆ—fR†VçbÂ²6†D–BÂÖW76vT–C¢×6ræÖW76vUö–BÂV–6´æ÷FT–C¢6fVBæ–BÂ–çFVçC¢66„W‡Vç6T–çFVçBÒ“°¦–b‚&÷fÂæö²’²v—B6VæDÖW76vR†VçbÂ6†D–BÂ~)ªûˆòöæ’¶'LKöÇ\Y÷GW'VÆÖLKâ†œ:v&—"&—¦–Ô†W6¶–LK–KÆÖLKâr“²&WGW&â§6öâ‡²ö³¢fÇ6RÂW'&÷#¢&÷fÂæW'&÷"ÇÂv&÷fÅ÷VWVUöf–ÆVBrÒÂS2“²Ğ¦v—B6VæDÖW76vR†VçbÂ6†D–BÂ66„W‡Vç6T&÷fÅFW‡DÆ—fR†66„W‡Vç6T–çFVçB’Â66„W‡Vç6T&÷fÄ'WGFöç4Æ—fR†&÷fÂæ–B’Â²'6UöÖöFS¢t…DÔÂrÒ“°§&WGW&â§6öâ‡²ö³¢G'VRÂ–çFVçC¢v66…öW‡Vç6RrÂ&÷fÅö–C¢&÷fÂæ–BÂGWÆ–6FS¢&÷fÂæGWÆ–6FRÂÆ—fU÷w&—FUöVæ&ÆVC¢fÇ6RÒ“°§Ğ ¦6öç7B–ÖVçDÖWF†öBÒ'6U–ÖVçDÖWF†öB†Æ÷vW"“°¦6öç7BGVTFFRÒ'6TGVTFFR‡FW‡B“°Ğ¦6öç7BÖ÷VçBÒ'6TÖ÷VçB‡FW‡BÂGVTFFRæÖF6†VB“°Ğ¦6öç7BöFVÖU6÷§TF–’Òü;fFVÖWÆöFVÖWÌ;fFUÆ"òçFW7B†Æ÷vW"’ÇÂÖ÷VçBæÖ÷VçBÓÒçVÆÃ°Ğ Ğ¦–b†öFVÖU6÷§TF–’bbÖ÷VçBæÖ÷VçBÓÒçVÆÂ’°Ğ¦6öç7B6÷VçFW''G”F–’ÒwVW746÷VçFW''G’‡FW‡BÂGVTFFRæÖF6†VBÂÖ÷VçBæÖF6†VB“°Ğ¦6öç7B×W7FW&’Òv—BÖF6„7W7FöÖW"†VçbÂ6÷VçFW''G”F–’“°Ğ Ğ¦6öç7Bæ÷FU6fVBÒv—B6fUV–6´æ÷FR†VçbÂ°Ğ¦6†D–BÂÖW76vT–C¢×6ræÖW76vUö–BÂ&uFW‡C¢FW‡BÀĞ§'6VEG—S¢vöFVÖU÷6÷§RrÂ–ÖVçDÖWF†öBÂæVVG5&Wf–Ws¢×W7FW&’ÇÂGVTFFRæ—6òÇÂGVTFFRævV6Ö—4ÖĞ§Ò“°Ğ¦6öç7B&öÖ—6U6fVBÒæ÷FU6fVBæö°Ğ£òv—B6fU–ÖVçE&öÖ—6R†VçbÂ°Ğ¦6†D–BÂV–6´æ÷FT–C¢æ÷FU6fVBæ–BÂ&uFW‡C¢FW‡BÀĞ¦6÷VçFW''G“¢×W7FW&’ò×W7FW&’æ6&•÷Vçfâ¢6÷VçFW''G”F–’ÀĞ¦ÖF6†VD7W7FöÖW$–C¢×W7FW&’ò×W7FW&’æ–B¢çVÆÂÀĞ¦Ö÷VçC¢Ö÷VçBæÖ÷VçBÂGVTFFS¢GVTFFRæ—6òÂ–ÖVçDÖWF†ö@Ğ§ÒĞ£¢²ö³¢fÇ6RÓ°Ğ Ğ¦6öç7B6F—&Æ"Ò°Ğ¢	ù8Â9fFVÖR<;g¬;ÂöÆ&²æÆLKÓ¢rÀĞ¢~(
-"¶,YüKF&c¢r²†×W7FW&’ò×W7FW&’æ6&•÷Vçfâ²r†6&’\YöÆ\Y÷F’’r¢†6÷VçFW''G”F–’ÇÂv&VÆ—'F–ÆÖVF’r’²r†6&’\YöÆ\YöÖVF’Â¶öçG&öÂWB’r’ÀĞ¢~(
-"GWF#¢r²ÖöæW’†Ö÷VçBæÖ÷VçB’ÀĞ¢~(
-"F&–ƒ¢r²†GVTFFRæ—6òòG%F&–‚†GVTFFRæ—6ò’¢t$TÌK%LKÄÔTLK(	BæR¦Öãòr’ÀĞ¢~(
-"9fFVÖRœ;fçFVÖ“¢r²–ÖVçDÖWF†ö@Ğ¥Ó°Ğ¦–b‡&öÖ—6U6fVBæö²’°Ğ§6F—&Æ"çW6‚‚~)ÈRW&”ôâ·&—F–²;fFVÖRÆ—7FW6–æRV¶ÆVæF’†–C¢r²&öÖ—6U6fVBæ–B²r’âr“°Ğ§ÒVÇ6R°Ğ§6F—&Æ"çW6‚‚~)ªûˆò¶œKB&Yö,K<K¢öÆGRÂFV·&"FVæW"Ö—6–ãòr“°Ğ§ĞĞ¦–b‚×W7FW&’’6F—&Æ"çW6‚‚~)Ùr'R—6Ö’6&’Æ—7FW6–æFR'VÆÖLKÒÂ–æÌKY÷6FüI÷'RVçfìK–¢âr“°Ğ¦–b‚GVTFFRæ—6ò’6F—&Æ"çW6‚‚~)ÙrF&–‚æÆ–ÖLKÒÂ#FVÖ×W¢"v–&’–¦"ÜK<Kãòr“°Ğ¦–b†GVTFFRævV6Ö—4Ö’’6F—&Æ"çW6‚‚~)Ùr'RF&–‚v\:vÖœY÷FR¶ÆÜKYò(	BvV6–¶ÖœYò&—";fFVÖRÖ’Â–ö·6vVÆV6V²œKÂÜKFVÖV²—7FVF–ãòVÖ–âF\Iö–Ç6Vâ&vVÆV6V²œKÂ"–¢âr“°Ğ¦v—B6VæDÖW76vR†VçbÂ6†D–BÂ6F—&Æ"æ¦ö–â‚uÆâr’“°Ğ§&WGW&â§6öâ‡²ö³¢G'VRÒ“°Ğ§ĞĞ Ğ¦6öç7B'6VEG—RÒ6Æ76–g”æ÷FR†Æ÷vW"“°Ğ¦6öç7B6fVBÒv—B6fUV–6´æ÷FR†VçbÂ°Ğ¦6†D–BÂÖW76vT–C¢×6ræÖW76vUö–BÂ&uFW‡C¢FW‡BÀĞ§'6VEG—RÂ–ÖVçDÖWF†öBÂæVVG5&Wf–Ws¢'6VEG—RÓÓÒvvVæVÅöæ÷BpĞ§Ò“°Ğ Ğ¦v—B6VæDÖW76vR†VçbÂ6†D–BÀĞ¢tÆLKÒåÆâr°Ğ¢uF—¢r²'6VEG—R²uÆâr°Ğ¢tæ÷C¢r²FW‡B²uÆâr°Ğ¢‡6fVBæö°Ğ£ò~)ÈRW&”ôâ¶–LK:|KÆLK†–C¢r²6fVBæ–B²r’âpĞ£¢~)ªûˆòæ÷BÌKæLKÖ¶ÌK<K¶œKB&Yö,K<K¢öÆGR‚r²‡6fVBæW'&÷"ÇÂv&–Æ–æÖW–Vâ†Fr’²r’âFV·&"FVæRfW–&æ<;g–ÆRârĞ¢“°Ğ§&WGW&â§6öâ‡²ö³¢G'VRÒ“°Ğ§Ò6F6‚†R’°Ğ§&WGW&â§6öâ‡²ö³¢fÇ6RÂW'&÷#¢RæÖW76vRÇÂw6W'fW%öW'&÷"rÒÂS“°Ğ§ĞĞ§ĞĞ
+const parsedType = intent.risk === 'approval_required' ? 'approval_required_command' : 'unmapped_command';
+const saved = await saveQuickNote(env, {
+chatId: identity.chatId,
+messageId: message.message_id,
+rawText: intent.rawText,
+parsedType,
+paymentMethod: null,
+needsReview: true,
+status: intent.risk === 'approval_required' ? 'approval_required' : 'needs_review'
+});
+if (!saved.ok) {
+await updateUniversalCommand(env, claimed.id, 'failed', 'Ä°nceleme kaydÄ± oluÅŸturulamadÄ±');
+await sendMessage(env, identity.chatId, 'âš ï¸ Emri kalÄ±cÄ± inceleme kuyruÄŸuna alamadÄ±m. HiÃ§bir dÄ±ÅŸ iÅŸlem yapÄ±lmadÄ±.');
+return { handled: true, status: 'failed' };
+}
+const status = intent.risk === 'approval_required' ? 'approval_required' : 'needs_review';
+await updateUniversalCommand(env, claimed.id, status, `quick_note:${saved.id || 'saved'}`);
+const reply = intent.risk === 'approval_required'
+? `ğŸ›¡ï¸ Emri aldÄ±m ve onay gerektiren â€œ${intent.category}â€ iÅŸlemi olarak hazÄ±rlÄ±k kuyruÄŸuna koydum. Bu kayÄ±t iÅŸlem onayÄ± deÄŸildir; hiÃ§bir dÄ±ÅŸ iÅŸlem yapÄ±lmadÄ±.`
+  : `ğŸ“¥ Emri aldÄ±m ve yetenek eÅŸleÅŸtirme kuyruÄŸuna koydum. HenÃ¼z otomatik uygulayamadÄ±ÄŸÄ±m iÃ§in hiÃ§bir sonucu uydurmadÄ±m.\n\nKullanÄ±labilir masaÃ¼stÃ¼ hedefleri: ${desktopTargetSummary()}.`;
+await sendMessage(env, identity.chatId, reply);
+return { handled: true, status, requestId: claimed.id };
+}
+
+async function createTransferApproval(env, { chatId, messageId, quickNoteId, intent }) {
+if (!env.APERION_DB) return { ok: false, error: 'd1_required_for_safe_approval' };
+const approvalId = crypto.randomUUID();
+const idempotencyKey = `telegram:cash-transfer:${chatId}:${messageId}`;
+const payload = {
+...intent,
+quick_note_id: quickNoteId,
+chat_id: String(chatId),
+telegram_message_id: String(messageId),
+test_mode: true,
+live_write_enabled: false
+};
+try {
+await env.APERION_DB.prepare(`INSERT INTO approval_queue (id,item_type,status,payload_json,evidence_ref,idempotency_key) VALUES (?,'cash_transfer_test','needs_review',?,?,?)`).bind(
+approvalId,
+JSON.stringify(payload),
+`telegram:${chatId}:${messageId}`,
+idempotencyKey
+).run();
+return { ok: true, id: approvalId, duplicate: false };
+} catch (error) {
+const existing = await env.APERION_DB.prepare('SELECT id,status FROM approval_queue WHERE idempotency_key=?').bind(idempotencyKey).first();
+if (existing?.id) return { ok: true, id: existing.id, duplicate: true, status: existing.status };
+return { ok: false, error: 'approval_queue_failed', detail: error.message };
+}
+}
+
+function transferApprovalText(intent) {
+return [
+'ğŸ§ª TEST MODU â€” BizimHesap kaydÄ± yapÄ±lmayacak',
+'',
+'Kaynak hesap adayÄ±: ' + intent.source_account_candidate,
+'Hedef hesap adayÄ±: ' + intent.target_account_candidate,
+'Tutar: ' + Number(intent.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TL',
+'Ä°ÅŸlem: Kasalar arasÄ± transfer',
+'Durum: Hesap adlarÄ± BizimHesapâ€™ta henÃ¼z doÄŸrulanmadÄ±'
+].join('\n');
+}
+
+function transferApprovalButtons(approvalId) {
+return {
+inline_keyboard: [
+[
+{ text: 'ONAYLA (TEST)', callback_data: `ct:a:${approvalId}` },
+{ text: 'REDDET', callback_data: `ct:r:${approvalId}` }
+],
+[{ text: 'HESAP DÃœZELT', callback_data: `ct:e:${approvalId}` }]
+]
+};
+}
+
+async function handleTransferCallback(env, callback) {
+const match = String(callback.data || '').match(/^ct:([are]):([0-9a-f-]{36})$/i);
+if (!match || !env.APERION_DB) return false;
+const chatId = callback.message?.chat?.id;
+const row = await env.APERION_DB.prepare('SELECT id,status,payload_json FROM approval_queue WHERE id=?').bind(match[2]).first();
+if (!row) {
+await answerCallbackQuery(env, callback.id, 'Test onayÄ± bulunamadÄ±.');
+return true;
+}
+
+/* CASH_EXPENSE_FUNCTIONS_BEGIN
+async function createCashExpenseApproval(env, { chatId, messageId, quickNoteId, intent }) {
+if (!env.APERION_DB) return { ok: false, error: 'd1_required_for_safe_approval' };
+const approvalId = crypto.randomUUID();
+const idempotencyKey = `telegram:cash-expense:${chatId}:${messageId}`;
+const payload = {
+...intent,
+quick_note_id: quickNoteId,
+chat_id: String(chatId),
+telegram_message_id: String(messageId),
+live_write_enabled: false
+};
+try {
+await env.APERION_DB.prepare(`INSERT INTO approval_queue (id,item_type,status,payload_json,evidence_ref,idempotency_key) VALUES (?,'cash_expense','needs_review',?,?,?)`).bind(
+approvalId, JSON.stringify(payload), `telegram:${chatId}:${messageId}`, idempotencyKey
+).run();
+return { ok: true, id: approvalId, duplicate: false };
+} catch (error) {
+const existing = await env.APERION_DB.prepare('SELECT id,status FROM approval_queue WHERE idempotency_key=?').bind(idempotencyKey).first();
+if (existing?.id) return { ok: true, id: existing.id, duplicate: true, status: existing.status };
+return { ok: false, error: 'approval_queue_failed', detail: error.message };
+}
+}
+
+function cashExpenseApprovalText(intent) {
+return [
+'ğŸŸ  <b>GERÃ‡EK GÄ°DER ONAYI</b>',
+'<i>Onay vermeden BizimHesap kaydÄ± oluÅŸturulmaz.</i>',
+'',
+`ğŸ’¼ <b>Kaynak:</b> ${intent.source_account}`,
+`ğŸ½ï¸ <b>Gider:</b> ${intent.expense_category}`,
+`ğŸ’³ <b>Tutar:</b> ${Number(intent.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`,
+`ğŸ“… <b>Tarih:</b> ${intent.transaction_date}`,
+'',
+'ğŸ›¡ï¸ Onay sonrasÄ± mÃ¼kerrer kontrolÃ¼ yapÄ±lÄ±r.',
+'ğŸ“¸ BaÅŸarÄ±lÄ± kayÄ±t; iÅŸlem kimliÄŸi, Ã¶nce/sonra bakiye ve ekran gÃ¶rÃ¼ntÃ¼sÃ¼yle bildirilir.'
+].join('\n');
+}
+
+function cashExpenseApprovalButtons(approvalId) {
+return { inline_keyboard: [[
+{ text: 'âœ… GERÃ‡EK KAYDI ONAYLA', callback_data: `ce:a:${approvalId}` },
+{ text: 'âŒ REDDET', callback_data: `ce:r:${approvalId}` }
+], [{ text: 'âœï¸ DÃœZELT', callback_data: `ce:e:${approvalId}` }]] };
+}
+
+async function handleCashExpenseCallback(env, callback) {
+const match = String(callback.data || '').match(/^ce:([are]):([0-9a-f-]{36})$/i);
+if (!match || !env.APERION_DB) return false;
+const chatId = callback.message?.chat?.id;
+const row = await env.APERION_DB.prepare('SELECT id,status,payload_json FROM approval_queue WHERE id=?').bind(match[2]).first();
+if (!row) { await answerCallbackQuery(env, callback.id, 'Gider onayÄ± bulunamadÄ±.'); return true; }
+const payload = JSON.parse(row.payload_json || '{}');
+if (String(payload.chat_id) !== String(chatId)) { await answerCallbackQuery(env, callback.id, 'Bu onay size ait deÄŸil.'); return true; }
+if (row.status !== 'needs_review') { await answerCallbackQuery(env, callback.id, 'Daha Ã¶nce iÅŸlendi: ' + row.status); return true; }
+
+if (match[1] !== 'a') {
+const status = match[1] === 'r' ? 'rejected' : 'needs_edit';
+await env.APERION_DB.prepare(`UPDATE approval_queue SET status=?,decided_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),decided_by=? WHERE id=? AND status='needs_review'`).bind(status, `telegram:${chatId}`, row.id).run();
+const message = status === 'rejected' ? 'âŒ Gider reddedildi; hiÃ§bir kayÄ±t oluÅŸturulmadÄ±.' : 'âœï¸ DÃ¼zeltme istendi; hiÃ§bir kayÄ±t oluÅŸturulmadÄ±.';
+await answerCallbackQuery(env, callback.id, message);
+await sendMessage(env, chatId, message);
+return true;
+}
+
+await env.APERION_DB.prepare(`UPDATE approval_queue SET status='approved_queueing',decided_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),decided_by=? WHERE id=? AND status='needs_review'`).bind(`telegram:${chatId}`, row.id).run();
+const queued = await sbFetch(env, '/rest/v1/bot_commands', {
+method: 'POST', headers: { prefer: 'return=representation' }, body: JSON.stringify({
+command: 'bizimhesap_expense', status: 'pending', params: {
+approval_id: row.id, approved: true, chat_id: String(chatId),
+source_account: payload.source_account, expense_category: payload.expense_category,
+amount: payload.amount, currency: 'TRY', transaction_date: payload.transaction_date,
+description: payload.description, raw_text: payload.raw_text,
+idempotency_key: `telegram-expense:${row.id}`
+}
+})
+});
+if (!queued.ok) {
+await env.APERION_DB.prepare(`UPDATE approval_queue SET status='approved_queue_failed' WHERE id=? AND status='approved_queueing'`).bind(row.id).run();
+await answerCallbackQuery(env, callback.id, 'Kuyruk baÄŸlantÄ±sÄ± kurulamadÄ±; kayÄ±t yapÄ±lmadÄ±.');
+await sendMessage(env, chatId, 'âš ï¸ Onay alÄ±ndÄ± fakat gÃ¼venli masaÃ¼stÃ¼ kuyruÄŸuna baÄŸlanÄ±lamadÄ±. BizimHesap kaydÄ± yapÄ±lmadÄ±.');
+return true;
+}
+await env.APERION_DB.prepare(`UPDATE approval_queue SET status='queued' WHERE id=? AND status='approved_queueing'`).bind(row.id).run();
+await answerCallbackQuery(env, callback.id, 'OnaylandÄ± ve gÃ¼venli kuyruÄŸa alÄ±ndÄ±.');
+await sendMessage(env, chatId, 'ğŸŸ¢ <b>ONAY ALINDI</b>\nMÃ¼kerrer ve kasa kontrolleri baÅŸlatÄ±ldÄ±. Ä°ÅŸlem ancak BizimHesap ekranÄ±nda doÄŸrulanÄ±rsa tamamlandÄ± sayÄ±lacak; ardÄ±ndan gÃ¶rsel kanÄ±t gÃ¶nderilecek.', null, { parse_mode: 'HTML' });
+return true;
+}
+CASH_EXPENSE_FUNCTIONS_END */
+const payload = JSON.parse(row.payload_json || '{}');
+if (String(payload.chat_id) !== String(chatId)) {
+await answerCallbackQuery(env, callback.id, 'Bu onay size ait deÄŸil.');
+return true;
+}
+if (row.status !== 'needs_review') {
+await answerCallbackQuery(env, callback.id, 'Daha Ã¶nce iÅŸlendi: ' + row.status);
+return true;
+}
+const status = { a: 'test_approved', r: 'rejected', e: 'needs_account_edit' }[match[1]];
+await env.APERION_DB.prepare(`UPDATE approval_queue SET status=?,decided_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),decided_by=? WHERE id=? AND status='needs_review'`).bind(
+status,
+`telegram:${chatId}`,
+row.id
+).run();
+const message = status === 'test_approved'
+? 'âœ… Kuru test onaylandÄ±. BizimHesapâ€™a kayÄ±t yapÄ±lmadÄ±.'
+: status === 'rejected'
+? 'âŒ Kuru test reddedildi. KayÄ±t yapÄ±lmadÄ±.'
+: 'âœï¸ Hesap dÃ¼zeltme istendi. KayÄ±t yapÄ±lmadÄ±.';
+await answerCallbackQuery(env, callback.id, message);
+await sendMessage(env, chatId, message);
+return true;
+}
+
+async function createCashExpenseApprovalLive(env, { chatId, messageId, quickNoteId, intent }) {
+if (!env.APERION_DB) return { ok: false, error: 'd1_required_for_safe_approval' };
+const approvalId = crypto.randomUUID();
+const idempotencyKey = `telegram:cash-expense:${chatId}:${messageId}`;
+const payload = { ...intent, quick_note_id: quickNoteId, chat_id: String(chatId), telegram_message_id: String(messageId), live_write_enabled: false };
+try {
+await env.APERION_DB.prepare(`INSERT INTO approval_queue (id,item_type,status,payload_json,evidence_ref,idempotency_key) VALUES (?,'cash_expense','needs_review',?,?,?)`).bind(approvalId, JSON.stringify(payload), `telegram:${chatId}:${messageId}`, idempotencyKey).run();
+return { ok: true, id: approvalId, duplicate: false };
+} catch (error) {
+const existing = await env.APERION_DB.prepare('SELECT id,status FROM approval_queue WHERE idempotency_key=?').bind(idempotencyKey).first();
+if (existing?.id) return { ok: true, id: existing.id, duplicate: true, status: existing.status };
+return { ok: false, error: 'approval_queue_failed', detail: error.message };
+}
+}
+
+function cashExpenseApprovalTextLive(intent) {
+return ['ğŸŸ  <b>GERÃ‡EK GÄ°DER ONAYI</b>', '<i>Onay vermeden BizimHesap kaydÄ± oluÅŸturulmaz.</i>', '', `ğŸ’¼ <b>Kaynak:</b> ${intent.source_account}`, `ğŸ½ï¸ <b>Gider:</b> ${intent.expense_category}`, `ğŸ’³ <b>Tutar:</b> ${Number(intent.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`, `ğŸ“… <b>Tarih:</b> ${intent.transaction_date}`, '', 'ğŸ›¡ï¸ Onay sonrasÄ± mÃ¼kerrer kontrolÃ¼ yapÄ±lÄ±r.', 'ğŸ“¸ BaÅŸarÄ±lÄ± kayÄ±t; iÅŸlem kimliÄŸi, Ã¶nce/sonra bakiye ve ekran gÃ¶rÃ¼ntÃ¼sÃ¼yle bildirilir.'].join('\n');
+}
+
+function cashExpenseApprovalButtonsLive(approvalId) {
+return { inline_keyboard: [[{ text: 'âœ… GERÃ‡EK KAYDI ONAYLA', callback_data: `ce:a:${approvalId}` }, { text: 'âŒ REDDET', callback_data: `ce:r:${approvalId}` }], [{ text: 'âœï¸ DÃœZELT', callback_data: `ce:e:${approvalId}` }]] };
+}
+
+async function handleCashExpenseCallbackLive(env, callback) {
+const match = String(callback.data || '').match(/^ce:([are]):([0-9a-f-]{36})$/i);
+if (!match || !env.APERION_DB) return false;
+const chatId = callback.message?.chat?.id;
+const row = await env.APERION_DB.prepare('SELECT id,status,payload_json FROM approval_queue WHERE id=?').bind(match[2]).first();
+if (!row) { await answerCallbackQuery(env, callback.id, 'Gider onayÄ± bulunamadÄ±.'); return true; }
+const payload = JSON.parse(row.payload_json || '{}');
+if (String(payload.chat_id) !== String(chatId)) { await answerCallbackQuery(env, callback.id, 'Bu onay size ait deÄŸil.'); return true; }
+if (row.status !== 'needs_review') { await answerCallbackQuery(env, callback.id, 'Daha Ã¶nce iÅŸlendi: ' + row.status); return true; }
+if (match[1] !== 'a') {
+const status = match[1] === 'r' ? 'rejected' : 'needs_edit';
+await env.APERION_DB.prepare(`UPDATE approval_queue SET status=?,decided_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),decided_by=? WHERE id=? AND status='needs_review'`).bind(status, `telegram:${chatId}`, row.id).run();
+const message = status === 'rejected' ? 'âŒ Gider reddedildi; hiÃ§bir kayÄ±t oluÅŸturulmadÄ±.' : 'âœï¸ DÃ¼zeltme istendi; hiÃ§bir kayÄ±t oluÅŸturulmadÄ±.';
+await answerCallbackQuery(env, callback.id, message); await sendMessage(env, chatId, message); return true;
+}
+await env.APERION_DB.prepare(`UPDATE approval_queue SET status='approved_queueing',decided_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),decided_by=? WHERE id=? AND status='needs_review'`).bind(`telegram:${chatId}`, row.id).run();
+const queued = await sbFetch(env, '/rest/v1/bot_commands', { method: 'POST', headers: { prefer: 'return=representation' }, body: JSON.stringify({ command: 'bizimhesap_expense', status: 'pending', params: { approval_id: row.id, approved: true, chat_id: String(chatId), source_account: payload.source_account, expense_category: payload.expense_category, amount: payload.amount, currency: 'TRY', transaction_date: payload.transaction_date, description: payload.description, raw_text: payload.raw_text, idempotency_key: `telegram-expense:${row.id}` } }) });
+if (!queued.ok) {
+await env.APERION_DB.prepare(`UPDATE approval_queue SET status='approved_queue_failed' WHERE id=? AND status='approved_queueing'`).bind(row.id).run();
+await answerCallbackQuery(env, callback.id, 'Kuyruk baÄŸlantÄ±sÄ± kurulamadÄ±; kayÄ±t yapÄ±lmadÄ±.'); await sendMessage(env, chatId, 'âš ï¸ Onay alÄ±ndÄ± fakat gÃ¼venli masaÃ¼stÃ¼ kuyruÄŸuna baÄŸlanÄ±lamadÄ±. BizimHesap kaydÄ± yapÄ±lmadÄ±.'); return true;
+}
+await env.APERION_DB.prepare(`UPDATE approval_queue SET status='queued' WHERE id=? AND status='approved_queueing'`).bind(row.id).run();
+await answerCallbackQuery(env, callback.id, 'OnaylandÄ± ve gÃ¼venli kuyruÄŸa alÄ±ndÄ±.');
+await sendMessage(env, chatId, 'ğŸŸ¢ <b>ONAY ALINDI</b>\nMÃ¼kerrer ve kasa kontrolleri baÅŸlatÄ±ldÄ±. Ä°ÅŸlem ancak BizimHesap ekranÄ±nda doÄŸrulanÄ±rsa tamamlandÄ± sayÄ±lacak; ardÄ±ndan gÃ¶rsel kanÄ±t gÃ¶nderilecek.', null, { parse_mode: 'HTML' });
+return true;
+}
+
+async function savePaymentPromise(env, { chatId, quickNoteId, rawText, counterparty, matchedCustomerId, amount, dueDate, paymentMethod }) {
+const r = await sbFetch(env, '/rest/v1/payment_promises', {
+method: 'POST',
+headers: { prefer: 'return=representation' },
+body: JSON.stringify({
+quick_note_id: quickNoteId,
+counterparty: counterparty || '(belirtilmedi)',
+counterparty_matched_customer_id: matchedCustomerId || null,
+amount,
+currency: 'TRY',
+due_date: dueDate,
+payment_method: paymentMethod,
+approval_status: 'pending',
+paid_status: 'pending_payment',
+evidence_status: 'waiting_proof',
+chat_id: chatId,
+raw_text: rawText
+})
+});
+if (!r.ok) return { ok: false, error: r.error, detail: r.detail };
+return { ok: true, id: r.data && r.data[0] && r.data[0].id };
+}
+
+// ---- mukerrer kontrolu: ayni telegram mesaji webhook tarafindan iki kez teslim edilirse ----
+async function zatenKayitliMi(env, messageId, chatId) {
+if (!messageId) return false;
+const r = await sbFetch(env, '/rest/v1/quick_notes?select=id&telegram_message_id=eq.' + messageId + '&chat_id=eq.' + chatId + '&limit=1');
+return r.ok && r.data && r.data.length > 0;
+}
+
+async function queryBalance(env) {
+if (env.APERION_DB) {
+try {
+const rows = await env.APERION_DB.prepare('SELECT bank_name,balance AS son_bakiye,balance_date AS son_tarih FROM last_bank_balances ORDER BY bank_name').all();
+if (rows.results && rows.results.length) return rows.results;
+} catch (_error) { /* D1 yoksa/hata varsa Supabase'e dus */ }
+}
+const r = await sbFetch(env, '/rest/v1/aperion_bank_last_known_balance_v1_view?select=bank_name,son_bakiye,son_tarih');
+if (!r.ok) return null;
+return r.data;
+}
+
+async function handleBalanceIntent(env, chatId) {
+const rows = await queryBalance(env);
+if (!rows) {
+await sendMessage(env, chatId, 'Bakiye verisine ÅŸu an ulaÅŸamadÄ±m (Supabase baÄŸlantÄ± sorunu).');
+return;
+}
+let toplam = 0;
+let enEskiTarih = null;
+const lines = rows.map(r => {
+toplam += Number(r.son_bakiye) || 0;
+if (r.son_tarih && (!enEskiTarih || r.son_tarih < enEskiTarih)) enEskiTarih = r.son_tarih;
+return 'â€¢ ' + r.bank_name + ': ' + money(r.son_bakiye) + ' (' + trTarih(r.son_tarih) + ' itibarÄ±yla)';
+});
+const suan = new Date();
+const suanStr = String(suan.getDate()).padStart(2, '0') + '.' + String(suan.getMonth() + 1).padStart(2, '0') + '.' + suan.getFullYear() + ' ' + String(suan.getHours()).padStart(2, '0') + ':' + String(suan.getMinutes()).padStart(2, '0');
+let mesaj = 'ğŸ’° Åu an elde (bilinen banka toplamÄ±, ' + suanStr + ' sorgu anÄ±): ' + money(toplam) + '\n' + lines.join('\n');
+if (enEskiTarih) {
+const gunFarki = Math.floor((suan - new Date(enEskiTarih)) / 86400000);
+if (gunFarki >= 2) {
+mesaj += '\n\nâš ï¸ En eski bakiye verisi ' + gunFarki + ' gÃ¼n Ã¶nceye ait (' + trTarih(enEskiTarih) + ') â€” o bankanÄ±n ekstresi gÃ¼ncellenmemiÅŸ olabilir.';
+}
+}
+await sendMessage(env, chatId, mesaj);
+}
+
+// ---------------------------------------------------------------------------
+// APERION-008 Faz 1 (Cloudflare tarafi) â€” 2026-08-15 eklendi.
+// AMAC: /durum ve /stok komutlarini DOGRUDAN Supabase'den cevaplamak â€” bu
+// webhook Cloudflare'de calistigi icin Windows bilgisayara hic erisemiyor,
+// bu yuzden sadece bulutta zaten var olan veriye bakan komutlar eklendi.
+// /senkron ve /oturum gibi "yerel bilgisayarda bir seyi calistir" komutlari
+// bu mimaride yapilamaz â€” bunun icin bot_commands kuyrugundaki yerel
+// dinleyicinin (su an 3 gundur calismiyor) ayrica calisir hale gelmesi lazim.
+// ---------------------------------------------------------------------------
+
+async function handleStokIntent(env, chatId, query) {
+if (!query) {
+await sendMessage(env, chatId, 'KullanÄ±m: /stok <Ã¼rÃ¼n adÄ±>');
+return;
+}
+const encoded = encodeURIComponent('*' + query + '*');
+const r = await sbFetch(env, '/rest/v1/stock_raw?select=urun,miktar,birim,tarih&urun=ilike.' + encoded + '&order=urun.asc&limit=5');
+if (!r.ok || !r.data) {
+await sendMessage(env, chatId, 'Stok verisine ÅŸu an ulaÅŸamadÄ±m (Supabase baÄŸlantÄ± sorunu).');
+return;
+}
+if (!r.data.length) {
+await sendMessage(env, chatId, '"' + query + '" iÃ§in sonuÃ§ bulunamadÄ±.');
+return;
+}
+const sonTarih = r.data[0].tarih;
+const lines = r.data.map(row => 'â€¢ ' + row.urun + '\n  Stok: ' + row.miktar + ' ' + row.birim);
+await sendMessage(env, chatId,
+'"' + query + '" iÃ§in ' + r.data.length + ' sonuÃ§ (veri tarihi: ' + trTarih(sonTarih) + '):\n\n' + lines.join('\n\n')
+);
+}
+
+async function handleDurumIntent(env, chatId) {
+const stokR = await sbFetch(env, '/rest/v1/stock_raw?select=tarih&order=tarih.desc&limit=1');
+const eventR = await sbFetch(env, '/rest/v1/bizimhesap_events?select=created_at&order=created_at.desc&limit=1');
+const lines = ['AperiON Durum (Supabase Ã¼zerinden):', ''];
+if (stokR.ok && stokR.data && stokR.data[0]) {
+lines.push('â€¢ Stok verisi: son gÃ¼ncelleme ' + trTarih(stokR.data[0].tarih));
+} else {
+lines.push('â€¢ Stok verisi: okunamadÄ±');
+}
+if (eventR.ok && eventR.data && eventR.data[0]) {
+const dt = new Date(eventR.data[0].created_at);
+lines.push('â€¢ Son BizimHesap olayÄ±: ' + dt.toLocaleString('tr-TR'));
+} else {
+lines.push('â€¢ BizimHesap olay kaydÄ±: okunamadÄ±');
+}
+lines.push('', 'Not: bu Ã¶zet yalnÄ±zca buluttaki (Supabase) verilere bakar; bilgisayarÄ±nÄ±zdaki senkron scriptinin ÅŸu anki canlÄ± Ã§alÄ±ÅŸma durumunu gÃ¶stermez.');
+await sendMessage(env, chatId, lines.join('\n'));
+}
+// ---------------------------------------------------------------------------
+
+async function getTelegramFileUrl(env, fileId) {
+    if (!env.TELEGRAM_BOT_TOKEN || !fileId) return null;
+    try {
+          const r = await fetch('https://api.telegram.org/bot' + env.TELEGRAM_BOT_TOKEN + '/getFile?file_id=' + encodeURIComponent(fileId));
+          const j = await r.json();
+          if (!j.ok || !j.result || !j.result.file_path) return null;
+          return 'https://api.telegram.org/file/bot' + env.TELEGRAM_BOT_TOKEN + '/' + j.result.file_path;
+    } catch (_e) { return null; }
+}
+
+async function ensureCapturesTable(env) {
+    await env.APERION_DB.prepare(
+          "CREATE TABLE IF NOT EXISTS telegram_captures (id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL, message_id TEXT NOT NULL, kind TEXT NOT NULL, file_id TEXT NOT NULL, mime_type TEXT, caption TEXT, status TEXT NOT NULL DEFAULT 'pending_review', created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(chat_id, message_id))"
+        ).run();
+}
+
+async function handleMediaCapture(env, msg) {
+    const chatId = msg.chat.id;
+    let fileId = null, kind = null, mimeType = null;
+    if (msg.photo && msg.photo.length) { const best = msg.photo[msg.photo.length - 1]; fileId = best.file_id; kind = 'photo'; }
+    else if (msg.document) { fileId = msg.document.file_id; kind = 'document'; mimeType = msg.document.mime_type || null; }
+    else if (msg.video) { fileId = msg.video.file_id; kind = 'video'; mimeType = msg.video.mime_type || null; }
+    if (!fileId) return json({ ok: true, ignored: true });
+  
+    const caption = clean(msg.caption || '');
+    let savedOk = false;
+    if (env.APERION_DB) {
+          try {
+                  await ensureCapturesTable(env);
+                  await env.APERION_DB.prepare(
+                            'INSERT INTO telegram_captures (chat_id,message_id,kind,file_id,mime_type,caption) VALUES (?,?,?,?,?,?) ON CONFLICT(chat_id,message_id) DO NOTHING'
+                          ).bind(String(chatId), String(msg.message_id), kind, fileId, mimeType, caption).run();
+                  savedOk = true;
+          } catch (_e) { savedOk = false; }
+    }
+  
+    const etiket = kind === 'photo' ? 'ğŸ“¸ FotoÄŸrafÄ±' : kind === 'video' ? 'ğŸ¥ Videoyu' : 'ğŸ“ DosyayÄ±';
+    const satirlar = [
+          etiket + ' aldÄ±m' + (caption ? (' â€” not: "' + caption + '"') : '') + '.',
+          savedOk ? 'âœ… KuyruÄŸa alÄ±ndÄ± (durum: onay bekliyor).' : 'âš ï¸ AldÄ±m ama kalÄ±cÄ± kayÄ±t baÅŸarÄ±sÄ±z oldu.',
+          'Bu fatura/fiÅŸ gÃ¶rselinden bilgi Ã§Ä±karma ve BizimHesap\'a onaylÄ± yazma adÄ±mÄ± ÅŸu an geliÅŸtiriliyor â€” hazÄ±r olunca burada onayÄ±na sunacaÄŸÄ±m.'
+        ];
+    await sendMessage(env, chatId, satirlar.join('\n'));
+    return json({ ok: true, captured: kind });
+}
+
+export async function onRequestGet({ env }) {
+const security = await getMobileSecurityStatus(env);
+const desktopBridge = await deviceHealth(env);
+return json({
+ok: true,
+service: 'aperion-telegram-webhook',
+mode: 'mobile-command-center-v2',
+command_router_version: 'v143',
+device_status_command: '/cihazdurum',
+desktop_target_count: Object.keys(DESKTOP_TARGETS).length,
+desktop_bridge_configured: desktopBridge.configured,
+desktop_bridge_active_device_count: desktopBridge.activeDeviceCount,
+desktop_bridge_pending_command_count: desktopBridge.pendingCommandCount,
+telegram_token_configured: Boolean(env.TELEGRAM_BOT_TOKEN),
+supabase_configured: Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
+identity_guard_configured: security.identityGuard,
+webhook_secret_configured: security.webhookSecret,
+security_source: security.source,
+webhook_bootstrap_status: security.bootstrapStatus || (security.webhookSecret ? 'ready' : 'pending')
+});
+}
+
+const REPORT_DEFINITIONS = Object.freeze({
+product: {
+title: 'ÃœrÃ¼n performans raporu', table: 'sales_raw', searchField: 'urun',
+defaultFields: ['period_quantity', 'period_revenue', 'top_customers', 'fifo_profit', 'margin', 'category_share'],
+allowedFields: ['period_quantity', 'period_revenue', 'top_customers', 'fifo_profit', 'margin', 'category_share'],
+labels: { period_quantity: 'DÃ¶nem adedi', period_revenue: 'DÃ¶nem cirosu', top_customers: 'En Ã§ok alan mÃ¼ÅŸteriler', fifo_profit: 'FIFO kÃ¢rÄ±', margin: 'KÃ¢r marjÄ±', category_share: 'Kategori payÄ±' }
+},
+customer: {
+title: 'Cari raporu', table: 'customers', searchField: 'cari_unvan',
+defaultFields: ['cari_unvan', 'sinif', 'acik_bakiye', 'cek_senet_bakiyesi', 'bakiye_guncelleme'],
+allowedFields: ['cari_unvan', 'sinif', 'acik_bakiye', 'cek_senet_bakiyesi', 'bakiye_guncelleme'],
+labels: { cari_unvan: 'Cari', sinif: 'SÄ±nÄ±f', acik_bakiye: 'AÃ§Ä±k bakiye', cek_senet_bakiyesi: 'Ã‡ek/senet', bakiye_guncelleme: 'GÃ¼ncelleme' }
+}
+});
+
+async function ensureReportProfileSchema(db) {
+if (!db) return false;
+try {
+await db.prepare(`CREATE TABLE IF NOT EXISTS telegram_report_profiles (
+report_key TEXT PRIMARY KEY,title TEXT NOT NULL,fields_json TEXT NOT NULL,updated_by TEXT,
+updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+)`).run();
+return true;
+} catch (_error) { return false; }
+}
+
+async function readReportFields(env, reportKey) {
+const definition = REPORT_DEFINITIONS[reportKey];
+if (!definition) return [];
+if (!(await ensureReportProfileSchema(env.APERION_DB))) return definition.defaultFields;
+try {
+const row = await env.APERION_DB.prepare('SELECT fields_json FROM telegram_report_profiles WHERE report_key=?').bind(reportKey).first();
+const fields = JSON.parse(row?.fields_json || '[]').filter(field => definition.allowedFields.includes(field));
+return fields.length ? fields : definition.defaultFields;
+} catch (_error) { return definition.defaultFields; }
+}
+
+async function saveReportFields(env, reportKey, requested, userId) {
+const definition = REPORT_DEFINITIONS[reportKey];
+if (!definition) return { ok: false, error: 'Rapor tÃ¼rÃ¼ Ã¼rÃ¼n veya cari olmalÄ±.' };
+const fields = requested.map(value => String(value || '').trim().toLocaleLowerCase('tr-TR')).filter(Boolean);
+const invalid = fields.filter(field => !definition.allowedFields.includes(field));
+if (!fields.length) return { ok: false, error: 'En az bir alan belirtin.' };
+if (invalid.length) return { ok: false, error: 'Desteklenmeyen alan: ' + invalid.join(', ') + '. KullanÄ±labilir: ' + definition.allowedFields.join(', ') };
+if (!(await ensureReportProfileSchema(env.APERION_DB))) return { ok: false, error: 'Rapor profili kaynaÄŸÄ± kullanÄ±lamÄ±yor.' };
+await env.APERION_DB.prepare(`INSERT INTO telegram_report_profiles(report_key,title,fields_json,updated_by,updated_at)
+VALUES(?,?,?,?,datetime('now')) ON CONFLICT(report_key) DO UPDATE SET fields_json=excluded.fields_json,updated_by=excluded.updated_by,updated_at=datetime('now')`)
+.bind(reportKey, definition.title, JSON.stringify(fields), String(userId || 'telegram')).run();
+return { ok: true, fields };
+}
+
+function reportValue(field, value) {
+if (value == null || value === '') return 'bilgi yok';
+if (['acik_bakiye', 'cek_senet_bakiyesi'].includes(field)) return money(value);
+return String(value);
+}
+
+function isoDate(date) {
+return date.toISOString().slice(0, 10);
+}
+
+function productPeriods(now = new Date()) {
+const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+const day = today.getUTCDay() || 7;
+const weekStart = new Date(today); weekStart.setUTCDate(today.getUTCDate() - day + 1);
+const monthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
+const previousMonthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 1, 1));
+const previousMonthEnd = new Date(monthStart); previousMonthEnd.setUTCDate(0);
+const yearStart = new Date(Date.UTC(today.getUTCFullYear(), 0, 1));
+return [
+{ key: 'today', label: 'BugÃ¼n', from: isoDate(today), to: isoDate(today) },
+{ key: 'yesterday', label: 'DÃ¼n', from: isoDate(new Date(today.getTime() - 86400000)), to: isoDate(new Date(today.getTime() - 86400000)) },
+{ key: 'this_week', label: 'Bu hafta', from: isoDate(weekStart), to: isoDate(today) },
+{ key: 'this_month', label: 'Bu ay', from: isoDate(monthStart), to: isoDate(today) },
+{ key: 'last_month', label: 'GeÃ§en ay', from: isoDate(previousMonthStart), to: isoDate(previousMonthEnd) },
+{ key: 'this_year', label: 'Bu yÄ±l', from: isoDate(yearStart), to: isoDate(today) },
+{ key: 'last_year', label: 'GeÃ§en yÄ±l', from: `${today.getUTCFullYear() - 1}-01-01`, to: `${today.getUTCFullYear() - 1}-12-31` }
+];
+}
+
+function sumRows(rows, field) {
+return rows.reduce((total, row) => total + (Number(row[field]) || 0), 0);
+}
+
+async function queryProductPeriod(env, query, period) {
+const path = '/rest/v1/sales_raw?select=urun,adet,ciro,satis_kdv_haric,unvan,kategori,tarih,urun_kod' +
+'&firma_id=eq.alayli&urun=ilike.*' + encodeURIComponent(query) + '*&tarih=gte.' + period.from + '&tarih=lte.' + period.to + '&limit=5000';
+const response = await sbFetch(env, path);
+if (!response.ok || !Array.isArray(response.data)) return { ok: false, rows: [] };
+return { ok: true, rows: response.data };
+}
+
+async function queryCategoryRevenue(env, category, period) {
+if (!category) return { ok: false, revenue: null };
+const path = '/rest/v1/sales_raw?select=ciro,satis_kdv_haric&firma_id=eq.alayli&kategori=eq.' + encodeURIComponent(category) +
+'&tarih=gte.' + period.from + '&tarih=lte.' + period.to + '&limit=5000';
+const response = await sbFetch(env, path);
+if (!response.ok || !Array.isArray(response.data)) return { ok: false, revenue: null };
+return { ok: true, revenue: sumRows(response.data, 'satis_kdv_haric') || sumRows(response.data, 'ciro') };
+}
+
+function fifoProductKey(row) {
+return String(row.urun_kod || row.barkod || row.urun || '').trim().toLocaleLowerCase('tr-TR');
+}
+
+async function buildProductFifoLedger(env, query, throughDate) {
+const filter = '&firma_id=eq.alayli&urun=ilike.*' + encodeURIComponent(query) + '*';
+const [purchaseResponse, salesResponse] = await Promise.all([
+sbFetch(env, '/rest/v1/purchase_raw?select=id,tarih,belge_no,urun,urun_kod,barkod,miktar,alis_fiyat,tutar' + filter + '&tarih=lte.' + throughDate + '&order=tarih.asc&limit=5000'),
+sbFetch(env, '/rest/v1/sales_raw?select=id,tarih,urun,urun_kod,barkod,adet,satis_kdv_haric,ciro' + filter + '&tarih=lte.' + throughDate + '&order=tarih.asc,id.asc&limit=5000')
+]);
+if (!purchaseResponse.ok || !salesResponse.ok || !Array.isArray(purchaseResponse.data) || !Array.isArray(salesResponse.data)) return { ok: false, sales: [], layers: [] };
+const truncated = purchaseResponse.data.length >= 5000 || salesResponse.data.length >= 5000;
+const layersByProduct = new Map();
+for (const row of purchaseResponse.data) {
+const quantity = Number(row.miktar) || 0;
+const unitCost = Number(row.alis_fiyat) || (quantity ? (Number(row.tutar) || 0) / quantity : 0);
+if (quantity <= 0 || unitCost <= 0) continue;
+const key = fifoProductKey(row);
+if (!layersByProduct.has(key)) layersByProduct.set(key, []);
+layersByProduct.get(key).push({ product: row.urun, date: row.tarih, document: row.belge_no, unitCost, received: quantity, remaining: quantity });
+}
+const sales = [];
+let incomplete = truncated;
+for (const row of salesResponse.data) {
+let needed = Number(row.adet) || 0;
+if (needed < 0) { incomplete = true; continue; }
+let fifoCost = 0;
+const allocations = [];
+const layers = layersByProduct.get(fifoProductKey(row)) || [];
+for (const layer of layers) {
+if (needed <= 0) break;
+if (layer.remaining <= 0) continue;
+const used = Math.min(needed, layer.remaining);
+layer.remaining -= used;
+needed -= used;
+fifoCost += used * layer.unitCost;
+allocations.push({ quantity: used, unitCost: layer.unitCost, purchaseDate: layer.date });
+}
+if (needed > 0) incomplete = true;
+const revenue = Number(row.satis_kdv_haric) || Number(row.ciro) || 0;
+sales.push({ date: row.tarih, quantity: Number(row.adet) || 0, revenue, fifoCost, profit: revenue - fifoCost, missingQuantity: needed, allocations });
+}
+return { ok: !incomplete, incomplete, truncated, sales, layers: [...layersByProduct.values()].flat().filter(layer => layer.remaining > 0) };
+}
+
+function fifoPeriodSummary(ledger, period) {
+if (!ledger.sales.length) return { ok: ledger.ok, revenue: 0, cost: 0, profit: 0, margin: null };
+const rows = ledger.sales.filter(row => row.date >= period.from && row.date <= period.to);
+const revenue = sumRows(rows, 'revenue');
+const cost = sumRows(rows, 'fifoCost');
+const profit = revenue - cost;
+return { ok: ledger.ok && !rows.some(row => row.missingQuantity > 0), revenue, cost, profit, margin: revenue ? profit / revenue * 100 : null };
+}
+
+function topCustomers(rows) {
+const totals = new Map();
+for (const row of rows) {
+const name = row.unvan || 'Cari eÅŸleÅŸmedi';
+const current = totals.get(name) || { quantity: 0, revenue: 0 };
+current.quantity += Number(row.adet) || 0;
+current.revenue += Number(row.satis_kdv_haric) || Number(row.ciro) || 0;
+totals.set(name, current);
+}
+return [...totals.entries()].sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 5);
+}
+
+async function handleProductPerformanceReport(env, chatId, query) {
+const search = String(query || '').trim();
+if (!search) {
+await sendMessage(env, chatId, 'KullanÄ±m: /urunraporu <Ã¼rÃ¼n adÄ± veya kodu>');
+return;
+}
+const fields = await readReportFields(env, 'product');
+const periods = productPeriods(new Date());
+const sales = await Promise.all(periods.map(period => queryProductPeriod(env, search, period)));
+if (!sales.some(result => result.ok)) {
+await sendMessage(env, chatId, 'âš ï¸ ÃœrÃ¼n satÄ±ÅŸ kaynaÄŸÄ± okunamadÄ±; rapor uydurulmadÄ±.');
+return;
+}
+const category = sales.flatMap(result => result.rows).find(row => row.kategori)?.kategori || '';
+const categoryTotals = fields.includes('category_share')
+? await Promise.all(periods.map(period => queryCategoryRevenue(env, category, period))) : periods.map(() => ({ ok: false }));
+const fifoLedger = fields.some(field => ['fifo_profit', 'margin'].includes(field))
+? await buildProductFifoLedger(env, search, periods.find(period => period.key === 'today').to) : { ok: false, sales: [], layers: [] };
+const fifo = periods.map(period => fifoPeriodSummary(fifoLedger, period));
+const lines = ['ğŸ“Š ÃœRÃœN PERFORMANS RAPORU', 'Arama: ' + search, 'Kategori: ' + (category || 'eÅŸleÅŸmedi'), 'Alan profili: ' + fields.join(', '), ''];
+periods.forEach((period, index) => {
+const result = sales[index];
+if (!result.ok) { lines.push('â€¢ ' + period.label + ': KAYNAK OKUNAMADI'); return; }
+const quantity = sumRows(result.rows, 'adet');
+const revenue = sumRows(result.rows, 'satis_kdv_haric') || sumRows(result.rows, 'ciro');
+const parts = [];
+if (fields.includes('period_quantity')) parts.push(quantity.toLocaleString('tr-TR') + ' adet');
+if (fields.includes('period_revenue')) parts.push(money(revenue));
+if (fields.includes('fifo_profit')) parts.push(fifo[index].ok ? 'FIFO kÃ¢r ' + money(fifo[index].profit) : 'FIFO KAYNAK EKSÄ°K');
+if (fields.includes('margin')) parts.push(fifo[index].ok && Number.isFinite(fifo[index].margin) ? 'marj %' + fifo[index].margin.toFixed(1) : 'marj hesaplanamadÄ±');
+if (fields.includes('category_share')) {
+const denominator = categoryTotals[index].revenue;
+parts.push(categoryTotals[index].ok && denominator > 0 ? 'kategori payÄ± %' + (revenue / denominator * 100).toFixed(1) : 'kategori payÄ± hesaplanamadÄ±');
+}
+lines.push('â€¢ ' + period.label + ': ' + (parts.join(' Â· ') || result.rows.length + ' kayÄ±t'));
+});
+if (fields.includes('top_customers')) {
+const yearIndex = periods.findIndex(period => period.key === 'this_year');
+const customers = topCustomers(sales[yearIndex].rows);
+lines.push('', 'BU YIL EN Ã‡OK ALAN MÃœÅTERÄ°LER');
+lines.push(...(customers.length ? customers.map(([name, value], index) => (index + 1) + '. ' + name + ' Â· ' + value.quantity.toLocaleString('tr-TR') + ' adet Â· ' + money(value.revenue)) : ['â€¢ DoÄŸrulanmÄ±ÅŸ mÃ¼ÅŸteri satÄ±ÅŸÄ± yok']));
+}
+if (fields.some(field => ['fifo_profit', 'margin'].includes(field))) {
+lines.push('', 'KALAN FIFO STOK KATMANLARI');
+lines.push(...(fifoLedger.layers.length ? fifoLedger.layers.slice(0, 12).map(layer => 'â€¢ ' + layer.remaining.toLocaleString('tr-TR') + ' adet Ã— ' + money(layer.unitCost) + ' Â· alÄ±ÅŸ ' + layer.date + (layer.document ? ' Â· ' + layer.document : '')) : ['â€¢ DoÄŸrulanmÄ±ÅŸ kalan katman yok']));
+if (!fifoLedger.ok) lines.push('âš ï¸ FIFO kaynak kapsamÄ± eksik veya satÄ±lan miktarÄ±n alÄ±ÅŸ katmanÄ± bulunamadÄ±; kÃ¢r kesinleÅŸtirilmedi.');
+}
+lines.push('', 'Not: FIFO yalnÄ±zca doÄŸrulanmÄ±ÅŸ alÄ±ÅŸ-satÄ±ÅŸ eÅŸleÅŸmesinden hesaplanÄ±r. Eksikse kÃ¢r gÃ¶sterilmez.');
+await sendMessage(env, chatId, lines.join('\n').slice(0, 4000));
+}
+
+async function handleConfiguredReport(env, chatId, reportKey, query) {
+const definition = REPORT_DEFINITIONS[reportKey];
+if (reportKey === 'product') return handleProductPerformanceReport(env, chatId, query);
+const fields = await readReportFields(env, reportKey);
+const search = String(query || '').trim();
+let path = '/rest/v1/' + definition.table + '?select=' + encodeURIComponent(fields.join(','));
+if (search) path += '&' + definition.searchField + '=ilike.*' + encodeURIComponent(search) + '*';
+path += reportKey === 'customer' ? '&order=acik_bakiye.desc.nullslast&limit=10' : '&order=urun.asc&limit=10';
+const result = await sbFetch(env, path);
+if (!result.ok || !Array.isArray(result.data)) {
+await sendMessage(env, chatId, 'âš ï¸ ' + definition.title + ' kaynaÄŸÄ± ÅŸu an okunamadÄ±; veri uydurulmadÄ±.');
+return;
+}
+if (!result.data.length) {
+await sendMessage(env, chatId, 'ğŸ” ' + (search ? 'â€œ' + search + 'â€ iÃ§in ' : '') + 'doÄŸrulanmÄ±ÅŸ kayÄ±t bulunamadÄ±.');
+return;
+}
+const cards = result.data.map((row, index) => [
+(index + 1) + ') ' + reportValue(fields[0], row[fields[0]]),
+...fields.slice(1).map(field => 'â€¢ ' + (definition.labels[field] || field) + ': ' + reportValue(field, row[field]))
+].join('\n'));
+await sendMessage(env, chatId, 'ğŸ“Š ' + definition.title + (search ? ' â€” ' + search : '') + '\nAlanlar: ' + fields.join(', ') + '\n\n' + cards.join('\n\n'));
+}
+
+async function handleReportFieldsIntent(env, chatId, userId, text) {
+const payload = String(text || '').replace(/^\/raporalanlari\s*/i, '').trim();
+if (!payload) {
+const product = await readReportFields(env, 'product');
+const customer = await readReportFields(env, 'customer');
+await sendMessage(env, chatId, 'âš™ï¸ Rapor alanlarÄ±\nâ€¢ ÃœrÃ¼n: ' + product.join(', ') + '\nâ€¢ Cari: ' + customer.join(', ') + '\n\nDeÄŸiÅŸtir: /raporalanlari urun:urun,miktar,tarih');
+return;
+}
+
+async function handleDailyStatementIntent(env, chatId, statementType) {
+const report = await buildDailyFinancialStatements(env, env.APERION_DB, new Date());
+const parts = report.split('\nGÃœNLÃœK BÄ°LANÃ‡O â€” KISMÄ° GÃ–RÃœNÃœM');
+const text = statementType === 'balance_sheet'
+? 'GÃœNLÃœK BÄ°LANÃ‡O â€” KISMÄ° GÃ–RÃœNÃœM' + (parts[1] || '\nâ€¢ KAYNAK OKUNAMADI')
+: parts[0];
+await sendMessage(env, chatId, text);
+}
+const match = payload.match(/^(urun|Ã¼rÃ¼n|cari)\s*:\s*(.+)$/i);
+if (!match) {
+await sendMessage(env, chatId, 'KullanÄ±m: /raporalanlari urun:urun,miktar,birim,tarih');
+return;
+}
+const reportKey = /cari/i.test(match[1]) ? 'customer' : 'product';
+const saved = await saveReportFields(env, reportKey, match[2].split(','), userId);
+await sendMessage(env, chatId, saved.ok ? 'âœ… ' + REPORT_DEFINITIONS[reportKey].title + ' alanlarÄ± gÃ¼ncellendi: ' + saved.fields.join(', ') : 'âš ï¸ ' + saved.error);
+}
+
+export async function onRequestPost({ request, env }) {
+try {
+const update = await request.json();
+const identity = await verifyTelegramRequest(request, env, update);
+if (!identity.ok) return json({ ok: false, error: 'unauthorized_telegram_update' }, identity.status || 403);
+if (update.callback_query) {
+if (!identity.hardened) return json({ ok: false, error: 'security_bootstrap_pending' }, 503);
+const handled = await handleCashExpenseCallbackLive(env, update.callback_query) || await handleTransferCallback(env, update.callback_query);
+return json({ ok: true, callback_handled: handled });
+}
+const msg = update.message;
+      if (msg && msg.chat && (msg.photo || msg.document || msg.video)) {
+      if (!identity.hardened) return json({ ok: false, error: 'security_bootstrap_pending' }, 503);
+      return await handleMediaCapture(env, msg);
+      }
+if (!msg || !msg.chat || !msg.text) return json({ ok: true, ignored: true });
+
+const chatId = msg.chat.id;
+const text = clean(msg.text);
+const lower = lowerTR(text);
+
+const priorityCashExpenseIntent = parseCashExpenseIntent(text);
+if (priorityCashExpenseIntent) {
+if (!identity.hardened) { await sendMessage(env, chatId, 'ğŸ”’ GerÃ§ek gider emri iÃ§in Telegram gÃ¼venlik eÅŸleÅŸtirmesi tamamlanmalÄ±dÄ±r. HiÃ§bir kayÄ±t yapÄ±lmadÄ±.'); return json({ ok: true, security_bootstrap_pending: true }); }
+const saved = await saveQuickNote(env, { chatId, messageId: msg.message_id, rawText: text, parsedType: priorityCashExpenseIntent.type, paymentMethod: 'nakit', needsReview: true, status: 'approval_pending' });
+if (!saved.ok) { await sendMessage(env, chatId, 'âš ï¸ Gider emri gÃ¼venli kuyruÄŸa alÄ±namadÄ±. HiÃ§bir kayÄ±t yapÄ±lmadÄ±.'); return json({ ok: false, error: saved.error || 'quick_note_failed' }, 503); }
+const approval = await createCashExpenseApprovalLive(env, { chatId, messageId: msg.message_id, quickNoteId: saved.id, intent: priorityCashExpenseIntent });
+if (!approval.ok) { await sendMessage(env, chatId, 'âš ï¸ Onay kartÄ± oluÅŸturulamadÄ±. HiÃ§bir BizimHesap kaydÄ± yapÄ±lmadÄ±.'); return json({ ok: false, error: approval.error || 'approval_queue_failed' }, 503); }
+await sendMessage(env, chatId, cashExpenseApprovalTextLive(priorityCashExpenseIntent), cashExpenseApprovalButtonsLive(approval.id), { parse_mode: 'HTML' });
+return json({ ok: true, intent: 'cash_expense', approval_id: approval.id, duplicate: approval.duplicate, live_write_enabled: false });
+}
+
+const mobileResult = await handleMobileCommand({ env, message: msg, identity, sendMessage });
+if (mobileResult.handled) return json({ ok: true, mobile_command: mobileResult.code, status: mobileResult.status });
+
+const earlyCashExpenseIntent = parseCashExpenseIntent(text);
+if (earlyCashExpenseIntent) {
+if (!identity.hardened) {
+await sendMessage(env, chatId, 'ğŸ”’ GerÃ§ek gider emri iÃ§in Telegram gÃ¼venlik eÅŸleÅŸtirmesi tamamlanmalÄ±dÄ±r. HiÃ§bir kayÄ±t yapÄ±lmadÄ±.');
+return json({ ok: true, security_bootstrap_pending: true });
+}
+const saved = await saveQuickNote(env, { chatId, messageId: msg.message_id, rawText: text, parsedType: earlyCashExpenseIntent.type, paymentMethod: 'nakit', needsReview: true, status: 'approval_pending' });
+if (!saved.ok) { await sendMessage(env, chatId, 'âš ï¸ Gider emri gÃ¼venli kuyruÄŸa alÄ±namadÄ±. HiÃ§bir kayÄ±t yapÄ±lmadÄ±.'); return json({ ok: false, error: saved.error || 'quick_note_failed' }, 503); }
+const approval = await createCashExpenseApprovalLive(env, { chatId, messageId: msg.message_id, quickNoteId: saved.id, intent: earlyCashExpenseIntent });
+if (!approval.ok) { await sendMessage(env, chatId, 'âš ï¸ Onay kartÄ± oluÅŸturulamadÄ±. HiÃ§bir BizimHesap kaydÄ± yapÄ±lmadÄ±.'); return json({ ok: false, error: approval.error || 'approval_queue_failed' }, 503); }
+await sendMessage(env, chatId, cashExpenseApprovalTextLive(earlyCashExpenseIntent), cashExpenseApprovalButtonsLive(approval.id), { parse_mode: 'HTML' });
+return json({ ok: true, intent: 'cash_expense', approval_id: approval.id, duplicate: approval.duplicate, live_write_enabled: false });
+}
+
+const universalIntent = parseUniversalCommand(text);
+if (universalIntent) {
+const universalResult = await handleUniversalCommand(env, msg, identity, universalIntent);
+return json({ ok: true, universal_command: universalIntent.code, status: universalResult.status, duplicate: Boolean(universalResult.duplicate) });
+}
+
+if (!identity.hardened && !lower.startsWith('/durum') && !lower.startsWith('/stok') && !lower.startsWith('/urunraporu') && !lower.startsWith('/Ã¼rÃ¼nraporu') && !lower.startsWith('/cariraporu') && !lower.startsWith('/raporalanlari') && !lower.startsWith('/gelirtablosu') && !lower.startsWith('/bilanco') && !lower.startsWith('/bilanÃ§o') && !lower.includes('bakiye')) {
+await sendMessage(env, chatId, 'ğŸ”’ GÃ¼venlik eÅŸleÅŸtirmesi tamamlanÄ±yor. Åimdilik rapor/sorgular, iÃ§ gÃ¶rev kayÄ±tlarÄ± ve izin listesindeki sabit uygulama aÃ§ma komutlarÄ± kullanÄ±labilir; mali, iletiÅŸim, silme ve eriÅŸim iÅŸlemleri kapalÄ±dÄ±r.');
+return json({ ok: true, security_bootstrap_pending: true });
+}
+
+if (text.startsWith('/start')) {
+await sendMessage(env, chatId,
+'AperiON Telegram canlÄ±. Ä°kinci beyin modu aÃ§Ä±k.\n\n' +
+'Ã–deme sÃ¶zÃ¼: "Sena Medikal 10 Temmuz 100 bin Ã¶deme kredi kartÄ±"\n' +
+'Bakiye sorgusu: "bakiye"\n' +
+'Durum: /durum\n' +
+'Stok sorgusu: /stok <Ã¼rÃ¼n adÄ±>\n' +
+'Fatura/fiÅŸ fotoÄŸrafÄ±: gÃ¶nder, kuyruÄŸa alÄ±rÄ±m (BizimHesap\'a onaylÄ± yazma yakÄ±nda).\n' +
+                      'Herhangi bir not: dÃ¼z yaz, kaydederim.'
+);
+return json({ ok: true });
+}
+
+if (lower.startsWith('/durum')) {
+await handleDurumIntent(env, chatId);
+return json({ ok: true });
+}
+
+if (lower.startsWith('/stok')) {
+await handleStokIntent(env, chatId, text.slice(5).trim());
+return json({ ok: true });
+}
+
+if (lower.startsWith('/urunraporu') || lower.startsWith('/Ã¼rÃ¼nraporu')) {
+await handleConfiguredReport(env, chatId, 'product', text.replace(/^\/(?:urunraporu|Ã¼rÃ¼nraporu)\s*/i, ''));
+return json({ ok: true, report: 'product' });
+}
+
+if (lower.startsWith('/cariraporu')) {
+await handleConfiguredReport(env, chatId, 'customer', text.replace(/^\/cariraporu\s*/i, ''));
+return json({ ok: true, report: 'customer' });
+}
+
+if (lower.startsWith('/raporalanlari')) {
+await handleReportFieldsIntent(env, chatId, msg.from?.id, text);
+return json({ ok: true, report_profile: true });
+}
+
+if (lower.startsWith('/gelirtablosu') || lower.includes('gelir tablosu')) {
+await handleDailyStatementIntent(env, chatId, 'income_statement');
+return json({ ok: true, report: 'income_statement' });
+}
+
+if (lower.startsWith('/bilanco') || lower.startsWith('/bilanÃ§o') || lower === 'bilanÃ§o' || lower === 'bilanco') {
+await handleDailyStatementIntent(env, chatId, 'balance_sheet');
+return json({ ok: true, report: 'balance_sheet' });
+}
+
+if (lower.startsWith('/senkron') || lower.startsWith('/oturum')) {
+await sendMessage(env, chatId, 'Bu komut ÅŸu an bilgisayarÄ±nÄ±za baÄŸlÄ± deÄŸil (yerel dinleyici Ã§alÄ±ÅŸmÄ±yor, en son 12 AÄŸustos\'ta aktifti). BaÄŸlanÄ±nca haber vereceÄŸim.');
+return json({ ok: true });
+}
+
+if (lower.includes('bakiye') || lower.includes('ne kadar param var') || lower.includes('nakit durum')) {
+await handleBalanceIntent(env, chatId);
+return json({ ok: true });
+}
+
+if (await zatenKayitliMi(env, msg.message_id, chatId)) {
+return json({ ok: true, deduped: true });
+}
+
+const transferIntent = parseCashTransferIntent(text);
+if (transferIntent) {
+const saved = await saveQuickNote(env, {
+chatId,
+messageId: msg.message_id,
+rawText: text,
+parsedType: transferIntent.type,
+paymentMethod: 'nakit',
+needsReview: true,
+status: 'approval_pending'
+});
+if (!saved.ok) {
+await sendMessage(env, chatId, 'âš ï¸ Transfer emri gÃ¼venli kuyruÄŸa alÄ±namadÄ±. HiÃ§bir kayÄ±t yapÄ±lmadÄ±.');
+return json({ ok: false, error: saved.error || 'quick_note_failed' }, 503);
+}
+
+/* CASH_EXPENSE_INTENT_MOVED
+const cashExpenseIntent = parseCashExpenseIntent(text);
+if (cashExpenseIntent) {
+const saved = await saveQuickNote(env, { chatId, messageId: msg.message_id, rawText: text, parsedType: cashExpenseIntent.type, paymentMethod: 'nakit', needsReview: true, status: 'approval_pending' });
+if (!saved.ok) {
+await sendMessage(env, chatId, 'âš ï¸ Gider emri gÃ¼venli kuyruÄŸa alÄ±namadÄ±. HiÃ§bir kayÄ±t yapÄ±lmadÄ±.');
+return json({ ok: false, error: saved.error || 'quick_note_failed' }, 503);
+}
+const approval = await createCashExpenseApproval(env, { chatId, messageId: msg.message_id, quickNoteId: saved.id, intent: cashExpenseIntent });
+if (!approval.ok) {
+await sendMessage(env, chatId, 'âš ï¸ Onay kartÄ± oluÅŸturulamadÄ±. HiÃ§bir BizimHesap kaydÄ± yapÄ±lmadÄ±.');
+return json({ ok: false, error: approval.error || 'approval_queue_failed' }, 503);
+}
+await sendMessage(env, chatId, cashExpenseApprovalText(cashExpenseIntent), cashExpenseApprovalButtons(approval.id), { parse_mode: 'HTML' });
+return json({ ok: true, intent: 'cash_expense', approval_id: approval.id, duplicate: approval.duplicate, live_write_enabled: false });
+}
+CASH_EXPENSE_INTENT_MOVED_END */
+const approval = await createTransferApproval(env, {
+chatId,
+messageId: msg.message_id,
+quickNoteId: saved.id,
+intent: transferIntent
+});
+if (!approval.ok) {
+await sendMessage(env, chatId, 'âš ï¸ Onay kartÄ± oluÅŸturulamadÄ±. HiÃ§bir BizimHesap kaydÄ± yapÄ±lmadÄ±.');
+return json({ ok: false, error: approval.error || 'approval_queue_failed' }, 503);
+}
+await sendMessage(env, chatId, transferApprovalText(transferIntent), transferApprovalButtons(approval.id));
+return json({
+ok: true,
+intent: 'cash_transfer_test',
+approval_id: approval.id,
+duplicate: approval.duplicate,
+live_write_enabled: false
+});
+}
+
+const cashExpenseIntent = parseCashExpenseIntent(text);
+if (cashExpenseIntent) {
+const saved = await saveQuickNote(env, { chatId, messageId: msg.message_id, rawText: text, parsedType: cashExpenseIntent.type, paymentMethod: 'nakit', needsReview: true, status: 'approval_pending' });
+if (!saved.ok) { await sendMessage(env, chatId, 'âš ï¸ Gider emri gÃ¼venli kuyruÄŸa alÄ±namadÄ±. HiÃ§bir kayÄ±t yapÄ±lmadÄ±.'); return json({ ok: false, error: saved.error || 'quick_note_failed' }, 503); }
+const approval = await createCashExpenseApprovalLive(env, { chatId, messageId: msg.message_id, quickNoteId: saved.id, intent: cashExpenseIntent });
+if (!approval.ok) { await sendMessage(env, chatId, 'âš ï¸ Onay kartÄ± oluÅŸturulamadÄ±. HiÃ§bir BizimHesap kaydÄ± yapÄ±lmadÄ±.'); return json({ ok: false, error: approval.error || 'approval_queue_failed' }, 503); }
+await sendMessage(env, chatId, cashExpenseApprovalTextLive(cashExpenseIntent), cashExpenseApprovalButtonsLive(approval.id), { parse_mode: 'HTML' });
+return json({ ok: true, intent: 'cash_expense', approval_id: approval.id, duplicate: approval.duplicate, live_write_enabled: false });
+}
+
+const paymentMethod = parsePaymentMethod(lower);
+const dueDate = parseDueDate(text);
+const amount = parseAmount(text, dueDate.matched);
+const odemeSozuAdayi = /Ã¶deme|odeme|Ã¶de\b/.test(lower) || amount.amount !== null;
+
+if (odemeSozuAdayi && amount.amount !== null) {
+const counterpartyAdayi = guessCounterparty(text, dueDate.matched, amount.matched);
+const musteri = await matchCustomer(env, counterpartyAdayi);
+
+const noteSaved = await saveQuickNote(env, {
+chatId, messageId: msg.message_id, rawText: text,
+parsedType: 'odeme_sozu', paymentMethod, needsReview: !musteri || !dueDate.iso || dueDate.gecmisMi
+});
+const promiseSaved = noteSaved.ok
+? await savePaymentPromise(env, {
+chatId, quickNoteId: noteSaved.id, rawText: text,
+counterparty: musteri ? musteri.cari_unvan : counterpartyAdayi,
+matchedCustomerId: musteri ? musteri.id : null,
+amount: amount.amount, dueDate: dueDate.iso, paymentMethod
+})
+: { ok: false };
+
+const satirlar = [
+'ğŸ“Œ Ã–deme sÃ¶zÃ¼ olarak anladÄ±m:',
+'â€¢ KarÅŸÄ± taraf: ' + (musteri ? musteri.cari_unvan + ' (cari eÅŸleÅŸti)' : (counterpartyAdayi || 'belirtilmedi') + ' (cari eÅŸleÅŸmedi, kontrol et)'),
+'â€¢ Tutar: ' + money(amount.amount),
+'â€¢ Tarih: ' + (dueDate.iso ? trTarih(dueDate.iso) : 'BELÄ°RTÄ°LMEDÄ° â€” ne zaman?'),
+'â€¢ Ã–deme yÃ¶ntemi: ' + paymentMethod
+];
+if (promiseSaved.ok) {
+satirlar.push('âœ… AperiON kritik Ã¶deme listesine eklendi (id: ' + promiseSaved.id + ').');
+} else {
+satirlar.push('âš ï¸ KayÄ±t baÅŸarÄ±sÄ±z oldu, tekrar dener misin?');
+}
+if (!musteri) satirlar.push('â— Bu ismi cari listesinde bulamadÄ±m, yanlÄ±ÅŸsa doÄŸru unvanÄ± yaz.');
+if (!dueDate.iso) satirlar.push('â— Tarih anlayamadÄ±m, "10 Temmuz" gibi yazar mÄ±sÄ±n?');
+if (dueDate.gecmisMi) satirlar.push('â— Bu tarih geÃ§miÅŸte kalmÄ±ÅŸ â€” gecikmiÅŸ bir Ã¶deme mi, yoksa gelecek yÄ±l mÄ± demek istedin? Emin deÄŸilsen "gelecek yÄ±l" yaz.');
+await sendMessage(env, chatId, satirlar.join('\n'));
+return json({ ok: true });
+}
+
+const parsedType = classifyNote(lower);
+const saved = await saveQuickNote(env, {
+chatId, messageId: msg.message_id, rawText: text,
+parsedType, paymentMethod, needsReview: parsedType === 'genel_not'
+});
+
+await sendMessage(env, chatId,
+'AldÄ±m.\n' +
+'Tip: ' + parsedType + '\n' +
+'Not: ' + text + '\n' +
+(saved.ok
+? 'âœ… AperiON kaydÄ± aÃ§Ä±ldÄ± (id: ' + saved.id + ').'
+: 'âš ï¸ Not alÄ±ndÄ± ama kalÄ±cÄ± kayÄ±t baÅŸarÄ±sÄ±z oldu (' + (saved.error || 'bilinmeyen hata') + '). Tekrar dene veya bana sÃ¶yle.')
+);
+return json({ ok: true });
+} catch (e) {
+return json({ ok: false, error: e.message || 'server_error' }, 500);
+}
+}

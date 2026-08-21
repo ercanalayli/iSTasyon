@@ -228,4 +228,1414 @@ async function bizimhesapPostExpense(row) {
     const vadeOk = setInput('txtDueDate', hareket.tarih);
     const tutarOk = setInput('txtAmount', hareket.tutar);
     const aciklamaOk = setTextarea('txtNote', hareket.aciklama);
-    const masrafOk = setSelect('ddlCostAccounts', hareket.masrafKalemi ? [hareket.masraÛo6ÒÚ$z{-®éÜj×FwÒF†;fæ6R&—¦–Ô†W6wFFüI÷'VÆæÜKYòæÓ°¢ÒVÇ6R°¢6öç7B&Vf÷&T&Ææ6RÒv—B†W6&¶—–W6”ö·R‡6÷W&6T66÷VçB“°¢–b‚&Vf÷&T&Ææ6Ræö²’F‡&÷ræWrW'&÷"†¶œKB;fæ6W6’&¶—–RFüI÷'VÆæÖLK¢G¶&Vf÷&T&Ææ6RæW'&÷'Ö“°¢6öç7BFW67&—F–öâÒ´uBÔ4ôDU‚´”D•ÒG¶VF—EFwÒÂôä“¢G¶&÷fÄ–GÒÂGµ7G&–ær‡&×2æFW67&—F–öâÇÂu–VÖV²;fFVÖW6’r’ç6Æ–6RƒÂ#—Ö°¢6öç7B÷7FVBÒv—B&—¦–Ö†W6÷7DW‡Vç6R‡²–C¢VF—D–BÂF&–ƒ¢&×2çG&ç67F–öåöFFRÂGWF#¢&†Ö÷VçB’Â6–¶ÆÖ¢FW67&—F–öâÂ†W6¢6÷W&6T66÷VçBÂÖ7&d¶ÆVÖ“¢W‡Vç6T6FVv÷'’Ò“°¢–b‡÷7FVBæ–ç6ä¶öçG&öÇTvW&V¶Æ’’°¢÷WF6öÖRÒ²ö³¢fÇ6RÂ÷WGWC¢Ü;Æ¶W'&W"Yü;Ç†W6’æVFVæ—–ÆR¶œKB–KÆÖLK¢G·÷7FVBæÖW6§ÖÓ°¢ÒVÇ6R–b‚÷7FVBæö²’°¢÷WF6öÖRÒ²ö³¢fÇ6RÂ÷WGWC¢÷7FVBæÖW6¢ÇÂt&—¦–Ô†W6v–FW"¶–LKFüI÷'VÆæÖLKârÓ°¢ÒVÇ6R°¢6öç7BgFW$&Ææ6RÒv—B†W6&¶—–W6”ö·R‡6÷W&6T66÷VçB“°¢–b‚gFW$&Ææ6Ræö²’F‡&÷ræWrW'&÷"†¶œKB–KÆLKæ6²¶œKB6öç&<K&¶—–Rö·VæÖLK¢G¶gFW$&Ææ6RæW'&÷'Ö“°¢6öç7BW‡V7FVDgFW"ÒÖF‚ç&÷VæB‚†&Vf÷&T&Ææ6RçfÇVRÒÖ÷VçB’¢’ò°¢6öç7B&Ææ6TÖF6†W2ÒÖF‚æ'2†gFW$&Ææ6RçfÇVRÒW‡V7FVDgFW"’ÃÒã#°¢6öç7B&öödæÖRÒ&—¦–Ö†W6öW‡Vç6UòG¶&÷fÄ–GÖ°¢v—B6fUvTF–væ÷7F–72‡vRÂ&öödæÖR“°¢6öç7B&ööeF‚ÒF‚æ¦ö–â…õöF—&æÖRÂrâârÂvF–væ÷7F–72rÂG·&öödæÖWÒçæv“°¢6öç7Bæ÷F–f–6F–öâÒv—B6VæDf–ææ6U&W7VÇB‡°¢fW&–f–VC¢G'VRÀ¢G&ç67F–öä–C¢&—¦–Ö†W6¦Æ–Æ“¦W‡Vç6S¢G¶&÷fÄ–GÖÀ¢7FGW3¢&Ææ6TÖF6†W2òt$Yä$”Ä’r¢t$Yä$”Ä’Ò$¼K”RäôÔÌK<KrÀ¢FFS¢&×2çG&ç67F–öåöFFRÀ¢6÷W&6T66÷VçBÀ¢F&vWD66÷VçC¢W‡Vç6T6FVv÷'’À¢Ö÷VçBÀ¢7W'&Væ7“¢uE%’rÀ¢&Wf–÷W4&Ææ6S¢&Vf÷&T&Ææ6RçfÇVRÀ¢æWt&Ææ6S¢gFW$&Ææ6RçfÇVRÀ¢FW67&—F–öã¢G·÷7FVBæÖW6§ÒG¶&Ææ6TÖF6†W2òrr¢&V¶ÆVæVâ&¶—–RG·&†W‡V7FVDgFW"—ÒDÂ–F“²¶öçG&öÂvW&V¶Æ’æÖÀ¢&ööeF‚À¢ÒÂ²6†D–C¢&×2æ6†Eö–BÒ“°¢÷WF6öÖRÒ²ö³¢G'VRÂ÷WGWC¢¶–FVF–ÆF’fRFüI÷'VÆæLKâ&—¦–Ô†W6¶–ÖÆœIö“¢G¶VF—D–GÒâ9fæ6S¢G·&†&Vf÷&T&Ææ6RçfÇVR—ÒDÃ²6öç&¢G·&†gFW$&Ææ6RçfÇVR—ÒDÂâFVÆVw&Ò|;g'6VÂ¶ìKBÖW6¬K¢G¶æ÷F–f–6F–öâæÖW76vT–BÇÂ|;fæ6VFVâ|;fæFW&–ÆF’wÒæÓ°¢Ğ¢Ğ¢ÒVÇ6R–b†6ÖBæ6öÖÖæBÓÓÒv&—¦–Ö†W6÷&ö6W72r’°¢6öç7B²FF¢&÷rÂW'&÷"ÒÒv—BF"æg&öÒ„$äµõD$ÄR’ç6VÆV7B‚r¢r’æW‚v–BrÂ&×2æ–B’ç6–ævÆR‚“°Ğ¢–b†W'&÷"ÇÂ&÷r’²÷WF6öÖRÒ²ö³¢fÇ6RÂ÷WGWC¢¶–—B'VÇVæÖF“¢G¶W'&÷#òæÖW76vRÇÂ&×2æ–GÖÓ²ĞĞ¢VÇ6R°Ğ¢6öç7B6–¶ÆÖÒU$”ôâUDòÂ”C¢G·&÷ræ–GÒÂD•¢G·&÷rçGW'ÒÂd•$Ô¢G·&÷ræf—&Öö–GÒÂG²‡&÷ræ6–¶ÆÖÇÂrr’ç6Æ–6RƒÂS—Ö°Ğ¢ÆWB#°¢ÆWB&–ÆF—&–Ô†W6Æ&’Ò°¢6÷W&6T66÷VçC¢&÷ræ†W6ÇÂrÒrÀ¢F&vWD66÷VçC¢&÷ræ¶'6•÷F&bÇÂ&÷rçGW"ÇÂrÒrÀ¢Ó°¢6öç7B&÷t6–¶ÆÖÒæ÷&Ò‡&÷ræ6–¶ÆÖÇÂrr“°Ğ¢òò##bÓ‚Ós¢$·&VF’vW&’öFVÖW6’"ò$·&VF’¶'F–æöFVæVâ"æ&Ğ¢òò†&V¶WFÆW&–F—"Âv–FW"FVv–ÆF—"ÒW&6âv–âFÆ–ÖF—–ÆVÖæW@Ğ¢òò†W6&–æG&ç6fW"öÆ&²–öæÆVæF—&–Æ—–÷"†¶–æ³¢vW&6V²&æ¶Ğ¢òò†W6&’Â†VFVc¢VÖæWBÒ†W6Fv÷'VçW"Öv–FW"v–&Ğ¢òò¶FVv÷&—¦RVF–ÆÖW¢Â6öç&FâVÆÆRæWFÆW7F—&–Æ—"’àĞ¢òò##bÓ‚Ós¢$µ$Rä´%B$õ,8r9dDTÔR"†&æ¶æ–â¶VæF’V·7G&W6–æFV¶Ğ¢òò¶—6ÇF–ÆÖ—2–fFW6’’'R¶Æ–&’–¶ÆÖ—–÷&GRÒ”C£ƒó#b6æÆĞ¢òò÷'FÖF$·&VF’¶'F’"F—–RæÆ×6—¢&—"†W6&–æÆ—2—6ÆVæFĞ¢òò†gW§§’W6ÆW6ÖR$Ôô44ôäõdõ2µ$TD’´%D’'–Rv—GF’’â·&VFĞ¢òò¶'F’&÷&2öFVÖW6–æ–âGVÒ––v–â–fFR&–6–ÖÆW&–æ’¶6–6°Ğ¢òò6V¶–ÆFRvVæ—6ÆWF–ÆF’àĞ¢6öç7Bæ&¶–æ¶Æ’Òö·&VF’vW&’öFVÖW6—Æ·&VF’¶'F–æöFVæVçÆ·&Rò†F’“òõÂãòö¶'B†—Æ“ò&÷&2òçFW7B‡&÷t6–¶ÆÖ“°Ğ¢6öç7B·&VF”f—¦’Òö·&VF’f—¦’òçFW7B‡&÷t6–¶ÆÖ“°Ğ¢òò##bÓ‚Órµ$•D”²'VÆwS¢&ö6W75÷VæF–æuö&æµöÖ÷fVÖVçG5÷c2æ6§0Ğ¢òò¶'6’F&b&–Æ–æÖW–Vâ¶–—FÆ&’VÖæWE÷&÷WFVC×G'VRF—–PĞ¢òò—6&WFÆ—–÷&GRÖ'R&—&²'W&F„”2ôµTäÕU”õ$ERÒ’¶–—@Ğ¢òò„DÒ&–F—&ÖÂ´Ô‚F‡6–ÆF’v–&’&VÆ—'6—¢¶–æ¶Æ’v—&—6ÆW"Ğ¢òòVÖæWB–W&–æRFöw'VFâtU$4T²&æ¶†W6&–æ%&v—&—6’"öÆ&°Ğ¢òò—6ÆVæÖ—2öÆGR„W&6âv–â6÷'W7W–Æ–¶ÆæF’’âVÖæWE÷&÷WFVBVàĞ¢òò$5D¶öçG&öÂVF–ÆÖVÆ’ÒGW"vv÷&R–öæÆVæF—&ÖVFVâöæ6RàĞ¢–b‡&÷ræVÖæWE÷&÷WFVB’°Ğ¢òò##bÓ‚Ós¢–öâ†vW&6V²†W6&Ö’GW6ÖVÆ’ÂFöw'VFâVÖæWBvRÖĞ¢òòv—&ÖVÆ’’W&6â–ÆRæWFÆW6ÖVFVâD„Ô”â•U%UETÄÔU”T4T²ÒvW&6V°Ğ¢òò&æ¶&¶—–W6–æ’WF¶–ÆW–Vâ&—"¶&"â–ç6â¶öçG&öÇVæR&—&¶–Æ—–÷"àĞ¢"Ò²ö³¢G'VRÂ–ç6ä¶öçG&öÇTvW&V¶Æ“¢G'VRÂÖW6£¢tVÖæWB–öæÆVæF—&ÖW6’&V¶Æ—–÷"Ò¶–æ²ö†VFVb–öçRæWFÆW6ÖVFVâ÷FöÖF–²—6ÆVæÖVF’†&·¢â”C£#ƒbÓ3BGW¦VÇFÖW6’’rÓ°Ğ¢ÒVÇ6R–b‡&÷rçGW"ÓÓÒwG&ç6fW"r’°¢6öç7B¶–æ´†W6Ò7G&–ær‡&÷ræ¶'6•÷F&bÇÂrr’ç7Æ—B‚rÓâr•³ÒçG&–Ò‚’ÇÂuõ2õ2õ2µ$TD’´%D’s°¢&–ÆF—&–Ô†W6Æ&’Ò²6÷W&6T66÷VçC¢¶–æ´†W6ÂF&vWD66÷VçC¢&÷ræ†W6Ó°¢"Òv—B&—¦–Ö†W6÷7EG&ç6fW"‡²–C¢&÷ræ–BÂF&–ƒ¢&÷rçF&–‚ÂGWF#¢&÷rçGWF"Â6–¶ÆÖÂ†W6¢&÷ræ†W6Â¶–æ´†W6Ò“°¢ÒVÇ6R–b‡&÷rçGW"ÓÓÒv6&•÷F‡6–ÆBrÇÂ&÷rçGW"ÓÓÒwF‡6–ÆBr’°¢&–ÆF—&–Ô†W6Æ&’Ò²6÷W&6T66÷VçC¢&÷ræ¶'6•÷F&bÇÂt6&’rÂF&vWD66÷VçC¢&÷ræ†W6Ó°¢"Òv—B&—¦–Ö†W6÷7D–æ6öÖR‡²–C¢&÷ræ–BÂF&–ƒ¢&÷rçF&–‚ÂGWF#¢&÷rçGWF"Â6–¶ÆÖÂ†W6¢&÷ræ†W6Ò“°¢ÒVÇ6R–b†æ&¶–æ¶Æ’’°¢&–ÆF—&–Ô†W6Æ&’Ò²6÷W&6T66÷VçC¢&÷ræ†W6ÂF&vWD66÷VçC¢tTÔäUBrÓ°¢"Òv—B&—¦–Ö†W6÷7EG&ç6fW"‡²–C¢&÷ræ–BÂF&–ƒ¢&÷rçF&–‚ÂGWF#¢&÷rçGWF"Â6–¶ÆÖÂ†W6¢tTÔäUBrÂ¶–æ´†W6¢&÷ræ†W6Ò“°¢ÒVÇ6R–b†·&VF”f—¦’’°¢&–ÆF—&–Ô†W6Æ&’Ò²6÷W&6T66÷VçC¢&÷ræ†W6ÂF&vWD66÷VçC¢tf—¢v–FW&’rÓ°¢"Òv—B&—¦–Ö†W6÷7DW‡Vç6R‡²–C¢&÷ræ–BÂF&–ƒ¢&÷rçF&–‚ÂGWF#¢&‡&÷rçGWF"’Â6–¶ÆÖÂ†W6¢&÷ræ†W6ÂÖ7&d¶ÆVÖ“¢tf—¢rÒ“°¢ÒVÇ6R°¢&–ÆF—&–Ô†W6Æ&’Ò²6÷W&6T66÷VçC¢&÷ræ†W6ÂF&vWD66÷VçC¢&÷ræ¶'6•÷F&bÇÂt&—¦–Ô†W6v–FW&’rÓ°¢"Òv—B&—¦–Ö†W6÷7DW‡Vç6R‡²–C¢&÷ræ–BÂF&–ƒ¢&÷rçF&–‚ÂGWF#¢&‡&÷rçGWF"’Â6–¶ÆÖÂ†W6¢&÷ræ†W6Ò“°¢ĞĞ¢÷WF6öÖRÒ²ö³¢"æö²Â÷WGWC¢"æÖW6¢Ó°Ğ¢–b‡"æö²’°Ğ¢òò##bÓ‚Ós¢W&6âv–âFÆV&’ÒVÆÆRv—&—6—–ÆR6F—6Ö7W†W6Ğ¢òòf'6v¶–FVF–ÆF’rDTäÔU¢‡–æÆ—6Æ–¶Æ–¶–æ6’¶W¢v—&–ÆÖ—0Ğ¢òò6æ–ÆÖ6–â’Â—&’&—"7FGVFR&—&¶–Æ—"¶’wVæÇV²&–ÆF—&–ÖFPĞ¢òò&–ç6â¶öçG&öÇRvW&V¶—–÷""öÆ&²v÷'Vç7VâÂ6W76—¦6R¶–&öÆÖ6–âàĞ¢6öç7BGW'VÒÒ"æ–ç6ä¶öçG&öÇTvW&V¶Æ’òv–ç6åö¶öçG&öÇUövW&V¶Æ’r¢‡"ç¦FVåf&F’òw¦FVå÷f&F’r¢v¶–FVF–ÆF’r“°¢v—BF"æg&öÒ„$äµõD$ÄR’çWFFR‡²&—¦–Ö†W6öGW'V×S¢GW'VÒÂ&—¦–Ö†W6öÖW6£¢"æÖW6¢Â&—¦–Ö†W6ö—6ÆVÕ÷F&–†“¢æWrFFR‚’çFô•4õ7G&–ær‚’Ò’æW‚v–BrÂ&÷ræ–B“°¢–b†GW'VÒÓÓÒv¶–FVF–ÆF’r’°¢6öç7B¶æ—DF’Ò&—¦–Ö†W6÷&W7VÇEô”BG·&÷ræ–GÖ°¢v—B6fUvTF–væ÷7F–72‡vRÂ¶æ—DF’“°¢6öç7B¶æ—E–öÇRÒF‚æ¦ö–â…õöF—&æÖRÂrâârÂvF–væ÷7F–72rÂG¶¶æ—DF—Òçæv“°¢G'’°¢6öç7B&–ÆF—&–ÒÒv—B6VæDf–ææ6U&W7VÇB‡°¢fW&–f–VC¢G'VRÀ¢G&ç67F–öä–C¢&—¦–Ö†W6¢G·&÷ræf—&Öö–BÇÂvÆ–Æ’wÓ¢G·&÷ræ–GÖÀ¢7FGW3¢t$Yä$”Ä’rÀ¢FFS¢&÷rçF&–‚À¢6÷W&6T66÷VçC¢&–ÆF—&–Ô†W6Æ&’ç6÷W&6T66÷VçBÀ¢F&vWD66÷VçC¢&–ÆF—&–Ô†W6Æ&’çF&vWD66÷VçBÀ¢Ö÷VçC¢çVÖ&W"‡&÷rçGWF"’À¢7W'&Væ7“¢uE%’rÀ¢FW67&—F–öã¢"æÖW6¢À¢&ööeFƒ¢¶æ—E–öÇRÀ¢Ò“°¢"æÖW6¢³Ò&–ÆF—&–ÒæGWÆ–6FP¢òrFVÆVw&Ò6öç\:r&–ÆF—&–Ö’F†;fæ6R|;fæFW&–ÆÖœY÷F’âp¢¢FVÆVw&Ò6öç\:rfR|;g'6VÂ¶ìKB|;fæFW&–ÆF’†ÖW6£¢G¶&–ÆF—&–ÒæÖW76vT–GÒ’æ°¢÷WF6öÖRæ÷WGWBÒ"æÖW6£°¢Ò6F6‚†&–ÆF—&–Ô†F6’’°¢Æör†DTÄTu$Õô$”ÄD•$”Õô„D4’”C¢G·&÷ræ–GÒG¶&–ÆF—&–Ô†F6’æÖW76vWÖ“°¢"æÖW6¢³ÒFVÆVw&Ò&–ÆF—&–Ö’|;fæFW&–ÆVÖVF“¢G¶&–ÆF—&–Ô†F6’æÖW76vWÖ°¢÷WF6öÖRæ÷WGWBÒ"æÖW6£°¢Ğ¢Ğ¢Ğ¢ĞĞ¢ÒVÇ6R°¢÷WF6öÖRÒ²ö³¢fÇ6RÂ÷WGWC¢&–Æ–æÖW–Vâ¶ö×WC¢G¶6ÖBæ6öÖÖæGÖÓ°¢Ğ¢Ğ¢Ò6F6‚†R’°¢÷WF6öÖRÒ²ö³¢fÇ6RÂ÷WGWC¢7G&–ær†RæÖW76vRÇÂR’Ó°Ğ¢ĞĞ¢v—BF"æg&öÒ‚v&÷Eö6öÖÖæG2r’çWFFR‡²7FGW3¢÷WF6öÖRæö²òv6ö×ÆWFVBr¢vf–ÆVBrÂ&W7VÇC¢÷WF6öÖRæ÷WGWBç6Æ–6RƒÂƒ’Â6ö×ÆWFVEöC¢æWrFFR‚’çFô•4õ7G&–ær‚’Ò’æW‚v–BrÂ6ÖBæ–B“°¢–b‚†6ÖBæ6öÖÖæBÓÓÒvFW6·F÷ö÷Vå÷W&ÂrÇÂ6ÖBæ6öÖÖæBÓÓÒv&—¦–Ö†W6öW‡Vç6Rr’bb&×2æ6†Eö–B’°¢6öç7B–6öâÒ÷WF6öÖRæö²ò~)ÈRr¢~)ªûˆòs°¢v—B6VæEFVÆVw&Ô6öÖÖæE&W7VÇB‡&×2æ6†Eö–BÂG¶–6öçÒÖ6;Ç7L;Â¶ö×WB6öçV7UÆâG¶÷WF6öÖRæ÷WGWGÖ“°¢Ğ¢Æör†¶ö×WB&—GF“¢2G¶6ÖBæ–GÒÓâG¶÷WF6öÖRæö²òv6ö×ÆWFVBr¢vf–ÆVBwÖ“°Ğ§ĞĞ Ğ¢òò##bÓ‚Óó#¢W&6âv–â6–¶6—7FVF–v’&GVç–7FæF&F’Â†–6&—"¦ÖàĞ¢òò¶÷Ö6–â"†VFVf–æRvW&6V¶6’¶F¶–ÒÒ6Æ÷VFfÆ&Rv–â&—¦’FV·&"FV·& Ğ¢òò&æÆÖ6–æ–â6–Â6V&V&’DõÅR—6ÆW"6—&6–æF6ö²¶—6&–ÆƒRÓc6âĞ¢òòöæÆ&6÷—W¦ÆW&6R÷FöÖF–²—6ÆVÒ–ÖÖ—¢…d´”b4•$´UBvW&’ÖFöÆGW&Öv–&’’àĞ¢òò–ç6â&—"×V†6V&V6’'R†—¦F6Æ—6Ö¢â6FÆ–²&—"&&—¦–Ö†W6÷&ö6W72 Ğ¢òòFfæ’²†W"¶ö×WB&6–æF$5DtTÄR†–ç6âv–&’FVv—6¶Vâ’&V¶ÆVÖRV¶ÆVæ—–÷ Ğ¢òòÒ'RÂ6b†—¢–W&–æR5U$EU%TÄT$”Ä•$Ä”t’öæ6VÆ–¶ÆVæF—&—"àĞ¢òò##bÓ‚Ó"FVævVÆVÖS¢–Æ²FVvW"ƒC÷6BÂ‚ÓC6â’vW&Vv–æFVâf¦ÆĞ¢òò–f7F’Ò'R÷GW'VÖF¶’tU$4T²&âöÆ–Æ&–æ–â–¶—6’FR†7&6‚ÖÆö÷wFĞ¢òòFV·&"FV·&"”Tä”DTât•$•2ÂfW–vV6R&÷—R´U4”åD•4•¢—W¦ÆW&6R—6ÆVÒĞ¢òòFV²Ö—6ÆVÒ†—¦–æFâFVv–ÂÂ÷GW'VÒö†6–Ò÷'VçGW'W7VæFVâ¶–æ¶ÆæF’àĞ¢òò÷GW'VÒ¦FVâ¶Æ–6’†¶ö×WB&6–æ–Væ–FVâv—&—2–ö²’Â'R—W¦FVâFfàĞ¢òòÖ·VÂ6Wf—–VFR—V·6VÇF–ÆF’Ò†Æ6&—BÖ&–¶Æ’&÷BFW6Væ’FVv–ÂÂÖĞ¢òòvW&V·6—¢–W&R7W'Væ×W–÷"àĞ¦6öç7B4DÄ”µô$•¤”Ô„U4ô•4ÄTÕõDdä’Ò“°Ğ¦6öç7B—6ÆVÕ¦ÖäFÖvÆ&’ÒµÓ°Ğ¦gVæ7F–öâ6FÆ–µFfä6–ÆF”Ö’‚’°Ğ¢6öç7B7VâÒFFRææ÷r‚“°Ğ¢v†–ÆR†—6ÆVÕ¦ÖäFÖvÆ&’æÆVæwF‚bb7VâÒ—6ÆVÕ¦ÖäFÖvÆ&•³Òâ3c’—6ÆVÕ¦ÖäFÖvÆ&’ç6†–gB‚“°Ğ¢&WGW&â—6ÆVÕ¦ÖäFÖvÆ&’æÆVæwF‚ãÒ4DÄ”µô$•¤”Ô„U4ô•4ÄTÕõDdä“°Ğ§ĞĞ Ğ¦ÆWBF–6´6Æ—6—–÷"ÒfÇ6S°Ğ¦7–æ2gVæ7F–öâF–6²‚’°Ğ¢òò##bÓ‚Óc¢6WD–çFW'fÂöæ6V¶’F–6²v–â†æFÆT6öÖÖæBv’‡vRæv÷FòğĞ¢òòv—Df÷$æf–vF–öâ–ÆRW6âvFVâW§Vâ7W&V&–Æ—–÷"’†Æ6Æ—6—&¶Vâ–VæĞ¢òòF–6²v’FWF–¶Æ—–÷&GRÒ–¶’¶ö×WB”ä’WWFVW"vRv’W2¦ÖæÆĞ¢òò·VÆÆæ—&—&&—&–æ–âf÷&ÒFöÆGW&Ööæf–v7–öçVçR&÷§W–÷&GRƒb¶ö×WFÇV°Ğ¢òòF÷ÇR·W—'V²##bÓ‚ÓbvF†W6’&f÷&ÒÆæÆ&’V·6–²"–ÆRFÆF’’àĞ¢òò&6—B¶–Æ—C¢&—"öæ6V¶’¶ö×WBFÒ&—FÖVFVâ–Væ’F–6²6Æ—6Ö¢àĞ¢–b‡F–6´6Æ—6—–÷"’&WGW&ã°Ğ¢F–6´6Æ—6—–÷"ÒG'VS°Ğ¢G'’°Ğ¢6öç7B²FFÂW'&÷"ÒÒv—BF"æg&öÒ‚v&÷Eö6öÖÖæG2r’ç6VÆV7B‚r¢r’æW‚w7FGW2rÂwVæF–ærr’æ÷&FW"‚v7&VFVEöBrÂ²66VæF–æs¢G'VRÒ’æÆ–Ö—Bƒ’æÖ–&U6–ævÆR‚“°Ğ¢–b†W'&÷"’²Æör†„D‡6÷&wR“¢G¶W'&÷"æÖW76vWÖ“²&WGW&ã²ĞĞ¢–b‚FF’&WGW&ã°Ğ¢–b†FFæ6öÖÖæBç7F'G5v—F‚‚v&—¦–Ö†W6òr’’°Ğ¢òò##bÓ‚Ó#¢F‡&÷GFÆRö¦—GFW"ôä4R6FV6Rv&—¦–Ö†W6÷&ö6W72vPĞ¢òòW–wVÆæ—–÷&GRÒ–EöFöw'VÆ÷67&öÆÅöF–r÷F&ÆUöF–rv–&’F–vW"6æÆĞ¢òòF&––6’¶ö×WFÆ&’†÷¦VÆÆ–¶ÆR6FÆW&6R&÷2·W—'V·Fâ6öç&'@Ğ¢òò&F·W—'V¶ÆæâFöw'VÆÖ¶ö×WFÆ&’’6–f—"vV6–¶ÖW–ÆR'B&FĞ¢òò6Æ—6—–÷&GRâ'RFÒöÆ&²&÷BÖFW6Væ“¢W§Vâ6W76—¦Æ–²²æ’FÆÖàĞ¢òòW&6âv&v—&—6–Ò¦&ÆÖ6–f6–æ–öæÆVæF—&–ÆF’"†&÷B¶÷'VÖ6’Ğ¢òò6V¶Æ–æFRvW&’FöæVâ&—"VævVÆÆR6öçV6ÆæF’â'F–²ETÒ6æÆĞ¢òò&—¦–Ö†W6ò¢¶ö×WFÆ&’–æ’–ç6â×FV×÷7R¦—GFW"v–æ’–Æ6—–÷"àĞ¢–b‡6FÆ–µFfä6–ÆF”Ö’‚’’°Ğ¢Æör†DõÅR•4ÄTÒ”d4ÄDÔ¢6öâ6GFRGµ4DÄ”µô$•¤”Ô„U4ô•4ÄTÕõDdä—Ò—6ÆVÒFfæ–æVÆ6–ÆF’Â2G¶FFæ–GÒ&—"6öç&¶’W–wVâGW"v&—&¶–Æ—–÷"æ“°Ğ¢&WGW&ã°Ğ¢ĞĞ¢—6ÆVÕ¦ÖäFÖvÆ&’çW6‚„FFRææ÷r‚’“°Ğ¢òò–ç6âv–&’FVv—6¶Vâ&V¶ÆVÖRƒBÓg6â’Ò6&—BW6âF–6²&Æ–v’FV°Ğ¢òò&6–æ&&÷BFW6Væ’"öÇW7GW'W–÷&GRÂ¦—GFW"'VçR¶—&"â“÷6BFfæÆĞ¢òò&—&Æ–·FR÷'FÆÖãC6âö—6ÆVÒ‡F–6²²¦—GFW"²—6ÆVÒ7W&W6’’VFW"àĞ¢ÆWB&V¶ÆVÖRÒC²ÖF‚ç&æFöÒ‚’¢#°Ğ¢òòW§Vâ6W76—¦Æ–²6öç&6’–Æ²¶ö×WB–6–âV·7G&&—6–æÖ"&V¶ÆVÖRĞĞ¢òò6FÆW&6R†–6&—"—7FV²v—FÖVÖ—6¶Vâæ–FVâ†—¦Æ’'B&F—7FV°Ğ¢òòv—FÖW6’FV²&6–æ7W†VÆ’&—"FW6VâàĞ¢6öç7B6öä—6ÆVÒÒ—6ÆVÕ¦ÖäFÖvÆ&’æÆVæwF‚ãÒ"ò—6ÆVÕ¦ÖäFÖvÆ&•¶—6ÆVÕ¦ÖäFÖvÆ&’æÆVæwF‚Ò%Ò¢çVÆÃ°Ğ¢–b‡6öä—6ÆVÒbbFFRææ÷r‚’Ò6öä—6ÆVÒâ#¢c¢’°Ğ¢&V¶ÆVÖR³ÒS²ÖF‚ç&æFöÒ‚’¢S°Ğ¢Æör†•4”äÔ$T´ÄTÔU4“¢6öâ—6ÆVÖFVâG´ÖF‚ç&÷VæB‚„FFRææ÷r‚’Ò6öä—6ÆVÒ’òc—ÒF²vV6Ö—2ÂV·7G&vV6–¶ÖRV¶ÆVæ—–÷"æ“°Ğ¢ĞĞ¢v—BæWr&öÖ—6R‡"Óâ6WEF–ÖV÷WB‡"Â&V¶ÆVÖR’“°Ğ¢ĞĞ¢v—B†æFÆT6öÖÖæB†FF“°Ğ¢Òf–æÆÇ’°Ğ¢F–6´6Æ—6—–÷"ÒfÇ6S°Ğ¢ĞĞ§ĞĞ Ğ¢†7–æ2‚’Óâ°Ğ¢Æör‚tW&”ôâ–W&VÂF–æÆW––6’‡c"Â¶Æ–6’÷GW'VÒ’&6ÆF–Æ—–÷"âââr“°Ğ¢òò##bÓ‚Ós¢F–æÆW––6’&—"¶ö×WB—6ÆVÖRõ%D4”äD‡7FGW3Òw&ö6W76–ærrĞ¢òòGW&GW'VÇW–Væ–FVâ&6ÆF–Æ—'6†¶öBwVæ6VÆÆVÖW6’–6–â6–²6–°Ğ¢òò––Æ—–÷"’Âò¶ö×WB6öç7W¦¶F"w&ö6W76–ærvFRF¶–Æ’¶Æ—–÷&GRĞĞ¢òò&—"F†4Ä—6ÆVæÖ—–÷&GR‚3#’ô”C£s’vF–¶ÆæF’’â&6Ææv–7FĞ¢òò–&–Ò¶ÆÖ—2‡&ö6W76–ær’¶ö×WFÆ"wVæF–ærvRvW&’Æ–æ—"Â÷FöÖF–°Ğ¢òò–Væ–FVâFVæVæ—"àĞ¢6öç7B²FF¢–&–Ô¶ÆæÆ"ÒÒv—BF"æg&öÒ‚v&÷Eö6öÖÖæG2r’çWFFR‡²7FGW3¢wVæF–ærrÒ’æW‚w7FGW2rÂw&ö6W76–ærr’ç6VÆV7B‚v–Br“°Ğ¢–b‡–&–Ô¶ÆæÆ"bb–&–Ô¶ÆæÆ"æÆVæwF‚’Æör†U”$“¢G·–&–Ô¶ÆæÆ"æÆVæwF‡Ò–&–Ò¶ÆÖ—2¶ö×WB†öæ6V¶’6Æ—7F—&ÖFâ’–Væ–FVâ·W—'VvÆ–æF“¢G·–&–Ô¶ÆæÆ"æÖ‡"Óâ"æ–B’æ¦ö–â‚rÂr—Ö“°Ğ¢òò##bÓ‚Ó¢&6Ææv–2v—&—6’G'’ö6F6‚D•4”äD–F’Ò&—¦–Ô†W6v—&—0Ğ¢òò6–f6’vV6–6’–f2–æ—BfW&–æ6Rƒ'6âF–ÖV÷WB’Vç7W&U6W76–öâ‚’&VFFVF— Ğ¢òò'WGVâ&ö6W72v’6ö¶W'F—–÷&GRÂvF6†För†W"VF²vF–Væ’6‡&öÖR6—–æĞ¢òò6V¶–ÆFR6ö·W–÷&GR†7&6‚ÖÆö÷Â÷FöÖ7–öâ6FÆW&6RFÖÖVâGW&GR’àĞ¢òò†æFÆT6öÖÖæB‚’¦FVâ¶VæF’Vç7W&U6W76–öâ‚’6w&—6–æ’G'’ö6F6‚–6–æFPĞ¢òò–—–÷"†¶ö×WB&6&—6—¢—6&WFÆVæ—"Â&ö6W72–·F¶Æ—"’Ò&6Ææv–7FĞ¢òòF–æ’FöÆW&ç6’W–wVÆ¢†Ff'6ÆövÆÂ&ö6W72v’F–6²FöæwW7VæR&—&²àĞ¢G'’°Ğ¢v—BVç7W&U6W76–öâ‚“°Ğ¢Æör‚t÷GW'VÒ†¦—"â¶ö×WB&V¶ÆVæ—–÷"††W"R6æ—–VFR&—"¶öçG&öÂ’âââr“°Ğ¢Ò6F6‚†R’°Ğ¢Æör†U”$“¢&6Ææv–2÷GW'V×R&6&—6—¢‚G¶RæÖW76vRÇÂWÒ’Ò&ö6W72–·F¶Æ—–÷"Â6öç&¶’¶ö×WFÆFV·&"FVæVæV6V²æ“°Ğ¢ĞĞ¢F–6²‚“°Ğ¢6WD–çFW'fÂ‡F–6²ÂS“°Ğ§Ò’‚“°Ğ 
+    const masrafOk = setSelect('ddlCostAccounts', hareket.masrafKalemi ? [hareket.masrafKalemi] : ['banka masraf']);
+    const odemeOk = setSelect('ddlPaymentOption', ['odendi', 'Ã¶dendi']);
+    const hesapHints = hareket.hesap ? [hareket.hesap] : ['*is bankasi', '*iÅŸ bankasÄ±', 'is bankasi', 'iÅŸ bankasÄ±'];
+    const hesapOk = setSelect('ddlCashierNew', hesapHints);
+    const selectDump = ['ddlCostAccounts', 'ddlPaymentOption', 'ddlCashierNew'].map(id => { const s = byId(id); return { id, secili: s?.selectedOptions[0]?.text || '(yok)' }; });
+    return { tarih: tarihOk && vadeOk, tutar: tutarOk, aciklama: aciklamaOk, masrafOk, odemeOk, hesapOk, selectDump };
+  }, row);
+
+  if (!dolduruldu.tarih || !dolduruldu.tutar || !dolduruldu.aciklama || !dolduruldu.masrafOk || !dolduruldu.hesapOk) {
+    return { ok: false, mesaj: 'Form alanlari eksik: ' + JSON.stringify(dolduruldu) };
+  }
+
+  // Gercek tani: Kaydet click'i sirasinda network cevaplarini, konsol
+  // hatalarini ve olasi alert/confirm dialoglarini Puppeteer seviyesinde
+  // yakala - page.evaluate() icinden bunlar gorulemiyor (2026-08-06,
+  // native-setter fix de sorunu cozmedi, kok neden hala bilinmiyor).
+  const agListesi = [];
+  const konsolListesi = [];
+  const dialogListesi = [];
+  const onResponse = async (res) => {
+    try {
+      const url = res.url();
+      if (!/bizimhesap\.com/i.test(url)) return;
+      const method = res.request().method();
+      if (method === 'GET' && res.status() < 400) return;
+      let govde = '';
+      try { govde = await res.text(); } catch {}
+      const kisaUrl = url.replace('https://bizimhesap.com', '');
+      let gercekBizimHesapPost = false;
+      try { const u = new URL(url); gercekBizimHesapPost = u.hostname === 'bizimhesap.com' && /\/ngncostentry/i.test(u.pathname); } catch {}
+      if (gercekBizimHesapPost && method === 'POST') {
+        // Bu, Kaydet'in gercek POST cevabi - DB'nin 8000 karakter siniri ve
+        // kelime-eslesmeli kirpma yaniltici oldugu icin (websocket JS
+        // boilerplate'i "error" kelimesiyle yanlis eslesip gercek hatayi
+        // gizledi) TAM govdeyi diske yaz, ozet olarak sadece uzunluk dondur.
+        try { fs.writeFileSync(path.join(__dirname, '..', 'local-secrets', 'kaydet_response.html'), govde); } catch {}
+        govde = `TAM_GOVDE_DISKE_YAZILDI uzunluk=${govde.length} local-secrets/kaydet_response.html`;
+      } else {
+        govde = govde.slice(0, 200);
+      }
+      agListesi.push(`${method} ${res.status()} ${kisaUrl} :: ${govde}`);
+    } catch {}
+  };
+  const onConsole = (msg) => { if (['error', 'warning'].includes(msg.type())) konsolListesi.push(`[${msg.type()}] ${msg.text()}`); };
+  const onDialog = async (dialog) => { dialogListesi.push(`${dialog.type()}: ${dialog.message()}`); await dialog.dismiss().catch(() => {}); };
+  page.on('response', onResponse);
+  page.on('console', onConsole);
+  page.on('dialog', onDialog);
+
+  const tiklandi = await page.evaluate(() => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const btn = [...document.querySelectorAll('button,a,input[type="submit"],input[type="button"]')]
+      .filter(visible)
+      .filter(x => !x.disabled)
+      .find(x => (x.innerText || x.value || '').trim().toLowerCase().includes('kaydet'));
+    if (!btn) return false;
+    btn.scrollIntoView({ block: 'center' });
+    btn.click();
+    return true;
+  });
+  if (!tiklandi) { page.off('response', onResponse); page.off('console', onConsole); page.off('dialog', onDialog); return { ok: false, mesaj: 'Kaydet butonu bulunamadi' }; }
+  await new Promise(r => setTimeout(r, 2500));
+  const hemenSonra = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 400)).catch(() => '');
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 1000));
+  const urlSonra = page.url();
+  page.off('response', onResponse);
+  page.off('console', onConsole);
+  page.off('dialog', onDialog);
+
+  const tani = `AG:[${agListesi.join(' | ') || 'yok'}] KONSOL:[${konsolListesi.join(' | ') || 'yok'}] DIALOG:[${dialogListesi.join(' | ') || 'yok'}]`;
+
+  // DOGRULAMA: tikladim demek yetmez, GERCEKTEN listede goruyor muyum kontrol et.
+  const dogrulama = await bizimhesapVerify('APERION AUTO | ID:' + (row.id || ''));
+  return { ok: dogrulama.found, mesaj: dogrulama.found ? 'Kaydedildi ve listede dogrulandi.' : `Kaydet sonrasi (${urlSonra}): ${hemenSonra.slice(0,200)} | TANI: ${tani}` };
+}
+
+// 2026-08-06: Ercan "sadece masraf yeterli degil, bizim hesabin
+// yapabilecegi herseyi yap - banka hareketlerinin hepsi banka masrafi
+// degil" dedi. Eski bizimhesap_queue_worker.cjs'te (her calistirmada YENI
+// tarayici acan, captcha riski yaratan eski mimari) zaten CALISAN alan
+// ID'leri bulundu - ayni ID'ler bu kalici-oturum dinleyicisine tasindi:
+// Hesaplar Arasi Transfer (#ddlOtherAccount/#txtTransferDate/Amount/
+// Description, #btnSaveTransfer) ve Hesaba Para Girisi (#txtTransactionDate/
+// #txtAmount/#txtDefinition, #myModalCashEntry #btnSave).
+//
+// KRITIK bulunan risk: BizimHesap'in KENDI cari eslestirme/banka entegrasyonu
+// bazi hareketleri (ornek: #172, YÃœKSEL DEMÄ°REL 13.421 TL Tahsilat) AperiON
+// hic gondermeden zaten olusturabiliyor. Bu yuzden transfer/tahsilat
+// gondermeden ONCE hedef hesabin HESAP HAREKETLERI listesinde ayni
+// tarih+tutar var mi diye bakiliyor - varsa atlaniyor (mukerrer onlenir).
+
+// 2026-08-07: Ercan'in talebiyle TAM hesap listesi cikarilip kesin guid'leri
+// config/bizimhesap_account_map.json'a kaydedildi. Once bu haritada TAM
+// eslesme aranir - bulunursa DOGRUDAN guid ile o hesabin sayfasina gidilir,
+// hicbir bulanik/alt-dizge eslestirme riski kalmaz (bugunku "POS POS POS
+// KREDI KARTI" aranirken "*MOCA SONOVA POS KREDI KARTI"ye giden hatanin kok
+// nedeni buydu). Haritada yoksa eski bulanik-tiklama yontemine (yedek) duser.
+const ACCOUNT_MAP_FILE = path.join(__dirname, '..', 'config', 'bizimhesap_account_map.json');
+let ACCOUNT_MAP = {};
+try { ACCOUNT_MAP = JSON.parse(fs.readFileSync(ACCOUNT_MAP_FILE, 'utf8')).accounts || {}; } catch { ACCOUNT_MAP = {}; }
+function normHesapAdi(s) {
+  return (s || '').toLowerCase().normalize('NFD').replace(/[Ì€-Í¯]/g, '').replace(/Ä±/g, 'i').replace(/ÅŸ/g, 's').replace(/Ã§/g, 'c').replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/Ã¶/g, 'o').replace(/^\*+/, '').trim();
+}
+function guidBul(hesapIpucu) {
+  const hedef = normHesapAdi(hesapIpucu);
+  for (const [ad, guid] of Object.entries(ACCOUNT_MAP)) {
+    if (normHesapAdi(ad) === hedef) return guid;
+  }
+  return null;
+}
+
+async function hesapDegerAgacayaYuklendiMi() {
+  // 2026-08-10: canli teste yakalandi - hesap sayfasindaki HESAP HAREKETLERI
+  // tablosu ayri bir XHR ile geliyor, sabit 1000ms bekleme yeterli
+  // gelmiyordu (ozellikle hesap 1000+ kayida ulasinca) - idIleDogrula()
+  // tablo hala bos/eski haliyken calisip YANLIS "bulunamadi" sonucu
+  // uretiyordu (18 kayitlik gercek dogrulama hatasi - para gercekte
+  // gitmisti, bakiye her denemede degisiyordu, sadece dogrulama erken
+  // calismisti). En az 2 satirli veri tablosu gorene kadar bekle.
+  for (let i = 0; i < 20; i++) {
+    const n = await page.evaluate(() => {
+      const adaylar = [...document.querySelectorAll('table')].filter(t => {
+        const h = (t.querySelector('tr') && t.querySelector('tr').innerText) || '';
+        return h.includes('Tarih') && h.includes('lem') && h.includes('Bakiye');
+      });
+      if (!adaylar.length) return 0;
+      return adaylar.reduce((best, x) => x.querySelectorAll('tr').length > best.querySelectorAll('tr').length ? x : best, adaylar[0]).querySelectorAll('tr').length;
+    }).catch(() => 0);
+    if (n >= 2) return true;
+    await new Promise(r => setTimeout(r, 300));
+  }
+  return false;
+}
+
+async function hesapAc(hesapIpucu) {
+  const guid = guidBul(hesapIpucu);
+  if (guid) {
+    await page.goto(`https://bizimhesap.com/web/ngn/acc/ngnaccount?rc=1&guid=${guid}`, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+    await hesapDegerAgacayaYuklendiMi();
+    await new Promise(r => setTimeout(r, 500));
+    return true;
+  }
+  log(`UYARI: "${hesapIpucu}" hesap haritasinda bulunamadi, bulanik tiklama yedegine dusuluyor.`);
+  await page.goto(ACCOUNTS_URL, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 800));
+  const tiklandi = await page.evaluate((ipucu) => {
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[Ì€-Í¯]/g, '').replace(/Ä±/g, 'i').replace(/ÅŸ/g, 's').replace(/Ã§/g, 'c').replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/Ã¶/g, 'o');
+    const hedef = norm2(ipucu);
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const el = [...document.querySelectorAll('a')].filter(visible).find(x => norm2(x.innerText || '').includes(hedef));
+    if (!el) return false;
+    el.click();
+    return true;
+  }, hesapIpucu);
+  if (!tiklandi) return false;
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 1000));
+  return true;
+}
+
+async function hesapBakiyesiOku(hesapIpucu) {
+  if (!guidBul(hesapIpucu)) return { ok: false, error: 'Hesap kesin GUID haritasÄ±nda bulunamadÄ±.' };
+  const acildi = await hesapAc(hesapIpucu);
+  if (!acildi) return { ok: false, error: 'Hesap aÃ§Ä±lamadÄ±.' };
+  const bakiyeText = await page.evaluate(() => {
+    const adaylar = [...document.querySelectorAll('table')].filter(table => {
+      const header = (table.querySelector('tr')?.innerText || '').replace(/\s+/g, ' ');
+      return header.includes('Tarih') && header.includes('Bakiye');
+    });
+    if (!adaylar.length) return null;
+    const table = adaylar.reduce((best, item) => item.querySelectorAll('tr').length > best.querySelectorAll('tr').length ? item : best, adaylar[0]);
+    for (const row of [...table.querySelectorAll('tr')]) {
+      const cells = [...row.querySelectorAll('td')].map(cell => (cell.innerText || '').trim());
+      const dateIndex = cells.findIndex(value => /^\d{2}\.\d{2}\.\d{4}$/.test(value));
+      if (dateIndex >= 0 && cells[dateIndex + 7]) return cells[dateIndex + 7];
+    }
+    return null;
+  });
+  if (!bakiyeText) return { ok: false, error: 'GÃ¼ncel bakiye satÄ±rÄ± okunamadÄ±.' };
+  return { ok: true, value: paraSayi(bakiyeText), text: bakiyeText };
+}
+
+// Hesap sayfasi acikken (hesapAc sonrasi), HESAP HAREKETLERI listesinde
+// verilen tarih (YYYY-MM-DD) + tutar zaten var mi kontrol eder. SADECE
+// on-kontrol (yeni kayittan ONCE, BizimHesap'in kendi/baska bir yoldan
+// zaten yazmis olabilecegi kayitlari yakalamak icin) - kendi yazdigim
+// kaydi DOGRULAMAK icin YETERSIZ, cunku tarih+tutar baska bir kayitla
+// TESADUFEN eslesebilir (2026-08-07'de tam bunun yuzunden birkac transfer
+// YANLIS hesaba gitmisken "dogrulandi" diye raporlandi - Ercan yakaladi).
+// 2026-08-07: Ercan'in talebi - "benim girdigim kayitlar var, onlarin
+// haricinde de sen gireceksin, mukerrer olmamasi cok onemli". AperiON'un
+// KENDI mukerrer kontrolu (idIleDogrula, asagida) sadece kendi ID
+// etiketini arar - bu, AperiON'un AYNI kaydi IKINCI KEZ postalamasini
+// onler ama Ercan'in AYNI hareketi ELLE (etiketsiz) zaten girmis olmasini
+// YAKALAYAMAZ. Bunun icin ayri bir supheli-mukerrer kontrolu: tarihin
+// yakin cevresinde (150 karakter) tutar da geciyor AMA "APERION AUTO"
+// etiketi YOK - bu, Ercan'in (ya da BizimHesap'in kendi otomatik
+// eslestirmesinin) ayni hareketi zaten elle girmis olabilecegini
+// gosterir. Boyle bir durumda otomatik POSTLAMA YAPILMAZ, insan
+// kontrolune birakilir (yanlislikla ikinci kez girmektense atlamak
+// tercih edilir - tersi cok daha tehlikeli).
+async function elleGirisSuphesi(tarihIso, tutar) {
+  const gg = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' '));
+  const [yil, ay, gun] = String(tarihIso || '').split('-');
+  if (!yil) return { supheli: false };
+  const trTarih = `${gun}.${ay}.${yil}`;
+  const trTutar = para(tutar);
+  // 2026-08-07: cevre.includes(trTutar) alt-dizge kontrolu YANLIS pozitif
+  // veriyordu - "500,00" arandiginda "1.500,00" icindeki "500,00" da
+  // eslesiyordu (POS POS POS gibi yogun hesaplarda cok sayida yuvarlak
+  // tutar oldugu icin canli ortamda yakalandi, ID:176). Simdi tutarin
+  // hemen oncesinde rakam/nokta (buyuk sayinin devami), hemen sonrasinda
+  // rakam OLMADIGI - yani tutarin TAM/BAGIMSIZ bir sayi oldugu - garanti
+  // ediliyor.
+  const escTutar = trTutar.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const tutarRe = new RegExp(`(?<![\\d.])${escTutar}(?!\\d)`);
+  let idx = gg.indexOf(trTarih);
+  while (idx !== -1) {
+    const cevre = gg.slice(Math.max(0, idx - 20), idx + 150);
+    if (tutarRe.test(cevre) && !cevre.includes('APERION AUTO')) {
+      return { supheli: true, ozet: cevre.slice(0, 220) };
+    }
+    idx = gg.indexOf(trTarih, idx + trTarih.length);
+  }
+  return { supheli: false };
+}
+
+// KENDI yazdigim kaydi dogrulamak icin GERCEK yontem: her kayda zaten
+// eklenen benzersiz "APERION AUTO | ID:X" etiketini hesap sayfasinda ara.
+// Bu etiket baska HICBIR kayitla tesadufen eslesemez (tarih+tutar'in aksine).
+async function idIleDogrula(rowId, tutar) {
+  const etiket = 'ID:' + rowId + ' ';
+  const gg = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' '));
+  const varMi = gg.includes(etiket);
+  // Ek guvence: etiketin hemen etrafinda beklenen tutar da gecsin (yanlislikla
+  // baska bir ID'nin metnini yakalamadigimizdan emin olmak icin).
+  const idx = gg.indexOf(etiket);
+  const cevre = idx >= 0 ? gg.slice(Math.max(0, idx - 200), idx + 200) : '';
+  const tutarUyumlu = tutar == null || cevre.includes(para(tutar));
+  return { varMi: varMi && tutarUyumlu, ozet: varMi ? cevre.slice(0, 250) : `"${etiket}" bulunamadi` };
+}
+
+async function bizimhesapPostTransfer(row) {
+  // row: {id, tarih, tutar, aciklama, hesap (PARA GIREN/hedef hesap), kaynakHesap (PARA CIKAN/kaynak)}
+  // 2026-08-07: Ercan ekran goruntusuyle yakaladi - "Hesaplar Arasi Transfer"
+  // ACILAN hesaptan PARA CIKISI olarak kaydediyor, dropdown'da secilen hesaba
+  // DEGIL. Ilk versiyon bunu tersten varsaymisti (hedefi acip kaynagi
+  // dropdown'a koymustu) - sonuc: Batch Yatan gibi PARA GIREN hareketler bile
+  // "Para Cikisi" olarak kaydedildi (13 kayit etkilendi, hepsi duzeltildi).
+  // Dogrusu: KAYNAK hesabi ac (parayi cikaran), dropdown'a HEDEFÄ° (parayi
+  // alan) sec.
+  const acildi = await hesapAc(row.kaynakHesap);
+  if (!acildi) return { ok: false, mesaj: `Kaynak hesap acilamadi: ${row.kaynakHesap}` };
+  // 2026-08-07 uctuncu duzeltme: tarih+tutar mukerrer-onleme kontrolu
+  // (proximity ile bile) yogun hareketli hesaplarda (gunde onlarca ayni
+  // tutarli Tahsilat, Ã¶r. "400,00 TL") tesadufen eslesip GERCEKTE HIC
+  // ISLENMEMIS kayitlari "zaten var" diye yanlislikla atliyordu (ID:168'de
+  // yakalandi). Kendi kaydimizin benzersiz "ID:X" etiketini aramak tek
+  // guvenilir yontem - baska hicbir kayitla tesadufen eslesemez.
+  const mukerrer = await idIleDogrula(row.id, row.tutar);
+  if (mukerrer.varMi) return { ok: true, zatenVardi: true, mesaj: `Mukerrer onlendi (ID etiketiyle) - ${mukerrer.ozet}` };
+  const supheli = await elleGirisSuphesi(row.tarih, row.tutar);
+  if (supheli.supheli) return { ok: true, insanKontroluGerekli: true, mesaj: `Olasi elle-giris suphesi (kaynak hesapta AperiON etiketsiz benzer kayit bulundu) - ${supheli.ozet}` };
+
+  const acildi2 = await page.evaluate(() => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const toggle = [...document.querySelectorAll('button.dropdown-toggle')].find(visible);
+    if (!toggle) return false;
+    toggle.click();
+    return true;
+  });
+  if (!acildi2) return { ok: false, mesaj: 'Transfer dropdown butonu bulunamadi' };
+  await new Promise(r => setTimeout(r, 500));
+  const transferAcildi = await page.evaluate(() => { const b = document.getElementById('btnTransfer'); if (!b) return false; b.click(); return true; });
+  if (!transferAcildi) return { ok: false, mesaj: 'Hesaplar Arasi Transfer secenegi bulunamadi' };
+  await page.waitForSelector('#myModalTransferTo[style*="display: block"] #txtTransferAmount', { timeout: 8000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 500));
+
+  const dolduruldu = await page.evaluate((p) => {
+    const fold = s => (s || '').toLocaleUpperCase('tr-TR').normalize('NFD').replace(/[Ì€-Í¯]/g, '').replace(/[^A-Z0-9]+/g, ' ').trim();
+    const set = (id, v) => { const el = document.getElementById(id); if (!el) return false; el.focus(); el.value = String(v || ''); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); el.blur(); return true; };
+    // 2026-08-07 ikinci hata: hesap/kaynakHesap yon duzeltmesi yapilirken
+    // burada YANLISLIKLA hala p.kaynakHesap araniyordu - yani zaten acik
+    // olan hesabin kendi adini dropdown'da ariyorduk. Bu bazen "bulunamadi"
+    // (dogru cikti ama islem eksik kaliyordu) bazen de fold() alt-dizge
+    // eslesmesi yuzunden YANLIS bir hesaba (Ã¶r. "POS POS POS KREDÄ° KARTI"
+    // aranirken "*MOCA SONOVA POS KREDÄ° KARTI" - ortak "POS/KREDI/KARTI"
+    // kelimeleri nedeniyle) transfer yapiyordu. Dogrusu: dropdown'da HEDEF
+    // (p.hesap) aranmali, cunku KAYNAK zaten acik olan hesap.
+    // 2026-08-07 guvenilirlik yukseltmesi: alt-dizge eslestirmesi ("her
+    // token gecsin mi") kisa/ortak kelimeli hesap adlarinda (POS, KREDI,
+    // KARTI gibi) yanlis hesaba secim yapabiliyordu. Once TAM esitlik
+    // deneniyor (bakiye parantezini atip): sadece bulunamazsa eski
+    // alt-dizge yontemine yedek olarak dusuluyor.
+    const coreFold = s => fold(String(s || '').replace(/\([^)]*\)\s*$/, '')).replace(/^\*+/, ' ').trim();
+    const hedefTam = coreFold(p.hesap);
+    const select = document.getElementById('ddlOtherAccount');
+    let opt = select && [...select.options].find(o => coreFold(o.text) === hedefTam);
+    let tamEslesme = Boolean(opt);
+    if (!opt) {
+      const wanted = fold(p.hesap).split(' ').filter(t => t.length > 2);
+      opt = select && [...select.options].find(o => wanted.length && wanted.every(t => fold(o.text).includes(t)));
+    }
+    if (opt) { select.value = opt.value; select.dispatchEvent(new Event('change', { bubbles: true })); }
+    const [yil, ay, gun] = String(p.tarih || '').split('-');
+    return {
+      tarih: set('txtTransferDate', `${gun}.${ay}.${yil}`),
+      tutar: set('txtTransferAmount', p.tutarText),
+      aciklama: set('txtTransferDescription', p.aciklama),
+      hedefHesap: Boolean(opt),
+      secilenHedef: opt ? opt.text : '(bulunamadi)',
+      tamEslesme,
+    };
+  }, { ...row, tutarText: para(row.tutar) });
+  if (dolduruldu.hedefHesap && !dolduruldu.tamEslesme) {
+    log(`UYARI: transfer hedef hesabi TAM eslesmeyle degil, alt-dizge yedegiyle bulundu: "${row.hesap}" -> "${dolduruldu.secilenHedef}" (ID:${row.id})`);
+  }
+
+  if (!dolduruldu.tarih || !dolduruldu.tutar || !dolduruldu.aciklama || !dolduruldu.hedefHesap) {
+    return { ok: false, mesaj: 'Transfer formu eksik: ' + JSON.stringify(dolduruldu) };
+  }
+  // 2026-08-10: "Basarili" modal her zaman gorunuyordu ama kayit hicbir
+  // zaman hesapta cikmiyordu - istemci tarafi iyimser (optimistic) mesaj
+  // olabilir, GERCEK sunucu cevabini yakalamadan bilinemez. bizimhesapPostExpense
+  // ile ayni yontem: kaydet POST cevabini tam govdesiyle diske yaz.
+  const transferAgListesi = [];
+  const onTransferResponse = async (res) => {
+    try {
+      const url = res.url();
+      if (!/bizimhesap\.com/i.test(url)) return;
+      if (res.request().method() !== 'POST') return;
+      let govde = '';
+      try { govde = await res.text(); } catch {}
+      transferAgListesi.push(`${res.status()} ${url.replace('https://bizimhesap.com', '')} :: ${govde.slice(0, 600)}`);
+    } catch {}
+  };
+  page.on('response', onTransferResponse);
+  const kaydedildi = await page.evaluate(() => { const b = document.querySelector('#myModalTransferTo #btnSaveTransfer'); if (!b) return false; b.click(); return true; });
+  if (!kaydedildi) { page.off('response', onTransferResponse); return { ok: false, mesaj: 'Transfer kaydet butonu bulunamadi' }; }
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 1800));
+  page.off('response', onTransferResponse);
+  if (process.env.APERION_TRANSFER_DEBUG === '1') {
+    fs.writeFileSync(path.join(__dirname, '..', 'local-secrets', `transfer_response_ID${row.id}.txt`), transferAgListesi.join('\n\n---\n\n'));
+    log(`TRANSFER_AG_ISTEK_SAYISI ID:${row.id} adet=${transferAgListesi.length}`);
+  }
+  // 2026-08-10: canli teste (ID:966 debug yakalamasi) yakalandi - kaydet
+  // sonrasi "Basarili / Para transferi kaydedildi / Tamam" onay penceresi
+  // ACIK KALIYORDU, kod hemen dogrulamaya geciyordu. Onay penceresi
+  // kapatilmadan hedef hesap sayfasi acilinca liste henuz tazelenmemis
+  // gorunuyor, "ID:X bulunamadi" YANLIS SONUCU uretiyordu - halbuki para
+  // GERCEKTEN transfer edilmisti. Once bu pencereyi kapat.
+  await page.evaluate(() => {
+    const gorunur = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const norm2 = s => (s || '').toLocaleLowerCase('tr-TR').trim();
+    const btn = [...document.querySelectorAll('button,a')].filter(gorunur).find(x => norm2(x.innerText) === 'tamam');
+    if (btn) btn.click();
+  });
+  await new Promise(r => setTimeout(r, 800));
+  if (process.env.APERION_TRANSFER_DEBUG === '1') {
+    const hataMetni = await page.evaluate(() => {
+      const gorunur = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+      const adaylar = [...document.querySelectorAll('.toast,.alert,.modal.show,.swal2-popup,[class*="error"],[class*="danger"],[role="alert"]')].filter(gorunur);
+      return adaylar.map(x => (x.innerText || '').trim()).filter(Boolean).join(' || ') || '(gorunur hata/toast yok)';
+    });
+    await savePageDiagnostics(page, `transfer_debug_ID${row.id}`);
+    log(`TRANSFER_DEBUG ID:${row.id} sayfa_url=${page.url()} hata_alani="${hataMetni}"`);
+  }
+
+  // 2026-08-07: tarih+tutar eslesmesi YETERSIZDI - baska bir kayitla
+  // tesadufen ayni tarih/tutar paylasip YANLIS hesaba giden transferler
+  // "dogrulandi" diye raporlanmisti (Ercan aktivite loguyla yakaladi).
+  // Simdi benzersiz "APERION AUTO | ID:X" etiketini HEDEF hesap sayfasinda
+  // arÄ±yoruz - bu hicbir zaman baska bir kayitla tesadufen eslesemez.
+  const acildi3 = await hesapAc(row.hesap);
+  const dogrulama = acildi3 ? await idIleDogrula(row.id, row.tutar) : { varMi: false, ozet: 'hedef hesap acilamadi' };
+  return { ok: dogrulama.varMi === true, mesaj: dogrulama.varMi ? `Transfer kaydedildi ve ID etiketiyle dogrulandi (hedef: ${dolduruldu.secilenHedef}).` : `Transfer sonrasi ID ile dogrulanamadi (hedef secimi: ${dolduruldu.secilenHedef}) - ${dogrulama.ozet}` };
+}
+
+async function bizimhesapPostIncome(row) {
+  // row: {id, tarih, tutar, aciklama, hesap (para giren hesap)}
+  const acildi = await hesapAc(row.hesap);
+  if (!acildi) return { ok: false, mesaj: `Hedef hesap acilamadi: ${row.hesap}` };
+  const mukerrer = await idIleDogrula(row.id, row.tutar);
+  if (mukerrer.varMi) return { ok: true, zatenVardi: true, mesaj: `Mukerrer onlendi (ID etiketiyle) - ${mukerrer.ozet}` };
+  const supheli = await elleGirisSuphesi(row.tarih, row.tutar);
+  if (supheli.supheli) return { ok: true, insanKontroluGerekli: true, mesaj: `Olasi elle-giris suphesi (hedef hesapta AperiON etiketsiz benzer kayit bulundu) - ${supheli.ozet}` };
+
+  const acildi2 = await page.evaluate(() => { const b = document.getElementById('btnIncome'); if (!b) return false; b.click(); return true; });
+  if (!acildi2) return { ok: false, mesaj: 'Hesaba Para Girisi Yap dugmesi bulunamadi' };
+  await page.waitForSelector('#myModalCashEntry[style*="display: block"] #txtAmount', { timeout: 8000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 500));
+
+  const dolduruldu = await page.evaluate((p) => {
+    const set = (id, v) => { const el = document.getElementById(id); if (!el) return false; el.focus(); el.value = String(v || ''); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); el.blur(); return true; };
+    const [yil, ay, gun] = String(p.tarih || '').split('-');
+    return {
+      tarih: set('txtTransactionDate', `${gun}.${ay}.${yil}`),
+      tutar: set('txtAmount', p.tutarText),
+      aciklama: set('txtDefinition', p.aciklama),
+    };
+  }, { ...row, tutarText: para(row.tutar) });
+
+  if (!dolduruldu.tarih || !dolduruldu.tutar || !dolduruldu.aciklama) {
+    return { ok: false, mesaj: 'Para girisi formu eksik: ' + JSON.stringify(dolduruldu) };
+  }
+  const kaydedildi = await page.evaluate(() => { const b = document.querySelector('#myModalCashEntry #btnSave'); if (!b) return false; b.click(); return true; });
+  if (!kaydedildi) return { ok: false, mesaj: 'Para girisi kaydet butonu bulunamadi' };
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 1800));
+
+  const acildi3 = await hesapAc(row.hesap);
+  const dogrulama = acildi3 ? await idIleDogrula(row.id, row.tutar) : { varMi: false, ozet: 'hedef hesap acilamadi' };
+  return { ok: dogrulama.varMi === true, mesaj: dogrulama.varMi ? 'Para girisi kaydedildi ve ID etiketiyle dogrulandi.' : `Para girisi sonrasi ID ile dogrulanamadi - ${dogrulama.ozet}` };
+}
+
+// Genel amacli sayfa okuma: bir menu yoluna tikla (opsiyonel), bir URL'e git,
+// opsiyonel arama yap, sayfanin tam metnini ve varsa tablo satirlarini dondur.
+// Bunun icin: params.url (tam URL) VEYA params.menu (["TedarikÃ§iler"] gibi tiklanacak menu adlari dizisi),
+// params.search (opsiyonel arama kutusuna yazilacak metin).
+// Bir hesap sayfasinda, aciklamasinda "esleme" gecen satirin "Islem"
+// acilir menusune tiklayip icindeki secenekleri (Duzenle/Sil vb.) dokup
+// donduren tanÄ± komutu - silme mekanizmasini kesfetmek icin.
+async function bizimhesapRowMenu(hesapIpucu, esleme) {
+  const acildi = await hesapAc(hesapIpucu);
+  if (!acildi) return { ok: false, mesaj: 'Hesap acilamadi' };
+  await new Promise(r => setTimeout(r, 800));
+  // Satir listesi uzun oldugundan once "Bul:" kutusuna eslesme metnini
+  // yazip listeyi filtrelemek gerekiyor. Sayfada baska input'lar da oldugundan
+  // (tarih araligi vb.) rastgele ilk input'u degil, "Bul:" etiketine bagli
+  // olani hedefliyoruz - Ercan'in kendi ekraninda "aperi" yazip filtreledigini
+  // dogruladigi ayni yontem (bizimhesapVerify'daki "Ara:" ile ayni kalip).
+  await page.evaluate((needle) => {
+    const label = [...document.querySelectorAll('*')].find(x => (x.textContent || '').trim() === 'Bul:' && x.children.length === 0);
+    let input = null;
+    if (label) { let cur = label.parentElement; for (let i = 0; i < 4 && cur && !input; i++) { input = cur.querySelector('input[type="text"],input:not([type])'); cur = cur.parentElement; } }
+    if (!input) input = document.querySelector('input[type="text"],input:not([type])');
+    if (!input) return false;
+    input.focus(); input.value = needle;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+    return true;
+  }, esleme);
+  await new Promise(r => setTimeout(r, 1500));
+  const sonuc = await page.evaluate((esleme) => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const rows = [...document.querySelectorAll('tr')].filter(tr => visible(tr) && tr.innerText.includes(esleme));
+    if (!rows.length) return { bulundu: false };
+    const row = rows[0];
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[Ì€-Í¯]/g, '').replace(/Ä±/g, 'i').replace(/ÅŸ/g, 's').replace(/Ã§/g, 'c').replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/Ã¶/g, 'o');
+    const dropBtn = [...row.querySelectorAll('a,button')].find(x => visible(x) && norm2(x.innerText || '').includes('islem'));
+    if (!dropBtn) return { bulundu: true, dropdownYok: true, rowHtml: row.outerHTML.slice(0, 500) };
+    dropBtn.click();
+    return { bulundu: true, tiklandi: true };
+  }, esleme);
+  await new Promise(r => setTimeout(r, 600));
+  const menu = await page.evaluate(() => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const menus = [...document.querySelectorAll('.dropdown-menu,ul.dropdown-menu,div[role="menu"]')].filter(visible);
+    return menus.map(m => [...m.querySelectorAll('a,button')].map(a => ({ metin: (a.innerText || '').trim(), href: a.getAttribute('href'), onclick: a.getAttribute('onclick') })));
+  });
+  return { ...sonuc, menu };
+}
+
+// 2026-08-07: Ercan'in "hepsini sil tekrar yap" talimatiyla bulundu. Bir
+// satirin "Islem" menusundeki "Sil" linki javascript:$('#myModalDelete
+// TransactionConfirmation').modal('show'); $('#hdnIdTransaction').val('X')
+// seklinde - yani id'yi gizli alana yazip onay penceresini aciyor. Bu
+// fonksiyon: hesabi ac, "Bul:" ile filtrele, ILK eslesen satiri sil, onay
+// penceresindeki onayla butonuna tikla. TEK bir kayit siler - coklu silme
+// icin bizimhesapTumEslesenleriSil bunu dongude cagirir (silinince liste
+// yeniden render oldugu icin her seferinde bastan aranmali).
+async function bizimhesapBirKaydiSil(hesapIpucu, esleme) {
+  const acildi = await hesapAc(hesapIpucu);
+  if (!acildi) return { ok: false, mesaj: 'Hesap acilamadi' };
+  await new Promise(r => setTimeout(r, 800));
+  await page.evaluate((needle) => {
+    const label = [...document.querySelectorAll('*')].find(x => (x.textContent || '').trim() === 'Bul:' && x.children.length === 0);
+    let input = null;
+    if (label) { let cur = label.parentElement; for (let i = 0; i < 4 && cur && !input; i++) { input = cur.querySelector('input[type="text"],input:not([type])'); cur = cur.parentElement; } }
+    if (!input) input = document.querySelector('input[type="text"],input:not([type])');
+    if (!input) return false;
+    input.focus(); input.value = needle;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+    return true;
+  }, esleme);
+  await new Promise(r => setTimeout(r, 1500));
+
+  const acildiMenu = await page.evaluate((esleme) => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[Ì€-Í¯]/g, '').replace(/Ä±/g, 'i').replace(/ÅŸ/g, 's').replace(/Ã§/g, 'c').replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/Ã¶/g, 'o');
+    const rows = [...document.querySelectorAll('tr')].filter(tr => visible(tr) && tr.innerText.includes(esleme));
+    if (!rows.length) return { bulundu: false };
+    const dropBtn = [...rows[0].querySelectorAll('a,button')].find(x => visible(x) && norm2(x.innerText || '').includes('islem'));
+    if (!dropBtn) return { bulundu: true, menuYok: true };
+    dropBtn.click();
+    return { bulundu: true };
+  }, esleme);
+  if (!acildiMenu.bulundu) return { ok: true, kalmadi: true, mesaj: `"${esleme}" icin baska kayit kalmadi` };
+  if (acildiMenu.menuYok) return { ok: false, mesaj: 'Islem menusu bulunamadi' };
+  await new Promise(r => setTimeout(r, 500));
+
+  const silTiklandi = await page.evaluate(() => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[Ì€-Í¯]/g, '').replace(/Ä±/g, 'i').replace(/ÅŸ/g, 's').replace(/Ã§/g, 'c').replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/Ã¶/g, 'o');
+    const menus = [...document.querySelectorAll('.dropdown-menu,ul.dropdown-menu')].filter(visible);
+    for (const m of menus) {
+      const link = [...m.querySelectorAll('a,button')].find(x => norm2(x.innerText || '').trim() === 'sil');
+      if (link) { link.click(); return true; }
+    }
+    return false;
+  });
+  if (!silTiklandi) return { ok: false, mesaj: 'Sil linki bulunamadi' };
+  await new Promise(r => setTimeout(r, 800));
+
+  const onaylandi = await page.evaluate(() => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[Ì€-Í¯]/g, '').replace(/Ä±/g, 'i').replace(/ÅŸ/g, 's').replace(/Ã§/g, 'c').replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/Ã¶/g, 'o');
+    const modal = document.getElementById('myModalDeleteTransactionConfirmation');
+    if (!modal) return false;
+    const btn = [...modal.querySelectorAll('a,button')].filter(visible).find(x => ['evet', 'sil', 'onayla', 'tamam', 'kaldir'].some(k => norm2(x.innerText || x.value || '').includes(k)));
+    if (!btn) return false;
+    btn.click();
+    return true;
+  });
+  if (!onaylandi) return { ok: false, mesaj: 'Silme onay butonu bulunamadi' };
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 1500));
+  return { ok: true, mesaj: 'Kayit silindi' };
+}
+
+// bizimhesapBirKaydiSil ile ayni mantik ama hesap sayfasi yerine Masraflar
+// listesinde (GIDER_URL) arar - yanlis siniflanan/yanlis hesaba giden
+// masraf kayitlarini silmek icin (ID:180 canli ortamda yanlis hesaba
+// gitmisti, bu fonksiyonla temizlendi).
+async function bizimhesapMasrafSil(esleme) {
+  await page.goto(GIDER_URL, { waitUntil: 'networkidle2', timeout: 30000 });
+  await tiklaMenu('TÃ¼mÃ¼');
+  await new Promise(r => setTimeout(r, 800));
+  await page.evaluate((needle) => {
+    const label = [...document.querySelectorAll('*')].find(x => (x.textContent || '').trim() === 'Ara:' && x.children.length === 0);
+    let input = null;
+    if (label) { let cur = label.parentElement; for (let i = 0; i < 4 && cur && !input; i++) { input = cur.querySelector('input[type="text"],input:not([type])'); cur = cur.parentElement; } }
+    if (!input) input = document.querySelector('input[type="text"],input:not([type])');
+    if (!input) return false;
+    input.focus(); input.value = needle;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+    return true;
+  }, esleme);
+  await new Promise(r => setTimeout(r, 1500));
+
+  const acildiMenu = await page.evaluate((esleme) => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[Ì€-Í¯]/g, '').replace(/Ä±/g, 'i').replace(/ÅŸ/g, 's').replace(/Ã§/g, 'c').replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/Ã¶/g, 'o');
+    const rows = [...document.querySelectorAll('tr')].filter(tr => visible(tr) && tr.innerText.includes(esleme));
+    if (!rows.length) return { bulundu: false };
+    const dropBtn = [...rows[0].querySelectorAll('a,button')].find(x => visible(x) && norm2(x.innerText || '').includes('islem'));
+    if (!dropBtn) return { bulundu: true, menuYok: true };
+    dropBtn.click();
+    return { bulundu: true };
+  }, esleme);
+  if (!acildiMenu.bulundu) return { ok: true, kalmadi: true, mesaj: `"${esleme}" icin kayit bulunamadi` };
+  if (acildiMenu.menuYok) return { ok: false, mesaj: 'Islem menusu bulunamadi' };
+  await new Promise(r => setTimeout(r, 500));
+
+  const silTiklandi = await page.evaluate(() => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[Ì€-Í¯]/g, '').replace(/Ä±/g, 'i').replace(/ÅŸ/g, 's').replace(/Ã§/g, 'c').replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/Ã¶/g, 'o');
+    const menus = [...document.querySelectorAll('.dropdown-menu,ul.dropdown-menu')].filter(visible);
+    for (const m of menus) {
+      const link = [...m.querySelectorAll('a,button')].find(x => norm2(x.innerText || '').trim() === 'sil');
+      if (link) { link.click(); return true; }
+    }
+    return false;
+  });
+  if (!silTiklandi) return { ok: false, mesaj: 'Sil linki bulunamadi' };
+  await new Promise(r => setTimeout(r, 800));
+
+  // Hesap sayfasindaki sabit #myModalDeleteTransactionConfirmation ID'si
+  // Masraflar listesinde YOK (canli testte yakalandi) - herhangi bir
+  // GORUNUR modal/dialog icinde onay-benzeri metinli butonu ariyoruz.
+  const onaylandi = await page.evaluate(() => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[Ì€-Í¯]/g, '').replace(/Ä±/g, 'i').replace(/ÅŸ/g, 's').replace(/Ã§/g, 'c').replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/Ã¶/g, 'o');
+    const modaller = [...document.querySelectorAll('.modal,[class*="modal"],[id*="odal"]')].filter(visible);
+    for (const modal of modaller) {
+      const btn = [...modal.querySelectorAll('a,button')].filter(visible).find(x => ['evet', 'sil', 'onayla', 'tamam', 'kaldir'].some(k => norm2(x.innerText || x.value || '').includes(k)));
+      if (btn) { btn.click(); return true; }
+    }
+    return false;
+  });
+  if (!onaylandi) {
+    const tani = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 300));
+    return { ok: false, mesaj: `Silme onay butonu bulunamadi. Sayfa: ${tani}` };
+  }
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 1500));
+  return { ok: true, mesaj: 'Masraf kaydi silindi' };
+}
+
+// Ayni eslesme metni gecen TUM kayitlari silene kadar dongu (guvenlik icin
+// maxSayi ile sinirli). Her tur basinda bastan arar cunku silme sonrasi
+// liste yeniden render olur ve DOM referanslari gecersiz olur.
+async function bizimhesapTumEslesenleriSil(hesapIpucu, esleme, maxSayi) {
+  const sonuclar = [];
+  for (let i = 0; i < (maxSayi || 30); i++) {
+    const r = await bizimhesapBirKaydiSil(hesapIpucu, esleme);
+    sonuclar.push(r);
+    if (r.kalmadi) break;
+    if (!r.ok) break;
+  }
+  return { toplamSilinen: sonuclar.filter(r => r.ok && !r.kalmadi).length, detay: sonuclar };
+}
+
+// 2026-08-07: Ercan'in istegi - "hergun banka hesaplarim ile bizim
+// hesaptaki gorunen banka hesaplarim kontrol edilmis ve 100/100 ayni
+// olmasi gerekiyor". Her gercek banka hesabi icin: (a) BizimHesap'in o an
+// gosterdigi "Bakiye : X" degerini dogrudan sayfadan oku, (b) o bankaya ait
+// en son mail-ekstre kaydinin balance_after (bankanin KENDI bildirdigi
+// bakiye) degerini pending_bank_movements'tan cek, (c) karsilastir. Kaynak
+// verisi eski (>3 gun) ise "dogrulanamiyor" diye ACIKCA belirtilir - sahte
+// "eslesti" iddiasi asla verilmez (bkz. 100/100 guvenilirlik mandati).
+const MUTABAKAT_HESAPLARI = [
+  { bankName: 'Akbank', hesap: 'AKBANK SIRKET' },
+  { bankName: 'VakifBank', hesap: 'VAKIF SIRKET' },
+  { bankName: 'Yapi Kredi', hesap: 'YAPI KREDI SIRKET' },
+  { bankName: 'Ä°ÅŸ BankasÄ±', hesap: 'IS BANKASI' },
+];
+
+async function bizimhesapBakiyeOku(hesapIpucu) {
+  const acildi = await hesapAc(hesapIpucu);
+  if (!acildi) return null;
+  const metin = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' '));
+  const m = metin.match(/Bakiye\s*:\s*(-?[\d.,]+)/);
+  if (!m) return null;
+  return trToNumber(m[1]);
+}
+
+async function gunlukBakiyeMutabakati() {
+  const satirlar = [`AperiON - Gunluk banka bakiye mutabakati (${new Date().toLocaleDateString('tr-TR')})`, ''];
+  for (const { bankName, hesap } of MUTABAKAT_HESAPLARI) {
+    let bhBakiye = null, hata = null;
+    try { bhBakiye = await bizimhesapBakiyeOku(hesap); } catch (e) { hata = e.message; }
+    const { data: son } = await db.from('pending_bank_movements')
+      .select('balance_after,transaction_date,transaction_time')
+      .eq('bank_name', bankName)
+      .not('balance_after', 'is', null)
+      .order('transaction_date', { ascending: false })
+      .order('transaction_time', { ascending: false })
+      .limit(1);
+    const kaynak = son && son[0];
+    if (hata) { satirlar.push(`âŒ ${hesap}: BizimHesap bakiyesi okunamadi (${hata})`); continue; }
+    if (bhBakiye == null) { satirlar.push(`âŒ ${hesap}: BizimHesap sayfasinda "Bakiye" bulunamadi`); continue; }
+    if (!kaynak) { satirlar.push(`âš ï¸ ${hesap}: BizimHesap bakiye ${para(bhBakiye)} TL - gercek banka bakiyesi icin mail-ekstre verisi hic yok, DOGRULANAMIYOR`); continue; }
+    const gunFarki = Math.floor((Date.now() - new Date(kaynak.transaction_date).getTime()) / 86400000);
+    const taze = gunFarki <= 3;
+    const fark = Math.abs(bhBakiye - Number(kaynak.balance_after));
+    const eslesti = fark < 0.02;
+    const tazeUyari = taze ? '' : ` (UYARI: kaynak veri ${gunFarki} gun eski, guncelligi supheli)`;
+    if (eslesti) {
+      satirlar.push(`âœ… ${hesap}: ${para(bhBakiye)} TL - eslesti (kaynak: ${kaynak.transaction_date})${tazeUyari}`);
+    } else {
+      satirlar.push(`âŒ ${hesap}: UYUSMUYOR - BizimHesap ${para(bhBakiye)} TL, banka ekstresi ${para(kaynak.balance_after)} TL (fark ${para(fark)} TL, kaynak: ${kaynak.transaction_date})${tazeUyari}`);
+    }
+  }
+  return satirlar.join('\n');
+}
+
+// 2026-08-07: Ercan'in istegi - "cari acik bakiye takibi". BizimHesap'in
+// musteri listesi (ngncustomers) her cari icin "Acik Bakiye" ve "Cek/Senet
+// Bakiyesi" sutunlarini zaten gosteriyor - resmi B2B API (customers/
+// abstract endpointleri) 401 donuyor (henuz yetkili degil), bu yuzden ayni
+// ekrani Puppeteer ile okuyoruz. 5734 musterinin cogu 0 bakiyeli oldugu
+// icin "Bakiyesi olanlari goster" filtresi denenir (basarisiz olursa TUM
+// liste kaydirilarak taranir, sadece bakiyesi <>0 olanlar veritabanina
+// yazilir).
+const CUSTOMERS_URL = 'https://bizimhesap.com/web/ngn/pos/ngncustomers';
+const COMPANY_ID = '9e9003b8-2721-4940-a4e9-a1b9a898a4a3';
+
+function paraSayi(s) {
+  return Number(String(s || '0').replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+}
+
+async function bizimhesapCariBakiyeSync() {
+  await page.goto(CUSTOMERS_URL, { waitUntil: 'networkidle2', timeout: 30000 });
+  await new Promise(r => setTimeout(r, 1000));
+
+  const filtreTiklandi = await page.evaluate(() => {
+    const norm2 = s => (s || '').toLowerCase().replace(/Ä±/g, 'i').replace(/ÅŸ/g, 's').replace(/Ã§/g, 'c').replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/Ã¶/g, 'o');
+    const el = [...document.querySelectorAll('a,button,span,div,label,input')].find(x => norm2(x.innerText || x.value || '').includes('bakiyesi olanlari goster'));
+    if (!el) return false;
+    const tiklanacak = el.closest('a') || el.closest('button') || el.closest('label') || el;
+    tiklanacak.click();
+    return true;
+  });
+  await new Promise(r => setTimeout(r, 2500));
+
+  // 2026-08-07: liste window/body degil, ".search-results" sinifli ic ice
+  // bir div icinde sanal-kaydirmali (virtual scroll) - scrollTo(window) hic
+  // etkisi yoktu (canli teste yakalandi, tanÄ± komutuyla dogrulandi:
+  // .search-results scrollHeight=3570 clientHeight=514). O div'in kendisi
+  // kaydirilmali.
+  let oncekiSayi = -1, sabitTur = 0;
+  for (let i = 0; i < 400 && sabitTur < 3; i++) {
+    const suankiSayi = await page.evaluate(() => document.querySelectorAll('table tbody tr, tr').length);
+    if (suankiSayi === oncekiSayi) sabitTur++; else sabitTur = 0;
+    oncekiSayi = suankiSayi;
+    await page.evaluate(() => {
+      const kapsayici = document.querySelector('.search-results') ||
+        [...document.querySelectorAll('*')].find(el => { const s = getComputedStyle(el); return (s.overflowY === 'auto' || s.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 10; });
+      if (kapsayici) kapsayici.scrollTop = kapsayici.scrollHeight;
+      else window.scrollTo(0, document.body.scrollHeight);
+    });
+    await new Promise(r => setTimeout(r, 350));
+  }
+
+  const satirlar = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('table tbody tr')];
+    return rows.map(tr => [...tr.querySelectorAll('td')].map(td => (td.innerText || '').trim()));
+  });
+
+  const kayitlar = [];
+  for (const r of satirlar) {
+    if (r.length < 3) continue;
+    const [isimSinif, acikBakiyeTxt, cekSenetTxt] = r;
+    const satirlarIsim = isimSinif.split('\n').map(s => s.trim()).filter(Boolean);
+    const isim = satirlarIsim[0] || '';
+    const sinif = satirlarIsim.length > 1 ? satirlarIsim[satirlarIsim.length - 1] : '';
+    const acikBakiye = paraSayi(acikBakiyeTxt);
+    const cekSenet = paraSayi(cekSenetTxt);
+    if (!isim || (acikBakiye === 0 && cekSenet === 0)) continue;
+    kayitlar.push({ cari_unvan: isim, sinif, acik_bakiye: acikBakiye, cek_senet_bakiyesi: cekSenet });
+  }
+
+  let yazilan = 0;
+  for (const k of kayitlar) {
+    const { error } = await db.from('customers').upsert({
+      company_id: COMPANY_ID,
+      cari_unvan: k.cari_unvan,
+      sinif: k.sinif,
+      acik_bakiye: k.acik_bakiye,
+      cek_senet_bakiyesi: k.cek_senet_bakiyesi,
+      bakiye_guncelleme: new Date().toISOString(),
+    }, { onConflict: 'company_id,cari_unvan' });
+    if (!error) yazilan++;
+  }
+
+  return { filtreTiklandi, toplamSatir: satirlar.length, bakiyesiOlan: kayitlar.length, yazilan };
+}
+
+// 2026-08-07: Ercan'in istegi - "tedarikci fiyat analizi". product_raw'da
+// urun basina TEK guncel alis_fiyat var ama farkli tedarikcilerin AYNI
+// urune verdigi fiyati karsilastirmiyor; bunun icin her faturanin satir
+// detayina inmek gerekir (cok daha buyuk bir tarama). Onun yerine daha
+// gerceklestirilebilir bir versiyon: BizimHesap Alislar listesinden
+// tedarikci bazli SATIN ALMA HACMI ozeti (kac fatura, toplam tutar, ilk/
+// son tarih) - "hangi tedarikciye ne kadar bagimliyiz" sorusuna cevap
+// verir, ayni ".search-results" sanal-kaydirma deseni kullanilir.
+const PURCHASES_URL = 'https://bizimhesap.com/web/ngn/doc/ngnretailpurchases';
+
+async function bizimhesapTedarikciOzetSync() {
+  await page.goto(PURCHASES_URL, { waitUntil: 'networkidle2', timeout: 30000 });
+  await new Promise(r => setTimeout(r, 1000));
+
+  let oncekiSayi = -1, sabitTur = 0;
+  for (let i = 0; i < 400 && sabitTur < 3; i++) {
+    const suankiSayi = await page.evaluate(() => document.querySelectorAll('table tbody tr, tr').length);
+    if (suankiSayi === oncekiSayi) sabitTur++; else sabitTur = 0;
+    oncekiSayi = suankiSayi;
+    await page.evaluate(() => {
+      const kapsayici = document.querySelector('.search-results') ||
+        [...document.querySelectorAll('*')].find(el => { const s = getComputedStyle(el); return (s.overflowY === 'auto' || s.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 10; });
+      if (kapsayici) kapsayici.scrollTop = kapsayici.scrollHeight;
+      else window.scrollTo(0, document.body.scrollHeight);
+    });
+    await new Promise(r => setTimeout(r, 350));
+  }
+
+  const satirlar = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('table tbody tr')];
+    return rows.map(tr => [...tr.querySelectorAll('td')].map(td => (td.innerText || '').trim()));
+  });
+
+  const tarihSayi = t => {
+    const m = String(t || '').match(/(\d{2})\.(\d{2})\.(\d{4})/);
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
+  };
+
+  const ozet = {};
+  for (const r of satirlar) {
+    if (r.length < 4) continue;
+    const [tarihTxt, unvan, , tutarTxt] = r;
+    const unv = (unvan || '').trim();
+    const tutar = paraSayi(tutarTxt);
+    const tarih = tarihSayi(tarihTxt);
+    if (!unv || !tutar) continue;
+    if (!ozet[unv]) ozet[unv] = { adet: 0, toplam: 0, ilk: tarih, son: tarih };
+    const o = ozet[unv];
+    o.adet++;
+    o.toplam += tutar;
+    if (tarih && (!o.ilk || tarih < o.ilk)) o.ilk = tarih;
+    if (tarih && (!o.son || tarih > o.son)) o.son = tarih;
+  }
+
+  let yazilan = 0;
+  for (const [unv, o] of Object.entries(ozet)) {
+    const { error } = await db.from('supplier_purchase_summary').upsert({
+      company_id: COMPANY_ID,
+      tedarikci_unvan: unv,
+      fatura_sayisi: o.adet,
+      toplam_tutar: o.toplam,
+      ilk_tarih: o.ilk,
+      son_tarih: o.son,
+      guncelleme: new Date().toISOString(),
+    }, { onConflict: 'company_id,tedarikci_unvan' });
+    if (!error) yazilan++;
+  }
+
+  return { toplamSatir: satirlar.length, tedarikciSayisi: Object.keys(ozet).length, yazilan };
+}
+
+// 2026-08-10: Ercan'in istegi - VAKIF SIRKET (ve gerekirse baska) BizimHesap
+// banka hesabinin TUM hareket gecmisini (yil bazinda) cekip gercek banka
+// ekstresiyle satir satir karsilastirmak icin. Hesap sayfasindaki "HESAP
+// HAREKETLERI" tablosu da virtual-scroll'lu (musteri listesiyle ayni
+// pattern). Odeme gecmisi tablosunda daha once yakalanan "gizli sutun"
+// tuzagina dusmemek icin, sabit indeks yerine TARIH hucresini bulup
+// digerlerini ona GORE (relative) okuyoruz.
+async function bizimhesapHesapEkstreDump(guid, hesapAdi) {
+  await page.goto(`https://bizimhesap.com/web/ngn/acc/ngnaccount?rc=1&guid=${guid}`, { waitUntil: 'networkidle2', timeout: 30000 });
+
+  // 2026-08-10: canli teste yakalandi - sayfada AYNI basligi tasiyan IKI
+  // tablo var (biri sabit 1 satirlik "sticky" baslik klonu, digeri gercek
+  // veri tablosu). Genel "table tbody tr, tr" sayaci ilk tabloda takilip
+  // gercek tablo hic yuklenmeden "durgunlasti" saniyordu (0 satir okundu).
+  // Her evaluate cagrisinda hedef tabloyu (Tarih/Islem/Bakiye basligi
+  // tasiyan, en cok satirli tablo) ACIKCA yeniden secen fonksiyon icinde
+  // tekrarlaniyor (page.evaluate() icine kucuk yardimciyi ayni fonksiyon
+  // govdesinde tutmak, string-eval'e gore Puppeteer'da daha guvenilir).
+  function hedefTabloSatirSayisi() {
+    const adaylar = [...document.querySelectorAll('table')].filter(t => {
+      const h = (t.querySelector('tr') && t.querySelector('tr').innerText) || '';
+      return h.includes('Tarih') && h.includes('lem') && h.includes('Bakiye');
+    });
+    if (!adaylar.length) return 0;
+    const t = adaylar.reduce((best, x) => x.querySelectorAll('tr').length > best.querySelectorAll('tr').length ? x : best, adaylar[0]);
+    return t.querySelectorAll('tr').length;
+  }
+
+  // Gercek veri tablosu ilk anda 0 satir olabilir (ayri bir XHR ile geliyor) -
+  // en az 2 satir gorene kadar (veya 15sn dolana kadar) bekle, sonra kaydirmaya basla.
+  for (let i = 0; i < 50; i++) {
+    const n = await page.evaluate(hedefTabloSatirSayisi);
+    if (n >= 2) break;
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  function tabloSatirlariniOku() {
+    const adaylar = [...document.querySelectorAll('table')].filter(t => {
+      const h = (t.querySelector('tr') && t.querySelector('tr').innerText) || '';
+      return h.includes('Tarih') && h.includes('lem') && h.includes('Bakiye');
+    });
+    if (!adaylar.length) return [];
+    const t = adaylar.reduce((best, x) => x.querySelectorAll('tr').length > best.querySelectorAll('tr').length ? x : best, adaylar[0]);
+    const rows = [...t.querySelectorAll('tr')];
+    return rows.map(tr => [...tr.querySelectorAll('td')].map(td => (td.innerText || '').trim()));
+  }
+
+  const tarihRe = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+  function satirlariAyristir(satirlar) {
+    const out = [];
+    for (const r of satirlar) {
+      const dateIdx = r.findIndex(c => tarihRe.test(c));
+      if (dateIdx === -1) continue;
+      const m = r[dateIdx].match(tarihRe);
+      const tarih = `${m[3]}-${m[2]}-${m[1]}`;
+      const islem = r[dateIdx + 1] || '';
+      const kullanici = r[dateIdx + 2] || '';
+      const hesap = r[dateIdx + 3] || '';
+      const aciklama = r[dateIdx + 4] || '';
+      const sutun1 = paraSayi(r[dateIdx + 5]);
+      const sutun2 = paraSayi(r[dateIdx + 6]);
+      const bakiye = paraSayi(r[dateIdx + 7]);
+      if (!sutun1 && !sutun2 && !bakiye) continue;
+      // 2026-08-10: canli teste yakalandi - sutun POZISYONU (Borc/Alacak)
+      // bekledigimin TERSIYMIS (07.08.2026'daki bilinen 7.245 TL Para Girisi
+      // ve 50.000 TL Para Cikisi ornekleriyle dogrulandi: bakiye sutunu
+      // dogru ve tutarli, ama tutar isaretini sutun konumundan degil,
+      // ISLEM METNINDEN turetmek cok daha guvenilir - sutun sirasi hesap
+      // turune gore degisebilir, islem adi (Para Girisi/Tahsilat = giren,
+      // Para Cikisi/Odeme = cikan) her zaman ayni anlama gelir.
+      const buyukluk = sutun1 || sutun2;
+      const giren = /GiriÅŸi|Tahsilat/i.test(islem);
+      const tutar = giren ? buyukluk : -buyukluk;
+      const yon = giren ? 'alacak' : 'borc';
+      const satir_hash = `${tarih}|${islem}|${aciklama}|${tutar}|${bakiye}`;
+      out.push({ tarih, islem, kullanici, hesap, aciklama, tutar, yon, bakiye, satir_hash });
+    }
+    return out;
+  }
+
+  // 2026-08-10: bu tablo "sonsuz kaydirma" (biriken) degil, SABIT PENCERELI
+  // sanal liste - kaydirdikca ONCEKI gorunen satirlar DOM'dan silinip
+  // YENILERI ekleniyor (satir SAYISI hep ayni ~110-120 kaliyor). Onceki
+  // versiyon sadece EN SON kaydirma konumundaki pencereyi okuyordu, bu
+  // yuzden sadece ortadaki bir tarih araligi yakalandi (2025-07/10, ne en
+  // yeni ne en eski). Duzeltme: HER kaydirma adiminda o anki pencereyi oku
+  // ve bir Map'te satir_hash ile biriktir (dogal tekillestirme), pencere
+  // icerigi degismemeye baslayana (gercekten dibe vurulana) kadar devam et.
+  const birikenMap = new Map();
+  let oncekiPencereImza = '', sabitTur = 0;
+  for (let i = 0; i < 1200 && sabitTur < 5; i++) {
+    const satirlar = await page.evaluate(tabloSatirlariniOku);
+    const parsed = satirlariAyristir(satirlar);
+    parsed.forEach(k => birikenMap.set(k.satir_hash, k));
+    const pencereImza = parsed.length ? (parsed[0].satir_hash + '|' + parsed[parsed.length - 1].satir_hash) : '';
+    if (pencereImza === oncekiPencereImza) sabitTur++; else sabitTur = 0;
+    oncekiPencereImza = pencereImza;
+    await page.evaluate(() => {
+      const adaylar = [...document.querySelectorAll('table')].filter(t => {
+        const h = (t.querySelector('tr') && t.querySelector('tr').innerText) || '';
+        return h.includes('Tarih') && h.includes('lem') && h.includes('Bakiye');
+      });
+      const t = adaylar.length ? adaylar.reduce((best, x) => x.querySelectorAll('tr').length > best.querySelectorAll('tr').length ? x : best, adaylar[0]) : null;
+      const kapsayici = (t && (t.closest('.search-results') || t.closest('[style*="overflow"]'))) ||
+        [...document.querySelectorAll('*')].find(el => { const s = getComputedStyle(el); return (s.overflowY === 'auto' || s.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 10; });
+      if (kapsayici) kapsayici.scrollTop += (kapsayici.clientHeight * 0.6);
+      else window.scrollBy(0, 400);
+    });
+    await new Promise(r => setTimeout(r, 280));
+  }
+
+  const kayitlar = [...birikenMap.values()];
+
+  let yazilan = 0, hata = 0;
+  for (const k of kayitlar) {
+    const { error } = await db.from('bizimhesap_hesap_hareketleri').upsert({
+      company_id: COMPANY_ID,
+      hesap_guid: guid,
+      hesap_adi: hesapAdi,
+      tarih: k.tarih,
+      islem: k.islem,
+      kullanici: k.kullanici,
+      hesap: k.hesap,
+      aciklama: k.aciklama,
+      tutar: k.tutar,
+      yon: k.yon,
+      bakiye: k.bakiye,
+      satir_hash: k.satir_hash,
+      guncelleme: new Date().toISOString(),
+    }, { onConflict: 'company_id,hesap_guid,satir_hash' });
+    if (error) hata++; else yazilan++;
+  }
+
+  return { pencereTaramaTuru: sabitTur >= 5 ? 'dibe_ulasti' : 'iterasyon_limiti', ayristirilan: kayitlar.length, yazilan, hata };
+}
+
+// 2026-08-07: Ercan'in istegi - cari acik bakiyeye tahsilat gecmisi ekle.
+// Musteri detay sayfasinda (ngncustomer?guid=X) zaten "ONCEKI ODEMELERI"
+// tablosu var (tarih/tutar/sekli, son ~10 kayit) - tum 5734 cariyi degil,
+// en riskli (en yuksek acik bakiyeli) ilk N cariyi tarar (varsayilan 30) -
+// tam tarama saatler surer, bu, en cok onem tasiyan carilere odaklaniyor.
+async function bizimhesapCariGuidBul(cariAdi) {
+  // 2026-08-07: bazi cari adlari sonunda telefon numarasi tasiyor ("ADI
+  // (530) 693 1341") - bu tam haliyle arama kutusuna yazilinca eslesme
+  // basarisiz oluyordu (canli teste yakalandi). Arama icin sadece
+  // telefon/parantez ONCESI kismi kullan.
+  const aramaTerimi = cariAdi.split(/\s{2,}\(/)[0].trim() || cariAdi;
+  await page.goto(CUSTOMERS_URL, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 800));
+  await page.evaluate((needle) => {
+    const input = document.querySelector('input[type="text"],input:not([type])');
+    if (!input) return false;
+    input.focus(); input.value = needle;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+    return true;
+  }, aramaTerimi);
+  await new Promise(r => setTimeout(r, 1500));
+  const href = await page.evaluate((needle) => {
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const link = [...document.querySelectorAll('a[href*="ngncustomer?"]')].find(a => visible(a) && a.innerText.trim().startsWith(needle.slice(0, 30)));
+    return link ? link.getAttribute('href') : null;
+  }, aramaTerimi);
+  if (!href) return null;
+  const m = href.match(/guid=([A-F0-9]+)/i);
+  return m ? m[1] : null;
+}
+
+async function bizimhesapCariOdemeGecmisiSync(limit) {
+  const { data: topCariler } = await db.from('customers')
+    .select('cari_unvan')
+    .eq('company_id', COMPANY_ID)
+    .not('acik_bakiye', 'is', null)
+    .neq('acik_bakiye', 0)
+    .order('acik_bakiye', { ascending: false })
+    .limit(limit || 30);
+
+  let taranan = 0, yazilan = 0, bulunamayan = 0;
+  for (const c of (topCariler || [])) {
+    const guid = await bizimhesapCariGuidBul(c.cari_unvan);
+    if (!guid) { bulunamayan++; continue; }
+    await page.goto(`https://bizimhesap.com/web/ngn/pos/ngncustomer?rc=1&guid=${guid}`, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+    await new Promise(r => setTimeout(r, 800));
+    const odemeler = await page.evaluate(() => {
+      const tables = [...document.querySelectorAll('table')];
+      for (const t of tables) {
+        const headerText = (t.querySelector('tr')?.innerText || '');
+        if (/tarih/i.test(headerText) && /tutar/i.test(headerText) && /ÅŸekli|sekli/i.test(headerText)) {
+          // 2026-08-07: satirlarda tarihten ONCE gizli/bos hucreler var (dahili
+          // id sutunlari, ekrandan gorunmuyor) - r[0] tarih SANMAK yanlisti,
+          // sonuc her zaman bos donuyordu (canli teste yakalandi). Artik
+          // TARIH DESENINE UYAN ilk hucreyi buluyor, ondan sonraki 2 hucreyi
+          // tutar/sekli olarak alÄ±yor.
+          return [...t.querySelectorAll('tbody tr, tr')].slice(1).map(tr => {
+            const hucreler = [...tr.querySelectorAll('td')].map(td => td.innerText.trim());
+            const ti = hucreler.findIndex(h => /^\d{2}\.\d{2}\.\d{4}$/.test(h));
+            if (ti === -1) return null;
+            return [hucreler[ti], hucreler[ti + 1], hucreler[ti + 2]];
+          }).filter(Boolean);
+        }
+      }
+      return [];
+    });
+    taranan++;
+    for (const r of odemeler) {
+      const [tarihTxt, tutarTxt, sekli] = r;
+      const m = tarihTxt.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+      if (!m) continue;
+      const tarih = `${m[3]}-${m[2]}-${m[1]}`;
+      const tutar = paraSayi(tutarTxt);
+      const { error } = await db.from('customer_payments').upsert({
+        company_id: COMPANY_ID,
+        cari_unvan: c.cari_unvan,
+        odeme_tarihi: tarih,
+        tutar,
+        sekli: (sekli || '').trim(),
+        guncelleme: new Date().toISOString(),
+      }, { onConflict: 'company_id,cari_unvan,odeme_tarihi,tutar,sekli' });
+      if (!error) yazilan++;
+    }
+  }
+  return { taranan, yazilan, bulunamayan, hedefCariSayisi: (topCariler || []).length };
+}
+
+async function bizimhesapFetch(params) {
+  if (params.url) {
+    await page.goto(params.url, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
+  } else if (Array.isArray(params.menu)) {
+    for (const kelime of params.menu) {
+      await tiklaMenu(kelime);
+      await new Promise(r => setTimeout(r, 600));
+    }
+  }
+  await new Promise(r => setTimeout(r, 1000));
+
+  if (params.search) {
+    await page.evaluate((needle) => {
+      const input = document.querySelector('input[type="text"],input:not([type])');
+      if (!input) return false;
+      input.focus(); input.value = needle;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+      return true;
+    }, params.search);
+    await new Promise(r => setTimeout(r, 1500));
+  }
+
+  const sonuc = await page.evaluate(() => {
+    const tables = [...document.querySelectorAll('table')].map(t =>
+      [...t.querySelectorAll('tr')].map(tr => [...tr.querySelectorAll('td,th')].map(td => (td.innerText || '').trim()))
+    );
+    const visible = x => !!(x.offsetWidth || x.offsetHeight || x.getClientRects().length);
+    const linkler = [...document.querySelectorAll('a[href]')].filter(visible).map(a => ({ metin: (a.innerText || '').trim(), href: a.getAttribute('href') })).filter(l => l.metin);
+    return { url: location.href, metin: (document.body.innerText || '').replace(/\s+/g, ' ').trim(), tablolar: tables, linkler };
+  });
+  return sonuc;
+}
+
+async function handleCommand(cmd) {
+  log(`Komut alindi: #${cmd.id} komut=${cmd.command} params=${JSON.stringify(cmd.params)}`);
+  await db.from('bot_commands').update({ status: 'processing', started_at: new Date().toISOString() }).eq('id', cmd.id);
+  const params = cmd.params || {};
+  let outcome;
+  try {
+    if (cmd.command === 'desktop_open_url') {
+      outcome = await openDesktopTarget(params.target);
+    } else {
+    await ensureSession();
+    if (cmd.command === 'bizimhesap_verify') {
+      const r = await bizimhesapVerify(params.search || 'APERION AUTO');
+      outcome = { ok: true, output: `bulundu=${r.found} | ${r.ozet}` };
+    } else if (cmd.command === 'bizimhesap_fetch') {
+      const r = await bizimhesapFetch(params);
+      outcome = { ok: true, output: JSON.stringify(r).slice(0, 7900) };
+    } else if (cmd.command === 'bizimhesap_row_menu') {
+      const r = await bizimhesapRowMenu(params.hesap, params.esleme);
+      outcome = { ok: true, output: JSON.stringify(r).slice(0, 7900) };
+    } else if (cmd.command === 'bizimhesap_sil_bir') {
+      const r = await bizimhesapBirKaydiSil(params.hesap, params.esleme);
+      outcome = { ok: r.ok, output: r.mesaj };
+    } else if (cmd.command === 'bizimhesap_masraf_sil') {
+      const r = await bizimhesapMasrafSil(params.esleme);
+      outcome = { ok: r.ok, output: r.mesaj };
+    } else if (cmd.command === 'bizimhesap_sil_tumu') {
+      const r = await bizimhesapTumEslesenleriSil(params.hesap, params.esleme, params.maxSayi);
+      outcome = { ok: true, output: `Silinen: ${r.toplamSilinen} | ${JSON.stringify(r.detay).slice(0, 7500)}` };
+    } else if (cmd.command === 'gunluk_mutabakat') {
+      const r = await gunlukBakiyeMutabakati();
+      outcome = { ok: true, output: r.slice(0, 7900) };
+    } else if (cmd.command === 'bizimhesap_cari_bakiye_sync') {
+      const r = await bizimhesapCariBakiyeSync();
+      outcome = { ok: true, output: JSON.stringify(r) };
+    } else if (cmd.command === 'bizimhesap_tedarikci_ozet_sync') {
+      const r = await bizimhesapTedarikciOzetSync();
+      outcome = { ok: true, output: JSON.stringify(r) };
+    } else if (cmd.command === 'bizimhesap_cari_odeme_gecmisi_sync') {
+      const r = await bizimhesapCariOdemeGecmisiSync(params.limit);
+      outcome = { ok: true, output: JSON.stringify(r) };
+    } else if (cmd.command === 'bizimhesap_hesap_ekstre_dump') {
+      const r = await bizimhesapHesapEkstreDump(params.guid, params.hesapAdi || params.guid);
+      outcome = { ok: true, output: JSON.stringify(r) };
+    } else if (cmd.command === 'bizimhesap_id_dogrula') {
+      // 2026-08-10: "Transfer sonrasi ID ile dogrulanamadi" hatasi alan
+      // kayitlari YENIDEN POSTALAMADAN, sadece hesapAc() (artik duzeltilmis
+      // bekleme ile) + idIleDogrula() ile tekrar kontrol eder. Cift kayit
+      // riskine girmeden, gercekte postalanmis mi yoksa gercekten
+      // basarisiz mi oldugunu netlestirmek icin.
+      const acildi = await hesapAc(params.hesap);
+      const r = acildi ? await idIleDogrula(params.id, params.tutar) : { varMi: false, ozet: 'hesap acilamadi' };
+      outcome = { ok: true, output: JSON.stringify({ gercektenVarMi: r.varMi, detay: r.ozet }) };
+    } else if (cmd.command === 'bizimhesap_scroll_diag') {
+      const r = await page.evaluate(() => {
+        const aday = [...document.querySelectorAll('*')].filter(el => {
+          const s = getComputedStyle(el);
+          return (s.overflowY === 'auto' || s.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 10;
+        }).slice(0, 10).map(el => ({ tag: el.tagName, cls: (el.className || '').toString().slice(0, 60), scrollHeight: el.scrollHeight, clientHeight: el.clientHeight }));
+        return { adaylar: aday, satirSayisi: document.querySelectorAll('table tbody tr').length };
+      });
+      outcome = { ok: true, output: JSON.stringify(r) };
+    } else if (cmd.command === 'bizimhesap_table_diag') {
+      const r = await page.evaluate(() => {
+        const tables = [...document.querySelectorAll('table')];
+        return tables.map((t, i) => ({ idx: i, header: (t.querySelector('tr')?.innerText || '').replace(/\s+/g, ' ').slice(0, 100), satir: t.querySelectorAll('tr').length }));
+      });
+      outcome = { ok: true, output: JSON.stringify(r) };
+    } else if (cmd.command === 'bizimhesap_expense') {
+      const approvalId = String(params.approval_id || '');
+      const amount = Number(params.amount);
+      const sourceAccount = String(params.source_account || '').trim();
+      const expenseCategory = String(params.expense_category || '').trim();
+      if (params.approved !== true) throw new Error('Tek kullanÄ±mlÄ±k Telegram onayÄ± doÄŸrulanmadÄ±; kayÄ±t yapÄ±lmadÄ±.');
+      if (!/^[0-9a-f-]{36}$/i.test(approvalId)) throw new Error('GeÃ§erli onay kimliÄŸi yok; kayÄ±t yapÄ±lmadÄ±.');
+      if (!Number.isFinite(amount) || amount <= 0) throw new Error('GeÃ§erli gider tutarÄ± yok; kayÄ±t yapÄ±lmadÄ±.');
+      if (!guidBul(sourceAccount)) throw new Error('Kaynak kasa kesin hesap haritasÄ±nda bulunamadÄ±; kayÄ±t yapÄ±lmadÄ±.');
+      if (normHesapAdi(sourceAccount) !== 'ercan nakit') throw new Error('Bu sÃ¼rÃ¼mde yalnÄ±zca doÄŸrulanmÄ±ÅŸ ercan nakit kasasÄ± destekleniyor; kayÄ±t yapÄ±lmadÄ±.');
+      if (expenseCategory !== 'Yemek') throw new Error('Gider kategorisi izin listesinde deÄŸil; kayÄ±t yapÄ±lmadÄ±.');
+
+      const auditId = `TE-${approvalId}`;
+      const auditTag = `APERION AUTO | ID:${auditId}`;
+      const existing = await bizimhesapVerify(auditTag);
+      if (existing.found) {
+        outcome = { ok: true, output: `MÃ¼kerrer engellendi: ${auditTag} daha Ã¶nce BizimHesap'ta doÄŸrulanmÄ±ÅŸ.` };
+      } else {
+        const beforeBalance = await hesapBakiyesiOku(sourceAccount);
+        if (!beforeBalance.ok) throw new Error(`KayÄ±t Ã¶ncesi bakiye doÄŸrulanamadÄ±: ${beforeBalance.error}`);
+        const description = `[GPT-CODEX KAYDI] ${auditTag} | ONAY:${approvalId} | ${String(params.description || 'Yemek Ã¶demesi').slice(0, 120)}`;
+        const posted = await bizimhesapPostExpense({ id: auditId, tarih: params.transaction_date, tutar: para(amount), aciklama: description, hesap: sourceAccount, masrafKalemi: expenseCategory });
+        if (posted.insanKontroluGerekli) {
+          outcome = { ok: false, output: `MÃ¼kerrer ÅŸÃ¼phesi nedeniyle kayÄ±t yapÄ±lmadÄ±: ${posted.mesaj}` };
+        } else if (!posted.ok) {
+          outcome = { ok: false, output: posted.mesaj || 'BizimHesap gider kaydÄ± doÄŸrulanamadÄ±.' };
+        } else {
+          const afterBalance = await hesapBakiyesiOku(sourceAccount);
+          if (!afterBalance.ok) throw new Error(`KayÄ±t yapÄ±ldÄ± ancak kayÄ±t sonrasÄ± bakiye okunamadÄ±: ${afterBalance.error}`);
+          const expectedAfter = Math.round((beforeBalance.value - amount) * 100) / 100;
+          const balanceMatches = Math.abs(afterBalance.value - expectedAfter) <= 0.02;
+          const proofName = `bizimhesap_expense_${approvalId}`;
+          await savePageDiagnostics(page, proofName);
+          const proofPath = path.join(__dirname, '..', 'diagnostics', `${proofName}.png`);
+          const notification = await sendFinanceResult({
+            verified: true,
+            transactionId: `bizimhesap:alayli:expense:${approvalId}`,
+            status: balanceMatches ? 'BAÅARILI' : 'BAÅARILI - BAKÄ°YE ANOMALÄ°SÄ°',
+            date: params.transaction_date,
+            sourceAccount,
+            targetAccount: expenseCategory,
+            amount,
+            currency: 'TRY',
+            previousBalance: beforeBalance.value,
+            newBalance: afterBalance.value,
+            description: `${posted.mesaj}${balanceMatches ? '' : ` Beklenen bakiye ${para(expectedAfter)} TL idi; kontrol gerekli.`}`,
+            proofPath,
+          }, { chatId: params.chat_id });
+          outcome = { ok: true, output: `Kaydedildi ve doÄŸrulandÄ±. BizimHesap kimliÄŸi: ${auditId}. Ã–nce: ${para(beforeBalance.value)} TL; sonra: ${para(afterBalance.value)} TL. Telegram gÃ¶rsel kanÄ±t mesajÄ±: ${notification.messageId || 'Ã¶nceden gÃ¶nderildi'}.` };
+        }
+      }
+    } else if (cmd.command === 'bizimhesap_process') {
+      const { data: row, error } = await db.from(BANK_TABLE).select('*').eq('id', params.id).single();
+      if (error || !row) { outcome = { ok: false, output: `Kayit bulunamadi: ${error?.message || params.id}` }; }
+      else {
+        const aciklama = `APERION AUTO | ID:${row.id} | TIP:${row.tur} | FIRMA:${row.firma_id} | ${(row.aciklama || '').slice(0, 150)}`;
+        let r;
+        let bildirimHesaplari = {
+          sourceAccount: row.hesap || '-',
+          targetAccount: row.karsi_taraf || row.tur || '-',
+        };
+        const rowAciklama = norm(row.aciklama || '');
+        // 2026-08-07: "Kredi Geri Odemesi" / "Kredi Kartina Odenen" anapara
+        // hareketleridir, gider degildir - Ercan'in talimatiyla Emanet
+        // hesabina transfer olarak yonlendiriliyor (kaynak: gercek banka
+        // hesabi, hedef: Emanet - hesapta gorunur ama gider gibi
+        // kategorize edilmez, sonradan elle netlestirilir).
+        // 2026-08-07: "KRE.KART BORÃ‡ Ã–DEME" (bankanin kendi ekstresindeki
+        // kisaltilmis ifadesi) bu kalibi yakalamiyordu - ID:180/206 canli
+        // ortamda "Kredi karti" diye anlamsiz bir hesaba yanlis islendi
+        // (fuzzy eslesme "MOCA SONOVA POS KREDI KARTI"ye gitti). Kredi
+        // karti borc odemesinin tum yaygin ifade bicimlerini kapsayacak
+        // sekilde genisletildi.
+        const anaparaKaynakli = /kredi geri odemesi|kredi kartina odenen|kre ?(di)? ?\.? ?kart(i|a)? borc/.test(rowAciklama);
+        const krediFaizi = /kredi faizi/.test(rowAciklama);
+        // 2026-08-07 KRITIK bulgu: process_pending_bank_movements_v113.cjs
+        // karsi taraf bilinmeyen kayitlari emanet_routed=true diye
+        // isaretliyordu ama bu bayrak burada HIC OKUNMUYORDU - 19 kayit
+        // (ATM para yatirma, KMH tahsilati gibi belirsiz kaynakli girisler)
+        // Emanet yerine dogrudan GERCEK banka hesabina "Para Girisi" olarak
+        // islenmis oldu (Ercan'in sorusuyla yakalandi). emanet_routed en
+        // BASTA kontrol edilmeli - tur'a gore yonlendirmeden once.
+        if (row.emanet_routed) {
+          // 2026-08-07: yon (gercek hesaba mi dusmeli, dogrudan Emanet'e mi
+          // girmeli) Ercan ile netlesmeden TAHMIN YURUTULMEYECEK - gercek
+          // banka bakiyesini etkileyen bir karar. Insan kontrolune birakiliyor.
+          r = { ok: true, insanKontroluGerekli: true, mesaj: 'Emanet yonlendirmesi bekliyor - kaynak/hedef yonu netlesmeden otomatik islenmedi (bkz. ID:286-304 duzeltmesi)' };
+        } else if (row.tur === 'transfer') {
+          const kaynakHesap = String(row.karsi_taraf || '').split('->')[0].trim() || 'POS POS POS KREDI KARTI';
+          bildirimHesaplari = { sourceAccount: kaynakHesap, targetAccount: row.hesap };
+          r = await bizimhesapPostTransfer({ id: row.id, tarih: row.tarih, tutar: row.tutar, aciklama, hesap: row.hesap, kaynakHesap });
+        } else if (row.tur === 'cari_tahsilat' || row.tur === 'tahsilat') {
+          bildirimHesaplari = { sourceAccount: row.karsi_taraf || 'Cari', targetAccount: row.hesap };
+          r = await bizimhesapPostIncome({ id: row.id, tarih: row.tarih, tutar: row.tutar, aciklama, hesap: row.hesap });
+        } else if (anaparaKaynakli) {
+          bildirimHesaplari = { sourceAccount: row.hesap, targetAccount: 'EMANET' };
+          r = await bizimhesapPostTransfer({ id: row.id, tarih: row.tarih, tutar: row.tutar, aciklama, hesap: 'EMANET', kaynakHesap: row.hesap });
+        } else if (krediFaizi) {
+          bildirimHesaplari = { sourceAccount: row.hesap, targetAccount: 'Faiz gideri' };
+          r = await bizimhesapPostExpense({ id: row.id, tarih: row.tarih, tutar: para(row.tutar), aciklama, hesap: row.hesap, masrafKalemi: 'Faiz' });
+        } else {
+          bildirimHesaplari = { sourceAccount: row.hesap, targetAccount: row.karsi_taraf || 'BizimHesap gideri' };
+          r = await bizimhesapPostExpense({ id: row.id, tarih: row.tarih, tutar: para(row.tutar), aciklama, hesap: row.hesap });
+        }
+        outcome = { ok: r.ok, output: r.mesaj };
+        if (r.ok) {
+          // 2026-08-07: Ercan'in talebi - elle girisiyle catisma suphesi
+          // varsa 'kaydedildi' DENMEZ (yanlislikla ikinci kez girilmis
+          // sanilmasin), ayri bir statude birakilir ki gunluk bildirimde
+          // "insan kontrolu gerekiyor" olarak gorunsun, sessizce kaybolmasin.
+          const durum = r.insanKontroluGerekli ? 'insan_kontrolu_gerekli' : (r.zatenVardi ? 'zaten_vardi' : 'kaydedildi');
+          await db.from(BANK_TABLE).update({ bizimhesap_durumu: durum, bizimhesap_mesaj: r.mesaj, bizimhesap_islem_tarihi: new Date().toISOString() }).eq('id', row.id);
+          if (durum === 'kaydedildi') {
+            const kanitAdi = `bizimhesap_result_ID${row.id}`;
+            await savePageDiagnostics(page, kanitAdi);
+            const kanitYolu = path.join(__dirname, '..', 'diagnostics', `${kanitAdi}.png`);
+            try {
+              const bildirim = await sendFinanceResult({
+                verified: true,
+                transactionId: `bizimhesap:${row.firma_id || 'alayli'}:${row.id}`,
+                status: 'BAÅARILI',
+                date: row.tarih,
+                sourceAccount: bildirimHesaplari.sourceAccount,
+                targetAccount: bildirimHesaplari.targetAccount,
+                amount: Number(row.tutar),
+                currency: 'TRY',
+                description: r.mesaj,
+                proofPath: kanitYolu,
+              });
+              r.mesaj += bildirim.duplicate
+                ? ' Telegram sonuÃ§ bildirimi daha Ã¶nce gÃ¶nderilmiÅŸti.'
+                : ` Telegram sonuÃ§ ve gÃ¶rsel kanÄ±t gÃ¶nderildi (mesaj:${bildirim.messageId}).`;
+              outcome.output = r.mesaj;
+            } catch (bildirimHatasi) {
+              log(`TELEGRAM_BILDIRIM_HATASI ID:${row.id} ${bildirimHatasi.message}`);
+              r.mesaj += ` Telegram bildirimi gÃ¶nderilemedi: ${bildirimHatasi.message}`;
+              outcome.output = r.mesaj;
+            }
+          }
+        }
+      }
+    } else {
+      outcome = { ok: false, output: `Bilinmeyen komut: ${cmd.command}` };
+    }
+    }
+  } catch (e) {
+    outcome = { ok: false, output: String(e.message || e) };
+  }
+  await db.from('bot_commands').update({ status: outcome.ok ? 'completed' : 'failed', result: outcome.output.slice(0, 8000), completed_at: new Date().toISOString() }).eq('id', cmd.id);
+  if ((cmd.command === 'desktop_open_url' || cmd.command === 'bizimhesap_expense') && params.chat_id) {
+    const icon = outcome.ok ? 'âœ…' : 'âš ï¸';
+    await sendTelegramCommandResult(params.chat_id, `${icon} MasaÃ¼stÃ¼ komut sonucu\n${outcome.output}`);
+  }
+  log(`Komut bitti: #${cmd.id} -> ${outcome.ok ? 'completed' : 'failed'}`);
+}
+
+// 2026-08-11/12: Ercan'in acikca istedigi "dunya standardi, hicbir zaman
+// kopmasin" hedefine gercekci katkim - Cloudflare'in bizi tekrar tekrar
+// banlamasinin asil sebebi TOPLU isler sirasinda cok kisa arayla (15-60sn)
+// onlarca/yuzlerce otomatik islem yapmamiz (VAKIF SIRKET geri-doldurma gibi).
+// Insan bir muhasebeci bu hizda calismaz. Saatlik bir "bizimhesap_process"
+// tavani + her komut arasinda RASTGELE (insan gibi degisken) bekleme ekleniyor
+// - bu, saf hiz yerine SURDURULEBILIRLIGI onceliklendirir.
+// 2026-08-12 dengeleme: ilk deger (40/saat, 8-40sn) gereginden fazla
+// yavasti - bu oturumdaki GERCEK ban olaylarinin ikisi de (crash-loop'ta
+// tekrar tekrar YENIDEN GIRIS, veya gece boyu KESINTISIZ yuzlerce islem)
+// tek-islem hizindan degil, oturum/hacim orunturusunden kaynaklandi.
+// Oturum zaten kalici (komut basina yeniden giris yok), bu yuzden tavan
+// makul seviyede yukseltildi - hala sabit-araikli bot deseni degil, ama
+// gereksiz yere surunmuyor.
+const SAATLIK_BIZIMHESAP_ISLEM_TAVANI = 90;
+const islemZamanDamgalari = [];
+function saatlikTavanAsildiMi() {
+  const suan = Date.now();
+  while (islemZamanDamgalari.length && suan - islemZamanDamgalari[0] > 3600000) islemZamanDamgalari.shift();
+  return islemZamanDamgalari.length >= SAATLIK_BIZIMHESAP_ISLEM_TAVANI;
+}
+
+let tickCalisiyor = false;
+async function tick() {
+  // 2026-08-06: setInterval onceki tick'in handleCommand'i (page.goto/
+  // waitForNavigation ile 15sn'den uzun surebiliyor) hala calisirken yeni
+  // tick'i tetikliyordu - iki komut AYNI Puppeteer page'i es zamanli
+  // kullanip birbirinin form doldurma/navigasyonunu bozuyordu (6 komutluk
+  // toplu kuyruk 2026-08-06'da hepsi "form alanlari eksik" ile patladi).
+  // Basit kilit: bir onceki komut tam bitmeden yeni tick calismaz.
+  if (tickCalisiyor) return;
+  tickCalisiyor = true;
+  try {
+    const { data, error } = await db.from('bot_commands').select('*').eq('status', 'pending').order('created_at', { ascending: true }).limit(1).maybeSingle();
+    if (error) { log(`HATA (sorgu): ${error.message}`); return; }
+    if (!data) return;
+    if (data.command.startsWith('bizimhesap_')) {
+      // 2026-08-12: throttle/jitter ONCE sadece 'bizimhesap_process'e
+      // uygulaniyordu - id_dogrula/scroll_diag/table_diag gibi diger canli
+      // tarayici komutlari (ozellikle saatlerce bos kuyruktan sonra art
+      // arda kuyruklanan dogrulama komutlari) sifir gecikmeyle art arda
+      // calisiyordu. Bu tam olarak bot-deseni: uzun sessizlik + ani patlama.
+      // Ercan'a "girisim pazarlama sayfasina yonlendirildi" (bot korumasi)
+      // seklinde geri donen bir engelle sonuclandi. Artik TUM canli
+      // bizimhesap_* komutlari ayni insan-temposu jitter'ini paylasiyor.
+      if (saatlikTavanAsildiMi()) {
+        log(`TOPLU ISLEM YAVASLATMA: son 1 saatte ${SAATLIK_BIZIMHESAP_ISLEM_TAVANI} islem tavanina ulasildi, #${data.id} bir sonraki uygun tur'a birakiliyor.`);
+        return;
+      }
+      islemZamanDamgalari.push(Date.now());
+      // Insan gibi degisken bekleme (4-16sn) - sabit 15sn tick araligi tek
+      // basina "bot deseni" olusturuyordu, jitter bunu kirar. 90/saat tavanla
+      // birlikte ortalama ~40sn/islem (tick + jitter + islem suresi) eder.
+      let bekleme = 4000 + Math.random() * 12000;
+      // Uzun sessizlik sonrasi ilk komut icin ekstra "isinma" bekleme -
+      // saatlerce hicbir istek gitmemisken aniden hizli art arda istek
+      // gitmesi tek basina supheli bir desen.
+      const sonIslem = islemZamanDamgalari.length >= 2 ? islemZamanDamgalari[islemZamanDamgalari.length - 2] : null;
+      if (sonIslem && Date.now() - sonIslem > 20 * 60 * 1000) {
+        bekleme += 15000 + Math.random() * 15000;
+        log(`ISINMA BEKLEMESI: son islemden ${Math.round((Date.now() - sonIslem) / 60000)} dk gecmis, ekstra gecikme ekleniyor.`);
+      }
+      await new Promise(r => setTimeout(r, bekleme));
+    }
+    await handleCommand(data);
+  } finally {
+    tickCalisiyor = false;
+  }
+}
+
+(async () => {
+  log('AperiON yerel dinleyici (v2, kalici oturum) baslatiliyor...');
+  // 2026-08-07: dinleyici bir komut isleme ORTASINDA (status='processing')
+  // durdurulup yeniden baslatilirsa (kod guncellemesi icin sik sik
+  // yapiliyor), o komut sonsuza kadar 'processing'de takili kaliyordu -
+  // bir daha ASLA islenmiyordu (#209/ID:179'da yakalandi). Baslangicta
+  // yarim kalmis (processing) komutlar 'pending'e geri alinir, otomatik
+  // yeniden denenir.
+  const { data: yarimKalanlar } = await db.from('bot_commands').update({ status: 'pending' }).eq('status', 'processing').select('id');
+  if (yarimKalanlar && yarimKalanlar.length) log(`UYARI: ${yarimKalanlar.length} yarim kalmis komut (onceki calistirmadan) yeniden kuyruga alindi: ${yarimKalanlar.map(r => r.id).join(',')}`);
+  // 2026-08-10: baslangic girisi try/catch DISINDA idi - BizimHesap giris
+  // sayfasi gecici yavas yanit verince (12sn timeout) ensureSession() reddedip
+  // butun process'i cokertiyordu, watchdog her 5dk'da yeni Chrome acip ayni
+  // sekilde cokuyordu (crash-loop, otomasyon saatlerce tamamen durdu).
+  // handleCommand() zaten kendi ensureSession() cagrisini try/catch icinde
+  // yapiyor (komut basarisiz isaretlenir, process ayakta kalir) - baslangicta
+  // da ayni toleransi uygula: hata varsa logla, process'i tick dongusune birak.
+  try {
+    await ensureSession();
+    log('Oturum hazir. Komut bekleniyor (her 15 saniyede bir kontrol)...');
+  } catch (e) {
+    log(`UYARI: baslangic oturumu basarisiz (${e.message || e}) - process ayakta kaliyor, sonraki komutla tekrar denenecek.`);
+  }
+  tick();
+  setInterval(tick, 15000);
+})();
