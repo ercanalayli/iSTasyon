@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.5 seconds
+Output:
 {
   "timeZone": "Europe/Istanbul",
   "dependencies": {},
@@ -5,8 +8,10 @@
   "runtimeVersion": "V8",
   "oauthScopes": [
     "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/gmail.readonly",
     "https://www.googleapis.com/auth/spreadsheets.readonly",
     "https://www.googleapis.com/auth/script.external_request",
     "https://www.googleapis.com/auth/script.scriptapp"
   ]
 }
+
