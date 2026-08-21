@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.4 seconds
-Output:
 CREATE TABLE IF NOT EXISTS bank_statement_movements (
   id TEXT PRIMARY KEY,
   company_id TEXT NOT NULL DEFAULT 'alayli',
