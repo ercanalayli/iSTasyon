@@ -26,8 +26,8 @@ function processAperionBankStatements() {
   if (!lock.tryLock(30000)) return { ok: false, skipped: true, reason: 'already_running' };
   try {
     var props = PropertiesService.getScriptProperties();
-    var secret = props.getProperty('APERION_GOOGLE_BRIDGE_KEY');
-    if (!secret) throw new Error('APERION_GOOGLE_BRIDGE_KEY tanÄ±mlÄ± deÄŸil.');
+    var secret = props.getProperty('APERION_BANK_INGEST_SECRET');
+    if (!secret) throw new Error('APERION_BANK_INGEST_SECRET tanÄ±mlÄ± deÄŸil.');
 
     var processed = readProcessedBankMessages_(props);
     var query = 'from:ekstre@vakifbank.com.tr subject:"E-Ekstre" newer_than:2d has:attachment';
