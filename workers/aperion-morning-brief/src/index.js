@@ -35,7 +35,7 @@ function label(item) {
 
 function short(text, max = 110) {
   const value = String(text || "").replace(/\s+/g, " ").trim();
-  return value.length > max ? `${value.slice(0, max - 1)}â€¦` : value;
+  return value.length > max ? `${value.slice(0, max - 1)}…` : value;
 }
 
 function moneyTr(value) {
@@ -74,27 +74,27 @@ export async function buildDailyFinancialStatements(env, db, now = new Date()) {
   ]);
   const filterFrom = (rows, from) => rows.filter((row) => String(row.tarih || "") >= from && String(row.tarih || "") <= scope.today);
   const incomeLine = (label, from) => {
-    if (!sales.ok || !expenses.ok) return `â€¢ ${label}: BILGI_GEREKLI â€” satÄ±ÅŸ/gider kaynaÄŸÄ± okunamadÄ±`;
+    if (!sales.ok || !expenses.ok) return `• ${label}: BILGI_GEREKLI — satış/gider kaynağı okunamadı`;
     const revenue = sumField(filterFrom(sales.rows, from), "satis_kdv_haric", "ciro");
     const expense = sumField(filterFrom(expenses.rows, from), "toplam", "tutar");
     const fifoRows = fifo.ok ? filterFrom(fifo.rows, from) : [];
     const profit = fifoRows.length ? sumField(fifoRows, "net_profit") - expense : null;
-    return `â€¢ ${label}: satÄ±ÅŸ ${moneyTr(revenue)} Â· gider ${moneyTr(expense)} Â· ${profit == null ? "net kÃ¢r: FIFO KAYNAK EKSÄ°K" : `net kÃ¢r ${moneyTr(profit)}`}`;
+    return `• ${label}: satış ${moneyTr(revenue)} · gider ${moneyTr(expense)} · ${profit == null ? "net kâr: FIFO KAYNAK EKSİK" : `net kâr ${moneyTr(profit)}`}`;
   };
   const bankTotal = banks.ok ? sumField(banks.rows, "balance") : null;
   const stockValue = stock.ok ? stock.rows.reduce((sum, row) => sum + (Number(row.miktar) || 0) * (Number(row.alis_fiyat) || 0), 0) : null;
   const cariNet = customers.ok ? sumField(customers.rows, "bakiye") : null;
   return [
-    "\nGÃœNLÃœK GELÄ°R TABLOSU â€” YÃ–NETÄ°M TASLAÄI",
-    incomeLine("BugÃ¼n", scope.today),
+    "\nGÜNLÜK GELİR TABLOSU — YÖNETİM TASLAĞI",
+    incomeLine("Bugün", scope.today),
     incomeLine("Bu ay", scope.month),
-    incomeLine("Bu yÄ±l", scope.year),
-    fifo.ok ? "â€¢ FIFO maliyet kaynaÄŸÄ±: doÄŸrulandÄ±" : "â€¢ BILGI_GEREKLI â€” FIFO maliyet kaynaÄŸÄ± yok; kesin kÃ¢r hesaplanmadÄ±",
-    "\nGÃœNLÃœK BÄ°LANÃ‡O â€” KISMÄ° GÃ–RÃœNÃœM",
-    `â€¢ Banka: ${bankTotal == null ? "KAYNAK OKUNAMADI" : moneyTr(bankTotal)}`,
-    `â€¢ Stok (kayÄ±tlÄ± alÄ±ÅŸ fiyatÄ±): ${stockValue == null ? "KAYNAK OKUNAMADI" : moneyTr(stockValue)}`,
-    `â€¢ Cari net bakiye: ${cariNet == null ? "KAYNAK OKUNAMADI" : moneyTr(cariNet)}`,
-    "â€¢ BILGI_GEREKLI â€” kasa, vergi, borÃ§lar ve Ã¶zkaynak tamamlanmadan kesin bilanÃ§o deÄŸildir"
+    incomeLine("Bu yıl", scope.year),
+    fifo.ok ? "• FIFO maliyet kaynağı: doğrulandı" : "• BILGI_GEREKLI — FIFO maliyet kaynağı yok; kesin kâr hesaplanmadı",
+    "\nGÜNLÜK BİLANÇO — KISMİ GÖRÜNÜM",
+    `• Banka: ${bankTotal == null ? "KAYNAK OKUNAMADI" : moneyTr(bankTotal)}`,
+    `• Stok (kayıtlı alış fiyatı): ${stockValue == null ? "KAYNAK OKUNAMADI" : moneyTr(stockValue)}`,
+    `• Cari net bakiye: ${cariNet == null ? "KAYNAK OKUNAMADI" : moneyTr(cariNet)}`,
+    "• BILGI_GEREKLI — kasa, vergi, borçlar ve özkaynak tamamlanmadan kesin bilanço değildir"
   ].join("\n");
 }
 
@@ -105,12 +105,12 @@ function categoryRows(rows, types) {
 
 function section(title, sourceOk, rows, emptyText) {
   const lines = [`\n${title}`];
-  if (!sourceOk) return lines.concat("â€¢ BILGI_GEREKLI â€” KAYNAK OKUNAMADI");
-  if (!rows.length) return lines.concat(`â€¢ BILGI_GEREKLI â€” ${emptyText}`);
+  if (!sourceOk) return lines.concat("• BILGI_GEREKLI — KAYNAK OKUNAMADI");
+  if (!rows.length) return lines.concat(`• BILGI_GEREKLI — ${emptyText}`);
   return lines.concat(rows.slice(0, 5).map((row) => {
-    const amount = Number.isFinite(Number(row.amount)) ? ` Â· ${Number(row.amount).toLocaleString("tr-TR")} ${row.currency || "TRY"}` : "";
-    const date = row.due_at || row.expected_at ? ` Â· ${short(row.due_at || row.expected_at, 16)}` : "";
-    return `â€¢ ${label(row)} â€” ${short(row.title)}${amount}${date}`;
+    const amount = Number.isFinite(Number(row.amount)) ? ` · ${Number(row.amount).toLocaleString("tr-TR")} ${row.currency || "TRY"}` : "";
+    const date = row.due_at || row.expected_at ? ` · ${short(row.due_at || row.expected_at, 16)}` : "";
+    return `• ${label(row)} — ${short(row.title)}${amount}${date}`;
   }));
 }
 
@@ -118,9 +118,9 @@ function sourceLine(key, connector, health) {
   const c = connector.get(key);
   const h = health.get(key);
   const verified = c && ["active", "connected"].includes(String(c.status).toLowerCase()) && h && ["confirmed", "ok"].includes(String(h.status).toLowerCase());
-  if (verified) return `â€¢ OTOMATIK â€” ${c.title || key}: doÄŸrulandÄ± (${short(h.checked_at || h.last_success_at, 16)})`;
-  const reason = h ? `${h.status}${h.message ? ` â€” ${short(h.message, 65)}` : ""}` : c ? `${c.status}/${c.maturity}` : "kayÄ±t yok";
-  return `â€¢ BILGI_GEREKLI â€” ${c && c.title || key}: KAYNAK EKSÄ°K (${reason})`;
+  if (verified) return `• OTOMATIK — ${c.title || key}: doğrulandı (${short(h.checked_at || h.last_success_at, 16)})`;
+  const reason = h ? `${h.status}${h.message ? ` — ${short(h.message, 65)}` : ""}` : c ? `${c.status}/${c.maturity}` : "kayıt yok";
+  return `• BILGI_GEREKLI — ${c && c.title || key}: KAYNAK EKSİK (${reason})`;
 }
 
 export async function buildMorningBrief(db, now = new Date()) {
@@ -142,7 +142,7 @@ export async function buildMorningBrief(db, now = new Date()) {
   const captures = captureQ.rows;
   const priorities = [];
   for (const row of commitments.filter((x) => x.time_bucket === "overdue" || String(x.priority).toLowerCase() === "high")) {
-    priorities.push({ text: `${row.title}${row.next_action ? ` â€” ${row.next_action}` : ""}`, tag: label(row) });
+    priorities.push({ text: `${row.title}${row.next_action ? ` — ${row.next_action}` : ""}`, tag: label(row) });
     if (priorities.length === 3) break;
   }
   for (const row of openWork) {
@@ -153,25 +153,25 @@ export async function buildMorningBrief(db, now = new Date()) {
 
   const stamp = istanbulParts(now);
   const lines = [
-    `GÃ¼naydÄ±n AperiON â€” ${stamp.date} ${stamp.time}`,
-    "Salt okunur sabah brifingi Â· mali kayÄ±t oluÅŸturulmadÄ±",
-    "\n1) KAYNAK SAÄLIÄI",
+    `Günaydın AperiON — ${stamp.date} ${stamp.time}`,
+    "Salt okunur sabah brifingi · mali kayıt oluşturulmadı",
+    "\n1) KAYNAK SAĞLIĞI",
     ...["gmail", "google_drive", "google_calendar", "bizimhesap", "bank_statements"].map((key) => sourceLine(key, connectors, health)),
-    "\n2) BUGÃœNÃœN EN FAZLA 3 Ã–NCELÄ°ÄÄ°",
-    ...(priorities.length ? priorities.slice(0, 3).map((p, i) => `${i + 1}. ${p.tag} â€” ${short(p.text, 130)}`) : ["â€¢ BILGI_GEREKLI â€” doÄŸrulanmÄ±ÅŸ Ã¶ncelik kaydÄ± yok"]),
-    ...section("\n3) ALINAN SÄ°PARÄ°ÅLER", commitmentQ.ok, categoryRows(commitments, ["received_order", "sales_order", "customer_order", "alinan_siparis"]), "doÄŸrulanmÄ±ÅŸ aÃ§Ä±k kayÄ±t yok"),
-    ...section("\n4) VERÄ°LEN SÄ°PARÄ°ÅLER", commitmentQ.ok, categoryRows(commitments, ["purchase_order", "supplier_order", "placed_order", "verilen_siparis"]), "doÄŸrulanmÄ±ÅŸ aÃ§Ä±k kayÄ±t yok"),
-    ...section("\n5) TAHSÄ°LATLAR", commitmentQ.ok, categoryRows(commitments, ["receivable", "collection", "tahsilat"]), "doÄŸrulanmÄ±ÅŸ aÃ§Ä±k kayÄ±t yok"),
-    ...section("\n6) Ã–DEMELER", commitmentQ.ok, categoryRows(commitments, ["payable", "payment", "odeme"]), "doÄŸrulanmÄ±ÅŸ aÃ§Ä±k kayÄ±t yok"),
-    "\n7) YAPILACAKLAR / TAKVÄ°M",
-    ...(workQ.ok ? (openWork.length ? openWork.slice(0, 5).map((row) => `â€¢ ${Number(row.approval_required) ? "ONAY_GEREKLI" : "OTOMATIK"} â€” ${short(row.title)}${row.due_at ? ` Â· ${short(row.due_at, 16)}` : ""}`) : ["â€¢ BILGI_GEREKLI â€” doÄŸrulanmÄ±ÅŸ aÃ§Ä±k gÃ¶rev yok"]) : ["â€¢ BILGI_GEREKLI â€” KAYNAK OKUNAMADI"]),
+    "\n2) BUGÜNÜN EN FAZLA 3 ÖNCELİĞİ",
+    ...(priorities.length ? priorities.slice(0, 3).map((p, i) => `${i + 1}. ${p.tag} — ${short(p.text, 130)}`) : ["• BILGI_GEREKLI — doğrulanmış öncelik kaydı yok"]),
+    ...section("\n3) ALINAN SİPARİŞLER", commitmentQ.ok, categoryRows(commitments, ["received_order", "sales_order", "customer_order", "alinan_siparis"]), "doğrulanmış açık kayıt yok"),
+    ...section("\n4) VERİLEN SİPARİŞLER", commitmentQ.ok, categoryRows(commitments, ["purchase_order", "supplier_order", "placed_order", "verilen_siparis"]), "doğrulanmış açık kayıt yok"),
+    ...section("\n5) TAHSİLATLAR", commitmentQ.ok, categoryRows(commitments, ["receivable", "collection", "tahsilat"]), "doğrulanmış açık kayıt yok"),
+    ...section("\n6) ÖDEMELER", commitmentQ.ok, categoryRows(commitments, ["payable", "payment", "odeme"]), "doğrulanmış açık kayıt yok"),
+    "\n7) YAPILACAKLAR / TAKVİM",
+    ...(workQ.ok ? (openWork.length ? openWork.slice(0, 5).map((row) => `• ${Number(row.approval_required) ? "ONAY_GEREKLI" : "OTOMATIK"} — ${short(row.title)}${row.due_at ? ` · ${short(row.due_at, 16)}` : ""}`) : ["• BILGI_GEREKLI — doğrulanmış açık görev yok"]) : ["• BILGI_GEREKLI — KAYNAK OKUNAMADI"]),
     "\n8) ONAYLAR VE BELGELER",
-    `â€¢ ${approvalQ.ok ? (approvals.length ? "ONAY_GEREKLI" : "BILGI_GEREKLI") : "BILGI_GEREKLI"} â€” ${approvalQ.ok ? `${approvals.length} bekleyen onay` : "onay kuyruÄŸu okunamadÄ±"}`,
-    `â€¢ ${captureQ.ok ? (captures.length ? "BILGI_GEREKLI" : "OTOMATIK") : "BILGI_GEREKLI"} â€” ${captureQ.ok ? `${captures.length} incelenecek Telegram belge/fotoÄŸrafÄ±` : "belge kuyruÄŸu okunamadÄ±"}`,
+    `• ${approvalQ.ok ? (approvals.length ? "ONAY_GEREKLI" : "BILGI_GEREKLI") : "BILGI_GEREKLI"} — ${approvalQ.ok ? `${approvals.length} bekleyen onay` : "onay kuyruğu okunamadı"}`,
+    `• ${captureQ.ok ? (captures.length ? "BILGI_GEREKLI" : "OTOMATIK") : "BILGI_GEREKLI"} — ${captureQ.ok ? `${captures.length} incelenecek Telegram belge/fotoğrafı` : "belge kuyruğu okunamadı"}`,
     "\n9) OTOMASYON DURUMU",
-    `â€¢ ${deviceQ.ok && deviceQ.rows.some((d) => String(d.status).toLowerCase() === "online") ? "OTOMATIK â€” masaÃ¼stÃ¼ kÃ¶prÃ¼sÃ¼ Ã§evrimiÃ§i" : "BILGI_GEREKLI â€” masaÃ¼stÃ¼ kÃ¶prÃ¼sÃ¼ doÄŸrulanamadÄ±"}`,
-    "\n10) APERÄ°ON Ã–NERÄ°SÄ°",
-    priorities.length ? `â€¢ Ã–nce: ${short(priorities[0].text, 150)}` : "â€¢ KaynaklarÄ± doÄŸrula; eksik veriden karar Ã¼retme."
+    `• ${deviceQ.ok && deviceQ.rows.some((d) => String(d.status).toLowerCase() === "online") ? "OTOMATIK — masaüstü köprüsü çevrimiçi" : "BILGI_GEREKLI — masaüstü köprüsü doğrulanamadı"}`,
+    "\n10) APERİON ÖNERİSİ",
+    priorities.length ? `• Önce: ${short(priorities[0].text, 150)}` : "• Kaynakları doğrula; eksik veriden karar üretme."
   ];
   return { text: lines.join("\n").slice(0, 3900), dateKey: stamp.date, counts: { priorities: priorities.length, approvals: approvals.length, captures: captures.length } };
 }
@@ -185,20 +185,20 @@ async function sendTelegram(token, chatId, text) {
     method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ chat_id: chatId, text, disable_web_page_preview: true })
   });
   const payload = await response.json();
-  if (!response.ok || !payload.ok) throw new Error(`Telegram gÃ¶nderimi baÅŸarÄ±sÄ±z: ${payload.description || response.status}`);
+  if (!response.ok || !payload.ok) throw new Error(`Telegram gönderimi başarısız: ${payload.description || response.status}`);
   return payload.result;
 }
 
 export async function runMorningBrief(env, options = {}) {
-  if (!env.APERION_DB) throw new Error("APERION_DB baÄŸlÄ± deÄŸil");
-  if (!env.TELEGRAM_BOT_TOKEN) throw new Error("TELEGRAM_BOT_TOKEN yapÄ±landÄ±rÄ±lmadÄ±");
+  if (!env.APERION_DB) throw new Error("APERION_DB bağlı değil");
+  if (!env.TELEGRAM_BOT_TOKEN) throw new Error("TELEGRAM_BOT_TOKEN yapılandırılmadı");
   await ensureSchema(env.APERION_DB);
   const chat = await first(env.APERION_DB, "SELECT config_value FROM telegram_security_config WHERE config_key='allowed_chat_id'");
-  if (!chat.ok || !chat.row || !chat.row.config_value) throw new Error("allowed_chat_id yapÄ±landÄ±rÄ±lmadÄ±");
+  if (!chat.ok || !chat.row || !chat.row.config_value) throw new Error("allowed_chat_id yapılandırılmadı");
   const now = options.now || new Date(options.scheduledAt || Date.now());
   const brief = await buildMorningBrief(env.APERION_DB, now);
   const financial = await buildDailyFinancialStatements(env, env.APERION_DB, now);
-  const headerEnd = brief.text.indexOf("\n\n1) KAYNAK SAÄLIÄI");
+  const headerEnd = brief.text.indexOf("\n\n1) KAYNAK SAĞLIĞI");
   const combinedText = headerEnd > 0
     ? `${brief.text.slice(0, headerEnd)}${financial}\n${brief.text.slice(headerEnd)}`.slice(0, 3900)
     : `${brief.text}${financial}`.slice(0, 3900);
@@ -228,7 +228,7 @@ export default {
         },
         body: JSON.stringify({ scheduledAt: controller.scheduledTime, cron: controller.cron })
       }).then(async (response) => {
-        if (!response.ok) throw new Error(`Brifing daÄŸÄ±tÄ±mÄ± baÅŸarÄ±sÄ±z: ${response.status} ${await response.text()}`);
+        if (!response.ok) throw new Error(`Brifing dağıtımı başarısız: ${response.status} ${await response.text()}`);
       }));
       return;
     }
