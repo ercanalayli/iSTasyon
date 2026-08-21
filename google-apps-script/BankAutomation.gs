@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.3 seconds
-Output:
 /**
  * AperiON banka ekstresi kÃ¶prÃ¼sÃ¼.
  * Gmail'i salt okunur tarar; mali kayÄ±t oluÅŸturmaz.
