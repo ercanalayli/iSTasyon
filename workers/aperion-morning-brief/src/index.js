@@ -180,7 +180,7 @@ async function ensureSchema(db) {
   await db.prepare("CREATE TABLE IF NOT EXISTS morning_brief_runs (run_key TEXT PRIMARY KEY,scheduled_at TEXT NOT NULL,cron TEXT,status TEXT NOT NULL,telegram_message_id TEXT,summary TEXT,created_at TEXT NOT NULL DEFAULT (datetime('now')),updated_at TEXT NOT NULL DEFAULT (datetime('now')),sent_at TEXT)").run();
 }
 
-async function sendTelegram(token, chatId, text) {
+export async function sendTelegram(token, chatId, text) {
   const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ chat_id: chatId, text, disable_web_page_preview: true })
   });
@@ -219,8 +219,9 @@ export async function runMorningBrief(env, options = {}) {
 
 export default {
   async scheduled(controller, env, ctx) {
-    if (env.BRIEF_DISPATCH_URL && env.MORNING_BRIEF_DISPATCH_SECRET) {
-      ctx.waitUntil(fetch(env.BRIEF_DISPATCH_URL, {
+    const dispatchUrl = controller.cron === "5 6 * * *" ? env.E2E_DISPATCH_URL : env.BRIEF_DISPATCH_URL;
+    if (dispatchUrl && env.MORNING_BRIEF_DISPATCH_SECRET) {
+      ctx.waitUntil(fetch(dispatchUrl, {
         method: "POST",
         headers: {
           "authorization": `Bearer ${env.MORNING_BRIEF_DISPATCH_SECRET}`,
@@ -228,7 +229,7 @@ export default {
         },
         body: JSON.stringify({ scheduledAt: controller.scheduledTime, cron: controller.cron })
       }).then(async (response) => {
-        if (!response.ok) throw new Error(`Brifing dağıtımı başarısız: ${response.status} ${await response.text()}`);
+        if (!response.ok) throw new Error(`Planlı dağıtım başarısız: ${response.status} ${await response.text()}`);
       }));
       return;
     }
