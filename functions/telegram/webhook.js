@@ -18,7 +18,7 @@ return String(text || '').trim();
 }
 
 function lowerTR(text) {
-return clean(text).replace(/Ä°/g, 'i').replace(/I/g, 'Ä±').toLowerCase();
+return clean(text).replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase();
 }
 
 function supabaseBase(env) {
@@ -131,26 +131,26 @@ return n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-' +
 
 // ---- odeme yontemi ----
 function parsePaymentMethod(lower) {
-if (lower.includes('kredi kart')) return 'kredi kartÄ±';
+if (lower.includes('kredi kart')) return 'kredi kartı';
 if (lower.includes('havale') || lower.includes('eft') || lower.includes('fast')) return 'havale/eft/fast';
 if (lower.includes('nakit')) return 'nakit';
-if (lower.includes('Ã§ek') || lower.includes('cek')) return 'Ã§ek';
+if (lower.includes('çek') || lower.includes('cek')) return 'çek';
 if (lower.includes('senet')) return 'senet';
 return 'belirsiz';
 }
 
 // ---- tarih cikarimi: "10 Temmuz", "bugun", "yarin" ----
-const AYLAR = ['ocak', 'ÅŸubat', 'mart', 'nisan', 'mayÄ±s', 'haziran', 'temmuz', 'aÄŸustos', 'eylÃ¼l', 'ekim', 'kasÄ±m', 'aralÄ±k'];
+const AYLAR = ['ocak', 'şubat', 'mart', 'nisan', 'mayıs', 'haziran', 'temmuz', 'ağustos', 'eylül', 'ekim', 'kasım', 'aralık'];
 function parseDueDate(text) {
 const lower = lowerTR(text);
 const now = new Date();
 
-if (/\byarÄ±n\b/.test(lower)) {
+if (/\byarın\b/.test(lower)) {
 const d = new Date(now); d.setDate(d.getDate() + 1);
-return { iso: isoFromDate(d), matched: 'yarÄ±n' };
+return { iso: isoFromDate(d), matched: 'yarın' };
 }
-if (/\bbugÃ¼n\b/.test(lower)) {
-return { iso: isoFromDate(now), matched: 'bugÃ¼n' };
+if (/\bbugün\b/.test(lower)) {
+return { iso: isoFromDate(now), matched: 'bugün' };
 }
 
 const ayPattern = AYLAR.join('|');
@@ -189,7 +189,7 @@ return { amount: Math.round(sayi * carpan * 100) / 100, currency: 'TRY', matched
 
 export function parseCashTransferIntent(text) {
 const rawText = clean(text).replace(/\s+/g, ' ');
-const match = rawText.match(/^(.+?)\s+(?:kasadan|hesaptan)\s+(.+?)\s+(?:kasaya|hesaba)\s+([\d.,]+)\s*(?:tl|try|â‚º)\s*(?:transfer(?:\s+et)?|aktar)?$/iu);
+const match = rawText.match(/^(.+?)\s+(?:kasadan|hesaptan)\s+(.+?)\s+(?:kasaya|hesaba)\s+([\d.,]+)\s*(?:tl|try|₺)\s*(?:transfer(?:\s+et)?|aktar)?$/iu);
 if (!match) return null;
 const amountResult = parseAmount(match[3] + ' TL', null);
 if (!clean(match[1]) || !clean(match[2]) || amountResult.amount === null || amountResult.amount <= 0) return null;
@@ -207,7 +207,7 @@ sends_to_bizimhesap: false
 }
 
 // ---- karsi taraf tahmini: tarih/tutar/anahtar kelimelerden once gelen kisim ----
-const DUZ_KELIMELER = ['Ã¶deme', 'odeme', 'kredi', 'kart', 'kartÄ±', 'kartÄ±', 'havale', 'eft', 'fast', 'nakit', 'Ã§ek', 'cek', 'senet', 'tl', 'lira', 'try', 'bin', 'milyon', 'milyar', 'bugÃ¼n', 'yarÄ±n', ...AYLAR];
+const DUZ_KELIMELER = ['ödeme', 'odeme', 'kredi', 'kart', 'kartı', 'kartı', 'havale', 'eft', 'fast', 'nakit', 'çek', 'cek', 'senet', 'tl', 'lira', 'try', 'bin', 'milyon', 'milyar', 'bugün', 'yarın', ...AYLAR];
 function guessCounterparty(text, dueDateMatchedStr, amountMatchedStr) {
 let t = text;
 if (dueDateMatchedStr) t = t.replace(dueDateMatchedStr, ' ');
@@ -215,7 +215,7 @@ if (amountMatchedStr) t = t.replace(amountMatchedStr, ' ');
 const words = t.split(/\s+/).filter(Boolean);
 const kalan = [];
 for (const w of words) {
-const lw = lowerTR(w).replace(/[^a-zÃ§ÄŸÄ±Ã¶ÅŸÃ¼]/g, '');
+const lw = lowerTR(w).replace(/[^a-zçğıöşü]/g, '');
 if (DUZ_KELIMELER.includes(lw) || /^\d+$/.test(w)) continue;
 kalan.push(w);
 }
@@ -234,8 +234,8 @@ return r.data[0];
 
 // ---- siniflandirma (odeme sozu disindaki notlar icin) ----
 function classifyNote(lower) {
-if (/\bsipariÅŸ|\bballya|\badet\b/.test(lower)) return 'siparis_notu';
-if (/yapacaksÄ±n|hatÄ±rlat|unutma|yap\b/.test(lower)) return 'yapilacak_is';
+if (/\bsipariş|\bballya|\badet\b/.test(lower)) return 'siparis_notu';
+if (/yapacaksın|hatırlat|unutma|yap\b/.test(lower)) return 'yapilacak_is';
 return 'genel_not';
 }
 
@@ -349,23 +349,23 @@ return { ok: true, id: result.data?.[0]?.id || null };
 async function handleUniversalCommand(env, message, identity, intent) {
 const claimed = await claimUniversalCommand(env, identity, message, intent);
 if (!claimed.ok) {
-await sendMessage(env, identity.chatId, 'âš ï¸ Komut kalÄ±cÄ± kuyruÄŸa alÄ±namadÄ±. HiÃ§bir dÄ±ÅŸ iÅŸlem yapÄ±lmadÄ±.');
+await sendMessage(env, identity.chatId, '⚠️ Komut kalıcı kuyruğa alınamadı. Hiçbir dış işlem yapılmadı.');
 return { handled: true, status: 'failed', error: claimed.error };
 }
 if (claimed.duplicate) {
-await sendMessage(env, identity.chatId, `â™»ï¸ Bu komut daha Ã¶nce alÄ±ndÄ±. Durum: ${claimed.status || 'bilinmiyor'}.`);
+await sendMessage(env, identity.chatId, `♻️ Bu komut daha önce alındı. Durum: ${claimed.status || 'bilinmiyor'}.`);
 return { handled: true, status: claimed.status || 'duplicate', duplicate: true };
 }
 
 if (intent.code === 'desktop_open') {
 const queued = await queueDesktopCommand(env, identity, message, intent);
 if (!queued.ok) {
-await updateUniversalCommand(env, claimed.id, 'blocked', 'MasaÃ¼stÃ¼ dinleyici kuyruÄŸuna eriÅŸilemedi');
-await sendMessage(env, identity.chatId, `âš ï¸ ${intent.targetTitle} aÃ§ma komutu kaydedildi fakat masaÃ¼stÃ¼ kuyruÄŸuna baÄŸlanamadÄ±. Bilgisayarda iÅŸlem yapÄ±lmadÄ±.`);
+await updateUniversalCommand(env, claimed.id, 'blocked', 'Masaüstü dinleyici kuyruğuna erişilemedi');
+await sendMessage(env, identity.chatId, `⚠️ ${intent.targetTitle} açma komutu kaydedildi fakat masaüstü kuyruğuna bağlanamadı. Bilgisayarda işlem yapılmadı.`);
 return { handled: true, status: 'blocked', error: queued.error };
 }
-await updateUniversalCommand(env, claimed.id, 'queued', `${intent.targetTitle} masaÃ¼stÃ¼ kuyruÄŸuna alÄ±ndÄ±`, queued.id);
-await sendMessage(env, identity.chatId, `ğŸ–¥ï¸ ${intent.targetTitle} aÃ§ma komutu masaÃ¼stÃ¼ kuyruÄŸuna alÄ±ndÄ±. Bilgisayar ve AperiON dinleyicisi aÃ§Ä±ksa sonuÃ§ Telegramâ€™a bildirilecek.`);
+await updateUniversalCommand(env, claimed.id, 'queued', `${intent.targetTitle} masaüstü kuyruğuna alındı`, queued.id);
+await sendMessage(env, identity.chatId, `🖥️ ${intent.targetTitle} açma komutu masaüstü kuyruğuna alındı. Bilgisayar ve AperiON dinleyicisi açıksa sonuç Telegram’a bildirilecek.`);
 return { handled: true, status: 'queued', queueId: queued.id };
 }
 
@@ -380,15 +380,15 @@ needsReview: true,
 status: intent.risk === 'approval_required' ? 'approval_required' : 'needs_review'
 });
 if (!saved.ok) {
-await updateUniversalCommand(env, claimed.id, 'failed', 'Ä°nceleme kaydÄ± oluÅŸturulamadÄ±');
-await sendMessage(env, identity.chatId, 'âš ï¸ Emri kalÄ±cÄ± inceleme kuyruÄŸuna alamadÄ±m. HiÃ§bir dÄ±ÅŸ iÅŸlem yapÄ±lmadÄ±.');
+await updateUniversalCommand(env, claimed.id, 'failed', 'İnceleme kaydı oluşturulamadı');
+await sendMessage(env, identity.chatId, '⚠️ Emri kalıcı inceleme kuyruğuna alamadım. Hiçbir dış işlem yapılmadı.');
 return { handled: true, status: 'failed' };
 }
 const status = intent.risk === 'approval_required' ? 'approval_required' : 'needs_review';
 await updateUniversalCommand(env, claimed.id, status, `quick_note:${saved.id || 'saved'}`);
 const reply = intent.risk === 'approval_required'
-? `ğŸ›¡ï¸ Emri aldÄ±m ve onay gerektiren â€œ${intent.category}â€ iÅŸlemi olarak hazÄ±rlÄ±k kuyruÄŸuna koydum. Bu kayÄ±t iÅŸlem onayÄ± deÄŸildir; hiÃ§bir dÄ±ÅŸ iÅŸlem yapÄ±lmadÄ±.`
-  : `ğŸ“¥ Emri aldÄ±m ve yetenek eÅŸleÅŸtirme kuyruÄŸuna koydum. HenÃ¼z otomatik uygulayamadÄ±ÄŸÄ±m iÃ§in hiÃ§bir sonucu uydurmadÄ±m.\n\nKullanÄ±labilir masaÃ¼stÃ¼ hedefleri: ${desktopTargetSummary()}.`;
+? `🛡️ Emri aldım ve onay gerektiren “${intent.category}” işlemi olarak hazırlık kuyruğuna koydum. Bu kayıt işlem onayı değildir; hiçbir dış işlem yapılmadı.`
+  : `📥 Emri aldım ve yetenek eşleştirme kuyruğuna koydum. Henüz otomatik uygulayamadığım için hiçbir sonucu uydurmadım.\n\nKullanılabilir masaüstü hedefleri: ${desktopTargetSummary()}.`;
 await sendMessage(env, identity.chatId, reply);
 return { handled: true, status, requestId: claimed.id };
 }
@@ -422,13 +422,13 @@ return { ok: false, error: 'approval_queue_failed', detail: error.message };
 
 function transferApprovalText(intent) {
 return [
-'ğŸ§ª TEST MODU â€” BizimHesap kaydÄ± yapÄ±lmayacak',
+'🧪 TEST MODU — BizimHesap kaydı yapılmayacak',
 '',
-'Kaynak hesap adayÄ±: ' + intent.source_account_candidate,
-'Hedef hesap adayÄ±: ' + intent.target_account_candidate,
+'Kaynak hesap adayı: ' + intent.source_account_candidate,
+'Hedef hesap adayı: ' + intent.target_account_candidate,
 'Tutar: ' + Number(intent.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TL',
-'Ä°ÅŸlem: Kasalar arasÄ± transfer',
-'Durum: Hesap adlarÄ± BizimHesapâ€™ta henÃ¼z doÄŸrulanmadÄ±'
+'İşlem: Kasalar arası transfer',
+'Durum: Hesap adları BizimHesap’ta henüz doğrulanmadı'
 ].join('\n');
 }
 
@@ -439,7 +439,7 @@ inline_keyboard: [
 { text: 'ONAYLA (TEST)', callback_data: `ct:a:${approvalId}` },
 { text: 'REDDET', callback_data: `ct:r:${approvalId}` }
 ],
-[{ text: 'HESAP DÃœZELT', callback_data: `ct:e:${approvalId}` }]
+[{ text: 'HESAP DÜZELT', callback_data: `ct:e:${approvalId}` }]
 ]
 };
 }
@@ -450,16 +450,16 @@ if (!match || !env.APERION_DB) return false;
 const chatId = callback.message?.chat?.id;
 const row = await env.APERION_DB.prepare('SELECT id,status,payload_json FROM approval_queue WHERE id=?').bind(match[2]).first();
 if (!row) {
-await answerCallbackQuery(env, callback.id, 'Test onayÄ± bulunamadÄ±.');
+await answerCallbackQuery(env, callback.id, 'Test onayı bulunamadı.');
 return true;
 }
 const payload = JSON.parse(row.payload_json || '{}');
 if (String(payload.chat_id) !== String(chatId)) {
-await answerCallbackQuery(env, callback.id, 'Bu onay size ait deÄŸil.');
+await answerCallbackQuery(env, callback.id, 'Bu onay size ait değil.');
 return true;
 }
 if (row.status !== 'needs_review') {
-await answerCallbackQuery(env, callback.id, 'Daha Ã¶nce iÅŸlendi: ' + row.status);
+await answerCallbackQuery(env, callback.id, 'Daha önce işlendi: ' + row.status);
 return true;
 }
 const status = { a: 'test_approved', r: 'rejected', e: 'needs_account_edit' }[match[1]];
@@ -469,16 +469,234 @@ status,
 row.id
 ).run();
 const message = status === 'test_approved'
-? 'âœ… Kuru test onaylandÄ±. BizimHesapâ€™a kayÄ±t yapÄ±lmadÄ±.'
+? '✅ Kuru test onaylandı. BizimHesap’a kayıt yapılmadı.'
 : status === 'rejected'
-? 'âŒ Kuru test reddedildi. KayÄ±t yapÄ±lmadÄ±.'
-: 'âœï¸ Hesap dÃ¼zeltme istendi. KayÄ±t yapÄ±lmadÄ±.';
+? '❌ Kuru test reddedildi. Kayıt yapılmadı.'
+: '✏️ Hesap düzeltme istendi. Kayıt yapılmadı.';
 await answerCallbackQuery(env, callback.id, message);
 await sendMessage(env, chatId, message);
 return true;
 }
 
-async function savePaymentPromise(env, { chatId, quickNoteId,…2767 tokens truncated…const row = await env.APERION_DB.prepare('SELECT fields_json FROM telegram_report_profiles WHERE report_key=?').bind(reportKey).first();
+async function savePaymentPromise(env, { chatId, quickNoteId, rawText, counterparty, matchedCustomerId, amount, dueDate, paymentMethod }) {
+const r = await sbFetch(env, '/rest/v1/payment_promises', {
+method: 'POST',
+headers: { prefer: 'return=representation' },
+body: JSON.stringify({
+quick_note_id: quickNoteId,
+counterparty: counterparty || '(belirtilmedi)',
+counterparty_matched_customer_id: matchedCustomerId || null,
+amount,
+currency: 'TRY',
+due_date: dueDate,
+payment_method: paymentMethod,
+approval_status: 'pending',
+paid_status: 'pending_payment',
+evidence_status: 'waiting_proof',
+chat_id: chatId,
+raw_text: rawText
+})
+});
+if (!r.ok) return { ok: false, error: r.error, detail: r.detail };
+return { ok: true, id: r.data && r.data[0] && r.data[0].id };
+}
+
+// ---- mukerrer kontrolu: ayni telegram mesaji webhook tarafindan iki kez teslim edilirse ----
+async function zatenKayitliMi(env, messageId, chatId) {
+if (!messageId) return false;
+const r = await sbFetch(env, '/rest/v1/quick_notes?select=id&telegram_message_id=eq.' + messageId + '&chat_id=eq.' + chatId + '&limit=1');
+return r.ok && r.data && r.data.length > 0;
+}
+
+async function queryBalance(env) {
+if (env.APERION_DB) {
+try {
+const rows = await env.APERION_DB.prepare('SELECT bank_name,balance AS son_bakiye,balance_date AS son_tarih FROM last_bank_balances ORDER BY bank_name').all();
+if (rows.results && rows.results.length) return rows.results;
+} catch (_error) { /* D1 yoksa/hata varsa Supabase'e dus */ }
+}
+const r = await sbFetch(env, '/rest/v1/aperion_bank_last_known_balance_v1_view?select=bank_name,son_bakiye,son_tarih');
+if (!r.ok) return null;
+return r.data;
+}
+
+async function handleBalanceIntent(env, chatId) {
+const rows = await queryBalance(env);
+if (!rows) {
+await sendMessage(env, chatId, 'Bakiye verisine şu an ulaşamadım (Supabase bağlantı sorunu).');
+return;
+}
+let toplam = 0;
+let enEskiTarih = null;
+const lines = rows.map(r => {
+toplam += Number(r.son_bakiye) || 0;
+if (r.son_tarih && (!enEskiTarih || r.son_tarih < enEskiTarih)) enEskiTarih = r.son_tarih;
+return '• ' + r.bank_name + ': ' + money(r.son_bakiye) + ' (' + trTarih(r.son_tarih) + ' itibarıyla)';
+});
+const suan = new Date();
+const suanStr = String(suan.getDate()).padStart(2, '0') + '.' + String(suan.getMonth() + 1).padStart(2, '0') + '.' + suan.getFullYear() + ' ' + String(suan.getHours()).padStart(2, '0') + ':' + String(suan.getMinutes()).padStart(2, '0');
+let mesaj = '💰 Şu an elde (bilinen banka toplamı, ' + suanStr + ' sorgu anı): ' + money(toplam) + '\n' + lines.join('\n');
+if (enEskiTarih) {
+const gunFarki = Math.floor((suan - new Date(enEskiTarih)) / 86400000);
+if (gunFarki >= 2) {
+mesaj += '\n\n⚠️ En eski bakiye verisi ' + gunFarki + ' gün önceye ait (' + trTarih(enEskiTarih) + ') — o bankanın ekstresi güncellenmemiş olabilir.';
+}
+}
+await sendMessage(env, chatId, mesaj);
+}
+
+// ---------------------------------------------------------------------------
+// APERION-008 Faz 1 (Cloudflare tarafi) — 2026-08-15 eklendi.
+// AMAC: /durum ve /stok komutlarini DOGRUDAN Supabase'den cevaplamak — bu
+// webhook Cloudflare'de calistigi icin Windows bilgisayara hic erisemiyor,
+// bu yuzden sadece bulutta zaten var olan veriye bakan komutlar eklendi.
+// /senkron ve /oturum gibi "yerel bilgisayarda bir seyi calistir" komutlari
+// bu mimaride yapilamaz — bunun icin bot_commands kuyrugundaki yerel
+// dinleyicinin (su an 3 gundur calismiyor) ayrica calisir hale gelmesi lazim.
+// ---------------------------------------------------------------------------
+
+async function handleStokIntent(env, chatId, query) {
+if (!query) {
+await sendMessage(env, chatId, 'Kullanım: /stok <ürün adı>');
+return;
+}
+const encoded = encodeURIComponent('*' + query + '*');
+const r = await sbFetch(env, '/rest/v1/stock_raw?select=urun,miktar,birim,tarih&urun=ilike.' + encoded + '&order=urun.asc&limit=5');
+if (!r.ok || !r.data) {
+await sendMessage(env, chatId, 'Stok verisine şu an ulaşamadım (Supabase bağlantı sorunu).');
+return;
+}
+if (!r.data.length) {
+await sendMessage(env, chatId, '"' + query + '" için sonuç bulunamadı.');
+return;
+}
+const sonTarih = r.data[0].tarih;
+const lines = r.data.map(row => '• ' + row.urun + '\n  Stok: ' + row.miktar + ' ' + row.birim);
+await sendMessage(env, chatId,
+'"' + query + '" için ' + r.data.length + ' sonuç (veri tarihi: ' + trTarih(sonTarih) + '):\n\n' + lines.join('\n\n')
+);
+}
+
+async function handleDurumIntent(env, chatId) {
+const stokR = await sbFetch(env, '/rest/v1/stock_raw?select=tarih&order=tarih.desc&limit=1');
+const eventR = await sbFetch(env, '/rest/v1/bizimhesap_events?select=created_at&order=created_at.desc&limit=1');
+const lines = ['AperiON Durum (Supabase üzerinden):', ''];
+if (stokR.ok && stokR.data && stokR.data[0]) {
+lines.push('• Stok verisi: son güncelleme ' + trTarih(stokR.data[0].tarih));
+} else {
+lines.push('• Stok verisi: okunamadı');
+}
+if (eventR.ok && eventR.data && eventR.data[0]) {
+const dt = new Date(eventR.data[0].created_at);
+lines.push('• Son BizimHesap olayı: ' + dt.toLocaleString('tr-TR'));
+} else {
+lines.push('• BizimHesap olay kaydı: okunamadı');
+}
+lines.push('', 'Not: bu özet yalnızca buluttaki (Supabase) verilere bakar; bilgisayarınızdaki senkron scriptinin şu anki canlı çalışma durumunu göstermez.');
+await sendMessage(env, chatId, lines.join('\n'));
+}
+// ---------------------------------------------------------------------------
+
+async function getTelegramFileUrl(env, fileId) {
+    if (!env.TELEGRAM_BOT_TOKEN || !fileId) return null;
+    try {
+          const r = await fetch('https://api.telegram.org/bot' + env.TELEGRAM_BOT_TOKEN + '/getFile?file_id=' + encodeURIComponent(fileId));
+          const j = await r.json();
+          if (!j.ok || !j.result || !j.result.file_path) return null;
+          return 'https://api.telegram.org/file/bot' + env.TELEGRAM_BOT_TOKEN + '/' + j.result.file_path;
+    } catch (_e) { return null; }
+}
+
+async function ensureCapturesTable(env) {
+    await env.APERION_DB.prepare(
+          "CREATE TABLE IF NOT EXISTS telegram_captures (id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL, message_id TEXT NOT NULL, kind TEXT NOT NULL, file_id TEXT NOT NULL, mime_type TEXT, caption TEXT, status TEXT NOT NULL DEFAULT 'pending_review', created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(chat_id, message_id))"
+        ).run();
+}
+
+async function handleMediaCapture(env, msg) {
+    const chatId = msg.chat.id;
+    let fileId = null, kind = null, mimeType = null;
+    if (msg.photo && msg.photo.length) { const best = msg.photo[msg.photo.length - 1]; fileId = best.file_id; kind = 'photo'; }
+    else if (msg.document) { fileId = msg.document.file_id; kind = 'document'; mimeType = msg.document.mime_type || null; }
+    else if (msg.video) { fileId = msg.video.file_id; kind = 'video'; mimeType = msg.video.mime_type || null; }
+    if (!fileId) return json({ ok: true, ignored: true });
+  
+    const caption = clean(msg.caption || '');
+    let savedOk = false;
+    if (env.APERION_DB) {
+          try {
+                  await ensureCapturesTable(env);
+                  await env.APERION_DB.prepare(
+                            'INSERT INTO telegram_captures (chat_id,message_id,kind,file_id,mime_type,caption) VALUES (?,?,?,?,?,?) ON CONFLICT(chat_id,message_id) DO NOTHING'
+                          ).bind(String(chatId), String(msg.message_id), kind, fileId, mimeType, caption).run();
+                  savedOk = true;
+          } catch (_e) { savedOk = false; }
+    }
+  
+    const etiket = kind === 'photo' ? '📸 Fotoğrafı' : kind === 'video' ? '🎥 Videoyu' : '📎 Dosyayı';
+    const satirlar = [
+          etiket + ' aldım' + (caption ? (' — not: "' + caption + '"') : '') + '.',
+          savedOk ? '✅ Kuyruğa alındı (durum: onay bekliyor).' : '⚠️ Aldım ama kalıcı kayıt başarısız oldu.',
+          'Bu fatura/fiş görselinden bilgi çıkarma ve BizimHesap\'a onaylı yazma adımı şu an geliştiriliyor — hazır olunca burada onayına sunacağım.'
+        ];
+    await sendMessage(env, chatId, satirlar.join('\n'));
+    return json({ ok: true, captured: kind });
+}
+
+export async function onRequestGet({ env }) {
+const security = await getMobileSecurityStatus(env);
+const desktopBridge = await deviceHealth(env);
+return json({
+ok: true,
+service: 'aperion-telegram-webhook',
+mode: 'mobile-command-center-v2',
+command_router_version: 'v143',
+device_status_command: '/cihazdurum',
+desktop_target_count: Object.keys(DESKTOP_TARGETS).length,
+desktop_bridge_configured: desktopBridge.configured,
+desktop_bridge_active_device_count: desktopBridge.activeDeviceCount,
+desktop_bridge_pending_command_count: desktopBridge.pendingCommandCount,
+telegram_token_configured: Boolean(env.TELEGRAM_BOT_TOKEN),
+supabase_configured: Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
+identity_guard_configured: security.identityGuard,
+webhook_secret_configured: security.webhookSecret,
+security_source: security.source,
+webhook_bootstrap_status: security.bootstrapStatus || (security.webhookSecret ? 'ready' : 'pending')
+});
+}
+
+const REPORT_DEFINITIONS = Object.freeze({
+product: {
+title: 'Ürün performans raporu', table: 'sales_raw', searchField: 'urun',
+defaultFields: ['period_quantity', 'period_revenue', 'top_customers', 'fifo_profit', 'margin', 'category_share'],
+allowedFields: ['period_quantity', 'period_revenue', 'top_customers', 'fifo_profit', 'margin', 'category_share'],
+labels: { period_quantity: 'Dönem adedi', period_revenue: 'Dönem cirosu', top_customers: 'En çok alan müşteriler', fifo_profit: 'FIFO kârı', margin: 'Kâr marjı', category_share: 'Kategori payı' }
+},
+customer: {
+title: 'Cari raporu', table: 'customers', searchField: 'cari_unvan',
+defaultFields: ['cari_unvan', 'sinif', 'acik_bakiye', 'cek_senet_bakiyesi', 'bakiye_guncelleme'],
+allowedFields: ['cari_unvan', 'sinif', 'acik_bakiye', 'cek_senet_bakiyesi', 'bakiye_guncelleme'],
+labels: { cari_unvan: 'Cari', sinif: 'Sınıf', acik_bakiye: 'Açık bakiye', cek_senet_bakiyesi: 'Çek/senet', bakiye_guncelleme: 'Güncelleme' }
+}
+});
+
+async function ensureReportProfileSchema(db) {
+if (!db) return false;
+try {
+await db.prepare(`CREATE TABLE IF NOT EXISTS telegram_report_profiles (
+report_key TEXT PRIMARY KEY,title TEXT NOT NULL,fields_json TEXT NOT NULL,updated_by TEXT,
+updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+)`).run();
+return true;
+} catch (_error) { return false; }
+}
+
+async function readReportFields(env, reportKey) {
+const definition = REPORT_DEFINITIONS[reportKey];
+if (!definition) return [];
+if (!(await ensureReportProfileSchema(env.APERION_DB))) return definition.defaultFields;
+try {
+const row = await env.APERION_DB.prepare('SELECT fields_json FROM telegram_report_profiles WHERE report_key=?').bind(reportKey).first();
 const fields = JSON.parse(row?.fields_json || '[]').filter(field => definition.allowedFields.includes(field));
 return fields.length ? fields : definition.defaultFields;
 } catch (_error) { return definition.defaultFields; }
@@ -486,12 +704,12 @@ return fields.length ? fields : definition.defaultFields;
 
 async function saveReportFields(env, reportKey, requested, userId) {
 const definition = REPORT_DEFINITIONS[reportKey];
-if (!definition) return { ok: false, error: 'Rapor tÃ¼rÃ¼ Ã¼rÃ¼n veya cari olmalÄ±.' };
+if (!definition) return { ok: false, error: 'Rapor türü ürün veya cari olmalı.' };
 const fields = requested.map(value => String(value || '').trim().toLocaleLowerCase('tr-TR')).filter(Boolean);
 const invalid = fields.filter(field => !definition.allowedFields.includes(field));
 if (!fields.length) return { ok: false, error: 'En az bir alan belirtin.' };
-if (invalid.length) return { ok: false, error: 'Desteklenmeyen alan: ' + invalid.join(', ') + '. KullanÄ±labilir: ' + definition.allowedFields.join(', ') };
-if (!(await ensureReportProfileSchema(env.APERION_DB))) return { ok: false, error: 'Rapor profili kaynaÄŸÄ± kullanÄ±lamÄ±yor.' };
+if (invalid.length) return { ok: false, error: 'Desteklenmeyen alan: ' + invalid.join(', ') + '. Kullanılabilir: ' + definition.allowedFields.join(', ') };
+if (!(await ensureReportProfileSchema(env.APERION_DB))) return { ok: false, error: 'Rapor profili kaynağı kullanılamıyor.' };
 await env.APERION_DB.prepare(`INSERT INTO telegram_report_profiles(report_key,title,fields_json,updated_by,updated_at)
 VALUES(?,?,?,?,datetime('now')) ON CONFLICT(report_key) DO UPDATE SET fields_json=excluded.fields_json,updated_by=excluded.updated_by,updated_at=datetime('now')`)
 .bind(reportKey, definition.title, JSON.stringify(fields), String(userId || 'telegram')).run();
@@ -517,13 +735,13 @@ const previousMonthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUT
 const previousMonthEnd = new Date(monthStart); previousMonthEnd.setUTCDate(0);
 const yearStart = new Date(Date.UTC(today.getUTCFullYear(), 0, 1));
 return [
-{ key: 'today', label: 'BugÃ¼n', from: isoDate(today), to: isoDate(today) },
-{ key: 'yesterday', label: 'DÃ¼n', from: isoDate(new Date(today.getTime() - 86400000)), to: isoDate(new Date(today.getTime() - 86400000)) },
+{ key: 'today', label: 'Bugün', from: isoDate(today), to: isoDate(today) },
+{ key: 'yesterday', label: 'Dün', from: isoDate(new Date(today.getTime() - 86400000)), to: isoDate(new Date(today.getTime() - 86400000)) },
 { key: 'this_week', label: 'Bu hafta', from: isoDate(weekStart), to: isoDate(today) },
 { key: 'this_month', label: 'Bu ay', from: isoDate(monthStart), to: isoDate(today) },
-{ key: 'last_month', label: 'GeÃ§en ay', from: isoDate(previousMonthStart), to: isoDate(previousMonthEnd) },
-{ key: 'this_year', label: 'Bu yÄ±l', from: isoDate(yearStart), to: isoDate(today) },
-{ key: 'last_year', label: 'GeÃ§en yÄ±l', from: `${today.getUTCFullYear() - 1}-01-01`, to: `${today.getUTCFullYear() - 1}-12-31` }
+{ key: 'last_month', label: 'Geçen ay', from: isoDate(previousMonthStart), to: isoDate(previousMonthEnd) },
+{ key: 'this_year', label: 'Bu yıl', from: isoDate(yearStart), to: isoDate(today) },
+{ key: 'last_year', label: 'Geçen yıl', from: `${today.getUTCFullYear() - 1}-01-01`, to: `${today.getUTCFullYear() - 1}-12-31` }
 ];
 }
 
@@ -562,7 +780,7 @@ return { ok: true, revenue, cost, profit, margin: revenue ? profit / revenue * 1
 function topCustomers(rows) {
 const totals = new Map();
 for (const row of rows) {
-const name = row.unvan || 'Cari eÅŸleÅŸmedi';
+const name = row.unvan || 'Cari eşleşmedi';
 const current = totals.get(name) || { quantity: 0, revenue: 0 };
 current.quantity += Number(row.adet) || 0;
 current.revenue += Number(row.satis_kdv_haric) || Number(row.ciro) || 0;
@@ -574,14 +792,14 @@ return [...totals.entries()].sort((a, b) => b[1].revenue - a[1].revenue).slice(0
 async function handleProductPerformanceReport(env, chatId, query) {
 const search = String(query || '').trim();
 if (!search) {
-await sendMessage(env, chatId, 'KullanÄ±m: /urunraporu <Ã¼rÃ¼n adÄ± veya kodu>');
+await sendMessage(env, chatId, 'Kullanım: /urunraporu <ürün adı veya kodu>');
 return;
 }
 const fields = await readReportFields(env, 'product');
 const periods = productPeriods(new Date());
 const sales = await Promise.all(periods.map(period => queryProductPeriod(env, search, period)));
 if (!sales.some(result => result.ok)) {
-await sendMessage(env, chatId, 'âš ï¸ ÃœrÃ¼n satÄ±ÅŸ kaynaÄŸÄ± okunamadÄ±; rapor uydurulmadÄ±.');
+await sendMessage(env, chatId, '⚠️ Ürün satış kaynağı okunamadı; rapor uydurulmadı.');
 return;
 }
 const category = sales.flatMap(result => result.rows).find(row => row.kategori)?.kategori || '';
@@ -589,30 +807,30 @@ const categoryTotals = fields.includes('category_share')
 ? await Promise.all(periods.map(period => queryCategoryRevenue(env, category, period))) : periods.map(() => ({ ok: false }));
 const fifo = fields.some(field => ['fifo_profit', 'margin'].includes(field))
 ? await Promise.all(periods.map(period => queryFifoProfit(env, search, period))) : periods.map(() => ({ ok: false }));
-const lines = ['ğŸ“Š ÃœRÃœN PERFORMANS RAPORU', 'Arama: ' + search, 'Kategori: ' + (category || 'eÅŸleÅŸmedi'), 'Alan profili: ' + fields.join(', '), ''];
+const lines = ['📊 ÜRÜN PERFORMANS RAPORU', 'Arama: ' + search, 'Kategori: ' + (category || 'eşleşmedi'), 'Alan profili: ' + fields.join(', '), ''];
 periods.forEach((period, index) => {
 const result = sales[index];
-if (!result.ok) { lines.push('â€¢ ' + period.label + ': KAYNAK OKUNAMADI'); return; }
+if (!result.ok) { lines.push('• ' + period.label + ': KAYNAK OKUNAMADI'); return; }
 const quantity = sumRows(result.rows, 'adet');
 const revenue = sumRows(result.rows, 'satis_kdv_haric') || sumRows(result.rows, 'ciro');
 const parts = [];
 if (fields.includes('period_quantity')) parts.push(quantity.toLocaleString('tr-TR') + ' adet');
 if (fields.includes('period_revenue')) parts.push(money(revenue));
-if (fields.includes('fifo_profit')) parts.push(fifo[index].ok ? 'FIFO kÃ¢r ' + money(fifo[index].profit) : 'FIFO KAYNAK EKSÄ°K');
-if (fields.includes('margin')) parts.push(fifo[index].ok && Number.isFinite(fifo[index].margin) ? 'marj %' + fifo[index].margin.toFixed(1) : 'marj hesaplanamadÄ±');
+if (fields.includes('fifo_profit')) parts.push(fifo[index].ok ? 'FIFO kâr ' + money(fifo[index].profit) : 'FIFO KAYNAK EKSİK');
+if (fields.includes('margin')) parts.push(fifo[index].ok && Number.isFinite(fifo[index].margin) ? 'marj %' + fifo[index].margin.toFixed(1) : 'marj hesaplanamadı');
 if (fields.includes('category_share')) {
 const denominator = categoryTotals[index].revenue;
-parts.push(categoryTotals[index].ok && denominator > 0 ? 'kategori payÄ± %' + (revenue / denominator * 100).toFixed(1) : 'kategori payÄ± hesaplanamadÄ±');
+parts.push(categoryTotals[index].ok && denominator > 0 ? 'kategori payı %' + (revenue / denominator * 100).toFixed(1) : 'kategori payı hesaplanamadı');
 }
-lines.push('â€¢ ' + period.label + ': ' + (parts.join(' Â· ') || result.rows.length + ' kayÄ±t'));
+lines.push('• ' + period.label + ': ' + (parts.join(' · ') || result.rows.length + ' kayıt'));
 });
 if (fields.includes('top_customers')) {
 const yearIndex = periods.findIndex(period => period.key === 'this_year');
 const customers = topCustomers(sales[yearIndex].rows);
-lines.push('', 'BU YIL EN Ã‡OK ALAN MÃœÅTERÄ°LER');
-lines.push(...(customers.length ? customers.map(([name, value], index) => (index + 1) + '. ' + name + ' Â· ' + value.quantity.toLocaleString('tr-TR') + ' adet Â· ' + money(value.revenue)) : ['â€¢ DoÄŸrulanmÄ±ÅŸ mÃ¼ÅŸteri satÄ±ÅŸÄ± yok']));
+lines.push('', 'BU YIL EN ÇOK ALAN MÜŞTERİLER');
+lines.push(...(customers.length ? customers.map(([name, value], index) => (index + 1) + '. ' + name + ' · ' + value.quantity.toLocaleString('tr-TR') + ' adet · ' + money(value.revenue)) : ['• Doğrulanmış müşteri satışı yok']));
 }
-lines.push('', 'Not: FIFO yalnÄ±zca doÄŸrulanmÄ±ÅŸ alÄ±ÅŸ-satÄ±ÅŸ eÅŸleÅŸmesinden hesaplanÄ±r. Eksikse kÃ¢r gÃ¶sterilmez.');
+lines.push('', 'Not: FIFO yalnızca doğrulanmış alış-satış eşleşmesinden hesaplanır. Eksikse kâr gösterilmez.');
 await sendMessage(env, chatId, lines.join('\n').slice(0, 4000));
 }
 
@@ -626,18 +844,18 @@ if (search) path += '&' + definition.searchField + '=ilike.*' + encodeURICompone
 path += reportKey === 'customer' ? '&order=acik_bakiye.desc.nullslast&limit=10' : '&order=urun.asc&limit=10';
 const result = await sbFetch(env, path);
 if (!result.ok || !Array.isArray(result.data)) {
-await sendMessage(env, chatId, 'âš ï¸ ' + definition.title + ' kaynaÄŸÄ± ÅŸu an okunamadÄ±; veri uydurulmadÄ±.');
+await sendMessage(env, chatId, '⚠️ ' + definition.title + ' kaynağı şu an okunamadı; veri uydurulmadı.');
 return;
 }
 if (!result.data.length) {
-await sendMessage(env, chatId, 'ğŸ” ' + (search ? 'â€œ' + search + 'â€ iÃ§in ' : '') + 'doÄŸrulanmÄ±ÅŸ kayÄ±t bulunamadÄ±.');
+await sendMessage(env, chatId, '🔎 ' + (search ? '“' + search + '” için ' : '') + 'doğrulanmış kayıt bulunamadı.');
 return;
 }
 const cards = result.data.map((row, index) => [
 (index + 1) + ') ' + reportValue(fields[0], row[fields[0]]),
-...fields.slice(1).map(field => 'â€¢ ' + (definition.labels[field] || field) + ': ' + reportValue(field, row[field]))
+...fields.slice(1).map(field => '• ' + (definition.labels[field] || field) + ': ' + reportValue(field, row[field]))
 ].join('\n'));
-await sendMessage(env, chatId, 'ğŸ“Š ' + definition.title + (search ? ' â€” ' + search : '') + '\nAlanlar: ' + fields.join(', ') + '\n\n' + cards.join('\n\n'));
+await sendMessage(env, chatId, '📊 ' + definition.title + (search ? ' — ' + search : '') + '\nAlanlar: ' + fields.join(', ') + '\n\n' + cards.join('\n\n'));
 }
 
 async function handleReportFieldsIntent(env, chatId, userId, text) {
@@ -645,26 +863,26 @@ const payload = String(text || '').replace(/^\/raporalanlari\s*/i, '').trim();
 if (!payload) {
 const product = await readReportFields(env, 'product');
 const customer = await readReportFields(env, 'customer');
-await sendMessage(env, chatId, 'âš™ï¸ Rapor alanlarÄ±\nâ€¢ ÃœrÃ¼n: ' + product.join(', ') + '\nâ€¢ Cari: ' + customer.join(', ') + '\n\nDeÄŸiÅŸtir: /raporalanlari urun:urun,miktar,tarih');
+await sendMessage(env, chatId, '⚙️ Rapor alanları\n• Ürün: ' + product.join(', ') + '\n• Cari: ' + customer.join(', ') + '\n\nDeğiştir: /raporalanlari urun:urun,miktar,tarih');
 return;
 }
 
 async function handleDailyStatementIntent(env, chatId, statementType) {
 const report = await buildDailyFinancialStatements(env, env.APERION_DB, new Date());
-const parts = report.split('\nGÃœNLÃœK BÄ°LANÃ‡O â€” KISMÄ° GÃ–RÃœNÃœM');
+const parts = report.split('\nGÜNLÜK BİLANÇO — KISMİ GÖRÜNÜM');
 const text = statementType === 'balance_sheet'
-? 'GÃœNLÃœK BÄ°LANÃ‡O â€” KISMÄ° GÃ–RÃœNÃœM' + (parts[1] || '\nâ€¢ KAYNAK OKUNAMADI')
+? 'GÜNLÜK BİLANÇO — KISMİ GÖRÜNÜM' + (parts[1] || '\n• KAYNAK OKUNAMADI')
 : parts[0];
 await sendMessage(env, chatId, text);
 }
-const match = payload.match(/^(urun|Ã¼rÃ¼n|cari)\s*:\s*(.+)$/i);
+const match = payload.match(/^(urun|ürün|cari)\s*:\s*(.+)$/i);
 if (!match) {
-await sendMessage(env, chatId, 'KullanÄ±m: /raporalanlari urun:urun,miktar,birim,tarih');
+await sendMessage(env, chatId, 'Kullanım: /raporalanlari urun:urun,miktar,birim,tarih');
 return;
 }
 const reportKey = /cari/i.test(match[1]) ? 'customer' : 'product';
 const saved = await saveReportFields(env, reportKey, match[2].split(','), userId);
-await sendMessage(env, chatId, saved.ok ? 'âœ… ' + REPORT_DEFINITIONS[reportKey].title + ' alanlarÄ± gÃ¼ncellendi: ' + saved.fields.join(', ') : 'âš ï¸ ' + saved.error);
+await sendMessage(env, chatId, saved.ok ? '✅ ' + REPORT_DEFINITIONS[reportKey].title + ' alanları güncellendi: ' + saved.fields.join(', ') : '⚠️ ' + saved.error);
 }
 
 export async function onRequestPost({ request, env }) {
@@ -697,20 +915,20 @@ const universalResult = await handleUniversalCommand(env, msg, identity, univers
 return json({ ok: true, universal_command: universalIntent.code, status: universalResult.status, duplicate: Boolean(universalResult.duplicate) });
 }
 
-if (!identity.hardened && !lower.startsWith('/durum') && !lower.startsWith('/stok') && !lower.startsWith('/urunraporu') && !lower.startsWith('/Ã¼rÃ¼nraporu') && !lower.startsWith('/cariraporu') && !lower.startsWith('/raporalanlari') && !lower.startsWith('/gelirtablosu') && !lower.startsWith('/bilanco') && !lower.startsWith('/bilanÃ§o') && !lower.includes('bakiye')) {
-await sendMessage(env, chatId, 'ğŸ”’ GÃ¼venlik eÅŸleÅŸtirmesi tamamlanÄ±yor. Åimdilik rapor/sorgular, iÃ§ gÃ¶rev kayÄ±tlarÄ± ve izin listesindeki sabit uygulama aÃ§ma komutlarÄ± kullanÄ±labilir; mali, iletiÅŸim, silme ve eriÅŸim iÅŸlemleri kapalÄ±dÄ±r.');
+if (!identity.hardened && !lower.startsWith('/durum') && !lower.startsWith('/stok') && !lower.startsWith('/urunraporu') && !lower.startsWith('/ürünraporu') && !lower.startsWith('/cariraporu') && !lower.startsWith('/raporalanlari') && !lower.startsWith('/gelirtablosu') && !lower.startsWith('/bilanco') && !lower.startsWith('/bilanço') && !lower.includes('bakiye')) {
+await sendMessage(env, chatId, '🔒 Güvenlik eşleştirmesi tamamlanıyor. Şimdilik rapor/sorgular, iç görev kayıtları ve izin listesindeki sabit uygulama açma komutları kullanılabilir; mali, iletişim, silme ve erişim işlemleri kapalıdır.');
 return json({ ok: true, security_bootstrap_pending: true });
 }
 
 if (text.startsWith('/start')) {
 await sendMessage(env, chatId,
-'AperiON Telegram canlÄ±. Ä°kinci beyin modu aÃ§Ä±k.\n\n' +
-'Ã–deme sÃ¶zÃ¼: "Sena Medikal 10 Temmuz 100 bin Ã¶deme kredi kartÄ±"\n' +
+'AperiON Telegram canlı. İkinci beyin modu açık.\n\n' +
+'Ödeme sözü: "Sena Medikal 10 Temmuz 100 bin ödeme kredi kartı"\n' +
 'Bakiye sorgusu: "bakiye"\n' +
 'Durum: /durum\n' +
-'Stok sorgusu: /stok <Ã¼rÃ¼n adÄ±>\n' +
-'Fatura/fiÅŸ fotoÄŸrafÄ±: gÃ¶nder, kuyruÄŸa alÄ±rÄ±m (BizimHesap\'a onaylÄ± yazma yakÄ±nda).\n' +
-                      'Herhangi bir not: dÃ¼z yaz, kaydederim.'
+'Stok sorgusu: /stok <ürün adı>\n' +
+'Fatura/fiş fotoğrafı: gönder, kuyruğa alırım (BizimHesap\'a onaylı yazma yakında).\n' +
+                      'Herhangi bir not: düz yaz, kaydederim.'
 );
 return json({ ok: true });
 }
@@ -725,8 +943,8 @@ await handleStokIntent(env, chatId, text.slice(5).trim());
 return json({ ok: true });
 }
 
-if (lower.startsWith('/urunraporu') || lower.startsWith('/Ã¼rÃ¼nraporu')) {
-await handleConfiguredReport(env, chatId, 'product', text.replace(/^\/(?:urunraporu|Ã¼rÃ¼nraporu)\s*/i, ''));
+if (lower.startsWith('/urunraporu') || lower.startsWith('/ürünraporu')) {
+await handleConfiguredReport(env, chatId, 'product', text.replace(/^\/(?:urunraporu|ürünraporu)\s*/i, ''));
 return json({ ok: true, report: 'product' });
 }
 
@@ -745,13 +963,13 @@ await handleDailyStatementIntent(env, chatId, 'income_statement');
 return json({ ok: true, report: 'income_statement' });
 }
 
-if (lower.startsWith('/bilanco') || lower.startsWith('/bilanÃ§o') || lower === 'bilanÃ§o' || lower === 'bilanco') {
+if (lower.startsWith('/bilanco') || lower.startsWith('/bilanço') || lower === 'bilanço' || lower === 'bilanco') {
 await handleDailyStatementIntent(env, chatId, 'balance_sheet');
 return json({ ok: true, report: 'balance_sheet' });
 }
 
 if (lower.startsWith('/senkron') || lower.startsWith('/oturum')) {
-await sendMessage(env, chatId, 'Bu komut ÅŸu an bilgisayarÄ±nÄ±za baÄŸlÄ± deÄŸil (yerel dinleyici Ã§alÄ±ÅŸmÄ±yor, en son 12 AÄŸustos\'ta aktifti). BaÄŸlanÄ±nca haber vereceÄŸim.');
+await sendMessage(env, chatId, 'Bu komut şu an bilgisayarınıza bağlı değil (yerel dinleyici çalışmıyor, en son 12 Ağustos\'ta aktifti). Bağlanınca haber vereceğim.');
 return json({ ok: true });
 }
 
@@ -776,7 +994,7 @@ needsReview: true,
 status: 'approval_pending'
 });
 if (!saved.ok) {
-await sendMessage(env, chatId, 'âš ï¸ Transfer emri gÃ¼venli kuyruÄŸa alÄ±namadÄ±. HiÃ§bir kayÄ±t yapÄ±lmadÄ±.');
+await sendMessage(env, chatId, '⚠️ Transfer emri güvenli kuyruğa alınamadı. Hiçbir kayıt yapılmadı.');
 return json({ ok: false, error: saved.error || 'quick_note_failed' }, 503);
 }
 const approval = await createTransferApproval(env, {
@@ -786,7 +1004,7 @@ quickNoteId: saved.id,
 intent: transferIntent
 });
 if (!approval.ok) {
-await sendMessage(env, chatId, 'âš ï¸ Onay kartÄ± oluÅŸturulamadÄ±. HiÃ§bir BizimHesap kaydÄ± yapÄ±lmadÄ±.');
+await sendMessage(env, chatId, '⚠️ Onay kartı oluşturulamadı. Hiçbir BizimHesap kaydı yapılmadı.');
 return json({ ok: false, error: approval.error || 'approval_queue_failed' }, 503);
 }
 await sendMessage(env, chatId, transferApprovalText(transferIntent), transferApprovalButtons(approval.id));
@@ -802,7 +1020,7 @@ live_write_enabled: false
 const paymentMethod = parsePaymentMethod(lower);
 const dueDate = parseDueDate(text);
 const amount = parseAmount(text, dueDate.matched);
-const odemeSozuAdayi = /Ã¶deme|odeme|Ã¶de\b/.test(lower) || amount.amount !== null;
+const odemeSozuAdayi = /ödeme|odeme|öde\b/.test(lower) || amount.amount !== null;
 
 if (odemeSozuAdayi && amount.amount !== null) {
 const counterpartyAdayi = guessCounterparty(text, dueDate.matched, amount.matched);
@@ -822,20 +1040,20 @@ amount: amount.amount, dueDate: dueDate.iso, paymentMethod
 : { ok: false };
 
 const satirlar = [
-'ğŸ“Œ Ã–deme sÃ¶zÃ¼ olarak anladÄ±m:',
-'â€¢ KarÅŸÄ± taraf: ' + (musteri ? musteri.cari_unvan + ' (cari eÅŸleÅŸti)' : (counterpartyAdayi || 'belirtilmedi') + ' (cari eÅŸleÅŸmedi, kontrol et)'),
-'â€¢ Tutar: ' + money(amount.amount),
-'â€¢ Tarih: ' + (dueDate.iso ? trTarih(dueDate.iso) : 'BELÄ°RTÄ°LMEDÄ° â€” ne zaman?'),
-'â€¢ Ã–deme yÃ¶ntemi: ' + paymentMethod
+'📌 Ödeme sözü olarak anladım:',
+'• Karşı taraf: ' + (musteri ? musteri.cari_unvan + ' (cari eşleşti)' : (counterpartyAdayi || 'belirtilmedi') + ' (cari eşleşmedi, kontrol et)'),
+'• Tutar: ' + money(amount.amount),
+'• Tarih: ' + (dueDate.iso ? trTarih(dueDate.iso) : 'BELİRTİLMEDİ — ne zaman?'),
+'• Ödeme yöntemi: ' + paymentMethod
 ];
 if (promiseSaved.ok) {
-satirlar.push('âœ… AperiON kritik Ã¶deme listesine eklendi (id: ' + promiseSaved.id + ').');
+satirlar.push('✅ AperiON kritik ödeme listesine eklendi (id: ' + promiseSaved.id + ').');
 } else {
-satirlar.push('âš ï¸ KayÄ±t baÅŸarÄ±sÄ±z oldu, tekrar dener misin?');
+satirlar.push('⚠️ Kayıt başarısız oldu, tekrar dener misin?');
 }
-if (!musteri) satirlar.push('â— Bu ismi cari listesinde bulamadÄ±m, yanlÄ±ÅŸsa doÄŸru unvanÄ± yaz.');
-if (!dueDate.iso) satirlar.push('â— Tarih anlayamadÄ±m, "10 Temmuz" gibi yazar mÄ±sÄ±n?');
-if (dueDate.gecmisMi) satirlar.push('â— Bu tarih geÃ§miÅŸte kalmÄ±ÅŸ â€” gecikmiÅŸ bir Ã¶deme mi, yoksa gelecek yÄ±l mÄ± demek istedin? Emin deÄŸilsen "gelecek yÄ±l" yaz.');
+if (!musteri) satirlar.push('❗ Bu ismi cari listesinde bulamadım, yanlışsa doğru unvanı yaz.');
+if (!dueDate.iso) satirlar.push('❗ Tarih anlayamadım, "10 Temmuz" gibi yazar mısın?');
+if (dueDate.gecmisMi) satirlar.push('❗ Bu tarih geçmişte kalmış — gecikmiş bir ödeme mi, yoksa gelecek yıl mı demek istedin? Emin değilsen "gelecek yıl" yaz.');
 await sendMessage(env, chatId, satirlar.join('\n'));
 return json({ ok: true });
 }
@@ -847,12 +1065,12 @@ parsedType, paymentMethod, needsReview: parsedType === 'genel_not'
 });
 
 await sendMessage(env, chatId,
-'AldÄ±m.\n' +
+'Aldım.\n' +
 'Tip: ' + parsedType + '\n' +
 'Not: ' + text + '\n' +
 (saved.ok
-? 'âœ… AperiON kaydÄ± aÃ§Ä±ldÄ± (id: ' + saved.id + ').'
-: 'âš ï¸ Not alÄ±ndÄ± ama kalÄ±cÄ± kayÄ±t baÅŸarÄ±sÄ±z oldu (' + (saved.error || 'bilinmeyen hata') + '). Tekrar dene veya bana sÃ¶yle.')
+? '✅ AperiON kaydı açıldı (id: ' + saved.id + ').'
+: '⚠️ Not alındı ama kalıcı kayıt başarısız oldu (' + (saved.error || 'bilinmeyen hata') + '). Tekrar dene veya bana söyle.')
 );
 return json({ ok: true });
 } catch (e) {
