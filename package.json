@@ -164,7 +164,9 @@
     "verify:telegram-universal-command-router": "node tools/test_telegram_universal_command_router_v140.mjs",
     "verify:aperion-device-bridge": "node --check functions/telegram/device-bridge.js && node --check functions/api/device/enroll.js && node --check functions/api/device/commands.js && node --check functions/api/device/health.js && node --check tools/aperion_device_bridge.cjs && node tools/aperion_device_bridge.cjs --self-test && node tools/verify_aperion_device_bridge_v141.mjs",
     "aperion:device:enroll": "node tools/aperion_device_bridge.cjs --enroll",
-    "aperion:device:once": "node tools/aperion_device_bridge.cjs --once"
+    "aperion:device:once": "node tools/aperion_device_bridge.cjs --once",
+    "verify:aperion-morning-brief": "node --check workers/aperion-morning-brief/src/index.js && node --check functions/api/morning-brief-dispatch.js && node tools/test_aperion_morning_brief_v144.mjs",
+    "verify:telegram-configurable-reports": "node --check functions/telegram/webhook.js && node --check functions/telegram/mobile-command-center.js"
     ,"hasta-bezi:source-audit": "node tools/audit_hasta_bezi_source_reports_v91.cjs"
     ,"verify:hasta-bezi:source-audit": "node tools/verify_hasta_bezi_source_reports_v91.cjs"
     ,"hasta-bezi:fifo:build": "node tools/build_hasta_bezi_fifo_chunks_v92.cjs"
