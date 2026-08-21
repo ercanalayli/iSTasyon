@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.3 seconds
-Output:
 import { ingestBankRows } from '../shared/bank-approvals.js';
 
 function json(data, status = 200) {
