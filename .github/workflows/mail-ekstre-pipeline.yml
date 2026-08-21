@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.3 seconds
+Output:
 name: AperiON Mail Ekstre Pipeline
 
 on:
@@ -46,6 +49,8 @@ jobs:
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       TELEGRAM_ALLOWED_CHAT_ID: ${{ secrets.TELEGRAM_ALLOWED_CHAT_ID }}
       TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
+      APERION_BANK_INGEST_URL: https://aperion-istasyon.pages.dev/api/bank-statement-ingest
+      APERION_BANK_INGEST_SECRET: ${{ secrets.APERION_BANK_INGEST_SECRET }}
       EKSTRE_SOURCE: ${{ inputs.source || 'gmail' }}
       GMAIL_MAILBOX: ercanalayli@gmail.com
       # Yeni mailleri gunluk akista oku; duplicate_key gecmis tarihli ekstreleri
@@ -125,8 +130,8 @@ jobs:
           fs.writeFileSync('mail-ekstre-dry-run-summary.json', JSON.stringify(report,null,2));
           NODE
 
-      - name: Live ingest to pending_bank_movements
-        if: ${{ (github.event_name == 'push' || github.event_name == 'schedule' || inputs.live == true) && steps.sqlcheck.outputs.sql_ready == '1' && steps.dryrun.outcome == 'success' && steps.dryrun_report.outputs.parsed_rows != '0' }}
+      - name: Live ingest to AperiON D1 approval queue
+        if: ${{ (github.event_name == 'push' || github.event_name == 'schedule' || inputs.live == true) && steps.dryrun.outcome == 'success' && steps.dryrun_report.outputs.parsed_rows != '0' }}
         working-directory: automation
         env:
           DRY_RUN: "0"
@@ -175,3 +180,4 @@ jobs:
             automation/logs/*.txt
             data/aperion_daily_bank_review.json
           if-no-files-found: ignore
+
