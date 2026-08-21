@@ -766,15 +766,58 @@ if (!response.ok || !Array.isArray(response.data)) return { ok: false, revenue: 
 return { ok: true, revenue: sumRows(response.data, 'satis_kdv_haric') || sumRows(response.data, 'ciro') };
 }
 
-async function queryFifoProfit(env, query, period) {
-const path = '/rest/v1/fifo_sales_profit_view?select=net_sales,fifo_cost,net_profit,margin' +
-'&firma_id=eq.alayli&urun=ilike.*' + encodeURIComponent(query) + '*&tarih=gte.' + period.from + '&tarih=lte.' + period.to + '&limit=5000';
-const response = await sbFetch(env, path);
-if (!response.ok || !Array.isArray(response.data) || !response.data.length) return { ok: false };
-const revenue = sumRows(response.data, 'net_sales');
-const cost = sumRows(response.data, 'fifo_cost');
-const profit = sumRows(response.data, 'net_profit');
-return { ok: true, revenue, cost, profit, margin: revenue ? profit / revenue * 100 : null };
+function fifoProductKey(row) {
+return String(row.urun_kod || row.barkod || row.urun || '').trim().toLocaleLowerCase('tr-TR');
+}
+
+async function buildProductFifoLedger(env, query, throughDate) {
+const filter = '&firma_id=eq.alayli&urun=ilike.*' + encodeURIComponent(query) + '*';
+const [purchaseResponse, salesResponse] = await Promise.all([
+sbFetch(env, '/rest/v1/purchase_raw?select=id,tarih,belge_no,urun,urun_kod,barkod,miktar,alis_fiyat,tutar' + filter + '&tarih=lte.' + throughDate + '&order=tarih.asc&limit=5000'),
+sbFetch(env, '/rest/v1/sales_raw?select=id,tarih,urun,urun_kod,barkod,adet,satis_kdv_haric,ciro' + filter + '&tarih=lte.' + throughDate + '&order=tarih.asc,id.asc&limit=5000')
+]);
+if (!purchaseResponse.ok || !salesResponse.ok || !Array.isArray(purchaseResponse.data) || !Array.isArray(salesResponse.data)) return { ok: false, sales: [], layers: [] };
+const truncated = purchaseResponse.data.length >= 5000 || salesResponse.data.length >= 5000;
+const layersByProduct = new Map();
+for (const row of purchaseResponse.data) {
+const quantity = Number(row.miktar) || 0;
+const unitCost = Number(row.alis_fiyat) || (quantity ? (Number(row.tutar) || 0) / quantity : 0);
+if (quantity <= 0 || unitCost <= 0) continue;
+const key = fifoProductKey(row);
+if (!layersByProduct.has(key)) layersByProduct.set(key, []);
+layersByProduct.get(key).push({ product: row.urun, date: row.tarih, document: row.belge_no, unitCost, received: quantity, remaining: quantity });
+}
+const sales = [];
+let incomplete = truncated;
+for (const row of salesResponse.data) {
+let needed = Number(row.adet) || 0;
+if (needed < 0) { incomplete = true; continue; }
+let fifoCost = 0;
+const allocations = [];
+const layers = layersByProduct.get(fifoProductKey(row)) || [];
+for (const layer of layers) {
+if (needed <= 0) break;
+if (layer.remaining <= 0) continue;
+const used = Math.min(needed, layer.remaining);
+layer.remaining -= used;
+needed -= used;
+fifoCost += used * layer.unitCost;
+allocations.push({ quantity: used, unitCost: layer.unitCost, purchaseDate: layer.date });
+}
+if (needed > 0) incomplete = true;
+const revenue = Number(row.satis_kdv_haric) || Number(row.ciro) || 0;
+sales.push({ date: row.tarih, quantity: Number(row.adet) || 0, revenue, fifoCost, profit: revenue - fifoCost, missingQuantity: needed, allocations });
+}
+return { ok: !incomplete, incomplete, truncated, sales, layers: [...layersByProduct.values()].flat().filter(layer => layer.remaining > 0) };
+}
+
+function fifoPeriodSummary(ledger, period) {
+if (!ledger.sales.length) return { ok: ledger.ok, revenue: 0, cost: 0, profit: 0, margin: null };
+const rows = ledger.sales.filter(row => row.date >= period.from && row.date <= period.to);
+const revenue = sumRows(rows, 'revenue');
+const cost = sumRows(rows, 'fifoCost');
+const profit = revenue - cost;
+return { ok: ledger.ok && !rows.some(row => row.missingQuantity > 0), revenue, cost, profit, margin: revenue ? profit / revenue * 100 : null };
 }
 
 function topCustomers(rows) {
@@ -805,8 +848,9 @@ return;
 const category = sales.flatMap(result => result.rows).find(row => row.kategori)?.kategori || '';
 const categoryTotals = fields.includes('category_share')
 ? await Promise.all(periods.map(period => queryCategoryRevenue(env, category, period))) : periods.map(() => ({ ok: false }));
-const fifo = fields.some(field => ['fifo_profit', 'margin'].includes(field))
-? await Promise.all(periods.map(period => queryFifoProfit(env, search, period))) : periods.map(() => ({ ok: false }));
+const fifoLedger = fields.some(field => ['fifo_profit', 'margin'].includes(field))
+? await buildProductFifoLedger(env, search, periods.find(period => period.key === 'today').to) : { ok: false, sales: [], layers: [] };
+const fifo = periods.map(period => fifoPeriodSummary(fifoLedger, period));
 const lines = ['📊 ÜRÜN PERFORMANS RAPORU', 'Arama: ' + search, 'Kategori: ' + (category || 'eşleşmedi'), 'Alan profili: ' + fields.join(', '), ''];
 periods.forEach((period, index) => {
 const result = sales[index];
@@ -829,6 +873,11 @@ const yearIndex = periods.findIndex(period => period.key === 'this_year');
 const customers = topCustomers(sales[yearIndex].rows);
 lines.push('', 'BU YIL EN ÇOK ALAN MÜŞTERİLER');
 lines.push(...(customers.length ? customers.map(([name, value], index) => (index + 1) + '. ' + name + ' · ' + value.quantity.toLocaleString('tr-TR') + ' adet · ' + money(value.revenue)) : ['• Doğrulanmış müşteri satışı yok']));
+}
+if (fields.some(field => ['fifo_profit', 'margin'].includes(field))) {
+lines.push('', 'KALAN FIFO STOK KATMANLARI');
+lines.push(...(fifoLedger.layers.length ? fifoLedger.layers.slice(0, 12).map(layer => '• ' + layer.remaining.toLocaleString('tr-TR') + ' adet × ' + money(layer.unitCost) + ' · alış ' + layer.date + (layer.document ? ' · ' + layer.document : '')) : ['• Doğrulanmış kalan katman yok']));
+if (!fifoLedger.ok) lines.push('⚠️ FIFO kaynak kapsamı eksik veya satılan miktarın alış katmanı bulunamadı; kâr kesinleştirilmedi.');
 }
 lines.push('', 'Not: FIFO yalnızca doğrulanmış alış-satış eşleşmesinden hesaplanır. Eksikse kâr gösterilmez.');
 await sendMessage(env, chatId, lines.join('\n').slice(0, 4000));
