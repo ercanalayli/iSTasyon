@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.3 seconds
+Output:
 import fs from 'fs/promises';
 import { createClient } from '@supabase/supabase-js';
 import { google } from 'googleapis';
@@ -43,25 +46,25 @@ function trMoney(value){
 function bankApprovalCard(row){
   const amountIn = Number(row.amount_in || 0);
   const amountOut = Number(row.amount_out || 0);
-  const direction = amountIn > 0 ? 'TAHSİLAT' : 'ÖDEME';
+  const direction = amountIn > 0 ? 'TAHSÄ°LAT' : 'Ã–DEME';
   const amount = amountIn > 0 ? amountIn : Math.abs(amountOut);
   const confidence = Number(row.confidence_score || 0);
-  const confidenceIcon = confidence >= 90 ? '🟢' : confidence >= 75 ? '🟠' : '🔴';
-  const counterparty = row.confirmed_counterparty || row.suggested_counterparty || 'EŞLEŞME GEREKLİ';
+  const confidenceIcon = confidence >= 90 ? 'ğŸŸ¢' : confidence >= 75 ? 'ğŸŸ ' : 'ğŸ”´';
+  const counterparty = row.confirmed_counterparty || row.suggested_counterparty || 'EÅLEÅME GEREKLÄ°';
   return [
-    '<b>🏦 BANKA HAREKETİ ONAYI</b>',
+    '<b>ğŸ¦ BANKA HAREKETÄ° ONAYI</b>',
     '',
-    '<b>' + direction + ' • ' + trMoney(amount) + '</b>',
-    '🏛 <b>Banka:</b> ' + html(row.bank_name || '-'),
-    '📅 <b>Tarih:</b> ' + html(row.transaction_date || '-'),
-    '👤 <b>Karşı taraf:</b> ' + html(counterparty),
-    '📝 <b>Açıklama:</b> ' + html(row.description || '-'),
-    confidenceIcon + ' <b>Eşleşme güveni:</b> ' + confidence.toLocaleString('tr-TR') + '%',
+    '<b>' + direction + ' â€¢ ' + trMoney(amount) + '</b>',
+    'ğŸ› <b>Banka:</b> ' + html(row.bank_name || '-'),
+    'ğŸ“… <b>Tarih:</b> ' + html(row.transaction_date || '-'),
+    'ğŸ‘¤ <b>KarÅŸÄ± taraf:</b> ' + html(counterparty),
+    'ğŸ“ <b>AÃ§Ä±klama:</b> ' + html(row.description || '-'),
+    confidenceIcon + ' <b>EÅŸleÅŸme gÃ¼veni:</b> ' + confidence.toLocaleString('tr-TR') + '%',
     '',
     confidence < 84 || !row.counterparty_confirmed
-      ? '<b>⚠️ İnceleme:</b> Cari veya işlem türü kesinleşmeden kayıt tamamlanmayacaktır.'
-      : '<b>✅ Kontrol:</b> Onaydan sonra BizimHesap güvenlik kapısına aktarılır.',
-    '<i>Mükerrer kontrolü uygulanmıştır. Onay vermek tek başına güvenlik kontrollerini kaldırmaz.</i>'
+      ? '<b>âš ï¸ Ä°nceleme:</b> Cari veya iÅŸlem tÃ¼rÃ¼ kesinleÅŸmeden kayÄ±t tamamlanmayacaktÄ±r.'
+      : '<b>âœ… Kontrol:</b> Onaydan sonra BizimHesap gÃ¼venlik kapÄ±sÄ±na aktarÄ±lÄ±r.',
+    '<i>MÃ¼kerrer kontrolÃ¼ uygulanmÄ±ÅŸtÄ±r. Onay vermek tek baÅŸÄ±na gÃ¼venlik kontrollerini kaldÄ±rmaz.</i>'
   ].join('\n');
 }
 
@@ -75,8 +78,8 @@ async function sendTelegramApproval(token, chatId, row){
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [[
-          { text: '✅ ONAYLA', callback_data: `bm:a:${row.id}` },
-          { text: '❌ REDDET', callback_data: `bm:r:${row.id}` }
+          { text: 'âœ… ONAYLA', callback_data: `bm:a:${row.id}` },
+          { text: 'âŒ REDDET', callback_data: `bm:r:${row.id}` }
         ]]
       }
     })
@@ -102,7 +105,7 @@ async function dispatchPendingApprovals(db, report){
     .gte('created_at', since)
     .order('created_at', { ascending: true })
     .limit(50);
-  if(error) throw new Error(`Telegram onay listesi okunamadı: ${error.message}`);
+  if(error) throw new Error(`Telegram onay listesi okunamadÄ±: ${error.message}`);
   const rows = (data || []).filter(row => !String(row.approval_note || '').includes(TELEGRAM_NOTIFICATION_PREFIX));
   let sent = 0;
   const failures = [];
@@ -120,7 +123,7 @@ async function dispatchPendingApprovals(db, report){
     }
   }
   report.telegram_approvals = { configured: true, candidates: rows.length, sent, failed: failures.length, failures: failures.slice(0, 10) };
-  if(failures.length) report.errors.push({ area: 'telegram_approval_dispatch', error: `${failures.length} kart gönderilemedi` });
+  if(failures.length) report.errors.push({ area: 'telegram_approval_dispatch', error: `${failures.length} kart gÃ¶nderilemedi` });
 }
 
 function openDb(){
@@ -128,6 +131,26 @@ function openDb(){
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
   if(!url || !key) return null;
   return createClient(url, key, { auth: { persistSession: false } });
+}
+
+async function ingestViaControlPlane(rows){
+  const url = process.env.APERION_BANK_INGEST_URL || '';
+  const secret = process.env.APERION_BANK_INGEST_SECRET || '';
+  if(!url || !secret) return null;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-aperion-ingest-secret': secret
+    },
+    body: JSON.stringify({ company_id: cfg.company_id || 'alayli', rows })
+  });
+  const body = await response.json().catch(() => ({}));
+  if(!response.ok || body.ok !== true){
+    const detail = body.error || body.failures?.[0]?.error || `HTTP ${response.status}`;
+    throw new Error(`AperiON D1 ingest baÅŸarÄ±sÄ±z: ${detail}`);
+  }
+  return { backend: 'cloudflare_d1', ...body };
 }
 
 function makeDrive(){
@@ -369,7 +392,7 @@ async function ingestPersonalRows(db, rows, report){
   const failDetails = [];
   for(const r of rows){
     const amount = Number(r.amount_out || 0) > 0 ? -Number(r.amount_out) : Number(r.amount_in || 0);
-    // company/owner NOT NULL - 'kisisel' skoru şirket adı degil, sirket-disi
+    // company/owner NOT NULL - 'kisisel' skoru ÅŸirket adÄ± degil, sirket-disi
     // oldugunu isaretler. status, personal_finance_documents CHECK kisitina
     // uymak zorunda: received|parsed|matched|approved|rejected|archived.
     const { error } = await db.from('personal_finance_documents').insert({
@@ -422,11 +445,11 @@ async function main(){
     report.errors.push({ area: sourceMode, error: err.message || String(err) });
   }
 
-  // Kisisel hesaplar (ör. TEB) sirket (BizimHesap) defterine ASLA islenmez -
+  // Kisisel hesaplar (Ã¶r. TEB) sirket (BizimHesap) defterine ASLA islenmez -
   // ayri tutulup AperiON kisisel finans tablosuna yazilir. bank.scope='kisisel'
   // mail-ekstre-config.json'da tanimli.
   // scope "sirket" (veya bos/tanimsiz - varsayilan) disindaki HER SEY ALAYLI
-  // defterine islenmez. Sadece "kisisel" degil - baska bir sirkete (ör. ALKAM
+  // defterine islenmez. Sadece "kisisel" degil - baska bir sirkete (Ã¶r. ALKAM
   // Mali Musavirlik) ait hesaplar da ayni sekilde disarida tutulmali; onlarin
   // kendi company_id ayrimi henuz yok, o yuzden simdilik sadece raporlanip
   // hicbir deftere yazilmiyorlar (ne ALAYLI'ya ne yanlislikla kisisele).
@@ -443,26 +466,40 @@ async function main(){
     report.ingest = { dry_run: true, input: companyRows.length, inserted: 0, duplicate: 0, failed: 0 };
     report.personal_ingest = { dry_run: true, input: personalRows.length, inserted: 0 };
   }else{
-    const db = openDb();
-    if(!db){
-      report.errors.push({ area: 'supabase', error: 'SUPABASE_URL veya SUPABASE_SERVICE_ROLE_KEY eksik' });
+    const controlPlaneConfigured = Boolean(process.env.APERION_BANK_INGEST_URL && process.env.APERION_BANK_INGEST_SECRET);
+    if(controlPlaneConfigured){
+      if(companyRows.length) {
+        try {
+          report.ingest = await ingestViaControlPlane(companyRows);
+        } catch(error) {
+          report.errors.push({ area: 'cloudflare_d1_ingest', error: error.message || String(error) });
+        }
+      } else {
+        report.ingest = { backend: 'cloudflare_d1', input: 0, inserted: 0, duplicate: 0, invalid: 0, telegram_sent: 0 };
+      }
+      report.personal_ingest = { input: personalRows.length, inserted: 0, status: 'excluded_from_company_ledger' };
     }else{
-      if(companyRows.length){
+      const db = openDb();
+      if(!db){
+        report.errors.push({ area: 'storage', error: 'Cloudflare D1 ingest veya Supabase yapÄ±landÄ±rmasÄ± eksik' });
+      }else{
+        if(companyRows.length){
         const freshRows = await filterAlreadyStoredRows(db, companyRows, report);
         const res = freshRows.length
           ? await db.rpc('ingest_mail_bank_movements', { p_rows: freshRows })
           : { data: { input: companyRows.length, inserted: 0, duplicate: report.prefilter?.skipped_existing || 0, failed: 0, prefiltered: true }, error: null };
         if(res.error) report.errors.push({ area: 'ingest_rpc', error: res.error.message });
         report.ingest = res.data || null;
-      }else{
-        report.ingest = { input: 0, inserted: 0, duplicate: 0, failed: 0 };
+        }else{
+          report.ingest = { input: 0, inserted: 0, duplicate: 0, failed: 0 };
+        }
+        if(personalRows.length){
+          report.personal_ingest = await ingestPersonalRows(db, personalRows, report);
+        }
+        await dispatchPendingApprovals(db, report).catch(error => {
+          report.errors.push({ area: 'telegram_approval_dispatch', error: error.message || String(error) });
+        });
       }
-      if(personalRows.length){
-        report.personal_ingest = await ingestPersonalRows(db, personalRows, report);
-      }
-      await dispatchPendingApprovals(db, report).catch(error => {
-        report.errors.push({ area: 'telegram_approval_dispatch', error: error.message || String(error) });
-      });
     }
   }
 
@@ -512,3 +549,4 @@ function buildConsoleSummary(report){
 }
 
 main().catch(e=>{console.error(e);process.exit(1)});
+
