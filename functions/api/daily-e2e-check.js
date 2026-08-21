@@ -68,7 +68,11 @@ export async function onRequestPost({ request, env }) {
 
   const checks = [
     { name: "09:00 Telegram brifingi", ok: brief.ok && brief.row?.status === "sent" && Boolean(brief.row?.telegram_message_id), detail: brief.row?.status || "kayıt yok" },
-    { name: "D1 kontrol düzlemi", ok: sourceHealth.ok, detail: sourceHealth.ok ? `${sourceHealth.row?.healthy || 0}/${sourceHealth.row?.total || 0} sağlıklı kaynak` : "okunamadı" },
+    {
+      name: "D1 kontrol düzlemi",
+      ok: sourceHealth.ok && Number(sourceHealth.row?.total || 0) > 0 && Number(sourceHealth.row?.healthy || 0) === Number(sourceHealth.row?.total || 0),
+      detail: sourceHealth.ok ? `${sourceHealth.row?.healthy || 0}/${sourceHealth.row?.total || 0} sağlıklı kaynak` : "okunamadı"
+    },
     { name: "Telegram hedef kimliği", ok: chat.ok && Boolean(chat.row?.config_value), detail: chat.row?.config_value ? "yapılandırıldı" : "eksik" },
     { name: "Satış kaynağı", ...sales },
     { name: "Cari kaynağı", ...customers },
