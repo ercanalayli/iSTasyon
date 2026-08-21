@@ -19,12 +19,15 @@ async function main() {
     targetAccount: '**ercan nakit',
     amount: 3500,
     currency: 'TRY',
+    previousBalance: 4490.10,
     newBalance: 990.10,
     proofPath,
   };
   const caption = buildCaption(payload);
   assert.match(caption, /^\[GPT-CODEX KAYDI\]/);
   assert.match(caption, /3\.500,00/);
+  assert.match(caption, /4\.490,10/);
+  assert.match(caption, /990,10/);
 
   const calls = [];
   const fetchImpl = async (url, options) => {

@@ -34,6 +34,9 @@ function buildCaption(result) {
     `Hedef: ${result.targetAccount || '-'}`,
     `Tutar: ${formatMoney(result.amount, result.currency || 'TRY')}`,
   ];
+  if (result.previousBalance !== undefined && result.previousBalance !== null && result.previousBalance !== '') {
+    lines.push(`Önceki bakiye: ${formatMoney(result.previousBalance, result.currency || 'TRY')}`);
+  }
   if (result.newBalance !== undefined && result.newBalance !== null && result.newBalance !== '') {
     lines.push(`Yeni bakiye: ${formatMoney(result.newBalance, result.currency || 'TRY')}`);
   }

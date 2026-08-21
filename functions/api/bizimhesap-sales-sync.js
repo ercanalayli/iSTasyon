@@ -5,6 +5,13 @@ function json(data, status = 200) {
   });
 }
 
+import {
+  buildProfitSnapshot,
+  crossedMilestones,
+  detectSalesAnomalies,
+  formatMilestoneMessage
+} from '../shared/sales-milestone.js';
+
 function authorized(request, env) {
   const configured = String(env.APERION_BRIDGE_SECRET || '');
   const supplied = String(request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
@@ -35,11 +42,87 @@ function normalizedSale(row) {
     ciro: finiteNumber(row.ciro, 0),
     satis_kdv_haric: finiteNumber(row.satis_kdv_haric, finiteNumber(row.ciro, 0)),
     satis_kdv_dahil: finiteNumber(row.satis_kdv_dahil, finiteNumber(row.ciro, 0)),
+    fifo_cost: row.fifo_cost == null ? null : finiteNumber(row.fifo_cost, 0),
+    operating_expense_allocated: row.operating_expense_allocated == null ? null : finiteNumber(row.operating_expense_allocated, 0),
+    estimated_tax: row.estimated_tax == null ? null : finiteNumber(row.estimated_tax, 0),
+    negative_stock: row.negative_stock === true,
+    discount_pct: row.discount_pct == null ? null : finiteNumber(row.discount_pct, 0),
     kaynak_satir: Math.max(0, Math.trunc(finiteNumber(row.kaynak_satir, 0))),
     source_url: cleanText(row.source_url || 'https://bizimhesap.com/web/ngn/doc/ngnretailsales', 500)
   };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(sale.tarih)) throw new Error('invalid_sale_date');
   return sale;
+}
+
+async function telegram(env, text) {
+  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return { sent: false, reason: 'telegram_not_configured' };
+  const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: env.TELEGRAM_CHAT_ID,
+      text,
+      parse_mode: 'HTML',
+      disable_web_page_preview: true
+    })
+  });
+  if (!response.ok) throw new Error(`telegram_send_failed:${response.status}`);
+  return { sent: true };
+}
+
+async function sendSalesMilestoneIfNeeded(env, saleDate, previousRevenue) {
+  const aggregate = await env.APERION_DB.prepare(
+    `SELECT COUNT(*) AS record_count,
+            ROUND(SUM(CAST(json_extract(payload_json,'$.ciro') AS REAL)),2) AS revenue,
+            SUM(CASE WHEN json_type(payload_json,'$.fifo_cost') IN ('integer','real') THEN 1 ELSE 0 END) AS fifo_covered_count,
+            ROUND(SUM(CASE WHEN json_type(payload_json,'$.fifo_cost') IN ('integer','real') THEN CAST(json_extract(payload_json,'$.fifo_cost') AS REAL) ELSE 0 END),2) AS fifo_cost,
+            ROUND(SUM(CASE WHEN json_type(payload_json,'$.operating_expense_allocated') IN ('integer','real') THEN CAST(json_extract(payload_json,'$.operating_expense_allocated') AS REAL) ELSE 0 END),2) AS operating_expense,
+            ROUND(SUM(CASE WHEN json_type(payload_json,'$.estimated_tax') IN ('integer','real') THEN CAST(json_extract(payload_json,'$.estimated_tax') AS REAL) ELSE 0 END),2) AS estimated_tax,
+            SUM(CASE WHEN json_extract(payload_json,'$.negative_stock')=1 THEN 1 ELSE 0 END) AS negative_stock_count,
+            SUM(CASE WHEN CAST(json_extract(payload_json,'$.ciro') AS REAL)<0 THEN 1 ELSE 0 END) AS return_count,
+            SUM(CASE WHEN CAST(json_extract(payload_json,'$.discount_pct') AS REAL)>=50 THEN 1 ELSE 0 END) AS high_discount_count
+       FROM canonical_events
+      WHERE event_type='sale.invoice' AND truth_state='confirmed' AND substr(occurred_at,1,10)=?`
+  ).bind(saleDate).first();
+  const currentRevenue = finiteNumber(aggregate?.revenue, 0);
+  const milestones = crossedMilestones(previousRevenue, currentRevenue, finiteNumber(env.SALES_MILESTONE_STEP, 10000));
+  if (!milestones.length) return { sent: false, milestones: [], revenue: currentRevenue };
+
+  const newMilestones = [];
+  for (const milestone of milestones) {
+    const key = `aperion:sales-milestone:${saleDate}:${milestone}`;
+    const result = await env.APERION_DB.prepare(
+      `INSERT OR IGNORE INTO canonical_events
+        (event_key,connector_id,external_ref,event_type,occurred_at,truth_state,subject_type,subject_ref,payload_json,evidence_ref,content_hash,received_at)
+       SELECT ?,id,?,'notification.sales_milestone',?,'confirmed','company','alayli',?,?,?,datetime('now')
+         FROM connector_registry WHERE connector_key='bizimhesap' LIMIT 1`
+    ).bind(key, String(milestone), `${saleDate}T23:59:59+03:00`, JSON.stringify({ sale_date: saleDate, milestone }), 'cloudflare_d1.canonical_events', key).run();
+    if (Number(result.meta?.changes || 0) > 0) newMilestones.push(milestone);
+  }
+  if (!newMilestones.length) return { sent: false, milestones: [], revenue: currentRevenue, deduplicated: true };
+
+  const daily = { ...aggregate, revenue: currentRevenue };
+  const snapshot = buildProfitSnapshot({
+    ...daily,
+    fifoCost: daily.fifo_cost,
+    operatingExpense: daily.operating_expense,
+    estimatedTax: daily.estimated_tax,
+    recordCount: daily.record_count,
+    fifoCoveredCount: daily.fifo_covered_count
+  });
+  const anomalies = detectSalesAnomalies({
+    ...daily,
+    recordCount: daily.record_count,
+    fifoCoveredCount: daily.fifo_covered_count,
+    negativeStockCount: daily.negative_stock_count,
+    returnCount: daily.return_count,
+    highDiscountCount: daily.high_discount_count,
+    lowMarginThreshold: finiteNumber(env.SALES_LOW_MARGIN_THRESHOLD, 5),
+    sourceFresh: true
+  }, snapshot);
+  const message = formatMilestoneMessage({ milestone: newMilestones.at(-1), daily, snapshot, anomalies });
+  const notification = await telegram(env, message);
+  return { ...notification, milestones: newMilestones, revenue: currentRevenue, anomalies };
 }
 
 async function sha256(value) {
@@ -57,6 +140,15 @@ export async function onRequestPost({ request, env }) {
     const incoming = Array.isArray(body.records) ? body.records : [];
     if (!incoming.length || incoming.length > 500) return json({ ok: false, error: 'records_must_be_1_to_500' }, 400);
     const records = incoming.map(normalizedSale);
+    const affectedDates = [...new Set(records.map(row => row.tarih))];
+    const previousRevenueByDate = {};
+    for (const date of affectedDates) {
+      const before = await env.APERION_DB.prepare(
+        `SELECT ROUND(SUM(CAST(json_extract(payload_json,'$.ciro') AS REAL)),2) AS revenue
+           FROM canonical_events WHERE event_type='sale.invoice' AND truth_state='confirmed' AND substr(occurred_at,1,10)=?`
+      ).bind(date).first();
+      previousRevenueByDate[date] = finiteNumber(before?.revenue, 0);
+    }
     const connector = await env.APERION_DB.prepare(
       `SELECT id FROM connector_registry WHERE connector_key='bizimhesap' LIMIT 1`
     ).first();
@@ -85,7 +177,11 @@ export async function onRequestPost({ request, env }) {
          last_success_at=excluded.last_success_at,checked_at=excluded.checked_at,evidence_ref=excluded.evidence_ref`
     ).bind(`${records.length} satış kaydı D1'e kabul edildi`, cleanText(body.evidence_ref || records[0].source_url, 500)));
     await env.APERION_DB.batch(statements);
-    return json({ ok: true, accepted: records.length, generated_at: new Date().toISOString() });
+    const milestone_notifications = [];
+    for (const date of affectedDates) {
+      milestone_notifications.push({ date, ...(await sendSalesMilestoneIfNeeded(env, date, previousRevenueByDate[date])) });
+    }
+    return json({ ok: true, accepted: records.length, milestone_notifications, generated_at: new Date().toISOString() });
   } catch (error) {
     return json({ ok: false, error: 'sales_sync_failed', message: error.message }, 400);
   }
