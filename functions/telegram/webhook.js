@@ -114,6 +114,72 @@ body: JSON.stringify({ callback_query_id: callbackQueryId, text, show_alert: fal
 return r.json();
 }
 
+async function clearCallbackButtons(env, callbackQuery) {
+if (!env.TELEGRAM_BOT_TOKEN || !callbackQuery?.message?.chat?.id || !callbackQuery?.message?.message_id) return;
+await fetch('https://api.telegram.org/bot' + env.TELEGRAM_BOT_TOKEN + '/editMessageReplyMarkup', {
+method: 'POST',
+headers: { 'content-type': 'application/json' },
+body: JSON.stringify({
+chat_id: callbackQuery.message.chat.id,
+message_id: callbackQuery.message.message_id,
+reply_markup: { inline_keyboard: [] }
+})
+}).catch(() => {});
+}
+
+async function handleBankMovementCallback(env, callbackQuery) {
+const data = clean(callbackQuery?.data);
+const match = data.match(/^bm:([ar]):([0-9a-f-]{36})$/i);
+if (!match) return false;
+const action = match[1].toLowerCase();
+const movementId = match[2];
+const chatId = callbackQuery?.message?.chat?.id;
+if (!chatId) return true;
+
+const lookup = await sbFetch(env, '/rest/v1/pending_bank_movements?select=id,status,bank_name,transaction_date,description,amount_in,amount_out&id=eq.' + encodeURIComponent(movementId) + '&limit=1');
+const row = lookup.ok && Array.isArray(lookup.data) ? lookup.data[0] : null;
+if (!row) {
+await answerCallbackQuery(env, callbackQuery.id, 'Hareket bulunamadı.');
+return true;
+}
+
+if (action === 'r') {
+if (row.status === 'approved') {
+await answerCallbackQuery(env, callbackQuery.id, 'Bu hareket daha önce onaylandı; red uygulanmadı.');
+return true;
+}
+const rejected = await sbFetch(env, '/rest/v1/rpc/reject_pending_bank_movement', {
+method: 'POST',
+body: JSON.stringify({ p_id: movementId, p_note: 'Telegram üzerinden reddedildi: ' + chatId })
+});
+if (!rejected.ok) {
+await answerCallbackQuery(env, callbackQuery.id, 'Red işlemi başarısız.');
+return true;
+}
+await clearCallbackButtons(env, callbackQuery);
+await answerCallbackQuery(env, callbackQuery.id, 'Hareket reddedildi.');
+await sendMessage(env, chatId, '❌ <b>Banka hareketi reddedildi</b>\nKayıt BizimHesap kuyruğuna alınmadı.', null, { parse_mode: 'HTML' });
+return true;
+}
+
+if (row.status === 'rejected') {
+await answerCallbackQuery(env, callbackQuery.id, 'Bu hareket daha önce reddedildi.');
+return true;
+}
+const approved = await sbFetch(env, '/rest/v1/rpc/approve_pending_bank_movement', {
+method: 'POST',
+body: JSON.stringify({ p_id: movementId, p_note: 'Telegram üzerinden onaylandı: ' + chatId })
+});
+if (!approved.ok) {
+await answerCallbackQuery(env, callbackQuery.id, 'Onay kuyruğa alınamadı.');
+return true;
+}
+await clearCallbackButtons(env, callbackQuery);
+await answerCallbackQuery(env, callbackQuery.id, 'Onaylandı; güvenli işlem kuyruğuna alındı.');
+await sendMessage(env, chatId, '✅ <b>Banka hareketi onaylandı</b>\nBizimHesap güvenlik kuyruğuna aktarıldı. Cari eşleşmesi, mükerrer kontrolü ve kayıt kanıtı tamamlanmadan işlem kapanmış sayılmaz.', null, { parse_mode: 'HTML' });
+return true;
+}
+
 function money(n) {
 const v = Math.round(Number(n) || 0);
 return v.toLocaleString('tr-TR') + ' TL';
@@ -1082,7 +1148,7 @@ const identity = await verifyTelegramRequest(request, env, update);
 if (!identity.ok) return json({ ok: false, error: 'unauthorized_telegram_update' }, identity.status || 403);
 if (update.callback_query) {
 if (!identity.hardened) return json({ ok: false, error: 'security_bootstrap_pending' }, 503);
-const handled = await handleCashExpenseCallbackLive(env, update.callback_query) || await handleTransferCallback(env, update.callback_query);
+const handled = await handleBankMovementCallback(env, update.callback_query) || await handleCashExpenseCallbackLive(env, update.callback_query) || await handleTransferCallback(env, update.callback_query);
 return json({ ok: true, callback_handled: handled });
 }
 const msg = update.message;
