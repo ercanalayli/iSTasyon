@@ -36,6 +36,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.125.0"
           command: d1 migrations apply aperion-control-plane --remote
 
       - name: Deploy main to canonical Pages project
@@ -43,5 +44,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.125.0"
           command: pages deploy . --project-name=aperion-istasyon --branch=main --commit-dirty=true
 
