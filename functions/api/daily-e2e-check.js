@@ -29,6 +29,22 @@ async function sourceProbe(env, table) {
   }
 }
 
+async function recordSourceHealth(db, sourceKey, probe, evidenceRef) {
+  const status = probe.ok ? "ok" : "error";
+  const errorCode = probe.ok ? "OK" : "PROBE_FAILED";
+  await db.prepare(`
+    INSERT INTO source_health(source_key,status,error_code,message,last_success_at,checked_at,evidence_ref)
+    VALUES(?,?,?,?,CASE WHEN ?='ok' THEN datetime('now') ELSE NULL END,datetime('now'),?)
+    ON CONFLICT(source_key) DO UPDATE SET
+      status=excluded.status,
+      error_code=excluded.error_code,
+      message=excluded.message,
+      last_success_at=CASE WHEN excluded.status='ok' THEN excluded.checked_at ELSE source_health.last_success_at END,
+      checked_at=excluded.checked_at,
+      evidence_ref=excluded.evidence_ref
+  `).bind(sourceKey, status, errorCode, probe.detail, status, evidenceRef).run();
+}
+
 function istanbulDate() {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Istanbul",
@@ -57,14 +73,23 @@ export async function onRequestPost({ request, env }) {
   const existing = await query(env.APERION_DB, "SELECT status FROM daily_e2e_runs WHERE run_key=?", `e2e:${date}`);
   if (existing.row) return json({ ok: true, skipped: true, status: existing.row.status });
 
-  const [brief, chat, sourceHealth, sales, customers, expenses] = await Promise.all([
+  const [brief, chat, sales, customers, expenses, purchases, products] = await Promise.all([
     query(env.APERION_DB, "SELECT status,telegram_message_id,sent_at FROM morning_brief_runs WHERE run_key=?", `morning:${date}`),
     query(env.APERION_DB, "SELECT config_value FROM telegram_security_config WHERE config_key='allowed_chat_id'"),
-    query(env.APERION_DB, "SELECT COUNT(*) AS total,SUM(CASE WHEN status IN ('ok','confirmed') THEN 1 ELSE 0 END) AS healthy FROM source_health"),
     sourceProbe(env, "sales_raw"),
     sourceProbe(env, "customers"),
-    sourceProbe(env, "masraf_raw")
+    sourceProbe(env, "masraf_raw"),
+    sourceProbe(env, "purchase_raw"),
+    sourceProbe(env, "product_raw")
   ]);
+  await Promise.all([
+    recordSourceHealth(env.APERION_DB, "supabase_sales_raw", sales, `daily-e2e:${date}`),
+    recordSourceHealth(env.APERION_DB, "supabase_customers", customers, `daily-e2e:${date}`),
+    recordSourceHealth(env.APERION_DB, "supabase_masraf_raw", expenses, `daily-e2e:${date}`),
+    recordSourceHealth(env.APERION_DB, "supabase_purchase_raw", purchases, `daily-e2e:${date}`),
+    recordSourceHealth(env.APERION_DB, "supabase_product_raw", products, `daily-e2e:${date}`)
+  ]);
+  const sourceHealth = await query(env.APERION_DB, "SELECT COUNT(*) AS total,SUM(CASE WHEN status IN ('ok','confirmed') THEN 1 ELSE 0 END) AS healthy FROM source_health");
 
   const checks = [
     { name: "09:00 Telegram brifingi", ok: brief.ok && brief.row?.status === "sent" && Boolean(brief.row?.telegram_message_id), detail: brief.row?.status || "kayıt yok" },
@@ -76,7 +101,9 @@ export async function onRequestPost({ request, env }) {
     { name: "Telegram hedef kimliği", ok: chat.ok && Boolean(chat.row?.config_value), detail: chat.row?.config_value ? "yapılandırıldı" : "eksik" },
     { name: "Satış kaynağı", ...sales },
     { name: "Cari kaynağı", ...customers },
-    { name: "Gider kaynağı", ...expenses }
+    { name: "Gider kaynağı", ...expenses },
+    { name: "FIFO alış kaynağı", ...purchases },
+    { name: "Ürün ana verisi", ...products }
   ];
 
   let allOk = checks.every(check => check.ok);
