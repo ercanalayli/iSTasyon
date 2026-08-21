@@ -1,7 +1,3 @@
-Exit code: 0
-Wall time: 0.3 seconds
-Total output lines: 1412
-Output:
 import { getMobileSecurityStatus, handleMobileCommand, verifyTelegramRequest } from './mobile-command-center.js';
 import { DESKTOP_TARGETS, desktopTargetSummary, parseUniversalCommand } from './universal-command-router.js';
 import { deviceHealth, queueDeviceCommand } from './device-bridge.js';
