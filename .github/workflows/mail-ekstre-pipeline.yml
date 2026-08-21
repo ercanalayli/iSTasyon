@@ -15,8 +15,8 @@ on:
         type: boolean
         default: true
   schedule:
-    # 10:00 Europe/Istanbul: fixed morning bank statement check.
-    - cron: "0 7 * * *"
+    # 09:00 Europe/Istanbul: fixed morning bank statement check.
+    - cron: "0 6 * * *"
     # 17:00 Europe/Istanbul: fixed evening bank statement check.
     - cron: "0 14 * * *"
     # 09:00-20:45 Europe/Istanbul: intraday follow-up while bank mails keep arriving.
@@ -42,6 +42,10 @@ jobs:
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
       GDRIVE_EKSTRE_FOLDER_ID: ${{ secrets.GDRIVE_EKSTRE_FOLDER_ID }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TELEGRAM_ALLOWED_CHAT_ID: ${{ secrets.TELEGRAM_ALLOWED_CHAT_ID }}
+      TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
       EKSTRE_SOURCE: ${{ inputs.source || 'gmail' }}
       GMAIL_MAILBOX: ercanalayli@gmail.com
       # Yeni mailleri gunluk akista oku; duplicate_key gecmis tarihli ekstreleri
@@ -151,7 +155,7 @@ jobs:
         run: npm run bank:daily-review
 
       - name: Send concise daily bank review
-        if: ${{ github.event_name == 'schedule' && (github.event.schedule == '0 7 * * *' || github.event.schedule == '0 14 * * *') }}
+        if: ${{ github.event_name == 'schedule' && (github.event.schedule == '0 6 * * *' || github.event.schedule == '0 14 * * *') }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
