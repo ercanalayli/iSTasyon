@@ -20,6 +20,108 @@ const lookback = process.env.LOOKBACK_DAYS || cfg.lookback_days || 7;
 const maxMessagesPerBank = Number(process.env.GMAIL_MAX_MESSAGES_PER_BANK || cfg.gmail_max_messages_per_bank || 25);
 const dryRun = process.env.DRY_RUN === '1';
 const LOG_DIR = new URL('./logs/', import.meta.url);
+const TELEGRAM_NOTIFICATION_PREFIX = '[TELEGRAM_ONAY_KARTI]';
+
+function telegramChatIds(){
+  return String(process.env.TELEGRAM_CHAT_IDS || process.env.TELEGRAM_CHAT_ID || process.env.TELEGRAM_ALLOWED_CHAT_ID || '')
+    .split(',')
+    .map(value => value.trim())
+    .filter(Boolean);
+}
+
+function html(value){
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function trMoney(value){
+  return Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TL';
+}
+
+function bankApprovalCard(row){
+  const amountIn = Number(row.amount_in || 0);
+  const amountOut = Number(row.amount_out || 0);
+  const direction = amountIn > 0 ? 'TAHSİLAT' : 'ÖDEME';
+  const amount = amountIn > 0 ? amountIn : Math.abs(amountOut);
+  const confidence = Number(row.confidence_score || 0);
+  const confidenceIcon = confidence >= 90 ? '🟢' : confidence >= 75 ? '🟠' : '🔴';
+  const counterparty = row.confirmed_counterparty || row.suggested_counterparty || 'EŞLEŞME GEREKLİ';
+  return [
+    '<b>🏦 BANKA HAREKETİ ONAYI</b>',
+    '',
+    '<b>' + direction + ' • ' + trMoney(amount) + '</b>',
+    '🏛 <b>Banka:</b> ' + html(row.bank_name || '-'),
+    '📅 <b>Tarih:</b> ' + html(row.transaction_date || '-'),
+    '👤 <b>Karşı taraf:</b> ' + html(counterparty),
+    '📝 <b>Açıklama:</b> ' + html(row.description || '-'),
+    confidenceIcon + ' <b>Eşleşme güveni:</b> ' + confidence.toLocaleString('tr-TR') + '%',
+    '',
+    confidence < 84 || !row.counterparty_confirmed
+      ? '<b>⚠️ İnceleme:</b> Cari veya işlem türü kesinleşmeden kayıt tamamlanmayacaktır.'
+      : '<b>✅ Kontrol:</b> Onaydan sonra BizimHesap güvenlik kapısına aktarılır.',
+    '<i>Mükerrer kontrolü uygulanmıştır. Onay vermek tek başına güvenlik kontrollerini kaldırmaz.</i>'
+  ].join('\n');
+}
+
+async function sendTelegramApproval(token, chatId, row){
+  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: bankApprovalCard(row),
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [[
+          { text: '✅ ONAYLA', callback_data: `bm:a:${row.id}` },
+          { text: '❌ REDDET', callback_data: `bm:r:${row.id}` }
+        ]]
+      }
+    })
+  });
+  const body = await response.json().catch(() => ({}));
+  if(!response.ok || body.ok !== true) throw new Error(body.description || `Telegram HTTP ${response.status}`);
+  return body.result?.message_id || null;
+}
+
+async function dispatchPendingApprovals(db, report){
+  const token = process.env.TELEGRAM_BOT_TOKEN || '';
+  const chatIds = telegramChatIds();
+  if(!token || !chatIds.length){
+    report.telegram_approvals = { configured: false, sent: 0, reason: 'Telegram token/chat eksik' };
+    return;
+  }
+  const since = new Date(Date.now() - Math.max(1, Number(lookback)) * 86400000).toISOString();
+  const { data, error } = await db
+    .from('pending_bank_movements')
+    .select('id,bank_name,transaction_date,description,amount_in,amount_out,confidence_score,suggested_counterparty,confirmed_counterparty,counterparty_confirmed,approval_note,created_at,status')
+    .eq('company_id', cfg.company_id || 'alayli')
+    .in('status', ['pending', 'needs_review'])
+    .gte('created_at', since)
+    .order('created_at', { ascending: true })
+    .limit(50);
+  if(error) throw new Error(`Telegram onay listesi okunamadı: ${error.message}`);
+  const rows = (data || []).filter(row => !String(row.approval_note || '').includes(TELEGRAM_NOTIFICATION_PREFIX));
+  let sent = 0;
+  const failures = [];
+  for(const row of rows){
+    try{
+      const messageIds = [];
+      for(const chatId of chatIds) messageIds.push(await sendTelegramApproval(token, chatId, row));
+      const marker = `${TELEGRAM_NOTIFICATION_PREFIX} ${new Date().toISOString()} message=${messageIds.filter(Boolean).join(',')}`;
+      const previous = String(row.approval_note || '').trim();
+      const { error: updateError } = await db.from('pending_bank_movements').update({ approval_note: previous ? `${previous}\n${marker}` : marker }).eq('id', row.id);
+      if(updateError) throw updateError;
+      sent++;
+    }catch(error){
+      failures.push({ id: row.id, error: error.message || String(error) });
+    }
+  }
+  report.telegram_approvals = { configured: true, candidates: rows.length, sent, failed: failures.length, failures: failures.slice(0, 10) };
+  if(failures.length) report.errors.push({ area: 'telegram_approval_dispatch', error: `${failures.length} kart gönderilemedi` });
+}
 
 function openDb(){
   const url = process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
@@ -358,6 +460,9 @@ async function main(){
       if(personalRows.length){
         report.personal_ingest = await ingestPersonalRows(db, personalRows, report);
       }
+      await dispatchPendingApprovals(db, report).catch(error => {
+        report.errors.push({ area: 'telegram_approval_dispatch', error: error.message || String(error) });
+      });
     }
   }
 
