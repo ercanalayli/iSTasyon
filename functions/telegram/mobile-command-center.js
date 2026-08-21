@@ -1,25 +1,25 @@
 const CLOSED_STATUSES = ['completed', 'cancelled', 'verified', 'done', 'closed'];
 
 export const MOBILE_COMMANDS = Object.freeze({
-  menu: { risk: 'read', title: 'Ana menü' },
-  morning: { risk: 'read', title: 'Günaydın özeti' },
-  system: { risk: 'read', title: 'Sistem sağlığı' },
-  priority_status: { risk: 'read', title: 'Önemli işler özeti' },
-  approvals: { risk: 'read', title: 'Onay kuyruğu' },
-  tasks: { risk: 'read', title: 'Görevler' },
-  memory: { risk: 'read', title: 'Hafıza özeti' },
-  command_catalog: { risk: 'read', title: 'Komut kataloğu' },
+  menu: { risk: 'read', title: 'Ana menÃ¼' },
+  morning: { risk: 'read', title: 'GÃ¼naydÄ±n Ã¶zeti' },
+  system: { risk: 'read', title: 'Sistem saÄŸlÄ±ÄŸÄ±' },
+  priority_status: { risk: 'read', title: 'Ã–nemli iÅŸler Ã¶zeti' },
+  approvals: { risk: 'read', title: 'Onay kuyruÄŸu' },
+  tasks: { risk: 'read', title: 'GÃ¶revler' },
+  memory: { risk: 'read', title: 'HafÄ±za Ã¶zeti' },
+  command_catalog: { risk: 'read', title: 'Komut kataloÄŸu' },
   command_status: { risk: 'read', title: 'Son komutlar' },
   device_status: { risk: 'read', title: 'Cihaz durumu' },
-  task_capture: { risk: 'low_risk', title: 'Görev yakalama' },
-  help: { risk: 'read', title: 'Yardım' }
+  task_capture: { risk: 'low_risk', title: 'GÃ¶rev yakalama' },
+  help: { risk: 'read', title: 'YardÄ±m' }
 });
 
 export function normalizeTurkish(value) {
   return String(value || '')
     .trim()
-    .replace(/İ/g, 'i')
-    .replace(/I/g, 'ı')
+    .replace(/Ä°/g, 'i')
+    .replace(/I/g, 'Ä±')
     .toLocaleLowerCase('tr-TR')
     .replace(/\s+/g, ' ');
 }
@@ -27,18 +27,18 @@ export function normalizeTurkish(value) {
 export function parseMobileCommand(text) {
   const raw = String(text || '').trim();
   const normalized = normalizeTurkish(raw);
-  if (/^\/(start|menu)(?:@\w+)?\b/.test(normalized) || /^(menü|menu)$/.test(normalized)) return { code: 'menu' };
-  if (/^\/sabah(?:@\w+)?\b/.test(normalized) || /^günaydın\s+aperion\b/.test(normalized)) return { code: 'morning' };
+  if (/^\/(start|menu)(?:@\w+)?\b/.test(normalized) || /^(menÃ¼|menu)$/.test(normalized)) return { code: 'menu' };
+  if (/^\/sabah(?:@\w+)?\b/.test(normalized) || /^gÃ¼naydÄ±n\s+aperion\b/.test(normalized)) return { code: 'morning' };
   if (/^\/sistem(?:@\w+)?\b/.test(normalized) || /^(sistem|sistem durumu)$/.test(normalized)) return { code: 'system' };
-  if (/^\/(onemli|önemli)(?:@\w+)?\b/.test(normalized) || /^önemli işler$/.test(normalized)) return { code: 'priority_status' };
+  if (/^\/(onemli|Ã¶nemli)(?:@\w+)?\b/.test(normalized) || /^Ã¶nemli iÅŸler$/.test(normalized)) return { code: 'priority_status' };
   if (/^\/onaylar(?:@\w+)?\b/.test(normalized)) return { code: 'approvals' };
-  if (/^\/(gorevler|görevler)(?:@\w+)?\b/.test(normalized)) return { code: 'tasks' };
-  if (/^\/hafiza(?:@\w+)?\b/.test(normalized) || /^\/hafıza(?:@\w+)?\b/.test(normalized)) return { code: 'memory' };
-  if (/^\/(yardim|yardım)(?:@\w+)?\b/.test(normalized)) return { code: 'help' };
+  if (/^\/(gorevler|gÃ¶revler)(?:@\w+)?\b/.test(normalized)) return { code: 'tasks' };
+  if (/^\/hafiza(?:@\w+)?\b/.test(normalized) || /^\/hafÄ±za(?:@\w+)?\b/.test(normalized)) return { code: 'memory' };
+  if (/^\/(yardim|yardÄ±m)(?:@\w+)?\b/.test(normalized)) return { code: 'help' };
   if (/^\/(komutlar|commands)(?:@\w+)?\b/.test(normalized)) return { code: 'command_catalog' };
-  if (/^\/(komutdurum|sonuclar|sonuçlar)(?:@\w+)?\b/.test(normalized)) return { code: 'command_status' };
+  if (/^\/(komutdurum|sonuclar|sonuÃ§lar)(?:@\w+)?\b/.test(normalized)) return { code: 'command_status' };
   if (/^\/(cihazdurum|cihaz)(?:@\w+)?\b/.test(normalized) || /^cihaz durumu$/.test(normalized)) return { code: 'device_status' };
-  const task = raw.match(/^\/(?:gorev|görev)(?:@\w+)?\s+([\s\S]+)$/iu);
+  const task = raw.match(/^\/(?:gorev|gÃ¶rev)(?:@\w+)?\s+([\s\S]+)$/iu);
   if (task && task[1].trim()) return { code: 'task_capture', payload: task[1].trim() };
   return null;
 }
@@ -266,7 +266,7 @@ async function safeFirst(db, sql, bindings = []) {
 }
 
 function valueOrUnknown(result, value) {
-  return result.available ? String(value ?? 0) : 'kaynak okunamadı';
+  return result.available ? String(value ?? 0) : 'kaynak okunamadÄ±';
 }
 
 async function commandHash(chatId, messageId, code) {
@@ -292,63 +292,70 @@ async function recordCommand(db, { chatId, userId, messageId, code, risk, status
 
 function menuText(hardened) {
   return [
-    '🧠 AperiON Mobil Kumanda',
+    'ğŸ§  AperiON Mobil Kumanda',
     '',
-    '🌅 Günaydın: Günaydın AperiON veya /sabah',
-    '🩺 Sistem: /sistem',
-    '⭐ Önemli işler: /onemli',
-    '🖥️ Cihaz durumu: /cihazdurum',
-    '✅ Onaylar: /onaylar',
-    '📋 Görevler: /gorevler',
-    '🧠 Hafıza: /hafiza',
-    '➕ Görev ekle: /gorev yapılacak iş',
-    '📦 Stok: /stok ürün adı',
-    '💰 Bakiye: bakiye',
-    '📎 Belge/fotoğraf: doğrudan gönder',
-    '🧭 Tüm komutlar: /komutlar',
-    '🕘 Son komutlar: /komutdurum',
-    '🖥️ Uygulama aç: “BizimHesap aç”, “Gmail aç”, “Drive aç”',
-    '💬 Serbest emir: /komut yapılacak iş',
+    'ğŸŒ… GÃ¼naydÄ±n: GÃ¼naydÄ±n AperiON veya /sabah',
+    'ğŸ©º Sistem: /sistem',
+    'â­ Ã–nemli iÅŸler: /onemli',
+    'ğŸ–¥ï¸ Cihaz durumu: /cihazdurum',
+    'âœ… Onaylar: /onaylar',
+    'ğŸ“‹ GÃ¶revler: /gorevler',
+    'ğŸ§  HafÄ±za: /hafiza',
+    'â• GÃ¶rev ekle: /gorev yapÄ±lacak iÅŸ',
+    'ğŸ“¦ Stok: /stok Ã¼rÃ¼n adÄ±',
+    'ğŸ“Š ÃœrÃ¼n performansÄ±: /urunraporu Ã¼rÃ¼n adÄ±',
+    'ğŸ“Š Cari raporu: /cariraporu cari adÄ±',
+    'ğŸ“ˆ Gelir tablosu: /gelirtablosu',
+    'âš–ï¸ BilanÃ§o: /bilanco',
+    'âš™ï¸ Rapor alanlarÄ±: /raporalanlari',
+    'ğŸ’° Bakiye: bakiye',
+    'ğŸ“ Belge/fotoÄŸraf: doÄŸrudan gÃ¶nder',
+    'ğŸ§­ TÃ¼m komutlar: /komutlar',
+    'ğŸ•˜ Son komutlar: /komutdurum',
+    'ğŸ–¥ï¸ Uygulama aÃ§: â€œBizimHesap aÃ§â€, â€œGmail aÃ§â€, â€œDrive aÃ§â€',
+    'ğŸ’¬ Serbest emir: /komut yapÄ±lacak iÅŸ',
     '',
-    'Gerçek mali işlemler yalnızca tek kullanımlık açık onaydan sonra yürütülür.',
-    hardened ? '🔒 Telegram kimliği ve webhook doğrulaması etkin.' : '⚠️ Webhook anahtarı tamamlanıyor: mali/iletişim işlemleri kapalı; sabit uygulama açma ve iç kayıt komutları kullanılabilir.'
+    'GerÃ§ek mali iÅŸlemler yalnÄ±zca tek kullanÄ±mlÄ±k aÃ§Ä±k onaydan sonra yÃ¼rÃ¼tÃ¼lÃ¼r.',
+    hardened ? 'ğŸ”’ Telegram kimliÄŸi ve webhook doÄŸrulamasÄ± etkin.' : 'âš ï¸ Webhook anahtarÄ± tamamlanÄ±yor: mali/iletiÅŸim iÅŸlemleri kapalÄ±; sabit uygulama aÃ§ma ve iÃ§ kayÄ±t komutlarÄ± kullanÄ±labilir.'
   ].join('\n');
 }
 
 function commandCatalogText() {
   return [
-    '🧭 AperiON Komut Kataloğu',
+    'ğŸ§­ AperiON Komut KataloÄŸu',
     '',
-    'OTOMATİK / SALT OKUNUR',
-    '• /sabah · /sistem · /onemli · /cihazdurum · /onaylar · /gorevler · /hafiza',
-    '• /stok ürün · bakiye · /durum',
+    'OTOMATÄ°K / SALT OKUNUR',
+    'â€¢ /sabah Â· /sistem Â· /onemli Â· /cihazdurum Â· /onaylar Â· /gorevler Â· /hafiza',
+    'â€¢ /stok Ã¼rÃ¼n Â· bakiye Â· /durum',
+    'â€¢ /urunraporu Ã¼rÃ¼n Â· /cariraporu cari Â· /gelirtablosu Â· /bilanco',
+    'â€¢ /raporalanlari ile gÃ¶sterilecek alanlarÄ± siz belirlersiniz',
     '',
-    'MASAÜSTÜ — SABİT VE GÜVENLİ HEDEFLER',
-    '• BizimHesap aç · Gmail aç · Drive aç · Takvim aç',
-    '• Telegram aç · WhatsApp aç · AperiON aç',
+    'MASAÃœSTÃœ â€” SABÄ°T VE GÃœVENLÄ° HEDEFLER',
+    'â€¢ BizimHesap aÃ§ Â· Gmail aÃ§ Â· Drive aÃ§ Â· Takvim aÃ§',
+    'â€¢ Telegram aÃ§ Â· WhatsApp aÃ§ Â· AperiON aÃ§',
     '',
     'KAYIT / PLANLAMA',
-    '• /gorev yapılacak iş',
-    '• /komut serbest metinli emir',
-    '• Belge veya fotoğrafı doğrudan gönder',
+    'â€¢ /gorev yapÄ±lacak iÅŸ',
+    'â€¢ /komut serbest metinli emir',
+    'â€¢ Belge veya fotoÄŸrafÄ± doÄŸrudan gÃ¶nder',
     '',
-    'TEK KULLANIMLIK ONAY GEREKTİRİR',
-    '• Para, ödeme, transfer, fatura, satınalma ve tahsilat',
-    '• Mesaj/e-posta gönderme, paylaşma veya yayınlama',
-    '• Silme, iptal, yetki ve erişim değişiklikleri',
+    'TEK KULLANIMLIK ONAY GEREKTÄ°RÄ°R',
+    'â€¢ Para, Ã¶deme, transfer, fatura, satÄ±nalma ve tahsilat',
+    'â€¢ Mesaj/e-posta gÃ¶nderme, paylaÅŸma veya yayÄ±nlama',
+    'â€¢ Silme, iptal, yetki ve eriÅŸim deÄŸiÅŸiklikleri',
     '',
-    'AperiON tanımadığı emri kaybetmez: inceleme kuyruğuna alır ve hiçbir dış işlemi uydurmaz.'
+    'AperiON tanÄ±madÄ±ÄŸÄ± emri kaybetmez: inceleme kuyruÄŸuna alÄ±r ve hiÃ§bir dÄ±ÅŸ iÅŸlemi uydurmaz.'
   ].join('\n');
 }
 
 async function buildCommandStatusText(db) {
   const result = await safeAll(db, 'SELECT raw_text,status,risk_class,created_at,result_summary FROM telegram_command_requests ORDER BY created_at DESC LIMIT 8');
-  if (!result.available) return '⚠️ Komut geçmişi henüz hazır değil.';
-  if (!result.rows.length) return '🕘 Henüz kayıtlı bir serbest komut yok.';
+  if (!result.available) return 'âš ï¸ Komut geÃ§miÅŸi henÃ¼z hazÄ±r deÄŸil.';
+  if (!result.rows.length) return 'ğŸ•˜ HenÃ¼z kayÄ±tlÄ± bir serbest komut yok.';
   return [
-    '🕘 Son AperiON komutları:',
+    'ğŸ•˜ Son AperiON komutlarÄ±:',
     '',
-    ...result.rows.map((row) => `• ${String(row.raw_text || '').slice(0, 80)}\n  ${row.status} · ${row.risk_class}${row.result_summary ? ` · ${row.result_summary}` : ''}`)
+    ...result.rows.map((row) => `â€¢ ${String(row.raw_text || '').slice(0, 80)}\n  ${row.status} Â· ${row.risk_class}${row.result_summary ? ` Â· ${row.result_summary}` : ''}`)
   ].join('\n');
 }
 
@@ -371,45 +378,45 @@ async function buildDeviceStatusText(db, nowMs = Date.now()) {
       FROM aperion_device_commands`)
   ]);
   if (!devices.available || !commands.available) {
-    return '⚠️ Cihaz durumu şu an okunamadı; hiçbir masaüstü komutu çalıştırılmadı.';
+    return 'âš ï¸ Cihaz durumu ÅŸu an okunamadÄ±; hiÃ§bir masaÃ¼stÃ¼ komutu Ã§alÄ±ÅŸtÄ±rÄ±lmadÄ±.';
   }
   if (!devices.rows.length) {
-    return '🖥️ Kayıtlı aktif AperiON bilgisayarı yok. Masaüstü köprüsü kurulmadan Telegram komutları bilgisayarda çalışmaz.';
+    return 'ğŸ–¥ï¸ KayÄ±tlÄ± aktif AperiON bilgisayarÄ± yok. MasaÃ¼stÃ¼ kÃ¶prÃ¼sÃ¼ kurulmadan Telegram komutlarÄ± bilgisayarda Ã§alÄ±ÅŸmaz.';
   }
 
   const latest = devices.rows[0];
   const lastSeenMs = parseSqliteUtc(latest.last_seen_at);
   const online = Number.isFinite(lastSeenMs) && nowMs - lastSeenMs <= 90 * 1000;
   const connection = online
-    ? 'ÇEVRİMİÇİ'
-    : (latest.last_seen_at ? 'ÇEVRİMDIŞI' : 'KAYITLI — İLK BAĞLANTI BEKLENİYOR');
+    ? 'Ã‡EVRÄ°MÄ°Ã‡Ä°'
+    : (latest.last_seen_at ? 'Ã‡EVRÄ°MDIÅI' : 'KAYITLI â€” Ä°LK BAÄLANTI BEKLENÄ°YOR');
   return [
-    '🖥️ AperiON cihaz durumu',
+    'ğŸ–¥ï¸ AperiON cihaz durumu',
     '',
-    `• Bilgisayar: ${latest.device_name || latest.device_id}`,
-    `• Bağlantı: ${connection}`,
-    `• Son görülme: ${latest.last_seen_at || 'henüz bağlantı kurulmadı'}`,
-    `• Kayıtlı aktif cihaz: ${devices.rows.length}`,
-    `• Bekleyen komut: ${commands.row?.pending || 0}`,
-    `• İşleniyor: ${commands.row?.processing || 0}`,
-    `• Tamamlanan: ${commands.row?.completed || 0}`,
-    `• Başarısız: ${commands.row?.failed || 0}`,
+    `â€¢ Bilgisayar: ${latest.device_name || latest.device_id}`,
+    `â€¢ BaÄŸlantÄ±: ${connection}`,
+    `â€¢ Son gÃ¶rÃ¼lme: ${latest.last_seen_at || 'henÃ¼z baÄŸlantÄ± kurulmadÄ±'}`,
+    `â€¢ KayÄ±tlÄ± aktif cihaz: ${devices.rows.length}`,
+    `â€¢ Bekleyen komut: ${commands.row?.pending || 0}`,
+    `â€¢ Ä°ÅŸleniyor: ${commands.row?.processing || 0}`,
+    `â€¢ Tamamlanan: ${commands.row?.completed || 0}`,
+    `â€¢ BaÅŸarÄ±sÄ±z: ${commands.row?.failed || 0}`,
     '',
     online
-      ? 'Telefon komutları masaüstü köprüsü tarafından alınabilir.'
-      : 'Bilgisayarda AperiON köprüsü çalıştırılmadan bekleyen komutlar açılmaz.'
+      ? 'Telefon komutlarÄ± masaÃ¼stÃ¼ kÃ¶prÃ¼sÃ¼ tarafÄ±ndan alÄ±nabilir.'
+      : 'Bilgisayarda AperiON kÃ¶prÃ¼sÃ¼ Ã§alÄ±ÅŸtÄ±rÄ±lmadan bekleyen komutlar aÃ§Ä±lmaz.'
   ].join('\n');
 }
 
 const PRIORITY_CATEGORIES = Object.freeze([
-  { key: 'received_orders', label: 'Alınan siparişler', types: ['received_order', 'sales_order', 'customer_order', 'alinan_siparis'] },
-  { key: 'placed_orders', label: 'Verilen siparişler', types: ['purchase_order', 'supplier_order', 'placed_order', 'verilen_siparis'] },
-  { key: 'payments', label: 'Ödemeler', types: ['payable', 'payment', 'odeme'] },
+  { key: 'received_orders', label: 'AlÄ±nan sipariÅŸler', types: ['received_order', 'sales_order', 'customer_order', 'alinan_siparis'] },
+  { key: 'placed_orders', label: 'Verilen sipariÅŸler', types: ['purchase_order', 'supplier_order', 'placed_order', 'verilen_siparis'] },
+  { key: 'payments', label: 'Ã–demeler', types: ['payable', 'payment', 'odeme'] },
   { key: 'collections', label: 'Tahsilatlar', types: ['receivable', 'collection', 'tahsilat'] }
 ]);
 
 function normalizedType(value) {
-  return normalizeTurkish(value).replace(/[^a-z0-9çğıöşü]+/g, '_').replace(/^_+|_+$/g, '');
+  return normalizeTurkish(value).replace(/[^a-z0-9Ã§ÄŸÄ±Ã¶ÅŸÃ¼]+/g, '_').replace(/^_+|_+$/g, '');
 }
 
 async function buildPrioritySnapshot(db) {
@@ -442,27 +449,27 @@ async function buildPrioritySnapshot(db) {
 }
 
 function prioritySnapshotLines(snapshot) {
-  if (!snapshot.available) return ['• Beşli ana kontrol: kaynak okunamadı'];
+  if (!snapshot.available) return ['â€¢ BeÅŸli ana kontrol: kaynak okunamadÄ±'];
   const lines = PRIORITY_CATEGORIES.map((category) => {
     const value = snapshot.categories[category.key];
-    const amount = value.knownAmount > 0 ? ` · bilinen ${Math.round(value.knownAmount).toLocaleString('tr-TR')} TL` : '';
-    const overdue = value.overdue > 0 ? ` · ${value.overdue} gecikmiş` : '';
-    return `• ${category.label}: ${value.count}${amount}${overdue}`;
+    const amount = value.knownAmount > 0 ? ` Â· bilinen ${Math.round(value.knownAmount).toLocaleString('tr-TR')} TL` : '';
+    const overdue = value.overdue > 0 ? ` Â· ${value.overdue} gecikmiÅŸ` : '';
+    return `â€¢ ${category.label}: ${value.count}${amount}${overdue}`;
   });
-  lines.push(`• Yapılacaklar: ${snapshot.tasks}`);
+  lines.push(`â€¢ YapÄ±lacaklar: ${snapshot.tasks}`);
   return lines;
 }
 
 async function buildPriorityStatusText(db) {
   const snapshot = await buildPrioritySnapshot(db);
   return [
-    '⭐ AperiON ana kontrol listesi',
+    'â­ AperiON ana kontrol listesi',
     '',
     ...prioritySnapshotLines(snapshot),
     '',
     snapshot.available
-      ? 'Bu ekran yalnızca kayıtlı ve doğrulanabilir verileri sayar.'
-      : 'Eksik kaynak sıfır kabul edilmedi; veri hazır olunca yeniden deneyin.'
+      ? 'Bu ekran yalnÄ±zca kayÄ±tlÄ± ve doÄŸrulanabilir verileri sayar.'
+      : 'Eksik kaynak sÄ±fÄ±r kabul edilmedi; veri hazÄ±r olunca yeniden deneyin.'
   ].join('\n');
 }
 
@@ -475,18 +482,18 @@ async function buildMorningBrief(db) {
     buildPrioritySnapshot(db)
   ]);
   return [
-    '🌅 Günaydın. AperiON sabah özeti:',
+    'ğŸŒ… GÃ¼naydÄ±n. AperiON sabah Ã¶zeti:',
     '',
-    `• Bekleyen onay: ${valueOrUnknown(approvals, approvals.row?.count)}`,
-    `• Açık görev: ${valueOrUnknown(work, work.row?.count)}`,
-    `• Gecikmiş taahhüt: ${valueOrUnknown(commitments, commitments.row?.overdue)}`,
-    `• 3 gün içinde: ${valueOrUnknown(commitments, commitments.row?.approaching)}`,
-    `• Sağlıklı kaynak: ${sources.available ? `${sources.row?.healthy || 0}/${sources.row?.total || 0}` : 'kaynak okunamadı'}`,
+    `â€¢ Bekleyen onay: ${valueOrUnknown(approvals, approvals.row?.count)}`,
+    `â€¢ AÃ§Ä±k gÃ¶rev: ${valueOrUnknown(work, work.row?.count)}`,
+    `â€¢ GecikmiÅŸ taahhÃ¼t: ${valueOrUnknown(commitments, commitments.row?.overdue)}`,
+    `â€¢ 3 gÃ¼n iÃ§inde: ${valueOrUnknown(commitments, commitments.row?.approaching)}`,
+    `â€¢ SaÄŸlÄ±klÄ± kaynak: ${sources.available ? `${sources.row?.healthy || 0}/${sources.row?.total || 0}` : 'kaynak okunamadÄ±'}`,
     '',
-    'Öncelikli operasyonlar:',
+    'Ã–ncelikli operasyonlar:',
     ...prioritySnapshotLines(priorities),
     '',
-    'Bu ifade kimlik doğrulama tetikleyicisidir; mali işlem onayı değildir.'
+    'Bu ifade kimlik doÄŸrulama tetikleyicisidir; mali iÅŸlem onayÄ± deÄŸildir.'
   ].join('\n');
 }
 
@@ -496,50 +503,50 @@ async function buildSystemText(db) {
     safeFirst(db, "SELECT COUNT(*) AS total, SUM(CASE WHEN status='active' THEN 1 ELSE 0 END) AS active FROM connector_registry"),
     safeFirst(db, 'SELECT COUNT(*) AS count FROM telegram_command_log')
   ]);
-  const lines = ['🩺 AperiON sistem sağlığı', ''];
-  lines.push(`• Bağlayıcılar: ${connectors.available ? `${connectors.row?.active || 0}/${connectors.row?.total || 0} aktif` : 'okunamadı'}`);
-  lines.push(`• Telegram audit: ${audit.available ? `${audit.row?.count || 0} komut` : 'tablo/migrasyon bekliyor'}`);
+  const lines = ['ğŸ©º AperiON sistem saÄŸlÄ±ÄŸÄ±', ''];
+  lines.push(`â€¢ BaÄŸlayÄ±cÄ±lar: ${connectors.available ? `${connectors.row?.active || 0}/${connectors.row?.total || 0} aktif` : 'okunamadÄ±'}`);
+  lines.push(`â€¢ Telegram audit: ${audit.available ? `${audit.row?.count || 0} komut` : 'tablo/migrasyon bekliyor'}`);
   if (sources.available && sources.rows.length) {
     lines.push('', 'Kaynaklar:');
-    for (const row of sources.rows) lines.push(`• ${row.source_id}: ${row.status}`);
+    for (const row of sources.rows) lines.push(`â€¢ ${row.source_id}: ${row.status}`);
   } else {
-    lines.push('• Kaynak sağlığı: kayıt yok veya okunamadı');
+    lines.push('â€¢ Kaynak saÄŸlÄ±ÄŸÄ±: kayÄ±t yok veya okunamadÄ±');
   }
   return lines.join('\n');
 }
 
 async function buildApprovalsText(db) {
   const result = await safeAll(db, "SELECT id,item_type,status,created_at FROM approval_queue WHERE status IN ('needs_review','pending','approval_pending') ORDER BY created_at DESC LIMIT 10");
-  if (!result.available) return '⚠️ Onay kuyruğu şu an okunamadı.';
-  if (!result.rows.length) return '✅ Bekleyen onay yok.';
-  return ['✅ Bekleyen onaylar:', '', ...result.rows.map((row) => `• #${row.id} · ${row.item_type} · ${row.status}`), '', 'Onay, yalnızca ilgili tek kullanımlık karttan verilebilir.'].join('\n');
+  if (!result.available) return 'âš ï¸ Onay kuyruÄŸu ÅŸu an okunamadÄ±.';
+  if (!result.rows.length) return 'âœ… Bekleyen onay yok.';
+  return ['âœ… Bekleyen onaylar:', '', ...result.rows.map((row) => `â€¢ #${row.id} Â· ${row.item_type} Â· ${row.status}`), '', 'Onay, yalnÄ±zca ilgili tek kullanÄ±mlÄ±k karttan verilebilir.'].join('\n');
 }
 
 async function buildTasksText(db) {
   const work = await safeAll(db, "SELECT title,status,due_at FROM work_items WHERE status NOT IN ('completed','cancelled','verified','done','closed') ORDER BY CASE WHEN due_at IS NULL THEN 1 ELSE 0 END,due_at LIMIT 10");
-  if (!work.available) return '⚠️ Görev kaynağı şu an okunamadı.';
-  if (!work.rows.length) return '📋 Açık görev yok. /gorev ile yeni görev bırakabilirsiniz.';
-  return ['📋 Açık görevler:', '', ...work.rows.map((row) => `• ${row.title} · ${row.status}${row.due_at ? ` · ${row.due_at}` : ''}`)].join('\n');
+  if (!work.available) return 'âš ï¸ GÃ¶rev kaynaÄŸÄ± ÅŸu an okunamadÄ±.';
+  if (!work.rows.length) return 'ğŸ“‹ AÃ§Ä±k gÃ¶rev yok. /gorev ile yeni gÃ¶rev bÄ±rakabilirsiniz.';
+  return ['ğŸ“‹ AÃ§Ä±k gÃ¶revler:', '', ...work.rows.map((row) => `â€¢ ${row.title} Â· ${row.status}${row.due_at ? ` Â· ${row.due_at}` : ''}`)].join('\n');
 }
 
 async function buildMemoryText(db) {
   const checkpoint = await safeFirst(db, 'SELECT summary,next_action,created_at FROM session_checkpoints ORDER BY created_at DESC LIMIT 1');
-  if (!checkpoint.available) return '⚠️ Kalıcı hafıza şu an okunamadı.';
-  if (!checkpoint.row) return '🧠 Henüz kalıcı oturum özeti yok.';
-  return ['🧠 Son kalıcı hafıza özeti:', '', checkpoint.row.summary, '', `Sonraki adım: ${checkpoint.row.next_action || 'belirtilmedi'}`, `Kayıt: ${checkpoint.row.created_at}`].join('\n');
+  if (!checkpoint.available) return 'âš ï¸ KalÄ±cÄ± hafÄ±za ÅŸu an okunamadÄ±.';
+  if (!checkpoint.row) return 'ğŸ§  HenÃ¼z kalÄ±cÄ± oturum Ã¶zeti yok.';
+  return ['ğŸ§  Son kalÄ±cÄ± hafÄ±za Ã¶zeti:', '', checkpoint.row.summary, '', `Sonraki adÄ±m: ${checkpoint.row.next_action || 'belirtilmedi'}`, `KayÄ±t: ${checkpoint.row.created_at}`].join('\n');
 }
 
 async function captureTask(db, identity, messageId, payload) {
-  if (!db) return { ok: false, text: '⚠️ Görev kaynağı bağlı değil; kayıt yapılmadı.' };
+  if (!db) return { ok: false, text: 'âš ï¸ GÃ¶rev kaynaÄŸÄ± baÄŸlÄ± deÄŸil; kayÄ±t yapÄ±lmadÄ±.' };
   try {
     await db.prepare(
       `INSERT INTO quick_notes (source,source_message_id,chat_id,raw_text,parsed_type,needs_review,status)
        VALUES ('telegram',?,?,?,?,1,'captured')
        ON CONFLICT(source,source_message_id) DO NOTHING`
     ).bind(String(messageId), identity.chatId, payload, 'task_request').run();
-    return { ok: true, text: `📌 Görev talebi kaydedildi:\n${payload}\n\nAperiON bunu planlama kuyruğunda sınıflandıracak; bu kayıt tek başına dış sistem işlemi başlatmaz.` };
+    return { ok: true, text: `ğŸ“Œ GÃ¶rev talebi kaydedildi:\n${payload}\n\nAperiON bunu planlama kuyruÄŸunda sÄ±nÄ±flandÄ±racak; bu kayÄ±t tek baÅŸÄ±na dÄ±ÅŸ sistem iÅŸlemi baÅŸlatmaz.` };
   } catch (_error) {
-    return { ok: false, text: '⚠️ Görev kaydedilemedi; hiçbir dış işlem yapılmadı.' };
+    return { ok: false, text: 'âš ï¸ GÃ¶rev kaydedilemedi; hiÃ§bir dÄ±ÅŸ iÅŸlem yapÄ±lmadÄ±.' };
   }
 }
 
