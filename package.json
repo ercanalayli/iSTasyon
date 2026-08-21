@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.4 seconds
+Output:
 {
   "name": "istasyon-bot-service",
   "version": "1.0.0",
@@ -169,7 +172,8 @@
     "verify:telegram-configurable-reports": "node --check functions/telegram/webhook.js && node --check functions/telegram/mobile-command-center.js",
     "verify:sales-milestone-v147": "node --check functions/shared/sales-milestone.js && node --check functions/api/bizimhesap-sales-sync.js && node tools/test_sales_milestone_v147.mjs",
     "verify:telegram-cash-expense-v148": "node --check functions/shared/cash-expense.js && node --check functions/telegram/webhook.js && node tools/test_telegram_cash_expense_v148.mjs",
-    "verify:mail-bank-telegram-approval-v149": "node --check automation/mail-ekstre-worker-lite.js && node --check functions/telegram/webhook.js && node tools/verify_mail_bank_telegram_approval_v149.cjs"
+    "verify:mail-bank-telegram-approval-v149": "node --check automation/mail-ekstre-worker-lite.js && node --check functions/telegram/webhook.js && node tools/verify_mail_bank_telegram_approval_v149.cjs",
+    "verify:bank-statement-gas-bridge-v150": "node --check automation/mail-ekstre-worker-lite.js && node --check functions/shared/bank-approvals.js && node --check functions/api/bank-statement-ingest.js && node --check functions/telegram/webhook.js && node tools/verify_bank_statement_gas_bridge_v150.cjs"
     ,"hasta-bezi:source-audit": "node tools/audit_hasta_bezi_source_reports_v91.cjs"
     ,"verify:hasta-bezi:source-audit": "node tools/verify_hasta_bezi_source_reports_v91.cjs"
     ,"hasta-bezi:fifo:build": "node tools/build_hasta_bezi_fifo_chunks_v92.cjs"
@@ -192,3 +196,4 @@
     "xlsx": "^0.18.5"
   }
 }
+
