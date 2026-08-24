@@ -15,6 +15,11 @@ function number(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function isOperatingCategory(row) {
+  const category = String(row && row.kategori_grup || '').toLocaleUpperCase('tr-TR');
+  return !category.includes('ARAÇ/VARLIK SATIŞI') && !category.includes('TİCARİ DEĞİL');
+}
+
 function datePart(value) {
   const match = String(value || '').match(/^\d{4}-\d{2}-\d{2}/);
   return match ? match[0] : null;
@@ -66,13 +71,15 @@ export function buildIncomeStatementSummary({
   now = new Date()
 }) {
   const sourceHealth = calculateSourceHealth({ income, refreshedAt, now });
+  const operatingIncome = income.filter(isOperatingCategory);
+  const operatingCogs = cogs.filter(isOperatingCategory);
   const periods = {};
 
   for (const period of INCOME_PERIODS) {
-    const sales = income.reduce((sum, row) => sum + number(row[`satis_${period}`]), 0);
-    const quantity = income.reduce((sum, row) => sum + number(row[`adet_${period}`]), 0);
-    const matchedRevenue = cogs.reduce((sum, row) => sum + number(row[`esl_ciro_${period}`]), 0);
-    const matchedCogs = cogs.reduce((sum, row) => sum + number(row[`maliyet_${period}`]), 0);
+    const sales = operatingIncome.reduce((sum, row) => sum + number(row[`satis_${period}`]), 0);
+    const quantity = operatingIncome.reduce((sum, row) => sum + number(row[`adet_${period}`]), 0);
+    const matchedRevenue = operatingCogs.reduce((sum, row) => sum + number(row[`esl_ciro_${period}`]), 0);
+    const matchedCogs = operatingCogs.reduce((sum, row) => sum + number(row[`maliyet_${period}`]), 0);
     const expenses = gider.reduce((sum, row) => sum + number(row[`gider_${period}`]), 0);
     const partialGrossProfit = matchedRevenue > 0 ? matchedRevenue - matchedCogs : null;
     const fifoCoveragePct = sales > 0 ? matchedRevenue / sales * 100 : null;
@@ -110,7 +117,7 @@ export function buildIncomeStatementSummary({
     source_health: sourceHealth,
     stock_recorded_purchase_value: stok.reduce((sum, row) => sum + number(row.stok), 0),
     periods,
-    accounting_note: 'Kısmi FIFO brüt kârı, tüm işletme giderleriyle birleştirilerek net kâr üretilmez.'
+    accounting_note: 'Ticari olmayan araç/varlık satışları faaliyet gelirinden ayrılır. Kısmi FIFO brüt kârı, tüm işletme giderleriyle birleştirilerek net kâr üretilmez.'
   };
 }
 
