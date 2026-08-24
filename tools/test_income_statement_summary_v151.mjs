@@ -4,7 +4,8 @@ import { buildIncomeStatementSummary } from '../functions/shared/income-statemen
 const result = buildIncomeStatementSummary({
   income: [
     { kategori_grup: 'A', son_tarih: '2026-08-12', satis_bugun: 0, satis_hafta: 1000, adet_hafta: 10 },
-    { kategori_grup: 'YENI_KATEGORI', son_tarih: '2026-08-11', satis_hafta: 500, adet_hafta: 5 }
+    { kategori_grup: 'YENI_KATEGORI', son_tarih: '2026-08-11', satis_hafta: 500, adet_hafta: 5 },
+    { kategori_grup: 'ARAÇ/VARLIK SATIŞI (TİCARİ DEĞİL)', son_tarih: '2026-08-10', satis_hafta: 999, adet_hafta: 1 }
   ],
   cogs: [
     { kategori_grup: 'A', esl_ciro_hafta: 750, maliyet_hafta: 500 }
