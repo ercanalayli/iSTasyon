@@ -17,6 +17,17 @@ const TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const EXPECTED_WEBHOOK_URL = process.env.TELEGRAM_EXPECTED_WEBHOOK_URL || 'https://aperion-istasyon.pages.dev/telegram/webhook';
 const SECRET_TOKEN = process.env.TELEGRAM_WEBHOOK_SECRET_TOKEN || '';
 const DROP_PENDING = String(process.env.TELEGRAM_DROP_PENDING || 'false').toLowerCase() === 'true';
+const ALERT_CHAT_ID = process.env.TELEGRAM_CHAT_ID || process.env.TELEGRAM_ALLOWED_CHAT_ID || '';
+
+async function sendDirectAlert(text){
+  if(!TOKEN || !ALERT_CHAT_ID) return { sent: false, reason: 'alert_target_missing' };
+  const r = await jfetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ chat_id: ALERT_CHAT_ID, text })
+  });
+  return { sent: Boolean(r.ok && r.json && r.json.ok), status: r.status };
+}
 
 async function jfetch(url, opts = {}){
   const res = await fetch(url, opts);
@@ -97,12 +108,23 @@ async function main(){
       : 'Telegram Quick Capture hazÄ±r deÄŸil; endpoint, webhook veya Telegram son hatasÄ± kontrol edilmeli.'
   };
 
+  if(!ok){
+    report.direct_alert = await sendDirectAlert(
+      '🚨 AperiON Telegram sağlık kontrolü başarısız. Webhook/endpoint otomatik toparlanamadı. Teknik inceleme gerekiyor.'
+    );
+  }
+
   console.log(JSON.stringify(report, null, 2));
   if(!ok) process.exitCode = 2;
 }
 
-main().catch(err => {
+main().catch(async err => {
   console.error(err);
+  try {
+    await sendDirectAlert('🚨 AperiON Telegram watchdog çalışamadı: ' + String(err && err.message || err).slice(0, 300));
+  } catch (alertError) {
+    console.error('Direct alert failed:', alertError.message);
+  }
   process.exitCode = 1;
 });
 
