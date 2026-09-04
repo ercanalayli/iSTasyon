@@ -51,6 +51,7 @@ jobs:
       - name: Rotate Pages webhook secret
         shell: bash
         run: |
+          printf '%s' "$TELEGRAM_BOT_TOKEN" | npx wrangler pages secret put TELEGRAM_BOT_TOKEN --project-name aperion-istasyon
           printf '%s' "$TELEGRAM_ALLOWED_CHAT_IDS" | npx wrangler pages secret put TELEGRAM_ALLOWED_CHAT_IDS --project-name aperion-istasyon
           printf '%s' "$WEBHOOK_SECRET" | npx wrangler pages secret put TELEGRAM_WEBHOOK_SECRET --project-name aperion-istasyon
 
