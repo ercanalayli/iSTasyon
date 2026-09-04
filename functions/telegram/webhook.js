@@ -1197,7 +1197,14 @@ return json({ ok: true, intent: 'cash_expense', approval_id: approval.id, duplic
 }
 
 const mobileResult = await handleMobileCommand({ env, message: msg, identity, sendMessage });
-if (mobileResult.handled) return json({ ok: true, mobile_command: mobileResult.code, status: mobileResult.status });
+if (mobileResult.handled) return json({
+ok: mobileResult.status !== 'failed',
+mobile_command: mobileResult.code,
+status: mobileResult.status,
+received_recorded: mobileResult.receivedRecorded,
+completed_recorded: mobileResult.completedRecorded,
+telegram_delivered: mobileResult.delivered
+}, mobileResult.status === 'failed' ? 502 : 200);
 
 const earlyCashExpenseIntent = parseCashExpenseIntent(text);
 if (earlyCashExpenseIntent) {

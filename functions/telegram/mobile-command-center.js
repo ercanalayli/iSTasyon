@@ -275,18 +275,23 @@ async function commandHash(chatId, messageId, code) {
 }
 
 async function recordCommand(db, { chatId, userId, messageId, code, risk, status, resultSummary }) {
-  if (!db) return;
+  if (!db) return false;
   try {
     const key = `telegram:${chatId}:${messageId}`;
     const hash = await commandHash(chatId, messageId, code);
     await db.prepare(
       `INSERT INTO telegram_command_log
        (command_key,chat_id,user_id,message_id,command_code,risk_class,content_hash,status,result_summary,completed_at)
-       VALUES (?,?,?,?,?,?,?,?,?,datetime('now'))
-       ON CONFLICT(command_key) DO NOTHING`
-    ).bind(key, chatId, userId || null, String(messageId), code, risk, hash, status, resultSummary || null).run();
+       VALUES (?,?,?,?,?,?,?,?,?,CASE WHEN ? IN ('completed','captured','failed') THEN datetime('now') ELSE NULL END)
+       ON CONFLICT(command_key) DO UPDATE SET
+         status=excluded.status,
+         result_summary=excluded.result_summary,
+         completed_at=excluded.completed_at`
+    ).bind(key, chatId, userId || null, String(messageId), code, risk, hash, status, resultSummary || null, status).run();
+    return true;
   } catch (_error) {
     // Audit must never make a read-only command unusable; health will expose a missing table.
+    return false;
   }
 }
 
@@ -554,6 +559,14 @@ export async function handleMobileCommand({ env, message, identity, sendMessage 
   const parsed = parseMobileCommand(message?.text);
   if (!parsed) return { handled: false };
   const meta = MOBILE_COMMANDS[parsed.code];
+  const receivedRecorded = await recordCommand(env.APERION_DB, {
+    ...identity,
+    messageId: message.message_id,
+    code: parsed.code,
+    risk: meta.risk,
+    status: 'received',
+    resultSummary: `${meta.title} alındı`
+  });
   let reply;
   let status = 'completed';
   if (parsed.code === 'menu' || parsed.code === 'help') reply = menuText(identity.hardened);
@@ -571,16 +584,18 @@ export async function handleMobileCommand({ env, message, identity, sendMessage 
     reply = saved.text;
     status = saved.ok ? 'captured' : 'failed';
   }
-  await sendMessage(env, identity.chatId, reply);
-  await recordCommand(env.APERION_DB, {
+  const sent = await sendMessage(env, identity.chatId, reply);
+  const delivered = Boolean(sent && sent.ok);
+  status = delivered ? status : 'failed';
+  const completedRecorded = await recordCommand(env.APERION_DB, {
     ...identity,
     messageId: message.message_id,
     code: parsed.code,
     risk: meta.risk,
     status,
-    resultSummary: meta.title
+    resultSummary: delivered ? meta.title : `${meta.title}: Telegram yanıtı başarısız`
   });
-  return { handled: true, code: parsed.code, status };
+  return { handled: true, code: parsed.code, status, receivedRecorded, completedRecorded, delivered };
 }
 
 export const __test = { constantTimeEqual, hashHex, updateIdentity, buildDeviceStatusText, buildPrioritySnapshot, buildPriorityStatusText, parseSqliteUtc, CLOSED_STATUSES };
