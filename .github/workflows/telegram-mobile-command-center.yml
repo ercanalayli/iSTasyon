@@ -39,20 +39,6 @@ jobs:
         shell: bash
         run: npm install --no-save --ignore-scripts wrangler@4.50.0
 
-      - name: Apply D1 migrations
-        shell: bash
-        run: npx wrangler d1 migrations apply aperion-control-plane --remote
-
-      - name: Resolve authorized Telegram chat
-        shell: bash
-        run: |
-          result="$(npx wrangler d1 execute aperion-control-plane --remote --json --command \
-            "SELECT chat_id, COUNT(*) AS message_count FROM quick_notes WHERE chat_id IS NOT NULL AND chat_id <> '' GROUP BY chat_id ORDER BY message_count DESC LIMIT 1")"
-          TELEGRAM_CHAT_ID="$(printf '%s' "$result" | jq -r '.[0].results[0].chat_id // empty')"
-          test -n "$TELEGRAM_CHAT_ID"
-          echo "::add-mask::$TELEGRAM_CHAT_ID"
-          echo "TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID" >> "$GITHUB_ENV"
-
       - name: Prepare one-time webhook secret
         shell: bash
         run: |
@@ -60,10 +46,9 @@ jobs:
           echo "::add-mask::$WEBHOOK_SECRET"
           echo "WEBHOOK_SECRET=$WEBHOOK_SECRET" >> "$GITHUB_ENV"
 
-      - name: Restrict Telegram identity
+      - name: Rotate Pages webhook secret
         shell: bash
         run: |
-          printf '%s' "$TELEGRAM_CHAT_ID" | npx wrangler pages secret put TELEGRAM_ALLOWED_CHAT_IDS --project-name aperion-istasyon
           printf '%s' "$WEBHOOK_SECRET" | npx wrangler pages secret put TELEGRAM_WEBHOOK_SECRET --project-name aperion-istasyon
 
       - name: Deploy hardened Pages functions
@@ -89,7 +74,7 @@ jobs:
           response="$(curl --fail --silent --show-error https://aperion-istasyon.pages.dev/telegram/webhook)"
           printf '%s' "$response" | jq -e '
             .ok == true and
-            .mode == "mobile-command-center-v1" and
+            .mode == "mobile-command-center-v2" and
             .identity_guard_configured == true and
             .webhook_secret_configured == true
           ' >/dev/null
