@@ -1,0 +1,41 @@
+name: Telegram Murat last-operation smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/telegram-murat-last-operation-smoke.yml
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Send idempotent last-operation notification
+        env:
+          APERION_BRIDGE_SECRET: ${{ secrets.APERION_BRIDGE_SECRET }}
+        shell: bash
+        run: |
+          test -n "$APERION_BRIDGE_SECRET"
+          response="$(curl --fail-with-body --silent --show-error             -X POST "https://aperion-istasyon.pages.dev/api/telegram-business-notify"             -H "Authorization: Bearer $APERION_BRIDGE_SECRET"             -H "Content-Type: application/json"             --data-binary @- <<'JSON'
+          {
+            "kind": "murat_email_sent",
+            "event_key": "murat:invoice:M012026000000200:telegram-smoke-v1",
+            "invoice_no": "M012026000000200",
+            "amount": 79069.95,
+            "subject": "RE: ALAYLI",
+            "to": "harslan@muratticaret.com",
+            "cc": "vagbulak@muratticaret.com, ercanalayli@gmail.com",
+            "attachments": [
+              "M012026000000200.pdf",
+              "Alaylı Nakliyat Dosyası (12) - Ağustos 2026 Fiyatlı.xlsx"
+            ],
+            "gmail_message_id": "1a071e6acd25d741",
+            "note": "Son işlem Telegram bildirim denemesi. Yeni e-posta veya finansal kayıt oluşturulmadı."
+          }
+          JSON
+          )"
+          node -e 'const r=JSON.parse(process.argv[1]); if(!r.ok || (!r.sent && !r.duplicate)) process.exit(1); console.log(JSON.stringify({ok:r.ok,sent:r.sent||false,duplicate:r.duplicate||false,event_key:r.event_key||null,telegram_message_id:r.telegram_message_id||null}))' "$response"
