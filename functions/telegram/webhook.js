@@ -1290,10 +1290,12 @@ if (report.ok) {
 await sendMessage(env, chatId, report.telegramCard);
 return json({ ok: true, report: directReport.kind, source: 'aperion_command_bridge' });
 }
-await sendMessage(env, chatId, '⚠️ RAPOR HATTI GEÇİCİ OLARAK KULLANILAMIYOR\nKaynak doğrulanamadığı için tahmini veri göstermedim. Finansal işlem veya genel not oluşturulmadı.');
+// B plan: use the existing verified Supabase reporting path when the
+// command bridge cannot authenticate or is temporarily unavailable.
+await handleConfiguredReport(env, chatId, directReport.kind, directReport.query);
 // Telegram retries every non-2xx webhook response. A delivery failure is
 // acknowledged here so one user message can never create a retry storm.
-return json({ ok: true, report: directReport.kind, delivered: false, error: report.error });
+return json({ ok: true, report: directReport.kind, source: 'supabase_fallback', bridge_error: report.error });
 }
 
 if (text.startsWith('/start')) {
