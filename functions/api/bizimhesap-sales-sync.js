@@ -54,6 +54,43 @@ function normalizedSale(row) {
   return sale;
 }
 
+export function saleFingerprint(sale) {
+  return [
+    sale.firma_id,
+    sale.tarih,
+    sale.fatura_no,
+    sale.urun_kod,
+    sale.barkod,
+    sale.unvan,
+    sale.urun,
+    sale.adet,
+    sale.ciro
+  ].join('|');
+}
+
+function money(value) {
+  return new Intl.NumberFormat('tr-TR', {
+    style: 'currency', currency: 'TRY', maximumFractionDigits: 2
+  }).format(finiteNumber(value, 0));
+}
+
+export function formatNewSalesMessage(records) {
+  const total = records.reduce((sum, sale) => sum + finiteNumber(sale.ciro, 0), 0);
+  const lines = [
+    '🛒 <b>YENİ BİZİMHESAP SATIŞI</b>',
+    `<b>${records.length}</b> yeni satış satırı • <b>${money(total)}</b>`
+  ];
+  for (const sale of records.slice(0, 12)) {
+    const customer = sale.unvan || 'Müşteri bilgisi yok';
+    const product = sale.urun || 'Ürün bilgisi yok';
+    const document = sale.fatura_no ? ` • ${sale.fatura_no}` : '';
+    lines.push('', `• <b>${customer}</b>${document}`, `${product} — ${sale.adet} adet — ${money(sale.ciro)}`);
+  }
+  if (records.length > 12) lines.push('', `+ ${records.length - 12} satır daha`);
+  lines.push('', '<i>AperiON • BizimHesap canlı satış izlemesi</i>');
+  return lines.join('\n');
+}
+
 async function telegram(env, text) {
   const token = String(env.HERMES_TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN || '').trim();
   const chatId = String(
@@ -148,6 +185,24 @@ export async function onRequestPost({ request, env }) {
     if (!incoming.length || incoming.length > 500) return json({ ok: false, error: 'records_must_be_1_to_500' }, 400);
     const records = incoming.map(normalizedSale);
     const affectedDates = [...new Set(records.map(row => row.tarih))];
+    const existingFingerprints = new Set();
+    for (const date of affectedDates) {
+      const existing = await env.APERION_DB.prepare(
+        `SELECT payload_json FROM canonical_events
+          WHERE event_type='sale.invoice' AND truth_state='confirmed' AND substr(occurred_at,1,10)=?`
+      ).bind(date).all();
+      for (const row of existing.results || []) {
+        try { existingFingerprints.add(saleFingerprint(normalizedSale(JSON.parse(row.payload_json)))); } catch {}
+      }
+    }
+    const newSales = [...new Map(
+      records
+        .filter(sale => !existingFingerprints.has(saleFingerprint(sale)))
+        .map(sale => [saleFingerprint(sale), sale])
+    ).values()];
+    const todayIstanbul = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Istanbul', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).format(new Date());
     const previousRevenueByDate = {};
     for (const date of affectedDates) {
       const before = await env.APERION_DB.prepare(
@@ -163,7 +218,7 @@ export async function onRequestPost({ request, env }) {
 
     const statements = [];
     for (const sale of records) {
-      const identity = [sale.firma_id, sale.tarih, sale.fatura_no, sale.urun_kod, sale.barkod, sale.unvan, sale.urun, sale.adet, sale.ciro, sale.kaynak_satir].join('|');
+      const identity = saleFingerprint(sale);
       const hash = await sha256(identity);
       const eventKey = `bizimhesap:sale:${hash}`;
       statements.push(env.APERION_DB.prepare(
@@ -176,6 +231,17 @@ export async function onRequestPost({ request, env }) {
         eventKey, connector.id, sale.fatura_no || null, 'sale.invoice', `${sale.tarih}T12:00:00+03:00`,
         sale.unvan || null, JSON.stringify(sale), sale.source_url, hash
       ));
+      if (!existingFingerprints.has(identity) && sale.tarih === todayIstanbul) {
+        statements.push(env.APERION_DB.prepare(
+          `INSERT OR IGNORE INTO canonical_events
+            (event_key,connector_id,external_ref,event_type,occurred_at,truth_state,subject_type,subject_ref,payload_json,evidence_ref,content_hash,received_at)
+           VALUES (?,?,?,?,?,'pending','customer',?,?,?,?,datetime('now'))`
+        ).bind(
+          `aperion:sales-delivery:${hash}`, connector.id, sale.fatura_no || null,
+          'notification.sales_delivery', `${sale.tarih}T12:00:00+03:00`, sale.unvan || null,
+          JSON.stringify(sale), sale.source_url, hash
+        ));
+      }
     }
     statements.push(env.APERION_DB.prepare(
       `INSERT INTO source_health(source_key,status,error_code,message,last_success_at,checked_at,evidence_ref)
@@ -184,11 +250,31 @@ export async function onRequestPost({ request, env }) {
          last_success_at=excluded.last_success_at,checked_at=excluded.checked_at,evidence_ref=excluded.evidence_ref`
     ).bind(`${records.length} satış kaydı D1'e kabul edildi`, cleanText(body.evidence_ref || records[0].source_url, 500)));
     await env.APERION_DB.batch(statements);
+    let sales_notification = { sent: false, new_records: newSales.length };
+    const pending = await env.APERION_DB.prepare(
+      `SELECT event_key,payload_json FROM canonical_events
+        WHERE event_type='notification.sales_delivery' AND truth_state='pending'
+        ORDER BY received_at ASC LIMIT 50`
+    ).all();
+    const pendingSales = (pending.results || []).map(row => {
+      try { return { event_key: row.event_key, sale: normalizedSale(JSON.parse(row.payload_json)) }; } catch { return null; }
+    }).filter(Boolean);
+    if (pendingSales.length) {
+      sales_notification = {
+        ...(await telegram(env, formatNewSalesMessage(pendingSales.map(item => item.sale)))),
+        new_records: pendingSales.length
+      };
+      if (sales_notification.sent) {
+        await env.APERION_DB.batch(pendingSales.map(item => env.APERION_DB.prepare(
+          `UPDATE canonical_events SET truth_state='confirmed',received_at=datetime('now') WHERE event_key=?`
+        ).bind(item.event_key)));
+      }
+    }
     const milestone_notifications = [];
     for (const date of affectedDates) {
       milestone_notifications.push({ date, ...(await sendSalesMilestoneIfNeeded(env, date, previousRevenueByDate[date])) });
     }
-    return json({ ok: true, accepted: records.length, milestone_notifications, generated_at: new Date().toISOString() });
+    return json({ ok: true, accepted: records.length, sales_notification, milestone_notifications, generated_at: new Date().toISOString() });
   } catch (error) {
     return json({ ok: false, error: 'sales_sync_failed', message: error.message }, 400);
   }

@@ -27,8 +27,12 @@ on:
       - "package.json"
       - "package-lock.json"
   schedule:
-    # Hourly BizimHesap source sync.
-    - cron: '7 * * * *'
+    # Near-real-time BizimHesap source sync (GitHub's minimum reliable cadence).
+    - cron: '*/15 * * * *'
+
+concurrency:
+  group: bizimhesap-sales-sync
+  cancel-in-progress: false
 
 jobs:
   sync:
