@@ -1145,6 +1145,46 @@ const cards = result.data.map((row, index) => [
 await sendMessage(env, chatId, '📊 ' + definition.title + (search ? ' — ' + search : '') + '\nAlanlar: ' + fields.join(', ') + '\n\n' + cards.join('\n\n'));
 }
 
+function detectDirectEntityReport(text) {
+const value = clean(text);
+const lower = lowerTR(value);
+if (!value || value.startsWith('/') || value.length > 160) return null;
+const productWords = ['belbant', 'bel bant', 'külot', 'kulot', 'hasta bezi', 'serme', 'jender', 'coverdry', 'beden'];
+if (productWords.some(word => lower.includes(word))) {
+return { command: 'aperion.product_report', query: value, kind: 'product' };
+}
+const customerWords = ['medikal', 'eczane', 'hastane', 'sağlık', 'saglik', 'ortopedi'];
+if (customerWords.some(word => lower.includes(word))) {
+return { command: 'aperion.customer_report', query: value, kind: 'customer' };
+}
+return null;
+}
+
+async function fetchBridgeReport(env, directReport, message) {
+const secret = clean(env.APERION_HERMES_SECRET || env.APERION_BRIDGE_SECRET);
+if (!secret) return { ok: false, error: 'missing_bridge_secret' };
+const bridgeUrl = clean(env.APERION_COMMAND_BRIDGE_URL || 'https://aperion-command-bridge.yenicespor-finans.workers.dev').replace(/\/+$/, '');
+const response = await fetch(bridgeUrl + '/v1/tasks', {
+method: 'POST',
+headers: {
+authorization: 'Bearer ' + secret,
+'content-type': 'application/json',
+'idempotency-key': 'telegram-' + message.chat.id + '-' + message.message_id
+},
+body: JSON.stringify({
+command: directReport.command,
+query: directReport.query,
+source: 'telegram',
+chat_id: String(message.chat.id),
+message_id: String(message.message_id)
+})
+});
+const body = await response.json().catch(() => ({}));
+if (!response.ok) return { ok: false, error: body.error || ('bridge_http_' + response.status) };
+const telegramCard = body?.result?.telegramCard || body?.telegramCard;
+return telegramCard ? { ok: true, telegramCard } : { ok: false, error: 'missing_telegram_card' };
+}
+
 async function handleReportFieldsIntent(env, chatId, userId, text) {
 const payload = String(text || '').replace(/^\/raporalanlari\s*/i, '').trim();
 if (!payload) {
@@ -1192,6 +1232,7 @@ if (!msg || !msg.chat || !msg.text) return json({ ok: true, ignored: true });
 const chatId = msg.chat.id;
 const text = clean(msg.text);
 const lower = lowerTR(text);
+const directReport = detectDirectEntityReport(text);
 
 const priorityCashExpenseIntent = parseCashExpenseIntent(text);
 if (priorityCashExpenseIntent) {
@@ -1234,9 +1275,19 @@ const universalResult = await handleUniversalCommand(env, msg, identity, univers
 return json({ ok: true, universal_command: universalIntent.code, status: universalResult.status, duplicate: Boolean(universalResult.duplicate) });
 }
 
-if (!identity.hardened && !lower.startsWith('/durum') && !lower.startsWith('/stok') && !lower.startsWith('/urunraporu') && !lower.startsWith('/ürünraporu') && !lower.startsWith('/cariraporu') && !lower.startsWith('/raporalanlari') && !lower.startsWith('/gelirtablosu') && !lower.startsWith('/bilanco') && !lower.startsWith('/bilanço') && !lower.includes('bakiye')) {
+if (!identity.hardened && !directReport && !lower.startsWith('/durum') && !lower.startsWith('/stok') && !lower.startsWith('/urunraporu') && !lower.startsWith('/ürünraporu') && !lower.startsWith('/cariraporu') && !lower.startsWith('/raporalanlari') && !lower.startsWith('/gelirtablosu') && !lower.startsWith('/bilanco') && !lower.startsWith('/bilanço') && !lower.includes('bakiye')) {
 await sendMessage(env, chatId, '🔒 Güvenlik eşleştirmesi tamamlanıyor. Şimdilik rapor/sorgular, iç görev kayıtları ve izin listesindeki sabit uygulama açma komutları kullanılabilir; mali, iletişim, silme ve erişim işlemleri kapalıdır.');
 return json({ ok: true, security_bootstrap_pending: true });
+}
+
+if (directReport) {
+const report = await fetchBridgeReport(env, directReport, msg);
+if (report.ok) {
+await sendMessage(env, chatId, report.telegramCard);
+return json({ ok: true, report: directReport.kind, source: 'aperion_command_bridge' });
+}
+await sendMessage(env, chatId, '⚠️ RAPOR HATTI GEÇİCİ OLARAK KULLANILAMIYOR\nKaynak doğrulanamadığı için tahmini veri göstermedim. Finansal işlem veya genel not oluşturulmadı.');
+return json({ ok: false, report: directReport.kind, error: report.error }, 503);
 }
 
 if (text.startsWith('/start')) {
