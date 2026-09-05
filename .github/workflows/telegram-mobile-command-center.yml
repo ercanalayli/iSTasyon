@@ -18,7 +18,7 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      HERMES_TELEGRAM_BOT_TOKEN: ${{ secrets.HERMES_TELEGRAM_BOT_TOKEN }}
       TELEGRAM_ALLOWED_CHAT_IDS: ${{ secrets.TELEGRAM_ALLOWED_CHAT_IDS }}
     steps:
       - name: Checkout
@@ -34,7 +34,7 @@ jobs:
         run: |
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"
-          test -n "$TELEGRAM_BOT_TOKEN"
+          test -n "$HERMES_TELEGRAM_BOT_TOKEN"
           test -n "$TELEGRAM_ALLOWED_CHAT_IDS"
 
       - name: Install pinned Wrangler
@@ -44,14 +44,14 @@ jobs:
       - name: Prepare stable webhook secret
         shell: bash
         run: |
-          WEBHOOK_SECRET="$(printf '%s' 'aperion-telegram-webhook-v2' | openssl dgst -sha256 -hmac "$TELEGRAM_BOT_TOKEN" | awk '{print $2}')"
+          WEBHOOK_SECRET="$(printf '%s' 'aperion-telegram-webhook-v2' | openssl dgst -sha256 -hmac "$HERMES_TELEGRAM_BOT_TOKEN" | awk '{print $2}')"
           echo "::add-mask::$WEBHOOK_SECRET"
           echo "WEBHOOK_SECRET=$WEBHOOK_SECRET" >> "$GITHUB_ENV"
 
       - name: Rotate Pages webhook secret
         shell: bash
         run: |
-          printf '%s' "$TELEGRAM_BOT_TOKEN" | npx wrangler pages secret put TELEGRAM_BOT_TOKEN --project-name aperion-istasyon
+          printf '%s' "$HERMES_TELEGRAM_BOT_TOKEN" | npx wrangler pages secret put HERMES_TELEGRAM_BOT_TOKEN --project-name aperion-istasyon
           printf '%s' "$TELEGRAM_ALLOWED_CHAT_IDS" | npx wrangler pages secret put TELEGRAM_ALLOWED_CHAT_IDS --project-name aperion-istasyon
           printf '%s' "$WEBHOOK_SECRET" | npx wrangler pages secret put TELEGRAM_WEBHOOK_SECRET --project-name aperion-istasyon
 
@@ -69,7 +69,7 @@ jobs:
             --request POST \
             --data-urlencode "url=https://aperion-istasyon.pages.dev/telegram/webhook" \
             --data-urlencode "secret_token=$WEBHOOK_SECRET" \
-            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook")"
+            "https://api.telegram.org/bot${HERMES_TELEGRAM_BOT_TOKEN}/setWebhook")"
           printf '%s' "$response" | jq -e '.ok == true' >/dev/null
 
       - name: Verify deployed secret and allowlist end-to-end

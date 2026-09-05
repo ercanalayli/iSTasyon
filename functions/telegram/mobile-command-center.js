@@ -145,8 +145,9 @@ function randomSecret() {
 }
 
 async function registerTelegramWebhook(env, secret) {
-  if (!env.TELEGRAM_BOT_TOKEN) return { ok: false, code: 'missing_bot_token' };
-  const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/setWebhook`;
+  const token = env.HERMES_TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN;
+  if (!token) return { ok: false, code: 'missing_bot_token' };
+  const url = `https://api.telegram.org/bot${token}/setWebhook`;
   const body = new URLSearchParams({
     url: env.TELEGRAM_WEBHOOK_URL || 'https://aperion-istasyon.pages.dev/telegram/webhook',
     secret_token: secret

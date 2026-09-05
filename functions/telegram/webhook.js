@@ -19,6 +19,10 @@ function clean(text) {
 return String(text || '').trim();
 }
 
+function telegramToken(env) {
+return env.HERMES_TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN || '';
+}
+
 function lowerTR(text) {
 return clean(text).replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase();
 }
@@ -94,8 +98,9 @@ return { ok: true, eventId: j.id, link: j.htmlLink };
 }
 
 async function sendMessage(env, chatId, text, replyMarkup, extra = {}) {
-if (!env.TELEGRAM_BOT_TOKEN) return { ok: false, error: 'missing_telegram_token' };
-const url = 'https://api.telegram.org/bot' + env.TELEGRAM_BOT_TOKEN + '/sendMessage';
+const token = telegramToken(env);
+if (!token) return { ok: false, error: 'missing_telegram_token' };
+const url = 'https://api.telegram.org/bot' + token + '/sendMessage';
 const r = await fetch(url, {
 method: 'POST',
 headers: { 'content-type': 'application/json' },
@@ -105,8 +110,9 @@ return r.json();
 }
 
 async function answerCallbackQuery(env, callbackQueryId, text) {
-if (!env.TELEGRAM_BOT_TOKEN) return { ok: false, error: 'missing_telegram_token' };
-const url = 'https://api.telegram.org/bot' + env.TELEGRAM_BOT_TOKEN + '/answerCallbackQuery';
+const token = telegramToken(env);
+if (!token) return { ok: false, error: 'missing_telegram_token' };
+const url = 'https://api.telegram.org/bot' + token + '/answerCallbackQuery';
 const r = await fetch(url, {
 method: 'POST',
 headers: { 'content-type': 'application/json' },
@@ -116,8 +122,9 @@ return r.json();
 }
 
 async function clearCallbackButtons(env, callbackQuery) {
-if (!env.TELEGRAM_BOT_TOKEN || !callbackQuery?.message?.chat?.id || !callbackQuery?.message?.message_id) return;
-await fetch('https://api.telegram.org/bot' + env.TELEGRAM_BOT_TOKEN + '/editMessageReplyMarkup', {
+const token = telegramToken(env);
+if (!token || !callbackQuery?.message?.chat?.id || !callbackQuery?.message?.message_id) return;
+await fetch('https://api.telegram.org/bot' + token + '/editMessageReplyMarkup', {
 method: 'POST',
 headers: { 'content-type': 'application/json' },
 body: JSON.stringify({
@@ -828,12 +835,13 @@ await sendMessage(env, chatId, lines.join('\n'));
 // ---------------------------------------------------------------------------
 
 async function getTelegramFileUrl(env, fileId) {
-    if (!env.TELEGRAM_BOT_TOKEN || !fileId) return null;
+    const token = telegramToken(env);
+    if (!token || !fileId) return null;
     try {
-          const r = await fetch('https://api.telegram.org/bot' + env.TELEGRAM_BOT_TOKEN + '/getFile?file_id=' + encodeURIComponent(fileId));
+          const r = await fetch('https://api.telegram.org/bot' + token + '/getFile?file_id=' + encodeURIComponent(fileId));
           const j = await r.json();
           if (!j.ok || !j.result || !j.result.file_path) return null;
-          return 'https://api.telegram.org/file/bot' + env.TELEGRAM_BOT_TOKEN + '/' + j.result.file_path;
+          return 'https://api.telegram.org/file/bot' + token + '/' + j.result.file_path;
     } catch (_e) { return null; }
 }
 
@@ -886,7 +894,7 @@ desktop_target_count: Object.keys(DESKTOP_TARGETS).length,
 desktop_bridge_configured: desktopBridge.configured,
 desktop_bridge_active_device_count: desktopBridge.activeDeviceCount,
 desktop_bridge_pending_command_count: desktopBridge.pendingCommandCount,
-telegram_token_configured: Boolean(env.TELEGRAM_BOT_TOKEN),
+telegram_token_configured: Boolean(telegramToken(env)),
 supabase_configured: Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
 identity_guard_configured: security.identityGuard,
 webhook_secret_configured: security.webhookSecret,

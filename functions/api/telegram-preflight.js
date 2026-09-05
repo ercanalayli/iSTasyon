@@ -23,7 +23,8 @@ async function fetchJson(url, opts = {}){
 }
 
 async function checkTelegram(env){
-  if(!env.TELEGRAM_BOT_TOKEN){
+  const token = env.HERMES_TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN;
+  if(!token){
     return {
       ok: false,
       status: 'missing_token',
@@ -32,8 +33,8 @@ async function checkTelegram(env){
   }
 
   const [r, me] = await Promise.all([
-    fetchJson(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/getWebhookInfo`),
-    fetchJson(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/getMe`)
+    fetchJson(`https://api.telegram.org/bot${token}/getWebhookInfo`),
+    fetchJson(`https://api.telegram.org/bot${token}/getMe`)
   ]);
   if(!r.ok || !r.body.ok){
     return {
