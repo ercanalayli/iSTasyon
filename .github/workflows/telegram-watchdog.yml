@@ -10,6 +10,7 @@ permissions:
 
 env:
   TELEGRAM_EXPECTED_WEBHOOK_URL: https://aperion-istasyon.pages.dev/telegram/webhook
+  TELEGRAM_PREFLIGHT_URL: https://aperion-istasyon.pages.dev/api/telegram-preflight
   TELEGRAM_DROP_PENDING: 'false'
 
 jobs:
@@ -26,8 +27,9 @@ jobs:
 
       - name: Ensure Telegram webhook
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          HERMES_TELEGRAM_BOT_TOKEN: ${{ secrets.HERMES_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.TELEGRAM_WEBHOOK_SECRET_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TELEGRAM_ALLOWED_CHAT_ID: ${{ secrets.TELEGRAM_ALLOWED_CHAT_ID }}
+          TELEGRAM_ALLOWED_CHAT_IDS: ${{ secrets.TELEGRAM_ALLOWED_CHAT_IDS }}
         run: node tools/ensure_telegram_webhook.cjs

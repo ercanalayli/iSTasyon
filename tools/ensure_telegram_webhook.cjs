@@ -7,17 +7,24 @@ if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_UR
    If webhook URL is empty or wrong, it re-registers the expected webhook.
 
    ENV:
-   TELEGRAM_BOT_TOKEN=required
+   HERMES_TELEGRAM_BOT_TOKEN=required
    TELEGRAM_EXPECTED_WEBHOOK_URL=https://aperion-istasyon.pages.dev/telegram/webhook
+   TELEGRAM_PREFLIGHT_URL=https://aperion-istasyon.pages.dev/api/telegram-preflight
    TELEGRAM_WEBHOOK_SECRET_TOKEN=optional Telegram secret header token
    TELEGRAM_DROP_PENDING=false|true  default false
 */
 
-const TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+const TOKEN = process.env.HERMES_TELEGRAM_BOT_TOKEN || '';
 const EXPECTED_WEBHOOK_URL = process.env.TELEGRAM_EXPECTED_WEBHOOK_URL || 'https://aperion-istasyon.pages.dev/telegram/webhook';
+const PREFLIGHT_URL = process.env.TELEGRAM_PREFLIGHT_URL || 'https://aperion-istasyon.pages.dev/api/telegram-preflight';
 const SECRET_TOKEN = process.env.TELEGRAM_WEBHOOK_SECRET_TOKEN || '';
 const DROP_PENDING = String(process.env.TELEGRAM_DROP_PENDING || 'false').toLowerCase() === 'true';
-const ALERT_CHAT_ID = process.env.TELEGRAM_CHAT_ID || process.env.TELEGRAM_ALLOWED_CHAT_ID || '';
+const ALERT_CHAT_ID = String(
+  process.env.TELEGRAM_CHAT_ID ||
+  process.env.TELEGRAM_ALLOWED_CHAT_ID ||
+  process.env.TELEGRAM_ALLOWED_CHAT_IDS ||
+  ''
+).split(/[\s,;]+/).map(value => value.trim()).find(Boolean) || '';
 
 async function sendDirectAlert(text){
   if(!TOKEN || !ALERT_CHAT_ID) return { sent: false, reason: 'alert_target_missing' };
@@ -61,7 +68,7 @@ async function setWebhook(){
 }
 
 async function pingEndpoint(){
-  const r = await jfetch(EXPECTED_WEBHOOK_URL);
+  const r = await jfetch(PREFLIGHT_URL);
   return {
     ok: r.ok && r.json && r.json.ok === true,
     status: r.status,
@@ -70,7 +77,7 @@ async function pingEndpoint(){
 }
 
 async function main(){
-  if(!TOKEN) throw new Error('Missing TELEGRAM_BOT_TOKEN');
+  if(!TOKEN) throw new Error('Missing HERMES_TELEGRAM_BOT_TOKEN');
 
   const endpoint = await pingEndpoint();
   const before = await getWebhookInfo();

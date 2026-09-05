@@ -7,8 +7,13 @@ const workflow = fs.readFileSync('.github/workflows/telegram-watchdog.yml', 'utf
 
 assert.match(script, /sendDirectAlert/);
 assert.match(script, /TELEGRAM_CHAT_ID/);
+assert.match(script, /HERMES_TELEGRAM_BOT_TOKEN/);
+assert.match(script, /TELEGRAM_ALLOWED_CHAT_IDS/);
+assert.match(script, /TELEGRAM_PREFLIGHT_URL/);
 assert.match(script, /if\(!ok\)/);
-assert.match(workflow, /TELEGRAM_CHAT_ID: \$\{\{ secrets\.TELEGRAM_CHAT_ID \}\}/);
+assert.match(workflow, /HERMES_TELEGRAM_BOT_TOKEN: \$\{\{ secrets\.HERMES_TELEGRAM_BOT_TOKEN \}\}/);
+assert.doesNotMatch(workflow, /^\s+TELEGRAM_BOT_TOKEN:/m);
+assert.match(workflow, /TELEGRAM_ALLOWED_CHAT_IDS: \$\{\{ secrets\.TELEGRAM_ALLOWED_CHAT_IDS \}\}/);
 assert.match(workflow, /schedule:/);
 assert.match(workflow, /cron: '\*\/15 \* \* \* \*'/);
 
