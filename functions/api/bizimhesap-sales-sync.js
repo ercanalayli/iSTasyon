@@ -245,8 +245,8 @@ export async function onRequestPost({ request, env }) {
     }
     statements.push(env.APERION_DB.prepare(
       `INSERT INTO source_health(source_key,status,error_code,message,last_success_at,checked_at,evidence_ref)
-       VALUES('bizimhesap','confirmed',NULL,?,datetime('now'),datetime('now'),?)
-       ON CONFLICT(source_key) DO UPDATE SET status='confirmed',error_code=NULL,message=excluded.message,
+       VALUES('bizimhesap','confirmed','',?,datetime('now'),datetime('now'),?)
+       ON CONFLICT(source_key) DO UPDATE SET status='confirmed',error_code='',message=excluded.message,
          last_success_at=excluded.last_success_at,checked_at=excluded.checked_at,evidence_ref=excluded.evidence_ref`
     ).bind(`${records.length} satış kaydı D1'e kabul edildi`, cleanText(body.evidence_ref || records[0].source_url, 500)));
     await env.APERION_DB.batch(statements);
