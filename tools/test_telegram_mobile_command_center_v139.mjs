@@ -19,12 +19,17 @@ assert.equal(parseMobileCommand('/komutlar').code, 'command_catalog');
 assert.equal(parseMobileCommand('/komutdurum').code, 'command_status');
 assert.equal(parseMobileCommand('/cihazdurum').code, 'device_status');
 assert.equal(parseMobileCommand('cihaz durumu').code, 'device_status');
+assert.equal(parseMobileCommand('/muratdurum').code, 'murat_status');
+assert.equal(parseMobileCommand('/sonislem').code, 'murat_status');
+assert.equal(parseMobileCommand('/faturakontrol').code, 'murat_status');
+assert.equal(parseMobileCommand('/dosyalar').code, 'murat_status');
 assert.deepEqual(parseMobileCommand('/gorev Faturaları kontrol et'), { code: 'task_capture', payload: 'Faturaları kontrol et' });
 assert.equal(parseMobileCommand('bakiye'), null);
 assert.equal(MOBILE_COMMANDS.task_capture.risk, 'low_risk');
 assert.equal(MOBILE_COMMANDS.command_catalog.risk, 'read');
 assert.equal(MOBILE_COMMANDS.device_status.risk, 'read');
 assert.equal(MOBILE_COMMANDS.priority_status.risk, 'read');
+assert.equal(MOBILE_COMMANDS.murat_status.risk, 'read');
 assert.equal(await __test.constantTimeEqual(await __test.hashHex('secret'), await __test.hashHex('secret')), true);
 assert.equal(await __test.constantTimeEqual(await __test.hashHex('secret'), await __test.hashHex('wrong')), false);
 
@@ -110,5 +115,38 @@ assert.match(priorityText, /Verilen siparişler: 1/);
 assert.match(priorityText, /Ödemeler: 1/);
 assert.match(priorityText, /Tahsilatlar: 1/);
 assert.match(priorityText, /Yapılacaklar: 6/);
+
+const muratDb = {
+  prepare(sql) {
+    return {
+      bind() { return this; },
+      async first() {
+        if (sql.includes('FROM telegram_business_notifications')) return {
+          event_key: 'murat:invoice:M012026000000200:telegram-smoke-v1',
+          kind: 'murat_email_sent',
+          status: 'sent',
+          telegram_message_id: '12345',
+          sent_at: '2026-09-05 15:23:50',
+          payload_json: JSON.stringify({
+            invoiceNo: 'M012026000000200',
+            amount: 79069.95,
+            subject: 'RE: ALAYLI',
+            to: 'harslan@muratticaret.com',
+            cc: 'vagbulak@muratticaret.com, ercanalayli@gmail.com',
+            attachments: ['M012026000000200.pdf', 'Alaylı Nakliyat Dosyası (12) - Ağustos 2026 Fiyatlı.xlsx'],
+            gmailMessageId: '1a071e6acd25d741'
+          })
+        };
+        throw new Error(`Unexpected first query: ${sql}`);
+      }
+    };
+  }
+};
+const muratText = await __test.buildMuratStatusText(muratDb);
+assert.match(muratText, /M012026000000200/);
+assert.match(muratText, /79\.069,95 TL/);
+assert.match(muratText, /ercanalayli@gmail\.com/);
+assert.match(muratText, /Alaylı Nakliyat Dosyası/);
+assert.match(muratText, /Aynı olay yeniden gönderilemez/);
 
 console.log('Telegram mobile command center tests passed.');

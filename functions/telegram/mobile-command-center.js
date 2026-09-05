@@ -11,6 +11,7 @@ export const MOBILE_COMMANDS = Object.freeze({
   command_catalog: { risk: 'read', title: 'Komut kataloğu' },
   command_status: { risk: 'read', title: 'Son komutlar' },
   device_status: { risk: 'read', title: 'Cihaz durumu' },
+  murat_status: { risk: 'read', title: 'Murat Ticaret son işlem' },
   task_capture: { risk: 'low_risk', title: 'Görev yakalama' },
   help: { risk: 'read', title: 'Yardım' }
 });
@@ -38,6 +39,7 @@ export function parseMobileCommand(text) {
   if (/^\/(komutlar|commands)(?:@\w+)?\b/.test(normalized)) return { code: 'command_catalog' };
   if (/^\/(komutdurum|sonuclar|sonuçlar)(?:@\w+)?\b/.test(normalized)) return { code: 'command_status' };
   if (/^\/(cihazdurum|cihaz)(?:@\w+)?\b/.test(normalized) || /^cihaz durumu$/.test(normalized)) return { code: 'device_status' };
+  if (/^\/(muratdurum|sonislem|sonişlem|faturakontrol|dosyalar)(?:@\w+)?\b/.test(normalized) || /^(murat durumu|son işlem|fatura kontrol)$/.test(normalized)) return { code: 'murat_status' };
   const task = raw.match(/^\/(?:gorev|görev)(?:@\w+)?\s+([\s\S]+)$/iu);
   if (task && task[1].trim()) return { code: 'task_capture', payload: task[1].trim() };
   return null;
@@ -304,6 +306,7 @@ function menuText(hardened) {
     '🩺 Sistem: /sistem',
     '⭐ Önemli işler: /onemli',
     '🖥️ Cihaz durumu: /cihazdurum',
+    '🚚 Murat Ticaret son işlem: /muratdurum',
     '✅ Onaylar: /onaylar',
     '📋 Görevler: /gorevler',
     '🧠 Hafıza: /hafiza',
@@ -332,6 +335,7 @@ function commandCatalogText() {
     '',
     'OTOMATİK / SALT OKUNUR',
     '• /sabah · /sistem · /onemli · /cihazdurum · /onaylar · /gorevler · /hafiza',
+    '• /muratdurum · /sonislem · /faturakontrol · /dosyalar',
     '• /stok ürün · bakiye · /durum',
     '• /urunraporu ürün · /cariraporu cari · /gelirtablosu · /bilanco',
     '• /raporalanlari ile gösterilecek alanları siz belirlersiniz',
@@ -362,6 +366,35 @@ async function buildCommandStatusText(db) {
     '🕘 Son AperiON komutları:',
     '',
     ...result.rows.map((row) => `• ${String(row.raw_text || '').slice(0, 80)}\n  ${row.status} · ${row.risk_class}${row.result_summary ? ` · ${row.result_summary}` : ''}`)
+  ].join('\n');
+}
+
+async function buildMuratStatusText(db) {
+  const result = await safeFirst(db, `SELECT event_key,kind,payload_json,status,telegram_message_id,sent_at,created_at
+    FROM telegram_business_notifications
+    WHERE kind IN ('murat_invoice_ready','murat_email_sent')
+    ORDER BY COALESCE(sent_at,created_at) DESC LIMIT 1`);
+  if (!result.available) return '⚠️ Murat Ticaret işlem kaydı henüz hazır değil.';
+  if (!result.row) return '🚚 Henüz kayıtlı bir Murat Ticaret fatura veya e-posta işlemi yok.';
+  let payload = {};
+  try { payload = JSON.parse(result.row.payload_json || '{}'); } catch {}
+  const attachments = Array.isArray(payload.attachments) ? payload.attachments.filter(Boolean) : [];
+  const sent = result.row.kind === 'murat_email_sent';
+  return [
+    sent ? '✅ MURAT TİCARET — SON E-POSTA' : '📄 MURAT TİCARET — FATURA HAZIR',
+    '',
+    `• Durum: ${result.row.status || '-'}`,
+    `• Fatura: ${payload.invoiceNo || '-'}`,
+    `• Tutar: ${Number.isFinite(Number(payload.amount)) ? Number(payload.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TL' : '-'}`,
+    `• Başlık: ${payload.subject || '-'}`,
+    `• Alıcı: ${payload.to || '-'}`,
+    `• CC: ${payload.cc || '-'}`,
+    `• Ekler: ${attachments.length ? attachments.join(', ') : '-'}`,
+    `• Gmail ileti kimliği: ${payload.gmailMessageId || '-'}`,
+    `• Telegram ileti kimliği: ${result.row.telegram_message_id || '-'}`,
+    `• Zaman: ${result.row.sent_at || result.row.created_at || '-'}`,
+    '',
+    sent ? 'Aynı olay yeniden gönderilemez.' : 'Gönderim için ayrıca açık onay gerekir.'
   ].join('\n');
 }
 
@@ -580,6 +613,7 @@ export async function handleMobileCommand({ env, message, identity, sendMessage 
   else if (parsed.code === 'command_catalog') reply = commandCatalogText();
   else if (parsed.code === 'command_status') reply = await buildCommandStatusText(env.APERION_DB);
   else if (parsed.code === 'device_status') reply = await buildDeviceStatusText(env.APERION_DB);
+  else if (parsed.code === 'murat_status') reply = await buildMuratStatusText(env.APERION_DB);
   else if (parsed.code === 'task_capture') {
     const saved = await captureTask(env.APERION_DB, identity, message.message_id, parsed.payload);
     reply = saved.text;
@@ -599,4 +633,4 @@ export async function handleMobileCommand({ env, message, identity, sendMessage 
   return { handled: true, code: parsed.code, status, receivedRecorded, completedRecorded, delivered };
 }
 
-export const __test = { constantTimeEqual, hashHex, updateIdentity, buildDeviceStatusText, buildPrioritySnapshot, buildPriorityStatusText, parseSqliteUtc, CLOSED_STATUSES };
+export const __test = { constantTimeEqual, hashHex, updateIdentity, buildDeviceStatusText, buildMuratStatusText, buildPrioritySnapshot, buildPriorityStatusText, parseSqliteUtc, CLOSED_STATUSES };
