@@ -65,12 +65,24 @@ jobs:
       - name: Register hardened Telegram webhook
         shell: bash
         run: |
-          response="$(curl --fail --silent --show-error \
-            --request POST \
-            --data-urlencode "url=https://aperion-istasyon.pages.dev/telegram/webhook" \
-            --data-urlencode "secret_token=$WEBHOOK_SECRET" \
-            "https://api.telegram.org/bot${HERMES_TELEGRAM_BOT_TOKEN}/setWebhook")"
-          printf '%s' "$response" | jq -e '.ok == true' >/dev/null
+          expected_url="https://aperion-istasyon.pages.dev/telegram/webhook"
+          for attempt in 1 2 3; do
+            response="$(curl --fail --silent --show-error \
+              --request POST \
+              --data-urlencode "url=$expected_url" \
+              --data-urlencode "secret_token=$WEBHOOK_SECRET" \
+              "https://api.telegram.org/bot${HERMES_TELEGRAM_BOT_TOKEN}/setWebhook")"
+            printf '%s' "$response" | jq -e '.ok == true' >/dev/null
+            sleep 2
+            info="$(curl --fail --silent --show-error \
+              "https://api.telegram.org/bot${HERMES_TELEGRAM_BOT_TOKEN}/getWebhookInfo")"
+            if printf '%s' "$info" | jq -e --arg expected "$expected_url" \
+              '.ok == true and .result.url == $expected and (.result.last_error_message // "") == ""' >/dev/null; then
+              exit 0
+            fi
+          done
+          printf '%s' "$info" | jq '{ok, result: {url: .result.url, pending_update_count: .result.pending_update_count, last_error_message: .result.last_error_message}}'
+          exit 1
 
       - name: Verify deployed secret and allowlist end-to-end
         shell: bash
