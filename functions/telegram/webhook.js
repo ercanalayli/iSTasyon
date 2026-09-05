@@ -1173,10 +1173,14 @@ authorization: 'Bearer ' + secret,
 },
 body: JSON.stringify({
 command: directReport.command,
+idempotencyKey: 'telegram-' + message.chat.id + '-' + message.message_id,
+payload: {
 query: directReport.query,
+view: 'executive_360',
 source: 'telegram',
 chat_id: String(message.chat.id),
 message_id: String(message.message_id)
+}
 })
 });
 const body = await response.json().catch(() => ({}));
