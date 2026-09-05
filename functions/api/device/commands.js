@@ -29,9 +29,10 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: false, error: 'invalid_json' }, 400);
   }
   const result = await completeDeviceCommand(env, device, body);
-  if (result.ok && env.TELEGRAM_BOT_TOKEN) {
+  const telegramToken = env.HERMES_TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN;
+  if (result.ok && telegramToken) {
     const icon = body.ok ? '✅' : '⚠️';
-    await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({

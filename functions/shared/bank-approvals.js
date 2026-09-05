@@ -79,8 +79,9 @@ export async function resolveTelegramChatId(db, env) {
 }
 
 export async function sendBankApproval(env, chatId, row) {
-  if (!env.TELEGRAM_BOT_TOKEN || !chatId) throw new Error('telegram_not_configured');
-  const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+  const telegramToken = env.HERMES_TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN;
+  if (!telegramToken || !chatId) throw new Error('telegram_not_configured');
+  const response = await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -143,7 +144,7 @@ export async function ingestBankRows(db, env, inputRows) {
       telegramFailures.push({ id: row.id, error: error.message || String(error) });
     }
   }
-  return { input: rows.length, inserted, duplicate, invalid, notification_candidates: notificationRows.length, telegram_configured: Boolean(env.TELEGRAM_BOT_TOKEN && chatId), telegram_sent: telegramSent, telegram_failed: telegramFailures.length, failures: telegramFailures.slice(0, 10) };
+  return { input: rows.length, inserted, duplicate, invalid, notification_candidates: notificationRows.length, telegram_configured: Boolean((env.HERMES_TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN) && chatId), telegram_sent: telegramSent, telegram_failed: telegramFailures.length, failures: telegramFailures.slice(0, 10) };
 }
 
 export async function readBankMovement(db, movementId) {

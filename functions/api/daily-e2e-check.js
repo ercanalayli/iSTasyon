@@ -59,7 +59,7 @@ export async function onRequestGet({ env }) {
     ok: true,
     service: "aperion-daily-e2e",
     version: "v145",
-    configured: Boolean(env.APERION_DB && env.TELEGRAM_BOT_TOKEN && env.MORNING_BRIEF_DISPATCH_SECRET)
+    configured: Boolean(env.APERION_DB && (env.HERMES_TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN) && env.MORNING_BRIEF_DISPATCH_SECRET)
   });
 }
 
@@ -108,7 +108,8 @@ export async function onRequestPost({ request, env }) {
 
   let allOk = checks.every(check => check.ok);
   let messageId = null;
-  if (chat.row?.config_value && env.TELEGRAM_BOT_TOKEN) {
+  const telegramToken = env.HERMES_TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN;
+  if (chat.row?.config_value && telegramToken) {
     try {
       const lines = [
         allOk ? "✅ APERİON UÇTAN UCA DOĞRULANDI" : "⚠️ APERİON UÇTAN UCA KONTROL",
@@ -117,7 +118,7 @@ export async function onRequestPost({ request, env }) {
         "",
         "Bu kontrol mali kayıt oluşturmadı."
       ];
-      const sent = await sendTelegram(env.TELEGRAM_BOT_TOKEN, chat.row.config_value, lines.join("\n"));
+      const sent = await sendTelegram(telegramToken, chat.row.config_value, lines.join("\n"));
       messageId = String(sent.message_id);
     } catch (error) {
       allOk = false;

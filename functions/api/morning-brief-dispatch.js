@@ -15,7 +15,7 @@ export async function onRequestGet({ env }) {
     schedule: "09:00 Europe/Istanbul",
     dispatchSecretConfigured: Boolean(env.MORNING_BRIEF_DISPATCH_SECRET),
     databaseConfigured: Boolean(env.APERION_DB),
-    telegramTokenConfigured: Boolean(env.TELEGRAM_BOT_TOKEN)
+    telegramTokenConfigured: Boolean(env.HERMES_TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN)
   });
 }
 

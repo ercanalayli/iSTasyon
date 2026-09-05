@@ -191,7 +191,8 @@ export async function sendTelegram(token, chatId, text) {
 
 export async function runMorningBrief(env, options = {}) {
   if (!env.APERION_DB) throw new Error("APERION_DB bağlı değil");
-  if (!env.TELEGRAM_BOT_TOKEN) throw new Error("TELEGRAM_BOT_TOKEN yapılandırılmadı");
+  const telegramToken = env.HERMES_TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN;
+  if (!telegramToken) throw new Error("Hermes Telegram anahtarı yapılandırılmadı");
   await ensureSchema(env.APERION_DB);
   const chat = await first(env.APERION_DB, "SELECT config_value FROM telegram_security_config WHERE config_key='allowed_chat_id'");
   if (!chat.ok || !chat.row || !chat.row.config_value) throw new Error("allowed_chat_id yapılandırılmadı");
@@ -208,7 +209,7 @@ export async function runMorningBrief(env, options = {}) {
   await env.APERION_DB.prepare("INSERT INTO morning_brief_runs(run_key,scheduled_at,cron,status,summary,updated_at) VALUES(?,?,?,?,?,datetime('now')) ON CONFLICT(run_key) DO UPDATE SET scheduled_at=excluded.scheduled_at,cron=excluded.cron,status='sending',summary=excluded.summary,updated_at=datetime('now')")
     .bind(runKey, now.toISOString(), options.cron || CRON, "sending", JSON.stringify(brief.counts)).run();
   try {
-    const sent = await sendTelegram(env.TELEGRAM_BOT_TOKEN, chat.row.config_value, combinedText);
+    const sent = await sendTelegram(telegramToken, chat.row.config_value, combinedText);
     await env.APERION_DB.prepare("UPDATE morning_brief_runs SET status='sent',telegram_message_id=?,sent_at=datetime('now'),updated_at=datetime('now') WHERE run_key=?").bind(String(sent.message_id), runKey).run();
     return { ok: true, skipped: false, runKey, messageId: sent.message_id };
   } catch (error) {
@@ -239,6 +240,6 @@ export default {
     const url = new URL(request.url);
     if (url.pathname !== "/health") return new Response("Not found", { status: 404 });
     const chat = env.APERION_DB ? await first(env.APERION_DB, "SELECT 1 AS ok FROM telegram_security_config WHERE config_key='allowed_chat_id'") : { ok: false };
-    return Response.json({ ok: true, service: "aperion-morning-brief", version: VERSION, cronUtc: CRON, timezone: "Europe/Istanbul", localTime: "09:00", dispatchConfigured: Boolean(env.BRIEF_DISPATCH_URL && env.MORNING_BRIEF_DISPATCH_SECRET), databaseConfigured: Boolean(env.APERION_DB), telegramTokenConfigured: Boolean(env.TELEGRAM_BOT_TOKEN), chatConfigured: Boolean(chat.ok && chat.row) });
+    return Response.json({ ok: true, service: "aperion-morning-brief", version: VERSION, cronUtc: CRON, timezone: "Europe/Istanbul", localTime: "09:00", dispatchConfigured: Boolean(env.BRIEF_DISPATCH_URL && env.MORNING_BRIEF_DISPATCH_SECRET), databaseConfigured: Boolean(env.APERION_DB), telegramTokenConfigured: Boolean(env.HERMES_TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN), chatConfigured: Boolean(chat.ok && chat.row) });
   }
 };

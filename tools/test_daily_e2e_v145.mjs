@@ -57,7 +57,8 @@ function database(options = {}) {
 function environment(db) {
   return {
     APERION_DB: db,
-    TELEGRAM_BOT_TOKEN: "test-token",
+    HERMES_TELEGRAM_BOT_TOKEN: "hermes-test-token",
+    TELEGRAM_BOT_TOKEN: "legacy-test-token",
     MORNING_BRIEF_DISPATCH_SECRET: "test-secret",
     SUPABASE_URL: "https://supabase.example",
     SUPABASE_SERVICE_ROLE_KEY: "test-key"
@@ -73,10 +74,12 @@ function request(secret = "test-secret") {
 
 let failingTable = "";
 let telegramMessages = 0;
+let lastTelegramUrl = "";
 globalThis.fetch = async url => {
   const value = String(url);
   if (value.includes("api.telegram.org")) {
     telegramMessages += 1;
+    lastTelegramUrl = value;
     return new Response(JSON.stringify({ ok: true, result: { message_id: 99 } }), {
       status: 200,
       headers: { "content-type": "application/json" }
@@ -113,6 +116,8 @@ globalThis.fetch = async url => {
   assert.equal(db.health.size, 5);
   assert.equal(db.savedRun.status, "passed");
   assert.equal(telegramMessages, 1);
+  assert.match(lastTelegramUrl, /bothermes-test-token\/sendMessage/);
+  assert.doesNotMatch(lastTelegramUrl, /legacy-test-token/);
 }
 
 {
