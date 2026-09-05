@@ -41,10 +41,10 @@ jobs:
         shell: bash
         run: npm install --no-save --ignore-scripts wrangler@4.50.0
 
-      - name: Prepare one-time webhook secret
+      - name: Prepare stable webhook secret
         shell: bash
         run: |
-          WEBHOOK_SECRET="$(openssl rand -hex 32)"
+          WEBHOOK_SECRET="$(printf '%s' 'aperion-telegram-webhook-v2' | openssl dgst -sha256 -hmac "$TELEGRAM_BOT_TOKEN" | awk '{print $2}')"
           echo "::add-mask::$WEBHOOK_SECRET"
           echo "WEBHOOK_SECRET=$WEBHOOK_SECRET" >> "$GITHUB_ENV"
 
@@ -71,6 +71,19 @@ jobs:
             --data-urlencode "secret_token=$WEBHOOK_SECRET" \
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook")"
           printf '%s' "$response" | jq -e '.ok == true' >/dev/null
+
+      - name: Verify deployed secret and allowlist end-to-end
+        shell: bash
+        run: |
+          TEST_CHAT_ID="$(printf '%s' "$TELEGRAM_ALLOWED_CHAT_IDS" | tr ',;' '  ' | awk '{print $1}')"
+          test -n "$TEST_CHAT_ID"
+          response="$(curl --fail --silent --show-error \
+            --request POST \
+            --header 'content-type: application/json' \
+            --header "x-telegram-bot-api-secret-token: $WEBHOOK_SECRET" \
+            --data "{\"update_id\":0,\"message\":{\"message_id\":0,\"from\":{\"id\":$TEST_CHAT_ID},\"chat\":{\"id\":$TEST_CHAT_ID,\"type\":\"private\"}}}" \
+            https://aperion-istasyon.pages.dev/telegram/webhook)"
+          printf '%s' "$response" | jq -e '.ok == true and .ignored == true' >/dev/null
 
       - name: Verify live security status
         shell: bash

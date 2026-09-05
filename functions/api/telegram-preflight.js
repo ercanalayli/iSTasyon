@@ -31,7 +31,10 @@ async function checkTelegram(env){
     };
   }
 
-  const r = await fetchJson(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/getWebhookInfo`);
+  const [r, me] = await Promise.all([
+    fetchJson(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/getWebhookInfo`),
+    fetchJson(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/getMe`)
+  ]);
   if(!r.ok || !r.body.ok){
     return {
       ok: false,
@@ -52,7 +55,10 @@ async function checkTelegram(env){
     configured_webhook_url: configuredUrl || null,
     webhook_matches_expected: configuredUrl === EXPECTED_WEBHOOK_URL,
     pending_update_count: info.pending_update_count || 0,
+    bot_username: me.ok && me.body.ok ? (me.body.result?.username || null) : null,
+    bot_id: me.ok && me.body.ok ? (me.body.result?.id || null) : null,
     last_error_message: lastError,
+    last_error_date: info.last_error_date || null,
     allowed_updates: info.allowed_updates || null,
     message: configuredUrl === EXPECTED_WEBHOOK_URL && !lastError
       ? 'Telegram webhook doğru bağlı.'
