@@ -1287,7 +1287,9 @@ await sendMessage(env, chatId, report.telegramCard);
 return json({ ok: true, report: directReport.kind, source: 'aperion_command_bridge' });
 }
 await sendMessage(env, chatId, '⚠️ RAPOR HATTI GEÇİCİ OLARAK KULLANILAMIYOR\nKaynak doğrulanamadığı için tahmini veri göstermedim. Finansal işlem veya genel not oluşturulmadı.');
-return json({ ok: false, report: directReport.kind, error: report.error }, 503);
+// Telegram retries every non-2xx webhook response. A delivery failure is
+// acknowledged here so one user message can never create a retry storm.
+return json({ ok: true, report: directReport.kind, delivered: false, error: report.error });
 }
 
 if (text.startsWith('/start')) {
