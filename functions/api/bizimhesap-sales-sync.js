@@ -55,12 +55,19 @@ function normalizedSale(row) {
 }
 
 async function telegram(env, text) {
-  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return { sent: false, reason: 'telegram_not_configured' };
-  const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+  const token = String(env.HERMES_TELEGRAM_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN || '').trim();
+  const chatId = String(
+    env.TELEGRAM_CHAT_ID ||
+    env.TELEGRAM_ALLOWED_CHAT_ID ||
+    env.TELEGRAM_ALLOWED_CHAT_IDS ||
+    ''
+  ).split(/[;,\s]+/).find(Boolean) || '';
+  if (!token || !chatId) return { sent: false, reason: 'telegram_not_configured' };
+  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
-      chat_id: env.TELEGRAM_CHAT_ID,
+      chat_id: chatId,
       text,
       parse_mode: 'HTML',
       disable_web_page_preview: true
