@@ -1,10 +1,10 @@
 {
-  "created_at": "2026-07-29T18:08:33.619Z",
+  "created_at": "2026-09-05T11:49:07.921Z",
   "safe_mode": true,
   "live_rpc_called": false,
   "live_bizimhesap_save_called": false,
   "safe_to_post": false,
-  "policy": "Onay Merkezi salt okunur simülasyon gösterir. Açık kullanıcı onayı, canlı kilit ve kayıt sonrası geri doğrulama olmadan BizimHesap kaydı yapılamaz.",
+  "policy": "Onay Merkezi salt okunur simÃ¼lasyon gÃ¶sterir. AÃ§Ä±k kullanÄ±cÄ± onayÄ±, canlÄ± kilit ve kayÄ±t sonrasÄ± geri doÄŸrulama olmadan BizimHesap kaydÄ± yapÄ±lamaz.",
   "files": {
     "status": {
       "path": "data/aperion_bank_approval_status.json",
@@ -40,8 +40,8 @@
   "summary": {
     "status_preview_count": 25,
     "status_candidate_count": 2,
-    "status_low_risk_count": 2,
-    "status_review_count": 15,
+    "status_low_risk_count": 1,
+    "status_review_count": 5,
     "status_ready_queue_count": 0,
     "candidate_file_count": 3,
     "posting_plan_count": 25,
@@ -50,23 +50,25 @@
     "parse_error_count": 0
   },
   "selected_candidate": {
-    "pending_bank_movement_id": "f7b75d0d-5df0-4678-b0d3-482a3575af1f",
+    "pending_bank_movement_id": "e222eb53-cb1a-41ba-af40-88b2e74b2323",
     "bank_name": "Turkiye Is Bankasi",
-    "transaction_date": "2026-07-02",
-    "transaction_time": "09:47",
-    "amount": 2740,
-    "type": "Moka banka transferi",
-    "target": "BizimHesap hesaplar arasi transfer",
+    "transaction_date": "2026-08-11",
+    "transaction_time": "09:59",
+    "amount": 8740,
+    "type": "Fatura odemesi",
+    "target": "BizimHesap gider/odeme kaydi",
     "source_account": "",
     "target_account": "*IS BANKASI",
-    "counterparty": "*MOCA SONOVA POS KREDI KARTI -> *IS BANKASI",
-    "category": "Moka POS banka aktarimi",
-    "confidence": 100,
+    "counterparty": "POS POS POS KREDI KARTI -> *IS BANKASI",
+    "category": "Sabit gider faturasi",
+    "confidence": 88,
     "risk_class": "low",
     "requires_user_review": false,
     "reasons": [
       "banka alacak/giris",
-      "Moka United aciklamasi kullanici tarafindan POS tahsilat aktarimi olarak dogrulandi"
+      "Moka banka aktarimi",
+      "POS banka aktarimi",
+      "fatura anahtar kelimesi"
     ]
   },
   "queues": {
@@ -77,25 +79,24 @@
   },
   "classifications": {
     "candidate_types": {
-      "Moka banka transferi": 3
+      "Fatura odemesi": 3
     },
     "posting_plan_types": {
-      "Banka hesaba para girisi - eslestirme bekliyor": 6,
-      "Cari tahsilat": 5,
-      "Cari odeme": 4,
-      "Banka disi ozet mail": 5,
-      "POS banka transferi": 2,
-      "Moka banka transferi": 2,
-      "Vergi/SGK odemesi": 1
+      "Fatura odemesi": 4,
+      "Banka disi ozet mail": 2,
+      "Banka/POS masrafi": 7,
+      "POS banka transferi": 8,
+      "Cari tahsilat": 3,
+      "Cari odeme": 1
     }
   },
   "missing_files": [],
   "parse_errors": [],
   "blockers": [],
-  "next_action": "Kullanıcı açık onay verirse yalnızca tekil seçili aday için approve RPC dry/live akışı ayrı çalıştırılabilir.",
+  "next_action": "KullanÄ±cÄ± aÃ§Ä±k onay verirse yalnÄ±zca tekil seÃ§ili aday iÃ§in approve RPC dry/live akÄ±ÅŸÄ± ayrÄ± Ã§alÄ±ÅŸtÄ±rÄ±labilir.",
   "approval_center_simulation": {
     "source": "bizimhesap_queue_worker dry-run",
-    "created_at": "2026-07-29T18:08:33.757Z",
+    "created_at": "2026-09-05T11:49:08.024Z",
     "writes_to_bizimhesap": false,
     "live_save_allowed": false,
     "queue_count": 0,
