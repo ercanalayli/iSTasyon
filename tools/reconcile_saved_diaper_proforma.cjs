@@ -12,6 +12,7 @@ const puppeteer = require(path.join(canonicalRoot, 'node_modules', 'puppeteer'))
 const { createClient } = require(path.join(canonicalRoot, 'node_modules', '@supabase', 'supabase-js'));
 
 const commandId = Number(process.argv[2]);
+const proofUrlArg = String(process.argv[3] || '').trim();
 if (!Number.isInteger(commandId) || commandId <= 0) throw new Error('Geçerli bot_commands kimliği gerekli.');
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) throw new Error('Yerel Supabase kasası eksik.');
 
@@ -35,6 +36,9 @@ async function sendHermes(payload) {
       'x-aperion-signature': signature
     },
     body
+  }).catch(error => {
+    const cause = error?.cause?.code || error?.cause?.message || error?.message || String(error);
+    throw new Error(`Hermes bulut ağına erişilemedi: ${cause}`);
   });
   const result = await response.json();
   if (!response.ok || !result?.ok) throw new Error(`Hermes bulut bildirimi başarısız: HTTP ${response.status} ${result?.error || ''}`);
@@ -57,8 +61,14 @@ async function sendHermes(payload) {
   let proof;
   try {
     const pages = await browser.pages();
-    const page = pages.find(candidate => /bizimhesap\.com\/web\/ngn\/doc\/ngnproposal/i.test(candidate.url()));
-    if (!page) throw new Error('Kaydedilmiş BizimHesap teklif ayrıntısı bulunamadı.');
+    let page = pages.find(candidate => /bizimhesap\.com\/web\/ngn\/doc\/ngnproposal/i.test(candidate.url()));
+    if (!page && proofUrlArg) {
+      if (!/^https:\/\/bizimhesap\.com\/web\/ngn\/doc\/ngnproposal\?/i.test(proofUrlArg)) throw new Error('Kanıt adresi BizimHesap teklif ayrıntısı değil.');
+      page = pages.find(candidate => /bizimhesap\.com\/web\/ngn\//i.test(candidate.url())) || await browser.newPage();
+      await page.goto(proofUrlArg, { waitUntil: 'networkidle2', timeout: 30000 });
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    if (!page) throw new Error('Kaydedilmiş BizimHesap teklif ayrıntısı bulunamadı; kanıt adresi gerekli.');
     proof = await page.evaluate((input) => {
       const text = document.body?.innerText || '';
       const rows = [...document.querySelectorAll('#editable-sample tbody tr')];
