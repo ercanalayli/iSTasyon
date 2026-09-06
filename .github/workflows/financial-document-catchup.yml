@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - name: Wait for Pages v152 and process latest pending capture
+      - name: Wait for Pages v153 and process latest pending capture
         env:
           APERION_BRIDGE_SECRET: ${{ secrets.APERION_BRIDGE_SECRET }}
         run: |
@@ -28,7 +28,7 @@ jobs:
           endpoint='https://aperion-istasyon.pages.dev/api/financial-document-process'
           ready=''
           for attempt in $(seq 1 20); do
-            if curl --fail --silent --show-error "$endpoint" | grep -q '"version":"v152"'; then
+            if curl --fail --silent --show-error "$endpoint" | grep -q '"version":"v153"'; then
               ready='yes'
               break
             fi

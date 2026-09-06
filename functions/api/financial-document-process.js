@@ -15,8 +15,27 @@ async function sendMessage(env, chatId, text) {
   return response.ok;
 }
 
-export async function onRequestGet() {
-  return json({ ok: true, service: 'aperion-financial-document-processor', version: 'v152' });
+export async function onRequestGet({ env }) {
+  const diagnostics = {
+    database: Boolean(env.APERION_DB),
+    workers_ai: Boolean(env.AI?.run && env.AI?.toMarkdown),
+    telegram: Boolean(token(env)),
+    bridge_secret: Boolean(env.APERION_BRIDGE_SECRET),
+    latest_capture_state: null,
+    latest_error_code: null
+  };
+  if (env.APERION_DB) {
+    try {
+      await ensureFinancialDocumentSchema(env.APERION_DB);
+      const latest = await env.APERION_DB.prepare('SELECT extraction_status,error_code FROM telegram_captures ORDER BY id DESC LIMIT 1').first();
+      diagnostics.latest_capture_state = latest?.extraction_status || null;
+      diagnostics.latest_error_code = latest?.error_code || null;
+    } catch (_error) {
+      diagnostics.database = false;
+      diagnostics.latest_error_code = 'diagnostic_query_failed';
+    }
+  }
+  return json({ ok: true, service: 'aperion-financial-document-processor', version: 'v153', diagnostics });
 }
 
 export async function onRequestPost({ request, env }) {
