@@ -35,12 +35,15 @@ export async function onRequestGet({ env }) {
       diagnostics.latest_error_code = 'diagnostic_query_failed';
     }
   }
-  return json({ ok: true, service: 'aperion-financial-document-processor', version: 'v153', diagnostics });
+  return json({ ok: true, service: 'aperion-financial-document-processor', version: 'v154', diagnostics });
 }
 
 export async function onRequestPost({ request, env }) {
-  const expected = String(env.APERION_BRIDGE_SECRET || '');
-  if (!expected || request.headers.get('authorization') !== `Bearer ${expected}`) return json({ ok: false, error: 'unauthorized' }, 401);
+  const bridgeSecret = String(env.APERION_BRIDGE_SECRET || '');
+  const webhookSecret = String(env.TELEGRAM_WEBHOOK_SECRET || '');
+  const bridgeAuthorized = Boolean(bridgeSecret) && request.headers.get('authorization') === `Bearer ${bridgeSecret}`;
+  const webhookAuthorized = Boolean(webhookSecret) && request.headers.get('x-telegram-bot-api-secret-token') === webhookSecret;
+  if (!bridgeAuthorized && !webhookAuthorized) return json({ ok: false, error: 'unauthorized' }, 401);
   if (!env.APERION_DB) return json({ ok: false, error: 'database_unavailable' }, 503);
   await ensureFinancialDocumentSchema(env.APERION_DB);
   let body = {};
