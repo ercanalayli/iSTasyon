@@ -12,10 +12,38 @@ function clean(value, max = 500) {
   return String(value == null ? '' : value).trim().slice(0, max);
 }
 
-function authorized(request, env) {
+async function sha256Bytes(value) {
+  return new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(value || ''))));
+}
+
+async function constantTimeEqual(left, right) {
+  const [a, b] = await Promise.all([sha256Bytes(left), sha256Bytes(right)]);
+  let mismatch = 0;
+  for (let index = 0; index < a.length; index += 1) mismatch |= a[index] ^ b[index];
+  return mismatch === 0;
+}
+
+async function hmacHex(secret, message) {
+  const key = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const signature = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(message)));
+  return [...signature].map(byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function authorized(request, env, rawBody) {
   const configured = clean(env.APERION_BRIDGE_SECRET, 500);
   const supplied = clean(request.headers.get('authorization'), 600).replace(/^Bearer\s+/i, '');
-  return configured.length >= 32 && supplied === configured;
+  if (configured.length >= 32 && supplied && await constantTimeEqual(supplied, configured)) return true;
+
+  const signingKey = clean(env.SUPABASE_SERVICE_ROLE_KEY, 2000);
+  const timestamp = clean(request.headers.get('x-aperion-timestamp'), 30);
+  const signature = clean(request.headers.get('x-aperion-signature'), 128).toLowerCase();
+  const timestampNumber = Number(timestamp);
+  if (signingKey.length < 32 || !/^\d{13}$/.test(timestamp) || !/^[a-f0-9]{64}$/.test(signature)) return false;
+  if (!Number.isFinite(timestampNumber) || Math.abs(Date.now() - timestampNumber) > 5 * 60 * 1000) return false;
+  const expected = await hmacHex(signingKey, `${timestamp}\n${rawBody}`);
+  return constantTimeEqual(signature, expected);
 }
 
 function firstConfiguredChat(env) {
@@ -51,12 +79,12 @@ function formatMoney(value) {
 
 export function normalizeNotification(body) {
   const kind = clean(body?.kind, 60);
-  if (!['murat_invoice_ready', 'murat_email_sent', 'test'].includes(kind)) {
+  if (!['murat_invoice_ready', 'murat_email_sent', 'diaper_proforma_ready', 'test'].includes(kind)) {
     throw new Error('unsupported_notification_kind');
   }
   const eventKey = clean(body?.event_key, 180);
   if (!/^[A-Za-z0-9._:-]{8,180}$/.test(eventKey)) throw new Error('invalid_event_key');
-  return {
+  const normalized = {
     kind,
     eventKey,
     invoiceNo: clean(body?.invoice_no, 120),
@@ -68,13 +96,37 @@ export function normalizeNotification(body) {
       ? body.attachments.map(item => clean(item, 240)).filter(Boolean).slice(0, 10)
       : [],
     gmailMessageId: clean(body?.gmail_message_id, 180),
-    note: clean(body?.note, 500)
+    note: clean(body?.note, 500),
+    orderReference: clean(body?.order_reference, 80),
+    customerName: clean(body?.customer_name, 240),
+    lineCount: Number(body?.line_count || 0),
+    packageQuantity: Number(body?.package_quantity || 0),
+    status: clean(body?.status, 40)
   };
+  if (kind === 'diaper_proforma_ready') {
+    if (!/^HB-\d+$/.test(normalized.orderReference)) throw new Error('invalid_order_reference');
+    if (normalized.customerName.length < 3) throw new Error('invalid_customer_name');
+    if (!Number.isInteger(normalized.lineCount) || normalized.lineCount < 1 || normalized.lineCount > 100) throw new Error('invalid_line_count');
+    if (!Number.isInteger(normalized.packageQuantity) || normalized.packageQuantity < 1 || normalized.packageQuantity > 100000) throw new Error('invalid_package_quantity');
+    if (!Number.isFinite(normalized.amount) || normalized.amount <= 0) throw new Error('invalid_amount');
+  }
+  return normalized;
 }
 
 export function formatNotification(item) {
   if (item.kind === 'test') {
     return ['🧪 APERİON TELEGRAM TESTİ', item.note || 'Bildirim kanalı çalışıyor.', `Olay: ${item.eventKey}`].join('\n');
+  }
+  if (item.kind === 'diaper_proforma_ready') {
+    return [
+      '✅ HASTA BEZİ PROFORMA HAZIR',
+      'Buyurun Ercan Bey, sevke hazır.',
+      `Sipariş: ${item.orderReference || '-'}`,
+      `Cari: ${item.customerName || '-'}`,
+      `${item.lineCount || 0} ürün • ${item.packageQuantity || 0} paket • ${formatMoney(item.amount)}`,
+      `Durum: ${item.status || 'BizimHesap taslağı kaydedildi'}`,
+      'Fatura kesilmedi.'
+    ].join('\n');
   }
   const sent = item.kind === 'murat_email_sent';
   const lines = [
@@ -127,12 +179,16 @@ async function sendTelegram(env, chatId, text) {
 }
 
 export async function onRequestPost({ request, env }) {
-  if (!authorized(request, env)) return json({ ok: false, error: 'unauthorized' }, 401);
+  const contentLength = Number(request.headers.get('content-length') || 0);
+  if (contentLength > 32768) return json({ ok: false, error: 'payload_too_large' }, 413);
+  const rawBody = await request.text();
+  if (rawBody.length > 32768) return json({ ok: false, error: 'payload_too_large' }, 413);
+  if (!(await authorized(request, env, rawBody))) return json({ ok: false, error: 'unauthorized' }, 401);
   if (!env.APERION_DB) return json({ ok: false, error: 'missing_d1_binding' }, 503);
 
   let item;
   try {
-    item = normalizeNotification(await request.json());
+    item = normalizeNotification(JSON.parse(rawBody));
   } catch (error) {
     return json({ ok: false, error: error.message || 'invalid_payload' }, 400);
   }

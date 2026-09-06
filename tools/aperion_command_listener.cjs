@@ -8,11 +8,13 @@
 // (login sayfasina geri atarsa) yeniden giris dene.
 const fs = require('fs');
 const path = require('path');
+const crypto = require('node:crypto');
 const { spawn } = require('child_process');
 const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
 const { launchOptions, loginBizimHesap, selectFirma, checkLoginCooldown, savePageDiagnostics } = require('../bizimhesap_common.cjs');
 const { sendFinanceResult } = require('./telegram_finance_result.cjs');
+const { loadDiaperPriceCatalog, resolveDiaperCatalogItem, parseDiscountPercent } = require('./diaper_price_catalog.cjs');
 
 const ENV_FILE = path.join(__dirname, '..', 'local-secrets', 'bizimhesap.local.env');
 if (!fs.existsSync(ENV_FILE)) { console.error('HATA: local-secrets/bizimhesap.local.env yok.'); process.exit(1); }
@@ -98,6 +100,28 @@ async function sendTelegramCommandResult(chatId, text) {
     return { ok: response.ok && Boolean(result?.ok) };
   } catch (_error) {
     return { ok: false };
+  }
+}
+
+async function sendHermesBusinessNotification(payload) {
+  const endpoint = process.env.APERION_TELEGRAM_NOTIFY_URL || 'https://aperion-istasyon.pages.dev/api/telegram-business-notify';
+  const body = JSON.stringify(payload);
+  const timestamp = String(Date.now());
+  const signature = crypto.createHmac('sha256', SERVICE_KEY).update(`${timestamp}\n${body}`).digest('hex');
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-aperion-timestamp': timestamp,
+        'x-aperion-signature': signature
+      },
+      body
+    });
+    const result = await response.json().catch(() => ({}));
+    return { ok: response.ok && Boolean(result?.ok), status: response.status, result };
+  } catch (error) {
+    return { ok: false, status: 0, error: String(error?.message || error) };
   }
 }
 // 2026-08-10: son savunma hatti - herhangi bir yerde yakalanmamis bir promise
@@ -1355,6 +1379,15 @@ function resolveDiaperCustomerName(requestedName) {
   return requested;
 }
 
+function resolvedItemsTotal(items, priceListName, discountPercent = 0) {
+  const catalog = loadDiaperPriceCatalog();
+  const gross = (items || []).reduce((sum, item) => {
+    const resolved = resolveDiaperCatalogItem(item, priceListName, catalog);
+    return sum + Number(resolved.unitPrice) * Number(item.package_quantity || 0);
+  }, 0);
+  return Math.round(gross * (1 - Number(discountPercent || 0) / 100) * 100) / 100;
+}
+
 async function bizimhesapDiaperProforma(params) {
   if (params.approved !== true) throw new Error('Telegram proforma onayı doğrulanmadı; BizimHesap kaydı yapılmadı.');
   if (!/^HB-\d+$/.test(String(params.order_reference || ''))) throw new Error('Geçerli hasta bezi sipariş kimliği yok.');
@@ -1363,12 +1396,21 @@ async function bizimhesapDiaperProforma(params) {
 
   const auditTag = `APERION HASTA BEZI | ${params.order_reference}`;
   const resolvedCustomerName = resolveDiaperCustomerName(params.customer_name);
+  const priceCatalog = loadDiaperPriceCatalog();
+  const resolvedItems = params.items.map(item => ({
+    ...item,
+    catalog: resolveDiaperCatalogItem(item, params.price_list_name, priceCatalog)
+  }));
+  const discountPercent = parseDiscountPercent(params.discount_note);
   await page.goto(PROPOSALS_URL, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
   if (!/\/web\/ngn\//i.test(page.url())) {
     throw new Error('GİRİŞ_GEREKLİ: Kalıcı BizimHesap oturumu kapalı. Güvenlik için otomatik tekrar giriş yapılmadı; taslak oluşturulmadı.');
   }
   await new Promise(r => setTimeout(r, 900));
-  const duplicate = await page.evaluate((tag) => (document.body.innerText || '').includes(tag), auditTag);
+  const duplicate = await page.evaluate((tag, orderRef) => {
+    const text = document.body.innerText || '';
+    return text.includes(tag) || text.includes(orderRef);
+  }, auditTag, params.order_reference);
   if (duplicate) return { ok: true, alreadyExisted: true, message: `${params.order_reference} proforma taslağı zaten listede; mükerrer kayıt engellendi.` };
 
   const opened = await page.evaluate(() => {
@@ -1463,7 +1505,9 @@ async function bizimhesapDiaperProforma(params) {
     const customerSelect = selects.find(s => /musteri|cari|customer/.test(norm2(`${s.id} ${s.name} ${s.getAttribute('aria-label') || ''} ${s.parentElement?.innerText || ''}`)));
     const listSelect = selects.find(s => /fiyat.*liste|price.*list|liste/.test(norm2(`${s.id} ${s.name} ${s.getAttribute('aria-label') || ''} ${s.parentElement?.innerText || ''}`)));
     const customerOk = input.customerAutocompleteOk || (customerSelect ? selectOption(customerSelect, input.customer, false) : false);
-    const listOk = listSelect ? selectOption(listSelect, input.priceList, true) : false;
+    const listOk = listSelect ? selectOption(listSelect, input.priceList, true) : input.linePriceCatalogOk;
+    const documentNo = document.querySelector('#txtDocumentNo');
+    if (documentNo) { documentNo.value = input.orderRef; dispatch(documentNo); }
     const dateInput = [...document.querySelectorAll('input')].filter(visible).find(el => /tarih|date/.test(norm2(`${el.id} ${el.name} ${el.placeholder || ''} ${el.parentElement?.innerText || ''}`)));
     if (dateInput) { dateInput.value = input.date.split('-').reverse().join('.'); dispatch(dateInput); }
     const note = [...document.querySelectorAll('textarea,input')].filter(visible).find(el => /aciklama|açıklama|not|note|description/.test(norm2(`${el.id} ${el.name} ${el.placeholder || ''}`)));
@@ -1471,6 +1515,7 @@ async function bizimhesapDiaperProforma(params) {
     return {
       customerOk,
       listOk,
+      documentNoOk: Boolean(documentNo && documentNo.value === input.orderRef),
       dateOk: Boolean(dateInput),
       noteOk: Boolean(note),
       customerSelectId: customerSelect?.id || '',
@@ -1486,7 +1531,7 @@ async function bizimhesapDiaperProforma(params) {
       })),
       bodySample: String(document.body?.innerText || '').replace(/\s+/g, ' ').slice(0, 2500)
     };
-  }, { customer: resolvedCustomerName, customerAutocompleteOk, priceList: params.price_list_name, date: params.order_date, note: `${auditTag} | ${String(params.source_text || '').slice(0, 350)}` });
+  }, { customer: resolvedCustomerName, customerAutocompleteOk, priceList: params.price_list_name, linePriceCatalogOk: resolvedItems.every(item => Number.isFinite(item.catalog.unitPrice)), orderRef: params.order_reference, date: params.order_date, note: `${auditTag} | ${String(params.source_text || '').slice(0, 350)}` });
 
   if (!headerResult.customerOk) {
     throw new Error(`Müşteri kesin eşleşmedi (${params.customer_name} → ${resolvedCustomerName}); taslak kaydedilmedi. FORM:${JSON.stringify({ autocomplete: customerAutocompleteDiagnostics, selects: headerResult.selectDiagnostics, inputs: headerResult.inputDiagnostics }).slice(0, 4500)}`);
@@ -1494,63 +1539,97 @@ async function bizimhesapDiaperProforma(params) {
   if (!headerResult.listOk) {
     throw new Error(`Fiyat listesi kesin eşleşmedi (${params.price_list_name}); taslak kaydedilmedi. FORM:${JSON.stringify({ selects: headerResult.selectDiagnostics, inputs: headerResult.inputDiagnostics, body: headerResult.bodySample }).slice(0, 6500)}`);
   }
+  if (!headerResult.documentNoOk) throw new Error('Sipariş kimliği teklif numarasına yazılamadı; taslak kaydedilmedi.');
   if (!headerResult.noteOk) throw new Error('AperiON mükerrerlik etiketi açıklama alanına yazılamadı; taslak kaydedilmedi.');
 
-  for (let index = 0; index < params.items.length; index += 1) {
-    const item = params.items[index];
-    if (index > 0) {
-      const added = await page.evaluate(() => {
-        const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i');
-        const visible = el => !!(el && (el.offsetWidth || el.offsetHeight || el.getClientRects().length));
-        const button = [...document.querySelectorAll('button,a')].filter(visible).find(el => /urun.*ekle|ürün.*ekle|satir.*ekle|satır.*ekle|yeni.*urun|yeni.*ürün/.test(norm2(el.innerText || el.title || '')));
-        if (!button) return false; button.click(); return true;
-      });
-      if (!added) throw new Error(`${index + 1}. ürün satırı açılamadı; taslak kaydedilmedi.`);
-      await new Promise(r => setTimeout(r, 500));
-    }
-    const query = [item.brand, item.product_kind, item.size, `${item.units_per_package}lu`].filter(Boolean).join(' ');
-    const prepared = await page.evaluate((input) => {
-      const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i');
+  for (let index = 0; index < resolvedItems.length; index += 1) {
+    const item = resolvedItems[index];
+    const searchSelector = 'input.select2-search__field[placeholder*="Ürün isminden"]';
+    const searchExists = await page.$(searchSelector);
+    if (!searchExists) throw new Error(`${index + 1}. ürün arama alanı bulunamadı; taslak kaydedilmedi.`);
+    await page.click(searchSelector, { clickCount: 3 });
+    await page.keyboard.press('Backspace');
+    await page.type(searchSelector, item.catalog.code, { delay: 18 });
+    await new Promise(r => setTimeout(r, 1400));
+    const suggestion = await page.evaluate((code) => {
       const visible = el => !!(el && (el.offsetWidth || el.offsetHeight || el.getClientRects().length));
-      const dispatch = el => { el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); };
-      const productControls = [...document.querySelectorAll('select')].filter(visible).filter(el => /urun|ürün|product|stok|item/.test(norm2(`${el.id} ${el.name} ${el.parentElement?.innerText || ''}`)));
-      const control = productControls[input.index] || productControls[productControls.length - 1];
-      if (!control) return { ok: false, reason: 'product_control_missing' };
-      const required = [input.brand, input.kind, input.size, String(input.units)].filter(Boolean).map(norm2);
-      const scored = [...control.options].map(option => {
-        const text = norm2(option.text);
-        return { option, text, score: required.filter(token => text.includes(token)).length };
-      }).filter(row => row.score === required.length);
-      if (scored.length !== 1) return { ok: false, reason: `product_match_${scored.length}` };
-      control.value = scored[0].option.value; dispatch(control);
-      const row = control.closest('tr,.row,[data-row]') || control.parentElement?.parentElement || document.body;
-      const quantity = [...row.querySelectorAll('input')].find(el => visible(el) && /miktar|quantity|qty|amount/.test(norm2(`${el.id} ${el.name} ${el.placeholder || ''} ${el.parentElement?.innerText || ''}`)));
-      if (!quantity) return { ok: false, reason: 'quantity_control_missing' };
-      quantity.value = String(input.packages); dispatch(quantity);
-      return { ok: true, product: scored[0].option.text, quantity: quantity.value };
-    }, { index, brand: item.brand, kind: item.product_kind, size: item.size, units: item.units_per_package, packages: item.package_quantity, query });
-    if (!prepared.ok) throw new Error(`${index + 1}. ürün kesin hazırlanamadı (${prepared.reason}, arama: ${query}); taslak kaydedilmedi.`);
+      const matches = [...document.querySelectorAll('.select2-results__option[role="treeitem"]')]
+        .filter(visible)
+        .filter(el => String(el.innerText || el.textContent || '').includes(code));
+      if (matches.length !== 1) return { ok: false, count: matches.length, samples: matches.slice(0, 8).map(el => String(el.innerText || '').replace(/\s+/g, ' ').slice(0, 240)) };
+      matches[0].setAttribute('data-aperion-product-choice', '1');
+      return { ok: true, text: String(matches[0].innerText || '').replace(/\s+/g, ' ').trim() };
+    }, item.catalog.code);
+    if (!suggestion.ok) throw new Error(`${index + 1}. ürün kodu kesin eşleşmedi (${item.catalog.code}); bulunan=${suggestion.count}; taslak kaydedilmedi.`);
+    await page.click('[data-aperion-product-choice="1"]');
+    await new Promise(r => setTimeout(r, 700));
+
+    const prepared = await page.evaluate((input) => {
+      const dispatch = el => {
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        el.dispatchEvent(new KeyboardEvent('keyup', { key: 'Tab', bubbles: true }));
+      };
+      const quantity = document.querySelector('#txtQuantity');
+      const price = document.querySelector('#txtPriceUnit');
+      const discount = document.querySelector('#txtDiscount');
+      const discountType = document.querySelector('#ddlDiscountType');
+      const vat = document.querySelector('#ddlVatRate');
+      const description = document.querySelector('#txtDescription2');
+      const add = document.querySelector('#btnAddProduct');
+      if (!quantity || !price || !discount || !discountType || !vat || !add) return { ok: false, reason: 'line_fields_missing' };
+      quantity.value = String(input.quantity); dispatch(quantity);
+      price.value = String(input.unitPrice).replace('.', ','); dispatch(price);
+      discountType.value = '%'; dispatch(discountType);
+      discount.value = String(input.discount).replace('.', ','); dispatch(discount);
+      if (description) { description.value = `${input.priceList} | ${input.orderRef}`; dispatch(description); }
+      if (typeof Calculate === 'function') Calculate();
+      const parseTr = value => {
+        const raw = String(value || '').trim();
+        return Number(raw.includes(',') ? raw.replace(/\./g, '').replace(',', '.') : raw);
+      };
+      const quantityOk = parseTr(quantity.value) === Number(input.quantity);
+      const priceOk = Math.abs(parseTr(price.value) - Number(input.unitPrice)) < 0.0001;
+      const discountOk = Math.abs(parseTr(discount.value) - Number(input.discount)) < 0.0001;
+      const vatOk = Number(vat.value) === 10;
+      return { ok: quantityOk && priceOk && discountOk && vatOk, reason: 'line_value_mismatch', quantity: quantity.value, price: price.value, discount: discount.value, vat: vat.value, grand: document.querySelector('#lblGrand')?.value || '' };
+    }, { quantity: item.package_quantity, unitPrice: item.catalog.unitPrice, discount: discountPercent, priceList: params.price_list_name, orderRef: params.order_reference });
+    if (!prepared.ok) throw new Error(`${index + 1}. ürün satırı hazırlanamadı (${prepared.reason}); değerler=${JSON.stringify(prepared)}; taslak kaydedilmedi.`);
+    await page.click('#btnAddProduct');
+    await new Promise(r => setTimeout(r, 900));
+    const lineProof = await page.evaluate((input) => {
+      const rows = [...document.querySelectorAll('#editable-sample tbody tr')];
+      const row = rows.find(candidate => String(candidate.innerText || '').includes(input.code));
+      return { count: rows.length, matched: Boolean(row), text: String(row?.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 500) };
+    }, { code: item.catalog.code });
+    if (!lineProof.matched || lineProof.count !== index + 1) throw new Error(`${index + 1}. ürün forma eklendiği doğrulanamadı (${item.catalog.code}); satır=${JSON.stringify(lineProof)}; taslak kaydedilmedi.`);
   }
 
   const preflight = await page.evaluate((tag) => {
     const text = document.body.innerText || '';
-    const save = [...document.querySelectorAll('button,input[type="submit"],a')].find(el => /^(kaydet|oluştur|olustur)$/i.test((el.innerText || el.value || '').trim()));
-    return { hasAuditTag: text.includes(tag) || [...document.querySelectorAll('input,textarea')].some(el => (el.value || '').includes(tag)), saveFound: Boolean(save) };
+    const save = document.querySelector('#btnSaveDraft') || [...document.querySelectorAll('button,input[type="submit"],a')].find(el => /teklifi kaydet|kaydet|oluştur|olustur/i.test((el.innerText || el.value || '').trim()));
+    return { hasAuditTag: text.includes(tag) || [...document.querySelectorAll('input,textarea')].some(el => (el.value || '').includes(tag)), saveFound: Boolean(save), lineCount: document.querySelectorAll('#editable-sample tbody tr').length };
   }, auditTag);
-  if (!preflight.hasAuditTag || !preflight.saveFound) throw new Error('Kaydetme öncesi kanıt denetimi geçmedi; taslak kaydedilmedi.');
+  if (!preflight.hasAuditTag || !preflight.saveFound || preflight.lineCount !== resolvedItems.length) throw new Error(`Kaydetme öncesi kanıt denetimi geçmedi (${JSON.stringify(preflight)}); taslak kaydedilmedi.`);
 
   const saved = await page.evaluate(() => {
-    const save = [...document.querySelectorAll('button,input[type="submit"],a')].find(el => /^(kaydet|oluştur|olustur)$/i.test((el.innerText || el.value || '').trim()));
+    const save = document.querySelector('#btnSaveDraft') || [...document.querySelectorAll('button,input[type="submit"],a')].find(el => /teklifi kaydet|kaydet|oluştur|olustur/i.test((el.innerText || el.value || '').trim()));
     if (!save) return false; save.click(); return true;
   });
   if (!saved) throw new Error('Kaydet düğmesi bulunamadı; taslak kaydedilmedi.');
   await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {});
   await new Promise(r => setTimeout(r, 1200));
-  const verified = await page.evaluate((tag, customer) => {
+  const verified = await page.evaluate((tag, orderRef, customer, expectedLineCount) => {
     const text = document.body.innerText || '';
-    return text.includes(tag) && text.toLocaleLowerCase('tr-TR').includes(String(customer).toLocaleLowerCase('tr-TR'));
-  }, auditTag, resolvedCustomerName);
-  if (!verified) throw new Error('Kaydet tıklandı fakat proforma ayrıntı ekranında doğrulanamadı; insan kontrolü gerekli.');
+    const normalizedText = text.toLocaleLowerCase('tr-TR');
+    const customerOk = normalizedText.includes(String(customer).toLocaleLowerCase('tr-TR'));
+    const referenceOk = text.includes(tag) || text.includes(orderRef);
+    const savedOk = /[?&]saved=1(?:&|$)/.test(location.search) || normalizedText.includes('teklif kaydedildi');
+    const draftOk = /durumu\s+taslak/.test(normalizedText);
+    const lineCount = document.querySelectorAll('#editable-sample tbody tr').length;
+    return { ok: customerOk && referenceOk && savedOk && draftOk && lineCount === expectedLineCount, customerOk, referenceOk, savedOk, draftOk, lineCount };
+  }, auditTag, params.order_reference, resolvedCustomerName, resolvedItems.length);
+  if (!verified.ok) throw new Error(`Kaydet tıklandı fakat proforma ayrıntı ekranında doğrulanamadı (${JSON.stringify(verified)}); insan kontrolü gerekli.`);
   const proofName = `diaper_proforma_${params.order_reference.replace(/[^A-Za-z0-9_-]/g, '_')}`;
   await savePageDiagnostics(page, proofName);
   return { ok: true, message: `${params.order_reference} BizimHesap proforma taslağı kaydedildi ve ayrıntı ekranında doğrulandı.`, proofPath: path.join(__dirname, '..', 'diagnostics', `${proofName}.png`) };
@@ -1570,7 +1649,20 @@ async function handleCommand(cmd) {
       const r = await bizimhesapDiaperProforma(params);
       outcome = { ok: r.ok, output: r.message };
       if (r.ok) {
-        await sendTelegramCommandResult(params.chat_id, `✅ HASTA BEZİ PROFORMA HAZIR\n${r.message}\nSipariş: ${params.order_reference}\nCari: ${params.customer_name}\nSevk için hazır; fatura kesilmedi.`);
+        const lineCount = Array.isArray(params.items) ? params.items.length : 0;
+        const packageQuantity = (params.items || []).reduce((sum, item) => sum + Number(item.package_quantity || 0), 0);
+        const delivery = await sendHermesBusinessNotification({
+          kind: 'diaper_proforma_ready',
+          event_key: `diaper:proforma:${params.order_reference}:ready`,
+          order_reference: params.order_reference,
+          customer_name: params.customer_name,
+          line_count: lineCount,
+          package_quantity: packageQuantity,
+          amount: resolvedItemsTotal(params.items, params.price_list_name, parseDiscountPercent(params.discount_note)),
+          status: 'BizimHesap taslağı kaydedildi'
+        });
+        if (!delivery.ok) log(`Hermes bulut bildirimi teslim edilemedi: HTTP ${delivery.status || 0}`);
+        outcome.output += delivery.ok ? ' Hermes bildirimi teslim edildi.' : ' Hermes bildirimi tekrar teslim kuyruğuna alınmalı.';
       }
     } else if (cmd.command === 'bizimhesap_verify') {
       const r = await bizimhesapVerify(params.search || 'APERION AUTO');
