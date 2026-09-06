@@ -15,11 +15,16 @@ assert.match(script, /direct_cloudflare_webhook_probe/);
 assert.match(script, /d1_control_plane_unhealthy/);
 assert.match(script, /retryProbe\(pingWebhookEndpoint\)/);
 assert.match(script, /refusing insecure webhook repair/);
+assert.match(script, /repair_delivery_webhook/);
+assert.match(script, /probeAuthenticatedWebhookPost/);
+assert.match(script, /x-telegram-bot-api-secret-token/);
+assert.match(script, /waitForPendingUpdates/);
 assert.match(workflow, /HERMES_TELEGRAM_BOT_TOKEN: \$\{\{ secrets\.HERMES_TELEGRAM_BOT_TOKEN \}\}/);
 assert.match(workflow, /secrets\.TELEGRAM_WEBHOOK_SECRET_TOKEN \|\| secrets\.TELEGRAM_WEBHOOK_SECRET/);
 assert.doesNotMatch(workflow, /^\s+TELEGRAM_BOT_TOKEN:/m);
 assert.match(workflow, /TELEGRAM_ALLOWED_CHAT_IDS: \$\{\{ secrets\.TELEGRAM_ALLOWED_CHAT_IDS \}\}/);
 assert.match(workflow, /schedule:/);
-assert.match(workflow, /cron: '\*\/15 \* \* \* \*'/);
+assert.match(workflow, /cron: '\*\/5 \* \* \* \*'/);
+assert.match(workflow, /group: aperion-telegram-watchdog/);
 
 console.log('telegram watchdog static checks: OK');

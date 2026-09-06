@@ -28,6 +28,21 @@ const ALERT_CHAT_ID = String(
   ''
 ).split(/[\s,;]+/).map(value => value.trim()).find(Boolean) || '';
 
+function deliveryState(telegram, nowMs = Date.now()){
+  const message = String(telegram && telegram.last_error_message || '');
+  const lastErrorSec = Number(telegram && telegram.last_error_date || 0);
+  const lastErrorMs = lastErrorSec * 1000;
+  const ageMs = lastErrorMs > 0 ? nowMs - lastErrorMs : null;
+  const pending = Number(telegram && telegram.pending_update_count || 0) > 0;
+  const recentOrUndated = Boolean(message) && (ageMs === null || ageMs < 0 || ageMs <= DELIVERY_ERROR_MAX_AGE_MS);
+  return {
+    active: Boolean(message) && (recentOrUndated || pending),
+    stale: Boolean(message) && !recentOrUndated && !pending,
+    pending,
+    lastErrorSec
+  };
+}
+
 async function sendDirectAlert(text){
   if(!TOKEN || !ALERT_CHAT_ID) return { sent: false, reason: 'alert_target_missing' };
   const r = await jfetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
@@ -100,6 +115,51 @@ async function pingWebhookEndpoint(){
   }
 }
 
+async function probeAuthenticatedWebhookPost(){
+  if(!SECRET_TOKEN || !ALERT_CHAT_ID){
+    return { ok: false, status: 0, reason: 'authenticated_probe_config_missing' };
+  }
+  try {
+    const numericChatId = Number(ALERT_CHAT_ID);
+    const chatId = Number.isSafeInteger(numericChatId) ? numericChatId : ALERT_CHAT_ID;
+    const probeId = -Math.floor(Date.now() / 1000);
+    const r = await jfetch(EXPECTED_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-telegram-bot-api-secret-token': SECRET_TOKEN
+      },
+      body: JSON.stringify({
+        update_id: probeId,
+        message: {
+          message_id: Math.abs(probeId),
+          date: Math.floor(Date.now() / 1000),
+          chat: { id: chatId, type: 'private' },
+          from: { id: chatId, is_bot: false }
+        }
+      })
+    });
+    return {
+      ok: Boolean(r.ok && r.json && r.json.ok === true && r.json.ignored === true),
+      status: r.status,
+      reason: r.ok ? null : 'authenticated_probe_http_' + r.status
+    };
+  } catch (error) {
+    return { ok: false, status: 0, reason: String(error && error.message || error) };
+  }
+}
+
+async function waitForPendingUpdates(initialTelegram, attempts = 3){
+  let current = initialTelegram;
+  for(let attempt = 1; attempt <= attempts; attempt += 1){
+    const state = deliveryState(current);
+    if(!state.pending) return { telegram: current, attempts: attempt - 1 };
+    await new Promise(resolve => setTimeout(resolve, attempt * 2000));
+    current = await getWebhookInfo();
+  }
+  return { telegram: current, attempts };
+}
+
 async function retryProbe(probe, attempts = 3){
   let result = null;
   for(let attempt = 1; attempt <= attempts; attempt += 1){
@@ -110,20 +170,24 @@ async function retryProbe(probe, attempts = 3){
   return { ...result, attempts };
 }
 
-function evaluateHealth({ preflight, webhookEndpoint, telegram, nowMs = Date.now() }){
+function evaluateHealth({ preflight, webhookEndpoint, telegram, repair = null, nowMs = Date.now() }){
   const failures = [];
   const warnings = [];
   const checks = preflight && preflight.response && preflight.response.checks || {};
+  const delivery = deliveryState(telegram, nowMs);
 
   if(!webhookEndpoint.ok) failures.push('cloudflare_webhook_endpoint_unreachable');
   if(telegram.url !== EXPECTED_WEBHOOK_URL) failures.push('telegram_webhook_url_mismatch');
-  if(telegram.last_error_message){
-    const lastErrorMs = Number(telegram.last_error_date || 0) * 1000;
-    const ageMs = lastErrorMs > 0 ? nowMs - lastErrorMs : null;
-    const recentOrUndated = ageMs === null || ageMs < 0 || ageMs <= DELIVERY_ERROR_MAX_AGE_MS;
-    const pending = Number(telegram.pending_update_count || 0) > 0;
-    if(recentOrUndated || pending) failures.push('telegram_delivery_error');
-    else warnings.push('stale_telegram_delivery_error');
+  if(delivery.active){
+    const repairedRetainedError = Boolean(
+      repair && repair.attempted && repair.setOk && repair.authenticatedPostOk &&
+      !delivery.pending && delivery.lastErrorSec > 0 &&
+      delivery.lastErrorSec <= Number(repair.baselineLastErrorSec || 0)
+    );
+    if(repairedRetainedError) warnings.push('telegram_delivery_repaired_old_error_retained');
+    else failures.push('telegram_delivery_error');
+  } else if(delivery.stale){
+    warnings.push('stale_telegram_delivery_error');
   }
   if(checks.d1 && checks.d1.ok === false) failures.push('d1_control_plane_unhealthy');
 
@@ -147,15 +211,30 @@ async function main(){
   const webhookEndpoint = await retryProbe(pingWebhookEndpoint);
   const before = await getWebhookInfo();
   const beforeUrl = before.url || '';
-  const needsSet = beforeUrl !== EXPECTED_WEBHOOK_URL;
+  const beforeDelivery = deliveryState(before);
+  const urlMismatch = beforeUrl !== EXPECTED_WEBHOOK_URL;
+  const needsSet = urlMismatch || beforeDelivery.active;
 
   let setResult = null;
+  let authenticatedPostProbe = null;
+  let repairStartedSec = 0;
   if(needsSet){
+    repairStartedSec = Math.floor(Date.now() / 1000);
     setResult = await setWebhook();
+    authenticatedPostProbe = await retryProbe(probeAuthenticatedWebhookPost);
   }
 
-  const after = await getWebhookInfo();
-  const health = evaluateHealth({ preflight: endpoint, webhookEndpoint, telegram: after });
+  const afterSet = await getWebhookInfo();
+  const recovery = needsSet ? await waitForPendingUpdates(afterSet) : { telegram: afterSet, attempts: 0 };
+  const after = recovery.telegram;
+  const repair = needsSet ? {
+    attempted: true,
+    setOk: Boolean(setResult && setResult.ok),
+    authenticatedPostOk: Boolean(authenticatedPostProbe && authenticatedPostProbe.ok),
+    startedAtSec: repairStartedSec,
+    baselineLastErrorSec: beforeDelivery.lastErrorSec
+  } : null;
+  const health = evaluateHealth({ preflight: endpoint, webhookEndpoint, telegram: after, repair });
   const ok = health.ok;
 
   const report = {
@@ -169,8 +248,10 @@ async function main(){
       last_error_date: before.last_error_date || null,
       last_error_message: before.last_error_message || null
     },
-    action: needsSet ? 'set_webhook' : 'no_change',
+    action: needsSet ? (urlMismatch ? 'set_webhook_url' : 'repair_delivery_webhook') : 'no_change',
     set_result: setResult,
+    authenticated_post_probe: authenticatedPostProbe,
+    pending_recovery_poll_attempts: recovery.attempts,
     after: {
       url: after.url || '',
       pending_update_count: after.pending_update_count || 0,
@@ -210,5 +291,5 @@ if(require.main === module) main().catch(async err => {
   process.exitCode = 1;
 });
 
-module.exports = { evaluateHealth };
+module.exports = { deliveryState, evaluateHealth };
 
