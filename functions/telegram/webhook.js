@@ -9,6 +9,7 @@ import { answerWithAperionAI, APERION_CONVERSATION_MODEL } from '../shared/aperi
 import {
 diaperApprovalButtons,
 diaperOrderCard,
+ensureDiaperSchema,
 listOpenDiaperOrders,
 looksLikeDiaperOrder,
 parseDiaperOrder,
@@ -262,7 +263,7 @@ return { ok: true, orderId: saved.orderId, duplicate: saved.duplicate, blockers:
 }
 
 async function syncDiaperJobStatuses(env) {
-if (!env.APERION_DB) return;
+if (!env.APERION_DB || !(await ensureDiaperSchema(env.APERION_DB))) return;
 const pending = await env.APERION_DB.prepare(`SELECT id,order_id,external_queue_id FROM diaper_proforma_jobs
 WHERE status='queued' AND external_queue_id IS NOT NULL ORDER BY id LIMIT 25`).all();
 for (const job of (pending?.results || [])) {
@@ -296,6 +297,10 @@ async function handleDiaperLifecycle(env, message) {
 const text = clean(message.text);
 const match = text.match(/\bHB[-\s]?(\d+)\b/i);
 if (!match || !env.APERION_DB) return false;
+if (!(await ensureDiaperSchema(env.APERION_DB))) {
+await sendMessage(env, message.chat.id, '🚨 Hasta bezi operasyon tablosu hazırlanamadı; hiçbir işlem kaydedilmedi.');
+return true;
+}
 const orderId = Number(match[1]);
 const normalized = lowerTR(text);
 let eventType = '';

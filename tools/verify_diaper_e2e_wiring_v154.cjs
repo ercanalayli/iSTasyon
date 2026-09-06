@@ -22,5 +22,6 @@ for (const source of [webhook, listener]) {
 if (!listener.includes("params.approved !== true")) throw new Error('Yerel işçi Telegram onayını zorunlu tutmuyor.');
 if (!listener.includes('mükerrer') && !listener.includes('Mukerrer')) throw new Error('Yerel işçi mükerrerlik denetimi içermiyor.');
 if (!shared.includes('CREATE TABLE IF NOT EXISTS diaper_orders')) throw new Error('İlk istekte güvenli D1 şema kurulumu yok.');
+if (!webhook.includes('await ensureDiaperSchema(env.APERION_DB)')) throw new Error('Durum ve yaşam döngüsü yolları ilk D1 şema kurulumunu çalıştırmıyor.');
 
 console.log('Hasta bezi Telegram → D1 → onay → masaüstü BizimHesap → kanıt hattı statik olarak doğrulandı.');
