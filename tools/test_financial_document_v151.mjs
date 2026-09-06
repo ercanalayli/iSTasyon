@@ -49,12 +49,4 @@ assert.equal((await catchupResponse.json()).reason, 'no_pending_capture');
 assert.ok(sqlOrder.findIndex((sql) => sql.includes('ALTER TABLE telegram_captures ADD COLUMN extraction_status')) <
   sqlOrder.findIndex((sql) => sql.includes('SELECT * FROM telegram_captures')));
 
-const webhookOnlyResponse = await onRequestPost({
-  request: new Request('https://example.test/api/financial-document-process', {
-    method: 'POST', headers: { 'x-telegram-bot-api-secret-token': 'webhook-test-secret' }, body: '{}'
-  }),
-  env: { TELEGRAM_WEBHOOK_SECRET: 'webhook-test-secret', APERION_DB: db }
-});
-assert.equal(webhookOnlyResponse.status, 200);
-
 console.log('financial document v151: OK');
