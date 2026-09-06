@@ -19,6 +19,7 @@ const EXPECTED_WEBHOOK_URL = process.env.TELEGRAM_EXPECTED_WEBHOOK_URL || 'https
 const PREFLIGHT_URL = process.env.TELEGRAM_PREFLIGHT_URL || 'https://aperion-istasyon.pages.dev/api/telegram-preflight';
 const WEBHOOK_HEALTH_URL = process.env.TELEGRAM_WEBHOOK_HEALTH_URL || EXPECTED_WEBHOOK_URL;
 const SECRET_TOKEN = process.env.TELEGRAM_WEBHOOK_SECRET_TOKEN || '';
+const DELIVERY_ERROR_MAX_AGE_MS = Math.max(60_000, Number(process.env.TELEGRAM_DELIVERY_ERROR_MAX_AGE_MS || 1_800_000));
 const DROP_PENDING = String(process.env.TELEGRAM_DROP_PENDING || 'false').toLowerCase() === 'true';
 const ALERT_CHAT_ID = String(
   process.env.TELEGRAM_CHAT_ID ||
@@ -109,14 +110,21 @@ async function retryProbe(probe, attempts = 3){
   return { ...result, attempts };
 }
 
-function evaluateHealth({ preflight, webhookEndpoint, telegram }){
+function evaluateHealth({ preflight, webhookEndpoint, telegram, nowMs = Date.now() }){
   const failures = [];
   const warnings = [];
   const checks = preflight && preflight.response && preflight.response.checks || {};
 
   if(!webhookEndpoint.ok) failures.push('cloudflare_webhook_endpoint_unreachable');
   if(telegram.url !== EXPECTED_WEBHOOK_URL) failures.push('telegram_webhook_url_mismatch');
-  if(telegram.last_error_message) failures.push('telegram_delivery_error');
+  if(telegram.last_error_message){
+    const lastErrorMs = Number(telegram.last_error_date || 0) * 1000;
+    const ageMs = lastErrorMs > 0 ? nowMs - lastErrorMs : null;
+    const recentOrUndated = ageMs === null || ageMs < 0 || ageMs <= DELIVERY_ERROR_MAX_AGE_MS;
+    const pending = Number(telegram.pending_update_count || 0) > 0;
+    if(recentOrUndated || pending) failures.push('telegram_delivery_error');
+    else warnings.push('stale_telegram_delivery_error');
+  }
   if(checks.d1 && checks.d1.ok === false) failures.push('d1_control_plane_unhealthy');
 
   if(!preflight.ok && failures.length === 0) warnings.push('preflight_probe_inconclusive');
@@ -158,6 +166,7 @@ async function main(){
     before: {
       url: before.url || '',
       pending_update_count: before.pending_update_count || 0,
+      last_error_date: before.last_error_date || null,
       last_error_message: before.last_error_message || null
     },
     action: needsSet ? 'set_webhook' : 'no_change',
@@ -165,6 +174,7 @@ async function main(){
     after: {
       url: after.url || '',
       pending_update_count: after.pending_update_count || 0,
+      last_error_date: after.last_error_date || null,
       last_error_message: after.last_error_message || null,
       allowed_updates: after.allowed_updates || null
     },

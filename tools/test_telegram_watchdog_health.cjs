@@ -37,9 +37,29 @@ assert.deepEqual(d1Down.failures, ['d1_control_plane_unhealthy']);
 const telegramDeliveryDown = evaluateHealth({
   preflight: { ok: true, status: 200, response: { checks: { d1: { ok: true } } } },
   webhookEndpoint: directHealthy,
-  telegram: { ...telegramHealthy, last_error_message: 'Connection timed out' }
+  telegram: { ...telegramHealthy, last_error_message: 'Connection timed out', last_error_date: 1_999_999_990 },
+  nowMs: 2_000_000_000_000
 });
 assert.equal(telegramDeliveryDown.ok, false);
 assert.deepEqual(telegramDeliveryDown.failures, ['telegram_delivery_error']);
+
+const staleTelegramDeliveryError = evaluateHealth({
+  preflight: { ok: false, status: 503, response: { checks: { d1: { ok: true } } } },
+  webhookEndpoint: directHealthy,
+  telegram: { ...telegramHealthy, pending_update_count: 0, last_error_message: 'Old 503', last_error_date: 1_999_990_000 },
+  nowMs: 2_000_000_000_000
+});
+assert.equal(staleTelegramDeliveryError.ok, true);
+assert.deepEqual(staleTelegramDeliveryError.failures, []);
+assert.deepEqual(staleTelegramDeliveryError.warnings, ['stale_telegram_delivery_error', 'preflight_probe_inconclusive']);
+
+const staleButPending = evaluateHealth({
+  preflight: { ok: true, status: 200, response: { checks: { d1: { ok: true } } } },
+  webhookEndpoint: directHealthy,
+  telegram: { ...telegramHealthy, pending_update_count: 2, last_error_message: 'Old 503', last_error_date: 1_999_990_000 },
+  nowMs: 2_000_000_000_000
+});
+assert.equal(staleButPending.ok, false);
+assert.deepEqual(staleButPending.failures, ['telegram_delivery_error']);
 
 console.log('telegram watchdog health classification: OK');
