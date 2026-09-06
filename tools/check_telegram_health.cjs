@@ -19,6 +19,21 @@ const path = require('path');
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const EXPECTED_WEBHOOK_URL = process.env.TELEGRAM_EXPECTED_WEBHOOK_URL || 'https://aperion-istasyon.pages.dev/telegram/webhook';
 const HEALTH_URL = process.env.TELEGRAM_HEALTH_URL || EXPECTED_WEBHOOK_URL;
+const DELIVERY_ERROR_MAX_AGE_MS = Math.max(60_000, Number(process.env.TELEGRAM_DELIVERY_ERROR_MAX_AGE_MS || 1_800_000));
+
+function deliveryState(telegram, nowMs = Date.now()){
+  const message = String(telegram && telegram.last_error_message || '');
+  const lastErrorSec = Number(telegram && telegram.last_error_date || 0);
+  const lastErrorMs = lastErrorSec * 1000;
+  const ageMs = lastErrorMs > 0 ? Math.max(0, nowMs - lastErrorMs) : null;
+  const pending = Number(telegram && telegram.pending_update_count || 0) > 0;
+  const active = Boolean(message) && (pending || ageMs === null || ageMs <= DELIVERY_ERROR_MAX_AGE_MS);
+  return {
+    active,
+    stale: Boolean(message) && !active,
+    age_seconds: ageMs === null ? null : Math.floor(ageMs / 1000)
+  };
+}
 
 async function fetchJson(url, opts = {}){
   const res = await fetch(url, opts);
@@ -79,6 +94,10 @@ async function main(){
         out.telegram_webhook.pending_update_count = r.pending_update_count;
         out.telegram_webhook.last_error_date = r.last_error_date || null;
         out.telegram_webhook.last_error_message = r.last_error_message || null;
+        const delivery = deliveryState(r);
+        out.telegram_webhook.active_delivery_error = delivery.active;
+        out.telegram_webhook.stale_delivery_event = delivery.stale;
+        out.telegram_webhook.last_error_age_seconds = delivery.age_seconds;
         out.telegram_webhook.max_connections = r.max_connections;
         out.telegram_webhook.allowed_updates = r.allowed_updates || null;
       }else{
@@ -90,11 +109,13 @@ async function main(){
   }
 
   const cloudOk = out.cloudflare_function.ok;
-  const telegramOk = out.telegram_webhook.ok && out.telegram_webhook.matches_expected && !out.telegram_webhook.last_error_message;
+  const telegramOk = out.telegram_webhook.ok && out.telegram_webhook.matches_expected && !out.telegram_webhook.active_delivery_error;
 
   if(cloudOk && telegramOk){
     out.overall_status = 'ok';
-    out.user_message = 'Telegram bot canlÄ± ve webhook AperiON Quick Capture endpointine baÄŸlÄ±.';
+    out.user_message = out.telegram_webhook.stale_delivery_event
+      ? 'Telegram bot canlı ve webhook doğru bağlı. Eski Telegram hata kaydı yalnız tarihsel olaydır; aktif arıza değildir.'
+      : 'Telegram bot canlı ve webhook AperiON Quick Capture endpointine bağlı.';
   }else if(cloudOk && out.telegram_webhook.ok && !out.telegram_webhook.matches_expected){
     out.overall_status = 'webhook_mismatch';
     out.user_message = 'Telegram bot canlÄ± olabilir ama webhook beklenen AperiON endpointine baÄŸlÄ± deÄŸil.';
@@ -113,8 +134,12 @@ async function main(){
   if(out.overall_status !== 'ok') process.exitCode = 2;
 }
 
-main().catch(err => {
-  console.error(err);
-  process.exitCode = 1;
-});
+if(require.main === module){
+  main().catch(err => {
+    console.error(err);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = { deliveryState };
 
