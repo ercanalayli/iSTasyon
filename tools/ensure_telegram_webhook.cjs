@@ -54,12 +54,13 @@ async function getWebhookInfo(){
 }
 
 async function setWebhook(){
+  if(!SECRET_TOKEN) throw new Error('Missing TELEGRAM_WEBHOOK_SECRET_TOKEN; refusing insecure webhook repair');
   const body = {
     url: EXPECTED_WEBHOOK_URL,
     drop_pending_updates: DROP_PENDING,
     allowed_updates: ['message', 'callback_query']
   };
-  if(SECRET_TOKEN) body.secret_token = SECRET_TOKEN;
+  body.secret_token = SECRET_TOKEN;
 
   const r = await jfetch(`https://api.telegram.org/bot${TOKEN}/setWebhook`, {
     method: 'POST',
