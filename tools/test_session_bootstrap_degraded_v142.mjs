@@ -11,6 +11,7 @@ const db = {
         }
         if (sql.includes('COUNT(*)')) return { checkpoints: 1, active_facts: 2, snapshots: 1 };
         if (sql.includes('session_checkpoints ORDER BY')) return { checkpoint_key: 'cp-1', completed_json: '[]', pending_json: '[]', blockers_json: '[]', evidence_refs_json: '[]' };
+        if (sql.includes("predicate='operating_roles'")) return { fact_key: 'aperion.core_roles', predicate: 'operating_roles', value_json: '{"roles":["CEO","CFO"]}', truth_state: 'confirmed' };
         return null;
       },
       async all() {
@@ -37,6 +38,7 @@ assert.deepEqual(body.objectives, []);
 assert.equal(body.work_items[0].work_key, 'work-1');
 assert.equal(body.last_checkpoint.checkpoint_key, 'cp-1');
 assert.equal(body.last_working_state.state.step, 'verify');
+assert.deepEqual(body.core_mandate.value.roles, ['CEO', 'CFO']);
 
 const healthResponse = await onRequestGet({
   request: new Request('https://example.test/api/session-bootstrap?health=1'),
@@ -44,7 +46,7 @@ const healthResponse = await onRequestGet({
 });
 const health = await healthResponse.json();
 assert.equal(healthResponse.status, 200);
-assert.equal(health.version, 'v142');
+assert.equal(health.version, 'v143');
 assert.equal(health.data_access, 'protected');
 
 console.log('AperiON degraded session bootstrap v142 testi geçti.');

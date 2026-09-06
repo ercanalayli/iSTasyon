@@ -50,7 +50,7 @@ function sourceStatus(result) {
 export async function onRequestGet({ request, env }) {
   if (!env.APERION_DB) return json({ ok: false, error: 'missing_d1_binding' }, 503);
   if (new URL(request.url).searchParams.get('health') === '1') {
-    return json({ ok: true, service: 'aperion-session-bootstrap', version: 'v142', data_access: 'protected' });
+    return json({ ok: true, service: 'aperion-session-bootstrap', version: 'v143', data_access: 'protected' });
   }
   if (!await authorized(request, env)) return json({ ok: false, error: 'unauthorized' }, 401);
 
@@ -64,6 +64,7 @@ export async function onRequestGet({ request, env }) {
     safeQuery(env.APERION_DB, 'connectors', 'SELECT connector_key,title,maturity,status FROM connector_registry ORDER BY title'),
     safeQuery(env.APERION_DB, 'memory_counts', "SELECT (SELECT COUNT(*) FROM session_checkpoints) AS checkpoints,(SELECT COUNT(*) FROM current_state_facts WHERE status='active') AS active_facts,(SELECT COUNT(*) FROM working_state_snapshots) AS snapshots", 'first'),
     safeQuery(env.APERION_DB, 'working_state', 'SELECT snapshot_key,state_json,next_action,evidence_refs_json,created_at FROM working_state_snapshots ORDER BY created_at DESC LIMIT 1', 'first'),
+    safeQuery(env.APERION_DB, 'core_mandate', "SELECT fact_key,predicate,value_json,truth_state,source_ref,observed_at FROM current_state_facts WHERE subject_type='system' AND subject_ref='aperion' AND predicate='operating_roles' AND status='active' ORDER BY observed_at DESC LIMIT 1", 'first'),
   ]);
 
   const byKey = Object.fromEntries(results.map((result) => [result.key, result]));
@@ -87,6 +88,10 @@ export async function onRequestGet({ request, env }) {
       ...snapshot,
       state: parseJson(snapshot.state_json, {}),
       evidence_refs: parseJson(snapshot.evidence_refs_json),
+    } : null,
+    core_mandate: byKey.core_mandate.row ? {
+      ...byKey.core_mandate.row,
+      value: parseJson(byKey.core_mandate.row.value_json, {}),
     } : null,
     objectives: byKey.objectives.rows,
     work_items: byKey.work_items.rows,
