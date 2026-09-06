@@ -1,4 +1,4 @@
-import { financialEventReply, processFinancialCapture } from '../shared/financial-document.js';
+import { ensureFinancialDocumentSchema, financialEventReply, processFinancialCapture } from '../shared/financial-document.js';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
@@ -16,13 +16,14 @@ async function sendMessage(env, chatId, text) {
 }
 
 export async function onRequestGet() {
-  return json({ ok: true, service: 'aperion-financial-document-processor', version: 'v151' });
+  return json({ ok: true, service: 'aperion-financial-document-processor', version: 'v152' });
 }
 
 export async function onRequestPost({ request, env }) {
   const expected = String(env.APERION_BRIDGE_SECRET || '');
   if (!expected || request.headers.get('authorization') !== `Bearer ${expected}`) return json({ ok: false, error: 'unauthorized' }, 401);
   if (!env.APERION_DB) return json({ ok: false, error: 'database_unavailable' }, 503);
+  await ensureFinancialDocumentSchema(env.APERION_DB);
   let body = {};
   try { body = await request.json(); } catch {}
   const capture = body.capture_id

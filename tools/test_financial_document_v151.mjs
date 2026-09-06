@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { detectPersonalFinanceQuery, financialDocumentInternals, personalFinanceSummaryReply } from '../functions/shared/financial-document.js';
+import { onRequestPost } from '../functions/api/financial-document-process.js';
 
 const { amount, isoDate, normalizeEvent } = financialDocumentInternals;
 assert.equal(amount('1.000,00 TL'), 1000);
@@ -23,5 +24,29 @@ assert.deepEqual(detectPersonalFinanceQuery("Bu ay oğluma ne kadar harçlık g�
 assert.match(personalFinanceSummaryReply({ count: 1, total: 1000, firstDate: '2026-09-06', lastDate: '2026-09-06', latest: [
   { transaction_date: '2026-09-06', category: 'Harçlık', amount: 1000, currency: 'TRY' }
 ] }, { counterparty: 'Ege' }), /1\.000,00/);
+
+const sqlOrder = [];
+const db = {
+  prepare(sql) {
+    sqlOrder.push(String(sql));
+    const statement = {
+      bind() { return statement; },
+      async run() { return { success: true }; },
+      async first() { return null; }
+    };
+    return statement;
+  }
+};
+const secret = 's'.repeat(40);
+const catchupResponse = await onRequestPost({
+  request: new Request('https://example.test/api/financial-document-process', {
+    method: 'POST', headers: { authorization: `Bearer ${secret}`, 'content-type': 'application/json' }, body: '{}'
+  }),
+  env: { APERION_BRIDGE_SECRET: secret, APERION_DB: db }
+});
+assert.equal(catchupResponse.status, 200);
+assert.equal((await catchupResponse.json()).reason, 'no_pending_capture');
+assert.ok(sqlOrder.findIndex((sql) => sql.includes('ALTER TABLE telegram_captures ADD COLUMN extraction_status')) <
+  sqlOrder.findIndex((sql) => sql.includes('SELECT * FROM telegram_captures')));
 
 console.log('financial document v151: OK');
