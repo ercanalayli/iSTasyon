@@ -4,6 +4,7 @@ import { deviceHealth, queueDeviceCommand } from './device-bridge.js';
 import { buildDailyFinancialStatements } from '../../workers/aperion-morning-brief/src/index.js';
 import { parseCashExpenseIntent } from '../shared/cash-expense.js';
 import { decideBankMovement } from '../shared/bank-approvals.js';
+import { detectPersonalFinanceQuery, ensureFinancialDocumentSchema, financialEventReply, personalFinanceSummary, personalFinanceSummaryReply, processFinancialCapture } from '../shared/financial-document.js';
 
 // AperiON Telegram Webhook - ikinci beyin / hizli yakalama
 // Route: /telegram/webhook
@@ -849,6 +850,7 @@ async function ensureCapturesTable(env) {
     await env.APERION_DB.prepare(
           "CREATE TABLE IF NOT EXISTS telegram_captures (id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL, message_id TEXT NOT NULL, kind TEXT NOT NULL, file_id TEXT NOT NULL, mime_type TEXT, caption TEXT, status TEXT NOT NULL DEFAULT 'pending_review', created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(chat_id, message_id))"
         ).run();
+    await ensureFinancialDocumentSchema(env.APERION_DB);
 }
 
 async function handleMediaCapture(env, msg) {
@@ -865,20 +867,34 @@ async function handleMediaCapture(env, msg) {
           try {
                   await ensureCapturesTable(env);
                   await env.APERION_DB.prepare(
-                            'INSERT INTO telegram_captures (chat_id,message_id,kind,file_id,mime_type,caption) VALUES (?,?,?,?,?,?) ON CONFLICT(chat_id,message_id) DO NOTHING'
-                          ).bind(String(chatId), String(msg.message_id), kind, fileId, mimeType, caption).run();
+                            'INSERT INTO telegram_captures (chat_id,message_id,kind,file_id,mime_type,caption,file_name,file_size,extraction_status) VALUES (?,?,?,?,?,?,?,?,?) ON CONFLICT(chat_id,message_id) DO NOTHING'
+                          ).bind(String(chatId), String(msg.message_id), kind, fileId, mimeType, caption,
+                            msg.document?.file_name || null, msg.document?.file_size || msg.video?.file_size || null, 'pending').run();
                   savedOk = true;
           } catch (_e) { savedOk = false; }
     }
   
     const etiket = kind === 'photo' ? '📸 Fotoğrafı' : kind === 'video' ? '🎥 Videoyu' : '📎 Dosyayı';
-    const satirlar = [
-          etiket + ' aldım' + (caption ? (' — not: "' + caption + '"') : '') + '.',
-          savedOk ? '✅ Kuyruğa alındı (durum: onay bekliyor).' : '⚠️ Aldım ama kalıcı kayıt başarısız oldu.',
-          'Bu fatura/fiş görselinden bilgi çıkarma ve BizimHesap\'a onaylı yazma adımı şu an geliştiriliyor — hazır olunca burada onayına sunacağım.'
-        ];
-    await sendMessage(env, chatId, satirlar.join('\n'));
-    return json({ ok: true, captured: kind });
+    if (!savedOk) {
+      await sendMessage(env, chatId, '⚠️ ' + etiket + ' aldım fakat güvenli kayıt kuyruğuna yazamadım. Mali kayıt oluşturulmadı.');
+      return json({ ok: false, error: 'capture_persist_failed' }, 503);
+    }
+    if (kind === 'video') {
+      await sendMessage(env, chatId, etiket + ' aldım. Video finans belgesi olarak otomatik işlenmez; görev kuyruğunda saklandı.');
+      return json({ ok: true, captured: kind, processed: false });
+    }
+    await sendMessage(env, chatId, etiket + ' aldım. 🔎 Okuyup ekonomik olayı tekilleştiriyorum…');
+    const capture = {
+      chat_id: String(chatId), message_id: String(msg.message_id), kind, file_id: fileId,
+      mime_type: mimeType, caption, file_name: msg.document?.file_name || null,
+      file_size: msg.document?.file_size || null
+    };
+    const processed = await processFinancialCapture(env, capture);
+    const resultText = processed.ok
+      ? financialEventReply(processed.event, processed.saved, processed.duplicate)
+      : '⚠️ Belgeyi okuyamadım. Hata: ' + processed.error + '\nBelge kuyrukta korundu; mali kayıt oluşturulmadı.';
+    await sendMessage(env, chatId, resultText);
+    return json({ ok: processed.ok, captured: kind, processed: processed.ok, status: processed.saved?.status || 'failed', error: processed.error || null }, processed.ok ? 200 : 502);
 }
 
 export async function onRequestGet({ env }) {
@@ -1237,6 +1253,13 @@ const chatId = msg.chat.id;
 const text = clean(msg.text);
 const lower = lowerTR(text);
 const directReport = detectDirectEntityReport(text);
+
+const personalFinanceQuery = detectPersonalFinanceQuery(text);
+if (personalFinanceQuery) {
+const summary = await personalFinanceSummary(env.APERION_DB, personalFinanceQuery);
+await sendMessage(env, chatId, personalFinanceSummaryReply(summary, personalFinanceQuery));
+return json({ ok: true, report: 'personal_finance', count: summary.count });
+}
 
 const priorityCashExpenseIntent = parseCashExpenseIntent(text);
 if (priorityCashExpenseIntent) {

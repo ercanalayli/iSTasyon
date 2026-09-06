@@ -1,0 +1,41 @@
+name: AperiON Financial Document Catch-up
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'functions/shared/financial-document.js'
+      - 'functions/api/financial-document-process.js'
+      - 'functions/telegram/webhook.js'
+      - 'wrangler.jsonc'
+      - '.github/workflows/financial-document-catchup.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  process-latest-pending-document:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Wait for Pages v151 and process latest pending capture
+        env:
+          APERION_BRIDGE_SECRET: ${{ secrets.APERION_BRIDGE_SECRET }}
+        run: |
+          set -euo pipefail
+          test -n "$APERION_BRIDGE_SECRET"
+          endpoint='https://aperion-istasyon.pages.dev/api/financial-document-process'
+          ready=''
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent --show-error "$endpoint" | grep -q '"version":"v151"'; then
+              ready='yes'
+              break
+            fi
+            sleep 15
+          done
+          test "$ready" = 'yes'
+          curl --fail-with-body --silent --show-error -X POST "$endpoint" \
+            -H "Authorization: Bearer $APERION_BRIDGE_SECRET" \
+            -H 'Content-Type: application/json' \
+            --data '{}'

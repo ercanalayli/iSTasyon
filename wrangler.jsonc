@@ -3,6 +3,9 @@
   "name": "aperion-istasyon",
   "compatibility_date": "2026-08-20",
   "pages_build_output_dir": ".",
+  "ai": {
+    "binding": "AI"
+  },
   "d1_databases": [
     {
       "binding": "APERION_DB",
