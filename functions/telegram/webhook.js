@@ -6,6 +6,15 @@ import { parseCashExpenseIntent } from '../shared/cash-expense.js';
 import { decideBankMovement } from '../shared/bank-approvals.js';
 import { detectPersonalFinanceQuery, ensureFinancialDocumentSchema, financialEventReply, personalFinanceSummary, personalFinanceSummaryReply, processFinancialCapture } from '../shared/financial-document.js';
 import { answerWithAperionAI, APERION_CONVERSATION_MODEL } from '../shared/aperion-conversation.js';
+import {
+diaperApprovalButtons,
+diaperOrderCard,
+listOpenDiaperOrders,
+looksLikeDiaperOrder,
+parseDiaperOrder,
+readDiaperOrder,
+saveDiaperOrder
+} from '../shared/diaper-operations.js';
 
 // AperiON Telegram Webhook - ikinci beyin / hizli yakalama
 // Route: /telegram/webhook
@@ -135,6 +144,201 @@ message_id: callbackQuery.message.message_id,
 reply_markup: { inline_keyboard: [] }
 })
 }).catch(() => {});
+}
+
+function diaperQueuePayload(order, orderId, chatId) {
+return {
+order_id: Number(orderId),
+order_reference: `HB-${orderId}`,
+customer_name: order.customer_name,
+order_date: order.order_date,
+price_list_name: order.price_list_name,
+discount_note: order.discount_note,
+special_list_note: order.special_list_note,
+source_text: order.source_text,
+chat_id: String(chatId),
+approved: true,
+items: (order.items || []).map((item) => ({
+line_no: Number(item.line_no),
+raw_text: item.raw_text,
+brand: item.brand,
+product_kind: item.product_kind,
+size: item.size,
+bale_quantity: Number(item.bale_quantity),
+packages_per_bale: Number(item.packages_per_bale),
+package_quantity: Number(item.package_quantity),
+units_per_package: Number(item.units_per_package),
+total_units: Number(item.total_units)
+}))
+};
+}
+
+async function queueDiaperProforma(env, order, orderId, chatId) {
+const payload = diaperQueuePayload(order, orderId, chatId);
+const jobKey = `diaper-proforma:${orderId}`;
+const existing = await env.APERION_DB.prepare('SELECT id,status,external_queue_id FROM diaper_proforma_jobs WHERE job_key=?')
+.bind(jobKey).first();
+if (existing && !['failed', 'cancelled'].includes(existing.status)) {
+return { ok: true, duplicate: true, jobId: existing.id, queueId: existing.external_queue_id, status: existing.status };
+}
+const jobId = crypto.randomUUID();
+await env.APERION_DB.prepare(`INSERT INTO diaper_proforma_jobs
+(job_key,order_id,status,approval_id,approved_at,updated_at)
+VALUES (?,?,'approved',?,datetime('now'),datetime('now'))
+ON CONFLICT(job_key) DO UPDATE SET status='approved',approval_id=excluded.approval_id,approved_at=datetime('now'),updated_at=datetime('now')`)
+.bind(jobKey, Number(orderId), jobId).run();
+
+const queued = await sbFetch(env, '/rest/v1/bot_commands', {
+method: 'POST',
+headers: { prefer: 'return=representation' },
+body: JSON.stringify({ command: 'bizimhesap_diaper_proforma', status: 'pending', params: payload })
+});
+if (!queued.ok) {
+await env.APERION_DB.prepare(`UPDATE diaper_proforma_jobs SET status='retry_required',result_summary=?,updated_at=datetime('now') WHERE job_key=?`)
+.bind(`Supabase iş kuyruğu hatası: ${queued.error || 'queue_unavailable'}`, jobKey).run();
+return { ok: false, error: queued.error || 'queue_unavailable' };
+}
+const queueId = queued.data?.[0]?.id || null;
+await env.APERION_DB.prepare(`UPDATE diaper_proforma_jobs SET status='queued',external_queue_id=?,updated_at=datetime('now') WHERE job_key=?`)
+.bind(queueId == null ? null : String(queueId), jobKey).run();
+await env.APERION_DB.prepare(`UPDATE diaper_orders SET status='proforma_queued',updated_at=datetime('now') WHERE id=?`).bind(Number(orderId)).run();
+return { ok: true, duplicate: false, jobId, queueId };
+}
+
+async function handleDiaperCallback(env, callbackQuery) {
+const match = clean(callbackQuery?.data).match(/^dp:([air]):(\d+)$/i);
+if (!match) return false;
+const action = match[1].toLowerCase();
+const orderId = Number(match[2]);
+const chatId = callbackQuery?.message?.chat?.id;
+if (!chatId || !env.APERION_DB) return true;
+const order = await readDiaperOrder(env.APERION_DB, orderId);
+if (!order || String(order.chat_id) !== String(chatId)) {
+await answerCallbackQuery(env, callbackQuery.id, 'Sipariş bulunamadı veya bu sohbete ait değil.');
+return true;
+}
+if (action === 'i') {
+await answerCallbackQuery(env, callbackQuery.id, 'Eksik bilgiyi yeni bir mesajla yazabilirsin.');
+await sendMessage(env, chatId, `✏️ HB-${orderId} için eksik bilgiyi yaz: müşteri, ürün tipi/beden, balya, liste veya iskonto.`);
+return true;
+}
+if (action === 'r') {
+await env.APERION_DB.prepare(`UPDATE diaper_orders SET status='cancelled',updated_at=datetime('now') WHERE id=? AND status NOT IN ('invoiced','collected')`).bind(orderId).run();
+await env.APERION_DB.prepare(`INSERT OR IGNORE INTO diaper_operation_events
+(event_key,order_id,event_type,event_at,source,payload_json) VALUES (?,?,'cancelled',datetime('now'),'telegram','{}')`)
+.bind(`diaper-order:${orderId}:cancelled`, orderId).run();
+await clearCallbackButtons(env, callbackQuery);
+await answerCallbackQuery(env, callbackQuery.id, 'Sipariş iptal edildi.');
+await sendMessage(env, chatId, `❌ HB-${orderId} iptal edildi; BizimHesap’a hiçbir kayıt yazılmadı.`);
+return true;
+}
+if (order.blockers?.length) {
+await answerCallbackQuery(env, callbackQuery.id, 'Eksik veri var; proforma hazırlanmadı.');
+await sendMessage(env, chatId, `⚠️ HB-${orderId} hazırlanamadı: ${order.blockers.join('; ')}`);
+return true;
+}
+const queued = await queueDiaperProforma(env, order, orderId, chatId);
+if (!queued.ok) {
+await answerCallbackQuery(env, callbackQuery.id, 'Masaüstü kuyruğuna erişilemedi.');
+await sendMessage(env, chatId, `🚨 HB-${orderId} kalıcı kayıtta duruyor fakat BizimHesap iş kuyruğuna bağlanamadı. Hiçbir taslak yazılmadı; otomatik tekrar/teknik müdahale gerekli.`);
+return true;
+}
+await clearCallbackButtons(env, callbackQuery);
+await answerCallbackQuery(env, callbackQuery.id, queued.duplicate ? 'Bu proforma zaten kuyrukta.' : 'Proforma hazırlığı başladı.');
+await sendMessage(env, chatId, `🟢 HB-${orderId} onaylandı. BizimHesap’ta ürün, Mayıs listesi, iskonto ve mükerrer kontrolü yapılarak <b>proforma taslağı</b> hazırlanacak. Fatura kesilmeyecek.`, null, { parse_mode: 'HTML' });
+return true;
+}
+
+async function handleDiaperOrderMessage(env, message) {
+const chatId = message.chat.id;
+const order = parseDiaperOrder(message.text, { telegramDate: message.date });
+const saved = await saveDiaperOrder(env.APERION_DB, { chatId, messageId: message.message_id, order });
+if (!saved.ok) {
+await sendMessage(env, chatId, `🚨 Hasta bezi siparişi kalıcı kayda alınamadı (${saved.error}). BizimHesap’a hiçbir şey yazılmadı.`);
+return { ok: false, error: saved.error };
+}
+await sendMessage(env, chatId, diaperOrderCard(order, saved.orderId, saved.duplicate), diaperApprovalButtons(saved.orderId, order.blockers.length === 0), { parse_mode: 'HTML' });
+return { ok: true, orderId: saved.orderId, duplicate: saved.duplicate, blockers: order.blockers };
+}
+
+async function syncDiaperJobStatuses(env) {
+if (!env.APERION_DB) return;
+const pending = await env.APERION_DB.prepare(`SELECT id,order_id,external_queue_id FROM diaper_proforma_jobs
+WHERE status='queued' AND external_queue_id IS NOT NULL ORDER BY id LIMIT 25`).all();
+for (const job of (pending?.results || [])) {
+if (!/^\d+$/.test(String(job.external_queue_id))) continue;
+const result = await sbFetch(env, `/rest/v1/bot_commands?select=id,status,result&id=eq.${encodeURIComponent(job.external_queue_id)}&limit=1`);
+const row = result.ok && Array.isArray(result.data) ? result.data[0] : null;
+if (!row || !['completed', 'failed'].includes(row.status)) continue;
+const jobStatus = row.status === 'completed' ? 'completed' : 'failed';
+const orderStatus = row.status === 'completed' ? 'proforma_ready' : 'proforma_failed';
+await env.APERION_DB.prepare(`UPDATE diaper_proforma_jobs SET status=?,result_summary=?,completed_at=datetime('now'),updated_at=datetime('now') WHERE id=?`)
+.bind(jobStatus, clean(row.result).slice(0, 1000), job.id).run();
+await env.APERION_DB.prepare(`UPDATE diaper_orders SET status=?,updated_at=datetime('now') WHERE id=?`).bind(orderStatus, job.order_id).run();
+await env.APERION_DB.prepare(`INSERT OR IGNORE INTO diaper_operation_events
+(event_key,order_id,event_type,event_at,source,payload_json) VALUES (?,?,?,datetime('now'),'bizimhesap_worker',?)`)
+.bind(`diaper-proforma-job:${job.id}:${jobStatus}`, job.order_id, jobStatus === 'completed' ? 'proforma_ready' : 'proforma_failed', JSON.stringify({ queue_id: row.id, result: clean(row.result).slice(0, 800) })).run();
+}
+}
+
+async function handleDiaperStatus(env, chatId) {
+await syncDiaperJobStatuses(env);
+const rows = await listOpenDiaperOrders(env.APERION_DB, 15);
+if (!rows.length) {
+await sendMessage(env, chatId, '📦 Açık hasta bezi siparişi yok. Yeni siparişi müşteri ve balya satırlarıyla doğrudan gönder.');
+return;
+}
+const lines = rows.map((row) => `• HB-${row.id} | ${row.order_date} | ${row.customer_name} | ${row.status} | ${row.price_list_name}`);
+await sendMessage(env, chatId, `📦 <b>AÇIK HASTA BEZİ OPERASYONLARI</b>\n\n${lines.join('\n')}\n\nDetay: “HB-12 durum”`, null, { parse_mode: 'HTML' });
+}
+
+async function handleDiaperLifecycle(env, message) {
+const text = clean(message.text);
+const match = text.match(/\bHB[-\s]?(\d+)\b/i);
+if (!match || !env.APERION_DB) return false;
+const orderId = Number(match[1]);
+const normalized = lowerTR(text);
+let eventType = '';
+let status = '';
+if (/sevk (edildi|tamam)|sevkiyat (yapıldı|yapildi|tamam)/.test(normalized)) { eventType = 'shipped'; status = 'shipped'; }
+else if (/fatura (kesildi|oluştu|olustu)|faturalaştı|faturalasti/.test(normalized)) { eventType = 'invoiced'; status = 'invoiced'; }
+else if (/tahsil(at)? (edildi|alındı|alindi|tamam)|ödeme (geldi|alındı|alindi)/.test(normalized)) { eventType = 'collected'; status = 'collected'; }
+else if (/durum|detay|göster|goster/.test(normalized)) {
+const order = await readDiaperOrder(env.APERION_DB, orderId);
+if (!order || String(order.chat_id) !== String(message.chat.id)) await sendMessage(env, message.chat.id, `HB-${orderId} bulunamadı.`);
+else {
+const converted = {
+customerName: order.customer_name, orderDate: order.order_date, priceListName: order.price_list_name,
+discountNote: order.discount_note, specialListNote: order.special_list_note, blockers: order.blockers,
+items: order.items.map((item) => ({ brand: item.brand, productKind: item.product_kind, size: item.size, baleQuantity: Number(item.bale_quantity), packageQuantity: Number(item.package_quantity), unitsPerPackage: Number(item.units_per_package) }))
+};
+await sendMessage(env, message.chat.id, `${diaperOrderCard(converted, orderId, true)}\n\n<b>Durum:</b> ${order.status}`, null, { parse_mode: 'HTML' });
+}
+return true;
+}
+if (!eventType) return false;
+const order = await env.APERION_DB.prepare('SELECT id,chat_id FROM diaper_orders WHERE id=?').bind(orderId).first();
+if (!order || String(order.chat_id) !== String(message.chat.id)) {
+await sendMessage(env, message.chat.id, `HB-${orderId} bulunamadı.`);
+return true;
+}
+const current = await env.APERION_DB.prepare('SELECT status FROM diaper_orders WHERE id=?').bind(orderId).first();
+if (eventType === 'invoiced' && current?.status !== 'shipped') {
+await sendMessage(env, message.chat.id, `⚠️ HB-${orderId} fatura zamanı kaydedilmedi: önce sevkin tamamlandığını yazmalısın (“HB-${orderId} sevk edildi”).`);
+return true;
+}
+if (eventType === 'collected' && current?.status !== 'invoiced') {
+await sendMessage(env, message.chat.id, `⚠️ HB-${orderId} tahsilat kaydedilmedi: önce sevk ve fatura aşamaları doğrulanmalı.`);
+return true;
+}
+const dateMatch = text.match(/\b(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2})\b/);
+const eventDate = dateMatch ? `${dateMatch[3]}-${dateMatch[2].padStart(2, '0')}-${dateMatch[1].padStart(2, '0')}T12:00:00+03:00` : new Date(Number(message.date || 0) * 1000 || Date.now()).toISOString();
+await env.APERION_DB.prepare(`INSERT OR IGNORE INTO diaper_operation_events
+(event_key,order_id,event_type,event_at,source,payload_json) VALUES (?,?,?,?, 'telegram', ?)`)
+.bind(`telegram:${message.chat.id}:${message.message_id}:diaper-event`, orderId, eventType, eventDate, JSON.stringify({ raw_text: text })).run();
+await env.APERION_DB.prepare(`UPDATE diaper_orders SET status=?,updated_at=datetime('now') WHERE id=?`).bind(status, orderId).run();
+await sendMessage(env, message.chat.id, `✅ HB-${orderId}: ${eventType} zamanı kaydedildi (${eventDate.slice(0, 10)}). Zaman çizelgesi güncellendi.`);
+return true;
 }
 
 async function handleBankMovementCallback(env, callbackQuery) {
@@ -1242,7 +1446,7 @@ const identity = await verifyTelegramRequest(request, env, update);
 if (!identity.ok) return json({ ok: false, error: 'unauthorized_telegram_update' }, identity.status || 403);
 if (update.callback_query) {
 if (!identity.hardened) return json({ ok: false, error: 'security_bootstrap_pending' }, 503);
-const handled = await handleBankMovementCallback(env, update.callback_query) || await handleCashExpenseCallbackLive(env, update.callback_query) || await handleTransferCallback(env, update.callback_query);
+const handled = await handleDiaperCallback(env, update.callback_query) || await handleBankMovementCallback(env, update.callback_query) || await handleCashExpenseCallbackLive(env, update.callback_query) || await handleTransferCallback(env, update.callback_query);
 return json({ ok: true, callback_handled: handled });
 }
 const msg = update.message;
@@ -1256,6 +1460,24 @@ const chatId = msg.chat.id;
 const text = clean(msg.text);
 const lower = lowerTR(text);
 const directReport = detectDirectEntityReport(text);
+
+if (await handleDiaperLifecycle(env, msg)) {
+return json({ ok: true, diaper_lifecycle: true });
+}
+
+if (lower === '/bez' || lower === '/hasta-bezi' || lower === '/hasta bezi' || lower === 'hasta bezi operasyonu') {
+await handleDiaperStatus(env, chatId);
+return json({ ok: true, diaper_operations: true });
+}
+
+if (looksLikeDiaperOrder(text)) {
+if (!identity.hardened) {
+await sendMessage(env, chatId, '🔒 Hasta bezi sipariş/proforma akışı için Telegram güvenlik eşleştirmesi tamamlanmalıdır. Hiçbir BizimHesap kaydı yapılmadı.');
+return json({ ok: true, security_bootstrap_pending: true });
+}
+const result = await handleDiaperOrderMessage(env, msg);
+return json({ ok: result.ok, diaper_order: true, order_id: result.orderId, duplicate: result.duplicate, blockers: result.blockers }, result.ok ? 200 : 503);
+}
 
 const personalFinanceQuery = detectPersonalFinanceQuery(text);
 if (personalFinanceQuery) {
@@ -1331,6 +1553,8 @@ await sendMessage(env, chatId,
 'Bakiye sorgusu: "bakiye"\n' +
 'Durum: /durum\n' +
 'Stok sorgusu: /stok <ürün adı>\n' +
+'Hasta bezi operasyonu: /bez\n' +
+'Sipariş: müşteri adını ve her ürünün balya satırını doğrudan gönder.\n' +
 'Fatura/fiş fotoğrafı: gönder, kuyruğa alırım (BizimHesap\'a onaylı yazma yakında).\n' +
                       'Benimle normal Türkçe konuş; soru sor, rapor iste veya düşünceni yaz.'
 );
