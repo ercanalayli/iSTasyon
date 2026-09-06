@@ -17,6 +17,7 @@ if (process.env.SUPABASE_URL) process.env.SUPABASE_URL = process.env.SUPABASE_UR
 const TOKEN = process.env.HERMES_TELEGRAM_BOT_TOKEN || '';
 const EXPECTED_WEBHOOK_URL = process.env.TELEGRAM_EXPECTED_WEBHOOK_URL || 'https://aperion-istasyon.pages.dev/telegram/webhook';
 const PREFLIGHT_URL = process.env.TELEGRAM_PREFLIGHT_URL || 'https://aperion-istasyon.pages.dev/api/telegram-preflight';
+const WEBHOOK_HEALTH_URL = process.env.TELEGRAM_WEBHOOK_HEALTH_URL || EXPECTED_WEBHOOK_URL;
 const SECRET_TOKEN = process.env.TELEGRAM_WEBHOOK_SECRET_TOKEN || '';
 const DROP_PENDING = String(process.env.TELEGRAM_DROP_PENDING || 'false').toLowerCase() === 'true';
 const ALERT_CHAT_ID = String(
@@ -37,7 +38,9 @@ async function sendDirectAlert(text){
 }
 
 async function jfetch(url, opts = {}){
-  const res = await fetch(url, opts);
+  const requestOpts = { ...opts };
+  if(!requestOpts.signal) requestOpts.signal = AbortSignal.timeout(8000);
+  const res = await fetch(url, requestOpts);
   const text = await res.text();
   let json;
   try { json = text ? JSON.parse(text) : {}; } catch { json = { raw: text }; }
@@ -68,18 +71,71 @@ async function setWebhook(){
 }
 
 async function pingEndpoint(){
-  const r = await jfetch(PREFLIGHT_URL);
+  try {
+    const r = await jfetch(PREFLIGHT_URL);
+    return {
+      ok: r.ok && r.json && r.json.ok === true,
+      status: r.status,
+      response: r.json,
+      error: null
+    };
+  } catch (error) {
+    return { ok: false, status: 0, response: null, error: String(error && error.message || error) };
+  }
+}
+
+async function pingWebhookEndpoint(){
+  try {
+    const r = await jfetch(WEBHOOK_HEALTH_URL);
+    return {
+      ok: r.ok && r.json && r.json.ok === true && r.json.service === 'aperion-telegram-webhook',
+      status: r.status,
+      response: r.json,
+      error: null
+    };
+  } catch (error) {
+    return { ok: false, status: 0, response: null, error: String(error && error.message || error) };
+  }
+}
+
+async function retryProbe(probe, attempts = 3){
+  let result = null;
+  for(let attempt = 1; attempt <= attempts; attempt += 1){
+    result = await probe();
+    if(result.ok) return { ...result, attempts: attempt };
+    if(attempt < attempts) await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+  }
+  return { ...result, attempts };
+}
+
+function evaluateHealth({ preflight, webhookEndpoint, telegram }){
+  const failures = [];
+  const warnings = [];
+  const checks = preflight && preflight.response && preflight.response.checks || {};
+
+  if(!webhookEndpoint.ok) failures.push('cloudflare_webhook_endpoint_unreachable');
+  if(telegram.url !== EXPECTED_WEBHOOK_URL) failures.push('telegram_webhook_url_mismatch');
+  if(telegram.last_error_message) failures.push('telegram_delivery_error');
+  if(checks.d1 && checks.d1.ok === false) failures.push('d1_control_plane_unhealthy');
+
+  if(!preflight.ok && failures.length === 0) warnings.push('preflight_probe_inconclusive');
+  if(checks.webhook_endpoint && checks.webhook_endpoint.ok === false && webhookEndpoint.ok){
+    warnings.push('preflight_internal_self_probe_failed_but_direct_probe_passed');
+  }
+
   return {
-    ok: r.ok && r.json && r.json.ok === true,
-    status: r.status,
-    response: r.json
+    ok: failures.length === 0,
+    failures,
+    warnings,
+    status: failures.length ? 'failed' : (warnings.length ? 'ok_with_probe_warning' : 'ok')
   };
 }
 
 async function main(){
   if(!TOKEN) throw new Error('Missing HERMES_TELEGRAM_BOT_TOKEN');
 
-  const endpoint = await pingEndpoint();
+  const endpoint = await retryProbe(pingEndpoint);
+  const webhookEndpoint = await retryProbe(pingWebhookEndpoint);
   const before = await getWebhookInfo();
   const beforeUrl = before.url || '';
   const needsSet = beforeUrl !== EXPECTED_WEBHOOK_URL;
@@ -90,11 +146,13 @@ async function main(){
   }
 
   const after = await getWebhookInfo();
-  const ok = endpoint.ok && after.url === EXPECTED_WEBHOOK_URL && !after.last_error_message;
+  const health = evaluateHealth({ preflight: endpoint, webhookEndpoint, telegram: after });
+  const ok = health.ok;
 
   const report = {
     checked_at: new Date().toISOString(),
     endpoint,
+    webhook_endpoint: webhookEndpoint,
     expected_webhook_url: EXPECTED_WEBHOOK_URL,
     before: {
       url: before.url || '',
@@ -109,15 +167,21 @@ async function main(){
       last_error_message: after.last_error_message || null,
       allowed_updates: after.allowed_updates || null
     },
+    health_status: health.status,
+    failures: health.failures,
+    warnings: health.warnings,
+    authoritative_sources: ['telegram_getWebhookInfo', 'direct_cloudflare_webhook_probe', 'preflight_d1_check'],
     ok,
     user_message: ok
-      ? 'Telegram Quick Capture hazÄ±r. KullanÄ±cÄ± direkt Telegramâ€™a yazabilir.'
-      : 'Telegram Quick Capture hazÄ±r deÄŸil; endpoint, webhook veya Telegram son hatasÄ± kontrol edilmeli.'
+      ? (health.warnings.length
+          ? 'Telegram ve doğrudan webhook canlı; yalnız birleşik ön kontrol ölçümü uyarı verdi.'
+          : 'Telegram hazır. Kullanıcı doğrudan Telegram’a yazabilir.')
+      : 'Telegram hazır değil; doğrulanmış kritik sağlık hatası bulundu.'
   };
 
   if(!ok){
     report.direct_alert = await sendDirectAlert(
-      '🚨 AperiON Telegram sağlık kontrolü başarısız. Webhook/endpoint otomatik toparlanamadı. Teknik inceleme gerekiyor.'
+      '🚨 AperiON Telegram bağlantısında doğrulanmış hata: ' + health.failures.join(', ') + '. Otomatik tekrar denemeleri başarısız oldu.'
     );
   }
 
@@ -125,7 +189,7 @@ async function main(){
   if(!ok) process.exitCode = 2;
 }
 
-main().catch(async err => {
+if(require.main === module) main().catch(async err => {
   console.error(err);
   try {
     await sendDirectAlert('🚨 AperiON Telegram watchdog çalışamadı: ' + String(err && err.message || err).slice(0, 300));
@@ -134,4 +198,6 @@ main().catch(async err => {
   }
   process.exitCode = 1;
 });
+
+module.exports = { evaluateHealth };
 

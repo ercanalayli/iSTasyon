@@ -2,6 +2,13 @@ name: AperiON Telegram Watchdog
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/telegram-watchdog.yml'
+      - 'tools/ensure_telegram_webhook.cjs'
+      - 'tools/test_telegram_watchdog_static.cjs'
+      - 'tools/test_telegram_watchdog_health.cjs'
   schedule:
     - cron: '*/15 * * * *'
 
@@ -32,4 +39,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TELEGRAM_ALLOWED_CHAT_ID: ${{ secrets.TELEGRAM_ALLOWED_CHAT_ID }}
           TELEGRAM_ALLOWED_CHAT_IDS: ${{ secrets.TELEGRAM_ALLOWED_CHAT_IDS }}
-        run: node tools/ensure_telegram_webhook.cjs
+        run: |
+          node tools/test_telegram_watchdog_static.cjs
+          node tools/test_telegram_watchdog_health.cjs
+          node tools/ensure_telegram_webhook.cjs
