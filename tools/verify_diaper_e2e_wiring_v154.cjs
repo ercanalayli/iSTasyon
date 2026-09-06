@@ -8,7 +8,7 @@ const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const webhook = read('functions/telegram/webhook.js');
 const listener = read('tools/aperion_command_listener.cjs');
 const migration = read('migrations/0019_diaper_operations.sql');
-const workflow = read('.github/workflows/cloudflare-pages-deploy.yml');
+const shared = read('functions/shared/diaper-operations.js');
 
 const diaperRoute = webhook.indexOf('if (looksLikeDiaperOrder(text))');
 const universalRoute = webhook.indexOf('const universalIntent = parseUniversalCommand(text);');
@@ -21,6 +21,6 @@ for (const source of [webhook, listener]) {
 }
 if (!listener.includes("params.approved !== true")) throw new Error('Yerel işçi Telegram onayını zorunlu tutmuyor.');
 if (!listener.includes('mükerrer') && !listener.includes('Mukerrer')) throw new Error('Yerel işçi mükerrerlik denetimi içermiyor.');
-if (!workflow.includes('d1 migrations apply aperion-control-plane --remote')) throw new Error('Üretim dağıtımı D1 göçlerini uygulamıyor.');
+if (!shared.includes('CREATE TABLE IF NOT EXISTS diaper_orders')) throw new Error('İlk istekte güvenli D1 şema kurulumu yok.');
 
 console.log('Hasta bezi Telegram → D1 → onay → masaüstü BizimHesap → kanıt hattı statik olarak doğrulandı.');
