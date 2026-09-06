@@ -24,6 +24,8 @@ if (!listener.includes("params.approved !== true")) throw new Error('Yerel işç
 if (!webhook.includes('await queueDiaperProforma(env, storedOrder, saved.orderId, chatId)')) throw new Error('Eksiksiz hasta bezi siparişi otomatik taslak kuyruğuna bağlı değil.');
 if (!listener.includes('resolveDiaperCustomerName')) throw new Error('Telegram kısa cari adı BizimHesap ticari unvanına çözümlenmiyor.');
 if (!listener.includes('sendHermesBusinessNotification')) throw new Error('BizimHesap kanıtı doğru Hermes bulut kanalına bağlı değil.');
+if (!listener.includes('queueHermesBusinessNotification')) throw new Error('Hermes bildirimi kalıcı teslim kutusuna bağlı değil.');
+if (!listener.includes('flushHermesBusinessNotificationOutbox')) throw new Error('Hermes kalıcı teslim kutusu otomatik yeniden denenmiyor.');
 if (!notifier.includes("kind === 'diaper_proforma_ready'")) throw new Error('Hermes hasta bezi taslak bildirimi tanımlı değil.');
 if (!notifier.includes('x-aperion-signature')) throw new Error('Hermes bildirim uç noktası imzalı yerel işçi isteklerini doğrulamıyor.');
 if (!listener.includes('mükerrer') && !listener.includes('Mukerrer')) throw new Error('Yerel işçi mükerrerlik denetimi içermiyor.');

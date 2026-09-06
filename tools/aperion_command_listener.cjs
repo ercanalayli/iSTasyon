@@ -111,6 +111,7 @@ async function sendHermesBusinessNotification(payload) {
   try {
     const response = await fetch(endpoint, {
       method: 'POST',
+      signal: AbortSignal.timeout(20000),
       headers: {
         'content-type': 'application/json',
         'x-aperion-timestamp': timestamp,
@@ -123,6 +124,55 @@ async function sendHermesBusinessNotification(payload) {
   } catch (error) {
     return { ok: false, status: 0, error: String(error?.message || error) };
   }
+}
+
+const HERMES_OUTBOX_FILE = path.join(__dirname, '..', 'local-secrets', 'telegram_business_outbox.json');
+
+function readHermesOutbox() {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(HERMES_OUTBOX_FILE, 'utf8'));
+    return Array.isArray(parsed) ? parsed.filter(item => item && item.payload?.event_key) : [];
+  } catch (_error) {
+    return [];
+  }
+}
+
+function writeHermesOutbox(items) {
+  const tempPath = `${HERMES_OUTBOX_FILE}.tmp`;
+  fs.writeFileSync(tempPath, JSON.stringify(items, null, 2), { encoding: 'utf8', mode: 0o600 });
+  fs.renameSync(tempPath, HERMES_OUTBOX_FILE);
+}
+
+function queueHermesBusinessNotification(payload) {
+  const eventKey = String(payload?.event_key || '').trim();
+  if (!eventKey) throw new Error('Hermes bildirim olay anahtarı eksik.');
+  const items = readHermesOutbox();
+  if (!items.some(item => item.payload?.event_key === eventKey)) {
+    items.push({ payload, attempts: 0, next_attempt_at: 0, queued_at: new Date().toISOString() });
+    writeHermesOutbox(items);
+  }
+  return eventKey;
+}
+
+async function flushHermesBusinessNotificationOutbox() {
+  const items = readHermesOutbox();
+  if (!items.length) return { ok: true, deliveredEventKeys: [], pending: 0 };
+  const now = Date.now();
+  const deliveredEventKeys = [];
+  for (const item of items.slice(0, 5)) {
+    if (Number(item.next_attempt_at || 0) > now) continue;
+    const delivery = await sendHermesBusinessNotification(item.payload);
+    if (delivery.ok) {
+      deliveredEventKeys.push(item.payload.event_key);
+      continue;
+    }
+    item.attempts = Number(item.attempts || 0) + 1;
+    item.next_attempt_at = now + Math.min(5 * 60 * 1000, 15000 * (2 ** Math.min(item.attempts - 1, 5)));
+    item.last_error = `HTTP ${delivery.status || 0} ${delivery.error || delivery.result?.error || 'delivery_failed'}`.slice(0, 300);
+  }
+  const remaining = items.filter(item => !deliveredEventKeys.includes(item.payload.event_key));
+  writeHermesOutbox(remaining);
+  return { ok: remaining.length === 0, deliveredEventKeys, pending: remaining.length };
 }
 // 2026-08-10: son savunma hatti - herhangi bir yerde yakalanmamis bir promise
 // reddi Node v25'te varsayilan olarak process'i cokertiyor (bkz. baslangic
@@ -1651,7 +1701,7 @@ async function handleCommand(cmd) {
       if (r.ok) {
         const lineCount = Array.isArray(params.items) ? params.items.length : 0;
         const packageQuantity = (params.items || []).reduce((sum, item) => sum + Number(item.package_quantity || 0), 0);
-        const delivery = await sendHermesBusinessNotification({
+        const notification = {
           kind: 'diaper_proforma_ready',
           event_key: `diaper:proforma:${params.order_reference}:ready`,
           order_reference: params.order_reference,
@@ -1660,9 +1710,12 @@ async function handleCommand(cmd) {
           package_quantity: packageQuantity,
           amount: resolvedItemsTotal(params.items, params.price_list_name, parseDiscountPercent(params.discount_note)),
           status: 'BizimHesap taslağı kaydedildi'
-        });
-        if (!delivery.ok) log(`Hermes bulut bildirimi teslim edilemedi: HTTP ${delivery.status || 0}`);
-        outcome.output += delivery.ok ? ' Hermes bildirimi teslim edildi.' : ' Hermes bildirimi tekrar teslim kuyruğuna alınmalı.';
+        };
+        const eventKey = queueHermesBusinessNotification(notification);
+        const delivery = await flushHermesBusinessNotificationOutbox();
+        const delivered = delivery.deliveredEventKeys.includes(eventKey);
+        if (!delivered) log(`Hermes bulut bildirimi kalıcı teslim kutusunda bekliyor: ${eventKey}`);
+        outcome.output += delivered ? ' Hermes bildirimi teslim edildi.' : ' Hermes bildirimi kalıcı teslim kutusuna alındı.';
       }
     } else if (cmd.command === 'bizimhesap_verify') {
       const r = await bizimhesapVerify(params.search || 'APERION AUTO');
@@ -1910,6 +1963,8 @@ async function tick() {
   if (tickCalisiyor) return;
   tickCalisiyor = true;
   try {
+    const outbox = await flushHermesBusinessNotificationOutbox();
+    if (outbox.deliveredEventKeys.length) log(`Hermes bekleyen bildirim teslim edildi: ${outbox.deliveredEventKeys.join(',')}`);
     const { data, error } = await db.from('bot_commands').select('*').eq('status', 'pending').order('created_at', { ascending: true }).limit(1).maybeSingle();
     if (error) { log(`HATA (sorgu): ${error.message}`); return; }
     if (!data) return;
