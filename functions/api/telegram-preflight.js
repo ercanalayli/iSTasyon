@@ -3,6 +3,18 @@
 // Purpose: system checks readiness before asking user to test Telegram bot.
 
 const EXPECTED_WEBHOOK_URL = 'https://aperion-istasyon.pages.dev/telegram/webhook';
+const DELIVERY_ERROR_MAX_AGE_SECONDS = 30 * 60;
+
+export function telegramDeliveryState(info, nowSeconds = Math.floor(Date.now() / 1000)){
+  const lastError = info?.last_error_message || null;
+  const lastErrorDate = Number(info?.last_error_date || 0);
+  const lastErrorAgeSeconds = lastErrorDate ? Math.max(0, nowSeconds - lastErrorDate) : null;
+  const pendingUpdateCount = Number(info?.pending_update_count || 0);
+  const activeDeliveryError = Boolean(lastError) && (
+    pendingUpdateCount > 0 || lastErrorAgeSeconds === null || lastErrorAgeSeconds <= DELIVERY_ERROR_MAX_AGE_SECONDS
+  );
+  return { lastError, lastErrorDate, lastErrorAgeSeconds, pendingUpdateCount, activeDeliveryError };
+}
 
 function json(data, status = 200){
   return new Response(JSON.stringify(data, null, 2), {
@@ -47,22 +59,25 @@ async function checkTelegram(env){
 
   const info = r.body.result || {};
   const configuredUrl = info.url || '';
-  const lastError = info.last_error_message || null;
+  const { lastError, lastErrorDate, lastErrorAgeSeconds, pendingUpdateCount, activeDeliveryError } = telegramDeliveryState(info);
+  const ready = configuredUrl === EXPECTED_WEBHOOK_URL && !activeDeliveryError;
 
   return {
-    ok: configuredUrl === EXPECTED_WEBHOOK_URL && !lastError,
-    status: configuredUrl === EXPECTED_WEBHOOK_URL && !lastError ? 'ok' : 'not_ready',
+    ok: ready,
+    status: ready ? (lastError ? 'ok_with_stale_error' : 'ok') : 'not_ready',
     expected_webhook_url: EXPECTED_WEBHOOK_URL,
     configured_webhook_url: configuredUrl || null,
     webhook_matches_expected: configuredUrl === EXPECTED_WEBHOOK_URL,
-    pending_update_count: info.pending_update_count || 0,
+    pending_update_count: pendingUpdateCount,
     bot_username: me.ok && me.body.ok ? (me.body.result?.username || null) : null,
     bot_id: me.ok && me.body.ok ? (me.body.result?.id || null) : null,
     last_error_message: lastError,
-    last_error_date: info.last_error_date || null,
+    last_error_date: lastErrorDate || null,
+    last_error_age_seconds: lastErrorAgeSeconds,
+    active_delivery_error: activeDeliveryError,
     allowed_updates: info.allowed_updates || null,
-    message: configuredUrl === EXPECTED_WEBHOOK_URL && !lastError
-      ? 'Telegram webhook doğru bağlı.'
+    message: ready
+      ? (lastError ? 'Telegram webhook doğru bağlı; eski hata yalnız geçmiş kaydıdır.' : 'Telegram webhook doğru bağlı.')
       : 'Telegram webhook doğru bağlı değil veya son hata var.'
   };
 }
@@ -124,8 +139,13 @@ export async function onRequestGet({ env }){
   const webhook_endpoint = await checkWebhookEndpoint().catch(e => ({ ok:false, status:'error', message:e.message }));
   const telegram = await checkTelegram(env).catch(e => ({ ok:false, status:'error', message:e.message }));
   const d1 = await checkD1(env).catch(e => ({ ok:false, status:'error', message:e.message }));
+  const conversational_ai = {
+    ok: Boolean(env.AI?.run),
+    status: env.AI?.run ? 'configured' : 'missing_workers_ai_binding',
+    message: env.AI?.run ? 'AperiON doğal konuşma yapay zekâsı bağlı.' : 'Workers AI binding bağlı değil.'
+  };
 
-  const ok = webhook_endpoint.ok && telegram.ok && d1.ok;
+  const ok = webhook_endpoint.ok && telegram.ok && d1.ok && conversational_ai.ok;
   return json({
     service: 'aperion_telegram_quick_capture_preflight',
     checked_at: checkedAt,
@@ -137,7 +157,8 @@ export async function onRequestGet({ env }){
     checks: {
       webhook_endpoint,
       telegram,
-      d1
+      d1,
+      conversational_ai
     }
   }, ok ? 200 : 503);
 }

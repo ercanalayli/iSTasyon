@@ -5,6 +5,7 @@ import { buildDailyFinancialStatements } from '../../workers/aperion-morning-bri
 import { parseCashExpenseIntent } from '../shared/cash-expense.js';
 import { decideBankMovement } from '../shared/bank-approvals.js';
 import { detectPersonalFinanceQuery, ensureFinancialDocumentSchema, financialEventReply, personalFinanceSummary, personalFinanceSummaryReply, processFinancialCapture } from '../shared/financial-document.js';
+import { answerWithAperionAI, APERION_CONVERSATION_MODEL } from '../shared/aperion-conversation.js';
 
 // AperiON Telegram Webhook - ikinci beyin / hizli yakalama
 // Route: /telegram/webhook
@@ -910,7 +911,9 @@ desktop_target_count: Object.keys(DESKTOP_TARGETS).length,
 desktop_bridge_configured: desktopBridge.configured,
 desktop_bridge_active_device_count: desktopBridge.activeDeviceCount,
 desktop_bridge_pending_command_count: desktopBridge.pendingCommandCount,
-telegram_token_configured: Boolean(telegramToken(env)),
+    telegram_token_configured: Boolean(telegramToken(env)),
+    conversational_ai_configured: Boolean(env.AI?.run),
+    conversational_ai_model: APERION_CONVERSATION_MODEL,
 supabase_configured: Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
 identity_guard_configured: security.identityGuard,
 webhook_secret_configured: security.webhookSecret,
@@ -1329,7 +1332,7 @@ await sendMessage(env, chatId,
 'Durum: /durum\n' +
 'Stok sorgusu: /stok <ürün adı>\n' +
 'Fatura/fiş fotoğrafı: gönder, kuyruğa alırım (BizimHesap\'a onaylı yazma yakında).\n' +
-                      'Herhangi bir not: düz yaz, kaydederim.'
+                      'Benimle normal Türkçe konuş; soru sor, rapor iste veya düşünceni yaz.'
 );
 return json({ ok: true });
 }
@@ -1485,6 +1488,17 @@ if (!dueDate.iso) satirlar.push('❗ Tarih anlayamadım, "10 Temmuz" gibi yazar 
 if (dueDate.gecmisMi) satirlar.push('❗ Bu tarih geçmişte kalmış — gecikmiş bir ödeme mi, yoksa gelecek yıl mı demek istedin? Emin değilsen "gelecek yıl" yaz.');
 await sendMessage(env, chatId, satirlar.join('\n'));
 return json({ ok: true });
+}
+
+const aiReply = await answerWithAperionAI(env, { chatId, messageId: msg.message_id, text });
+if (aiReply.ok) {
+const delivered = await sendMessage(env, chatId, aiReply.text);
+if (!delivered?.ok) return json({ ok: false, error: 'telegram_ai_reply_delivery_failed' }, 502);
+await saveQuickNote(env, {
+chatId, messageId: msg.message_id, rawText: text,
+parsedType: 'ai_conversation', paymentMethod, needsReview: false, status: 'answered'
+});
+return json({ ok: true, conversational_ai: true, provider: aiReply.provider, model: aiReply.model, replayed: aiReply.replayed });
 }
 
 const parsedType = classifyNote(lower);
