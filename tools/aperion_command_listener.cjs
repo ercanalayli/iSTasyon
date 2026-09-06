@@ -1322,6 +1322,39 @@ async function bizimhesapFetch(params) {
 
 const PROPOSALS_URL = 'https://bizimhesap.com/web/ngn/doc/ngnretailproposals';
 
+function resolveDiaperCustomerName(requestedName) {
+  const requested = String(requestedName || '').trim();
+  if (!requested) return requested;
+  const foldName = value => String(value || '')
+    .toLocaleLowerCase('tr-TR')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/ı/g, 'i')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+  const explicitAliases = new Map([
+    ['sercan medikal', 'SERCAN GRUP TIBBİ GEREÇLER SAN. VE TİC. LTD. ŞTİ.']
+  ]);
+  const direct = explicitAliases.get(foldName(requested));
+  if (direct) return direct;
+  try {
+    const snapshot = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'hasta-bezi', 'bizimhesap_customers.json'), 'utf8'));
+    const rows = Array.isArray(snapshot?.rows) ? snapshot.rows : [];
+    const wanted = foldName(requested);
+    const exact = rows.filter(row => foldName(row.cari_unvan) === wanted);
+    if (exact.length === 1) return String(exact[0].cari_unvan).trim();
+    const ignored = new Set(['medikal', 'saglik', 'grup', 'tibbi', 'gerecler', 'san', 've', 'tic', 'ltd', 'sti']);
+    const tokens = wanted.split(' ').filter(token => token.length >= 3 && !ignored.has(token));
+    if (tokens.length) {
+      const candidates = rows.filter(row => {
+        const candidate = foldName(row.cari_unvan);
+        return tokens.every(token => candidate.includes(token));
+      });
+      if (candidates.length === 1) return String(candidates[0].cari_unvan).trim();
+    }
+  } catch (_error) {}
+  return requested;
+}
+
 async function bizimhesapDiaperProforma(params) {
   if (params.approved !== true) throw new Error('Telegram proforma onayı doğrulanmadı; BizimHesap kaydı yapılmadı.');
   if (!/^HB-\d+$/.test(String(params.order_reference || ''))) throw new Error('Geçerli hasta bezi sipariş kimliği yok.');
@@ -1329,6 +1362,7 @@ async function bizimhesapDiaperProforma(params) {
   if (!Array.isArray(params.items) || !params.items.length) throw new Error('Ürün satırı eksik.');
 
   const auditTag = `APERION HASTA BEZI | ${params.order_reference}`;
+  const resolvedCustomerName = resolveDiaperCustomerName(params.customer_name);
   await page.goto(PROPOSALS_URL, { waitUntil: 'networkidle2', timeout: 30000 }).catch(() => {});
   if (!/\/web\/ngn\//i.test(page.url())) {
     throw new Error('GİRİŞ_GEREKLİ: Kalıcı BizimHesap oturumu kapalı. Güvenlik için otomatik tekrar giriş yapılmadı; taslak oluşturulmadı.');
@@ -1349,6 +1383,69 @@ async function bizimhesapDiaperProforma(params) {
   await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 12000 }).catch(() => {});
   await new Promise(r => setTimeout(r, 1000));
 
+  const customerAutocomplete = await page.evaluate(() => {
+    const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i');
+    const visible = el => !!(el && (el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+    const input = [...document.querySelectorAll('input')].filter(visible).find(el =>
+      /isim.*telefon.*vergi|musteri|cari|customer/.test(norm2(`${el.placeholder || ''} ${el.id || ''} ${el.name || ''}`))
+    );
+    if (!input) return { found: false };
+    input.setAttribute('data-aperion-diaper-customer', '1');
+    return { found: true, placeholder: input.placeholder || '', id: input.id || '', name: input.name || '' };
+  });
+  let customerAutocompleteOk = false;
+  let customerAutocompleteDiagnostics = customerAutocomplete;
+  if (customerAutocomplete.found) {
+    const selector = 'input[data-aperion-diaper-customer="1"]';
+    await page.click(selector, { clickCount: 3 }).catch(() => {});
+    await page.keyboard.press('Backspace').catch(() => {});
+    await page.type(selector, resolvedCustomerName, { delay: 12 });
+    await new Promise(r => setTimeout(r, 1400));
+    const suggestion = await page.evaluate((wanted) => {
+      const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i').replace(/\s+/g, ' ').trim();
+      const visible = el => !!(el && (el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+      const w = norm2(wanted);
+      const selectors = '[role="option"], .select2-results li, .ui-autocomplete li, .tt-suggestion, .autocomplete-suggestion, .angucomplete-row, ul.dropdown-menu li, div.dropdown-menu a, div, span, a, li, tr';
+      const rows = [...document.querySelectorAll(selectors)].filter(visible).map(el => ({ el, text: String(el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim() }))
+        .filter(row => row.text && row.text.length <= 240 && norm2(row.text).includes(w));
+      const exact = rows.filter(row => norm2(row.text) === w);
+      const contains = rows.filter(row => norm2(row.text).startsWith(w));
+      const matches = exact.length ? exact : contains;
+      const uniqueTexts = [...new Set(matches.map(row => norm2(row.text)))];
+      if (uniqueTexts.length !== 1 || !matches.length) return { ok: false, matchCount: matches.length, samples: rows.slice(0, 12).map(row => row.text) };
+      const chosen = matches.sort((a, b) => a.el.childElementCount - b.el.childElementCount || a.text.length - b.text.length)[0];
+      const interactive = chosen.el.closest('a,button,li,tr,[role="option"],[onclick],.angucomplete-row,.ui-menu-item,.select2-results__option') || chosen.el;
+      interactive.setAttribute('data-aperion-customer-choice', '1');
+      return { ok: true, matchCount: matches.length, selected: chosen.text, tag: interactive.tagName, className: interactive.className || '' };
+    }, resolvedCustomerName);
+    if (suggestion.ok) {
+      await page.click('[data-aperion-customer-choice="1"]').catch(() => {});
+      await new Promise(r => setTimeout(r, 1100));
+      let selectionState = await page.evaluate((wanted) => {
+        const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i').replace(/\s+/g, ' ').trim();
+        const body = norm2(document.body?.innerText || '');
+        const input = document.querySelector('input[data-aperion-diaper-customer="1"]');
+        return {
+          modalOpen: body.includes('teklif vereceginiz musteriyi secin'),
+          inputValue: input?.value || '',
+          wantedInValue: norm2(input?.value || '').includes(norm2(wanted))
+        };
+      }, resolvedCustomerName);
+      if (selectionState.modalOpen) {
+        await page.keyboard.press('ArrowDown').catch(() => {});
+        await page.keyboard.press('Enter').catch(() => {});
+        await new Promise(r => setTimeout(r, 1100));
+        selectionState = await page.evaluate(() => ({
+          modalOpen: (document.body?.innerText || '').toLocaleLowerCase('tr-TR').includes('teklif vereceğiniz müşteriyi seçin')
+        }));
+      }
+      suggestion.selectionState = selectionState;
+      customerAutocompleteOk = !selectionState.modalOpen;
+    }
+    customerAutocompleteDiagnostics = { ...customerAutocomplete, ...suggestion };
+    if (customerAutocompleteOk) await new Promise(r => setTimeout(r, 700));
+  }
+
   const headerResult = await page.evaluate((input) => {
     const norm2 = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i');
     const visible = el => !!(el && (el.offsetWidth || el.offsetHeight || el.getClientRects().length));
@@ -1365,7 +1462,7 @@ async function bizimhesapDiaperProforma(params) {
     const selects = [...document.querySelectorAll('select')].filter(visible);
     const customerSelect = selects.find(s => /musteri|cari|customer/.test(norm2(`${s.id} ${s.name} ${s.getAttribute('aria-label') || ''} ${s.parentElement?.innerText || ''}`)));
     const listSelect = selects.find(s => /fiyat.*liste|price.*list|liste/.test(norm2(`${s.id} ${s.name} ${s.getAttribute('aria-label') || ''} ${s.parentElement?.innerText || ''}`)));
-    const customerOk = customerSelect ? selectOption(customerSelect, input.customer, false) : false;
+    const customerOk = input.customerAutocompleteOk || (customerSelect ? selectOption(customerSelect, input.customer, false) : false);
     const listOk = listSelect ? selectOption(listSelect, input.priceList, true) : false;
     const dateInput = [...document.querySelectorAll('input')].filter(visible).find(el => /tarih|date/.test(norm2(`${el.id} ${el.name} ${el.placeholder || ''} ${el.parentElement?.innerText || ''}`)));
     if (dateInput) { dateInput.value = input.date.split('-').reverse().join('.'); dispatch(dateInput); }
@@ -1377,15 +1474,25 @@ async function bizimhesapDiaperProforma(params) {
       dateOk: Boolean(dateInput),
       noteOk: Boolean(note),
       customerSelectId: customerSelect?.id || '',
-      listSelectId: listSelect?.id || ''
+      listSelectId: listSelect?.id || '',
+      selectDiagnostics: selects.slice(0, 20).map(s => ({
+        id: s.id || '', name: s.name || '', parent: String(s.parentElement?.innerText || '').replace(/\s+/g, ' ').slice(0, 100),
+        optionCount: s.options.length,
+        options: [...s.options].slice(0, 30).map(o => String(o.text || '').replace(/\s+/g, ' ').trim())
+      })),
+      inputDiagnostics: [...document.querySelectorAll('input')].filter(visible).slice(0, 30).map(el => ({
+        id: el.id || '', name: el.name || '', type: el.type || '', placeholder: el.placeholder || '',
+        parent: String(el.parentElement?.innerText || '').replace(/\s+/g, ' ').slice(0, 100)
+      })),
+      bodySample: String(document.body?.innerText || '').replace(/\s+/g, ' ').slice(0, 2500)
     };
-  }, { customer: params.customer_name, priceList: params.price_list_name, date: params.order_date, note: `${auditTag} | ${String(params.source_text || '').slice(0, 350)}` });
+  }, { customer: resolvedCustomerName, customerAutocompleteOk, priceList: params.price_list_name, date: params.order_date, note: `${auditTag} | ${String(params.source_text || '').slice(0, 350)}` });
 
   if (!headerResult.customerOk) {
-    throw new Error(`Müşteri kesin eşleşmedi (${params.customer_name}); taslak kaydedilmedi.`);
+    throw new Error(`Müşteri kesin eşleşmedi (${params.customer_name} → ${resolvedCustomerName}); taslak kaydedilmedi. FORM:${JSON.stringify({ autocomplete: customerAutocompleteDiagnostics, selects: headerResult.selectDiagnostics, inputs: headerResult.inputDiagnostics }).slice(0, 4500)}`);
   }
   if (!headerResult.listOk) {
-    throw new Error(`Fiyat listesi kesin eşleşmedi (${params.price_list_name}); taslak kaydedilmedi.`);
+    throw new Error(`Fiyat listesi kesin eşleşmedi (${params.price_list_name}); taslak kaydedilmedi. FORM:${JSON.stringify({ selects: headerResult.selectDiagnostics, inputs: headerResult.inputDiagnostics, body: headerResult.bodySample }).slice(0, 6500)}`);
   }
   if (!headerResult.noteOk) throw new Error('AperiON mükerrerlik etiketi açıklama alanına yazılamadı; taslak kaydedilmedi.');
 
@@ -1442,7 +1549,7 @@ async function bizimhesapDiaperProforma(params) {
   const verified = await page.evaluate((tag, customer) => {
     const text = document.body.innerText || '';
     return text.includes(tag) && text.toLocaleLowerCase('tr-TR').includes(String(customer).toLocaleLowerCase('tr-TR'));
-  }, auditTag, params.customer_name);
+  }, auditTag, resolvedCustomerName);
   if (!verified) throw new Error('Kaydet tıklandı fakat proforma ayrıntı ekranında doğrulanamadı; insan kontrolü gerekli.');
   const proofName = `diaper_proforma_${params.order_reference.replace(/[^A-Za-z0-9_-]/g, '_')}`;
   await savePageDiagnostics(page, proofName);
