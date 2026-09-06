@@ -46,7 +46,7 @@ const healthResponse = await onRequestGet({
 });
 const health = await healthResponse.json();
 assert.equal(healthResponse.status, 200);
-assert.equal(health.version, 'v143');
+assert.equal(health.version, 'v153');
 assert.equal(health.data_access, 'protected');
 
 console.log('AperiON degraded session bootstrap v142 testi geçti.');

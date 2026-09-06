@@ -50,3 +50,4 @@ bizimhesap_son_islemler*.json
 bizimhesap_son_islemler*.png
 .DS_Store
 Thumbs.db
+.wrangler/
