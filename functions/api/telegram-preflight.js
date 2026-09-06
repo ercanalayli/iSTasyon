@@ -10,9 +10,10 @@ export function telegramDeliveryState(info, nowSeconds = Math.floor(Date.now() /
   const lastErrorDate = Number(info?.last_error_date || 0);
   const lastErrorAgeSeconds = lastErrorDate ? Math.max(0, nowSeconds - lastErrorDate) : null;
   const pendingUpdateCount = Number(info?.pending_update_count || 0);
-  const activeDeliveryError = Boolean(lastError) && (
-    pendingUpdateCount > 0 || lastErrorAgeSeconds === null || lastErrorAgeSeconds <= DELIVERY_ERROR_MAX_AGE_SECONDS
-  );
+  // Telegram keeps the last_error fields after later successful deliveries.
+  // Treat it as active only while an update is still waiting; otherwise a
+  // recovered webhook would produce a false alarm for 30 minutes.
+  const activeDeliveryError = Boolean(lastError) && pendingUpdateCount > 0;
   return { lastError, lastErrorDate, lastErrorAgeSeconds, pendingUpdateCount, activeDeliveryError };
 }
 
