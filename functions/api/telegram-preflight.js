@@ -144,6 +144,8 @@ export async function onRequestGet({ env }){
     ok: Boolean(env.OPENAI_API_KEY || env.AI?.run),
     status: env.OPENAI_API_KEY ? 'openai_primary_configured' : (env.AI?.run ? 'cloudflare_fallback_only' : 'missing_ai_provider'),
     primary_model: env.OPENAI_API_KEY ? (env.OPENAI_MODEL || 'gpt-6-astra') : null,
+    claude_configured: Boolean(env.ANTHROPIC_API_KEY),
+    claude_model: env.ANTHROPIC_API_KEY ? (env.ANTHROPIC_MODEL || 'claude-fable-5-1') : null,
     fallback_model: env.AI?.run ? (env.APERION_CONVERSATION_MODEL || '@cf/meta/llama-4-scout-17b-16e-instruct') : null,
     message: env.OPENAI_API_KEY
       ? 'AperiON doğal konuşma ana zekâsı ve otomatik yedeği bağlı.'

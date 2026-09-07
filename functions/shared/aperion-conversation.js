@@ -102,12 +102,23 @@ async function persistTurn(db, { chatId, messageId, role, content, provider = nu
   } catch (_error) { return false; }
 }
 
-function providerOrder(env) {
+function requestedProvider(input = '') {
+  const request = clean(input, 1000).toLowerCase();
+  if (/\bclaude\b|\bklod\b/.test(request)) return 'anthropic';
+  if (/\bgpt\b|\bopenai\b/.test(request)) return 'openai';
+  return null;
+}
+
+function providerOrder(env, input = '') {
   const configured = clean(env?.APERION_CONVERSATION_PROVIDERS, 200).toLowerCase()
     .split(',').map((value) => value.trim()).filter(Boolean);
   const allowed = new Set(DEFAULT_PROVIDER_ORDER);
   const result = [...new Set(configured.filter((value) => allowed.has(value)))];
-  return result.length ? result : DEFAULT_PROVIDER_ORDER;
+  const available = result.length ? result : DEFAULT_PROVIDER_ORDER;
+  const prefer = requestedProvider(input);
+  return prefer && available.includes(prefer)
+    ? [prefer, ...available.filter((provider) => provider !== prefer)]
+    : available;
 }
 
 function timeoutMs(env) {
@@ -149,11 +160,14 @@ async function callOpenAI(env, system, history, input, timeout) {
 
 async function callAnthropic(env, system, history, input, timeout) {
   if (!env.ANTHROPIC_API_KEY) return null;
-  const model = clean(env.ANTHROPIC_MODEL, 120) || 'claude-sonnet-4-6';
+  const model = clean(env.ANTHROPIC_MODEL, 120) || 'claude-fable-5-1';
   const body = await fetchJson('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-    body: JSON.stringify({ model, system, messages: conversationMessages(history, input), max_tokens: MAX_OUTPUT_TOKENS, temperature: 0.2 })
+    body: JSON.stringify({
+      model, system, messages: conversationMessages(history, input), max_tokens: MAX_OUTPUT_TOKENS,
+      output_config: { effort: clean(env.ANTHROPIC_EFFORT, 20) || 'high' }
+    })
   }, timeout);
   return { text: telegramText(body), provider: 'anthropic', model };
 }
@@ -199,11 +213,19 @@ export async function answerWithAperionAI(env, { chatId, messageId, text }) {
 
   const input = clean(text, MAX_INPUT_CHARS);
   if (!input) return { ok: false, error: 'empty_input' };
+  const explicitlyRequested = requestedProvider(input);
+  if (explicitlyRequested === 'anthropic' && !env?.ANTHROPIC_API_KEY) {
+    return { ok: false, error: 'anthropic_not_configured', requestedProvider: 'anthropic' };
+  }
+  if (explicitlyRequested === 'openai' && !env?.OPENAI_API_KEY) {
+    return { ok: false, error: 'openai_not_configured', requestedProvider: 'openai' };
+  }
   const memory = await memoryContext(env?.APERION_DB, chatId);
   const system = systemInstruction(memory.checkpoint);
   let configuredProviders = 0;
 
-  for (const provider of providerOrder(env)) {
+  const order = explicitlyRequested ? [explicitlyRequested] : providerOrder(env, input);
+  for (const provider of order) {
     try {
       const answer = await callProvider(provider, env || {}, system, memory.history, input, timeoutMs(env));
       if (!answer) continue;
@@ -222,4 +244,4 @@ export async function answerWithAperionAI(env, { chatId, messageId, text }) {
 }
 
 export const APERION_CONVERSATION_MODEL = DEFAULT_CLOUDFLARE_MODEL;
-export { ensureConversationSchema, modelText, providerOrder, systemInstruction };
+export { ensureConversationSchema, modelText, providerOrder, requestedProvider, systemInstruction };
