@@ -1,5 +1,5 @@
 const DEFAULT_CLOUDFLARE_MODEL = '@cf/meta/llama-4-scout-17b-16e-instruct';
-const DEFAULT_PROVIDER_ORDER = ['openai', 'anthropic', 'gemini', 'cloudflare'];
+const DEFAULT_PROVIDER_ORDER = ['openai', 'cloudflare', 'anthropic', 'gemini'];
 const MAX_HISTORY_TURNS = 10;
 const MAX_INPUT_CHARS = 6000;
 const MAX_OUTPUT_TOKENS = 1200;
@@ -80,9 +80,9 @@ function systemInstruction(checkpoint) {
   const durable = checkpoint?.summary
     ? `\nMERKEZI HAFIZA OZETI (${checkpoint.created_at || 'tarih yok'}):\n${clean(checkpoint.summary, 3500)}\nSIRADAKI ADIM: ${clean(checkpoint.next_action, 800) || 'belirtilmedi'}`
     : '\nMERKEZI HAFIZA: Bu konuşmada henüz doğrulanmış kalıcı oturum özeti bulunmuyor.';
-  return `Sen AperiON'sun: Ercan Alaylı'nın Türkçe konuşan ikinci beyni, CEO/CFO karar destek katmanı ve dijital çalışanısın.
+  return `Sen tek kimlikli AperiON'sun: Ercan Alaylı'nın Türkçe konuşan ikinci beyni, üst aklı, CEO/CFO karar destek katmanı ve dijital çalışanısın.
 Önce sonucu söyle. Doğal, hızlı, doğrudan ve insani cevap ver. Kullanıcıyı komut ezberlemeye zorlama; niyetini gündelik Türkçeden anla.
-Kullanıcı seninle güçlü bir yapay zekâ asistanıyla konuşur gibi konuşabilmelidir. Komut biçimi, görev kimliği, kuyruk veya teknik süreç öğretme.
+Kullanıcı seninle güçlü bir yapay zekâ asistanıyla konuşur gibi konuşabilmelidir. Hangi altyapı modeli yanıt üretirse üretsin kimliğin daima AperiON'dur; model veya sağlayıcı adını kullanıcıya söyleme. Komut biçimi, görev kimliği, kuyruk veya teknik süreç öğretme.
 Elindeki doğrulanmış bilgileri birleştirerek karar, analiz ve uygulanabilir sonraki adımı ver. Yanıtı normalde 1200 karakteri aşmayacak kadar öz tut.
 Gerçek veri verilmemişse rakam, kayıt, başarı veya erişim uydurma. Kaynak eksikse tek cümlede neyin eksik olduğunu söyle ve mevcut bilgiyle yararlı bir sonraki adımı ver.
 Bu serbest konuşma katmanı hiçbir para transferi, fatura, mesaj, silme, yetki veya dış sistem kaydı gerçekleştirmez. Böyle bir işlem istenirse yapıldığını söyleme; güvenli işlem motoruna aktarılması gerektiğini belirt.
@@ -102,23 +102,12 @@ async function persistTurn(db, { chatId, messageId, role, content, provider = nu
   } catch (_error) { return false; }
 }
 
-function requestedProvider(input = '') {
-  const request = clean(input, 1000).toLowerCase();
-  if (/\bclaude\b|\bklod\b/.test(request)) return 'anthropic';
-  if (/\bgpt\b|\bopenai\b/.test(request)) return 'openai';
-  return null;
-}
-
-function providerOrder(env, input = '') {
+function providerOrder(env) {
   const configured = clean(env?.APERION_CONVERSATION_PROVIDERS, 200).toLowerCase()
     .split(',').map((value) => value.trim()).filter(Boolean);
   const allowed = new Set(DEFAULT_PROVIDER_ORDER);
   const result = [...new Set(configured.filter((value) => allowed.has(value)))];
-  const available = result.length ? result : DEFAULT_PROVIDER_ORDER;
-  const prefer = requestedProvider(input);
-  return prefer && available.includes(prefer)
-    ? [prefer, ...available.filter((provider) => provider !== prefer)]
-    : available;
+  return result.length ? result : DEFAULT_PROVIDER_ORDER;
 }
 
 function timeoutMs(env) {
@@ -213,18 +202,11 @@ export async function answerWithAperionAI(env, { chatId, messageId, text }) {
 
   const input = clean(text, MAX_INPUT_CHARS);
   if (!input) return { ok: false, error: 'empty_input' };
-  const explicitlyRequested = requestedProvider(input);
-  if (explicitlyRequested === 'anthropic' && !env?.ANTHROPIC_API_KEY) {
-    return { ok: false, error: 'anthropic_not_configured', requestedProvider: 'anthropic' };
-  }
-  if (explicitlyRequested === 'openai' && !env?.OPENAI_API_KEY) {
-    return { ok: false, error: 'openai_not_configured', requestedProvider: 'openai' };
-  }
   const memory = await memoryContext(env?.APERION_DB, chatId);
   const system = systemInstruction(memory.checkpoint);
   let configuredProviders = 0;
 
-  const order = explicitlyRequested ? [explicitlyRequested] : providerOrder(env, input);
+  const order = providerOrder(env);
   for (const provider of order) {
     try {
       const answer = await callProvider(provider, env || {}, system, memory.history, input, timeoutMs(env));
@@ -244,4 +226,4 @@ export async function answerWithAperionAI(env, { chatId, messageId, text }) {
 }
 
 export const APERION_CONVERSATION_MODEL = DEFAULT_CLOUDFLARE_MODEL;
-export { ensureConversationSchema, modelText, providerOrder, requestedProvider, systemInstruction };
+export { ensureConversationSchema, modelText, providerOrder, systemInstruction };

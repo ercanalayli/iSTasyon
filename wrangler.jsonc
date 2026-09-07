@@ -7,12 +7,10 @@
     "binding": "AI"
   },
   "vars": {
-    "APERION_CONVERSATION_PROVIDERS": "openai,anthropic,cloudflare",
-    "APERION_PROVIDER_TIMEOUT_MS": "20000",
+    "APERION_CONVERSATION_PROVIDERS": "openai,cloudflare",
+    "APERION_PROVIDER_TIMEOUT_MS": "8000",
     "OPENAI_MODEL": "gpt-6-astra",
-    "OPENAI_REASONING_EFFORT": "low",
-    "ANTHROPIC_MODEL": "claude-fable-5-1",
-    "ANTHROPIC_EFFORT": "high"
+    "OPENAI_REASONING_EFFORT": "low"
   },
   "d1_databases": [
     {

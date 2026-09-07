@@ -121,6 +121,17 @@ body: JSON.stringify({ chat_id: chatId, text, ...(replyMarkup ? { reply_markup: 
 return r.json();
 }
 
+async function sendChatAction(env, chatId, action = 'typing') {
+const token = telegramToken(env);
+if (!token) return { ok: false, error: 'missing_telegram_token' };
+const r = await fetch('https://api.telegram.org/bot' + token + '/sendChatAction', {
+method: 'POST',
+headers: { 'content-type': 'application/json' },
+body: JSON.stringify({ chat_id: chatId, action })
+});
+return r.json().catch(() => ({ ok: false }));
+}
+
 async function answerCallbackQuery(env, callbackQueryId, text) {
 const token = telegramToken(env);
 if (!token) return { ok: false, error: 'missing_telegram_token' };
@@ -1749,24 +1760,16 @@ await sendMessage(env, chatId, satirlar.join('\n'));
 return json({ ok: true });
 }
 
+await sendChatAction(env, chatId).catch(() => {});
 const aiReply = await answerWithAperionAI(env, { chatId, messageId: msg.message_id, text });
 if (aiReply.ok) {
-const modelLabel = aiReply.provider === 'openai'
-? 'GPT-6 Astra'
-: (aiReply.provider === 'anthropic' ? 'Claude Fable 5.1' : null);
-const delivered = await sendMessage(env, chatId, aiReply.text + (modelLabel ? `\n\n— ${modelLabel}` : ''));
+const delivered = await sendMessage(env, chatId, aiReply.text);
 if (!delivered?.ok) return json({ ok: false, error: 'telegram_ai_reply_delivery_failed' }, 502);
 await saveQuickNote(env, {
 chatId, messageId: msg.message_id, rawText: text,
 parsedType: 'ai_conversation', paymentMethod, needsReview: false, status: 'answered'
 });
 return json({ ok: true, conversational_ai: true, provider: aiReply.provider, model: aiReply.model, replayed: aiReply.replayed });
-}
-
-if (aiReply.error === 'anthropic_not_configured' || aiReply.error === 'openai_not_configured') {
-const providerName = aiReply.error === 'anthropic_not_configured' ? 'Claude' : 'GPT';
-await sendMessage(env, chatId, `⚠️ ${providerName} özellikle istendi fakat güvenli API bağlantısı henüz etkin değil. Başka bir modeli ${providerName} gibi göstermedim.`);
-return json({ ok: false, conversational_ai: false, error: aiReply.error }, 503);
 }
 
 const parsedType = classifyNote(lower);

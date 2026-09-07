@@ -1,18 +1,15 @@
 import assert from 'node:assert/strict';
-import { answerWithAperionAI, modelText, providerOrder, requestedProvider, systemInstruction } from '../functions/shared/aperion-conversation.js';
+import { answerWithAperionAI, modelText, providerOrder, systemInstruction } from '../functions/shared/aperion-conversation.js';
 
 assert.equal(modelText({ response: ' Merhaba Ercan ' }), 'Merhaba Ercan');
 assert.equal(modelText({ output: [{ content: [{ type: 'output_text', text: 'OpenAI cevabı' }] }] }), 'OpenAI cevabı');
 assert.equal(modelText({ content: [{ type: 'text', text: 'Claude cevabı' }] }), 'Claude cevabı');
 assert.equal(modelText({ candidates: [{ content: { parts: [{ text: 'Gemini cevabı' }] } }] }), 'Gemini cevabı');
 assert.match(systemInstruction(null), /doğrudan|Doğal/i);
+assert.match(systemInstruction(null), /kimliğin daima AperiON/i);
 assert.match(systemInstruction({ summary: 'Hasta bezi operasyonu öncelikli.', next_action: 'Canlı kabul' }), /Hasta bezi operasyonu/);
 assert.deepEqual(providerOrder({ APERION_CONVERSATION_PROVIDERS: 'anthropic,openai,unknown,anthropic' }), ['anthropic', 'openai']);
-assert.equal(requestedProvider('Claude ile değerlendir'), 'anthropic');
-assert.equal(requestedProvider('GPT ile değerlendir'), 'openai');
-assert.equal(requestedProvider('Bugün ne yapalım?'), null);
-assert.deepEqual(providerOrder({ APERION_CONVERSATION_PROVIDERS: 'openai,anthropic,cloudflare' }, 'Claude ile değerlendir'), ['anthropic', 'openai', 'cloudflare']);
-assert.deepEqual(providerOrder({ APERION_CONVERSATION_PROVIDERS: 'anthropic,openai,cloudflare' }, 'GPT ile değerlendir'), ['openai', 'anthropic', 'cloudflare']);
+assert.deepEqual(providerOrder({ APERION_CONVERSATION_PROVIDERS: 'openai,cloudflare' }), ['openai', 'cloudflare']);
 
 let captured;
 const cloudflareEnv = {
@@ -63,13 +60,13 @@ try {
   assert.equal(astra.model, 'gpt-6-astra');
   assert.equal(astra.text, 'Astra yanıtı.');
 
-  const exactClaude = await answerWithAperionAI({
+  const unifiedIdentity = await answerWithAperionAI({
     APERION_CONVERSATION_PROVIDERS: 'openai,anthropic',
     OPENAI_API_KEY: 'success',
     ANTHROPIC_API_KEY: 'test-anthropic-key'
-  }, { chatId: 1, messageId: 31, text: 'Claude ile değerlendir.' });
-  assert.equal(exactClaude.ok, true);
-  assert.equal(exactClaude.provider, 'anthropic');
+  }, { chatId: 1, messageId: 31, text: 'Claude gibi derin değerlendir.' });
+  assert.equal(unifiedIdentity.ok, true);
+  assert.equal(unifiedIdentity.provider, 'openai');
 
   const fallback = await answerWithAperionAI({
     APERION_CONVERSATION_PROVIDERS: 'openai,anthropic',
@@ -87,9 +84,10 @@ try {
 const unavailable = await answerWithAperionAI({}, { chatId: 1, messageId: 5, text: 'test' });
 assert.deepEqual(unavailable, { ok: false, error: 'no_conversation_provider_configured' });
 
-const missingClaude = await answerWithAperionAI({
-  APERION_CONVERSATION_PROVIDERS: 'openai,anthropic', OPENAI_API_KEY: 'success'
-}, { chatId: 1, messageId: 6, text: 'Claude ile konuş.' });
-assert.deepEqual(missingClaude, { ok: false, error: 'anthropic_not_configured', requestedProvider: 'anthropic' });
+const providerNamesDoNotChangeIdentity = await answerWithAperionAI({
+  APERION_CONVERSATION_PROVIDERS: 'cloudflare', AI: cloudflareEnv.AI
+}, { chatId: 1, messageId: 6, text: 'GPT ve Claude gibi benimle doğal konuş.' });
+assert.equal(providerNamesDoNotChangeIdentity.ok, true);
+assert.equal(providerNamesDoNotChangeIdentity.provider, 'cloudflare_workers_ai');
 
 console.log('AperiON conversational AI router with failover: OK');
