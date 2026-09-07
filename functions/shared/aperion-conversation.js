@@ -59,35 +59,54 @@ async function existingAnswer(db, chatId, messageId) {
 }
 
 async function memoryContext(db, chatId) {
-  if (!db) return { history: [], checkpoint: null };
+  if (!db) return { history: [], checkpoint: null, standingRules: [], accessGrants: [] };
   try {
     await ensureConversationSchema(db);
-    const [turns, checkpoint] = await db.batch([
+    const [turns, checkpoint, standingRules, accessGrants] = await db.batch([
       db.prepare(`SELECT role,content FROM telegram_conversation_turns
         WHERE chat_id=? ORDER BY created_at DESC,id DESC LIMIT ?`).bind(String(chatId), MAX_HISTORY_TURNS),
-      db.prepare('SELECT summary,next_action,created_at FROM session_checkpoints ORDER BY created_at DESC LIMIT 1')
+      db.prepare('SELECT summary,next_action,created_at FROM session_checkpoints ORDER BY created_at DESC LIMIT 1'),
+      db.prepare(`SELECT statement FROM memory_items
+        WHERE status='active' AND memory_type='standing_rule'
+        AND (valid_until IS NULL OR valid_until>=date('now'))
+        ORDER BY confidence DESC,updated_at DESC LIMIT 20`),
+      db.prepare(`SELECT connector_key,scopes_json FROM standing_access_grants
+        WHERE principal='ercan' AND status='active' AND revoked_at IS NULL
+        ORDER BY connector_key`)
     ]);
     return {
       history: (turns?.results || []).reverse().map((row) => ({ role: row.role, content: clean(row.content, 2500) })),
-      checkpoint: checkpoint?.results?.[0] || null
+      checkpoint: checkpoint?.results?.[0] || null,
+      standingRules: (standingRules?.results || []).map((row) => clean(row.statement, 1200)).filter(Boolean),
+      accessGrants: (accessGrants?.results || []).map((row) => ({
+        connector: clean(row.connector_key, 100),
+        scopes: (() => { try { return JSON.parse(row.scopes_json || '[]'); } catch (_error) { return []; } })()
+      }))
     };
   } catch (_error) {
-    return { history: [], checkpoint: null };
+    return { history: [], checkpoint: null, standingRules: [], accessGrants: [] };
   }
 }
 
-function systemInstruction(checkpoint) {
+function systemInstruction(checkpoint, standingRules = [], accessGrants = []) {
   const durable = checkpoint?.summary
     ? `\nMERKEZI HAFIZA OZETI (${checkpoint.created_at || 'tarih yok'}):\n${clean(checkpoint.summary, 3500)}\nSIRADAKI ADIM: ${clean(checkpoint.next_action, 800) || 'belirtilmedi'}`
     : '\nMERKEZI HAFIZA: Bu konuşmada henüz doğrulanmış kalıcı oturum özeti bulunmuyor.';
+  const rules = standingRules.length
+    ? `\nKALICI KURALLAR:\n${standingRules.slice(0, 20).map((rule) => `- ${clean(rule, 1200)}`).join('\n')}`
+    : '';
+  const grants = accessGrants.length
+    ? `\nAKTIF KALICI ERISIM IZINLERI:\n${accessGrants.map((grant) => `- ${grant.connector}: ${(grant.scopes || []).join(', ')}`).join('\n')}\nBu kapsamlarda tekrar izin isteme. Kullanici iptal ederse ilgili izni gecersiz say.`
+    : '';
   return `Sen tek kimlikli AperiON'sun: Ercan Alaylı'nın Türkçe konuşan ikinci beyni, üst aklı, CEO/CFO karar destek katmanı ve dijital çalışanısın.
 Önce sonucu söyle. Doğal, hızlı, doğrudan ve insani cevap ver. Kullanıcıyı komut ezberlemeye zorlama; niyetini gündelik Türkçeden anla.
 Kullanıcı seninle güçlü bir yapay zekâ asistanıyla konuşur gibi konuşabilmelidir. Hangi altyapı modeli yanıt üretirse üretsin kimliğin daima AperiON'dur; model veya sağlayıcı adını kullanıcıya söyleme. Komut biçimi, görev kimliği, kuyruk veya teknik süreç öğretme.
 Elindeki doğrulanmış bilgileri birleştirerek karar, analiz ve uygulanabilir sonraki adımı ver. Yanıtı normalde 1200 karakteri aşmayacak kadar öz tut.
 Gerçek veri verilmemişse rakam, kayıt, başarı veya erişim uydurma. Kaynak eksikse tek cümlede neyin eksik olduğunu söyle ve mevcut bilgiyle yararlı bir sonraki adımı ver.
-Bu serbest konuşma katmanı hiçbir para transferi, fatura, mesaj, silme, yetki veya dış sistem kaydı gerçekleştirmez. Böyle bir işlem istenirse yapıldığını söyleme; güvenli işlem motoruna aktarılması gerektiğini belirt.
+Bir sistem için aktif kalıcı erişim izni varsa giriş, kasadaki kimlik bilgisini kullanma, oturum yenileme, gezinme, okuma, sağlık kontrolü, bağlantı kurtarma ve taslak hazırlama için tekrar izin isteme. Para transferi/ödeme, faturayı veya muhasebe kaydını kesinleştirme, üçüncü kişiye mesaj gönderme, silme, erişim kapsamını büyütme, yeni API/OAuth anahtarı üretme, parola değiştirme, OTP/MFA ve CAPTCHA adımları bu kapsamın dışındadır.
+Bu serbest konuşma katmanı dış işlemi kendi başına tamamlanmış saymaz; güvenli işlem motoruna yönlendirir ve hedef sistemden geri okuma kanıtı olmadan başarı bildirmez.
 Parola, anahtar, OTP veya gizli değeri isteme, tekrarlama ya da yanıta koyma.
-Yanıtı Telegram için kısa tut; ham JSON, HTML, form dökümü, görev kuyruğu ayrıntısı ve gereksiz bürokratik durum mesajı kullanma.${durable}`;
+Yanıtı Telegram için kısa tut; ham JSON, HTML, form dökümü, görev kuyruğu ayrıntısı ve gereksiz bürokratik durum mesajı kullanma.${durable}${rules}${grants}`;
 }
 
 async function persistTurn(db, { chatId, messageId, role, content, provider = null, model = null }) {
@@ -203,7 +222,7 @@ export async function answerWithAperionAI(env, { chatId, messageId, text }) {
   const input = clean(text, MAX_INPUT_CHARS);
   if (!input) return { ok: false, error: 'empty_input' };
   const memory = await memoryContext(env?.APERION_DB, chatId);
-  const system = systemInstruction(memory.checkpoint);
+  const system = systemInstruction(memory.checkpoint, memory.standingRules, memory.accessGrants);
   let configuredProviders = 0;
 
   const order = providerOrder(env);

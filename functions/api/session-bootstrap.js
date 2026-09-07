@@ -68,6 +68,7 @@ export async function onRequestGet({ request, env }) {
     safeQuery(env.APERION_DB, 'durable_memory', "SELECT m.memory_key,d.domain_key,m.memory_type,m.statement,m.source_ref,m.confidence,m.valid_from,m.valid_until,m.updated_at FROM memory_items m LEFT JOIN life_domains d ON d.id=m.domain_id WHERE m.status='active' AND (m.valid_until IS NULL OR m.valid_until>=date('now')) ORDER BY CASE m.memory_type WHEN 'standing_rule' THEN 1 WHEN 'business_rule' THEN 2 WHEN 'identity' THEN 3 WHEN 'goal' THEN 4 ELSE 5 END,m.confidence DESC,m.updated_at DESC LIMIT 120"),
     safeQuery(env.APERION_DB, 'memory_sources', "SELECT provider,title,import_status,user_fact_count,last_scanned_at,notes FROM external_conversation_sources ORDER BY CASE import_status WHEN 'complete' THEN 1 WHEN 'partial' THEN 2 WHEN 'inventoried' THEN 3 ELSE 4 END,title LIMIT 200"),
     safeQuery(env.APERION_DB, 'memory_import', "SELECT run_key,status,sources_seen,sources_scanned,candidates_created,memories_accepted,secrets_rejected,error_summary,started_at,completed_at FROM memory_import_runs ORDER BY started_at DESC LIMIT 1", 'first'),
+    safeQuery(env.APERION_DB, 'standing_access_grants', "SELECT grant_key,principal,connector_key,scopes_json,status,granted_at,notes,updated_at FROM standing_access_grants WHERE status='active' AND revoked_at IS NULL ORDER BY connector_key"),
   ]);
 
   const byKey = Object.fromEntries(results.map((result) => [result.key, result]));
@@ -99,6 +100,10 @@ export async function onRequestGet({ request, env }) {
     durable_memory: byKey.durable_memory.rows,
     memory_sources: byKey.memory_sources.rows,
     latest_memory_import: byKey.memory_import.row || null,
+    standing_access_grants: byKey.standing_access_grants.rows.map((row) => ({
+      ...row,
+      scopes: parseJson(row.scopes_json),
+    })),
     objectives: byKey.objectives.rows,
     work_items: byKey.work_items.rows,
     pending_approvals: byKey.approvals.rows,
