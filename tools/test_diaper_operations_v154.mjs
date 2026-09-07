@@ -47,4 +47,8 @@ assert.match(card, /82 paket/);
 assert.equal(diaperApprovalButtons(42, true).inline_keyboard[0][0].callback_data, 'dp:a:42');
 assert.equal(diaperApprovalButtons(42, false).inline_keyboard[0][0].callback_data, 'dp:i:42');
 
+const webhookSource = await import('node:fs').then(({ readFileSync }) => readFileSync(new URL('../functions/telegram/webhook.js', import.meta.url), 'utf8'));
+assert.match(webhookSource, /await queueDiaperProforma\(env, storedOrder, saved\.orderId, chatId\)/);
+assert.match(webhookSource, /Faturalaştırma, gönderim ve tahsilat bu yetkiye dahil değildir/);
+
 console.log('Hasta bezi sipariş ayrıştırma, varsayılan paket, liste, iskonto ve onay kartı testleri geçti.');

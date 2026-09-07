@@ -1,9 +1,10 @@
 'use strict';
 
 const fs = require('node:fs');
+const crypto = require('node:crypto');
 
 const DEFAULT_ENDPOINT = 'https://aperion-istasyon.pages.dev/api/telegram-business-notify';
-const ALLOWED_KINDS = new Set(['murat_invoice_ready', 'murat_email_sent', 'test']);
+const ALLOWED_KINDS = new Set(['murat_invoice_ready', 'murat_email_sent', 'diaper_proforma_ready', 'test']);
 
 function normalize(input) {
   const body = input && typeof input === 'object' ? input : {};
@@ -14,16 +15,22 @@ function normalize(input) {
 
 async function sendBusinessNotification(input, options = {}) {
   const secret = String(options.secret || process.env.APERION_BRIDGE_SECRET || '');
-  if (secret.length < 32) throw new Error('APERION_BRIDGE_SECRET gerekli.');
+  const signingKey = String(options.signingKey || process.env.SUPABASE_SERVICE_ROLE_KEY || '');
+  if (secret.length < 32 && signingKey.length < 32) throw new Error('APERION_BRIDGE_SECRET veya imza anahtarı gerekli.');
   const endpoint = String(options.endpoint || process.env.APERION_TELEGRAM_NOTIFY_URL || DEFAULT_ENDPOINT);
   const body = normalize(input);
+  const rawBody = JSON.stringify(body);
+  const timestamp = String(Date.now());
+  const headers = { 'content-type': 'application/json' };
+  if (secret.length >= 32) headers.authorization = `Bearer ${secret}`;
+  else {
+    headers['x-aperion-timestamp'] = timestamp;
+    headers['x-aperion-signature'] = crypto.createHmac('sha256', signingKey).update(`${timestamp}\n${rawBody}`).digest('hex');
+  }
   const response = await (options.fetch || fetch)(endpoint, {
     method: 'POST',
-    headers: {
-      authorization: `Bearer ${secret}`,
-      'content-type': 'application/json'
-    },
-    body: JSON.stringify(body)
+    headers,
+    body: rawBody
   });
   const text = await response.text();
   let result = {};

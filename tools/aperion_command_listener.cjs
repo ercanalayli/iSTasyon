@@ -15,6 +15,7 @@ const { createClient } = require('@supabase/supabase-js');
 const { launchOptions, loginBizimHesap, selectFirma, checkLoginCooldown, savePageDiagnostics } = require('../bizimhesap_common.cjs');
 const { sendFinanceResult } = require('./telegram_finance_result.cjs');
 const { loadDiaperPriceCatalog, resolveDiaperCatalogItem, parseDiscountPercent } = require('./diaper_price_catalog.cjs');
+const { userSafeDesktopResult } = require('./desktop_result_formatter.cjs');
 
 const ENV_FILE = path.join(__dirname, '..', 'local-secrets', 'bizimhesap.local.env');
 if (!fs.existsSync(ENV_FILE)) { console.error('HATA: local-secrets/bizimhesap.local.env yok.'); process.exit(1); }
@@ -59,6 +60,49 @@ const GIDER_URL = 'https://bizimhesap.com/web/ngn/acc/ngncostss';
 const ACCOUNTS_URL = 'https://bizimhesap.com/web/ngn/acc/ngnaccounts';
 
 let browser, page;
+let browserOwnedByListener = false;
+
+async function disconnectBrowser() {
+  if (!browser) return;
+  if (browserOwnedByListener) await browser.close().catch(() => {});
+  else browser.disconnect();
+  browser = null;
+  page = null;
+  browserOwnedByListener = false;
+}
+
+async function connectAuthenticatedSessionBroker() {
+  const browserURL = process.env.APERION_BIZIMHESAP_BROWSER_URL || 'http://127.0.0.1:9223';
+  let connected;
+  try {
+    connected = await puppeteer.connect({ browserURL, defaultViewport: null });
+    const pages = await connected.pages();
+    const candidates = pages.filter(candidate => /bizimhesap\.com/i.test(candidate.url()));
+    for (const candidate of candidates) {
+      let url = candidate.url();
+      if (!/\/web\//i.test(url)) continue;
+      const authenticated = await candidate.evaluate(async () => {
+        try {
+          const response = await fetch('/api/AngularControllers/firms/getcurrentfirm', { credentials: 'include' });
+          if (!response.ok) return false;
+          const payload = await response.json().catch(() => null);
+          const firm = payload?.Data || payload?.data || payload;
+          return Boolean(firm && typeof firm === 'object' && (firm.Id || firm.id || firm.FirmId || firm.firmId || firm.Name || firm.name));
+        } catch { return false; }
+      }).catch(() => false);
+      if (!authenticated) continue;
+      browser = connected;
+      page = candidate;
+      browserOwnedByListener = false;
+      return true;
+    }
+    connected.disconnect();
+    return false;
+  } catch (_error) {
+    try { connected?.disconnect(); } catch {}
+    return false;
+  }
+}
 
 function log(msg) { console.log(`[${new Date().toISOString()}] ${msg}`); }
 
@@ -191,6 +235,25 @@ const para = n => Math.abs(Number(n || 0)).toLocaleString('tr-TR', { minimumFrac
 const trToNumber = s => Number(String(s || '').replace(/\./g, '').replace(',', '.')) || 0;
 
 async function ensureSession() {
+  if (browser && page && !page.isClosed() && !browserOwnedByListener) {
+    const brokerAuthenticated = await page.evaluate(async () => {
+      try {
+        const response = await fetch('/api/AngularControllers/firms/getcurrentfirm', { credentials: 'include' });
+        return response.ok;
+      } catch { return false; }
+    }).catch(() => false);
+    if (brokerAuthenticated) return;
+    await disconnectBrowser();
+  }
+
+  // Tek oturum ilkesi: tüm masaüstü işçileri önce görünür ve gözetlenen 9223
+  // brokerına bağlanır. Böylece aynı hesap için iki ayrı profil/giriş döngüsü
+  // CAPTCHA ve yanlış sağlık alarmı üretmez.
+  if (await connectAuthenticatedSessionBroker()) {
+    log('Gözetlenen BizimHesap oturum brokerına bağlanıldı; ikinci giriş açılmadı.');
+    return;
+  }
+
   // 2026-08-10: bu kontrol ONCE "browser && page zaten var mi" hizli-yolundan
   // ONCE calismaliydi - onceki siralamada, oturum dusmus (login sayfasinda)
   // bir page zaten varsa devre kesici HIC KONTROL EDILMEDEN dogrudan
@@ -217,8 +280,9 @@ async function ensureSession() {
     if (!/bhlogin|account\/login/i.test(url) && /\/web\//i.test(url)) return;
     log(`Oturum dusmus gorunuyor (son URL: ${url}), yeniden giris deneniyor...`);
   }
-  if (browser) await browser.close().catch(() => {});
+  await disconnectBrowser();
   browser = await puppeteer.launch(launchOptions({ headless: process.env.BIZIMHESAP_HEADLESS !== 'false', width: 1366, height: 768 }));
+  browserOwnedByListener = true;
   page = await browser.newPage();
   await loginBizimHesap(page, log);
   await selectFirma(page, FIRMA, log);
@@ -1535,7 +1599,17 @@ async function bizimhesapDiaperProforma(params) {
       customerAutocompleteOk = !selectionState.modalOpen;
     }
     customerAutocompleteDiagnostics = { ...customerAutocomplete, ...suggestion };
-    if (customerAutocompleteOk) await new Promise(r => setTimeout(r, 700));
+    if (customerAutocompleteOk) {
+      await page.waitForFunction(() => {
+        const visible = el => !!(el && (el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+        const proposalField = document.querySelector('#txtDocumentNo, #txtDocumentDate, input[placeholder*="Ürün isminden"], input[placeholder*="urun isminden"]');
+        const modalStillOpen = [...document.querySelectorAll('body *')].some(el =>
+          visible(el) && /teklif vereceğiniz müşteriyi seçin/i.test(String(el.textContent || '').trim()) && String(el.textContent || '').trim().length < 120
+        );
+        return Boolean(proposalField && visible(proposalField) && !modalStillOpen);
+      }, { timeout: 20000 }).catch(() => {});
+      await new Promise(r => setTimeout(r, 500));
+    }
   }
 
   const headerResult = await page.evaluate((input) => {
@@ -1555,7 +1629,11 @@ async function bizimhesapDiaperProforma(params) {
     const customerSelect = selects.find(s => /musteri|cari|customer/.test(norm2(`${s.id} ${s.name} ${s.getAttribute('aria-label') || ''} ${s.parentElement?.innerText || ''}`)));
     const listSelect = selects.find(s => /fiyat.*liste|price.*list|liste/.test(norm2(`${s.id} ${s.name} ${s.getAttribute('aria-label') || ''} ${s.parentElement?.innerText || ''}`)));
     const customerOk = input.customerAutocompleteOk || (customerSelect ? selectOption(customerSelect, input.customer, false) : false);
-    const listOk = listSelect ? selectOption(listSelect, input.priceList, true) : input.linePriceCatalogOk;
+    // BizimHesap teklif formunda bu select kimi oturumlarda yalnız ürün arama
+    // filtresidir ve seçenekleri AJAX ile sonradan dolar. Satırların tamamı
+    // doğrulanmış yerel fiyat kataloğundan geliyorsa boş filtreyi fiyat listesi
+    // hatası sayma; her satırdaki birim fiyat ayrıca aşağıda doğrulanır.
+    const listOk = input.linePriceCatalogOk || (listSelect ? selectOption(listSelect, input.priceList, true) : false);
     const documentNo = document.querySelector('#txtDocumentNo');
     if (documentNo) { documentNo.value = input.orderRef; dispatch(documentNo); }
     const dateInput = [...document.querySelectorAll('input')].filter(visible).find(el => /tarih|date/.test(norm2(`${el.id} ${el.name} ${el.placeholder || ''} ${el.parentElement?.innerText || ''}`)));
@@ -1924,8 +2002,7 @@ async function handleCommand(cmd) {
   }
   await db.from('bot_commands').update({ status: outcome.ok ? 'completed' : 'failed', result: outcome.output.slice(0, 8000), completed_at: new Date().toISOString() }).eq('id', cmd.id);
   if ((cmd.command === 'desktop_open_url' || cmd.command === 'bizimhesap_expense' || (cmd.command === 'bizimhesap_diaper_proforma' && !outcome.ok)) && params.chat_id) {
-    const icon = outcome.ok ? '✅' : '⚠️';
-    await sendTelegramCommandResult(params.chat_id, `${icon} Masaüstü komut sonucu\n${outcome.output}`);
+    await sendTelegramCommandResult(params.chat_id, userSafeDesktopResult(cmd.command, outcome, params));
   }
   log(`Komut bitti: #${cmd.id} -> ${outcome.ok ? 'completed' : 'failed'}`);
 }

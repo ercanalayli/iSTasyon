@@ -258,8 +258,33 @@ if (!saved.ok) {
 await sendMessage(env, chatId, `🚨 Hasta bezi siparişi kalıcı kayda alınamadı (${saved.error}). BizimHesap’a hiçbir şey yazılmadı.`);
 return { ok: false, error: saved.error };
 }
-await sendMessage(env, chatId, diaperOrderCard(order, saved.orderId, saved.duplicate), diaperApprovalButtons(saved.orderId, order.blockers.length === 0), { parse_mode: 'HTML' });
-return { ok: true, orderId: saved.orderId, duplicate: saved.duplicate, blockers: order.blockers };
+const needsInformation = order.blockers.length > 0;
+await sendMessage(
+env,
+chatId,
+diaperOrderCard(order, saved.orderId, saved.duplicate),
+needsInformation ? diaperApprovalButtons(saved.orderId, false) : null,
+{ parse_mode: 'HTML' }
+);
+if (needsInformation) {
+return { ok: true, orderId: saved.orderId, duplicate: saved.duplicate, blockers: order.blockers, queued: false };
+}
+
+// Ercan'ın kalıcı çalışma kuralı: eksiksiz hasta bezi siparişi, ayrıca
+// düğme/onay bekletilmeden yalnızca TASLAK proforma kuyruğuna alınır.
+// Faturalaştırma, gönderim ve tahsilat bu yetkiye dahil değildir.
+const storedOrder = await readDiaperOrder(env.APERION_DB, saved.orderId);
+const queued = storedOrder
+? await queueDiaperProforma(env, storedOrder, saved.orderId, chatId)
+: { ok: false, error: 'stored_order_unavailable' };
+if (!queued.ok) {
+await sendMessage(env, chatId, `🚨 HB-${saved.orderId} kalıcı kayıtta duruyor fakat BizimHesap taslak kuyruğuna bağlanamadı (${queued.error || 'queue_unavailable'}). Fatura kesilmedi.`);
+return { ok: false, orderId: saved.orderId, error: queued.error || 'queue_unavailable' };
+}
+await sendMessage(env, chatId, queued.duplicate
+? `♻️ HB-${saved.orderId} proforma hazırlığı zaten kuyrukta; mükerrer görev oluşturulmadı.`
+: `⚡ HB-${saved.orderId} otomatik işlendi. BizimHesap'ta cari, ürün, Mayıs listesi, iskonto ve mükerrerlik doğrulanarak <b>taslak proforma</b> hazırlanıyor. Fatura kesilmeyecek.`, null, { parse_mode: 'HTML' });
+return { ok: true, orderId: saved.orderId, duplicate: saved.duplicate, blockers: [], queued: true, queueId: queued.queueId };
 }
 
 async function syncDiaperJobStatuses(env) {

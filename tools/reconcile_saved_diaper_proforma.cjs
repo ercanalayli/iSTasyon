@@ -36,6 +36,12 @@ async function sendHermes(payload) {
       'x-aperion-signature': signature
     },
     body
+<<<<<<< HEAD
+=======
+  }).catch(error => {
+    const cause = error?.cause?.code || error?.cause?.message || error?.message || String(error);
+    throw new Error(`Hermes bulut ağına erişilemedi: ${cause}`);
+>>>>>>> 3414c97b463e3c90aa949982aba7f6ab30ead0aa
   });
   const result = await response.json();
   if (!response.ok || !result?.ok) throw new Error(`Hermes bulut bildirimi başarısız: HTTP ${response.status} ${result?.error || ''}`);

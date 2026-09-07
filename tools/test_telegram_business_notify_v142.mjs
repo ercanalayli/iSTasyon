@@ -18,6 +18,28 @@ assert.match(message, /79\.069,95/);
 assert.match(message, /RE: ALAYLI/);
 assert.match(message, /ercanalayli@gmail\.com/);
 assert.match(message, /Alaylı Nakliyat Dosyası/);
+const diaper = normalizeNotification({
+  kind: 'diaper_proforma_ready',
+  event_key: 'diaper:proforma:HB-1:ready',
+  order_reference: 'HB-1',
+  customer_name: 'Sercan Medikal',
+  line_count: 6,
+  package_quantity: 82,
+  amount: 30476.77,
+  status: 'BizimHesap taslağı kaydedildi'
+});
+const diaperMessage = formatNotification(diaper);
+assert.match(diaperMessage, /Buyurun Ercan Bey, sevke hazır/);
+assert.match(diaperMessage, /HB-1/);
+assert.match(diaperMessage, /30\.476,77/);
+assert.throws(() => normalizeNotification({
+  kind: 'diaper_proforma_ready', event_key: 'diaper:bad:1', order_reference: 'bad',
+  customer_name: 'Sercan Medikal', line_count: 6, package_quantity: 82, amount: 30476.77
+}), /invalid_order_reference/);
+assert.throws(() => normalizeNotification({
+  kind: 'diaper_proforma_ready', event_key: 'diaper:bad:2', order_reference: 'HB-2',
+  customer_name: 'Sercan Medikal', line_count: 0, package_quantity: 82, amount: 30476.77
+}), /invalid_line_count/);
 assert.throws(() => normalizeNotification({ kind: 'arbitrary', event_key: '12345678' }), /unsupported/);
 assert.throws(() => normalizeNotification({ kind: 'test', event_key: '../bad' }), /invalid_event_key/);
 console.log('telegram-business-notify=ok');

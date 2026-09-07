@@ -110,16 +110,10 @@ export function parseUniversalCommand(text) {
     };
   }
 
-  if (/^\/komut\s+/.test(normalized) || looksLikeCommand(normalized)) {
-    return {
-      code: 'command_request',
-      category: 'general',
-      risk: 'low_risk',
-      approvalPolicy: 'review_if_unmapped',
-      executionMode: 'review_queue',
-      rawText: rawText.replace(/^\/komut\s+/iu, '').trim() || rawText
-    };
-  }
+  // Güvenli ve tanınmış bir yeteneğe eşleşmeyen gündelik istekleri burada
+  // "komut kuyruğu"na hapsetme. Webhook bunları bir sonraki adımda genel
+  // AperiON konuşma aklına verir. Böylece kullanıcı komut ezberlemez;
+  // dış etki doğuran işlemler ise yukarıdaki onay sınıflandırmasında kalır.
   return null;
 }
 

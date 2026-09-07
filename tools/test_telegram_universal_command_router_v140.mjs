@@ -10,7 +10,7 @@ assert.equal(parseUniversalCommand('AperiON paneli aç').target, 'aperion');
 assert.equal(parseUniversalCommand('Nakit kasadan Ercan kasaya 3500 TL transfer').risk, 'approval_required');
 assert.equal(parseUniversalCommand('Ahmet’e WhatsApp mesajı gönder').category, 'communication');
 assert.equal(parseUniversalCommand('Bu kaydı sil').category, 'delete');
-assert.equal(parseUniversalCommand('Yarın satış raporunu hazırla').executionMode, 'review_queue');
+assert.equal(parseUniversalCommand('Yarın satış raporunu hazırla'), null);
 assert.equal(parseUniversalCommand('sadece bir not'), null);
 assert.equal(DESKTOP_TARGETS.bizimhesap.url.startsWith('https://bizimhesap.com/'), true);
 
