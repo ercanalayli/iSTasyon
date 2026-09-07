@@ -1,12 +1,17 @@
 import assert from 'node:assert/strict';
-import { answerWithAperionAI, modelText, systemInstruction } from '../functions/shared/aperion-conversation.js';
+import { answerWithAperionAI, modelText, providerOrder, systemInstruction } from '../functions/shared/aperion-conversation.js';
 
 assert.equal(modelText({ response: ' Merhaba Ercan ' }), 'Merhaba Ercan');
-assert.match(systemInstruction(null), /normal|Doğal/i);
+assert.equal(modelText({ output: [{ content: [{ type: 'output_text', text: 'OpenAI cevabı' }] }] }), 'OpenAI cevabı');
+assert.equal(modelText({ content: [{ type: 'text', text: 'Claude cevabı' }] }), 'Claude cevabı');
+assert.equal(modelText({ candidates: [{ content: { parts: [{ text: 'Gemini cevabı' }] } }] }), 'Gemini cevabı');
+assert.match(systemInstruction(null), /doğrudan|Doğal/i);
 assert.match(systemInstruction({ summary: 'Hasta bezi operasyonu öncelikli.', next_action: 'Canlı kabul' }), /Hasta bezi operasyonu/);
+assert.deepEqual(providerOrder({ APERION_CONVERSATION_PROVIDERS: 'anthropic,openai,unknown,anthropic' }), ['anthropic', 'openai']);
 
 let captured;
-const env = {
+const cloudflareEnv = {
+  APERION_CONVERSATION_PROVIDERS: 'cloudflare',
   AI: {
     async run(model, payload) {
       captured = { model, payload };
@@ -14,14 +19,39 @@ const env = {
     }
   }
 };
-const result = await answerWithAperionAI(env, { chatId: 1, messageId: 2, text: 'Benimle normal konuş.' });
-assert.equal(result.ok, true);
-assert.equal(result.text, 'Elbette. İsteğini doğrudan ele alıyorum.');
+const cloudflareResult = await answerWithAperionAI(cloudflareEnv, { chatId: 1, messageId: 2, text: 'Benimle normal konuş.' });
+assert.equal(cloudflareResult.ok, true);
+assert.equal(cloudflareResult.text, 'Elbette. İsteğini doğrudan ele alıyorum.');
+assert.equal(cloudflareResult.provider, 'cloudflare_workers_ai');
 assert.match(captured.model, /llama-4-scout/);
 assert.equal(captured.payload.messages.at(-1).content, 'Benimle normal konuş.');
 assert.equal(captured.payload.messages[0].role, 'system');
 
-const unavailable = await answerWithAperionAI({}, { chatId: 1, messageId: 3, text: 'test' });
-assert.deepEqual(unavailable, { ok: false, error: 'workers_ai_binding_missing' });
+const originalFetch = globalThis.fetch;
+const calls = [];
+globalThis.fetch = async (url) => {
+  calls.push(String(url));
+  if (String(url).includes('api.openai.com')) return new Response('{"error":"temporary"}', { status: 503 });
+  if (String(url).includes('api.anthropic.com')) {
+    return Response.json({ content: [{ type: 'text', text: 'Claude yedek yanıtı.' }] });
+  }
+  throw new Error('unexpected_provider');
+};
+try {
+  const fallback = await answerWithAperionAI({
+    APERION_CONVERSATION_PROVIDERS: 'openai,anthropic',
+    OPENAI_API_KEY: 'test-openai-key',
+    ANTHROPIC_API_KEY: 'test-anthropic-key'
+  }, { chatId: 1, messageId: 3, text: 'Stratejik bir yanıt ver.' });
+  assert.equal(fallback.ok, true);
+  assert.equal(fallback.provider, 'anthropic');
+  assert.equal(fallback.text, 'Claude yedek yanıtı.');
+  assert.equal(calls.length, 2);
+} finally {
+  globalThis.fetch = originalFetch;
+}
 
-console.log('AperiON conversational AI router: OK');
+const unavailable = await answerWithAperionAI({}, { chatId: 1, messageId: 4, text: 'test' });
+assert.deepEqual(unavailable, { ok: false, error: 'no_conversation_provider_configured' });
+
+console.log('AperiON conversational AI router with failover: OK');
