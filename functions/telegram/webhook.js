@@ -1417,8 +1417,10 @@ async function fetchBridgeReport(env, directReport, message) {
 const secret = clean(env.APERION_HERMES_SECRET || env.APERION_BRIDGE_SECRET);
 if (!secret) return { ok: false, error: 'missing_bridge_secret' };
 const bridgeUrl = clean(env.APERION_COMMAND_BRIDGE_URL || 'https://aperion-command-bridge.yenicespor-finans.workers.dev').replace(/\/+$/, '');
+try {
 const response = await fetch(bridgeUrl + '/v1/tasks', {
 method: 'POST',
+signal: AbortSignal.timeout(4500),
 headers: {
 authorization: 'Bearer ' + secret,
 'content-type': 'application/json',
@@ -1440,6 +1442,9 @@ const body = await response.json().catch(() => ({}));
 if (!response.ok) return { ok: false, error: body.error || ('bridge_http_' + response.status) };
 const telegramCard = body?.result?.telegramCard || body?.telegramCard;
 return telegramCard ? { ok: true, telegramCard } : { ok: false, error: 'missing_telegram_card' };
+} catch (error) {
+return { ok: false, error: error?.name === 'TimeoutError' ? 'bridge_timeout' : 'bridge_unavailable' };
+}
 }
 
 async function handleReportFieldsIntent(env, chatId, userId, text) {

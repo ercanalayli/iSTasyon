@@ -29,29 +29,45 @@ assert.equal(captured.payload.messages[0].role, 'system');
 
 const originalFetch = globalThis.fetch;
 const calls = [];
-globalThis.fetch = async (url) => {
+globalThis.fetch = async (url, init) => {
   calls.push(String(url));
-  if (String(url).includes('api.openai.com')) return new Response('{"error":"temporary"}', { status: 503 });
+  if (String(url).includes('api.openai.com') && !String(init?.headers?.authorization || '').includes('success')) return new Response('{"error":"temporary"}', { status: 503 });
+  if (String(url).includes('api.openai.com')) {
+    const request = JSON.parse(init.body);
+    assert.equal(request.model, 'gpt-6-astra');
+    assert.deepEqual(request.reasoning, { effort: 'low' });
+    assert.equal('temperature' in request, false);
+    return Response.json({ output: [{ content: [{ type: 'output_text', text: 'Astra yanıtı.' }] }] });
+  }
   if (String(url).includes('api.anthropic.com')) {
     return Response.json({ content: [{ type: 'text', text: 'Claude yedek yanıtı.' }] });
   }
   throw new Error('unexpected_provider');
 };
 try {
+  const astra = await answerWithAperionAI({
+    APERION_CONVERSATION_PROVIDERS: 'openai,cloudflare',
+    OPENAI_API_KEY: 'success'
+  }, { chatId: 1, messageId: 3, text: 'Bugün neye odaklanmalıyım?' });
+  assert.equal(astra.ok, true);
+  assert.equal(astra.provider, 'openai');
+  assert.equal(astra.model, 'gpt-6-astra');
+  assert.equal(astra.text, 'Astra yanıtı.');
+
   const fallback = await answerWithAperionAI({
     APERION_CONVERSATION_PROVIDERS: 'openai,anthropic',
     OPENAI_API_KEY: 'test-openai-key',
     ANTHROPIC_API_KEY: 'test-anthropic-key'
-  }, { chatId: 1, messageId: 3, text: 'Stratejik bir yanıt ver.' });
+  }, { chatId: 1, messageId: 4, text: 'Stratejik bir yanıt ver.' });
   assert.equal(fallback.ok, true);
   assert.equal(fallback.provider, 'anthropic');
   assert.equal(fallback.text, 'Claude yedek yanıtı.');
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 3);
 } finally {
   globalThis.fetch = originalFetch;
 }
 
-const unavailable = await answerWithAperionAI({}, { chatId: 1, messageId: 4, text: 'test' });
+const unavailable = await answerWithAperionAI({}, { chatId: 1, messageId: 5, text: 'test' });
 assert.deepEqual(unavailable, { ok: false, error: 'no_conversation_provider_configured' });
 
 console.log('AperiON conversational AI router with failover: OK');

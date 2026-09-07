@@ -2,7 +2,8 @@ const DEFAULT_CLOUDFLARE_MODEL = '@cf/meta/llama-4-scout-17b-16e-instruct';
 const DEFAULT_PROVIDER_ORDER = ['openai', 'anthropic', 'gemini', 'cloudflare'];
 const MAX_HISTORY_TURNS = 10;
 const MAX_INPUT_CHARS = 6000;
-const MAX_OUTPUT_TOKENS = 650;
+const MAX_OUTPUT_TOKENS = 1200;
+const MAX_TELEGRAM_CHARS = 3900;
 let schemaReady = false;
 
 function clean(value, limit = 4000) {
@@ -23,6 +24,10 @@ function modelText(result) {
   const geminiText = result?.candidates?.[0]?.content?.parts
     ?.map((part) => part?.text || '').join('\n');
   return clean(geminiText, 12000);
+}
+
+function telegramText(result) {
+  return clean(modelText(result), MAX_TELEGRAM_CHARS);
 }
 
 async function ensureConversationSchema(db) {
@@ -77,6 +82,8 @@ function systemInstruction(checkpoint) {
     : '\nMERKEZI HAFIZA: Bu konuşmada henüz doğrulanmış kalıcı oturum özeti bulunmuyor.';
   return `Sen AperiON'sun: Ercan Alaylı'nın Türkçe konuşan ikinci beyni, CEO/CFO karar destek katmanı ve dijital çalışanısın.
 Önce sonucu söyle. Doğal, hızlı, doğrudan ve insani cevap ver. Kullanıcıyı komut ezberlemeye zorlama; niyetini gündelik Türkçeden anla.
+Kullanıcı seninle güçlü bir yapay zekâ asistanıyla konuşur gibi konuşabilmelidir. Komut biçimi, görev kimliği, kuyruk veya teknik süreç öğretme.
+Elindeki doğrulanmış bilgileri birleştirerek karar, analiz ve uygulanabilir sonraki adımı ver. Yanıtı normalde 1200 karakteri aşmayacak kadar öz tut.
 Gerçek veri verilmemişse rakam, kayıt, başarı veya erişim uydurma. Kaynak eksikse tek cümlede neyin eksik olduğunu söyle ve mevcut bilgiyle yararlı bir sonraki adımı ver.
 Bu serbest konuşma katmanı hiçbir para transferi, fatura, mesaj, silme, yetki veya dış sistem kaydı gerçekleştirmez. Böyle bir işlem istenirse yapıldığını söyleme; güvenli işlem motoruna aktarılması gerektiğini belirt.
 Parola, anahtar, OTP veya gizli değeri isteme, tekrarlama ya da yanıta koyma.
@@ -121,17 +128,23 @@ function conversationMessages(history, input) {
 
 async function callOpenAI(env, system, history, input, timeout) {
   if (!env.OPENAI_API_KEY) return null;
-  const model = clean(env.OPENAI_MODEL, 120) || 'gpt-4o';
+  const model = clean(env.OPENAI_MODEL, 120) || 'gpt-6-astra';
+  const request = {
+    model, instructions: system,
+    input: conversationMessages(history, input).map((item) => ({ role: item.role, content: item.content })),
+    max_output_tokens: MAX_OUTPUT_TOKENS, store: false
+  };
+  if (/^gpt-6(?:-|$)/i.test(model)) {
+    request.reasoning = { effort: clean(env.OPENAI_REASONING_EFFORT, 20) || 'low' };
+  } else {
+    request.temperature = 0.2;
+  }
   const body = await fetchJson('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: { authorization: `Bearer ${env.OPENAI_API_KEY}`, 'content-type': 'application/json' },
-    body: JSON.stringify({
-      model, instructions: system,
-      input: conversationMessages(history, input).map((item) => ({ role: item.role, content: item.content })),
-      max_output_tokens: MAX_OUTPUT_TOKENS, temperature: 0.2, store: false
-    })
+    body: JSON.stringify(request)
   }, timeout);
-  return { text: modelText(body), provider: 'openai', model };
+  return { text: telegramText(body), provider: 'openai', model };
 }
 
 async function callAnthropic(env, system, history, input, timeout) {
@@ -142,7 +155,7 @@ async function callAnthropic(env, system, history, input, timeout) {
     headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
     body: JSON.stringify({ model, system, messages: conversationMessages(history, input), max_tokens: MAX_OUTPUT_TOKENS, temperature: 0.2 })
   }, timeout);
-  return { text: modelText(body), provider: 'anthropic', model };
+  return { text: telegramText(body), provider: 'anthropic', model };
 }
 
 async function callGemini(env, system, history, input, timeout) {
@@ -159,7 +172,7 @@ async function callGemini(env, system, history, input, timeout) {
       generationConfig: { maxOutputTokens: MAX_OUTPUT_TOKENS, temperature: 0.2 }
     })
   }, timeout);
-  return { text: modelText(body), provider: 'gemini', model };
+  return { text: telegramText(body), provider: 'gemini', model };
 }
 
 async function callCloudflare(env, system, history, input) {
@@ -169,7 +182,7 @@ async function callCloudflare(env, system, history, input) {
     messages: [{ role: 'system', content: system }, ...conversationMessages(history, input)],
     temperature: 0.2, max_tokens: MAX_OUTPUT_TOKENS
   });
-  return { text: modelText(result), provider: 'cloudflare_workers_ai', model };
+  return { text: telegramText(result), provider: 'cloudflare_workers_ai', model };
 }
 
 async function callProvider(provider, env, system, history, input, timeout) {
