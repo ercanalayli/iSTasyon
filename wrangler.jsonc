@@ -6,6 +6,13 @@
   "ai": {
     "binding": "AI"
   },
+  "vars": {
+    "APERION_CONVERSATION_PROVIDERS": "openai,anthropic,gemini,cloudflare",
+    "APERION_PROVIDER_TIMEOUT_MS": "8000",
+    "OPENAI_MODEL": "gpt-4o",
+    "ANTHROPIC_MODEL": "claude-sonnet-4-6",
+    "GEMINI_MODEL": "gemini-2.5-flash"
+  },
   "d1_databases": [
     {
       "binding": "APERION_DB",
