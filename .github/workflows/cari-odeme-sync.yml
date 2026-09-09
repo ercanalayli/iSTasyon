@@ -5,6 +5,11 @@ name: AperiON Cari Odeme Gecmisi Sync
 # kuyruga ekler. Gercek tarama isini yerel dinleyici yapar.
 on:
   workflow_dispatch: {}
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/cari-odeme-sync.yml"
   schedule:
     # 06:50 Europe/Istanbul (UTC+3) - tedarikci sync'ten 10 dk sonra
     - cron: '50 3 * * *'
