@@ -1,17 +1,10 @@
-// bot_commands'e 'bizimhesap_cari_bakiye_sync' komutu ekler. Yerel dinleyici
-// (tools/aperion_command_listener.cjs) calisiyorsa 15 saniye icinde alip
-// BizimHesap musteri listesindeki (5700+ cari) acik bakiyeleri tarar,
-// public.customers tablosuna yazar.
-const { createClient } = require('@supabase/supabase-js');
+// Queues the read-only BizimHesap customer balance sync.
+// The common helper prevents duplicate pending jobs and can verify Hermes pickup.
+const { queueReadSync } = require('./kuyruk_bizimhesap_read_sync_common.cjs');
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://iilfwosoroflzubkaryj.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
-const db = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-async function main() {
-  const { data, error } = await db.from('bot_commands').insert({ command: 'bizimhesap_cari_bakiye_sync' }).select('id').single();
-  if (error) throw new Error(error.message);
-  console.log('Kuyruga eklendi, bot_commands id:', data.id);
-}
-
-main().catch(e => { console.error('HATA:', e.message); process.exitCode = 1; });
+queueReadSync({
+  command: 'bizimhesap_cari_bakiye_sync',
+}).catch(error => {
+  console.error('HATA:', error.message);
+  process.exitCode = 1;
+});
