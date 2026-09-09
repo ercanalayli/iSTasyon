@@ -1,18 +1,13 @@
-// bot_commands'e 'bizimhesap_cari_odeme_gecmisi_sync' komutu ekler. Yerel
-// dinleyici, acik bakiyesi olan en yuksek N cariyi (varsayilan 30) tek tek
-// acip "ONCEKI ODEMELERI" tablosundan son tahsilatlari
-// public.customer_payments tablosuna yazar.
-const { createClient } = require('@supabase/supabase-js');
+// Queues the read-only BizimHesap payment-history sync.
+// The common helper prevents duplicate pending jobs and can verify Hermes pickup.
+const { queueReadSync } = require('./kuyruk_bizimhesap_read_sync_common.cjs');
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://iilfwosoroflzubkaryj.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
-const db = createClient(SUPABASE_URL, SUPABASE_KEY);
-const LIMIT = Number(process.argv[2] || 30);
+const limit = Number(process.argv[2] || 30);
 
-async function main() {
-  const { data, error } = await db.from('bot_commands').insert({ command: 'bizimhesap_cari_odeme_gecmisi_sync', params: { limit: LIMIT } }).select('id').single();
-  if (error) throw new Error(error.message);
-  console.log('Kuyruga eklendi, bot_commands id:', data.id, '| limit:', LIMIT);
-}
-
-main().catch(e => { console.error('HATA:', e.message); process.exitCode = 1; });
+queueReadSync({
+  command: 'bizimhesap_cari_odeme_gecmisi_sync',
+  params: { limit },
+}).catch(error => {
+  console.error('HATA:', error.message);
+  process.exitCode = 1;
+});
