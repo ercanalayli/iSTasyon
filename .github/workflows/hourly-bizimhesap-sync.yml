@@ -5,27 +5,6 @@ permissions:
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/hourly-bizimhesap-sync.yml"
-      - "aperion_veri_senkron.js"
-      - "bizimhesap_common.cjs"
-      - "bizimhesap_bot.js"
-      - "bizimhesap_son_islemler_izle.js"
-      - "bizimhesap_masraf_cek.js"
-      - "bizimhesap_urun_stok_cek.js"
-      - "tools/import_bizimhesap_invoice_details_to_purchase_raw_v127.cjs"
-      - "tools/verify_hasta_bezi_source_completeness_v127.cjs"
-      - "supabase_hasta_bezi_source_raw_v127.sql"
-      - "tools/check_bizimhesap_action_secrets.cjs"
-      - "tools/stress_check_index_sales_today.cjs"
-      - "tools/build_hasta_bezi_bizimhesap_data_v126.cjs"
-      - "tools/verify_hasta_bezi_bizimhesap_v126.cjs"
-      - "hasta-bezi/index.html"
-      - "package.json"
-      - "package-lock.json"
   # Canli BizimHesap taramasi Hermes kasasini okuyabilen Windows gorevinde
   # her saat :05'te calisir. GitHub-hosted IP'den otomatik login kapatildi;
   # bu akis yalniz elle tanilama ve kod degisikligi dogrulamasi icindir.
