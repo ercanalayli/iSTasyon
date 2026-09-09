@@ -26,9 +26,9 @@ on:
       - "hasta-bezi/index.html"
       - "package.json"
       - "package-lock.json"
-  schedule:
-    # Near-real-time BizimHesap source sync (GitHub's minimum reliable cadence).
-    - cron: '*/15 * * * *'
+  # Canli BizimHesap taramasi Hermes kasasini okuyabilen Windows gorevinde
+  # her saat :05'te calisir. GitHub-hosted IP'den otomatik login kapatildi;
+  # bu akis yalniz elle tanilama ve kod degisikligi dogrulamasi icindir.
 
 concurrency:
   group: bizimhesap-sales-sync
