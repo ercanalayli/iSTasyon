@@ -6,6 +6,11 @@ name: AperiON Cari Bakiye Sync
 # aperion_command_listener.cjs) yapar - bu is sadece komutu kuyruklar.
 on:
   workflow_dispatch: {}
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/cari-bakiye-sync.yml"
   schedule:
     # 06:30 Europe/Istanbul (UTC+3)
     - cron: '30 3 * * *'
