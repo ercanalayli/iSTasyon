@@ -5,6 +5,11 @@ name: AperiON Tedarikci Ozet Sync
 # yazan komutu kuyruga ekler. Gercek tarama isini yerel dinleyici yapar.
 on:
   workflow_dispatch: {}
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/tedarikci-ozet-sync.yml"
   schedule:
     # 06:40 Europe/Istanbul (UTC+3) - cari senkrondan 10 dk sonra
     - cron: '40 3 * * *'
