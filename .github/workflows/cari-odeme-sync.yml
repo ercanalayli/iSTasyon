@@ -2,7 +2,7 @@ name: AperiON Cari Odeme Gecmisi Sync
 
 # Gunde bir kez en yuksek acik bakiyeli ilk 30 carinin son tahsilat
 # gecmisini tarayip public.customer_payments tablosuna yazan komutu
-# kuyruga ekler. Gercek tarama isini yerel dinleyici yapar.
+# kuyruga ekler. Gercek tarama isini yerel Hermes dinleyicisi yapar.
 on:
   workflow_dispatch: {}
   push:
@@ -10,6 +10,8 @@ on:
       - main
     paths:
       - ".github/workflows/cari-odeme-sync.yml"
+      - "tools/kuyruk_cari_odeme_gecmisi_sync.cjs"
+      - "tools/kuyruk_bizimhesap_read_sync_common.cjs"
   schedule:
     # 06:50 Europe/Istanbul (UTC+3) - tedarikci sync'ten 10 dk sonra
     - cron: '50 3 * * *'
@@ -24,6 +26,7 @@ jobs:
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      APERION_QUEUE_WAIT_SECONDS: "120"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
