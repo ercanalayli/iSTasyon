@@ -1,0 +1,18 @@
+{
+  "channel": "alayli-magaza-1",
+  "revision": "2026-09-09-2",
+  "refreshSeconds": 300,
+  "items": [
+    {
+      "type": "video",
+      "src": "media/alayli-medikal-reklam-v1.mp4",
+      "fallbackSrc": "media/alayli-medikal-reklam-lite-v1.mp4",
+      "durationSeconds": 48,
+      "active": true
+    }
+  ],
+  "fallback": {
+    "title": "ALAYLI MEDİKAL",
+    "text": "Satış danışmanımıza başvurun"
+  }
+}

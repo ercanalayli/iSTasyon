@@ -1,0 +1,9 @@
+{
+  "name":"Alaylı Ekran",
+  "short_name":"Alaylı Ekran",
+  "start_url":"./",
+  "display":"fullscreen",
+  "background_color":"#10161d",
+  "theme_color":"#10161d",
+  "orientation":"landscape"
+}

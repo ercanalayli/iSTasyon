@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#10161d">
+  <title>Alaylı Ekran</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="stage" aria-label="Alaylı Medikal reklam ekranı">
+    <video id="player" muted autoplay playsinline preload="auto"></video>
+    <div id="brand" aria-hidden="true"><i></i><b>ALAYLI</b><span>MEDİKAL</span></div>
+    <section id="message">
+      <strong id="messageTitle">Yayın hazırlanıyor</strong>
+      <span id="messageText">Lütfen kısa bir süre bekleyin</span>
+    </section>
+    <button id="start" type="button">Yayını başlat</button>
+    <div id="status" aria-live="polite">BAĞLANIYOR</div>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
