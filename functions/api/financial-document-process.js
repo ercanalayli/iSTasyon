@@ -43,7 +43,7 @@ export async function onRequestGet({ request, env }) {
       diagnostics.latest_error_code = 'diagnostic_query_failed';
     }
   }
-  return json({ ok: true, service: 'aperion-financial-document-processor', version: 'v153', diagnostics });
+  return json({ ok: true, service: 'aperion-financial-document-processor', version: 'v157', diagnostics });
 }
 
 export async function onRequestPost({ request, env }) {
