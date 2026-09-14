@@ -1,0 +1,84 @@
+{
+  "checked_at": "2026-09-14T10:36:00.567Z",
+  "schema": "aperion-project-conversation-memory-v1",
+  "version": "v158",
+  "source_adapters": [
+    {
+      "type": "repository_document",
+      "status": "VERIFIED"
+    },
+    {
+      "type": "evidence",
+      "status": "VERIFIED"
+    },
+    {
+      "type": "chatgpt_project",
+      "status": "BLOCKED_PLATFORM_ACCESS"
+    },
+    {
+      "type": "codex_claude_cursor_import",
+      "status": "BLOCKED_PLATFORM_ACCESS"
+    }
+  ],
+  "real_ingest_counts": {
+    "sources": 11,
+    "sources_synced": 9,
+    "facts": 725,
+    "decisions": 28,
+    "deduplicates": 2,
+    "conflicts": 0,
+    "secrets_rejected": 0
+  },
+  "duplicate_count": 2,
+  "conflict_count": 0,
+  "blocked_platform_access": [
+    {
+      "source_key": "platform:chatgpt-project-conversations",
+      "source_type": "chatgpt_project",
+      "status": "BLOCKED_PLATFORM_ACCESS",
+      "reason": "No supported programmatic conversation-history API or connector is available in this environment."
+    },
+    {
+      "source_key": "local:imported-agent-sessions",
+      "source_type": "codex_claude_cursor_import",
+      "status": "BLOCKED_PLATFORM_ACCESS",
+      "reason": "No supported workspace-scoped imported-session export was discovered; private application stores were not scraped."
+    }
+  ],
+  "fixture_results": [
+    {
+      "name": "same fact two sources -> one fact and two provenance",
+      "status": "PASS"
+    },
+    {
+      "name": "user correction supersedes old fact",
+      "status": "PASS"
+    },
+    {
+      "name": "conflicting sources -> needs_review conflict",
+      "status": "PASS"
+    },
+    {
+      "name": "dated decision change keeps history",
+      "status": "PASS"
+    },
+    {
+      "name": "secret-like material is not persisted",
+      "status": "PASS"
+    },
+    {
+      "name": "unchanged source hash creates no duplicate",
+      "status": "PASS"
+    },
+    {
+      "name": "entity lookup returns provenance and active facts",
+      "status": "PASS"
+    },
+    {
+      "name": "ChatGPT unavailable degrades gracefully",
+      "status": "PASS"
+    }
+  ],
+  "financial_writes": 0,
+  "secrets_exposed": 0
+}

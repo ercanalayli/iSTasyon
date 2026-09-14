@@ -28,5 +28,8 @@ jobs:
         node --check services/bizimhesap_bot.js || true
         node --check services/banka_parser.js || true
 
+    - name: Project conversation memory tests
+      run: npm run verify:project-conversation-memory-v158
+
     - name: Docker Build Check
       run: docker build . -t istasyon-bot-test

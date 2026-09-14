@@ -1,5 +1,14 @@
 # AperiON iSTasyon - Güncel Durum (14 Eylül 2026)
 
+## Proje sohbetleri ortak hafızası (14 Eylül 2026)
+
+- Mevcut D1 oturum hafızası, `memory_sources`, `memory_facts`, `memory_fact_sources`, `memory_decisions`, `memory_conflicts` ve `memory_sync_state` ile kaynak/tarih/hash/supersede/dedupe izli kanonik proje hafızasına genişletildi.
+- Repo belgeleri ve state kanıtları adaptörlü gerçek ingest hattına bağlandı. İlk çalışma: 11 kaynak, 9 senkron kaynak, 725 fact, 28 karar, 2 dedupe, 0 açık çelişki.
+- `functions/api/project-memory.js` kimlik doğrulamalı read-only entity/fact, karar geçmişi, conflict, provenance, sync-state ve birleşik context sorguları sağlar.
+- ChatGPT proje sohbet geçmişi için bu ortamda desteklenen programatik API/connector yoktur; durum `BLOCKED_PLATFORM_ACCESS` olarak açıkça tutulur. Özel uygulama depoları kazınmaz, PDF/kopyala-yapıştır ana mimari yapılmaz.
+- Yerel D1 migration ve gerçek ingest doğrulandı. Canlı D1 aktarımı mevcut Wrangler hesabının `7403` yetki hatası ve uzaktaki D1’e operasyonel fact aktarımı için gereken ayrı veri aktarım onayı nedeniyle blokludur.
+- Kanıt: `state/project-conversation-memory-verification.json`. Finansal write: `0`; secret ifşası: `0`.
+
 ## Finans hafızası ve vade motoru (14 Eylül 2026)
 
 - Mevcut Telegram/Gmail belge hattı, `evidence_inbox` ve `personal_finance_events` korunarak kalıcı `finance_obligations` hafızasıyla genişletildi.

@@ -17,6 +17,16 @@ mantıksal/temel başlangıcı olduğu için); tarih sırası tam kronolojik de�
 bilerek böyle bırakıldı — bu bir hata değil, kaynaktaki tarih etiketleme
 tutarsızlığının şeffaf şekilde taşınmasıdır.
 
+## 2026-09-14 - Proje sohbetleri ortak hafızası
+
+- Var olan AperiON D1 hafıza katmanı `migrations/0022_project_conversation_memory.sql` ile kaynak, fact/provenance, karar tarihçesi, conflict ve sync checkpoint tablolarıyla genişletildi.
+- `functions/shared/project-memory.js` kaynak hash dedupe, çoklu provenance, kullanıcı düzeltmesiyle supersede, çelişkiyi `needs_review`e alma, secret reddi ve tek memory-context üretimini uygular.
+- `functions/api/project-memory.js` Bearer korumalı read-only entity/relation, karar, conflict, kaynak, sync ve birleşik context sorgularını sunar.
+- `tools/consolidate_project_conversation_memory_v158.mjs` aktif repo belgeleri/kanıtlarından gerçek ingest ve idempotent D1 SQL paketi üretir. İlk sonuç: 11 kaynak, 725 fact, 28 karar, 2 dedupe, 0 conflict.
+- Sekiz zorunlu fixture `tools/test_project_conversation_memory_v158.mjs` ile doğrulandı. ChatGPT geçmiş erişimi yoksa graceful `BLOCKED_PLATFORM_ACCESS` testi dahildir.
+- Yerel D1 şema/ingest sayıları doğrulandı. Canlı D1 denemesi Cloudflare `7403` yetki hatasında durdu; otomatik uzaktan belge-fact aktarımı ayrı açık onay olmadan workflow’a eklenmedi.
+- Gerçek finansal write yapılmadı; secret ifşası `0`.
+
 ## 2026-09-14 - Finans hafızası ve vade motoru
 
 - `functions/shared/finance-obligation-memory.js` ile kalıcı finans yükümlülüğü çıkarımı, içerik tabanlı dedupe, Europe/Istanbul vade riski, günlük uyarı dedupe, güvenli ödeme eşleştirme ve yaşam döngüsü eklendi.
