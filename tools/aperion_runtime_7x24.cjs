@@ -18,6 +18,8 @@ const ENSURE_RUNTIME = path.join(EXTERNAL_ROOT, 'ensure-aperion-always-on.ps1');
 const HERMES_WATCH = 'C:\\Users\\HP\\AppData\\Local\\hermes\\gateway-service\\Watch-AperionHermesGateway.ps1';
 const GOOGLE_WATCHERS = path.join(ROOT, 'tools', 'unified_google_watchers.mjs');
 const D1_HEALTH = path.join(ROOT, 'tools', 'd1_memory_health_v160.cjs');
+const PILOT = path.join(ROOT, 'tools', 'aperion_24h_pilot.cjs');
+const PILOT_INPUT = path.join(STATE_DIR, 'apeiron-24h-pilot-tick-input.json');
 const FORCE_WATCHERS = process.argv.includes('--force-watchers');
 
 fs.mkdirSync(STATE_DIR, { recursive: true });
@@ -62,7 +64,7 @@ async function main() {
     } catch (error) { checks.hermesAfterRecovery = { ok: false, error: String(error.message || error).slice(0, 120) }; }
   }
 
-  if (due(state, 'bizimhesap_session', POLICY.watchers.bizimhesap_session.interval_minutes)) {
+  if (FORCE_WATCHERS || due(state, 'bizimhesap_session', POLICY.watchers.bizimhesap_session.interval_minutes)) {
     const health = await site.health();
     checks.bizimhesap = health;
     const authenticated = health?.output?.authenticated === true;
@@ -82,6 +84,9 @@ async function main() {
     }
   }
 
+  const observedAt = new Date().toISOString();
+  fs.writeFileSync(PILOT_INPUT, `${JSON.stringify({ checks, observedAt }, null, 2)}\n`);
+  checks.pilot = run(PILOT, ['--tick']);
   const evidence = redact({
     schemaVersion: 'hermes-runtime-v160',
     commandId: `runtime-tick:${new Date().toISOString()}`,
@@ -92,7 +97,7 @@ async function main() {
     financialWrites: 0,
     bizimHesapWrites: 0,
     secretsExposed: 0,
-    observedAt: new Date().toISOString()
+    observedAt
   });
   fs.writeFileSync(STATE_FILE, `${JSON.stringify(state, null, 2)}\n`);
   fs.writeFileSync(EVIDENCE_FILE, `${JSON.stringify(evidence, null, 2)}\n`);

@@ -20,6 +20,38 @@ const hash = value => crypto.createHash('sha256').update(String(value)).digest('
 const now = () => new Date().toISOString();
 const nextDue = minutes => new Date(Date.now() + minutes * 60000).toISOString();
 async function readJson(file, fallback) { try { return JSON.parse(await fs.readFile(file, 'utf8')); } catch { return fallback; } }
+const normalize = value => String(value || '').toLocaleLowerCase('tr-TR');
+function classifyScope(text) {
+  const value = normalize(text);
+  if (/alayli|alaylı|medikal|bizimhesap|moka|sgk|vergi|tedarik|fatura/.test(value)) return 'ALAYLI';
+  if (/şahsi|sahsi|kişisel|kisisel|ercan alayli|ercan alaylı/.test(value)) return 'ŞAHSİ';
+  return 'BELİRSİZ';
+}
+function parseAmount(text) {
+  const match = String(text || '').match(/(?:₺|TL|TRY)\s*([0-9.]+(?:,[0-9]{2})?)|([0-9.]+(?:,[0-9]{2})?)\s*(?:₺|TL|TRY)/i);
+  if (!match) return null;
+  const amount = Number(String(match[1] || match[2]).replaceAll('.', '').replace(',', '.'));
+  return Number.isFinite(amount) ? amount : null;
+}
+function parseDueDate(text) {
+  const match = String(text || '').match(/(?:son ödeme|son odeme|vade)(?:\s+tarihi)?[^0-9]{0,20}(\d{1,2}[./-]\d{1,2}[./-]\d{2,4})/i);
+  return match?.[1] || null;
+}
+function gmailSignal(item, meta, headers) {
+  const text = `${headers.subject || ''} ${headers.from || ''} ${meta.snippet || ''}`;
+  const value = normalize(text);
+  const card = /kredi kart|ekstre|dönem borcu|donem borcu|asgari/.test(value);
+  const due = parseDueDate(text);
+  const amount = parseAmount(text);
+  const eventType = card ? 'credit_card_statement' : /sgk/.test(value) ? 'sgk' : /vergi/.test(value) ? 'tax' : /fast|dekont/.test(value) ? 'bank_transfer_notice' : /fatura/.test(value) ? 'supplier_invoice' : /moka/.test(value) ? 'moka' : 'finance_operation_mail';
+  const risk = due || card || /gecik|ödenmemiş|odenmemis|bloke|redded|başarısız|basarisiz/.test(value) ? 'high' : 'medium';
+  return {
+    event_id: hash(item.id), source: 'gmail', scope: classifyScope(text), importance: risk === 'high' ? 'critical' : 'important', risk,
+    event_type: eventType, amount, due_date: due, required_action: risk === 'high' ? 'review' : 'none',
+    summary: `${eventType} algılandı${amount != null ? '; tutar ayrıştırıldı' : ''}${due ? '; vade ayrıştırıldı' : ''}.`,
+    provenance: { message_fingerprint: hash(item.id), thread_fingerprint: hash(meta.threadId || item.id), observed_at: now() }, confidence: card || due ? 0.9 : 0.75
+  };
+}
 
 async function loadVault() {
   const { stdout } = await execFileAsync('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', VAULT_SCRIPT, '-Mode', 'unprotect', '-Vault', VAULT], { windowsHide: true, timeout: 15000, maxBuffer: 16384 });
@@ -56,10 +88,10 @@ async function gmailWatcher(token, state) {
   for (const item of fresh.slice(0, 25)) {
     const meta = await api(token, `https://gmail.googleapis.com/gmail/v1/users/me/messages/${encodeURIComponent(item.id)}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`);
     const headers = Object.fromEntries((meta.payload?.headers || []).map(header => [header.name.toLowerCase(), header.value]));
-    important.push({ fingerprint: hash(item.id), threadFingerprint: hash(meta.threadId || item.id), subjectHash: hash(headers.subject || ''), fromDomainHash: hash(String(headers.from || '').split('@').at(-1) || ''), internalDate: meta.internalDate || null, hasAttachmentHint: /attachment/i.test(JSON.stringify(meta.payload || {})) });
+    important.push({ fingerprint: hash(item.id), threadFingerprint: hash(meta.threadId || item.id), subjectHash: hash(headers.subject || ''), fromDomainHash: hash(String(headers.from || '').split('@').at(-1) || ''), internalDate: meta.internalDate || null, hasAttachmentHint: /attachment/i.test(JSON.stringify(meta.payload || {})), signal: gmailSignal(item, meta, headers) });
   }
   state.gmail = { fingerprints: [...new Set([...(state.gmail?.fingerprints || []), ...(list.messages || []).map(item => hash(item.id))])].slice(-500), lastRunAt: now() };
-  return { status: 'healthy', last_success: now(), last_error: null, duration_ms: Date.now() - started, next_due: nextDue(30), source_health: 'connected_readonly', scanned_metadata: (list.messages || []).length, new_important: important.length, unchanged: important.length === 0, provenance: important };
+  return { status: 'healthy', last_success: now(), last_error: null, duration_ms: Date.now() - started, next_due: nextDue(30), source_health: 'connected_readonly', scanned_metadata: (list.messages || []).length, new_important: important.length, unchanged: important.length === 0, signals: important.map(item => item.signal), provenance: important.map(({ signal, ...item }) => item) };
 }
 
 async function driveWatcher(token, state) {
@@ -85,7 +117,7 @@ async function driveWatcher(token, state) {
   }
   state.drive = { pageToken, lastRunAt: now() };
   const provenance = changes.map(change => ({ fileFingerprint: hash(change.fileId), removed: Boolean(change.removed), mimeType: change.file?.mimeType || null, modifiedTime: change.file?.modifiedTime || null, contentHashPresent: Boolean(change.file?.md5Checksum), size: change.file?.size || null })).slice(0, 100);
-  return { status: 'healthy', last_success: now(), last_error: null, duration_ms: Date.now() - started, next_due: nextDue(60), source_health: 'connected_metadata_only', baseline_initialized: baselineInitialized, changed_metadata: changes.length, unchanged: changes.length === 0, provenance };
+  return { status: 'healthy', last_success: now(), last_error: null, duration_ms: Date.now() - started, next_due: nextDue(60), source_health: 'connected_metadata_only', baseline_initialized: baselineInitialized, changed_metadata: changes.length, unchanged: changes.length === 0, signals: baselineInitialized ? [] : provenance.map(item => ({ event_id: item.fileFingerprint, source: 'google_drive', scope: 'BELİRSİZ', importance: 'important', risk: 'low', event_type: item.removed ? 'file_removed' : 'file_metadata_changed', amount: null, due_date: null, required_action: 'none', summary: 'ApeirON operasyon dosyası metadata değişikliği algılandı.', provenance: { file_fingerprint: item.fileFingerprint, observed_at: now() }, confidence: 0.7 })), provenance };
 }
 
 async function chatgptStateWatcher() {
@@ -115,6 +147,8 @@ if (runAll || requested.has('--chatgpt-state')) {
   catch (error) { result.watchers.chatgpt_project_memory = { status: 'unhealthy', last_success: null, last_error: String(error.message || error).slice(0, 160), duration_ms: 0, next_due: nextDue(60), source_health: 'blocked_retry_backoff' }; }
 }
 await fs.writeFile(STATE_FILE, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+const previousEvidence = await readJson(EVIDENCE_FILE, { watchers: {} });
+result.watchers = { ...(previousEvidence.watchers || {}), ...result.watchers };
 await fs.writeFile(EVIDENCE_FILE, `${JSON.stringify(result, null, 2)}\n`, 'utf8');
 process.stdout.write(`${JSON.stringify(result)}\n`);
 if (Object.values(result.watchers).some(watcher => watcher.status !== 'healthy')) process.exitCode = 2;
