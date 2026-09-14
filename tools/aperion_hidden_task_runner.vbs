@@ -4,6 +4,8 @@ If WScript.Arguments.Count <> 1 Then WScript.Quit 64
 mode = LCase(WScript.Arguments(0))
 Set sh = CreateObject("WScript.Shell")
 Select Case mode
+  Case "runtime"
+    command = """C:\Program Files\nodejs\node.exe"" ""C:\AperiON\iSTasyon\tools\aperion_runtime_7x24.cjs"""
   Case "watchdog"
     command = "powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ""C:\Users\HP\Documents\Codex\2026-08-27\referenced-chatgpt-conversation-this-is-an\work\aperion-command-bridge\ensure-aperion-always-on.ps1"""
   Case "hermes-watchdog"

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "hermes-runtime-v160",
+  "commandId": "runtime-tick:2026-09-14T15:33:47.814Z",
+  "source": "AperiON_Watchdog_1Min",
+  "decision": "health_check_and_safe_recovery",
+  "approval": "not_required_read_only",
+  "checks": {
+    "runtimeEnsure": {
+      "status": 0,
+      "ok": true,
+      "stderr": ""
+    },
+    "hermes": {
+      "ok": true,
+      "httpStatus": 200
+    }
+  },
+  "financialWrites": 0,
+  "bizimHesapWrites": 0,
+  "secretsExposed": 0,
+  "observedAt": "2026-09-14T15:33:47.815Z"
+}

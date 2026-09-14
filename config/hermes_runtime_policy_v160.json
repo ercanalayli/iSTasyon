@@ -1,0 +1,33 @@
+{
+  "version": "v160",
+  "canonical_workspace": "C:\\AperiON\\iSTasyon",
+  "tick_seconds": 60,
+  "max_retry_count": 3,
+  "backoff_seconds": [60, 300, 900],
+  "notifications": "failures_and_required_user_action_only",
+  "watchers": {
+    "runtime_health": { "interval_minutes": 1, "enabled": true },
+    "bizimhesap_session": { "interval_minutes": 5, "enabled": true },
+    "gmail_finance_documents": { "interval_minutes": 30, "enabled": true, "mode": "dry_run_collect" },
+    "drive_operations": { "interval_minutes": 60, "enabled": true, "mode": "metadata_only" },
+    "d1_memory_health": { "interval_minutes": 60, "enabled": true, "mode": "read_only" },
+    "chatgpt_project_memory": { "interval_minutes": 720, "enabled": true, "mode": "metadata_fingerprint_first", "read_unchanged_threads": false, "rate_limit_backoff": true }
+  },
+  "risk_policy": {
+    "read": "auto",
+    "low_risk_reversible": "auto_with_audit",
+    "payment": "explicit_single_use_approval",
+    "transfer": "explicit_single_use_approval",
+    "collection": "explicit_single_use_approval",
+    "invoice_finalization": "explicit_single_use_approval",
+    "einvoice_send": "explicit_single_use_approval",
+    "other_write": "explicit_single_use_approval"
+  },
+  "secrets": {
+    "storage": "Windows DPAPI CurrentUser",
+    "plaintext_logs": false,
+    "plaintext_d1": false,
+    "plaintext_repo": false,
+    "plaintext_evidence": false
+  }
+}

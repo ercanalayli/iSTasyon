@@ -1,0 +1,52 @@
+{
+  "checkedAt": "2026-09-14T15:32:10Z",
+  "canonicalWorkspace": "C:\\AperiON\\iSTasyon",
+  "version": "v160",
+  "matrix": {
+    "1_7x24_execution_engine": { "status": "PASS", "proof": "AperiON_Watchdog_1Min hidden runtime; existing startup and supervisor retained; controlled worker crash recovered 7000 -> 42608" },
+    "2_command_router": { "status": "PASS", "proof": "read routes automatic; payment/transfer/collection/invoice write variants route prepare_only + explicit_single_use approval" },
+    "3_bizimhesap_continuous_access": { "status": "PASS", "proof": "APERION_BIZIMHESAP authenticated=true, SAGLIKLI, official API customer count=5758; recovery baseline retained" },
+    "4_unified_watchers": { "status": "PARTIAL", "proof": "single v160 scheduler policy covers runtime, BizimHesap, Gmail finance documents, Drive, D1 and ChatGPT memory without duplicate task creation", "blocker": "Gmail/Drive collectors remain existing source-specific programs; v160 currently schedules safe modes but does not yet execute every collector from the unified tick" },
+    "5_d1_memory_feeder": { "status": "PARTIAL", "proof": "v158 dedupe/provenance/idempotency tests PASS; last same-day verified totals sources=15 facts=741 decisions=41 provenance=741 open_conflicts=0", "blocker": "current Wrangler remote SELECT returned Cloudflare 7403; account authorization must be corrected without switching to an unverified account" },
+    "6_approval_engine": { "status": "PASS", "proof": "write-risk fixtures blocked in prepare_only; existing cloud claim and local ledger approval guards verified; no write executed" },
+    "7_audit_proof_layer": { "status": "PASS", "proof": "runtime evidence includes commandId, source, decision, approval, checks/results and proof files" },
+    "8_self_healing": { "status": "PASS", "proof": "worker child PID 7000 stopped; supervisor restarted PID 42608; queue returned healthy; bounded retries and IgnoreNew lock" },
+    "9_phone_first_telegram": { "status": "PASS", "proof": "Telegram mobile command center and universal router tests PASS; bridge /health=200; notifications failures/user-action only" },
+    "10_upper_mind_preparation": { "status": "PASS", "proof": "normalized signal contract emits importance, risk, requiredAction, summary and provenance instead of raw-message dispatch" },
+    "11_site_session_identity": { "status": "PASS", "proof": "reusable SiteSessionAdapter with profile, DPAPI declaration, health, recovery, redaction and CAPTCHA/SMS/MFA escalation; BizimHesap is live adapter" }
+  },
+  "activeTasks": [
+    "AperiON_Startup",
+    "Hermes_Gateway",
+    "AperiON_Watchdog_1Min (unified runtime)",
+    "AperiON BizimHesap Senkron",
+    "AperiON_BizimHesap_D1_Satis_Saatlik"
+  ],
+  "disabledConsolidatedTasks": [
+    "AperiON_BizimHesap_Listener_Watchdog",
+    "AperiON_BizimHesap_Session_5Min",
+    "AperiON_EndToEnd_Monitor_5Min",
+    "AperiON_Hermes_Watchdog_1Min"
+  ],
+  "activeWorkers": {
+    "windowsWorkerSupervisorPid": 21228,
+    "windowsWorkerPidAfterRecovery": 42608,
+    "bizimHesapChromePort": 9222,
+    "listenerPid": 19624
+  },
+  "popupTest": { "samples": 30, "visibleTerminalHits": 0, "scheduledTaskResult": 0 },
+  "d1MemoryHealth": { "currentLiveSelect": "BLOCKED_7403", "lastSameDayVerified": { "sources": 15, "facts": 741, "decisions": 41, "provenance": 741, "openConflicts": 0 } },
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "messages_sent": 0,
+  "secrets_exposed": 0,
+  "evidenceFiles": [
+    "evidence/hermes-7x24-runtime-acceptance-v160.json",
+    "evidence/hermes-runtime-v160-unit.json",
+    "state/hermes-runtime/last-tick.json",
+    "state/hermes-runtime-popup-test-v160.json",
+    "state/hermes-runtime-task-install-v160.json",
+    "state/chatgpt-project-incremental-sync-verification.json",
+    "evidence/production-readiness-command-path-v159.json"
+  ]
+}

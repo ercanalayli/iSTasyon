@@ -1,0 +1,18 @@
+﻿{
+    "installedAt":  "2026-09-14T18:28:03.8443254+03:00",
+    "primaryTask":  "AperiON_Watchdog_1Min",
+    "action":  "wscript hidden -\u003e aperion_runtime_7x24.cjs",
+    "consolidatedDisabled":  [
+                                 "AperiON_BizimHesap_Listener_Watchdog",
+                                 "AperiON_BizimHesap_Session_5Min",
+                                 "AperiON_EndToEnd_Monitor_5Min",
+                                 "AperiON_Hermes_Watchdog_1Min"
+                             ],
+    "preserved":  [
+                      "AperiON_Startup",
+                      "Hermes_Gateway",
+                      "AperiON BizimHesap Senkron",
+                      "AperiON_BizimHesap_D1_Satis_Saatlik"
+                  ],
+    "popupFree":  true
+}

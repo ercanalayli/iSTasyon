@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "policyVersion": "v160",
+  "commandRouter": "PASS",
+  "approvalGate": "PASS",
+  "auditChain": "PASS",
+  "upperMindPreparation": "PASS",
+  "siteSessionAdapter": "PASS",
+  "chatgptFingerprintFirst": "PASS",
+  "financialWrites": 0,
+  "bizimHesapWrites": 0,
+  "secretsExposed": 0
+}
