@@ -17,6 +17,8 @@ const WORKER = path.join(EXTERNAL_ROOT, 'src', 'windows-worker.js');
 const ENSURE_RUNTIME = path.join(EXTERNAL_ROOT, 'ensure-aperion-always-on.ps1');
 const HERMES_WATCH = 'C:\\Users\\HP\\AppData\\Local\\hermes\\gateway-service\\Watch-AperionHermesGateway.ps1';
 const GOOGLE_WATCHERS = path.join(ROOT, 'tools', 'unified_google_watchers.mjs');
+const D1_HEALTH = path.join(ROOT, 'tools', 'd1_memory_health_v160.cjs');
+const FORCE_WATCHERS = process.argv.includes('--force-watchers');
 
 fs.mkdirSync(STATE_DIR, { recursive: true });
 let lock;
@@ -70,10 +72,11 @@ async function main() {
 
   for (const [key, definition] of Object.entries(POLICY.watchers)) {
     if (!definition.enabled || key === 'bizimhesap_session' || key === 'runtime_health') continue;
-    if (due(state, key, definition.interval_minutes)) {
+    if (FORCE_WATCHERS || due(state, key, definition.interval_minutes)) {
       if (key === 'gmail_finance_documents') checks[key] = run(GOOGLE_WATCHERS, ['--gmail']);
       else if (key === 'drive_operations') checks[key] = run(GOOGLE_WATCHERS, ['--drive']);
       else if (key === 'chatgpt_project_memory') checks[key] = run(GOOGLE_WATCHERS, ['--chatgpt-state']);
+      else if (key === 'd1_memory_health') checks[key] = run(D1_HEALTH);
       else checks[key] = { scheduled: true, mode: definition.mode, safeDispatch: true };
       state.watchers[key] = new Date().toISOString();
     }

@@ -7,8 +7,9 @@ import { promisify } from 'node:util';
 const execFileAsync = promisify(execFile);
 const ROOT = path.resolve(import.meta.dirname, '..');
 const STATE_DIR = path.join(ROOT, 'state', 'hermes-runtime');
-const STATE_FILE = path.join(STATE_DIR, 'google-watchers-state.json');
-const EVIDENCE_FILE = path.join(STATE_DIR, 'google-watchers-last-run.json');
+// Versioned files avoid clashing with a still-running pre-v160 collector handle.
+const STATE_FILE = path.join(STATE_DIR, 'google-watchers-state-v160.json');
+const EVIDENCE_FILE = path.join(STATE_DIR, 'google-watchers-last-run-v160.json');
 const VAULT_ROOT = 'C:\\Users\\HP\\Documents\\Codex\\2026-08-27\\referenced-chatgpt-conversation-this-is-an\\work\\aperion-command-bridge';
 const VAULT = path.join(VAULT_ROOT, 'state', 'google-oauth.dpapi');
 const VAULT_SCRIPT = path.join(VAULT_ROOT, 'tools', 'google-oauth-dpapi.ps1');
