@@ -1,9 +1,9 @@
 {
-  "checked_at": "2026-09-14T07:38:11.866Z",
+  "checked_at": "2026-09-14T12:32:33.050Z",
   "status": "ONLINE",
   "process_alive": true,
-  "pid": 2168,
-  "watchdog_last_line": "[2026-09-14 10:36:21] OK: dinleyici zaten calisiyor (PID 2168).",
+  "pid": 19624,
+  "watchdog_last_line": "[2026-09-14 15:31:20] Yeniden baslatildi.",
   "supervisor": "AperiON_BizimHesap_Listener_Watchdog",
   "financial_writes": 0
 }

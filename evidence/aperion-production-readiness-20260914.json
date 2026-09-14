@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-09-14T12:31:35.848Z",
+  "canonicalWorkspace": "C:\\AperiON\\iSTasyon",
+  "overall": "PARTIAL_FAIL",
+  "financialWrites": 0,
+  "bizimHesapWrites": 0,
+  "messagesSentByAcceptance": 0,
+  "matrix": {
+    "rebootAutoStart": {
+      "status": "PASS",
+      "evidence": "AperiON_Startup and Hermes_Gateway retained; seven recurring workers use hidden WScript launch; controlled listener restart recovered PID 2168 -> 19624"
+    },
+    "bizimHesapSessionRecovery": {
+      "status": "FAIL",
+      "evidence": "Persistent APERION_BIZIMHESAP profile connected on port 9222, but authenticated=false. DPAPI recovery attempted previously and returned login_rejected; retry guard correctly holds until 2026-09-14T15:30:19.329Z. captcha=false, mfa=false, rateLimited=false."
+    },
+    "hermesReachability": {
+      "status": "PASS",
+      "evidence": "Cloud bridge /health HTTP 200 in 232 ms; Telegram webhook matches and pending_update_count=0; worker supervisor heartbeat 2026-09-14T12:31:22.099Z"
+    },
+    "commandQueue": {
+      "status": "PASS",
+      "evidence": "Windows worker health=healthy, queue=reachable; live read-only command 1742 completed with a returned result"
+    },
+    "approvalGate": {
+      "status": "PASS",
+      "evidence": "Cloud write tasks require approval_state=approved before claim; local guarded writes use execution ledger; natural-language transfer, collection and invoice-create variants resolve to approval_required/prepare_only"
+    },
+    "dryRunWritePath": {
+      "status": "PASS",
+      "evidence": "Three fixture scenarios validated payload, duplicate_key, account/customer resolution and approval queue transition; live ready_for_bizimhesap queue was empty; live saves=0"
+    },
+    "resultProofReturn": {
+      "status": "PASS",
+      "evidence": "Read-only command 1742 completed: taranan=23, yazilan=95, hedefCariSayisi=30; no acceptance message was sent"
+    },
+    "popupFreeBackgroundOperation": {
+      "status": "PASS",
+      "evidence": "1440 samples from 2026-09-14T15:24:52+03:00 to 15:30:52+03:00 across one-minute and five-minute triggers; visible PowerShell/cmd/conhost hits=0"
+    }
+  },
+  "workers": {
+    "listenerRecovery": { "stoppedPid": 2168, "restartedPid": 19624, "recovered": true },
+    "windowsWorkerSupervisor": { "pid": 21228, "heartbeatAt": "2026-09-14T12:31:22.099Z" },
+    "realtimeSupervisor": { "pid": 5524, "heartbeatAt": "2026-09-14T12:31:35.848Z" }
+  },
+  "taskChanges": {
+    "activeKeep": ["AperiON_Startup", "Hermes_Gateway"],
+    "convertedToHidden": ["AperiON BizimHesap Senkron", "AperiON_BizimHesap_D1_Satis_Saatlik", "AperiON_BizimHesap_Listener_Watchdog", "AperiON_BizimHesap_Session_5Min", "AperiON_EndToEnd_Monitor_5Min", "AperiON_Hermes_Watchdog_1Min", "AperiON_Watchdog_1Min"],
+    "disabledUnneeded": ["AperiON Evening Check", "AperiON Morning Startup", "AperiON_Always_On", "AperiON_BizimHesap_Sabah_Ac", "AperiON_BizimHesap_Worker", "AperiON_Background_Worker", "AperiON_BizimHesap_ReadOnly_Retry_Once", "AperiON_BizimHesap_Realtime_Monitor", "AperiON_Morning_0730", "AperiON_Ofis_0800_Uyandir"]
+  },
+  "evidenceFiles": [
+    "state/windows-task-popup-fix-v4-result.json",
+    "state/hermes-vps-health.json",
+    "state/hermes-readonly-verification.json",
+    "evidence/production-readiness-command-path-v159.json"
+  ],
+  "blocker": "BizimHesap credentials currently reject automatic login. No CAPTCHA/SMS/MFA challenge is present, so the notification-only-on-MFA rule correctly produced no user message."
+}

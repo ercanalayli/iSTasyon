@@ -1,0 +1,181 @@
+{
+  "checkedAt": "2026-09-14T12:29:34.051Z",
+  "status": "PASS",
+  "mode": "fixture_dry_run_plus_live_wiring_inspection",
+  "financialWrites": 0,
+  "bizimHesapWrites": 0,
+  "messagesSent": 0,
+  "commandParsing": [
+    {
+      "text": "Nakit kasadan Ercan kasaya 3500 TL transfer",
+      "parsed": {
+        "code": "approval_request",
+        "category": "finance",
+        "risk": "approval_required",
+        "approvalPolicy": "single_use_explicit",
+        "executionMode": "prepare_only",
+        "rawText": "Nakit kasadan Ercan kasaya 3500 TL transfer"
+      }
+    },
+    {
+      "text": "Murat Ticaret için fatura oluştur",
+      "parsed": {
+        "code": "approval_request",
+        "category": "finance",
+        "risk": "approval_required",
+        "approvalPolicy": "single_use_explicit",
+        "executionMode": "prepare_only",
+        "rawText": "Murat Ticaret için fatura oluştur"
+      }
+    },
+    {
+      "text": "Ahmet carisine 1250 TL tahsilat kaydet",
+      "parsed": {
+        "code": "approval_request",
+        "category": "finance",
+        "risk": "approval_required",
+        "approvalPolicy": "single_use_explicit",
+        "executionMode": "prepare_only",
+        "rawText": "Ahmet carisine 1250 TL tahsilat kaydet"
+      }
+    }
+  ],
+  "plans": [
+    {
+      "pending_bank_movement_id": "dry-transfer-001",
+      "statement_transaction_no": "",
+      "bank_name": "VakıfBank",
+      "transaction_date": "2026-09-14",
+      "transaction_time": "",
+      "amount_in": 3500,
+      "amount_out": 0,
+      "balance_after": 0,
+      "description": "IS BANKASI HESAPLAR ARASI VIRMAN",
+      "duplicate_key": "dry:transfer:001",
+      "plan": {
+        "kind": "bank_transfer",
+        "type": "Sirket bankalari arasi virman",
+        "target": "BizimHesap banka virmani",
+        "account": "*VAKIF SIRKET",
+        "source_account": "*IS BANKASI",
+        "target_account": "*VAKIF SIRKET",
+        "counterparty": "*IS BANKASI -> *VAKIF SIRKET",
+        "category": "Bankalar arasi transfer",
+        "confidence": 95,
+        "recording_confidence": 95,
+        "amount": 3500,
+        "date": "2026-09-14",
+        "time": "",
+        "bank_name": "VakıfBank",
+        "description": "IS BANKASI HESAPLAR ARASI VIRMAN",
+        "source": "",
+        "business_scope": "sirket_finansi",
+        "fixed_variable": "islem_bazli",
+        "requires_counterparty_confirmation": false,
+        "emanet_routed": false,
+        "reasons": [
+          "banka alacak/giris",
+          "giris yonu kaynak/hedef ters cevrildi",
+          "aciklamada iki sirket bankasi ve virman bulundu",
+          "ekstre metnindeki banka ile kaynak banka uyusmuyor"
+        ],
+        "requires_user_review": false,
+        "next_step_after_user_approval": "approve_pending_bank_movement RPC -> bizimhesap_queue.status=ready_for_bizimhesap",
+        "confirmation_question": "*IS BANKASI hesabindan *VAKIF SIRKET hesabina 3.500 TL sirket ici virman olarak BizimHesap'a isleyeyim mi?",
+        "decision_summary": "Sirket bankalari arasi virman | *IS BANKASI -> *VAKIF SIRKET | Bankalar arasi transfer | sirket_finansi | islem_bazli"
+      }
+    },
+    {
+      "pending_bank_movement_id": "dry-cari-001",
+      "statement_transaction_no": "",
+      "bank_name": "İş Bankası",
+      "transaction_date": "2026-09-14",
+      "transaction_time": "",
+      "amount_in": 1250,
+      "amount_out": 0,
+      "balance_after": 0,
+      "description": "GELEN EFT MURAT TICARET TARAFINDAN AKTARILAN",
+      "duplicate_key": "dry:cari:001",
+      "plan": {
+        "kind": "customer_collection",
+        "type": "Cari tahsilat",
+        "target": "BizimHesap banka/kasa kaydi",
+        "account": "*IS BANKASI",
+        "source_account": "",
+        "target_account": "*IS BANKASI",
+        "counterparty": "MURAT TICARET",
+        "category": "Tahsilat",
+        "confidence": 96,
+        "recording_confidence": 96,
+        "amount": 1250,
+        "date": "2026-09-14",
+        "time": "",
+        "bank_name": "İş Bankası",
+        "description": "GELEN EFT MURAT TICARET TARAFINDAN AKTARILAN",
+        "source": "",
+        "business_scope": "sirket_finansi",
+        "fixed_variable": "islem_bazli",
+        "requires_counterparty_confirmation": false,
+        "emanet_routed": false,
+        "reasons": [
+          "banka alacak/giris"
+        ],
+        "requires_user_review": false,
+        "next_step_after_user_approval": "approve_pending_bank_movement RPC -> bizimhesap_queue.status=ready_for_bizimhesap",
+        "confirmation_question": "MURAT TICARET carisine 1.250 TL tahsilat olarak BizimHesap'a isleyeyim mi?",
+        "decision_summary": "Cari tahsilat | MURAT TICARET | Tahsilat | sirket_finansi | islem_bazli"
+      }
+    },
+    {
+      "pending_bank_movement_id": "dry-invoice-001",
+      "statement_transaction_no": "",
+      "bank_name": "İş Bankası",
+      "transaction_date": "2026-09-14",
+      "transaction_time": "",
+      "amount_in": 0,
+      "amount_out": 890,
+      "balance_after": 0,
+      "description": "TURKCELL FATURA ODEMESI",
+      "duplicate_key": "dry:invoice:001",
+      "plan": {
+        "kind": "utility_bill_payment",
+        "type": "Fatura odemesi",
+        "target": "BizimHesap gider/odeme kaydi",
+        "account": "*IS BANKASI",
+        "source_account": "*IS BANKASI",
+        "target_account": "*IS BANKASI",
+        "counterparty": "TURKCELL",
+        "category": "Sabit gider faturasi",
+        "confidence": 90,
+        "recording_confidence": 90,
+        "amount": 890,
+        "date": "2026-09-14",
+        "time": "",
+        "bank_name": "İş Bankası",
+        "description": "TURKCELL FATURA ODEMESI",
+        "source": "",
+        "business_scope": "sirket_finansi",
+        "fixed_variable": "islem_bazli",
+        "requires_counterparty_confirmation": false,
+        "emanet_routed": false,
+        "reasons": [
+          "banka borc/cikis",
+          "fatura anahtar kelimesi"
+        ],
+        "requires_user_review": false,
+        "next_step_after_user_approval": "approve_pending_bank_movement RPC -> bizimhesap_queue.status=ready_for_bizimhesap",
+        "confirmation_question": "Fatura odemesi olarak BizimHesap kuyruÄŸuna alinsin mi?",
+        "decision_summary": "Fatura odemesi | TURKCELL | Sabit gider faturasi | sirket_finansi | islem_bazli"
+      }
+    }
+  ],
+  "guards": {
+    "cloudRiskMap": true,
+    "cloudApprovalRequired": true,
+    "claimRequiresApproval": true,
+    "localGuardedWrites": true,
+    "duplicateLedger": true,
+    "mfaOnlyNotification": true
+  },
+  "approvalQueueStage": "approve_pending_bank_movement RPC -> bizimhesap_queue.status=ready_for_bizimhesap"
+}

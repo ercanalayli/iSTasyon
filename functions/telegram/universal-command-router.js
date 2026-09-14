@@ -69,7 +69,7 @@ function resolveDesktopTarget(normalized) {
 
 function approvalCategory(normalized) {
   if (/\b(sil|iptal et|kaldir|temizle)\b/.test(normalized)) return 'delete';
-  if (/\b(ode|odeme|transfer|aktar|havale|eft|tahsilat|fatura kes|satinal|satin al|siparis ver|para gonder)\b/.test(normalized)) return 'finance';
+  if (/\b(ode|odeme|transfer|aktar|havale|eft|tahsilat|fatura (?:kes|olustur|hazirla)|satinal|satin al|siparis ver|para gonder)\b/.test(normalized)) return 'finance';
   if (/\b(mesaj(?:i)? gonder|mail(?:i)? gonder|e posta gonder|yanitla|paylas|yayinla|ara)\b/.test(normalized)) return 'communication';
   if (/\b(yetki ver|erisimi degistir|sifre|parola|otp|giris bilgisi)\b/.test(normalized)) return 'access';
   return null;

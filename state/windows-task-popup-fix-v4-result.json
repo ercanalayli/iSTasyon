@@ -1,0 +1,29 @@
+﻿{
+    "completed_at":  "2026-09-14T15:23:45.8726323+03:00",
+    "elevated":  true,
+    "converted_to_hidden":  [
+                                "AperiON BizimHesap Senkron",
+                                "AperiON_BizimHesap_D1_Satis_Saatlik",
+                                "AperiON_BizimHesap_Listener_Watchdog",
+                                "AperiON_BizimHesap_Session_5Min",
+                                "AperiON_EndToEnd_Monitor_5Min",
+                                "AperiON_Hermes_Watchdog_1Min",
+                                "AperiON_Watchdog_1Min"
+                            ],
+    "active_keep_hidden":  [
+                               "AperiON_Startup",
+                               "Hermes_Gateway"
+                           ],
+    "disabled_unneeded":  [
+                              "AperiON Evening Check",
+                              "AperiON Morning Startup",
+                              "AperiON_Always_On",
+                              "AperiON_BizimHesap_Sabah_Ac",
+                              "AperiON_BizimHesap_Worker",
+                              "AperiON_Background_Worker",
+                              "AperiON_BizimHesap_ReadOnly_Retry_Once",
+                              "AperiON_BizimHesap_Realtime_Monitor",
+                              "AperiON_Morning_0730",
+                              "AperiON_Ofis_0800_Uyandir"
+                          ]
+}

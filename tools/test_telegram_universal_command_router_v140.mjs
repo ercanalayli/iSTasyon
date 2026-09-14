@@ -8,6 +8,7 @@ assert.equal(parseUniversalCommand('/ac gmail').target, 'gmail');
 assert.equal(parseUniversalCommand('Telegramı aç').target, 'telegram');
 assert.equal(parseUniversalCommand('AperiON paneli aç').target, 'aperion');
 assert.equal(parseUniversalCommand('Nakit kasadan Ercan kasaya 3500 TL transfer').risk, 'approval_required');
+assert.equal(parseUniversalCommand('Murat Ticaret için fatura oluştur').risk, 'approval_required');
 assert.equal(parseUniversalCommand('Ahmet’e WhatsApp mesajı gönder').category, 'communication');
 assert.equal(parseUniversalCommand('Bu kaydı sil').category, 'delete');
 assert.equal(parseUniversalCommand('Yarın satış raporunu hazırla'), null);

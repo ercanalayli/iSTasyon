@@ -26,7 +26,7 @@ assertHas('tools/preview_pending_bank_to_bizimhesap_plan.cjs', 'bank_posting_pla
 assertHas('bizimhesap_queue_worker.cjs', 'BIZIMHESAP_POSTING_LIVE', 'live mode lock');
 assertHas('bizimhesap_queue_worker.cjs', 'BIZIMHESAP_POSTING_SAVE', 'save mode lock');
 assertHas('bizimhesap_queue_worker.cjs', "status === 'processed'", 'marks processed');
-assertHas('bizimhesap_queue_worker.cjs', 'Queue durum doÄŸrulamasÄ±', 'verifies queue status after update');
+assertHas('bizimhesap_queue_worker.cjs', 'Queue durum doğrulaması', 'verifies queue status after update');
 assertHas('bizimhesap_queue_worker.cjs', "markQueue(row, 'failed'", 'marks failed');
 assertHas('bizimhesap_queue_worker.cjs', 'aperion_posting_result', 'writes posting result back');
 assertHas('bizimhesap_queue_worker.cjs', '_after_save', 'captures after-save diagnostics');
