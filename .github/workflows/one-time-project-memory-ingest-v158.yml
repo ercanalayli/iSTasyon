@@ -28,13 +28,13 @@ jobs:
         shell: bash
         run: APERION_MEMORY_SQL_OUT=.wrangler/project-memory-seed.sql npm run verify:project-conversation-memory-v158
 
-      - name: Apply memory schema to approved D1
+      - name: Apply only project memory schema to approved D1
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4.125.0"
-          command: d1 migrations apply aperion-control-plane --remote
+          command: d1 execute aperion-control-plane --remote --file migrations/0022_project_conversation_memory.sql
 
       - name: Ingest approved filtered memory
         uses: cloudflare/wrangler-action@v3
