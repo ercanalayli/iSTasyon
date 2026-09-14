@@ -1,0 +1,72 @@
+{
+  "project": {
+    "id": "g-p-6a4de51260808191b0eebbd74c65783c",
+    "label": "AperiON İstasyON"
+  },
+  "discovery": {
+    "surface": "Codex app list_threads + read_thread",
+    "discovered_at": "2026-09-14T11:25:00Z",
+    "list_limit": 50
+  },
+  "threads": [
+    {
+      "id": "6a04892e-d894-83eb-b8cd-8e41f44d871b",
+      "title": "Alaylı İşlemleri",
+      "updated_at": 1783489980.486,
+      "content_fingerprint": "8d8ef8fc51375b24",
+      "previous_content_hash": "9f23781eb56a621972596ef3e1ea415e807f869ea1b83f9dae5fad62231ac3d5",
+      "pages_read": 9,
+      "turns_read": 90,
+      "rate_limit_retries": 5,
+      "readable": true,
+      "facts": [],
+      "decisions": [],
+      "excluded_reason": "Conversation contains dated financial balance-sheet values; no durable operational candidate was safe to ingest."
+    },
+    {
+      "id": "6a140c8a-077c-83eb-b36d-491756ee1b81",
+      "title": "AperiON iSTasyon Gelişimi",
+      "updated_at": 1783489990.221,
+      "content_fingerprint": "e203aaf39603e44f",
+      "previous_content_hash": "41a4ba7177363de35fde16c9f946092a2b192fe02821aa075e4e22f50fd4c54a",
+      "pages_read": 30,
+      "turns_read": 296,
+      "rate_limit_retries": 45,
+      "readable": true,
+      "facts": [
+        { "subject": "AperiON uygulama mimarisi", "predicate": "ana operasyon sistemi", "object": "BizimHesap ana muhasebe ve operasyon programıdır; AperiON analiz, onay, rapor ve üst akıl katmanıdır.", "scope": "aperion_product", "confidence": 1, "authority": "user_correction" },
+        { "subject": "AperiON ana ekranı", "predicate": "varsayılan aktif şirket", "object": "ALAYLI Medikal", "scope": "aperion_product", "confidence": 1, "authority": "user_correction" },
+        { "subject": "AperiON ana ekranı", "predicate": "zaman filtreleri", "object": "Bugün, Dün, Bu Hafta, Bu Ay, Geçen Ay, Bu Yıl ve Geçen Yıl", "scope": "aperion_product", "confidence": 1, "authority": "user_correction" },
+        { "subject": "AperiON Agent Hub", "predicate": "işlem durumları", "object": "Ham veri, öneri, onay bekliyor, işlendi ve hata durumları loglanır.", "scope": "aperion_product", "confidence": 1, "authority": "user_correction" }
+      ],
+      "decisions": [
+        { "decision": "Banka hareketleri kullanıcı butonuna ihtiyaç duymadan otomatik olarak onay merkezine düşmeli ve ana ekranda sinyal vermelidir.", "scope": "aperion_automation", "effectiveDate": "2026-06-01" },
+        { "decision": "Hiçbir öneri kullanıcı onayı olmadan kesin finansal kayda dönüşmez.", "scope": "aperion_finance_safety", "effectiveDate": "2026-06-01" },
+        { "decision": "Her ürün veya ekran güncellemesinden sonra güncel önizleme bağlantısı verilir; değişen bölüm görünür biçimde işaretlenir ve güncelleme tarihi-saati gösterilir.", "scope": "aperion_delivery", "effectiveDate": "2026-06-01" },
+        { "decision": "AperiON geliştirmelerinde mevcut özellikler korunur; değişiklikler patch, verify ve preview aşamalarından sonra canlıya alınır.", "scope": "aperion_delivery", "effectiveDate": "2026-06-01" },
+        { "decision": "AperiON arayüzünde sayılar K/M kısaltması olmadan tam gösterilir ve açık tema korunur.", "scope": "aperion_product", "effectiveDate": "2026-06-01" },
+        { "decision": "Telegram, AperiON'un temel kullanıcı iletişim yüzeylerinden biridir.", "scope": "aperion_communication", "effectiveDate": "2026-06-01" }
+      ]
+    },
+    {
+      "id": "6a45f188-f590-83eb-b9ae-43b9c7647f05",
+      "title": "140926AperiON iSTasyon",
+      "updated_at": 1789384313.774,
+      "content_fingerprint": "0eef4a662aa199c2",
+      "previous_content_hash": "1e31298061c9f83e8e0e277994bf7f3c8eea5aad0728e26257fe2a6ab6cdc6c5",
+      "pages_read": 10,
+      "turns_read": 93,
+      "rate_limit_retries": 50,
+      "readable": true,
+      "facts": [
+        { "subject": "AperiON kurumsal hafıza", "predicate": "zamansal kayıt ilkesi", "object": "Kalıcı bilgiler kaynak ve söylendiği tarih ile saklanır; sonraki sorularda tarihsel bağlamıyla kullanılabilir.", "scope": "aperion_memory", "confidence": 1, "authority": "user_correction" },
+        { "subject": "AperiON kurumsal veri kaynakları", "predicate": "şirket ve kişisel e-posta ayrımı", "object": "Şirket e-postası ve kişisel e-posta ayrı kaynaklar olarak bağlanır; şirket operasyon iletileri ağırlıklı olarak şirket kaynağından izlenir.", "scope": "aperion_sources", "confidence": 1, "authority": "user_correction" }
+      ],
+      "decisions": [
+        { "decision": "AperiON proje sohbetleri tek tek dosya aktarımı istemeden desteklenen uygulama API'leri üzerinden otomatik keşfedilip ortak hafızaya incremental senkronize edilmelidir.", "scope": "aperion_memory", "effectiveDate": "2026-09-14" },
+        { "decision": "AperiON sohbet başlığı kalıcı olarak AperiON İstasyON olmalı ve konuşma konusuna göre değişmemelidir.", "scope": "aperion_product", "effectiveDate": "2026-09-14" },
+        { "decision": "Kullanıcı günlük AperiON operasyonlarını tek sohbet yüzeyinden yürütür; Drive kalıcı belge saklama alanı olarak kullanılabilir.", "scope": "aperion_operating_model", "effectiveDate": "2026-09-14" }
+      ]
+    }
+  ]
+}

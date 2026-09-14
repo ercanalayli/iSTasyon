@@ -1,0 +1,104 @@
+{
+  "checked_at": "2026-09-14T11:34:54.513Z",
+  "version": "v158",
+  "project": {
+    "id": "g-p-6a4de51260808191b0eebbd74c65783c",
+    "label": "AperiON İstasyON"
+  },
+  "discovery_surface": "Codex app list_threads + read_thread",
+  "discovered_threads": 3,
+  "readable_threads": 3,
+  "ingested_threads": 3,
+  "skipped_unchanged_threads": 0,
+  "pages_read": 49,
+  "turns_read": 479,
+  "rate_limit_retries": 100,
+  "backoff_policy": "exponential 1s,2s,4s,8s,16s; maximum five retries per page",
+  "dry_run": {
+    "facts": 6,
+    "decisions": 9,
+    "provenance_links": 6,
+    "duplicates": 0,
+    "conflicts": 0,
+    "secrets_rejected": 0
+  },
+  "threads": [
+    {
+      "id": "6a04892e-d894-83eb-b8cd-8e41f44d871b",
+      "status": "ingested",
+      "content_hash": "9f23781eb56a621972596ef3e1ea415e807f869ea1b83f9dae5fad62231ac3d5",
+      "unchanged": false,
+      "facts": 0,
+      "decisions": 0
+    },
+    {
+      "id": "6a140c8a-077c-83eb-b36d-491756ee1b81",
+      "status": "ingested",
+      "content_hash": "41a4ba7177363de35fde16c9f946092a2b192fe02821aa075e4e22f50fd4c54a",
+      "unchanged": false,
+      "facts": 4,
+      "decisions": 6
+    },
+    {
+      "id": "6a45f188-f590-83eb-b9ae-43b9c7647f05",
+      "status": "ingested",
+      "content_hash": "1e31298061c9f83e8e0e277994bf7f3c8eea5aad0728e26257fe2a6ab6cdc6c5",
+      "unchanged": false,
+      "facts": 2,
+      "decisions": 3
+    }
+  ],
+  "exclusions": [
+    "dated balances and transaction rows",
+    "credentials, tokens and secrets",
+    "assistant-only claims",
+    "temporary implementation status"
+  ],
+  "live_d1": {
+    "verified_at": "2026-09-14T11:36:00Z",
+    "verification_mode": "SELECT only",
+    "database_name": "aperion-control-plane",
+    "database_id": "8f32b3b1-5451-4c9e-9bd2-5d3626e4a561",
+    "added": {
+      "sources": 3,
+      "facts": 6,
+      "decisions": 9,
+      "provenance_links": 6,
+      "conflicts": 0
+    },
+    "totals": {
+      "sources": 15,
+      "facts": 741,
+      "decisions": 41,
+      "provenance_links": 741,
+      "open_conflicts": 0
+    },
+    "project_sources": 3,
+    "project_provenance_links": 6,
+    "project_decisions": 9,
+    "all_target_sources_synced": true,
+    "secret_like_facts": 0
+  },
+  "automation": {
+    "id": "aperion-chatgpt-haf-za-senkronu",
+    "name": "AperiON ChatGPT Hafıza Senkronu",
+    "kind": "heartbeat",
+    "interval_hours": 12,
+    "status": "ACTIVE",
+    "unchanged_policy": "silent",
+    "notification_policy": "failed_runs_only"
+  },
+  "idempotency_check": {
+    "mode": "check_only",
+    "discovered_threads": 3,
+    "readable_threads": 3,
+    "ingested_threads": 0,
+    "skipped_unchanged_threads": 3,
+    "facts_added": 0,
+    "decisions_added": 0,
+    "provenance_links_added": 0
+  },
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "messages_sent": 0
+}
