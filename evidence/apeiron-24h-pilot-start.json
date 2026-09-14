@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "apeiron-24h-operations-pilot-start-v1",
+  "brand": "ApeirON",
+  "status": "RUNNING",
+  "startedAt": "2026-09-14T16:41:32.793Z",
+  "endsAt": "2026-09-15T16:41:32.793Z",
+  "canonicalWorkspace": "C:\\AperiON\\iSTasyon",
+  "runtime": "existing Hermes v160 single runtime",
+  "rollingState": "state/hermes-runtime/apeiron-24h-pilot-rolling.json",
+  "finalEvidence": "evidence/apeiron-24h-pilot-final.json",
+  "notificationPolicy": "critical_or_action_required_only; unchanged_and_success_silent; current-thread heartbeat; Telegram recipient not guessed",
+  "watchers": {
+    "gmail": "readonly incremental finance/operations classification",
+    "bizimhesap": "readonly health/session recovery",
+    "drive": "metadata changes only",
+    "chatgpt": "metadata/fingerprint-first with rate-limit backoff",
+    "d1_memory": "idempotent fact/provenance only"
+  },
+  "initialSignal": {
+    "source": "gmail",
+    "scope": "ALAYLI",
+    "importance": "critical",
+    "risk": "high",
+    "event_type": "credit_card_statement",
+    "required_action": "review",
+    "amount": null,
+    "due_date": null,
+    "confidence": 0.9
+  },
+  "baseline": {
+    "hermes": "healthy",
+    "d1": "healthy",
+    "bizimhesapOfficialApi": "healthy",
+    "bizimhesapCustomerCount": 5758,
+    "popupCount": 0,
+    "financial_writes": 0,
+    "bizimhesap_writes": 0,
+    "secrets_exposed": 0
+  }
+}
