@@ -1,0 +1,73 @@
+{
+  "checked_at": "2026-09-14T11:07:40.402Z",
+  "version": "v158",
+  "classification": "VISIBLE_AND_INGESTIBLE",
+  "supported_surface": "Codex app list_threads + read_thread",
+  "source": {
+    "source_key": "chatgpt:6aa0f5c7-b6cc-83ed-b530-273afa4d4d54",
+    "title": "Sözleşmeye Erişim 090926 mail güzel",
+    "project_ref": "g-p-6a3e6e2831bc8191b565d78f5dd74751",
+    "conversation_ref": "6aa0f5c7-b6cc-83ed-b530-273afa4d4d54"
+  },
+  "dry_run": {
+    "first_pass": {
+      "unchanged": false,
+      "facts": 10,
+      "decisions": 4
+    },
+    "idempotent_second_pass": {
+      "unchanged": true,
+      "facts": 0,
+      "decisions": 0
+    },
+    "candidates": {
+      "facts": 10,
+      "decisions": 4
+    },
+    "deduplicates_within_payload": 0,
+    "conflicts_within_payload": 0,
+    "secrets_rejected": 0
+  },
+  "exclusions": [
+    "financial transaction examples",
+    "credentials/tokens/secrets",
+    "assistant-only claims without durable corroboration",
+    "stale point-in-time blockers"
+  ],
+  "live_d1_preflight": {
+    "database_name": "aperion-control-plane",
+    "database_id": "8f32b3b1-5451-4c9e-9bd2-5d3626e4a561",
+    "mode": "read_only_select",
+    "related_active_rows_reviewed": true,
+    "conflicting_slots_found": 0
+  },
+  "live_d1_ingest": {
+    "database_name": "aperion-control-plane",
+    "database_id": "8f32b3b1-5451-4c9e-9bd2-5d3626e4a561",
+    "source_rows_added": 1,
+    "facts_added": 10,
+    "decisions_added": 4,
+    "provenance_links_added": 10,
+    "conflicts_added": 0,
+    "superseded_adapter_blocks": 1,
+    "idempotency": "second dry-run pass added 0 facts and 0 decisions"
+  },
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "messages_sent": 0,
+  "secrets_persisted": 0,
+  "live_d1_read_only_verification": {
+    "verified_at": "2026-09-14T11:06:41Z",
+    "mode": "SELECT only",
+    "sources": 12,
+    "facts": 735,
+    "decisions": 32,
+    "open_conflicts": 0,
+    "blocked_sources": 1,
+    "target_source_status": "VISIBLE_AND_INGESTIBLE",
+    "target_sync_status": "synced",
+    "target_linked_facts": 10,
+    "target_linked_decisions": 4,
+    "secret_like_facts": 0
+  }
+}
