@@ -1,0 +1,36 @@
+{
+  "checked_at": "2026-09-14T07:38:11.866Z",
+  "status": "ONLINE",
+  "endpoint": "https://aperion-command-bridge.yenicespor-finans.workers.dev/health",
+  "bridge_health": {
+    "status": "ONLINE",
+    "http_status": 200,
+    "latency_ms": 270,
+    "service": null,
+    "ready_for_user_test": false,
+    "checks": null,
+    "error": null
+  },
+  "telegram": {
+    "status": "OK",
+    "webhook_matches_expected": true,
+    "configured_webhook_url": "https://aperion-command-bridge.yenicespor-finans.workers.dev/telegram/webhook",
+    "pending_update_count": 0,
+    "last_error_date": null,
+    "last_error_message": null,
+    "bot_username": "ercanalayli_bot"
+  },
+  "pages_preflight": {
+    "status": "BLOCKED",
+    "http_status": null,
+    "latency_ms": 10740,
+    "error": "fetch failed"
+  },
+  "pages_dns": [
+    {
+      "address": "213.14.227.50",
+      "family": 4
+    }
+  ],
+  "financial_writes": 0
+}

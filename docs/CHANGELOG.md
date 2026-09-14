@@ -17,6 +17,18 @@ mantıksal/temel başlangıcı olduğu için); tarih sırası tam kronolojik de�
 bilerek böyle bırakıldı — bu bir hata değil, kaynaktaki tarih etiketleme
 tutarsızlığının şeffaf şekilde taşınmasıdır.
 
+## 2026-09-14 - Hermes VPS ve read-only BizimHesap hattı uçtan uca doğrulandı
+
+- Yerel `main`, kullanıcı değişiklikleri korunarak yalnız `docs/HERMES_VPS_NEXT_TASK.md` ekleyen `origin/main` commitine fast-forward edildi.
+- Mevcut altyapı kullanıldı: Supabase `bot_commands`, `tools/aperion_command_listener.cjs`, `AperiON_BizimHesap_Listener_Watchdog` ve read-only kuyruk yardımcıları.
+- Hermes command bridge `/health` uç noktası HTTP 200 döndürdü.
+- Telegram `getWebhookInfo` ve `getMe` salt-okuma kontrolleri geçti; webhook Hermes command bridge adresiyle eşleşiyor, bekleyen update ve aktif hata yok.
+- Windows dinleyici PID'si ve watchdog'un 5 dakikalık başarılı çalışması doğrulandı.
+- `bizimhesap_cari_bakiye_sync` read-only işi `bot_commands` #1739 ile tamamlandı: 5.600 satır tarandı, 164 bakiye özeti yazıldı. BizimHesap finansal write endpointi çağrılmadı.
+- `tools/verify_hermes_readonly_health.cjs` eklendi; secret değerlerini kanıtlara taşımadan canlı Worker, Telegram, Windows listener ve son read-only kuyruk sonuçlarını denetler.
+- Kanıtlar `state/hermes-vps-health.json`, `state/windows-worker-health.json`, `state/hermes-readonly-verification.json` altında üretildi.
+- Pages `/api/telegram-preflight` bu Windows ağında DNS/erişim sapması nedeniyle başarısız; kanonik Hermes Worker ve doğrudan Telegram webhook kontrolü sağlıklı. Finansal write: `0`; secret ifşası: `0`.
+
 ## 2026-08-02 - İstek defteri: Ercan'ın bugün istediği her şey, ne yapıldı, nasıl doğrulandı
 
 Ercan'ın "bugüne kadar yazdıklarımı listele, istediklerim yapıldı mı, nasıl

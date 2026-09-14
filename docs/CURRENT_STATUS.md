@@ -1,4 +1,14 @@
-# AperiON iSTasyon - Güncel Durum (31 Temmuz 2026)
+# AperiON iSTasyon - Güncel Durum (14 Eylül 2026)
+
+## Hermes VPS / Windows worker doğrulaması (14 Eylül 2026)
+
+- Hermes command bridge canlı: `https://aperion-command-bridge.yenicespor-finans.workers.dev/health` HTTP 200 ve `{ "ok": true }` döndürdü.
+- Telegram webhook doğrudan Telegram API üzerinden doğrulandı: Hermes command bridge webhook'una bağlı, bekleyen güncelleme `0`, aktif teslimat hatası yok.
+- Windows Hermes/BizimHesap dinleyicisi ONLINE: PID kilidi canlı; `AperiON_BizimHesap_Listener_Watchdog` etkin, 5 dakikada bir çalışıyor ve son sonucu `0`.
+- BizimHesap READ-ONLY uçtan uca kanıtı: `bizimhesap_cari_bakiye_sync` işi `bot_commands` kimliği `1739` ile tamamlandı; 5.600 satır tarandı, bakiyesi olan 164 cari bulundu ve 164 özet satırı güncellendi.
+- Eski Pages preflight adresi bu Windows makinesinin DNS'inde hatalı/erişilemez çözülüyor; kanonik Hermes Worker ve Telegram webhook sağlıklı olduğundan komut köprüsünü engellemiyor. DNS/preflight sapması açık teknik borçtur.
+- Bu doğrulamada finansal kayıt yazımı `0`, secret ifşası `0`.
+- Kanıtlar: `state/hermes-vps-health.json`, `state/windows-worker-health.json`, `state/hermes-readonly-verification.json`.
 
 ## Canlı adres (kesin)
 - Canonical: `https://aperion-istasyon.pages.dev/` → `aperion.html` → **`aperion-ust-akil.html`** (gerçek ana ekran, `_redirects` + meta-refresh zinciriyle doğrulandı)

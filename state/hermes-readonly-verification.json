@@ -1,0 +1,163 @@
+{
+  "checked_at": "2026-09-14T07:38:11.866Z",
+  "status": "VERIFIED",
+  "verified_job": {
+    "id": 1739,
+    "command": "bizimhesap_cari_bakiye_sync",
+    "status": "completed",
+    "created_at": "2026-09-14T07:32:10.250405+00:00",
+    "started_at": "2026-09-14T07:32:26.873+00:00",
+    "completed_at": "2026-09-14T07:34:00.341+00:00",
+    "result": {
+      "present": true,
+      "length": 75,
+      "record_count_hint": null,
+      "safe_preview": "{\"filtreTiklandi\":true,\"toplamSatir\":5600,\"bakiyesiOlan\":164,\"yazilan\":164}"
+    }
+  },
+  "recent_readonly_jobs": [
+    {
+      "id": 1739,
+      "command": "bizimhesap_cari_bakiye_sync",
+      "status": "completed",
+      "created_at": "2026-09-14T07:32:10.250405+00:00",
+      "started_at": "2026-09-14T07:32:26.873+00:00",
+      "completed_at": "2026-09-14T07:34:00.341+00:00",
+      "result": {
+        "present": true,
+        "length": 75,
+        "record_count_hint": null,
+        "safe_preview": "{\"filtreTiklandi\":true,\"toplamSatir\":5600,\"bakiyesiOlan\":164,\"yazilan\":164}"
+      }
+    },
+    {
+      "id": 1738,
+      "command": "bizimhesap_cari_bakiye_sync",
+      "status": "completed",
+      "created_at": "2026-09-14T07:31:38.879953+00:00",
+      "started_at": "2026-09-14T07:31:49.382+00:00",
+      "completed_at": "2026-09-14T07:32:05.439+00:00",
+      "result": {
+        "present": true,
+        "length": 69,
+        "record_count_hint": null,
+        "safe_preview": "{\"filtreTiklandi\":false,\"toplamSatir\":0,\"bakiyesiOlan\":0,\"yazilan\":0}"
+      }
+    },
+    {
+      "id": 1737,
+      "command": "bizimhesap_cari_odeme_gecmisi_sync",
+      "status": "failed",
+      "created_at": "2026-09-13T08:33:38.09879+00:00",
+      "started_at": "2026-09-14T06:06:47.398+00:00",
+      "completed_at": "2026-09-14T06:06:47.637+00:00",
+      "result": {
+        "present": true,
+        "length": 94,
+        "record_count_hint": null,
+        "safe_preview": "BizimHesap giris SOGUMADA (other) - 2026-09-14T06:19:26.305Z tarihine kadar deneme yapilmiyor."
+      }
+    },
+    {
+      "id": 1736,
+      "command": "bizimhesap_tedarikci_ozet_sync",
+      "status": "failed",
+      "created_at": "2026-09-13T08:31:43.277384+00:00",
+      "started_at": "2026-09-14T06:06:32.955+00:00",
+      "completed_at": "2026-09-14T06:06:33.168+00:00",
+      "result": {
+        "present": true,
+        "length": 94,
+        "record_count_hint": null,
+        "safe_preview": "BizimHesap giris SOGUMADA (other) - 2026-09-14T06:19:26.305Z tarihine kadar deneme yapilmiyor."
+      }
+    },
+    {
+      "id": 1735,
+      "command": "bizimhesap_cari_bakiye_sync",
+      "status": "failed",
+      "created_at": "2026-09-13T08:26:10.983169+00:00",
+      "started_at": "2026-09-14T06:06:17.18+00:00",
+      "completed_at": "2026-09-14T06:06:17.54+00:00",
+      "result": {
+        "present": true,
+        "length": 94,
+        "record_count_hint": null,
+        "safe_preview": "BizimHesap giris SOGUMADA (other) - 2026-09-14T06:19:26.305Z tarihine kadar deneme yapilmiyor."
+      }
+    },
+    {
+      "id": 1734,
+      "command": "bizimhesap_cari_odeme_gecmisi_sync",
+      "status": "failed",
+      "created_at": "2026-09-12T08:09:11.90231+00:00",
+      "started_at": "2026-09-12T08:09:40.085+00:00",
+      "completed_at": "2026-09-12T08:09:40.352+00:00",
+      "result": {
+        "present": true,
+        "length": 94,
+        "record_count_hint": null,
+        "safe_preview": "BizimHesap giris SOGUMADA (other) - 2026-09-12T08:15:03.249Z tarihine kadar deneme yapilmiyor."
+      }
+    },
+    {
+      "id": 1733,
+      "command": "bizimhesap_tedarikci_ozet_sync",
+      "status": "failed",
+      "created_at": "2026-09-12T08:07:13.983994+00:00",
+      "started_at": "2026-09-12T08:07:43.338+00:00",
+      "completed_at": "2026-09-12T08:07:43.614+00:00",
+      "result": {
+        "present": true,
+        "length": 94,
+        "record_count_hint": null,
+        "safe_preview": "BizimHesap giris SOGUMADA (other) - 2026-09-12T08:15:03.249Z tarihine kadar deneme yapilmiyor."
+      }
+    },
+    {
+      "id": 1732,
+      "command": "bizimhesap_cari_bakiye_sync",
+      "status": "failed",
+      "created_at": "2026-09-12T08:01:18.154136+00:00",
+      "started_at": "2026-09-12T08:01:39.038+00:00",
+      "completed_at": "2026-09-12T08:02:27.397+00:00",
+      "result": {
+        "present": true,
+        "length": 55,
+        "record_count_hint": null,
+        "safe_preview": "BizimHesap giris formu Enter veya butonla gonderilemedi"
+      }
+    },
+    {
+      "id": 1731,
+      "command": "bizimhesap_cari_odeme_gecmisi_sync",
+      "status": "failed",
+      "created_at": "2026-09-11T08:19:58.56332+00:00",
+      "started_at": "2026-09-11T08:20:21.839+00:00",
+      "completed_at": "2026-09-11T08:20:22.094+00:00",
+      "result": {
+        "present": true,
+        "length": 99,
+        "record_count_hint": null,
+        "safe_preview": "BizimHesap giris SOGUMADA (rate_limit) - 2026-09-11T09:05:00.991Z tarihine kadar deneme yapilmiyor."
+      }
+    },
+    {
+      "id": 1730,
+      "command": "bizimhesap_tedarikci_ozet_sync",
+      "status": "failed",
+      "created_at": "2026-09-11T08:17:13.501438+00:00",
+      "started_at": "2026-09-11T08:17:39.368+00:00",
+      "completed_at": "2026-09-11T08:18:05.229+00:00",
+      "result": {
+        "present": true,
+        "length": 100,
+        "record_count_hint": null,
+        "safe_preview": "Waiting for selector `#txtPassword, input[type=\"password\"]` failed: Waiting failed: 12000ms exceeded"
+      }
+    }
+  ],
+  "dedupe_policy": "pending/processing commands are reused within three hours",
+  "financial_writes": 0,
+  "secrets_exposed": 0
+}
