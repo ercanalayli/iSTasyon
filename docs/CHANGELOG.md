@@ -17,6 +17,17 @@ mantıksal/temel başlangıcı olduğu için); tarih sırası tam kronolojik de�
 bilerek böyle bırakıldı — bu bir hata değil, kaynaktaki tarih etiketleme
 tutarsızlığının şeffaf şekilde taşınmasıdır.
 
+## 2026-09-14 - Finans hafızası ve vade motoru
+
+- `functions/shared/finance-obligation-memory.js` ile kalıcı finans yükümlülüğü çıkarımı, içerik tabanlı dedupe, Europe/Istanbul vade riski, günlük uyarı dedupe, güvenli ödeme eşleştirme ve yaşam döngüsü eklendi.
+- Desteklenen fixture sınıfları: kredi kartı ekstresi, vergi, SGK, kira, kredi, utility, abonelik/telekom, tedarikçi faturası ve FAST/EFT/dekont.
+- `migrations/0021_finance_obligation_memory.sql` ile `finance_obligations`, `finance_payment_matches` ve `finance_obligation_alerts` tabloları tanımlandı; mevcut `evidence_inbox` ve `personal_finance_events` korunuyor.
+- `functions/shared/financial-document.js` yeni finans hafızasına bağlandı. Eksik kanıt `needs_review`; yüksek güvenli dekont eşleşmesi `paid`; belirsiz ödeme incelemede kalır.
+- `functions/api/financial-document-process.js` altında Bearer korumalı `?view=obligations` read-only özeti eklendi. Yetkisiz erişim testi `401` ile doğrulandı.
+- Morning brief'e bugün, 3/7 gün, geciken, son kapanan ve inceleme gereken finans hafızası bölümü eklendi.
+- `verify:finance-memory-v157` ve sekiz zorunlu fixture senaryosu eklendi; `state/finance-memory-verification.json` üretiliyor.
+- Gerçek finansal write yapılmadı (`0`); secret ifşası `0`.
+
 ## 2026-09-14 - Hermes VPS ve read-only BizimHesap hattı uçtan uca doğrulandı
 
 - Yerel `main`, kullanıcı değişiklikleri korunarak yalnız `docs/HERMES_VPS_NEXT_TASK.md` ekleyen `origin/main` commitine fast-forward edildi.

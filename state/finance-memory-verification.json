@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-09-14T08:04:02.832Z",
+  "schema_ok": true,
+  "extraction_tests_passed": true,
+  "supported_types": [
+    "credit_card",
+    "tax",
+    "sgk",
+    "rent",
+    "loan",
+    "utility",
+    "supplier_invoice",
+    "subscription",
+    "payment"
+  ],
+  "dedupe_ok": true,
+  "due_engine_ok": true,
+  "payment_match_ok": true,
+  "ambiguous_payment_needs_review": true,
+  "lifecycle_ok": true,
+  "scope_separation_ok": true,
+  "morning_brief_or_summary_ok": true,
+  "financial_writes": 0,
+  "secrets_exposed": 0
+}

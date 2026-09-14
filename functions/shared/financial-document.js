@@ -1,3 +1,5 @@
+import { ensureFinanceMemorySchema, extractFinanceMemory, persistFinanceMemory } from './finance-obligation-memory.js';
+
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const MODEL = '@cf/meta/llama-4-scout-17b-16e-instruct';
 
@@ -55,6 +57,7 @@ async function ensureColumn(db, sql) {
 
 export async function ensureFinancialDocumentSchema(db) {
   if (!db) throw new Error('financial_store_unavailable');
+  await ensureFinanceMemorySchema(db);
   await db.prepare(`CREATE TABLE IF NOT EXISTS telegram_captures (
     id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL, message_id TEXT NOT NULL,
     kind TEXT NOT NULL, file_id TEXT NOT NULL, mime_type TEXT, caption TEXT,
@@ -287,9 +290,14 @@ export async function processFinancialCapture(env, capture) {
     const [text, rules, evidenceHash] = await Promise.all([
       documentText(env, file), entityRules(env.APERION_DB), sha256Hex(file.buffer)
     ]);
+    const memoryDocument = extractFinanceMemory(text, { rules });
+    const memory = await persistFinanceMemory(env.APERION_DB, memoryDocument, {
+      evidence_key: `telegram-${capture.chat_id}-${capture.message_id}`,
+      source_message_id: String(capture.message_id), document_hash: evidenceHash
+    });
     const event = normalizeEvent(await extractEvent(env, text, rules), rules);
     const saved = await persistEvent(env.APERION_DB, capture, event, evidenceHash);
-    return { ok: true, duplicate: false, event, saved };
+    return { ok: true, duplicate: false, event, saved, memory };
   } catch (error) {
     const code = clean(error?.message || error, 120) || 'financial_document_failed';
     await env.APERION_DB.prepare(`UPDATE telegram_captures SET extraction_status='failed',error_code=?,processed_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE chat_id=? AND message_id=?`)

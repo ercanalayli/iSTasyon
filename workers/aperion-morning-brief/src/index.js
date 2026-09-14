@@ -1,3 +1,5 @@
+import { financeMemorySummaryFromDb, financeMemorySummaryText } from '../../../functions/shared/finance-obligation-memory.js';
+
 const VERSION = "v144";
 const CRON = "0 6 * * *";
 const CLOSED = new Set(["completed", "cancelled", "verified", "tamamlandi", "iptal"]);
@@ -151,6 +153,7 @@ export async function buildMorningBrief(db, now = new Date()) {
   }
   if (priorities.length < 3 && approvals.length) priorities.push({ text: `${approvals.length} bekleyen onay incelenecek`, tag: "ONAY_GEREKLI" });
 
+  const financeMemory = await financeMemorySummaryFromDb(db, now).catch(() => null);
   const stamp = istanbulParts(now);
   const lines = [
     `Günaydın AperiON — ${stamp.date} ${stamp.time}`,
@@ -168,6 +171,8 @@ export async function buildMorningBrief(db, now = new Date()) {
     "\n8) ONAYLAR VE BELGELER",
     `• ${approvalQ.ok ? (approvals.length ? "ONAY_GEREKLI" : "BILGI_GEREKLI") : "BILGI_GEREKLI"} — ${approvalQ.ok ? `${approvals.length} bekleyen onay` : "onay kuyruğu okunamadı"}`,
     `• ${captureQ.ok ? (captures.length ? "BILGI_GEREKLI" : "OTOMATIK") : "BILGI_GEREKLI"} — ${captureQ.ok ? `${captures.length} incelenecek Telegram belge/fotoğrafı` : "belge kuyruğu okunamadı"}`,
+    "\n8A) FİNANS HAFIZASI / VADELER",
+    financeMemory ? financeMemorySummaryText(financeMemory) : "• BILGI_GEREKLI — finans hafızası okunamadı",
     "\n9) OTOMASYON DURUMU",
     `• ${deviceQ.ok && deviceQ.rows.some((d) => String(d.status).toLowerCase() === "online") ? "OTOMATIK — masaüstü köprüsü çevrimiçi" : "BILGI_GEREKLI — masaüstü köprüsü doğrulanamadı"}`,
     "\n10) APERİON ÖNERİSİ",

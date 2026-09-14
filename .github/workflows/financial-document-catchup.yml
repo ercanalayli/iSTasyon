@@ -5,7 +5,10 @@ on:
     branches: [main]
     paths:
       - 'functions/shared/financial-document.js'
+      - 'functions/shared/finance-obligation-memory.js'
       - 'functions/api/financial-document-process.js'
+      - 'migrations/0021_finance_obligation_memory.sql'
+      - 'workers/aperion-morning-brief/src/index.js'
       - 'functions/telegram/webhook.js'
       - 'wrangler.jsonc'
       - '.github/workflows/financial-document-catchup.yml'

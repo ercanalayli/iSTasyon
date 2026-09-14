@@ -1,5 +1,15 @@
 # AperiON iSTasyon - Güncel Durum (14 Eylül 2026)
 
+## Finans hafızası ve vade motoru (14 Eylül 2026)
+
+- Mevcut Telegram/Gmail belge hattı, `evidence_inbox` ve `personal_finance_events` korunarak kalıcı `finance_obligations` hafızasıyla genişletildi.
+- Kredi kartı, vergi, SGK, kira, kredi, elektrik/su, abonelik/telekom ve tedarikçi faturalarından tutar/vade/kurum/kapsam çıkarılıyor; FAST/EFT/dekont güvenli ödeme eşleştirmesinde kullanılıyor.
+- Eksik vade, kurum veya kapsam uydurulmuyor; kayıt `needs_review` kalıyor. Mevcut alias kuralları kişi eşleşmesinde öneri olarak kullanılıyor.
+- Europe/Istanbul takvimine göre normal, 7 gün yaklaşan, 3 gün yüksek, 1 gün/bugün kritik ve gecikmiş riskleri hesaplanıyor. Aynı günlük risk uyarısı benzersiz anahtarla tekrar üretilmiyor.
+- Yalnız yüksek güvenli ödeme eşleşmesi `paid` üretiyor; belirsiz eşleşme otomatik kapanmıyor. `paid → archived` geçişi ayrı ve doğrulanmış bir durum geçişidir.
+- Finans vade özeti kimlik doğrulamalı read-only endpoint ve morning brief içinde bugün/3 gün/7 gün/geciken/kapanan/kapsam ayrımıyla sunuluyor.
+- Migration: `migrations/0021_finance_obligation_memory.sql`. Kanıt: `state/finance-memory-verification.json`. Gerçek finansal write: `0`; secret ifşası: `0`.
+
 ## Hermes VPS / Windows worker doğrulaması (14 Eylül 2026)
 
 - Hermes command bridge canlı: `https://aperion-command-bridge.yenicespor-finans.workers.dev/health` HTTP 200 ve `{ "ok": true }` döndürdü.

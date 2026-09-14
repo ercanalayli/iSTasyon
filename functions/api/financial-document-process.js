@@ -1,4 +1,5 @@
 import { ensureFinancialDocumentSchema, financialEventReply, processFinancialCapture } from '../shared/financial-document.js';
+import { financeMemorySummaryFromDb, financeMemorySummaryText } from '../shared/finance-obligation-memory.js';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
@@ -15,7 +16,14 @@ async function sendMessage(env, chatId, text) {
   return response.ok;
 }
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
+  if (new URL(request?.url || 'https://local.invalid/').searchParams.get('view') === 'obligations') {
+    const expected = String(env.APERION_BRIDGE_SECRET || '');
+    if (!expected || request.headers.get('authorization') !== `Bearer ${expected}`) return json({ ok: false, error: 'unauthorized' }, 401);
+    if (!env.APERION_DB) return json({ ok: false, error: 'database_unavailable' }, 503);
+    const summary = await financeMemorySummaryFromDb(env.APERION_DB);
+    return json({ ok: true, service: 'aperion-finance-memory-summary', summary, text: financeMemorySummaryText(summary), financial_writes: 0 });
+  }
   const diagnostics = {
     database: Boolean(env.APERION_DB),
     workers_ai: Boolean(env.AI?.run && env.AI?.toMarkdown),
@@ -54,5 +62,6 @@ export async function onRequestPost({ request, env }) {
     ? financialEventReply(result.event, result.saved, result.duplicate)
     : `⚠️ Belge okunamadı\nHata: ${result.error}\nBelge kuyrukta korundu; mali kayıt oluşturulmadı.`;
   const delivered = await sendMessage(env, capture.chat_id, reply);
-  return json({ ok: result.ok, processed: true, capture_id: capture.id, status: result.saved?.status || 'failed', delivered, error: result.error || null }, result.ok ? 200 : 502);
+  return json({ ok: result.ok, processed: true, capture_id: capture.id, status: result.saved?.status || 'failed',
+    memory_status: result.memory?.status || null, delivered, financial_writes: 0, error: result.error || null }, result.ok ? 200 : 502);
 }

@@ -31,6 +31,14 @@ jobs:
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"
 
+      - name: Apply finance obligation memory schema
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.125.0"
+          command: d1 execute aperion-control-plane --remote --file migrations/0021_finance_obligation_memory.sql
+
       - name: Deploy main to canonical Pages project
         uses: cloudflare/wrangler-action@v3
         with:
