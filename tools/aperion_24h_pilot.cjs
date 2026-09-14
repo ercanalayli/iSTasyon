@@ -64,7 +64,7 @@ async function tick(state) {
   const bh = input.checks?.bizimhesap?.output;
   if (bh) {
     state.counters.bizimhesap_health_runs++;
-    state.health.bizimhesap = bh.overallAvailable ? 'healthy' : 'unhealthy';
+    state.health.bizimhesap = bh.authenticated ? 'healthy' : bh.officialApiHealthy ? 'degraded_api_only' : 'unhealthy';
     if (input.checks?.bizimhesapRecovery) state.counters.bizimhesap_session_recoveries++;
     if (bh.captcha || bh.mfa) state.counters.captcha_mfa++;
   }
