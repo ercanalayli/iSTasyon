@@ -24,7 +24,8 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
 - `functions/api/project-memory.js` Bearer korumalı read-only entity/relation, karar, conflict, kaynak, sync ve birleşik context sorgularını sunar.
 - `tools/consolidate_project_conversation_memory_v158.mjs` aktif repo belgeleri/kanıtlarından gerçek ingest ve idempotent D1 SQL paketi üretir. İlk sonuç: 11 kaynak, 725 fact, 28 karar, 2 dedupe, 0 conflict.
 - Sekiz zorunlu fixture `tools/test_project_conversation_memory_v158.mjs` ile doğrulandı. ChatGPT geçmiş erişimi yoksa graceful `BLOCKED_PLATFORM_ACCESS` testi dahildir.
-- Yerel D1 şema/ingest sayıları doğrulandı. Canlı D1 denemesi Cloudflare `7403` yetki hatasında durdu; otomatik uzaktan belge-fact aktarımı ayrı açık onay olmadan workflow’a eklenmedi.
+- Yerel D1 şema/ingest sayıları doğrulandı. Kullanıcının açık veri aktarım onayından sonra `7403` sorunu doğru hesap ve kesin D1 UUID eşleşmesiyle çözüldü; 725 fact ve 28 karar canlı `aperion-control-plane` D1’e idempotent olarak aktarıldı.
+- Canlı read-only doğrulama 11 source, 725 fact, 28 decision, 0 conflict, 2 platform blokajı ve 0 secret-benzeri fact döndürdü. Tek-seferlik aktarım workflow’u işlem sonrasında kaldırıldı.
 - Gerçek finansal write yapılmadı; secret ifşası `0`.
 
 ## 2026-09-14 - Finans hafızası ve vade motoru

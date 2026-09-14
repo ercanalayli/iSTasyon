@@ -6,7 +6,8 @@
 - Repo belgeleri ve state kanıtları adaptörlü gerçek ingest hattına bağlandı. İlk çalışma: 11 kaynak, 9 senkron kaynak, 725 fact, 28 karar, 2 dedupe, 0 açık çelişki.
 - `functions/api/project-memory.js` kimlik doğrulamalı read-only entity/fact, karar geçmişi, conflict, provenance, sync-state ve birleşik context sorguları sağlar.
 - ChatGPT proje sohbet geçmişi için bu ortamda desteklenen programatik API/connector yoktur; durum `BLOCKED_PLATFORM_ACCESS` olarak açıkça tutulur. Özel uygulama depoları kazınmaz, PDF/kopyala-yapıştır ana mimari yapılmaz.
-- Yerel D1 migration ve gerçek ingest doğrulandı. Canlı D1 aktarımı mevcut Wrangler hesabının `7403` yetki hatası ve uzaktaki D1’e operasyonel fact aktarımı için gereken ayrı veri aktarım onayı nedeniyle blokludur.
+- Yerel ve canlı D1 migration/ingest doğrulandı. `7403` sorunu şifreli Wrangler OAuth oturumu yenilenip hesap/veritabanı UUID eşleşmesi `SELECT 1` ile doğrulanarak çözüldü.
+- Canlı `aperion-control-plane` read-only sonucu: 11 source, 725 fact, 28 decision, 0 conflict, 2 bilinçli platform blokajı ve 0 secret-benzeri fact.
 - Kanıt: `state/project-conversation-memory-verification.json`. Finansal write: `0`; secret ifşası: `0`.
 
 ## Finans hafızası ve vade motoru (14 Eylül 2026)

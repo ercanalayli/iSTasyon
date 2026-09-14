@@ -80,6 +80,11 @@ const proof = {
   duplicate_count: snapshot.stats.duplicates, conflict_count: snapshot.conflicts.length,
   blocked_platform_access: blockedSources, fixture_results: [], financial_writes: 0, secrets_exposed: 0,
 };
+const proofPath=path.join(ROOT, 'state/project-conversation-memory-verification.json');
+try {
+  const previous=JSON.parse(fs.readFileSync(proofPath,'utf8'));
+  if (previous.live_d1_verification) proof.live_d1_verification=previous.live_d1_verification;
+} catch {}
 fs.mkdirSync(path.join(ROOT, 'state'), {recursive:true});
-fs.writeFileSync(path.join(ROOT, 'state/project-conversation-memory-verification.json'), JSON.stringify(proof,null,2)+'\n');
+fs.writeFileSync(proofPath, JSON.stringify(proof,null,2)+'\n');
 console.log(JSON.stringify(proof,null,2));

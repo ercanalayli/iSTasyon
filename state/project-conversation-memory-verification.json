@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-09-14T10:36:00.567Z",
+  "checked_at": "2026-09-14T10:51:38.605Z",
   "schema": "aperion-project-conversation-memory-v1",
   "version": "v158",
   "source_adapters": [
@@ -23,7 +23,7 @@
   "real_ingest_counts": {
     "sources": 11,
     "sources_synced": 9,
-    "facts": 725,
+    "facts": 727,
     "decisions": 28,
     "deduplicates": 2,
     "conflicts": 0,
@@ -80,5 +80,18 @@
     }
   ],
   "financial_writes": 0,
-  "secrets_exposed": 0
+  "secrets_exposed": 0,
+  "live_d1_verification": {
+    "verified_at": "2026-09-14T10:50:30Z",
+    "account_id_suffix": "e77ce",
+    "database_name": "aperion-control-plane",
+    "database_id": "8f32b3b1-5451-4c9e-9bd2-5d3626e4a561",
+    "sources": 11,
+    "facts": 725,
+    "decisions": 28,
+    "conflicts": 0,
+    "blocked_sources": 2,
+    "secret_like_facts": 0,
+    "verification_mode": "read_only_select"
+  }
 }
