@@ -69,10 +69,41 @@ function resolveDesktopTarget(normalized) {
 
 function approvalCategory(normalized) {
   if (/\b(sil|iptal et|kaldir|temizle)\b/.test(normalized)) return 'delete';
-  if (/\b(ode|odeme|transfer|aktar|havale|eft|tahsilat|fatura (?:kes|olustur|hazirla)|satinal|satin al|siparis ver|para gonder)\b/.test(normalized)) return 'finance';
+  if (/\b(ode|odeme|gider(?:i)?|masraf(?:i)?|transfer|aktar|havale|eft|tahsilat|fatura (?:kes|olustur|hazirla)|satinal|satin al|siparis ver|para gonder)\b/.test(normalized)) return 'finance';
   if (/\b(mesaj(?:i)? gonder|mail(?:i)? gonder|e posta gonder|yanitla|paylas|yayinla|ara)\b/.test(normalized)) return 'communication';
   if (/\b(yetki ver|erisimi degistir|sifre|parola|otp|giris bilgisi)\b/.test(normalized)) return 'access';
   return null;
+}
+
+function parseFinanceExpense(normalized, rawText) {
+  if (!/\b(?:gider|masraf)(?:i)?\b/.test(normalized) || !/\b(?:kasa|banka|nakit)\b/.test(normalized)) return null;
+  const amountMatch = normalized.match(/\b(\d[\d.,]*)\s*(?:tl|try)\b/);
+  if (!amountMatch) return null;
+  let amountText = amountMatch[1];
+  if (amountText.includes(',') && amountText.includes('.')) amountText = amountText.replace(/\./g, '').replace(',', '.');
+  else if (amountText.includes(',')) amountText = amountText.replace(',', '.');
+  else if (/^\d{1,3}(?:\.\d{3})+$/.test(amountText)) amountText = amountText.replace(/\./g, '');
+  const amount = Number(amountText);
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+
+  const ercanCash = /\bercan\s+nakit\s+kasa\b/.test(normalized);
+  const tea = /\b(?:cay|ikram)\b/.test(normalized);
+  return {
+    code: 'bizimhesap.expense_post',
+    category: 'finance',
+    risk: 'approval_required',
+    approvalPolicy: 'explicit_single_use',
+    executionMode: 'prepare_only',
+    parsedScope: 'ALAYLI',
+    amount,
+    currency: 'TRY',
+    expenseCategory: tea ? 'Çay / İkram' : 'Genel Gider',
+    sourceAccount: ercanCash ? 'Ercan Nakit Kasa' : null,
+    sourceAccountId: ercanCash ? '1525267' : null,
+    target: 'BizimHesap',
+    duplicateCheck: 'required',
+    rawText
+  };
 }
 
 function looksLikeCommand(normalized) {
@@ -97,6 +128,9 @@ export function parseUniversalCommand(text) {
       rawText
     };
   }
+
+  const financeExpense = parseFinanceExpense(normalized, rawText);
+  if (financeExpense) return financeExpense;
 
   const sensitiveCategory = approvalCategory(normalized);
   if (sensitiveCategory) {

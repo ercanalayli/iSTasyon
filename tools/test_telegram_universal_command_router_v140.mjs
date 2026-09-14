@@ -11,6 +11,18 @@ assert.equal(parseUniversalCommand('Nakit kasadan Ercan kasaya 3500 TL transfer'
 assert.equal(parseUniversalCommand('Murat Ticaret için fatura oluştur').risk, 'approval_required');
 assert.equal(parseUniversalCommand('Ahmet’e WhatsApp mesajı gönder').category, 'communication');
 assert.equal(parseUniversalCommand('Bu kaydı sil').category, 'delete');
+const teaExpense = parseUniversalCommand('50 TL çay masrafı Ercan Nakit Kasa');
+assert.equal(teaExpense.code, 'bizimhesap.expense_post');
+assert.equal(teaExpense.risk, 'approval_required');
+assert.equal(teaExpense.executionMode, 'prepare_only');
+assert.equal(teaExpense.approvalPolicy, 'explicit_single_use');
+assert.equal(teaExpense.parsedScope, 'ALAYLI');
+assert.equal(teaExpense.amount, 50);
+assert.equal(teaExpense.currency, 'TRY');
+assert.equal(teaExpense.expenseCategory, 'Çay / İkram');
+assert.equal(teaExpense.sourceAccount, 'Ercan Nakit Kasa');
+assert.equal(teaExpense.sourceAccountId, '1525267');
+assert.equal(teaExpense.target, 'BizimHesap');
 assert.equal(parseUniversalCommand('Yarın satış raporunu hazırla'), null);
 assert.equal(parseUniversalCommand('sadece bir not'), null);
 assert.equal(DESKTOP_TARGETS.bizimhesap.url.startsWith('https://bizimhesap.com/'), true);

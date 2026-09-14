@@ -1,0 +1,70 @@
+{
+  "checkedAt": "2026-09-14T17:23:20.561Z",
+  "status": "approval_required",
+  "integration": "authenticated_gpt_action_openapi",
+  "endpoint": "https://aperion-command-bridge.yenicespor-finans.workers.dev/openapi.json",
+  "commandText": "50 TL çay masrafı Ercan Nakit Kasa",
+  "command_id": "56047a36-be2c-4e62-b010-a2061fea2124",
+  "parsed_scope": "ALAYLI",
+  "amount": 50,
+  "currency": "TRY",
+  "category": "Çay / İkram",
+  "source_account": "Ercan Nakit Kasa",
+  "resolved_account": {
+    "name": "**ercan nakit",
+    "id": "1525267"
+  },
+  "live_account_resolution": {
+    "ok": true,
+    "displayName": "Ercan Nakit Kasa",
+    "resolvedName": "**ercan nakit",
+    "resolvedId": "1525267",
+    "provenance": "v160 verified BizimHesap account registry + local read-only activity ledger",
+    "occurrenceCount": 51,
+    "freshBrowserProbe": "deferred_rate_limited_429",
+    "writePerformed": false
+  },
+  "target": "BizimHesap",
+  "duplicate_check": "PASS",
+  "replay_same_command_id": true,
+  "approval_policy": "explicit_single_use",
+  "execution_mode": "prepare_only",
+  "proof": {
+    "source": "ChatGPT/ApeirON",
+    "queue_task_present": true,
+    "immutable_payload_binding": true,
+    "worker_leasing_blocked_until_approval": true
+  },
+  "status_query": {
+    "command_id": "56047a36-be2c-4e62-b010-a2061fea2124",
+    "command": "bizimhesap.expense_post",
+    "status": "approval_required",
+    "approval_policy": "explicit_single_use",
+    "approval_binding": "sha256:c34534c656578be8202a9a790afe748f9371a2ce2e558e075775c627ee54464b",
+    "parsed_scope": "ALAYLI",
+    "amount": 50,
+    "currency": "TRY",
+    "category": "Çay / İkram",
+    "source_account": "Ercan Nakit Kasa",
+    "resolved_account": {
+      "name": "**ercan nakit",
+      "id": "1525267"
+    },
+    "target": "BizimHesap",
+    "duplicate_check": "PASS",
+    "result": null,
+    "financial_write": 0,
+    "bizimhesap_write": 0,
+    "proof": {
+      "queue_task_present": true,
+      "risk": "write",
+      "approval_state": "required",
+      "created_at": "2026-09-14T17:16:41.204Z",
+      "updated_at": "2026-09-14T17:16:41.204Z"
+    }
+  },
+  "transient_session_note": "fresh account selector probe deferred after BizimHesap HTTP 429; no retry storm",
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "secrets_exposed": 0
+}
