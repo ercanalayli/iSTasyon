@@ -1,0 +1,53 @@
+name: One-time AperiON Project Memory Ingest v158
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    if: github.event.head_commit.message == '[APERION] one-time project memory ingest v158'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify approved target identity
+        shell: bash
+        env:
+          EXPECTED_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$EXPECTED_ACCOUNT_ID"
+          grep -F '"database_name": "aperion-control-plane"' wrangler.jsonc
+          grep -F '"database_id": "8f32b3b1-5451-4c9e-9bd2-5d3626e4a561"' wrangler.jsonc
+
+      - name: Build filtered ingest and run safety tests
+        shell: bash
+        run: APERION_MEMORY_SQL_OUT=.wrangler/project-memory-seed.sql npm run verify:project-conversation-memory-v158
+
+      - name: Apply memory schema to approved D1
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.125.0"
+          command: d1 migrations apply aperion-control-plane --remote
+
+      - name: Ingest approved filtered memory
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.125.0"
+          command: d1 execute aperion-control-plane --remote --file .wrangler/project-memory-seed.sql
+
+      - name: Read-only verification
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.125.0"
+          command: d1 execute aperion-control-plane --remote --command "SELECT (SELECT COUNT(*) FROM memory_sources) sources,(SELECT COUNT(*) FROM memory_facts) facts,(SELECT COUNT(*) FROM memory_decisions) decisions,(SELECT COUNT(*) FROM memory_conflicts) conflicts,(SELECT COUNT(*) FROM memory_sync_state WHERE status='blocked') blocked;"
