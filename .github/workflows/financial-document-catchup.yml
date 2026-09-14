@@ -21,10 +21,10 @@ jobs:
   process-latest-pending-document:
     runs-on: ubuntu-latest
     timeout-minutes: 6
+    env:
+      APERION_BRIDGE_SECRET: ${{ secrets.APERION_BRIDGE_SECRET }}
     steps:
-      - name: Wait for Pages v157 and process latest pending capture
-        env:
-          APERION_BRIDGE_SECRET: ${{ secrets.APERION_BRIDGE_SECRET }}
+      - name: Wait for Pages v157 finance memory health
         run: |
           set -euo pipefail
           endpoint='https://aperion-istasyon.pages.dev/api/financial-document-process'
@@ -37,10 +37,12 @@ jobs:
             sleep 15
           done
           test "$ready" = 'yes'
-          if [ -z "$APERION_BRIDGE_SECRET" ]; then
-            echo '::warning::APERION_BRIDGE_SECRET yok; canlı v157 doğrulandı, pending belge POST adımı güvenle atlandı.'
-            exit 0
-          fi
+
+      - name: Process latest pending capture when authorized
+        if: ${{ env.APERION_BRIDGE_SECRET != '' }}
+        continue-on-error: true
+        run: |
+          endpoint='https://aperion-istasyon.pages.dev/api/financial-document-process'
           curl --fail-with-body --silent --show-error -X POST "$endpoint" \
             -H "Authorization: Bearer $APERION_BRIDGE_SECRET" \
             -H 'Content-Type: application/json' \

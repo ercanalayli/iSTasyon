@@ -27,7 +27,7 @@ tutarsızlığının şeffaf şekilde taşınmasıdır.
 - Morning brief'e bugün, 3/7 gün, geciken, son kapanan ve inceleme gereken finans hafızası bölümü eklendi.
 - `verify:finance-memory-v157` ve sekiz zorunlu fixture senaryosu eklendi; `state/finance-memory-verification.json` üretiliyor.
 - Gerçek finansal write yapılmadı (`0`); secret ifşası `0`.
-- Pages deploy sonrası catch-up, `APERION_BRIDGE_SECRET` GitHub ortamında yoksa önce canlı `v157` endpointini doğrulayıp POST adımını güvenli şekilde atlayacak hale getirildi.
+- Pages deploy sonrası catch-up iki adıma ayrıldı: canlı `v157`/D1 şema health kontrolü zorunlu; yetkili pending-belge POST’u ayrı ve tekil belge hatasında dağıtımı bozmayan uyarı adımıdır.
 
 ## 2026-09-14 - Hermes VPS ve read-only BizimHesap hattı uçtan uca doğrulandı
 

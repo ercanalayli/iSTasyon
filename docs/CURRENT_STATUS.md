@@ -9,7 +9,7 @@
 - Yalnız yüksek güvenli ödeme eşleşmesi `paid` üretiyor; belirsiz eşleşme otomatik kapanmıyor. `paid → archived` geçişi ayrı ve doğrulanmış bir durum geçişidir.
 - Finans vade özeti kimlik doğrulamalı read-only endpoint ve morning brief içinde bugün/3 gün/7 gün/geciken/kapanan/kapsam ayrımıyla sunuluyor.
 - Migration: `migrations/0021_finance_obligation_memory.sql`. Kanıt: `state/finance-memory-verification.json`. Gerçek finansal write: `0`; secret ifşası: `0`.
-- Cloudflare Pages dağıtımı başarılı. GitHub catch-up secret yoksa canlı `v157` health kontrolünü yapar ve yetkisiz POST denemeden güvenli biçimde atlar.
+- Cloudflare Pages dağıtımı başarılı. GitHub catch-up canlı `v157`/D1 şema health kontrolünü zorunlu yapar; yetkili pending-belge işlemesi ayrı adımdır ve tekil belge ayrıştırma hatası dağıtımı bozmaz.
 
 ## Hermes VPS / Windows worker doğrulaması (14 Eylül 2026)
 
