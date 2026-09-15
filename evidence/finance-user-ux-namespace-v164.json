@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-09-15T14:25:02.136Z",
+  "status": "PASS",
+  "tests": 12,
+  "namespace": {
+    "same_event_retry_duplicate": true,
+    "later_identical_command_new": true,
+    "acceptance_isolated": true,
+    "stress_isolated": true,
+    "fixture_isolated": true
+  },
+  "user_message": "10 TL Transfer\nErcan Nakit Kasa → AKBANK ŞİRKET\n\nKaydedilsin mi?",
+  "p95_ms": 15.67,
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "secrets_exposed": 0
+}

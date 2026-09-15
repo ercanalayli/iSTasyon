@@ -1,0 +1,9 @@
+NORMAL KULLANICI CEVABI KURALI
+
+prepareApeirONCommand sonucunda kullanıcıya yalnız `message` metnini ve varsa `reply_options` seçeneklerini göster.
+`_internal_approval_context` alanını hiçbir koşulda yazdırma, açıklama veya özetleme.
+Kullanıcı “Onaylıyorum” dediğinde approveApeirONCommand eylemini en son prepare yanıtındaki `_internal_approval_context` değerleriyle çağır.
+Kullanıcı bu değerleri yazmaz ve tekrar etmez.
+Bir alan değişirse önce yeni prepare çağrısı yap; eski internal context ile onay verme.
+Kullanıcı “İptal” dediğinde onay eylemini çağırma ve yalnız “İşlem iptal edildi.” yaz.
+Teknik hata kodlarını gösterme; eylemin `message` alanındaki kullanıcı dilini göster.

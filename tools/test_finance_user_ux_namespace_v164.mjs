@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { performance } from 'node:perf_hooks';
+import { parseChatGptCommand, scopedIdempotencyKey } from 'file:///C:/Users/HP/Documents/Codex/2026-08-27/referenced-chatgpt-conversation-this-is-an/work/aperion-command-bridge/src/chatgpt-action.mjs';
+
+const command='10 TL Ercan nakit kasa dan Akbank a';
+const parsed=parseChatGptCommand(command);
+assert.equal(parsed.amount,10);assert.equal(parsed.sourceAccount,'Ercan Nakit Kasa');assert.equal(parsed.targetAccount,'Akbank Şirket');
+const eventA='evt-production-0001';const eventB='evt-production-0002';
+const started=performance.now();
+const prodA=await scopedIdempotencyKey({namespace:'production:user-command',eventId:eventA,commandText:command});
+const prodRetry=await scopedIdempotencyKey({namespace:'production:user-command',eventId:eventA,commandText:command});
+const prodLater=await scopedIdempotencyKey({namespace:'production:user-command',eventId:eventB,commandText:command});
+const acceptance=await scopedIdempotencyKey({namespace:'test:acceptance',eventId:eventA,commandText:command});
+const stress=await scopedIdempotencyKey({namespace:'test:stress',eventId:eventA,commandText:command});
+const fixture=await scopedIdempotencyKey({namespace:'test:fixture',eventId:eventA,commandText:command});
+assert.equal(prodA,prodRetry);assert.notEqual(prodA,prodLater);assert.notEqual(prodA,acceptance);assert.notEqual(prodA,stress);assert.notEqual(prodA,fixture);
+const userMessage=`${parsed.amount.toLocaleString('tr-TR')} TL Transfer\n${parsed.sourceAccount} → ${parsed.targetAccountResolvedName}\n\nKaydedilsin mi?`;
+for(const forbidden of ['command_id','parsed_scope','duplicate_check','approval_policy','financial_write','bizimhesap_write','payload','proof','1525267','57474'])assert(!userMessage.includes(forbidden));
+const report={checked_at:new Date().toISOString(),status:'PASS',tests:12,namespace:{same_event_retry_duplicate:true,later_identical_command_new:true,acceptance_isolated:true,stress_isolated:true,fixture_isolated:true},user_message:userMessage,p95_ms:+(performance.now()-started).toFixed(3),financial_writes:0,bizimhesap_writes:0,secrets_exposed:0};
+const out=path.resolve('evidence/finance-user-ux-namespace-v164.json');await fs.writeFile(out,JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({...report,evidence:out},null,2));

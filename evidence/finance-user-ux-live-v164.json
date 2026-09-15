@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-09-15T14:31:51.077Z",
+  "status": "PASS",
+  "production_version": "cf145401-69a1-4592-a02c-9cf6d4fc3cec",
+  "new_production_event_id": "b99aac94-47aa-4001-9f70-acd820c84d7c",
+  "new_production_command_id_audit_only": "6b1fd034-34df-4852-a6ec-497d7c91ebc8",
+  "conversation_key_redacted": true,
+  "user_visible_response": {
+    "message": "10 TL Transfer\nErcan Nakit Kasa → Akbank Şirket\n\nKaydedilsin mi?",
+    "reply_options": [
+      "Onaylıyorum",
+      "İptal"
+    ]
+  },
+  "internal_context_present_not_user_visible": true,
+  "namespace_live": {
+    "same_event_retry_deduplicated_backend": true,
+    "later_identical_command_new_backend": true,
+    "test_acceptance_isolated": true
+  },
+  "p95_prepare_ms": 327.92,
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "secrets_exposed": 0
+}
