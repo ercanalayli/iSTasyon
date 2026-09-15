@@ -1,0 +1,36 @@
+{
+  "checked_at": "2026-09-15T14:57:00.000Z",
+  "overall_status": "PARTIAL",
+  "backend_and_live_schema": "PASS",
+  "production_worker_version": "dabed992-ede5-4657-9133-4db5532099cc",
+  "schema_contract": {
+    "prepareApeirONCommand_consequential": false,
+    "approveApeirONCommand_consequential": true,
+    "exact_command_id_binding": "PASS",
+    "exact_payload_hash_binding": "PASS",
+    "conversation_binding": "PASS",
+    "single_use_approval": "PASS",
+    "idempotency": "PASS"
+  },
+  "new_conversation_backend_dry_run": "PASS",
+  "target_user_summary": "10 TL Transfer\nErcan Nakit Kasa → Akbank Şirket",
+  "typed_onayliyorum_step_removed": true,
+  "native_allow_visual_acceptance": "NOT_RUN",
+  "native_allow_visual_blocker": "No controllable authenticated ChatGPT/Custom GPT surface was available. The desktop ChatGPT app is not exposed to computer control and no ChatGPT browser tab was open. The Custom GPT stores a configuration snapshot, so its pasted schema and instructions must be refreshed before a real new-chat UI test.",
+  "regression": {
+    "legacy_total": 135,
+    "legacy_passed": 135,
+    "adapter_total": 15,
+    "adapter_passed": 15,
+    "live_schema_tests": 1,
+    "live_schema_passed": 1,
+    "live_dry_run_tests": 1,
+    "live_dry_run_passed": 1,
+    "total": 152,
+    "passed": 152,
+    "failed": 0
+  },
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "secrets_exposed": 0
+}

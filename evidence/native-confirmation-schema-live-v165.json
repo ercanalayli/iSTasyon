@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-09-15T14:56:52.979Z",
+  "status": "PASS",
+  "endpoint": "https://aperion-command-bridge.yenicespor-finans.workers.dev",
+  "production_worker_version": "dabed992-ede5-4657-9133-4db5532099cc",
+  "schema": {
+    "prepareApeirONCommand_consequential": false,
+    "approveApeirONCommand_consequential": true,
+    "exact_binding_fields_present": true
+  },
+  "live_schema_latency_ms": 399.8,
+  "test_mode": "schema_and_dry_contract_only",
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "secrets_exposed": 0
+}

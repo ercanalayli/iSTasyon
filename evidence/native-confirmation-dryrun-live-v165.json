@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-09-15T14:56:54.990Z",
+  "status": "PASS",
+  "production_worker_version": "dabed992-ede5-4657-9133-4db5532099cc",
+  "new_conversation_key_redacted": true,
+  "acceptance_command_id": "9addc46d-ae32-429a-9ac7-d217b626c6af",
+  "user_visible_summary": "10 TL Transfer\nErcan Nakit Kasa → Akbank Şirket",
+  "internal_exact_binding_present": true,
+  "typed_approval_prompt_removed": true,
+  "test_namespace_approval_blocked": true,
+  "approval_http_status": 409,
+  "technical_error_redacted": true,
+  "prepare_duration_ms": 554.58,
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "secrets_exposed": 0
+}
