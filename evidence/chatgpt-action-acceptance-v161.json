@@ -1,10 +1,10 @@
 {
-  "checkedAt": "2026-09-14T17:23:20.561Z",
+  "checkedAt": "2026-09-15T09:55:05.382Z",
   "status": "approval_required",
   "integration": "authenticated_gpt_action_openapi",
   "endpoint": "https://aperion-command-bridge.yenicespor-finans.workers.dev/openapi.json",
   "commandText": "50 TL çay masrafı Ercan Nakit Kasa",
-  "command_id": "56047a36-be2c-4e62-b010-a2061fea2124",
+  "command_id": "17ba9d04-efd2-4893-b583-63ff02105ffc",
   "parsed_scope": "ALAYLI",
   "amount": 50,
   "currency": "TRY",
@@ -36,7 +36,7 @@
     "worker_leasing_blocked_until_approval": true
   },
   "status_query": {
-    "command_id": "56047a36-be2c-4e62-b010-a2061fea2124",
+    "command_id": "17ba9d04-efd2-4893-b583-63ff02105ffc",
     "command": "bizimhesap.expense_post",
     "status": "approval_required",
     "approval_policy": "explicit_single_use",
@@ -59,9 +59,26 @@
       "queue_task_present": true,
       "risk": "write",
       "approval_state": "required",
-      "created_at": "2026-09-14T17:16:41.204Z",
-      "updated_at": "2026-09-14T17:16:41.204Z"
+      "created_at": "2026-09-15T09:55:05.382Z",
+      "updated_at": "2026-09-15T09:55:05.382Z"
     }
+  },
+  "live_d1_verification": {
+    "database": "aperion-control-plane",
+    "database_id": "8f32b3b1-5451-4c9e-9bd2-5d3626e4a561",
+    "rows_read": 1,
+    "rows_written": 0,
+    "changed_db": false,
+    "command": "bizimhesap.expense_post",
+    "risk": "write",
+    "approval_state": "required",
+    "queue_status": "pending"
+  },
+  "chatgpt_ui_acceptance": {
+    "source": "published private ApeirON custom GPT",
+    "user_retyped_elsewhere": false,
+    "duplicate": true,
+    "result_visible_in_chatgpt": true
   },
   "transient_session_note": "fresh account selector probe deferred after BizimHesap HTTP 429; no retry storm",
   "financial_writes": 0,

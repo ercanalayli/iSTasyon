@@ -26,3 +26,5 @@ The existing project conversation itself cannot gain a GPT Action merely because
 `50 TL çay masrafı Ercan Nakit Kasa`
 
 Expected safe state: `bizimhesap.expense_post`, 50 TRY, ALAYLI, Çay / İkram, Ercan Nakit Kasa resolved to the verified BizimHesap account, `approval_required`, zero financial writes.
+
+Live ChatGPT acceptance passed on 2026-09-15 with command ID `17ba9d04-efd2-4893-b583-63ff02105ffc`. Repeating the command resolved idempotently to the same queued task with `duplicate=true`. Remote D1 verification read one row and wrote zero rows; the task remains `pending` with `approval_state=required`.
