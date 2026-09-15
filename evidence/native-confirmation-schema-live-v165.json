@@ -1,14 +1,14 @@
 {
-  "checked_at": "2026-09-15T14:56:52.979Z",
+  "checked_at": "2026-09-15T15:38:41.624Z",
   "status": "PASS",
   "endpoint": "https://aperion-command-bridge.yenicespor-finans.workers.dev",
-  "production_worker_version": "dabed992-ede5-4657-9133-4db5532099cc",
+  "production_worker_version": "0db5201e-a243-4eff-a30e-3dc1ffc618e0",
   "schema": {
     "prepareApeirONCommand_consequential": false,
     "approveApeirONCommand_consequential": true,
     "exact_binding_fields_present": true
   },
-  "live_schema_latency_ms": 399.8,
+  "live_schema_latency_ms": 451.95,
   "test_mode": "schema_and_dry_contract_only",
   "financial_writes": 0,
   "bizimhesap_writes": 0,

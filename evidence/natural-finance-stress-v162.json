@@ -1,13 +1,13 @@
 {
-  "checkedAt": "2026-09-15T14:56:51.947Z",
+  "checkedAt": "2026-09-15T15:38:40.860Z",
   "mode": "fixture_dry_run",
   "total": 104,
   "passed": 104,
   "failed": 0,
   "accuracy": 100,
   "ambiguityDetection": "PASS",
-  "p50Ms": 0.034,
-  "p95Ms": 0.699,
+  "p50Ms": 0.017,
+  "p95Ms": 0.329,
   "security": {
     "no_guess_on_missing_source": true,
     "no_write_on_clarification": true,

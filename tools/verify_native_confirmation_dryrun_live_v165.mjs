@@ -58,7 +58,7 @@ assert.equal(approvalResponse.ok, false);
 const report = {
   checked_at: new Date().toISOString(),
   status: 'PASS',
-  production_worker_version: 'dabed992-ede5-4657-9133-4db5532099cc',
+  production_worker_version: '0db5201e-a243-4eff-a30e-3dc1ffc618e0',
   new_conversation_key_redacted: true,
   acceptance_command_id: prepared._internal_approval_context.command_id,
   user_visible_summary: prepared.message,

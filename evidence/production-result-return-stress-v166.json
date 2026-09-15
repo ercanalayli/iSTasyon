@@ -1,0 +1,567 @@
+{
+  "checked_at": "2026-09-15T15:38:45.151Z",
+  "mode": "fixture_dry_run_state_machine",
+  "status": "PASS",
+  "total": 134,
+  "passed": 134,
+  "failed": 0,
+  "sequential_commands": 100,
+  "concurrent_commands": 20,
+  "scenario_tests": 14,
+  "criteria": {
+    "lost_command": 0,
+    "unauthorized_write": 0,
+    "duplicate_financial_write": 0,
+    "unverified_success": 0,
+    "stuck_processing": 0,
+    "secrets_exposed": 0,
+    "popup_count": 0
+  },
+  "concurrency": "PASS",
+  "crash_recovery": "PASS",
+  "timeout_recovery": "PASS",
+  "duplicate_prevention": "PASS",
+  "result_return": "PASS",
+  "p50_ms": 0.003,
+  "p95_ms": 0.023,
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "checks": [
+    {
+      "name": "sequential_1",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_2",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_3",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_4",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_5",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_6",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_7",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_8",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_9",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_10",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_11",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_12",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_13",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_14",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_15",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_16",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_17",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_18",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_19",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_20",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_21",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_22",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_23",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_24",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_25",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_26",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_27",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_28",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_29",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_30",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_31",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_32",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_33",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_34",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_35",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_36",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_37",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_38",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_39",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_40",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_41",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_42",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_43",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_44",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_45",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_46",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_47",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_48",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_49",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_50",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_51",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_52",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_53",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_54",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_55",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_56",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_57",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_58",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_59",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_60",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_61",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_62",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_63",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_64",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_65",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_66",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_67",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_68",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_69",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_70",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_71",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_72",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_73",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_74",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_75",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_76",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_77",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_78",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_79",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_80",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_81",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_82",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_83",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_84",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_85",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_86",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_87",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_88",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_89",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_90",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_91",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_92",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_93",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_94",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_95",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_96",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_97",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_98",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_99",
+      "status": "PASS"
+    },
+    {
+      "name": "sequential_100",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_1",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_2",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_3",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_4",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_5",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_6",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_7",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_8",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_9",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_10",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_11",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_12",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_13",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_14",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_15",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_16",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_17",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_18",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_19",
+      "status": "PASS"
+    },
+    {
+      "name": "concurrent_20",
+      "status": "PASS"
+    },
+    {
+      "name": "duplicate_message",
+      "status": "PASS"
+    },
+    {
+      "name": "double_approval",
+      "status": "PASS"
+    },
+    {
+      "name": "approval_replay",
+      "status": "PASS"
+    },
+    {
+      "name": "worker_crash_before_write",
+      "status": "PASS"
+    },
+    {
+      "name": "browser_session_expiration",
+      "status": "PASS"
+    },
+    {
+      "name": "network_timeout_before_write",
+      "status": "PASS"
+    },
+    {
+      "name": "network_timeout_after_write",
+      "status": "PASS"
+    },
+    {
+      "name": "write_callback_lost",
+      "status": "PASS"
+    },
+    {
+      "name": "readback_delayed",
+      "status": "PASS"
+    },
+    {
+      "name": "bizimhesap_temporary_loss",
+      "status": "PASS"
+    },
+    {
+      "name": "windows_worker_restart",
+      "status": "PASS"
+    },
+    {
+      "name": "hermes_restart",
+      "status": "PASS"
+    },
+    {
+      "name": "unauthorized_write",
+      "status": "PASS"
+    },
+    {
+      "name": "unverified_success_blocked",
+      "status": "PASS"
+    }
+  ]
+}

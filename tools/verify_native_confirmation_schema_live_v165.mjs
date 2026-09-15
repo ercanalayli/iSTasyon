@@ -26,7 +26,7 @@ const report = {
   checked_at: new Date().toISOString(),
   status: 'PASS',
   endpoint,
-  production_worker_version: 'dabed992-ede5-4657-9133-4db5532099cc',
+  production_worker_version: '0db5201e-a243-4eff-a30e-3dc1ffc618e0',
   schema: {
     prepareApeirONCommand_consequential: false,
     approveApeirONCommand_consequential: true,

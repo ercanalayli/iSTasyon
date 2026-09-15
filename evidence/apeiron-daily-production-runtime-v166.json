@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-09-15T18:41:22+03:00",
+  "release": "v166",
+  "overall": "PARTIAL",
+  "reason": "The production result-return state machine is deployed and dry-run regressions pass, but the current APERION_BIZIMHESAP persistent session is login_required after automated recovery was rejected. A real write/read-back cycle was intentionally not executed.",
+  "production_worker_version": "0db5201e-a243-4eff-a30e-3dc1ffc618e0",
+  "chain": {
+    "phone_to_hermes": "PASS",
+    "approval_binding": "PASS",
+    "windows_worker_queue": "PASS",
+    "bizimhesap_write_readback": "NOT_RUN",
+    "result_return": "PASS_DRY_RUN",
+    "terminal_states": ["completed_verified", "failed_safe", "needs_review"]
+  },
+  "tests": {
+    "existing_regression": {"passed": 152, "total": 152},
+    "new_result_return_stress": {"passed": 134, "total": 134},
+    "combined": {"passed": 286, "total": 286},
+    "sequential_commands": 100,
+    "concurrent_commands": 20,
+    "lost_command": 0,
+    "unauthorized_write": 0,
+    "duplicate_financial_write": 0,
+    "unverified_success": 0,
+    "stuck_processing": 0,
+    "secrets_exposed": 0,
+    "popup_count": 0,
+    "financial_writes": 0,
+    "bizimhesap_writes": 0
+  },
+  "performance": {
+    "live_prepare_ms": 2091.39,
+    "fixture_p50_ms": 0.003,
+    "fixture_p95_ms": 0.023,
+    "approval_to_completed_verified_p95": "NOT_MEASURED_NO_REAL_WRITE"
+  },
+  "d1": {
+    "database": "aperion-control-plane",
+    "database_id": "8f32b3b1-5451-4c9e-9bd2-5d3626e4a561",
+    "migration": "0003_execution_state.sql",
+    "counts": {"completed_verified": 74, "failed_safe": 6, "prepared": 17},
+    "stuck_processing": 0
+  },
+  "health": {
+    "windows_worker": "PASS",
+    "worker_id": "ercan-windows-desktop-omkjlpq",
+    "queue": "reachable",
+    "bizimhesap_session": "FAIL_LOGIN_REQUIRED",
+    "captcha_or_mfa": false,
+    "hermes_gateway": "PARTIAL_PROCESSES_RUNNING_WATCHDOG_LAST_RESULT_NONZERO"
+  },
+  "safety": {
+    "blind_retry_after_uncertain_write": false,
+    "mandatory_readback": true,
+    "approval_single_use": true,
+    "exact_payload_binding": true,
+    "idempotent_callbacks": true,
+    "test_command_10_try_is_not_a_release_blocker": true
+  },
+  "source_hashes": {
+    "src/index.js": "DE25B4059670492B1E04611F7B974582B23211EE3355DDED65565881B31F9337",
+    "src/windows-worker.js": "BBE7E76C7B977B03C1E45DC13C273B96AB6A7540E9A8580AE8F4ABE556723B6D",
+    "migrations/0003_execution_state.sql": "1F086A239DD5F90A57A470AE2498FEDFB66B4487057BFB5AC57DF65CC4C33511"
+  },
+  "exact_blocker": {
+    "code": "APERION_BIZIMHESAP_SESSION_LOGIN_REQUIRED",
+    "detail": "The persistent browser profile currently returns HTTP 401; stored-session recovery returned login_rejected and entered backoff. There is no CAPTCHA or MFA challenge to escalate.",
+    "effect": "A real BizimHesap write plus independent read-back cannot be certified until the persistent session is authenticated."
+  }
+}
