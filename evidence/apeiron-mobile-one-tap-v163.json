@@ -1,0 +1,52 @@
+{
+  "checked_at": "2026-09-15T14:30:00+03:00",
+  "status": "PARTIAL",
+  "reason": "The supported one-tap entry is configured and the exact live conversation URL is known, but adding the icon to a physical phone Home Screen requires one user-side installation gesture and cannot be verified remotely from this Windows host.",
+  "entry": {
+    "display_name": "ApeirON",
+    "method": "authenticated HTTPS direct conversation shortcut",
+    "url": "https://chatgpt.com/c/6aa915e2-058c-83eb-a46c-31f68f080f51",
+    "conversation_id": "6aa915e2-058c-83eb-a46c-31f68f080f51",
+    "shared_snapshot_used": false,
+    "secret_in_url": false
+  },
+  "iphone": {
+    "supported_method": "Safari Add to Home Screen; Open as Web App when offered",
+    "minimum_taps_to_text_screen_after_unlock": 1,
+    "minimum_taps_to_voice_input_after_unlock": 2,
+    "physical_device_install_verified": false
+  },
+  "android": {
+    "supported_method": "Chrome Install and create shortcut / Create shortcut",
+    "minimum_taps_to_text_screen_after_unlock": 1,
+    "minimum_taps_to_voice_input_after_unlock": 2,
+    "physical_device_install_verified": false
+  },
+  "conversation_sync": {
+    "status": "PASS",
+    "chatgpt_thread_title": "Nakit Kasa Kaydı",
+    "same_conversation_visible_to_codex_app": true,
+    "authoritative_command_state": "Hermes/D1 command_id, not ChatGPT history"
+  },
+  "hermes_bridge": {
+    "status": "PASS",
+    "acceptance_command": "50 TL çay masrafı Ercan Nakit Kasa",
+    "command_id": "17ba9d04-efd2-4893-b583-63ff02105ffc",
+    "result": "approval_required",
+    "approval_policy": "explicit_single_use",
+    "duplicate_check": "PASS",
+    "financial_writes": 0,
+    "bizimhesap_writes": 0
+  },
+  "security": {
+    "bridge_changed": false,
+    "approval_gate_changed": false,
+    "telegram_role": "critical_notification_captcha_mfa_runtime_failure_fallback",
+    "secrets_exposed": 0
+  },
+  "sources": {
+    "apple": "https://support.apple.com/guide/iphone/bookmark-a-website-iph42ab2f3a7/ios",
+    "google": "https://support.google.com/chrome/answer/15085120?co=GENIE.Platform%3DAndroid&hl=en",
+    "openai_gpts": "https://help.openai.com/en/articles/8554407-gpts-in-chatgpt"
+  }
+}
