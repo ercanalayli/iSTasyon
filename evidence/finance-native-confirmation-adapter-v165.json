@@ -1,0 +1,74 @@
+{
+  "checked_at": "2026-09-15T14:48:58.904Z",
+  "status": "PASS",
+  "total": 15,
+  "passed": 15,
+  "failed": 0,
+  "tests": [
+    {
+      "name": "prepare_identity_preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "production_namespace",
+      "status": "PASS"
+    },
+    {
+      "name": "exact_command_binding",
+      "status": "PASS"
+    },
+    {
+      "name": "exact_payload_binding",
+      "status": "PASS"
+    },
+    {
+      "name": "conversation_binding",
+      "status": "PASS"
+    },
+    {
+      "name": "missing_hash_blocked",
+      "status": "PASS"
+    },
+    {
+      "name": "cancel_zero_write",
+      "status": "PASS"
+    },
+    {
+      "name": "replay_zero_duplicate",
+      "status": "PASS"
+    },
+    {
+      "name": "stale_conversation_isolated",
+      "status": "PASS"
+    },
+    {
+      "name": "new_conversation_supported",
+      "status": "PASS"
+    },
+    {
+      "name": "schema_update_old_conversation_safe",
+      "status": "PASS"
+    },
+    {
+      "name": "mobile_shortcut_stable_gpt_identity",
+      "status": "PASS"
+    },
+    {
+      "name": "plugin_ready_surfaces",
+      "status": "PASS"
+    },
+    {
+      "name": "debug_hidden",
+      "status": "PASS"
+    },
+    {
+      "name": "verified_success_copy",
+      "status": "PASS"
+    }
+  ],
+  "native_confirmation_attestation": "NOT_DOCUMENTED",
+  "safe_design": "native confirmation plus backend exact command/payload/conversation validation",
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "secrets_exposed": 0
+}

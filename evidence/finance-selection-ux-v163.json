@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-09-15T13:47:47.762Z",
+  "checked_at": "2026-09-15T14:48:58.716Z",
   "mode": "fixture_dry_run",
   "live_account_registry_read_only": true,
   "real_akbank_bank_candidate_count": 1,
@@ -11,97 +11,97 @@
     {
       "name": "acceptance_not_generic_unsupported",
       "pass": true,
-      "duration_ms": 0.076
+      "duration_ms": 0.038
     },
     {
       "name": "acceptance_operation",
       "pass": true,
-      "duration_ms": 0.043
+      "duration_ms": 0.024
     },
     {
       "name": "acceptance_amount",
       "pass": true,
-      "duration_ms": 0.01
+      "duration_ms": 0.005
     },
     {
       "name": "acceptance_source",
       "pass": true,
-      "duration_ms": 0.009
+      "duration_ms": 0.005
     },
     {
       "name": "acceptance_target",
       "pass": true,
-      "duration_ms": 0.01
+      "duration_ms": 0.005
     },
     {
       "name": "acceptance_prepare_only",
       "pass": true,
-      "duration_ms": 0.009
+      "duration_ms": 0.005
     },
     {
       "name": "acceptance_approval_required",
       "pass": true,
-      "duration_ms": 0.011
+      "duration_ms": 0.005
     },
     {
       "name": "single_candidate_final_summary",
       "pass": true,
-      "duration_ms": 0.378
+      "duration_ms": 0.157
     },
     {
       "name": "single_candidate_approve_action",
       "pass": true,
-      "duration_ms": 0.027
+      "duration_ms": 0.011
     },
     {
       "name": "selection_not_approval",
       "pass": true,
-      "duration_ms": 2.033
+      "duration_ms": 0.69
     },
     {
       "name": "candidate_limit",
       "pass": true,
-      "duration_ms": 1.7
+      "duration_ms": 0.85
     },
     {
       "name": "other_option",
       "pass": true,
-      "duration_ms": 0.811
+      "duration_ms": 0.232
     },
     {
       "name": "context_preserved_after_selection",
       "pass": true,
-      "duration_ms": 0.443
+      "duration_ms": 0.204
     },
     {
       "name": "choice_is_not_approval",
       "pass": true,
-      "duration_ms": 0.02
+      "duration_ms": 0.007
     },
     {
       "name": "double_tap_idempotent",
       "pass": true,
-      "duration_ms": 0.016
+      "duration_ms": 0.008
     },
     {
       "name": "payload_mutation_invalidates_approval",
       "pass": true,
-      "duration_ms": 0.057
+      "duration_ms": 0.028
     },
     {
       "name": "single_use_approval",
       "pass": true,
-      "duration_ms": 0.009
+      "duration_ms": 0.005
     },
     {
       "name": "approval_replay_blocked",
       "pass": true,
-      "duration_ms": 0.013
+      "duration_ms": 0.007
     },
     {
       "name": "stale_approval_blocked",
       "pass": true,
-      "duration_ms": 0.012
+      "duration_ms": 0.007
     }
   ],
   "security": {
