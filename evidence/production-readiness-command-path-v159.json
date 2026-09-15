@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-14T12:29:34.051Z",
+  "checkedAt": "2026-09-15T11:43:18.422Z",
   "status": "PASS",
   "mode": "fixture_dry_run_plus_live_wiring_inspection",
   "financialWrites": 0,
@@ -9,34 +9,73 @@
     {
       "text": "Nakit kasadan Ercan kasaya 3500 TL transfer",
       "parsed": {
-        "code": "approval_request",
         "category": "finance",
+        "parsedScope": "ALAYLI",
+        "currency": "TRY",
+        "rawText": "Nakit kasadan Ercan kasaya 3500 TL transfer",
+        "target": "BizimHesap",
         "risk": "approval_required",
-        "approvalPolicy": "single_use_explicit",
+        "approvalPolicy": "explicit_single_use",
         "executionMode": "prepare_only",
-        "rawText": "Nakit kasadan Ercan kasaya 3500 TL transfer"
+        "amount": 3500,
+        "code": "bizimhesap.cash_transfer_post",
+        "operation": "transfer",
+        "sourceAccount": null,
+        "sourceAccountId": null,
+        "targetAccount": "Ercan Nakit Kasa",
+        "targetAccountId": "1525267",
+        "status": "needs_clarification",
+        "needsClarification": true,
+        "missingFields": [
+          "source_account"
+        ],
+        "clarificationQuestion": "3.500 TL transfer. Hedef: Ercan Nakit Kasa. Kaynak kasa/hesap hangisi?",
+        "approvalRequired": true,
+        "financialWrite": 0,
+        "bizimhesapWrite": 0
       }
     },
     {
       "text": "Murat Ticaret için fatura oluştur",
       "parsed": {
-        "code": "approval_request",
         "category": "finance",
+        "parsedScope": "ALAYLI",
+        "currency": "TRY",
+        "rawText": "Murat Ticaret için fatura oluştur",
+        "target": "BizimHesap",
         "risk": "approval_required",
-        "approvalPolicy": "single_use_explicit",
+        "approvalPolicy": "explicit_single_use",
         "executionMode": "prepare_only",
-        "rawText": "Murat Ticaret için fatura oluştur"
+        "amount": null,
+        "code": "bizimhesap.invoice_draft",
+        "operation": "fatura_taslagi",
+        "status": "needs_clarification",
+        "needsClarification": true,
+        "missingFields": [
+          "amount"
+        ],
+        "clarificationQuestion": "Tutar nedir?",
+        "approvalRequired": true,
+        "financialWrite": 0,
+        "bizimhesapWrite": 0
       }
     },
     {
       "text": "Ahmet carisine 1250 TL tahsilat kaydet",
       "parsed": {
-        "code": "approval_request",
         "category": "finance",
+        "parsedScope": "ALAYLI",
+        "currency": "TRY",
+        "rawText": "Ahmet carisine 1250 TL tahsilat kaydet",
+        "target": "BizimHesap",
         "risk": "approval_required",
-        "approvalPolicy": "single_use_explicit",
+        "approvalPolicy": "explicit_single_use",
         "executionMode": "prepare_only",
-        "rawText": "Ahmet carisine 1250 TL tahsilat kaydet"
+        "amount": 1250,
+        "code": "bizimhesap.collection_draft",
+        "operation": "tahsilat",
+        "status": "approval_required",
+        "duplicateCheck": "required"
       }
     }
   ],

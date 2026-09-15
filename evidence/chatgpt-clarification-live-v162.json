@@ -1,0 +1,45 @@
+{
+  "checkedAt": "2026-09-15T11:44:22.814Z",
+  "status": "PASS",
+  "productionVersion": "f2649921-11a1-4c18-8398-719c0436fc16",
+  "partial": {
+    "status": "needs_clarification",
+    "known_fields": {
+      "operation": "transfer",
+      "scope": "ALAYLI",
+      "amount": 16000,
+      "currency": "TRY",
+      "source_account": null,
+      "target_account": "Ercan Nakit Kasa",
+      "target": "BizimHesap"
+    },
+    "missing_fields": [
+      "source_account"
+    ],
+    "question": "16.000 TL transfer. Hedef: Ercan Nakit Kasa. Kaynak kasa/hesap hangisi?",
+    "duration_ms": 324.57
+  },
+  "continuation": {
+    "command_id": "757801d3-2f11-4a51-a6d7-ce9b52675884",
+    "status": "approval_required",
+    "amount": 16000,
+    "currency": "TRY",
+    "source_account": "TL Kasa",
+    "target_account": "Ercan Nakit Kasa",
+    "approval_policy": "explicit_single_use",
+    "duration_ms": 156.57
+  },
+  "duplicate_replay": {
+    "same_command_id": true,
+    "duplicate": true
+  },
+  "server_side_status": {
+    "queryable": true,
+    "status": "approval_required",
+    "approval_state": "required"
+  },
+  "device_independent_state": true,
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "secrets_exposed": 0
+}

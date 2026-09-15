@@ -23,7 +23,7 @@ assert.equal(teaExpense.expenseCategory, 'Çay / İkram');
 assert.equal(teaExpense.sourceAccount, 'Ercan Nakit Kasa');
 assert.equal(teaExpense.sourceAccountId, '1525267');
 assert.equal(teaExpense.target, 'BizimHesap');
-assert.equal(parseUniversalCommand('Yarın satış raporunu hazırla'), null);
+assert.equal(parseUniversalCommand('Yarın satış raporunu hazırla').code, 'bizimhesap.sales_analysis');
 assert.equal(parseUniversalCommand('sadece bir not'), null);
 assert.equal(DESKTOP_TARGETS.bizimhesap.url.startsWith('https://bizimhesap.com/'), true);
 

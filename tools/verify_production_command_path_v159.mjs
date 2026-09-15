@@ -18,7 +18,7 @@ const commands = [
 for (const row of commands) {
   assert.equal(row.parsed?.risk, 'approval_required');
   assert.equal(row.parsed?.executionMode, 'prepare_only');
-  assert.equal(row.parsed?.approvalPolicy, 'single_use_explicit');
+  assert.equal(row.parsed?.approvalPolicy, 'explicit_single_use');
 }
 
 const fixtures = [

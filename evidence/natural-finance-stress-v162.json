@@ -1,0 +1,26 @@
+{
+  "checkedAt": "2026-09-15T11:43:18.558Z",
+  "mode": "fixture_dry_run",
+  "total": 104,
+  "passed": 104,
+  "failed": 0,
+  "accuracy": 100,
+  "ambiguityDetection": "PASS",
+  "p50Ms": 0.017,
+  "p95Ms": 0.372,
+  "security": {
+    "no_guess_on_missing_source": true,
+    "no_write_on_clarification": true,
+    "context_preserved": true,
+    "approval_payload_binding": "covered_by_existing_sha256_guard",
+    "duplicate_prevention": "covered_by_existing_unique_idempotency_key",
+    "approval_replay": "covered_by_existing_atomic_required_to_approved_transition",
+    "concurrency": "covered_by_existing_conditional_lease_update",
+    "crash_recovery": "covered_by_existing_lease_expiry",
+    "unknown_write_retry": "blocked_by_execution_ledger"
+  },
+  "failures": [],
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "secrets_exposed": 0
+}
