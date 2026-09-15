@@ -1,0 +1,21 @@
+{
+  "checked_at": "2026-09-15T13:49:47.601Z",
+  "status": "PASS",
+  "production_version": "bf7ad6f5-a9a6-4fa7-84d2-d8634f2d9f5d",
+  "command_id": "3080388b-1d76-41d1-8c3b-65c143f4a176",
+  "amount": 10,
+  "currency": "TRY",
+  "source_account": "Ercan Nakit Kasa",
+  "target_account": "Akbank Şirket",
+  "final_summary": "10 TRY\nErcan Nakit Kasa → Akbank Şirket",
+  "approval_policy": "explicit_single_use",
+  "approval_expires_at": "2026-09-15T13:59:47.070Z",
+  "duplicate_replay": {
+    "same_command_id": true,
+    "duplicate": true
+  },
+  "duration_ms": 367.28,
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "secrets_exposed": 0
+}
