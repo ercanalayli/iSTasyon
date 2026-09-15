@@ -7,8 +7,8 @@ Date: 2026-09-15
 - 104 Turkish natural-language fixtures: 104 PASS, 0 FAIL.
 - Parser accuracy: 100% on the versioned fixture corpus.
 - Ambiguity detection: PASS.
-- False-positive write-risk: 0/10 deliberately non-financial or explicitly uncertain commands.
-- False-negative write-risk: 0/74 fixture commands that imply a financial draft/write risk.
+- False-positive write-risk: 0/40 read-only, non-financial, or explicitly uncertain commands.
+- False-negative write-risk: 0/64 fixture commands that imply a financial draft/write risk or require safe clarification.
 - Local parse latency: p50 0.017 ms, p95 0.372 ms.
 - Production partial-command round trip: 324.57 ms; continuation/prepare: 156.57 ms.
 - Financial writes: 0. BizimHesap writes: 0. Secrets exposed: 0.
