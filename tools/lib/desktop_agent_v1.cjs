@@ -17,8 +17,8 @@ const READ = new Set(['desktop.health','browser.health','site.session.health']);
 // These capabilities can expose local names or content even though they do
 // not mutate the machine. Keep them out of remote task execution until a
 // payload-scoped consent and output-redaction policy exists.
-const SENSITIVE_READ = new Set(['desktop.list_apps','desktop.inspect_screen','browser.list_tabs','browser.inspect','file.read','file.list']);
-const MUTATING = new Set(['desktop.open_app','desktop.focus_app','desktop.click','desktop.type','desktop.hotkey','browser.open','browser.focus_tab','browser.click','browser.type','browser.navigate','file.write_safe','site.session.recover']);
+const SENSITIVE_READ = new Set(['desktop.list_apps','desktop.inspect_screen','desktop.list_windows','desktop.inspect_window','browser.list_tabs','browser.inspect','file.read','file.list']);
+const MUTATING = new Set(['desktop.open_app','desktop.focus_app','desktop.focus_window','desktop.click','desktop.mouse_move','desktop.mouse_click','desktop.type','desktop.hotkey','browser.open','browser.focus_tab','browser.click','browser.type','browser.navigate','file.write_safe','site.session.recover']);
 const META = new Set(['task.execute','task.status','task.result','task.cancel']);
 const ALL = new Set([...READ, ...SENSITIVE_READ, ...MUTATING, ...META]);
 
@@ -70,12 +70,33 @@ async function desktopApps() {
   const { stdout } = await run('tasklist.exe', ['/FO', 'CSV', '/NH'], { windowsHide: true, timeout: 10000, maxBuffer: 1024 * 1024 });
   return [...new Set(stdout.split(/\r?\n/).map(line => /^"([^"]+)"/.exec(line)?.[1]).filter(Boolean))].sort().slice(0, 200);
 }
+async function desktopWindows(operation, payload = {}) {
+  if (process.platform !== 'win32') throw new Error('windows_desktop_required');
+  const script = path.join(__dirname, 'desktop_agent_windows.ps1');
+  const { stdout } = await run('powershell.exe', ['-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden', '-File', script, '-Operation', operation, '-PayloadJson', JSON.stringify(payload)],
+    { windowsHide: true, timeout: 15000, maxBuffer: operation === 'inspect_screen' ? 32 * 1024 * 1024 : 1024 * 1024 });
+  return JSON.parse(stdout.trim());
+}
+let localHealthCache = { expires: 0, value: null };
+async function localDesktopHealth() {
+  if (Date.now() < localHealthCache.expires) return localHealthCache.value;
+  let value;
+  try { value = await desktopWindows('health'); }
+  catch { value = { available: false }; }
+  localHealthCache = { expires: Date.now() + 2000, value };
+  return value;
+}
 async function executeRead(capability, payload = {}, dependencies = {}) {
   if (!READ.has(capability) && !SENSITIVE_READ.has(capability)) throw new Error('read_capability_required');
   switch (capability) {
-    case 'desktop.health': return { platform: process.platform, agent_version: 'desktop-agent-v1', ready: true };
+    case 'desktop.health': {
+      const local_capabilities = await localDesktopHealth();
+      return { platform: process.platform, agent_version: 'desktop-agent-v1', ready: true, local_capabilities };
+    }
     case 'desktop.list_apps': return { apps: await desktopApps() };
-    case 'desktop.inspect_screen': return { available: false, reason: 'screen_capture_not_connected_to_authenticated_worker' };
+    case 'desktop.inspect_screen': return desktopWindows('inspect_screen');
+    case 'desktop.list_windows': return desktopWindows('list_windows');
+    case 'desktop.inspect_window': return desktopWindows('inspect_window', payload);
     case 'browser.health': {
       try { const tabs = await cdpTargets(); return { connected: true, tab_count: tabs.length, profile: 'APERION_BIZIMHESAP' }; }
       catch { return { connected: false, tab_count: 0, profile: 'APERION_BIZIMHESAP' }; }
@@ -103,6 +124,18 @@ async function executeRead(capability, payload = {}, dependencies = {}) {
     }
   }
 }
+// Local Session 1 entry point. The remote task executor below deliberately
+// keeps screen/window reads and all input capabilities blocked.
+async function executeLocalDesktop(capability, payload = {}) {
+  const operations = {
+    'desktop.inspect_screen': 'inspect_screen', 'desktop.list_windows': 'list_windows',
+    'desktop.inspect_window': 'inspect_window', 'desktop.focus_window': 'focus_window',
+    'desktop.mouse_move': 'mouse_move', 'desktop.mouse_click': 'mouse_click',
+    'desktop.type': 'type', 'desktop.hotkey': 'hotkey'
+  };
+  if (!Object.hasOwn(operations, capability)) throw new Error('local_desktop_capability_not_allowed');
+  return desktopWindows(operations[capability], payload);
+}
 function validateTask(task) {
   if (!task || !ALL.has(task.capability)) throw new Error('capability_not_allowed');
   if (typeof task.task_id !== 'string' || !/^[0-9a-f-]{36}$/i.test(task.task_id)) throw new Error('task_id_invalid');
@@ -121,4 +154,4 @@ async function execute(task, dependencies = {}) {
   return { status: 'completed_verified', result, write_performed: false };
 }
 
-module.exports = { ALL, READ, SENSITIVE_READ, MUTATING, riskClass, hashPayload, validateTask, execute, executeRead, checkedPath };
+module.exports = { ALL, READ, SENSITIVE_READ, MUTATING, riskClass, hashPayload, validateTask, execute, executeRead, executeLocalDesktop, checkedPath };
