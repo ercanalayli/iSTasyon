@@ -32,10 +32,13 @@
     "event_dedupe_count": 1
   },
   "fixture_tests": { "event_ledger": "13/13 PASS", "existing_memory_regression": "8/8 PASS (read-only mode)", "supersede": "PASS", "append_only_update_delete": "PASS" },
+  "deployment": { "source_commit": "a115c4b3b48650f62216b866c79518088d7efc08", "cloudflare_pages_production_source": "a115c4b", "authenticated_live_http_acceptance": "NOT_VERIFIED" },
   "notes": [
     "The existing 767 facts and 41 decisions were not reset or recreated.",
     "AI-0646 is a verified historical expense; no new financial record was created.",
     "Drive vault mapping is tested with a fixture; no Drive file ID was invented for AI-0646.",
-    "The authenticated ingestion and retrieval API requires deployment before live HTTP acceptance can be claimed."
+    "The authenticated ingestion and retrieval API is deployed, but a live authenticated HTTP call was not verified.",
+    "The existing Drive watcher is not yet proven to call the document mapping endpoint automatically.",
+    "The Codex/Computer Use result producer is not yet proven to call the verified-result ingestion endpoint automatically."
   ]
 }
