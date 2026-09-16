@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
-import { appendEvent, ingestVerifiedResult, ingestRuleCandidate, recordFact, upsertEntity, linkEntities, mapDriveDocument } from '../functions/shared/memory-event-ledger.js';
+import { appendEvent, ingestVerifiedResult, ingestRuleCandidate, recordFact, upsertEntity, linkEntities, mapDriveDocument, ingestDriveChange } from '../functions/shared/memory-event-ledger.js';
 import { onRequestGet, onRequestPost } from '../functions/api/project-memory.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -57,4 +57,13 @@ check('Entity graph retrieval API',()=>assert.ok(entitiesJson.rows.some(row=>row
 const posted=await onRequestPost({request:new Request('https://fixture.test/api/project-memory',{method:'POST',headers:{...headers,'content-type':'application/json'},body:JSON.stringify({kind:'verified_result',event:{...verified,source_ref:'fixture:AI-0647',task_id:'fixture-task-0647',command_id:'fixture-command-0647',metadata:{...verified.metadata,document_no:'AI-0647'}}})}),env});
 const postedJson=await posted.json();
 check('Codex verified-result ingestion API',()=>assert.equal(postedJson.ok,true));
+const driveBase={drive_file_id:'fixture-drive-acceptance',canonical_name:'ApeirON Memory Acceptance 20260916',document_type:'application/vnd.google-apps.document',modified_at:'2026-09-16T13:00:00Z',cursor:'fixture-cursor'};
+const driveV1={...driveBase,version_hash:'a'.repeat(64),acceptance_code:'APN-MEM-20260916'};
+const driveFirst=await ingestDriveChange(db,driveV1);
+check('Drive v1 auto-ingest objects',()=>{assert.equal(native.prepare('SELECT COUNT(*) AS n FROM memory_documents WHERE drive_file_id=?').get(driveBase.drive_file_id).n,1);assert.ok(driveFirst.event_id);});
+const driveDuplicate=await ingestDriveChange(db,driveV1);
+check('Drive same fingerprint deduped',()=>{assert.equal(driveDuplicate.duplicate,true);assert.equal(native.prepare("SELECT COUNT(*) AS n FROM memory_events WHERE event_type='drive_document_version'").get().n,1);});
+const driveV2={...driveBase,version_hash:'b'.repeat(64),acceptance_code:'APN-MEM-20260916-V2',modified_at:'2026-09-17T13:00:00Z'};
+await ingestDriveChange(db,driveV2);
+check('Drive v2 supersedes but retains v1',()=>{assert.equal(native.prepare('SELECT COUNT(*) AS n FROM memory_documents WHERE drive_file_id=?').get(driveBase.drive_file_id).n,2);assert.equal(native.prepare('SELECT COUNT(*) AS n FROM memory_documents WHERE drive_file_id=? AND superseded_by IS NOT NULL').get(driveBase.drive_file_id).n,1);assert.equal(native.prepare("SELECT object_value FROM memory_facts WHERE predicate='acceptance_code' AND status='active'").get().object_value,'APN-MEM-20260916-V2');});
 console.log(JSON.stringify({mode:'fixture_only',passed:checks.length,total:checks.length,checks,financial_writes:0,bizimhesap_writes:0,secrets_exposed:0}));
