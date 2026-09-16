@@ -20,5 +20,6 @@ const schema=fs.readFileSync(new URL('../migrations/0022_project_conversation_me
 for(const table of ['memory_sources','memory_facts','memory_fact_sources','memory_decisions','memory_conflicts','memory_sync_state']) assert.match(schema,new RegExp(`CREATE TABLE IF NOT EXISTS ${table}`));
 const api=fs.readFileSync(new URL('../functions/api/project-memory.js',import.meta.url),'utf8');
 for(const view of ['facts','decisions','conflicts','sources','sync','context']) assert.ok(api.includes(`'${view}'`)||api.includes(`${view}:`),`missing API view ${view}`);
-const proof=JSON.parse(fs.readFileSync(proofPath,'utf8'));proof.fixture_results=results;fs.writeFileSync(proofPath,JSON.stringify(proof,null,2)+'\n');
+const proof=JSON.parse(fs.readFileSync(proofPath,'utf8'));proof.fixture_results=results;
+if (process.env.APERION_READ_ONLY_TEST !== '1') fs.writeFileSync(proofPath,JSON.stringify(proof,null,2)+'\n');
 console.log(`PASS ${results.length}/${results.length}`);

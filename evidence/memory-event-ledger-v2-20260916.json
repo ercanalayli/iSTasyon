@@ -1,0 +1,41 @@
+{
+  "phase": "ApeirON MEMORY OS v2 — EVENT LEDGER",
+  "date": "2026-09-16",
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "secrets_exposed": 0,
+  "d1_database": "aperion-control-plane",
+  "migration": "0023_memory_event_ledger.sql",
+  "migration_method": "additive remote D1 execute; legacy Wrangler migration tracker was empty, so migrations apply was not used",
+  "before": { "facts": 767, "decisions": 41, "fact_source_links": 767, "sources": 41 },
+  "after": { "facts": 768, "decisions": 41, "fact_source_links": 769, "events": 2, "entities": 4, "relations": 4 },
+  "primary_source_readback": {
+    "company": "ALAYLI MEDİKAL",
+    "document_no": "AI-0646",
+    "amount": 50,
+    "currency": "TRY",
+    "category_group": "İşletme Giderleri",
+    "category_detail": "MARKET",
+    "payment_account": "Ercan Nakit Kasa",
+    "status": "Ödenmiş",
+    "date": "2026-09-16",
+    "read_only_method": "existing authenticated BizimHesap Chrome session, getcurrentfirm and GetAllCosts",
+    "matching_document_count": 1
+  },
+  "rule_provenance": ["user-correction:chay-market-20260916", "bizimhesap:expense:AI-0646"],
+  "live_retrieval": {
+    "AI-0646_document_matches": 1,
+    "first_verified_expense_event": "evt:ai0646:verified",
+    "tea_category": "MARKET",
+    "cash_account_relation": "Ercan Nakit Kasa",
+    "rule_source_count": 2,
+    "event_dedupe_count": 1
+  },
+  "fixture_tests": { "event_ledger": "13/13 PASS", "existing_memory_regression": "8/8 PASS (read-only mode)", "supersede": "PASS", "append_only_update_delete": "PASS" },
+  "notes": [
+    "The existing 767 facts and 41 decisions were not reset or recreated.",
+    "AI-0646 is a verified historical expense; no new financial record was created.",
+    "Drive vault mapping is tested with a fixture; no Drive file ID was invented for AI-0646.",
+    "The authenticated ingestion and retrieval API requires deployment before live HTTP acceptance can be claimed."
+  ]
+}

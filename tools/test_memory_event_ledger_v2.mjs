@@ -4,6 +4,7 @@ import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import { appendEvent, ingestVerifiedResult, ingestRuleCandidate, recordFact, upsertEntity, linkEntities, mapDriveDocument } from '../functions/shared/memory-event-ledger.js';
+import { onRequestGet, onRequestPost } from '../functions/api/project-memory.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const native = new DatabaseSync(':memory:');
@@ -43,4 +44,17 @@ check('Drive vault stores mapping, not file bytes',()=>assert.equal(native.prepa
 assert.throws(()=>native.prepare('UPDATE memory_events SET summary=? WHERE event_id=?').run('changed',result.event_id),/append_only_event/);
 assert.throws(()=>native.prepare('DELETE FROM memory_events WHERE event_id=?').run(result.event_id),/append_only_event/);
 check('Append-only update/delete guards',()=>assert.equal(native.prepare('SELECT COUNT(*) AS n FROM memory_events').get().n,2));
+const env={APERION_DB:db,APERION_BRIDGE_SECRET:'fixture-secret-for-memory-api-testing-only-123456'};
+const headers={authorization:`Bearer ${env.APERION_BRIDGE_SECRET}`};
+const unauthorized=await onRequestGet({request:new Request('https://fixture.test/api/project-memory?view=ledger&ref=AI-0646'),env});
+check('Authenticated retrieval required',()=>assert.equal(unauthorized.status,401));
+const ledger=await onRequestGet({request:new Request('https://fixture.test/api/project-memory?view=ledger&ref=AI-0646',{headers}),env});
+const ledgerJson=await ledger.json();
+check('Document-number retrieval API',()=>assert.equal(ledgerJson.rows.length,1));
+const entities=await onRequestGet({request:new Request('https://fixture.test/api/project-memory?view=entities&ref=ALAYLI',{headers}),env});
+const entitiesJson=await entities.json();
+check('Entity graph retrieval API',()=>assert.ok(entitiesJson.rows.some(row=>row.related_name==='Ercan Nakit Kasa')));
+const posted=await onRequestPost({request:new Request('https://fixture.test/api/project-memory',{method:'POST',headers:{...headers,'content-type':'application/json'},body:JSON.stringify({kind:'verified_result',event:{...verified,source_ref:'fixture:AI-0647',task_id:'fixture-task-0647',command_id:'fixture-command-0647',metadata:{...verified.metadata,document_no:'AI-0647'}}})}),env});
+const postedJson=await posted.json();
+check('Codex verified-result ingestion API',()=>assert.equal(postedJson.ok,true));
 console.log(JSON.stringify({mode:'fixture_only',passed:checks.length,total:checks.length,checks,financial_writes:0,bizimhesap_writes:0,secrets_exposed:0}));

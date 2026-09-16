@@ -9,7 +9,7 @@ const expression = `(async()=>{
   const cost=await fetch('/api/AngularControllers/costs/GetAllCosts',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json;charset=UTF-8'},body:JSON.stringify({guid:'',searchText:'AI-0646',startIndex:0,totalRecordCount:100,sortColumnIndex:0,sortDirectionAsc:false,paymentStatus:0,canViewAll:true,costSearchCalendarType:1})}).then(r=>r.json());
   const flat=[]; const seen=new Set(); const walk=(value,depth)=>{if(depth>5||!value||typeof value!=='object'||seen.has(value))return;seen.add(value);if(value.dsGuid&&String(value.dsDocumentNo||'').includes('AI-0646'))flat.push(value);else for(const child of Object.values(value))walk(child,depth+1)};walk(cost,0);
   const firmText=JSON.stringify(firm).slice(0,2000);
-  return {company_alayli:/ALAYLI/i.test(firmText),matches:flat.map(v=>({document_no:String(v.dsDocumentNo||''),amount:Number(v.mtAmount),category:String(v.dsAccount||v.dsAccountDetail||''),account:String(v.dsSupplier||''),status:String(v.dsStatus||''),date:String(v.dtTransaction||v.dtDue||'')})).slice(0,10)};
+  return {company_alayli:/ALAYLI/i.test(firmText),matches:flat.map(v=>({document_no:String(v.dsDocumentNo||''),amount:Number(v.mtAmount),category_group:String(v.dsAccount||''),category_detail:String(v.dsAccountDetail||''),account:String(v.dsSupplier||''),status:String(v.dsStatus||''),date:String(v.dtTransaction||v.dtDue||'')})).slice(0,10)};
 })()`;
 const result = await new Promise((resolve,reject)=>{
   const timer=setTimeout(()=>reject(new Error('cdp_evaluate_timeout')),10000);
