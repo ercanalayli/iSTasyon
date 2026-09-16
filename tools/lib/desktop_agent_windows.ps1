@@ -24,6 +24,9 @@ public static class ApeirDesktopNative {
   [DllImport("user32.dll")] public static extern uint SendInput(uint count, INPUT[] inputs, int size);
   [DllImport("kernel32.dll")] public static extern uint WTSGetActiveConsoleSessionId();
   [DllImport("user32.dll", SetLastError=true)] public static extern IntPtr OpenInputDesktop(uint flags, bool inherit, uint access);
+  [DllImport("user32.dll")] public static extern IntPtr GetProcessWindowStation();
+  [DllImport("kernel32.dll")] public static extern uint GetCurrentThreadId();
+  [DllImport("user32.dll")] public static extern IntPtr GetThreadDesktop(uint threadId);
   [DllImport("user32.dll")] public static extern bool CloseDesktop(IntPtr desktop);
   [DllImport("user32.dll", SetLastError=true)] public static extern bool GetUserObjectInformation(IntPtr handle, int index, StringBuilder info, int length, out int needed);
   [StructLayout(LayoutKind.Sequential)] public struct MOUSEINPUT { public int dx,dy; public uint mouseData,dwFlags,time; public IntPtr dwExtraInfo; }
@@ -38,6 +41,15 @@ function Assert-InteractiveDesktop {
   $current = [System.Diagnostics.Process]::GetCurrentProcess().SessionId
   $active = [ApeirDesktopNative]::WTSGetActiveConsoleSessionId()
   if ($current -eq 0 -or $current -ne $active) { throw 'interactive_session_unavailable' }
+  $stationName = New-Object System.Text.StringBuilder 128
+  $stationLength = 0
+  if (-not [ApeirDesktopNative]::GetUserObjectInformation([ApeirDesktopNative]::GetProcessWindowStation(), 2, $stationName, $stationName.Capacity * 2, [ref]$stationLength)) { throw 'window_station_unavailable' }
+  if ($stationName.ToString() -ne 'WinSta0') { throw "noninteractive_window_station:$($stationName.ToString())" }
+  $threadDesktop = New-Object System.Text.StringBuilder 128
+  $threadLength = 0
+  $threadHandle = [ApeirDesktopNative]::GetThreadDesktop([ApeirDesktopNative]::GetCurrentThreadId())
+  if (-not [ApeirDesktopNative]::GetUserObjectInformation($threadHandle, 2, $threadDesktop, $threadDesktop.Capacity * 2, [ref]$threadLength)) { throw 'thread_desktop_unavailable' }
+  if ($threadDesktop.ToString() -ne 'Default') { throw "noninteractive_thread_desktop:$($threadDesktop.ToString())" }
   $desktop = [ApeirDesktopNative]::OpenInputDesktop(0, $false, 1)
   if ($desktop -eq [IntPtr]::Zero) { throw 'input_desktop_unavailable' }
   try {
