@@ -1,0 +1,61 @@
+{
+  "checked_at": "2026-09-16",
+  "release_state": "PARTIAL_LIVE_HEALTH_BRIDGE",
+  "canonical_workspace": "C:\\AperiON\\iSTasyon",
+  "architecture": "Existing D1 bridge and Windows worker retained; no parallel runtime deployed",
+  "desktop_adapter": {
+    "file": "tools/lib/desktop_agent_v1.cjs",
+    "capability_contract_declared": true,
+    "read_implemented": ["desktop.health", "desktop.list_apps", "browser.health", "browser.list_tabs", "browser.inspect", "file.read", "file.list", "site.session.health"],
+    "read_partial": ["desktop.inspect_screen"],
+    "mutating_blocked_until_verified_approval": true,
+    "task_bridge_not_connected": false,
+    "remote_allowlist": ["desktop.health", "site.session.health"],
+    "sensitive_read_and_mutating_remote_capabilities_blocked": true
+  },
+  "live_read_only": {
+    "bizimhesap_browser_authenticated": true,
+    "bizimhesap_profile": "APERION_BIZIMHESAP",
+    "bizimhesap_costs_api_scanned": 239,
+    "bridge_health": true,
+    "windows_worker_health": "healthy",
+    "worker_supervisor_alive": true,
+    "hidden_watchdog": "AperiON_Watchdog_1Min ready, wscript hidden runner",
+    "legacy_startup_tasks": "disabled"
+  },
+  "expense_prepare": {
+    "amount": 50,
+    "currency": "TRY",
+    "account": "**ercan nakit",
+    "account_match_count": 1,
+    "requested_category": "Çay/İkram",
+    "category_match_count": 0,
+    "possible_related_50_try_cost_previous_day": 1,
+    "status": "needs_review_not_approval_ready"
+  },
+  "stress": {
+    "status": "PASS_LOCAL_FIXTURE_ONLY",
+    "total": 145,
+    "sequential_read": 100,
+    "concurrent_read": 20,
+    "mutating_capabilities_fail_closed": 12,
+    "sensitive_reads_fail_closed": 6,
+    "bridge_tests": 14
+  },
+  "security_review": {
+    "cloud_bridge_extension": "REJECTED_BY_AUTO_REVIEW",
+    "reason": "Remote general desktop task surface could disclose local documents and browser metadata without sufficient payload-specific egress controls",
+    "rejected_change_reverted": true,
+    "chatgpt_to_desktop_live_call": false,
+    "authenticated_client_to_gateway_d1_windows_result_return": true,
+    "site_session_health_live": "PASS",
+    "desktop_health_live": "PASS",
+    "custom_gpt_action_invocation": "NOT_PROVEN",
+    "custom_gpt_schema_update": "NOT_VERIFIED"
+  },
+  "financial_writes": 0,
+  "bizimhesap_writes": 0,
+  "secrets_exposed": 0,
+  "production_worker_version": "1c6db8cd-358c-4ce8-be67-a45eef3988d1",
+  "general_result": "PARTIAL"
+}

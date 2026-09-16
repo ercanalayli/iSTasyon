@@ -4,7 +4,6 @@
 // second daemon, queue, credential store, or browser profile.
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const os = require('node:os');
 const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const { createHash } = require('node:crypto');
@@ -14,13 +13,18 @@ const ROOT = path.resolve(__dirname, '../..');
 const CDP = 'http://127.0.0.1:9222';
 const SECRET_NAME = /(?:secret|credential|password|token|cookie|\.dpapi|\.pem|\.key|\.env)/i;
 const READABLE_ROOTS = new Set(['docs', 'evidence']);
-const READ = new Set(['desktop.health','desktop.list_apps','desktop.inspect_screen','browser.health','browser.list_tabs','browser.inspect','file.read','file.list','site.session.health']);
+const READ = new Set(['desktop.health','browser.health','site.session.health']);
+// These capabilities can expose local names or content even though they do
+// not mutate the machine. Keep them out of remote task execution until a
+// payload-scoped consent and output-redaction policy exists.
+const SENSITIVE_READ = new Set(['desktop.list_apps','desktop.inspect_screen','browser.list_tabs','browser.inspect','file.read','file.list']);
 const MUTATING = new Set(['desktop.open_app','desktop.focus_app','desktop.click','desktop.type','desktop.hotkey','browser.open','browser.focus_tab','browser.click','browser.type','browser.navigate','file.write_safe','site.session.recover']);
 const META = new Set(['task.execute','task.status','task.result','task.cancel']);
-const ALL = new Set([...READ, ...MUTATING, ...META]);
+const ALL = new Set([...READ, ...SENSITIVE_READ, ...MUTATING, ...META]);
 
 function riskClass(capability) {
   if (READ.has(capability)) return 'READ';
+  if (SENSITIVE_READ.has(capability)) return 'SENSITIVE_READ';
   if (MUTATING.has(capability)) return 'WRITE_EXTERNAL';
   if (META.has(capability)) return 'CONTROL';
   throw new Error('capability_not_allowed');
@@ -67,9 +71,9 @@ async function desktopApps() {
   return [...new Set(stdout.split(/\r?\n/).map(line => /^"([^"]+)"/.exec(line)?.[1]).filter(Boolean))].sort().slice(0, 200);
 }
 async function executeRead(capability, payload = {}, dependencies = {}) {
-  if (!READ.has(capability)) throw new Error('read_capability_required');
+  if (!READ.has(capability) && !SENSITIVE_READ.has(capability)) throw new Error('read_capability_required');
   switch (capability) {
-    case 'desktop.health': return { platform: process.platform, host: os.hostname(), agent_version: 'desktop-agent-v1', ready: true };
+    case 'desktop.health': return { platform: process.platform, agent_version: 'desktop-agent-v1', ready: true };
     case 'desktop.list_apps': return { apps: await desktopApps() };
     case 'desktop.inspect_screen': return { available: false, reason: 'screen_capture_not_connected_to_authenticated_worker' };
     case 'browser.health': {
@@ -112,9 +116,9 @@ function validateTask(task) {
 }
 async function execute(task, dependencies = {}) {
   validateTask(task);
-  if (!READ.has(task.capability)) return { status: 'blocked', reason: 'exact_approval_and_verification_adapter_required', write_performed: false };
+  if (!READ.has(task.capability)) return { status: 'blocked', reason: 'exact_approval_and_egress_policy_required', write_performed: false };
   const result = await executeRead(task.capability, task.payload, dependencies);
   return { status: 'completed_verified', result, write_performed: false };
 }
 
-module.exports = { ALL, READ, MUTATING, riskClass, hashPayload, validateTask, execute, executeRead, checkedPath };
+module.exports = { ALL, READ, SENSITIVE_READ, MUTATING, riskClass, hashPayload, validateTask, execute, executeRead, checkedPath };

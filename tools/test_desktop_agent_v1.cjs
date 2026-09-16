@@ -25,15 +25,22 @@ async function main() {
     assert.equal(result.status, 'blocked');
     passed++;
   }
+  for (const capability of agent.SENSITIVE_READ) {
+    const result = await agent.execute(task(capability));
+    assert.equal(result.write_performed, false);
+    assert.equal(result.status, 'blocked');
+    passed++;
+  }
   const bad = task('desktop.health'); bad.payload_hash = 'sha256:bad';
   assert.throws(() => agent.validateTask(bad), /payload_hash_mismatch/); passed++;
   for (const path of ['state/windows-worker.secret','config/credentials.json','../outside','docs/../../state/windows-worker.secret']) {
     assert.throws(() => agent.checkedPath(path)); passed++;
   }
   assert.equal(agent.riskClass('browser.navigate'), 'WRITE_EXTERNAL'); passed++;
-  assert.equal(agent.riskClass('file.read'), 'READ'); passed++;
+  assert.equal(agent.riskClass('file.read'), 'SENSITIVE_READ'); passed++;
   console.log(JSON.stringify({ status: 'PASS', tests: passed, sequential: 100, concurrent_read: 20,
-    mutating_capabilities_blocked_without_exact_approval: agent.MUTATING.size, financial_writes: 0,
+    mutating_capabilities_blocked_without_exact_approval: agent.MUTATING.size,
+    sensitive_reads_blocked_without_egress_policy: agent.SENSITIVE_READ.size, financial_writes: 0,
     bizimhesap_writes: 0, secrets_exposed: 0 }));
 }
 main().catch(error => { console.error(error.message); process.exitCode = 1; });
