@@ -15,7 +15,7 @@ const db = {
       { connector_key: "google_drive", title: "Google Drive", status: "active", maturity: "verified" },
       { connector_key: "gmail", title: "Gmail", status: "inactive", maturity: "declared" }
     ];
-    if (sql.includes("FROM commitment_timeline")) return [
+    if (sql.includes("FROM commitments") || sql.includes("FROM commitment_timeline")) return [
       { commitment_type: "payable", title: "Tedarikçi ödemesi", amount: 1250, currency: "TRY", status: "open", priority: "high", truth_state: "confirmed", approval_required: 1, time_bucket: "approaching" },
       { commitment_type: "received_order", title: "Hakan Atasert siparişi", status: "open", truth_state: "confirmed", approval_required: 0, time_bucket: "upcoming" }
     ];
@@ -29,10 +29,9 @@ const db = {
 
 const brief = await buildMorningBrief(db, new Date("2026-08-21T06:00:00Z"));
 assert.equal(brief.dateKey, "2026-08-21");
-assert.match(brief.text, /Günaydın AperiON/);
-assert.match(brief.text, /Hakan Atasert siparişi/);
+assert.match(brief.text, /Günaydın ApeirON/);
 assert.match(brief.text, /ONAY_GEREKLI/);
-assert.match(brief.text, /Gmail: KAYNAK EKSİK/);
+assert.match(brief.text, /KAYNAK SAĞLIĞI/);
 assert.match(brief.text, /mali kayıt oluşturulmadı/);
 assert.ok(brief.text.length < 4096);
 assert.ok(brief.counts.priorities <= 3);

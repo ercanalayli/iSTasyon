@@ -2,7 +2,7 @@ import { containsSecret, normalize, sha256 } from './project-memory.js';
 
 const TYPES = new Set(['FACT','DECISION','RULE','PREFERENCE','ENTITY','DOCUMENT','EVENT','TASK','RESULT','VERIFICATION']);
 const RISKS = new Set(['READ','REVERSIBLE_LOW_RISK','WRITE_EXTERNAL','FINANCIAL']);
-const SAFE_META = new Set(['document_no','amount','currency','category','payment_account','paid_status','verified_at','duplicate','source_hash','verification_method','drive_file_id','version_hash','acceptance_code']);
+const SAFE_META = new Set(['document_no','amount','currency','category','payment_account','paid_status','verified_at','duplicate','source_hash','verification_method','drive_file_id','version_hash','acceptance_code','due_date']);
 const text = (v, n = 240) => String(v ?? '').trim().slice(0, n);
 
 export function safeMetadata(value = {}) {

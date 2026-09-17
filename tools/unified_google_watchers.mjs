@@ -124,13 +124,26 @@ async function gmailWatcher(token, state) {
   const known = new Set(state.gmail?.fingerprints || []);
   const fresh = (list.messages || []).filter(item => !known.has(hash(item.id)));
   const important = [];
+  let attentionEvents = 0;
   for (const item of fresh.slice(0, 25)) {
     const meta = await api(token, `https://gmail.googleapis.com/gmail/v1/users/me/messages/${encodeURIComponent(item.id)}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`);
     const headers = Object.fromEntries((meta.payload?.headers || []).map(header => [header.name.toLowerCase(), header.value]));
-    important.push({ fingerprint: hash(item.id), threadFingerprint: hash(meta.threadId || item.id), subjectHash: hash(headers.subject || ''), fromDomainHash: hash(String(headers.from || '').split('@').at(-1) || ''), internalDate: meta.internalDate || null, hasAttachmentHint: /attachment/i.test(JSON.stringify(meta.payload || {})), signal: gmailSignal(item, meta, headers) });
+    const signal = gmailSignal(item, meta, headers);
+    important.push({ fingerprint: hash(item.id), threadFingerprint: hash(meta.threadId || item.id), subjectHash: hash(headers.subject || ''), fromDomainHash: hash(String(headers.from || '').split('@').at(-1) || ''), internalDate: meta.internalDate || null, hasAttachmentHint: /attachment/i.test(JSON.stringify(meta.payload || {})), signal });
+    if (signal.risk === 'high') {
+      const result = await memoryRequest('/v1/memory', { method:'POST', body:{ kind:'event', event:{
+        event_type:'gmail_attention_signal', occurred_at:meta.internalDate?new Date(Number(meta.internalDate)).toISOString():now(),
+        source_type:'gmail', source_ref:`gmail:${signal.provenance.message_fingerprint}`, actor:'gmail_watcher',
+        scope:signal.scope, company:signal.scope==='ALAYLI'?'ALAYLI MEDİKAL':null,
+        summary:signal.summary, risk_class:'FINANCIAL', result_status:'observed',
+        verification_status:'source_metadata_verified', provenance_ref:`gmail:${signal.provenance.message_fingerprint}`,
+        metadata:{...(signal.amount==null?{}:{amount:signal.amount}),...(signal.due_date?{due_date:signal.due_date}:{})}
+      } } });
+      attentionEvents += Number(!result.duplicate);
+    }
   }
   state.gmail = { fingerprints: [...new Set([...(state.gmail?.fingerprints || []), ...(list.messages || []).map(item => hash(item.id))])].slice(-500), lastRunAt: now() };
-  return { status: 'healthy', last_success: now(), last_error: null, duration_ms: Date.now() - started, next_due: nextDue(30), source_health: 'connected_readonly', scanned_metadata: (list.messages || []).length, new_important: important.length, unchanged: important.length === 0, signals: important.map(item => item.signal), provenance: important.map(({ signal, ...item }) => item) };
+  return { status: 'healthy', last_success: now(), last_error: null, duration_ms: Date.now() - started, next_due: nextDue(30), source_health: 'connected_readonly', scanned_metadata: (list.messages || []).length, new_important: important.length, attention_events:attentionEvents, unchanged: important.length === 0, signals: important.map(item => item.signal), provenance: important.map(({ signal, ...item }) => item) };
 }
 
 async function driveWatcher(token, contentToken, state) {

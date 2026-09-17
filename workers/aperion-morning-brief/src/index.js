@@ -1,6 +1,7 @@
 import { financeMemorySummaryFromDb, financeMemorySummaryText } from '../../../functions/shared/finance-obligation-memory.js';
+import { buildToday, formatTodayBrief } from '../../../functions/shared/attention-engine.js';
 
-const VERSION = "v144";
+const VERSION = "v167";
 const CRON = "0 6 * * *";
 const CLOSED = new Set(["completed", "cancelled", "verified", "tamamlandi", "iptal"]);
 
@@ -126,6 +127,12 @@ function sourceLine(key, connector, health) {
 }
 
 export async function buildMorningBrief(db, now = new Date()) {
+  const today = await buildToday(db, now);
+  return { text: formatTodayBrief(today), dateKey: today.date,
+    counts: { priorities: today.priorities.length, approvals: today.approvals.length, failed: today.failed.length } };
+}
+
+export async function buildLegacyMorningBrief(db, now = new Date()) {
   const [healthQ, connectorQ, commitmentQ, workQ, approvalQ, captureQ, deviceQ] = await Promise.all([
     all(db, "SELECT source_id,status,message,last_success_at,checked_at FROM source_health"),
     all(db, "SELECT connector_key,title,maturity,status FROM connector_registry"),
@@ -203,11 +210,7 @@ export async function runMorningBrief(env, options = {}) {
   if (!chat.ok || !chat.row || !chat.row.config_value) throw new Error("allowed_chat_id yapılandırılmadı");
   const now = options.now || new Date(options.scheduledAt || Date.now());
   const brief = await buildMorningBrief(env.APERION_DB, now);
-  const financial = await buildDailyFinancialStatements(env, env.APERION_DB, now);
-  const headerEnd = brief.text.indexOf("\n\n1) KAYNAK SAĞLIĞI");
-  const combinedText = headerEnd > 0
-    ? `${brief.text.slice(0, headerEnd)}${financial}\n${brief.text.slice(headerEnd)}`.slice(0, 3900)
-    : `${brief.text}${financial}`.slice(0, 3900);
+  const combinedText = brief.text;
   const runKey = `morning:${brief.dateKey}`;
   const existing = await first(env.APERION_DB, "SELECT status FROM morning_brief_runs WHERE run_key=?", runKey);
   if (existing.ok && existing.row && existing.row.status === "sent") return { ok: true, skipped: true, runKey };
