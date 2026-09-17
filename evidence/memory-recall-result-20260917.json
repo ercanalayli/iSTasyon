@@ -1,0 +1,19 @@
+{
+  "occurred_at": "2026-09-17T06:08:44.000Z",
+  "source_type": "memory_os_retrieval",
+  "source_ref": "memory_retrieval_acceptance:2026-09-17:4-of-4",
+  "actor": "Codex",
+  "scope": "ApeirON",
+  "company": "ALAYLI MEDİKAL",
+  "task_id": "apeiron-memory-recall-acceptance-20260917",
+  "command_id": "accept-memory-recall-20260917",
+  "summary": "AI-0646, çay→MARKET, kaynak açıklaması ve ilk Computer Use BizimHesap işlemi için bağımsız Memory OS geri çağırma testi 4/4 geçti.",
+  "risk_class": "READ",
+  "result_status": "completed_verified",
+  "verification_status": "read_back_verified",
+  "provenance_ref": "retrieval:612a4d35292802ecc58a7e2b5e24054c6184a706",
+  "metadata": {
+    "verification_method": "fresh_process_remote_memory_api",
+    "verified_at": "2026-09-17T06:08:44.000Z"
+  }
+}

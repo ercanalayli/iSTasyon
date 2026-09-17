@@ -3,6 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { memoryRequest } from './lib/memory_transport.mjs';
 
 const execFileAsync = promisify(execFile);
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -104,20 +105,35 @@ async function driveWatcher(token, state) {
     pageToken = start.startPageToken;
     baselineInitialized = true;
     const since = new Date(Date.now() - 7 * 86400000).toISOString();
-    const recent = await api(token, `https://www.googleapis.com/drive/v3/files?pageSize=100&orderBy=modifiedTime%20desc&q=${encodeURIComponent(`modifiedTime > '${since}' and trashed = false`)}&fields=${encodeURIComponent('files(id,mimeType,modifiedTime,md5Checksum,size),nextPageToken')}`);
+    const recent = await api(token, `https://www.googleapis.com/drive/v3/files?pageSize=100&orderBy=modifiedTime%20desc&q=${encodeURIComponent(`modifiedTime > '${since}' and trashed = false`)}&fields=${encodeURIComponent('files(id,name,mimeType,modifiedTime,md5Checksum,size,parents,trashed),nextPageToken')}`);
     changes = (recent.files || []).map(file => ({ fileId: file.id, file }));
   } else {
     let cursor = pageToken;
     do {
-      const page = await api(token, `https://www.googleapis.com/drive/v3/changes?pageSize=100&includeRemoved=true&supportsAllDrives=true&fields=${encodeURIComponent('changes(fileId,removed,file(id,mimeType,modifiedTime,md5Checksum,size,trashed)),newStartPageToken,nextPageToken')}&pageToken=${encodeURIComponent(cursor)}`);
+      const page = await api(token, `https://www.googleapis.com/drive/v3/changes?pageSize=100&includeRemoved=true&supportsAllDrives=true&fields=${encodeURIComponent('changes(fileId,removed,file(id,name,mimeType,modifiedTime,md5Checksum,size,parents,trashed)),newStartPageToken,nextPageToken')}&pageToken=${encodeURIComponent(cursor)}`);
       changes.push(...(page.changes || []));
       cursor = page.nextPageToken || null;
       if (page.newStartPageToken) pageToken = page.newStartPageToken;
     } while (cursor);
   }
+  let ingested = 0;
+  let duplicates = 0;
+  for (const change of changes) {
+    const file = change.file;
+    if (change.removed || !file || file.trashed || !file.name || !file.modifiedTime) continue;
+    if (!/aperion|apeiron|alayl[ıi]|medikal|bizimhesap|ekstre|fatura|makbuz|dekont|mutabakat|s[oö]zle[sş]me|karar|banka/i.test(file.name)) continue;
+    const versionHash = hash(`${file.id}|${file.modifiedTime}|${file.md5Checksum || file.size || ''}`);
+    const result = await memoryRequest('/v1/memory', { method: 'POST', body: { kind: 'drive_change', document: {
+      drive_file_id: file.id, canonical_name: file.name, document_type: file.mimeType || 'application/octet-stream',
+      modified_at: file.modifiedTime, version_hash: versionHash, cursor: pageToken,
+    } } });
+    if (result.duplicate) duplicates += 1;
+    else ingested += 1;
+  }
+  // Commit the Drive cursor only after every selected change was persisted.
   state.drive = { pageToken, lastRunAt: now() };
   const provenance = changes.map(change => ({ fileFingerprint: hash(change.fileId), removed: Boolean(change.removed), mimeType: change.file?.mimeType || null, modifiedTime: change.file?.modifiedTime || null, contentHashPresent: Boolean(change.file?.md5Checksum), size: change.file?.size || null })).slice(0, 100);
-  return { status: 'healthy', last_success: now(), last_error: null, duration_ms: Date.now() - started, next_due: nextDue(60), source_health: 'connected_metadata_only', baseline_initialized: baselineInitialized, changed_metadata: changes.length, unchanged: changes.length === 0, signals: baselineInitialized ? [] : provenance.map(item => ({ event_id: item.fileFingerprint, source: 'google_drive', scope: 'BELİRSİZ', importance: 'important', risk: 'low', event_type: item.removed ? 'file_removed' : 'file_metadata_changed', amount: null, due_date: null, required_action: 'none', summary: 'ApeirON operasyon dosyası metadata değişikliği algılandı.', provenance: { file_fingerprint: item.fileFingerprint, observed_at: now() }, confidence: 0.7 })), provenance };
+  return { status: 'healthy', last_success: now(), last_error: null, duration_ms: Date.now() - started, next_due: nextDue(60), source_health: 'connected_metadata_only', baseline_initialized: baselineInitialized, changed_metadata: changes.length, ingested_metadata_versions: ingested, duplicate_versions: duplicates, content_extraction: 'blocked_by_drive_metadata_only_oauth_scope', unchanged: changes.length === 0, signals: baselineInitialized ? [] : provenance.map(item => ({ event_id: item.fileFingerprint, source: 'google_drive', scope: 'BELİRSİZ', importance: 'important', risk: 'low', event_type: item.removed ? 'file_removed' : 'file_metadata_changed', amount: null, due_date: null, required_action: 'none', summary: 'ApeirON operasyon dosyası metadata değişikliği algılandı.', provenance: { file_fingerprint: item.fileFingerprint, observed_at: now() }, confidence: 0.7 })), provenance };
 }
 
 async function chatgptStateWatcher() {

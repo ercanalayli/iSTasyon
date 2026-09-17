@@ -1,0 +1,43 @@
+{
+  "date": "2026-09-17",
+  "canonical_workspace": "C:\\AperiON\\iSTasyon",
+  "mobile_access": {
+    "status": "FAIL",
+    "stable_remote_deep_link_verified": false,
+    "stable_machine_or_workspace_link_verified": false,
+    "iphone_home_screen_ApeirON_installed": false,
+    "minimum_taps_to_command_field": null,
+    "maximum_taps_to_command_field": null,
+    "supported_fallback": "ChatGPT mobile > Remote > connected Windows host > chat",
+    "source": "https://learn.chatgpt.com/docs/remote-connections"
+  },
+  "memory": {
+    "drive_metadata_auto_ingest": "PASS",
+    "drive_content_fact_auto_ingest": "FAIL_METADATA_ONLY_OAUTH_SCOPE",
+    "codex_verified_result_ingress": "PASS",
+    "codex_lifecycle_auto_ingest": "FAIL_HOOK_TRUST_NOT_VERIFIED",
+    "event_ledger": "PASS",
+    "fact_rule_learning_core_example": "PASS",
+    "confidence_freshness": "PASS_11_OF_11_OBJECTS",
+    "provenance": "PASS",
+    "recall_guarantee_core_example": "PASS_4_OF_4_NEW_PROCESS",
+    "original_file_vault": "FAIL",
+    "file_versioning": "PASS_LOCAL_FIXTURE_ONLY",
+    "dedupe": "PASS_LIVE_NO_CHANGE_AND_LOCAL_FIXTURE",
+    "supersede": "PASS_LOCAL_FIXTURE_ONLY",
+    "ai_0646_recall": "PASS",
+    "tea_market_recall": "PASS",
+    "source_explanation": "PASS",
+    "drive_no_change_run": { "changed_metadata": 0, "new_facts": 0, "duplicate_facts": 0, "unnecessary_full_rescans": 0 },
+    "live_counts": { "memory_objects": 11, "memory_quality_rows": 11, "memory_documents": 1, "memory_events": 5, "retrieval_acceptance": 4 }
+  },
+  "safety": { "financial_writes": 0, "bizimhesap_writes": 0, "secrets_exposed": 0 },
+  "tests": [
+    "node tools/test_memory_event_ledger_v2.mjs: 16/16 fixture checks",
+    "node tools/accept_memory_recall.mjs: 4/4 production Memory OS retrievals",
+    "node tools/ingest_codex_result.mjs evidence/memory-recall-result-20260917.json: independent production ledger read-back",
+    "Drive watcher changed run: 1 metadata document version ingested",
+    "Drive watcher no-change run: 0 changes, 0 ingests, 0 duplicates",
+    "Memory API unauthorized requests: HTTP 401"
+  ]
+}

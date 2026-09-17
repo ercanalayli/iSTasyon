@@ -2,7 +2,7 @@ import { containsSecret, normalize, sha256 } from './project-memory.js';
 
 const TYPES = new Set(['FACT','DECISION','RULE','PREFERENCE','ENTITY','DOCUMENT','EVENT','TASK','RESULT','VERIFICATION']);
 const RISKS = new Set(['READ','REVERSIBLE_LOW_RISK','WRITE_EXTERNAL','FINANCIAL']);
-const SAFE_META = new Set(['document_no','amount','currency','category','payment_account','paid_status','verified_at','duplicate','source_hash','verification_method']);
+const SAFE_META = new Set(['document_no','amount','currency','category','payment_account','paid_status','verified_at','duplicate','source_hash','verification_method','drive_file_id','version_hash','acceptance_code']);
 const text = (v, n = 240) => String(v ?? '').trim().slice(0, n);
 
 export function safeMetadata(value = {}) {
@@ -61,13 +61,21 @@ export async function linkObject(db, type, canonicalRef, scope, eventId, superse
   return key;
 }
 
+async function quality(db, objectKey, { confidence, freshness, validFrom, scope, authority, verifiedAt, provenance }) {
+  await db.prepare(`INSERT OR IGNORE INTO memory_quality
+    (object_key,confidence,freshness,valid_from,scope,source_authority,last_verified_at,provenance_ref)
+    VALUES(?,?,?,?,?,?,?,?)`).bind(objectKey,confidence,freshness,validFrom,scope,authority,verifiedAt,provenance).run();
+}
+
 export async function ingestVerifiedResult(db, input) {
   if (input.result_status !== 'completed_verified' || input.verification_status !== 'read_back_verified' || !input.provenance_ref || !input.task_id)
     throw new Error('verified_result_proof_required');
   const result = await appendEvent(db, { ...input, event_type: 'task_result_verified' });
-  await linkObject(db,'TASK',input.task_id,input.scope,result.event_id);
-  await linkObject(db,'RESULT',`${input.task_id}:result`,input.scope,result.event_id);
-  await linkObject(db,'VERIFICATION',`${input.task_id}:verification`,input.scope,result.event_id);
+  const task = await linkObject(db,'TASK',input.task_id,input.scope,result.event_id);
+  const output = await linkObject(db,'RESULT',`${input.task_id}:result`,input.scope,result.event_id);
+  const verification = await linkObject(db,'VERIFICATION',`${input.task_id}:verification`,input.scope,result.event_id);
+  for (const objectKey of [task,output,verification]) await quality(db,objectKey,{ confidence:0.99,freshness:'historical_verified',validFrom:input.occurred_at,
+    scope:input.scope,authority:input.source_type,verifiedAt:input.occurred_at,provenance:input.provenance_ref });
   return result;
 }
 
@@ -83,10 +91,13 @@ export async function ingestRuleCandidate(db, input) {
   const event = await appendEvent(db, { ...input, event_type: 'user_rule_correction', source_type: 'user_correction', source_ref: input.user_correction_ref,
     risk_class: 'READ', result_status: 'candidate', verification_status: verifiedSource ? 'corroborated' : 'awaiting_source',
     provenance_ref: input.user_correction_ref, summary: input.summary || 'Çay gideri kategorisi MARKET olarak düzeltildi.' });
-  await linkObject(db,'RULE',`${subject}:expense_category→${category}`,input.scope,event.event_id);
+  const ruleObject = await linkObject(db,'RULE',`${subject}:expense_category→${category}`,input.scope,event.event_id);
   const fact = await recordFact(db, { subject, predicate: 'expense_category', object_value: category, scope: input.scope,
     source_key: `user-correction:${input.user_correction_ref}`, source_type: 'user_correction', source_ref: input.user_correction_ref,
     authority: 'user_correction', event_id: event.event_id, observed_at: input.occurred_at });
+  const factObject = await linkObject(db,'FACT',fact.fact_key,input.scope,event.event_id);
+  for (const objectKey of [ruleObject,factObject]) await quality(db,objectKey,{ confidence:1,freshness:'current',validFrom:input.occurred_at,
+    scope:input.scope,authority:'user_correction',verifiedAt:verifiedSource?input.occurred_at:null,provenance:input.user_correction_ref });
   if (verifiedSource) {
     const sourceKey = `${verifiedSource.source_type}:${verifiedSource.source_ref}`;
     await db.prepare(`INSERT OR IGNORE INTO memory_sources(source_key,source_type,source_date,content_hash,adapter_status) VALUES(?,?,?,?,?)`)
@@ -113,7 +124,7 @@ export async function recordFact(db, input) {
   const active = await db.prepare(`SELECT id,fact_key,object_value FROM memory_facts WHERE subject=? AND predicate=? AND scope=? AND status='active'`)
     .bind(input.subject,input.predicate,input.scope).all();
   const alternatives = (active.results||[]).filter(row => normalize(row.object_value)!==normalize(input.object_value));
-  const correction = input.authority === 'user_correction';
+  const correction = input.authority === 'user_correction' || (input.authority === 'verified_document_version' && input.subject.startsWith('Drive document '));
   const status = alternatives.length && !correction ? 'needs_review' : 'active';
   await db.prepare(`INSERT INTO memory_facts(fact_key,subject,predicate,object_value,scope,valid_from,confidence,status,authority,supersedes_fact_id)
     VALUES(?,?,?,?,?,?,?,?,?,?)`).bind(key,input.subject,input.predicate,input.object_value,input.scope,input.observed_at||new Date().toISOString(),correction?1:0.9,status,input.authority,correction&&alternatives.length?alternatives[0].id:null).run();
@@ -155,4 +166,40 @@ export async function mapDriveDocument(db, input) {
   await db.prepare('INSERT OR IGNORE INTO memory_documents(document_id,drive_file_id,canonical_name,version_hash,document_type,document_date,related_entities_json,summary,extracted_fact_keys_json,provenance_ref) VALUES(?,?,?,?,?,?,?,?,?,?)')
     .bind(documentId,text(input.drive_file_id,160),text(input.canonical_name,240),text(input.version_hash,160),text(input.document_type,80),input.document_date||null,JSON.stringify(entities),text(input.summary,600)||null,JSON.stringify(facts),text(input.provenance_ref,240)).run();
   return documentId;
+}
+
+export async function ingestDriveChange(db, input) {
+  const fileId = text(input?.drive_file_id,160);
+  const versionHash = text(input?.version_hash,160);
+  const name = text(input?.canonical_name,240);
+  const modifiedAt = text(input?.modified_at,80);
+  if (!fileId || !/^[a-f0-9]{64}$/.test(versionHash) || !name || !Number.isFinite(Date.parse(modifiedAt))) throw new Error('drive_change_invalid');
+  if ([fileId,name,input?.acceptance_code].some(value => containsSecret(String(value || '')))) throw new Error('secret_material_rejected');
+  const code = text(input.acceptance_code,80);
+  if (code && !/^APN-MEM-[0-9]{8}(?:-V[0-9]+)?$/.test(code)) throw new Error('drive_code_invalid');
+  const sourceKey = `drive:${fileId}`;
+  const versionKey = `${sourceKey}:${versionHash}`;
+  const prior = await db.prepare('SELECT document_id,version_hash FROM memory_documents WHERE drive_file_id=? AND superseded_by IS NULL ORDER BY created_at DESC LIMIT 1').bind(fileId).first();
+  if (prior?.version_hash === versionHash) return { document_id: prior.document_id, duplicate: true };
+  const summary = code ? `ApeirON kalıcı hafıza kabul kodu: ${code}` : 'ApeirON belge sürümü gözlendi.';
+  const event = await appendEvent(db, { event_type: 'drive_document_version', occurred_at: modifiedAt,
+    source_type: 'google_drive', source_ref: versionKey, actor: 'Google Drive watcher', scope: 'ApeirON',
+    summary, risk_class: 'READ', result_status: 'observed', verification_status: code ? 'source_content_verified' : 'source_metadata_verified',
+    provenance_ref: versionKey, supersedes_event_id: prior ? (await db.prepare('SELECT source_event_id FROM memory_objects WHERE object_type=? AND canonical_ref=?').bind('DOCUMENT',prior.document_id).first())?.source_event_id : null,
+    metadata: { drive_file_id: fileId, version_hash: versionHash, ...(code ? { acceptance_code: code } : {}) } });
+  const documentId = await mapDriveDocument(db, { drive_file_id: fileId, version_hash: versionHash, canonical_name: name,
+    document_type: text(input.document_type,100) || 'application/octet-stream', document_date: modifiedAt,
+    summary, provenance_ref: versionKey });
+  if (prior && prior.document_id !== documentId) await db.prepare('UPDATE memory_documents SET superseded_by=? WHERE document_id=? AND superseded_by IS NULL').bind(documentId,prior.document_id).run();
+  const documentObject = await linkObject(db,'DOCUMENT',documentId,'ApeirON',event.event_id);
+  await quality(db,documentObject,{ confidence:code?0.95:0.65,freshness:code?'current':'unknown',validFrom:modifiedAt,
+    scope:'ApeirON',authority:code?'source_content_verified':'source_metadata_verified',verifiedAt:code?modifiedAt:null,provenance:versionKey });
+  const sourceHash = await sha256(`google_drive|${fileId}`);
+  await db.prepare('INSERT OR IGNORE INTO memory_sources(source_key,source_type,source_date,content_hash,adapter_status) VALUES(?,?,?,?,?)')
+    .bind(sourceKey,'google_drive',modifiedAt,sourceHash,'verified').run();
+  await db.prepare('INSERT INTO memory_sync_state(source_key,cursor,content_hash,checkpoint_json,status,last_synced_at,last_error) VALUES(?,?,?,?,?,datetime(\'now\'),NULL) ON CONFLICT(source_key) DO UPDATE SET cursor=excluded.cursor,content_hash=excluded.content_hash,checkpoint_json=excluded.checkpoint_json,status=excluded.status,last_synced_at=excluded.last_synced_at,last_error=NULL')
+    .bind(sourceKey,text(input.cursor,240)||null,versionHash,JSON.stringify({ document_id: documentId }),'synced').run();
+  if (code) await recordFact(db, { subject: `Drive document ${fileId}`, predicate: 'acceptance_code', object_value: code, scope: 'ApeirON',
+    source_key: versionKey, source_type: 'google_drive', source_ref: versionKey, authority: 'verified_document_version', observed_at: modifiedAt });
+  return { document_id: documentId, event_id: event.event_id, duplicate: event.duplicate };
 }

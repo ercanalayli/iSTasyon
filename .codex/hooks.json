@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node C:/AperiON/iSTasyon/tools/aperion_stop_hook.mjs",
+            "timeout": 30,
+            "statusMessage": "ApeirON doğrulanmış iş sonuçları hafızaya işleniyor"
+          }
+        ]
+      }
+    ]
+  }
+}

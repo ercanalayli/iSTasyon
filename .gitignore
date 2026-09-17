@@ -51,3 +51,4 @@ bizimhesap_son_islemler*.png
 .DS_Store
 Thumbs.db
 .wrangler/
+.aperion-memory-outbox/

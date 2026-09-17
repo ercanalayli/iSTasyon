@@ -1,5 +1,5 @@
 import { authorized } from './session-checkpoint.js';
-import { appendEvent, ingestVerifiedResult, ingestRuleCandidate, upsertEntity, linkEntities, mapDriveDocument } from '../shared/memory-event-ledger.js';
+import { appendEvent, ingestVerifiedResult, ingestRuleCandidate, upsertEntity, linkEntities, mapDriveDocument, ingestDriveChange } from '../shared/memory-event-ledger.js';
 
 function json(data, status = 200) { return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } }); }
 function clean(value) { return String(value || '').trim().slice(0, 200); }
@@ -19,6 +19,7 @@ export async function onRequestPost({ request, env }) {
     else if (kind === 'entity') result = { entity_id: await upsertEntity(env.APERION_DB, body.entity) };
     else if (kind === 'relation') result = { relation_id: await linkEntities(env.APERION_DB, body.relation) };
     else if (kind === 'drive_document') result = { document_id: await mapDriveDocument(env.APERION_DB, body.document) };
+    else if (kind === 'drive_change') result = await ingestDriveChange(env.APERION_DB, body.document);
     else return json({ ok: false, error: 'kind_not_allowed' }, 400);
     return json({ ok: true, ...result });
   } catch (error) { return json({ ok: false, error: String(error.message || error).slice(0, 100) }, 400); }
