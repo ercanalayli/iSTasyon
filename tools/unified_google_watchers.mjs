@@ -121,13 +121,17 @@ async function gmailWatcher(token, state) {
   const started = Date.now();
   const query = 'newer_than:7d (has:attachment OR subject:(ekstre OR dekont OR fatura OR sipariş OR ödeme OR tahsilat OR banka))';
   const list = await api(token, `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=25&q=${encodeURIComponent(query)}`);
+  // The active Murat contract thread can receive a plain reply without finance keywords.
+  // A separate bounded metadata search preserves the general watcher limit and content privacy.
+  const muratReplies = await api(token, `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=25&q=${encodeURIComponent('newer_than:7d in:inbox subject:"Alaylı Nakliyat Söz. Hk."')}`);
+  const messages = [...new Map([...(list.messages || []), ...(muratReplies.messages || [])].map(item => [item.id,item])).values()];
   const known = new Set(state.gmail?.fingerprints || []);
-  const fresh = (list.messages || []).filter(item => !known.has(hash(item.id)));
+  const fresh = messages.filter(item => !known.has(hash(item.id)));
   const important = [];
   let attentionEvents = 0;
   let linkedFollowups = 0;
   let followupLinkErrors = 0;
-  for (const item of fresh.slice(0, 25)) {
+  for (const item of fresh.slice(0, 50)) {
     const meta = await api(token, `https://gmail.googleapis.com/gmail/v1/users/me/messages/${encodeURIComponent(item.id)}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`);
     const headers = Object.fromEntries((meta.payload?.headers || []).map(header => [header.name.toLowerCase(), header.value]));
     const signal = gmailSignal(item, meta, headers);
@@ -154,8 +158,8 @@ async function gmailWatcher(token, state) {
       attentionEvents += Number(!result.duplicate);
     }
   }
-  state.gmail = { fingerprints: [...new Set([...(state.gmail?.fingerprints || []), ...(list.messages || []).map(item => hash(item.id))])].slice(-500), lastRunAt: now() };
-  return { status: followupLinkErrors?'degraded':'healthy', last_success: now(), last_error: followupLinkErrors?'followup_link_unavailable':null, duration_ms: Date.now() - started, next_due: nextDue(30), source_health: 'connected_readonly', scanned_metadata: (list.messages || []).length, new_important: important.length, attention_events:attentionEvents, linked_followups:linkedFollowups, followup_link_errors:followupLinkErrors, unchanged: important.length === 0, signals: important.map(item => item.signal), provenance: important.map(({ signal, ...item }) => item) };
+  state.gmail = { fingerprints: [...new Set([...(state.gmail?.fingerprints || []), ...messages.map(item => hash(item.id))])].slice(-500), lastRunAt: now() };
+  return { status: followupLinkErrors?'degraded':'healthy', last_success: now(), last_error: followupLinkErrors?'followup_link_unavailable':null, duration_ms: Date.now() - started, next_due: nextDue(30), source_health: 'connected_readonly', scanned_metadata: messages.length, new_important: important.length, attention_events:attentionEvents, linked_followups:linkedFollowups, followup_link_errors:followupLinkErrors, unchanged: important.length === 0, signals: important.map(item => item.signal), provenance: important.map(({ signal, ...item }) => item) };
 }
 
 async function driveWatcher(token, contentToken, state) {
@@ -245,6 +249,9 @@ for (const name of ['gmail', 'drive']) {
   } catch (error) {
     result.watchers[name] = { status: 'unhealthy', last_success: state[name]?.lastRunAt || null, last_error: String(error.message || error).slice(0, 160), duration_ms: Date.now() - started, next_due: nextDue(15), source_health: 'blocked_retry_backoff' };
   }
+  try {
+    await memoryRequest('/v1/memory',{method:'POST',body:{kind:'source_health',health:{source_key:name==='drive'?'google_drive':'gmail',status:result.watchers[name].status==='healthy'?'ok':'blocked',checked_at:now()}}});
+  } catch { /* The watcher result remains available locally when the health sink is degraded. */ }
 }
 if (runAll || requested.has('--chatgpt-state')) {
   try { result.watchers.chatgpt_project_memory = await chatgptStateWatcher(); }

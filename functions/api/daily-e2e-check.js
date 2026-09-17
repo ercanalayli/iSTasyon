@@ -95,8 +95,9 @@ export async function onRequestPost({ request, env }) {
     { name: "09:00 Telegram brifingi", ok: brief.ok && brief.row?.status === "sent" && Boolean(brief.row?.telegram_message_id), detail: brief.row?.status || "kayıt yok" },
     {
       name: "D1 kontrol düzlemi",
-      ok: sourceHealth.ok && Number(sourceHealth.row?.total || 0) > 0 && Number(sourceHealth.row?.healthy || 0) === Number(sourceHealth.row?.total || 0),
-      detail: sourceHealth.ok ? `${sourceHealth.row?.healthy || 0}/${sourceHealth.row?.total || 0} sağlıklı kaynak` : "okunamadı"
+      // A degraded source (notably Computer Use) must not imply that D1 itself failed.
+      ok: sourceHealth.ok,
+      detail: sourceHealth.ok ? `D1 okundu; ${sourceHealth.row?.healthy || 0}/${sourceHealth.row?.total || 0} kaynak sağlıklı` : "D1 okunamadı"
     },
     { name: "Telegram hedef kimliği", ok: chat.ok && Boolean(chat.row?.config_value), detail: chat.row?.config_value ? "yapılandırıldı" : "eksik" },
     { name: "Satış kaynağı", ...sales },

@@ -14,13 +14,33 @@ export async function onRequestPost({ request, env }) {
     const kind = clean(body.kind);
     let result;
     if (kind === 'verified_result') result = await ingestVerifiedResult(env.APERION_DB, body.event);
-    else if (kind === 'codex_result_envelope') result = await ingestCodexEnvelope(env.APERION_DB, body.envelope);
+    else if (kind === 'codex_result_envelope') {
+      result = await ingestCodexEnvelope(env.APERION_DB, body.envelope);
+      try {
+        await env.APERION_DB.prepare(`INSERT INTO source_health(source_key,status,error_code,message,last_success_at,checked_at,evidence_ref)
+          VALUES('codex_result_ingest','ok','OK',NULL,datetime('now'),datetime('now'),'codex_result_envelope')
+          ON CONFLICT(source_key) DO UPDATE SET status=excluded.status,error_code=excluded.error_code,
+            last_success_at=excluded.last_success_at,checked_at=excluded.checked_at,evidence_ref=excluded.evidence_ref`).run();
+      } catch { /* A health probe must never turn a committed envelope into a failed response. */ }
+    }
     else if (kind === 'rule_candidate') result = await ingestRuleCandidate(env.APERION_DB, body.event);
     else if (kind === 'event') result = await appendEvent(env.APERION_DB, body.event);
     else if (kind === 'entity') result = { entity_id: await upsertEntity(env.APERION_DB, body.entity) };
     else if (kind === 'relation') result = { relation_id: await linkEntities(env.APERION_DB, body.relation) };
     else if (kind === 'drive_document') result = { document_id: await mapDriveDocument(env.APERION_DB, body.document) };
     else if (kind === 'drive_change') result = await ingestDriveChange(env.APERION_DB, body.document);
+    else if (kind === 'source_health') {
+      const source=body.health?.source_key;
+      const status=body.health?.status;
+      const checkedAt=body.health?.checked_at;
+      if (!['gmail','google_drive'].includes(source) || !['ok','blocked'].includes(status) || !Number.isFinite(Date.parse(checkedAt))) throw new Error('invalid_source_health');
+      await env.APERION_DB.prepare(`INSERT INTO source_health(source_key,status,error_code,message,last_success_at,checked_at,evidence_ref)
+        VALUES(?,?,?,NULL,?,?,'unified_google_watchers')
+        ON CONFLICT(source_key) DO UPDATE SET status=excluded.status,error_code=excluded.error_code,
+          last_success_at=COALESCE(excluded.last_success_at,source_health.last_success_at),checked_at=excluded.checked_at,evidence_ref=excluded.evidence_ref`)
+        .bind(source,status,status==='ok'?'OK':'WATCHER_FAILED',status==='ok'?checkedAt:null,checkedAt).run();
+      result={source_key:source,status};
+    }
     else return json({ ok: false, error: 'kind_not_allowed' }, 400);
     return json({ ok: true, ...result });
   } catch (error) { return json({ ok: false, error: String(error.message || error).slice(0, 100) }, 400); }

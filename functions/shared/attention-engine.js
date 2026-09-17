@@ -81,7 +81,7 @@ async function rows(db, sql) {
 
 export async function buildToday(db, now = new Date()) {
   const today = istanbulDate(now);
-  const [commitments,work,approvals,executions,events,conflicts,staleFacts,health,documents,followups] = await Promise.all([
+  const [commitments,work,approvals,executions,events,conflicts,staleFacts,health,documents,followups,computerUseWork] = await Promise.all([
     rows(db,"SELECT commitment_key,title,commitment_type,amount,currency,due_at,expected_at,status,priority,truth_state,approval_required,source_ref,evidence_ref,next_action FROM commitments WHERE status NOT IN ('completed','cancelled','verified') ORDER BY COALESCE(due_at,expected_at) LIMIT 100"),
     rows(db,"SELECT work_key,title,action_type,due_at,status,approval_required,idempotency_key FROM work_items WHERE status NOT IN ('completed','cancelled','verified','done') ORDER BY due_at LIMIT 100"),
     rows(db,"SELECT id,item_type,status,evidence_ref,created_at FROM approval_queue WHERE status IN ('needs_review','pending','awaiting_approval') ORDER BY created_at LIMIT 100"),
@@ -91,11 +91,14 @@ export async function buildToday(db, now = new Date()) {
     rows(db,"SELECT f.fact_key,f.subject,f.predicate,f.object_value,q.confidence,q.last_verified_at,q.freshness_policy,q.provenance_ref FROM memory_facts f JOIN memory_objects o ON o.object_type='FACT' AND o.canonical_ref=f.fact_key JOIN memory_quality q ON q.object_key=o.object_key WHERE f.status='active' AND (q.freshness='stale' OR (q.freshness_policy='price_30d' AND q.last_verified_at<datetime('now','-30 days'))) LIMIT 30"),
     rows(db,"SELECT source_key AS source_id,status,message,last_success_at,checked_at FROM source_health"),
     rows(db,"SELECT document_id,drive_file_id,canonical_name,document_date,provenance_ref FROM memory_documents WHERE superseded_by IS NULL AND document_date>=datetime('now','-7 days') ORDER BY document_date DESC LIMIT 30"),
-    rows(db,"SELECT followup_key,title,stage,due_at,next_action,provenance_ref FROM aperion_followups WHERE stage NOT IN ('COMPLETED','CANCELLED') ORDER BY updated_at DESC LIMIT 50")
+    rows(db,"SELECT followup_key,title,stage,due_at,next_action,provenance_ref FROM aperion_followups WHERE stage NOT IN ('COMPLETED','CANCELLED') ORDER BY updated_at DESC LIMIT 50"),
+    rows(db,"SELECT work_key FROM work_items WHERE execution_adapter='computer_use' AND status NOT IN ('completed','cancelled','verified','done') LIMIT 100")
   ]);
   const candidates=[];
+  const computerUseDegraded=health.rows.some(row=>row.source_id==='computer_use_chrome'&&['blocked','missing','stale'].includes(lower(row.status)));
+  const computerUseKeys=new Set(computerUseWork.rows.map(row=>row.work_key));
   for(const row of commitments.rows) candidates.push({id:`commitment:${row.commitment_key}`,canonical_ref:row.source_ref||null,kind:'commitment',title:row.title,scope:'AperiON',due_at:row.due_at||row.expected_at,status:row.status,importance:lower(row.priority)==='high'?.9:.65,risk:row.amount?.5:.25,financial_impact:number(row.amount),approval_required:Boolean(row.approval_required),truth_state:row.truth_state,confidence:row.truth_state==='confirmed'?.9:.5,actionability:.85,user_commitment:true,next_action:row.next_action,provenance:[row.evidence_ref||row.source_ref].filter(Boolean)});
-  for(const row of work.rows) candidates.push({id:`work:${row.work_key}`,canonical_ref:row.idempotency_key||null,kind:'work',title:row.title,scope:'AperiON',due_at:row.due_at,status:row.status,importance:.6,risk:.3,confidence:.8,actionability:.9,approval_required:Boolean(row.approval_required),provenance:[`work:${row.work_key}`]});
+  for(const row of work.rows) candidates.push({id:`work:${row.work_key}`,canonical_ref:row.idempotency_key||null,kind:'work',title:row.title,scope:'AperiON',due_at:row.due_at,status:computerUseDegraded&&computerUseKeys.has(row.work_key)?'WAITING_EXECUTION_CHANNEL':row.status,importance:.6,risk:.3,confidence:.8,actionability:.9,approval_required:Boolean(row.approval_required),provenance:[`work:${row.work_key}`]});
   for(const row of approvals.rows) candidates.push({id:`approval:${row.id}`,kind:'approval',title:`Bekleyen onay: ${row.item_type||'inceleme'}`,scope:'AperiON',status:row.status,importance:.8,risk:.8,confidence:.95,actionability:1,approval_required:true,financial_risk:/finan|payment|expense|gider|bank/i.test(row.item_type||''),provenance:[row.evidence_ref||`approval:${row.id}`]});
   for(const row of executions.rows) candidates.push({id:`execution:${row.execution_id}`,kind:'failed_automation',title:`Başarısız Codex işi: ${row.task_type}`,scope:row.company||'AperiON',status:row.result_status,importance:.8,risk:.8,confidence:.95,actionability:.8,failed:true,provenance:[row.provenance_ref]});
   for(const row of events.rows) {
@@ -107,10 +110,29 @@ export async function buildToday(db, now = new Date()) {
   for(const row of staleFacts.rows) candidates.push({id:`stale:${row.fact_key}`,kind:'stale_fact',title:`Eski kritik bilgi: ${row.subject} / ${row.predicate}`,scope:'AperiON',status:'open',importance:.7,risk:.7,confidence:number(row.confidence),actionability:.7,stale_critical:true,provenance:[row.provenance_ref]});
   for(const row of documents.rows) candidates.push({id:`document:${row.document_id}`,canonical_ref:`drive:${row.drive_file_id}`,kind:'document',title:`Önemli Drive değişikliği: ${row.canonical_name}`,scope:'AperiON',status:'open',urgency:.4,importance:.7,risk:.45,confidence:.9,actionability:.7,provenance:[row.provenance_ref]});
   for(const row of followups.rows) candidates.push({id:`followup:${row.followup_key}`,canonical_ref:`followup:${row.followup_key}`,kind:'followup',title:row.title,scope:'AperiON',status:'open',due_at:row.due_at,urgency:row.stage==='RESPONSE_RECEIVED'?.9:.35,importance:row.stage==='RESPONSE_RECEIVED'?.8:.6,risk:.35,confidence:.9,actionability:row.stage==='RESPONSE_RECEIVED'?.9:.45,waiting_on_external:row.stage==='WAITING_EXTERNAL',new_important_message:row.stage==='RESPONSE_RECEIVED',approval_required:row.stage==='WAITING_APPROVAL',next_action:row.next_action,provenance:[row.provenance_ref]});
-  for(const row of health.rows.filter(row=>['blocked','missing','stale'].includes(lower(row.status)))) candidates.push({id:`health:${row.source_id}`,kind:'failed_automation',title:`Kaynak sağlığı: ${row.source_id} (${row.status})`,scope:'AperiON',status:'open',importance:.7,risk:.75,confidence:.95,actionability:.7,failed:true,provenance:[row.source_id,row.checked_at].filter(Boolean)});
+  for(const row of health.rows.filter(row=>['blocked','missing','stale'].includes(lower(row.status)))) {
+    if (row.source_id==='computer_use_chrome' && !computerUseWork.rows.length) continue;
+    candidates.push({id:`health:${row.source_id}`,kind:'failed_automation',title:`Kaynak sağlığı: ${row.source_id} (${row.status})`,scope:'AperiON',status:'open',importance:.7,risk:.75,confidence:.95,actionability:.7,failed:true,provenance:[row.source_id,row.checked_at].filter(Boolean)});
+  }
   const ranked=rankAttention(candidates,now);
   const categories={approvals:ranked.filter(x=>x.reason_codes.includes('WAITING_APPROVAL')),financial:ranked.filter(x=>x.reason_codes.includes('FINANCIAL_RISK')),failed:ranked.filter(x=>x.reason_codes.includes('FAILED_AUTOMATION')),new_information:ranked.filter(x=>x.reason_codes.includes('NEW_IMPORTANT_MESSAGE')||x.kind==='document')};
-  return {date:today,generated_at:now.toISOString(),source_health:health.rows,source_availability:{commitments:commitments.available,work:work.available,approvals:approvals.available,executions:executions.available,events:events.available,conflicts:conflicts.available,stale_facts:staleFacts.available,health:health.available,documents:documents.available,followups:followups.available},priorities:ranked.slice(0,3),...categories,items:ranked,duplicate_suppressed:candidates.length-new Set(candidates.map(dedupeKey)).size,read_only:true};
+  const source = key => health.rows.find(row=>row.source_id===key);
+  const channel = (key,available) => {
+    const row=source(key);
+    const checked=Date.parse(String(row?.checked_at||'').replace(' ','T').replace(/Z?$/,'Z'));
+    const freshnessHours={gmail:2,google_drive:3,bizimhesap:1,codex_result_ingest:48};
+    const stale=Number.isFinite(checked)&&freshnessHours[key]&&now.getTime()-checked>freshnessHours[key]*3600000;
+    return {status:available===false?'DEGRADED':!row?'UNKNOWN':stale?'DEGRADED':['confirmed','ok','healthy'].includes(lower(row.status))?'HEALTHY':'DEGRADED',checked_at:row?.checked_at||null,evidence_ref:row?.source_id||null};
+  };
+  const channel_health={
+    MEMORY:{status:events.available&&followups.available?'HEALTHY':'DEGRADED',checked_at:now.toISOString(),evidence_ref:'memory_events+aperion_followups'},
+    GMAIL:channel('gmail'),DRIVE:channel('google_drive'),
+    TODAY:{status:'HEALTHY',checked_at:now.toISOString(),evidence_ref:'buildToday'},
+    ATTENTION:{status:'HEALTHY',checked_at:now.toISOString(),evidence_ref:'rankAttention'},
+    CODEX_RESULT_INGEST:channel('codex_result_ingest',executions.available),
+    COMPUTER_USE:channel('computer_use_chrome'),BIZIMHESAP_SESSION:channel('bizimhesap')
+  };
+  return {date:today,generated_at:now.toISOString(),source_health:health.rows,channel_health,execution_channel_blocked:channel_health.COMPUTER_USE.status==='DEGRADED'&&computerUseWork.rows.length>0,source_availability:{commitments:commitments.available,work:work.available,approvals:approvals.available,executions:executions.available,events:events.available,conflicts:conflicts.available,stale_facts:staleFacts.available,health:health.available,documents:documents.available,followups:followups.available,computer_use_work:computerUseWork.available},priorities:ranked.slice(0,3),...categories,items:ranked,duplicate_suppressed:candidates.length-new Set(candidates.map(dedupeKey)).size,read_only:true};
 }
 
 export function formatTodayBrief(today) {

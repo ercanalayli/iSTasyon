@@ -96,3 +96,47 @@ export function formatMilestoneMessage({ milestone, daily, snapshot, anomalies =
   lines.push('', '<i>AperiON • Gelir tablosu izleme</i>');
   return lines.join('\n');
 }
+
+// v2 is an evidence contract only. The live milestone formula and sender remain unchanged.
+export function reconcileSaleFifo(input = {}) {
+  const layers = Array.isArray(input.fifo_layers) ? input.fifo_layers : [];
+  const saleQty = Number(input.sale_qty);
+  const smm = Number(input.SMM);
+  const identityComplete = Boolean(input.sale_id && input.product_id && /^\d{4}-\d{2}-\d{2}$/.test(String(input.sale_date || '')));
+  const validLayer = layer => Boolean(layer.purchase_document_id && /^\d{4}-\d{2}-\d{2}$/.test(String(layer.purchase_date || '')) && layer.supplier &&
+    Number.isFinite(Number(layer.original_qty)) && Number(layer.original_qty)>0 && Number.isFinite(Number(layer.unit_cost)) && Number(layer.unit_cost)>=0 &&
+    Number.isFinite(Number(layer.qty_consumed_before)) && Number(layer.qty_consumed_before)>=0 &&
+    Number.isFinite(Number(layer.qty_consumed_this_sale)) && Number(layer.qty_consumed_this_sale)>0 &&
+    Number.isFinite(Number(layer.qty_remaining)) && Number(layer.qty_remaining)>=0 &&
+    Math.abs(Number(layer.original_qty)-Number(layer.qty_consumed_before)-Number(layer.qty_consumed_this_sale)-Number(layer.qty_remaining))<0.000001);
+  const qty = layers.reduce((sum,layer)=>sum+Number(layer.qty_consumed_this_sale||0),0);
+  const calculatedCogs = layers.reduce((sum,layer)=>sum+Number(layer.qty_consumed_this_sale||0)*Number(layer.unit_cost||0),0);
+  const pass=identityComplete && saleQty>0 && Number.isFinite(smm) && smm>=0 && layers.length>0 && layers.every(validLayer) &&
+    Math.abs(qty-saleQty)<0.000001 && Math.round(calculatedCogs*100)===Math.round(smm*100);
+  return {sale_id:input.sale_id||null,product_id:input.product_id||null,sale_date:input.sale_date||null,sale_qty:Number.isFinite(saleQty)?saleQty:null,
+    fifo_layers:layers,calculated_cogs:Number.isFinite(calculatedCogs)?Math.round(calculatedCogs*100)/100:null,
+    reconciliation_status:pass?'PASS':'FAIL',profit_locked:!pass};
+}
+
+export function buildSalesNotificationV2(input = {}) {
+  const audit=reconcileSaleFifo(input);
+  const fields=Object.fromEntries(['SAT','SMM','BRK','SAB','DEĞ','GİD','VÖK','VER','NEK'].map(key=>[key,input[key]??null]));
+  // Allocation of SAB/DEĞ is intentionally unresolved. A reconciled cost alone cannot unlock final profit.
+  return {contract_version:'sales_notification_v2',...fields,fifo_audit:audit,profit_locked:audit.profit_locked||fields.SAB==null||fields['DEĞ']==null,
+    fifo_proof:audit.reconciliation_status==='PASS'?'FIFO ✓':null,formula_status:'UNRESOLVED_SAB_DEG'};
+}
+
+export function formatV2FifoProof(contract) {
+  const audit=contract?.fifo_audit;
+  if (!audit || audit.reconciliation_status!=='PASS') return `SMM::: ${money(contract?.SMM)} · FIFO kanıtı eksik; kâr kilitli`;
+  const layers=audit.fifo_layers;
+  if (layers.length===1) return `SMM::: ${money(contract.SMM)} · ${layers[0].purchase_date} · ${layers[0].supplier} · FIFO ✓`;
+  return [`SMM::: ${money(contract.SMM)} · FIFO ✓`,...layers.map(layer=>`↳ ${layer.qty_consumed_this_sale} ad · ${layer.purchase_date} · ${layer.supplier} · ${money(layer.unit_cost)}`)].join('\n');
+}
+
+export const SALES_MEMORY_EVENT_KINDS=Object.freeze(['fifo_layer_exhausted','cost_changed','margin_anomaly','stock_risk','sales_velocity_anomaly','price_anomaly','verified_user_rule']);
+export function salesMemoryEventCandidate(event = {}) {
+  if (!SALES_MEMORY_EVENT_KINDS.includes(event.kind) || !event.source_ref || !event.product_id) return null;
+  return {kind:event.kind,product_id:event.product_id,occurred_at:event.occurred_at||null,source_ref:event.source_ref,
+    summary:String(event.summary||'').replace(/\s+/g,' ').trim().slice(0,180)};
+}

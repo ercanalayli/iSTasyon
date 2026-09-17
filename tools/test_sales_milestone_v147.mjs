@@ -3,7 +3,10 @@ import {
   buildProfitSnapshot,
   crossedMilestones,
   detectSalesAnomalies,
-  formatMilestoneMessage
+  formatMilestoneMessage,
+  buildSalesNotificationV2,
+  formatV2FifoProof,
+  salesMemoryEventCandidate
 } from '../functions/shared/sales-milestone.js';
 import { formatNewSalesMessage, saleFingerprint } from '../functions/api/bizimhesap-sales-sync.js';
 
@@ -40,4 +43,23 @@ assert.equal(saleFingerprint(sampleSale), saleFingerprint({ ...sampleSale, kayna
 const saleMessage = formatNewSalesMessage([sampleSale]);
 assert.match(saleMessage, /YENİ BİZİMHESAP SATIŞI/);
 assert.match(saleMessage, /450,00/);
+const fifoSale={sale_id:'sale-1',product_id:'product-1',sale_date:'2026-09-17',sale_qty:8,SMM:957.64,SAT:1200,
+  fifo_layers:[
+    {purchase_document_id:'buy-1',purchase_date:'2026-04-22',supplier:'TUNA DIŞ TİC.',original_qty:10,unit_cost:110.88,qty_consumed_before:7,qty_consumed_this_sale:3,qty_remaining:0},
+    {purchase_document_id:'buy-2',purchase_date:'2026-08-18',supplier:'TUNA DIŞ TİC.',original_qty:12,unit_cost:125,qty_consumed_before:2,qty_consumed_this_sale:5,qty_remaining:5}
+  ]};
+// 3*110.88 + 5*125 = 957.64.
+const v2=buildSalesNotificationV2(fifoSale);
+assert.equal(v2.fifo_audit.reconciliation_status,'PASS');
+assert.equal(v2.profit_locked,true); // SAB/DEĞ deliberately unresolved.
+assert.match(formatV2FifoProof(v2),/22.04|2026-04-22/);
+assert.match(formatV2FifoProof(v2),/2026-08-18/);
+assert.match(formatV2FifoProof(v2),/TUNA DIŞ TİC/);
+assert.match(formatV2FifoProof(v2),/FIFO ✓/);
+const mismatch=buildSalesNotificationV2({...fifoSale,SMM:957.63});
+assert.equal(mismatch.fifo_audit.reconciliation_status,'FAIL');
+assert.equal(mismatch.profit_locked,true);
+assert.doesNotMatch(formatV2FifoProof(mismatch),/FIFO ✓/);
+assert.equal(salesMemoryEventCandidate({kind:'ordinary_sale',product_id:'x',source_ref:'sale:x'}),null);
+assert.equal(salesMemoryEventCandidate({kind:'cost_changed',product_id:'x',source_ref:'sale:x',summary:'FIFO cost changed'}).kind,'cost_changed');
 console.log('sales milestone v147: OK');

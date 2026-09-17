@@ -45,7 +45,7 @@ const tableRows={
 };
 const db={prepare(sql){
   const table=Object.keys(tableRows).find(key=>sql.includes(`FROM ${key}`));
-  return {async all(){return {results:table?tableRows[table]:[]};},async first(){
+  return {async all(){return {results:sql.includes("execution_adapter='computer_use'")?[]:table?tableRows[table]:[]};},async first(){
     if(sql.includes("FROM memory_entities WHERE entity_type='cash_account'")) return {canonical_name:'Ercan Nakit Kasa',provenance_ref:'fixture:AI-0646:account'};
     if(sql.includes('FROM memory_facts f JOIN memory_fact_sources')) return {fact_key:'tea',object_value:'MARKET',confidence:1,authority:'user_correction',valid_from:'2026-09-16',object_key:'fact:tea',freshness:'current',freshness_policy:'until_superseded',source_authority:'user_correction+verified_bizimhesap',sources:'fixture:user_correction | fixture:AI-0646'};
     return null;
@@ -55,9 +55,17 @@ const today=await buildToday(db,now);
 assert.equal(today.priorities.length,3);
 assert.equal(today.approvals.length,2);
 assert.equal(today.failed.length,1);
+assert.equal(today.channel_health.GMAIL.status,'HEALTHY');
+assert.equal(today.channel_health.DRIVE.status,'UNKNOWN');
 assert.ok(today.new_information.some(item=>item.kind==='document'));
 assert.match(formatTodayBrief(today),/Günaydın ApeirON/);
 assert.ok(formatTodayBrief(today).length<3901);
+tableRows.source_health.push({source_id:'computer_use_chrome',status:'blocked',checked_at:'2026-09-17T06:00:00Z'});
+const degraded=await buildToday(db,now);
+assert.equal(degraded.channel_health.COMPUTER_USE.status,'DEGRADED');
+assert.equal(degraded.channel_health.MEMORY.status,'HEALTHY');
+assert.equal(degraded.failed.length,1,'degraded Computer Use is not a passive daily failure');
+assert.equal(degraded.execution_channel_blocked,false);
 
 const tea=await resolveNaturalCommand(db,'75 TL çay Ercan nakit',today.priorities);
 assert.equal(tea.scope,'ALAYLI MEDİKAL');

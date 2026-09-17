@@ -55,7 +55,7 @@ SELECT 'decision:murat:terminal-approved','Murat yönetimi İnegöl Fabrika–İ
 FROM memory_sources WHERE source_key='gmail:19fa76e1f31ca52b';
 
 INSERT OR IGNORE INTO aperion_followups(followup_key,entity_ref,thread_ref,lifecycle_type,stage,title,next_action,source_event_id,provenance_ref)
-VALUES('followup:murat:aug2026-fuel-escalation','Murat Ticaret','gmail-thread:19f36e84a3370e08','contract_escalation','WAITING_EXTERNAL','Murat Ticaret: Ağustos yakıt eskalasyonu teyidi','Sercan Mutlu yanıtını kontrol et; teyit yoksa fiyat farkı faturasını onaylanmış sayma.','evt:murat:escalation-wait','gmail:1a08515985214614');
+VALUES('followup:murat:aug2026-fuel-escalation','Murat Ticaret','thread:13ffc8821305f9d36bc9aa010c1833a0918c9596fc2e9c361e0c089bb60aec10','contract_escalation','WAITING_EXTERNAL','Murat Ticaret: Ağustos yakıt eskalasyonu teyidi','Sercan Mutlu yanıtını kontrol et; teyit yoksa fiyat farkı faturasını onaylanmış sayma.','evt:murat:escalation-wait','gmail:1a08515985214614');
 
 INSERT OR IGNORE INTO aperion_followups(followup_key,entity_ref,thread_ref,lifecycle_type,stage,title,next_action,source_event_id,provenance_ref)
 VALUES('followup:murat:july2026-freight','Murat Ticaret','gmail-thread:19fc5f828ec8c669','freight_approval','COMPLETED','Murat Ticaret: Temmuz sevkiyat teklif/onay döngüsü',NULL,'evt:murat:july-next-action','gmail:19ff12e28eb4dafe');
