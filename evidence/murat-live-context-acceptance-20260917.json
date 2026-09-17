@@ -1,0 +1,54 @@
+{
+  "phase": "MURAT_TICARET_LIVE_MEMORY_CONTEXT",
+  "tested_at": "2026-09-17T13:58:26Z",
+  "source_recovery": {
+    "memory_before": "no_verified_entity",
+    "recovered_from": "existing real Gmail messages",
+    "gmail_source_count": 7,
+    "drive": "Only 2014 historical shipment-list metadata found; content/version not verified, excluded from current pack",
+    "memory_after": "entity, four facts, one decision, nine events, two lifecycle followups",
+    "retrieval": "5/5 fresh-process answers with provenance"
+  },
+  "acceptance": {
+    "murat_gmail_ingest": "PASS",
+    "murat_context_pack": "PASS",
+    "lifecycle": "PASS",
+    "today_integration": "PASS",
+    "entity_360": "PASS",
+    "source_recovery": "PASS_GMAIL_PATH",
+    "provenance": "PASS",
+    "no_stale_as_current": "PASS",
+    "new_context_retrieval": "5/5"
+  },
+  "current_state": "WAITING_EXTERNAL",
+  "latest_verified_communication": "gmail:1a08515985214614",
+  "open_followup": "followup:murat:aug2026-fuel-escalation",
+  "historical_lifecycle": "INBOUND_RECEIVED 2026-08-03 > ACTION_IDENTIFIED 2026-08-10 > RESPONSE_RECEIVED 2026-08-11 > NEXT_ACTION invoicing; not in Today",
+  "current_freight_tariff": null,
+  "payment_term": null,
+  "withholding_rule": null,
+  "related_current_drive_documents": [],
+  "invoice_state": "M012026000000200 sent by email; invoice primary-system status and payment not verified",
+  "repeat_ingest_counts": { "facts": 4, "events": 9, "followups": 2, "duplicate_facts_added": 0 },
+  "durable_memory_verified_facts": 3,
+  "computer_use": {
+    "channel": "DEGRADED",
+    "code": "DEGRADED_EXECUTION_CHANNEL",
+    "issue": "Chrome URL verification",
+    "backlog_key": "issue:computer-use-chrome-url-verification"
+  },
+  "writes": {
+    "financial": 0,
+    "bizimhesap": 0,
+    "messages_sent": 0,
+    "drive": 0,
+    "secrets_exposed": 0,
+    "memory_os": "provenance and lifecycle writes only"
+  },
+  "worker_version": "02c56d97-01b0-4f13-b2a1-aaf8e8805524",
+  "checks": [
+    "node tools/test_context_autonomy_v1.mjs: 8/8",
+    "node tools/accept_murat_live_context.mjs: 5/5, Today open only",
+    "D1 readback: 4 facts, 9 events, 2 followups, 3 retrieval acceptance records"
+  ]
+}

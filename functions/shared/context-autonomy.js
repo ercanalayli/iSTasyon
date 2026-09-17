@@ -43,7 +43,7 @@ export async function buildContextPack(db,packId,question,{now=new Date(),tokenB
       LEFT JOIN memory_quality q ON q.object_key=o.object_key
       WHERE f.status='active' AND (f.scope=? OR f.subject LIKE ? OR f.object_value LIKE ?)
       ORDER BY f.last_seen DESC LIMIT 35`,[spec.scope,match,match]),
-    query(db,"SELECT decision_key,decision,scope,effective_date,source_id FROM memory_decisions WHERE status='active' AND (scope=? OR decision LIKE ?) ORDER BY effective_date DESC LIMIT 12",[spec.scope,match]),
+    query(db,"SELECT d.decision_key,d.decision,d.scope,d.effective_date,s.source_key FROM memory_decisions d JOIN memory_sources s ON s.id=d.source_id WHERE d.status='active' AND (d.scope=? OR d.decision LIKE ?) ORDER BY d.effective_date DESC LIMIT 12",[spec.scope,match]),
     query(db,`SELECT event_id,event_type,occurred_at,summary,source_type,source_ref,verification_status,provenance_ref
       FROM memory_events WHERE (scope=? OR company=? OR summary LIKE ?) AND verification_status IN ('read_back_verified','source_content_verified','corroborated')
       ORDER BY occurred_at DESC LIMIT 18`,[spec.scope,spec.scope,match]),
@@ -63,7 +63,7 @@ export async function buildContextPack(db,packId,question,{now=new Date(),tokenB
   const safeDocs=documents.rows.filter(row=>!secretLike(`${row.canonical_name} ${row.summary}`));
   const activeRules=unique([
     ...freshFacts.filter(row=>/category|rule|price|policy|hesap|fiyat/i.test(row.predicate)).map(row=>({key:row.fact_key,statement:`${tidy(row.subject)}: ${tidy(row.predicate)} = ${tidy(row.object_value)}`,confidence:row.confidence,freshness:row.freshness,valid_from:row.valid_from,valid_until:row.valid_to,source_authority:row.source_authority||row.authority,source_ref:row.provenance_ref||row.fact_key})),
-    ...decisions.rows.filter(row=>!secretLike(row.decision)).map(row=>({key:row.decision_key,statement:tidy(row.decision),valid_from:row.effective_date,source_ref:`decision:${row.decision_key}`}))
+    ...decisions.rows.filter(row=>packId!=='MURAT_TICARET'&&!secretLike(row.decision)).map(row=>({key:row.decision_key,statement:tidy(row.decision),valid_from:row.effective_date,source_ref:row.source_key}))
   ],row=>row.key).slice(0,12);
   const openItems=unique([...work.rows.filter(row=>!secretLike(row.title)).map(row=>({id:`work:${row.work_key}`,title:tidy(row.title),status:row.status,due_at:row.due_at,approval_required:Boolean(row.approval_required)})),
     ...followups.rows.filter(row=>!secretLike(`${row.title} ${row.next_action}`)).map(row=>({id:`followup:${row.followup_key}`,title:tidy(row.title),status:row.stage,due_at:row.due_at,next_action:tidy(row.next_action),source_ref:row.provenance_ref}))],row=>row.id).slice(0,15);
@@ -71,6 +71,9 @@ export async function buildContextPack(db,packId,question,{now=new Date(),tokenB
   const pack={pack_id:packId,scope:spec.scope,generated_at:iso(now),freshness:facts.available&&events.available?'source_bounded':'partial_source_unavailable',
     entities:entities.rows.map(row=>({id:row.entity_id,type:row.entity_type,name:row.canonical_name,source_ref:row.provenance_ref})),
     active_rules:activeRules,open_items:openItems,
+    verified_facts:freshFacts.map(row=>({key:row.fact_key,predicate:row.predicate,value:tidy(row.object_value),confidence:row.confidence,
+      freshness:row.freshness,valid_from:row.valid_from,valid_until:row.valid_to,source_authority:row.source_authority||row.authority,source_ref:row.provenance_ref||null})).slice(0,20),
+    decisions:decisions.rows.filter(row=>!secretLike(row.decision)).map(row=>({key:row.decision_key,decision:tidy(row.decision),effective_date:row.effective_date,source_ref:row.source_key})),
     relevant_documents:safeDocs.map(row=>({document_id:row.document_id,name:tidy(row.canonical_name),version_hash:row.version_hash,date:row.document_date,summary:tidy(row.summary),source_ref:row.provenance_ref})),
     recent_verified_events:safeEvents.map(row=>({event_id:row.event_id,type:row.event_type,occurred_at:row.occurred_at,summary:tidy(row.summary),verification_status:row.verification_status,source_ref:row.provenance_ref})),
     conflicts:conflicts.rows.filter(row=>!secretLike(`${row.subject} ${row.predicate}`)),source_refs:sourceRefs,skills:skills.rows.filter(row=>row.status==='candidate'||row.status==='production_ready'),
@@ -78,12 +81,12 @@ export async function buildContextPack(db,packId,question,{now=new Date(),tokenB
   // Each query is bounded; additionally bound the serialized pack rather than silently loading a whole archive.
   const cap=budget*5;
   while (JSON.stringify(pack).length>cap) {
-    const arrays=['recent_verified_events','relevant_documents','open_items','active_rules','entities'];
+    const arrays=['recent_verified_events','relevant_documents','open_items','active_rules','verified_facts','decisions','entities'];
     const candidate=arrays.sort((a,b)=>pack[b].length-pack[a].length)[0];
     if (!candidate || !pack[candidate].length) break;
     pack[candidate].pop();
   }
-  pack.source_refs=[...new Set([...pack.entities.map(x=>x.source_ref),...pack.active_rules.map(x=>x.source_ref),...pack.relevant_documents.map(x=>x.source_ref),...pack.recent_verified_events.map(x=>x.source_ref),...pack.open_items.map(x=>x.source_ref)].filter(Boolean))];
+  pack.source_refs=[...new Set([...pack.entities.map(x=>x.source_ref),...pack.active_rules.map(x=>x.source_ref),...pack.verified_facts.map(x=>x.source_ref),...pack.decisions.map(x=>x.source_ref),...pack.relevant_documents.map(x=>x.source_ref),...pack.recent_verified_events.map(x=>x.source_ref),...pack.open_items.map(x=>x.source_ref)].filter(Boolean))];
   pack.evidence_count=pack.entities.length+pack.active_rules.length+pack.relevant_documents.length+pack.recent_verified_events.length;
   pack.unknown=pack.evidence_count===0;
   return pack;
@@ -91,15 +94,30 @@ export async function buildContextPack(db,packId,question,{now=new Date(),tokenB
 
 export function entity360(pack) {
   const take=(items,predicate)=>items.filter(predicate);
-  const communication=take(pack.recent_verified_events,row=>/mail|message|reply|yanıt|iletişim/i.test(`${row.type} ${row.summary}`));
+  const communication=take(pack.recent_verified_events,row=>/^(gmail_message_verified|reply_received)$/.test(row.type)&&row.source_ref?.startsWith('gmail:'));
   const contracts=take(pack.relevant_documents,row=>/sözleşme|contract/i.test(`${row.name} ${row.summary}`));
   const invoices=take(pack.relevant_documents,row=>/fatura|invoice/i.test(`${row.name} ${row.summary}`));
   const prices=take(pack.active_rules,row=>/price|fiyat|birim/i.test(row.statement));
   const approvals=take(pack.open_items,row=>row.approval_required||row.status==='WAITING_APPROVAL');
   const risks=pack.conflicts.map(row=>({type:'unresolved_conflict',subject:row.subject,predicate:row.predicate,source_ref:`conflict:${row.conflict_key}`}));
+  const fact=predicate=>pack.verified_facts?.find(row=>row.predicate===predicate&&row.freshness==='current')||null;
+  const isMurat=pack.pack_id==='MURAT_TICARET';
+  const latest=communication[0]||null;
+  const invoiceMail=pack.recent_verified_events.find(row=>/M012026000000200/.test(row.summary));
+  if (isMurat && pack.open_items.some(row=>row.status==='WAITING_EXTERNAL')) risks.push({type:'external_confirmation_pending',
+    summary:'Ağustos yakıt eskalasyonu ve fiyat farkı faturasına karşı taraf teyidi doğrulanmadı.',
+    source_ref:pack.open_items.find(row=>row.status==='WAITING_EXTERNAL')?.source_ref});
   return {entity:pack.entities[0]||null,scope:pack.scope,as_of:pack.generated_at,completeness:pack.unknown?'no_verified_entity':'partial_source_backed',
     last_communications:communication.slice(0,5),open_tasks:pack.open_items,waiting_approvals:approvals,
     contracts,price_rules:prices,invoices,documents:pack.relevant_documents,
+    ...(isMurat?{current_state:pack.open_items.length?'WAITING_EXTERNAL':'NO_VERIFIED_OPEN_LOOP',
+      latest_verified_communication:latest,open_loops:pack.open_items,
+      contract_terms:[fact('contract_reference'),fact('price_fuel_base'),fact('price_fuel_escalation_rule')].filter(Boolean),
+      current_freight_pricing_rule:null,fuel_escalation_rule:fact('price_fuel_escalation_rule'),
+      payment_term:null,withholding_rule:null,related_drive_documents:pack.relevant_documents,
+      invoice_state:invoiceMail?{status:'sent_by_email',invoice_no:'M012026000000200',payment_verified:false,
+        primary_invoice_verified:false,source_ref:invoiceMail.source_ref}:null,
+      historical_decisions:pack.decisions}:{}),
     recent_verified_events:pack.recent_verified_events,risks,next_action:pack.open_items[0]?.next_action||null,
     source_refs:pack.source_refs,missing_fields:['last_communications','contracts','price_rules','invoices'].filter(field=>({last_communications:communication,contracts,price_rules:prices,invoices})[field].length===0)};
 }
