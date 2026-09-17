@@ -16,6 +16,7 @@ const { launchOptions, loginBizimHesap, selectFirma, checkLoginCooldown, savePag
 const { sendFinanceResult } = require('./telegram_finance_result.cjs');
 const { loadDiaperPriceCatalog, resolveDiaperCatalogItem, parseDiscountPercent } = require('./diaper_price_catalog.cjs');
 const { userSafeDesktopResult } = require('./desktop_result_formatter.cjs');
+const { assertBizimHesapWriteEnabled } = require('./lib/bizimhesap_write_policy.cjs');
 
 const ENV_FILE = path.join(__dirname, '..', 'local-secrets', 'bizimhesap.local.env');
 if (!fs.existsSync(ENV_FILE)) { console.error('HATA: local-secrets/bizimhesap.local.env yok.'); process.exit(1); }
@@ -1769,6 +1770,9 @@ async function handleCommand(cmd) {
   const params = cmd.params || {};
   let outcome;
   try {
+    if (['bizimhesap_diaper_proforma', 'bizimhesap_sil_bir', 'bizimhesap_masraf_sil', 'bizimhesap_sil_tumu', 'bizimhesap_expense', 'bizimhesap_process'].includes(cmd.command)) {
+      assertBizimHesapWriteEnabled();
+    }
     if (cmd.command === 'desktop_open_url') {
       outcome = await openDesktopTarget(params.target);
     } else {

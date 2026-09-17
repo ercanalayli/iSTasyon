@@ -1,0 +1,8 @@
+---
+description: ApeirON BizimHesap write suspension and read-only operating mode
+alwaysApply: true
+---
+
+# BizimHesap read-only mode
+
+The user suspended ApeirON/Codex writes to BizimHesap on 2026-09-17 and will enter records manually. Do not create, edit, delete, save, or attach documents to BizimHesap transactions, even if an older approval or queue item exists. Read-only verification and source-backed reporting may continue. Focus development on reporting, notifications, procurement, and marketing. This rule is superseded only by a new explicit user instruction to resume writes, followed by an audited production change.

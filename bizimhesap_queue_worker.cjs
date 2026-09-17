@@ -4,6 +4,7 @@ const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
 const { launchOptions, loginBizimHesap, selectFirma, savePageDiagnostics } = require('./bizimhesap_common.cjs');
 const { classifyQueueRow: classifyQueueBankPlan } = require('./tools/bank_posting_plan.cjs');
+const { assertBizimHesapWriteEnabled } = require('./tools/lib/bizimhesap_write_policy.cjs');
 
 const args = process.argv.slice(2);
 const LIMIT = Number(valueArg('--limit', process.env.BIZIMHESAP_QUEUE_LIMIT || 10));
@@ -771,6 +772,7 @@ async function main() {
     console.log('SONUC: BANKA_TARIHI_KORUMASI_BASARILI');
     return;
   }
+  if (COMMIT || SAVE) assertBizimHesapWriteEnabled();
   log(`AperiON BizimHesap queue worker - ${COMMIT ? 'FORM' : 'DRY'}${SAVE ? '+SAVE' : ''} - limit ${LIMIT}`);
   if (COMMIT && !LIVE_UNLOCKED) {
     throw new Error('Canlı form modu kilitli: BIZIMHESAP_POSTING_LIVE=1 gerekli.');

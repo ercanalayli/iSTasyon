@@ -1,0 +1,7 @@
+{
+  "mode": "read_only_advisory",
+  "bizimhesap_writes_enabled": false,
+  "effective_date": "2026-09-17",
+  "authority": "explicit_user_instruction",
+  "reason": "User handles BizimHesap record entry; ApeirON focuses on reporting, notifications, procurement and marketing."
+}
