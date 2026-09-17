@@ -10,8 +10,10 @@ if (payload.kind === 'codex_result_envelope') {
   if (!envelope?.execution_id || !envelope?.idempotency_key || !envelope?.provenance) throw new Error('envelope_evidence_required');
   const write = await memoryRequest('/v1/memory', { method:'POST', body:payload });
   const lookup = await memoryRequest(`/v1/memory?view=ledger&ref=${encodeURIComponent(envelope.execution_id)}`);
+  // The ledger canonicalizes provenance to 240 characters before persisting it.
+  const storedProvenance = String(envelope.provenance).trim().slice(0, 240);
   for (const id of [write.task_event_id,write.result_event_id,write.verification_event_id].filter(Boolean))
-    assert.ok(lookup.rows.some(row => row.event_id === id && row.provenance_ref === envelope.provenance),'independent_ledger_readback_missing');
+    assert.ok(lookup.rows.some(row => row.event_id === id && row.provenance_ref === storedProvenance),'independent_ledger_readback_missing');
   console.log(JSON.stringify({ ok:true, execution_id:envelope.execution_id, duplicate:write.duplicate,new_events:write.new_events,
     new_facts:write.new_facts, independent_ledger_readback:true, financialWrites:0,bizimHesapWrites:0,secretsExposed:0 }));
   process.exit(0);
