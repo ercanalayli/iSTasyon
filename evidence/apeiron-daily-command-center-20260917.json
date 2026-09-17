@@ -1,6 +1,6 @@
 {
   "schemaVersion": "apeiron-daily-command-center-acceptance-v1",
-  "observedAt": "2026-09-17T07:54:27Z",
+  "observedAt": "2026-09-17T07:56:29Z",
   "canonicalWorkspace": "C:\\AperiON\\iSTasyon",
   "phaseComplete": false,
   "mobileEntry": {
@@ -22,7 +22,7 @@
   "duplicateSuppression": "PASS_FIXTURE",
   "attentionScenariosPassed": 9,
   "attentionScenariosTotal": 9,
-  "skillRegistry": "PASS_LIVE_READ",
+  "skillRegistry": "PASS_LIVE_D1_READ",
   "bizimHesapGiderKaydet": "PASS_CANDIDATE_ONLY",
   "verifiedSkillExamples": 1,
   "memoryAwareIntent": "PASS_LIVE_READ_ONLY",
@@ -32,7 +32,7 @@
   "dailyBriefPriorityCount": 3,
   "morningWorkerVersion": "v167",
   "morningWorkerDeploymentId": "866e7fdf-726d-4abb-8924-c40ff46be9ea",
-  "memoryWorkerDeploymentId": "4b8d2b38-7654-4af2-b604-ab6af3a1db34",
+  "memoryWorkerDeploymentId": "65a65bb3-25c8-47d3-8f24-3d73b3c7627e",
   "codexAutoMemoryRegression": "PASS_FIXTURE_AND_EXISTING_LIVE_PROVENANCE",
   "driveAutoMemoryRegression": "PASS_LIVE_NO_CHANGE",
   "gmailWatcherNoChange": { "status": "healthy", "newImportant": 0, "newAttentionEvents": 0 },
@@ -45,7 +45,8 @@
   "bizimHesapWrites": 0,
   "driveWrites": 0,
   "secretsNewlyExposed": 0,
-  "pagesDeploymentCommit": "3d6f782",
+  "pagesDeploymentCommit": "1914571",
+  "pagesDeploymentId": "140b742c-1ffb-406d-a306-aebbd796dcaa",
   "pagesEndpointReachabilityFromThisHost": "FAIL_TIMEOUT",
   "protectedMemoryWorkerTodayEndpoint": "PASS"
 }

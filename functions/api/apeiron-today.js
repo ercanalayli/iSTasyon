@@ -8,7 +8,17 @@ export async function onRequestGet({request,env}) {
   if (!env.APERION_DB) return json({ok:false,error:'missing_d1_binding'},503);
   if (!await authorized(request,env)) return json({ok:false,error:'unauthorized'},401);
   const view=new URL(request.url).searchParams.get('view');
-  if (view==='skills') return json({ok:true,registry_version:1,skills:Object.values(SKILL_REGISTRY_V1)});
+  if (view==='skills') {
+    try {
+      const rows=(await env.APERION_DB.prepare("SELECT task_type,status,verified_executions,provenance_ref,updated_at FROM memory_skill_candidates WHERE task_type='BizimHesap.GiderKaydet' LIMIT 1").all()).results||[];
+      const candidate=rows[0];
+      const skills=Object.values(SKILL_REGISTRY_V1).map(contract=>candidate?{
+        ...contract,status:candidate.status,verified_examples:candidate.verified_executions,
+        memory_provenance:candidate.provenance_ref,last_verified_at:candidate.updated_at
+      }:contract);
+      return json({ok:true,registry_version:1,source:candidate?'memory_os_d1':'contract_only',skills});
+    } catch { return json({ok:false,error:'skill_registry_memory_unavailable'},503); }
+  }
   try {
     const today=await buildToday(env.APERION_DB);
     if (view==='brief') return json({ok:true,view:'brief',date:today.date,text:formatTodayBrief(today),read_only:true});

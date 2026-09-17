@@ -41,6 +41,7 @@ const tableRows={
   memory_facts:[{fact_key:'price1',subject:'Fiyat',predicate:'unit_price',object_value:'100',confidence:.8,last_verified_at:'2026-08-01',freshness_policy:'price_30d',provenance_ref:'fixture:price'}],
   source_health:[{source_id:'gmail',status:'confirmed',checked_at:'2026-09-17T06:00:00Z'}],
   memory_documents:[{document_id:'d1',drive_file_id:'drive1',canonical_name:'Önemli belge',document_date:'2026-09-17',provenance_ref:'fixture:drive'}]
+  ,memory_skill_candidates:[{task_type:'BizimHesap.GiderKaydet',status:'candidate',verified_executions:1,provenance_ref:'fixture:AI-0646',updated_at:'2026-09-17'}]
 };
 const db={prepare(sql){
   const table=Object.keys(tableRows).find(key=>sql.includes(`FROM ${key}`));
@@ -78,6 +79,8 @@ assert.equal(unauthorized.status,401);
 const headers={authorization:`Bearer ${env.APERION_BRIDGE_SECRET}`};
 const skills=await (await onRequestGet({request:new Request('https://fixture.test/api/apeiron-today?view=skills',{headers}),env})).json();
 assert.equal(skills.skills[0].skill_id,'BizimHesap.GiderKaydet');
+assert.equal(skills.source,'memory_os_d1');
+assert.equal(skills.skills[0].memory_provenance,'fixture:AI-0646');
 const brief=await (await onRequestGet({request:new Request('https://fixture.test/api/apeiron-today?view=brief',{headers}),env})).json();
 assert.match(brief.text,/Günaydın ApeirON/);
 assert.equal(brief.read_only,true);
