@@ -125,11 +125,23 @@ async function gmailWatcher(token, state) {
   const fresh = (list.messages || []).filter(item => !known.has(hash(item.id)));
   const important = [];
   let attentionEvents = 0;
+  let linkedFollowups = 0;
+  let followupLinkErrors = 0;
   for (const item of fresh.slice(0, 25)) {
     const meta = await api(token, `https://gmail.googleapis.com/gmail/v1/users/me/messages/${encodeURIComponent(item.id)}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`);
     const headers = Object.fromEntries((meta.payload?.headers || []).map(header => [header.name.toLowerCase(), header.value]));
     const signal = gmailSignal(item, meta, headers);
     important.push({ fingerprint: hash(item.id), threadFingerprint: hash(meta.threadId || item.id), subjectHash: hash(headers.subject || ''), fromDomainHash: hash(String(headers.from || '').split('@').at(-1) || ''), internalDate: meta.internalDate || null, hasAttachmentHint: /attachment/i.test(JSON.stringify(meta.payload || {})), signal });
+    if ((meta.labelIds || []).includes('INBOX')) {
+      try {
+        const link = await memoryRequest('/v1/followup', { method:'POST', body:{
+          thread_ref:`thread:${signal.provenance.thread_fingerprint}`,
+          message_ref:`gmail:${signal.provenance.message_fingerprint}`,
+          received_at:meta.internalDate?new Date(Number(meta.internalDate)).toISOString():now()
+        } });
+        linkedFollowups += Number(link.matched&&link.updated);
+      } catch { followupLinkErrors += 1; }
+    }
     if (signal.risk === 'high') {
       const result = await memoryRequest('/v1/memory', { method:'POST', body:{ kind:'event', event:{
         event_type:'gmail_attention_signal', occurred_at:meta.internalDate?new Date(Number(meta.internalDate)).toISOString():now(),
@@ -143,7 +155,7 @@ async function gmailWatcher(token, state) {
     }
   }
   state.gmail = { fingerprints: [...new Set([...(state.gmail?.fingerprints || []), ...(list.messages || []).map(item => hash(item.id))])].slice(-500), lastRunAt: now() };
-  return { status: 'healthy', last_success: now(), last_error: null, duration_ms: Date.now() - started, next_due: nextDue(30), source_health: 'connected_readonly', scanned_metadata: (list.messages || []).length, new_important: important.length, attention_events:attentionEvents, unchanged: important.length === 0, signals: important.map(item => item.signal), provenance: important.map(({ signal, ...item }) => item) };
+  return { status: followupLinkErrors?'degraded':'healthy', last_success: now(), last_error: followupLinkErrors?'followup_link_unavailable':null, duration_ms: Date.now() - started, next_due: nextDue(30), source_health: 'connected_readonly', scanned_metadata: (list.messages || []).length, new_important: important.length, attention_events:attentionEvents, linked_followups:linkedFollowups, followup_link_errors:followupLinkErrors, unchanged: important.length === 0, signals: important.map(item => item.signal), provenance: important.map(({ signal, ...item }) => item) };
 }
 
 async function driveWatcher(token, contentToken, state) {

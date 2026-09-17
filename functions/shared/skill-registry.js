@@ -12,6 +12,7 @@ export const SKILL_REGISTRY_V1 = Object.freeze({
     risk_class:'FINANCIAL',approval_policy:'Action-time user confirmation for exact values; no save without approval',
     execution_engine:'Existing production Computer Use/BizimHesap line; registry never invokes it automatically',
     verification_policy:'Read the created record back from BizimHesap; compare amount, category, account, date, paid state and duplicate count',
+    failure_recovery:'If save or read-back is uncertain, stop; recheck live record and duplicate key before any retry. Never blindly submit again.',
     memory_learning_policy:'Verified TASK→RESULT→VERIFICATION→EVENT; new rule only with explicit correction or corroboration, provenance and independent retrieval test',
     generalization_limit:'One verified expense is a candidate, not blanket category or payment authorization'
   })

@@ -1,0 +1,60 @@
+{
+  "phase": "ApeirON CONTEXT + AUTONOMY v1",
+  "date": "2026-09-17",
+  "phase_complete": false,
+  "deployed_worker_version": "51e2552c-d76c-4005-87a1-cd2655a16e8b",
+  "implementation": {
+    "context_packs": "PASS",
+    "working_memory": "PASS",
+    "intent_router": "PASS_RULE_BASED",
+    "execution_planner": "PARTIAL_PLAN_ONLY",
+    "action_policy": "PASS_PREPARE_ONLY_FOR_FINANCIAL_WRITE",
+    "proactive_follow_up": "PARTIAL_INBOUND_THREAD_LINKING_FIXTURE_VERIFIED",
+    "entity_360": "PARTIAL_LIVE_MURAT_SOURCE_ABSENT",
+    "conflict_resolution": "PASS_FIXTURE_ONLY",
+    "skill_learning": "PASS_CANDIDATE_NOT_PRODUCTION_READY",
+    "real_task_scorecard": "PARTIAL_INTERVENTION_FIELDS_UNINSTRUMENTED"
+  },
+  "context_tests_fixture": "8/8",
+  "live": {
+    "ai0646_recall": "PASS",
+    "tea_market_recall": "PASS",
+    "tea_expense_draft": "PASS",
+    "working_memory_continuation": "PASS",
+    "murat_entity_360": "FAIL_NO_VERIFIED_SOURCE_DATA",
+    "murat_memory_entities": 0,
+    "murat_memory_facts": 0,
+    "murat_memory_events": 0,
+    "murat_memory_documents": 0,
+    "murat_work_items": 0,
+    "today_real_tasks_derived": 2,
+    "today_completed_verified_derived": 2,
+    "skill_verified_examples": 1
+  },
+  "regressions": {
+    "computer_use": "NOT_RUN_PRODUCTION_PATH_UNTOUCHED",
+    "memory": "PASS_NEW_PROCESS_RECALL_4_OF_4",
+    "drive": "PASS_WATCHER_HEALTHY_NO_CHANGE_CONTENT_READS_0",
+    "attention": "PASS_FIXTURE_9_OF_9"
+  },
+  "one_tap_ux": {
+    "stable_remote_deep_link": "NOT_DOCUMENTED_OR_VERIFIED",
+    "fallback": "ChatGPT mobile Remote navigation",
+    "source": "https://learn.chatgpt.com/docs/remote-connections"
+  },
+  "safety": {
+    "financial_writes": 0,
+    "bizimhesap_writes": 0,
+    "drive_writes": 0,
+    "secrets_exposed": 0,
+    "duplicate_context": 0,
+    "no_change_drive_content_reads": 0
+  },
+  "remaining_gates": [
+    "Ingest source-backed Murat Ticaret records before live Entity 360 PASS.",
+    "Instrument user intervention and memory-use fields for a complete real-task scorecard.",
+    "Connect outbound communication events to WAITING_EXTERNAL creation and live-test a real reply without sending a test message.",
+    "Verify execution-planner engine selection against real capability availability; current endpoint plans only and never authorizes execution.",
+    "Run a non-disruptive actual Computer Use regression when a suitable real user operation occurs."
+  ]
+}
