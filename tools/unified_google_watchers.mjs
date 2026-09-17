@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { memoryRequest } from './lib/memory_transport.mjs';
+import { containsSecret } from '../functions/shared/project-memory.js';
 
 const execFileAsync = promisify(execFile);
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -120,7 +121,7 @@ async function driveWatcher(token, state) {
   let duplicates = 0;
   for (const change of changes) {
     const file = change.file;
-    if (change.removed || !file || file.trashed || !file.name || !file.modifiedTime) continue;
+    if (change.removed || !file || file.trashed || !file.name || !file.modifiedTime || containsSecret(file.name)) continue;
     if (!/aperion|apeiron|alayl[ıi]|medikal|bizimhesap|ekstre|fatura|makbuz|dekont|mutabakat|s[oö]zle[sş]me|karar|banka/i.test(file.name)) continue;
     const versionHash = hash(`${file.id}|${file.modifiedTime}|${file.md5Checksum || file.size || ''}`);
     const result = await memoryRequest('/v1/memory', { method: 'POST', body: { kind: 'drive_change', document: {
