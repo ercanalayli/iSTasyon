@@ -175,31 +175,54 @@ export async function ingestDriveChange(db, input) {
   const modifiedAt = text(input?.modified_at,80);
   if (!fileId || !/^[a-f0-9]{64}$/.test(versionHash) || !name || !Number.isFinite(Date.parse(modifiedAt))) throw new Error('drive_change_invalid');
   if ([fileId,name,input?.acceptance_code].some(value => containsSecret(String(value || '')))) throw new Error('secret_material_rejected');
+  const contentHash = text(input.content_hash,80);
+  if (contentHash && !/^[a-f0-9]{64}$/.test(contentHash)) throw new Error('drive_content_hash_invalid');
+  const facts = Array.isArray(input.facts) ? input.facts.slice(0,30) : [];
+  for (const fact of facts) {
+    if (!fact || !['subject','predicate','object_value'].every(key => text(fact[key])) ||
+      /\b(?:password|parola|sifre|şifre|token|secret|api[_ -]?key|otp|cvv|cvc)\b/i.test(String(fact.predicate)) ||
+      [fact.subject,fact.predicate,fact.object_value].some(value => containsSecret(String(value)))) throw new Error('drive_fact_unsafe');
+  }
   const code = text(input.acceptance_code,80);
   if (code && !/^APN-MEM-[0-9]{8}(?:-V[0-9]+)?$/.test(code)) throw new Error('drive_code_invalid');
   const sourceKey = `drive:${fileId}`;
   const versionKey = `${sourceKey}:${versionHash}`;
-  const prior = await db.prepare('SELECT document_id,version_hash FROM memory_documents WHERE drive_file_id=? AND superseded_by IS NULL ORDER BY created_at DESC LIMIT 1').bind(fileId).first();
+  const prior = await db.prepare('SELECT document_id,version_hash,document_date FROM memory_documents WHERE drive_file_id=? AND superseded_by IS NULL ORDER BY document_date DESC LIMIT 1').bind(fileId).first();
   if (prior?.version_hash === versionHash) return { document_id: prior.document_id, duplicate: true };
-  const summary = code ? `ApeirON kalıcı hafıza kabul kodu: ${code}` : 'ApeirON belge sürümü gözlendi.';
+  const historical = Boolean(prior && Date.parse(modifiedAt) < Date.parse(prior.document_date));
+  const summary = code ? `ApeirON kalıcı hafıza kabul kodu: ${code}` : contentHash ? 'ApeirON belge içeriği doğrulandı.' : 'ApeirON belge sürümü gözlendi.';
   const event = await appendEvent(db, { event_type: 'drive_document_version', occurred_at: modifiedAt,
     source_type: 'google_drive', source_ref: versionKey, actor: 'Google Drive watcher', scope: 'ApeirON',
-    summary, risk_class: 'READ', result_status: 'observed', verification_status: code ? 'source_content_verified' : 'source_metadata_verified',
-    provenance_ref: versionKey, supersedes_event_id: prior ? (await db.prepare('SELECT source_event_id FROM memory_objects WHERE object_type=? AND canonical_ref=?').bind('DOCUMENT',prior.document_id).first())?.source_event_id : null,
+    summary, risk_class: 'READ', result_status: 'observed', verification_status: contentHash ? 'source_content_verified' : 'source_metadata_verified',
+    provenance_ref: versionKey, supersedes_event_id: prior && !historical ? (await db.prepare('SELECT source_event_id FROM memory_objects WHERE object_type=? AND canonical_ref=?').bind('DOCUMENT',prior.document_id).first())?.source_event_id : null,
     metadata: { drive_file_id: fileId, version_hash: versionHash, ...(code ? { acceptance_code: code } : {}) } });
   const documentId = await mapDriveDocument(db, { drive_file_id: fileId, version_hash: versionHash, canonical_name: name,
     document_type: text(input.document_type,100) || 'application/octet-stream', document_date: modifiedAt,
     summary, provenance_ref: versionKey });
-  if (prior && prior.document_id !== documentId) await db.prepare('UPDATE memory_documents SET superseded_by=? WHERE document_id=? AND superseded_by IS NULL').bind(documentId,prior.document_id).run();
+  if (historical) await db.prepare('UPDATE memory_documents SET superseded_by=? WHERE document_id=? AND superseded_by IS NULL').bind(prior.document_id,documentId).run();
+  else if (prior && prior.document_id !== documentId) await db.prepare('UPDATE memory_documents SET superseded_by=? WHERE document_id=? AND superseded_by IS NULL').bind(documentId,prior.document_id).run();
   const documentObject = await linkObject(db,'DOCUMENT',documentId,'ApeirON',event.event_id);
-  await quality(db,documentObject,{ confidence:code?0.95:0.65,freshness:code?'current':'unknown',validFrom:modifiedAt,
-    scope:'ApeirON',authority:code?'source_content_verified':'source_metadata_verified',verifiedAt:code?modifiedAt:null,provenance:versionKey });
+  await quality(db,documentObject,{ confidence:contentHash?0.95:0.65,freshness:historical?'historical_verified':contentHash?'current':'unknown',validFrom:modifiedAt,
+    scope:'ApeirON',authority:contentHash?'source_content_verified':'source_metadata_verified',verifiedAt:contentHash?modifiedAt:null,provenance:versionKey });
   const sourceHash = await sha256(`google_drive|${fileId}`);
   await db.prepare('INSERT OR IGNORE INTO memory_sources(source_key,source_type,source_date,content_hash,adapter_status) VALUES(?,?,?,?,?)')
     .bind(sourceKey,'google_drive',modifiedAt,sourceHash,'verified').run();
-  await db.prepare('INSERT INTO memory_sync_state(source_key,cursor,content_hash,checkpoint_json,status,last_synced_at,last_error) VALUES(?,?,?,?,?,datetime(\'now\'),NULL) ON CONFLICT(source_key) DO UPDATE SET cursor=excluded.cursor,content_hash=excluded.content_hash,checkpoint_json=excluded.checkpoint_json,status=excluded.status,last_synced_at=excluded.last_synced_at,last_error=NULL')
+  if (!historical) await db.prepare('INSERT INTO memory_sync_state(source_key,cursor,content_hash,checkpoint_json,status,last_synced_at,last_error) VALUES(?,?,?,?,?,datetime(\'now\'),NULL) ON CONFLICT(source_key) DO UPDATE SET cursor=excluded.cursor,content_hash=excluded.content_hash,checkpoint_json=excluded.checkpoint_json,status=excluded.status,last_synced_at=excluded.last_synced_at,last_error=NULL')
     .bind(sourceKey,text(input.cursor,240)||null,versionHash,JSON.stringify({ document_id: documentId }),'synced').run();
-  if (code) await recordFact(db, { subject: `Drive document ${fileId}`, predicate: 'acceptance_code', object_value: code, scope: 'ApeirON',
-    source_key: versionKey, source_type: 'google_drive', source_ref: versionKey, authority: 'verified_document_version', observed_at: modifiedAt });
-  return { document_id: documentId, event_id: event.event_id, duplicate: event.duplicate };
+  const candidates = historical ? [] : [...facts, ...(code ? [{ subject: `Drive document ${fileId}`, predicate: 'acceptance_code', object_value: code }] : [])];
+  let insertedFacts = 0;
+  const factKeys = [];
+  for (const candidate of candidates) {
+    const fact = await recordFact(db, { subject: text(candidate.subject,160), predicate: text(candidate.predicate,80),
+      object_value: text(candidate.object_value,240), scope: 'ApeirON', source_key: versionKey,
+      source_type: 'google_drive', source_ref: versionKey, authority: 'verified_document_version', observed_at: modifiedAt });
+    insertedFacts += Number(!fact.duplicate);
+    factKeys.push(fact.fact_key);
+    const objectKey = await linkObject(db,'FACT',fact.fact_key,'ApeirON',event.event_id);
+    await quality(db,objectKey,{ confidence:0.95,freshness:'current',validFrom:modifiedAt,
+      scope:'ApeirON',authority:'verified_document_version',verifiedAt:modifiedAt,provenance:versionKey });
+  }
+  if (factKeys.length) await db.prepare('UPDATE memory_documents SET extracted_fact_keys_json=? WHERE document_id=?')
+    .bind(JSON.stringify([...new Set(factKeys)]),documentId).run();
+  return { document_id: documentId, event_id: event.event_id, duplicate: event.duplicate, inserted_facts: insertedFacts, content_verified: Boolean(contentHash), historical };
 }

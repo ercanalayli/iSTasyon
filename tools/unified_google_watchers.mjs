@@ -5,6 +5,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { memoryRequest } from './lib/memory_transport.mjs';
 import { containsSecret } from '../functions/shared/project-memory.js';
+import { contentVault, loadVault as loadContentVault, refresh as refreshContentToken } from './google_drive_readonly_oauth.mjs';
 
 const execFileAsync = promisify(execFile);
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -80,6 +81,36 @@ async function api(token, url) {
   return data;
 }
 
+async function readDriveContent(token, file, revision) {
+  const mime = file.mimeType || '';
+  let url;
+  if (revision && mime === 'application/vnd.google-apps.document') {
+    const rev = await api(token, `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(file.id)}/revisions/${encodeURIComponent(revision)}?fields=id,modifiedTime,exportLinks`);
+    url = rev.exportLinks?.['text/plain'];
+    if (!url) throw new Error('drive_revision_export_unavailable');
+  } else if (mime === 'application/vnd.google-apps.document') url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(file.id)}/export?mimeType=text%2Fplain`;
+  else if (mime === 'application/vnd.google-apps.spreadsheet') url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(file.id)}/export?mimeType=text%2Fcsv`;
+  else if (!mime.startsWith('application/vnd.google-apps.')) url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(file.id)}?alt=media`;
+  else return null;
+  const response = await fetch(url, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(25000) });
+  if (!response.ok) throw new Error(`drive_content_http_${response.status}`);
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (bytes.length > 10_000_000) throw new Error('drive_content_too_large');
+  const contentHash = crypto.createHash('sha256').update(bytes).digest('hex');
+  const plain = /text\/|application\/(?:json|csv|xml)/.test(mime) || mime === 'application/vnd.google-apps.document' || mime === 'application/vnd.google-apps.spreadsheet';
+  const content = plain ? bytes.toString('utf8') : '';
+  const facts = [];
+  for (const line of content.split(/\r?\n/)) {
+    const match = line.match(/^\s*(?:FACT|OLGU)\s*:\s*([^|]{1,160})\|([^|]{1,80})\|(.{1,240})\s*$/i);
+    if (!match) continue;
+    const [subject,predicate,object_value] = match.slice(1).map(value => value.trim());
+    if (!/\b(?:password|parola|sifre|şifre|token|secret|api[_ -]?key|otp|cvv|cvc)\b/i.test(predicate) &&
+        ![subject,predicate,object_value].some(containsSecret)) facts.push({ subject,predicate,object_value });
+  }
+  const acceptanceCode = content.match(/\bAPN-MEM-[0-9]{8}(?:-V[0-9]+)?\b/)?.[0] || null;
+  return { contentHash, facts: facts.slice(0,30), acceptanceCode };
+}
+
 async function gmailWatcher(token, state) {
   const started = Date.now();
   const query = 'newer_than:7d (has:attachment OR subject:(ekstre OR dekont OR fatura OR sipariş OR ödeme OR tahsilat OR banka))';
@@ -96,7 +127,7 @@ async function gmailWatcher(token, state) {
   return { status: 'healthy', last_success: now(), last_error: null, duration_ms: Date.now() - started, next_due: nextDue(30), source_health: 'connected_readonly', scanned_metadata: (list.messages || []).length, new_important: important.length, unchanged: important.length === 0, signals: important.map(item => item.signal), provenance: important.map(({ signal, ...item }) => item) };
 }
 
-async function driveWatcher(token, state) {
+async function driveWatcher(token, contentToken, state) {
   const started = Date.now();
   let changes = [];
   let pageToken = state.drive?.pageToken || null;
@@ -117,24 +148,40 @@ async function driveWatcher(token, state) {
       if (page.newStartPageToken) pageToken = page.newStartPageToken;
     } while (cursor);
   }
+  const acceptanceId = process.argv.find(arg => arg.startsWith('--acceptance-file-id='))?.split('=')[1];
+  if (acceptanceId && /^[a-zA-Z0-9_-]+$/.test(acceptanceId)) {
+    const file = await api(token, `https://www.googleapis.com/drive/v3/files/${acceptanceId}?fields=id,name,mimeType,modifiedTime,md5Checksum,size,parents,trashed`);
+    changes.push({ fileId: file.id, file });
+    const revision = process.argv.find(arg => arg.startsWith('--acceptance-revision='))?.split('=')[1];
+    if (revision && /^[a-zA-Z0-9_-]+$/.test(revision)) {
+      const rev = await api(contentToken, `https://www.googleapis.com/drive/v3/files/${acceptanceId}/revisions/${revision}?fields=id,modifiedTime`);
+      changes.push({ fileId: file.id, file: { ...file, modifiedTime: rev.modifiedTime }, revision });
+    }
+  }
   let ingested = 0;
   let duplicates = 0;
+  let contentReads = 0;
+  let insertedFacts = 0;
   for (const change of changes) {
     const file = change.file;
     if (change.removed || !file || file.trashed || !file.name || !file.modifiedTime || containsSecret(file.name)) continue;
     if (!/aperion|apeiron|alayl[ıi]|medikal|bizimhesap|ekstre|fatura|makbuz|dekont|mutabakat|s[oö]zle[sş]me|karar|banka/i.test(file.name)) continue;
-    const versionHash = hash(`${file.id}|${file.modifiedTime}|${file.md5Checksum || file.size || ''}`);
+    const extracted = contentToken ? await readDriveContent(contentToken,file,change.revision) : null;
+    if (extracted) contentReads += 1;
+    const versionHash = extracted?.contentHash || hash(`${file.id}|${file.modifiedTime}|${file.md5Checksum || file.size || ''}`);
     const result = await memoryRequest('/v1/memory', { method: 'POST', body: { kind: 'drive_change', document: {
       drive_file_id: file.id, canonical_name: file.name, document_type: file.mimeType || 'application/octet-stream',
-      modified_at: file.modifiedTime, version_hash: versionHash, cursor: pageToken,
+      modified_at: file.modifiedTime, version_hash: versionHash, content_hash: extracted?.contentHash,
+      acceptance_code: extracted?.acceptanceCode, facts: extracted?.facts || [], cursor: pageToken,
     } } });
     if (result.duplicate) duplicates += 1;
     else ingested += 1;
+    insertedFacts += result.inserted_facts || 0;
   }
   // Commit the Drive cursor only after every selected change was persisted.
   state.drive = { pageToken, lastRunAt: now() };
   const provenance = changes.map(change => ({ fileFingerprint: hash(change.fileId), removed: Boolean(change.removed), mimeType: change.file?.mimeType || null, modifiedTime: change.file?.modifiedTime || null, contentHashPresent: Boolean(change.file?.md5Checksum), size: change.file?.size || null })).slice(0, 100);
-  return { status: 'healthy', last_success: now(), last_error: null, duration_ms: Date.now() - started, next_due: nextDue(60), source_health: 'connected_metadata_only', baseline_initialized: baselineInitialized, changed_metadata: changes.length, ingested_metadata_versions: ingested, duplicate_versions: duplicates, content_extraction: 'blocked_by_drive_metadata_only_oauth_scope', unchanged: changes.length === 0, signals: baselineInitialized ? [] : provenance.map(item => ({ event_id: item.fileFingerprint, source: 'google_drive', scope: 'BELİRSİZ', importance: 'important', risk: 'low', event_type: item.removed ? 'file_removed' : 'file_metadata_changed', amount: null, due_date: null, required_action: 'none', summary: 'ApeirON operasyon dosyası metadata değişikliği algılandı.', provenance: { file_fingerprint: item.fileFingerprint, observed_at: now() }, confidence: 0.7 })), provenance };
+  return { status: 'healthy', last_success: now(), last_error: null, duration_ms: Date.now() - started, next_due: nextDue(60), source_health: contentToken ? 'connected_content_readonly' : 'connected_metadata_only', baseline_initialized: baselineInitialized, changed_metadata: changes.length, ingested_metadata_versions: ingested, duplicate_versions: duplicates, content_reads: contentReads, inserted_facts: insertedFacts, content_extraction: contentToken ? 'enabled' : 'blocked_by_drive_metadata_only_oauth_scope', unchanged: changes.length === 0, signals: baselineInitialized ? [] : provenance.map(item => ({ event_id: item.fileFingerprint, source: 'google_drive', scope: 'BELİRSİZ', importance: 'important', risk: 'low', event_type: item.removed ? 'file_removed' : 'file_metadata_changed', amount: null, due_date: null, required_action: 'none', summary: 'ApeirON operasyon dosyası metadata değişikliği algılandı.', provenance: { file_fingerprint: item.fileFingerprint, observed_at: now() }, confidence: 0.7 })), provenance };
 }
 
 async function chatgptStateWatcher() {
@@ -149,12 +196,17 @@ await fs.mkdir(STATE_DIR, { recursive: true });
 const state = await readJson(STATE_FILE, {});
 const result = { schemaVersion: 'unified-google-watchers-v160', observedAt: now(), financialWrites: 0, bizimHesapWrites: 0, messagesSent: 0, secretsExposed: 0, watchers: {} };
 let token;
+let contentToken;
 for (const name of ['gmail', 'drive']) {
   if (!(runAll || requested.has(`--${name}`))) continue;
   const started = Date.now();
   try {
     token ||= await accessToken(await loadVault());
-    result.watchers[name] = name === 'gmail' ? await gmailWatcher(token, state) : await driveWatcher(token, state);
+    if (name === 'drive') {
+      try { contentToken = (await refreshContentToken(await loadContentVault(contentVault))).access_token; }
+      catch (error) { if (error.code !== 'ENOENT') throw new Error('drive_content_oauth_unavailable'); }
+    }
+    result.watchers[name] = name === 'gmail' ? await gmailWatcher(token, state) : await driveWatcher(token, contentToken, state);
   } catch (error) {
     result.watchers[name] = { status: 'unhealthy', last_success: state[name]?.lastRunAt || null, last_error: String(error.message || error).slice(0, 160), duration_ms: Date.now() - started, next_due: nextDue(15), source_health: 'blocked_retry_backoff' };
   }

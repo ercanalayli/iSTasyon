@@ -1,0 +1,37 @@
+{
+  "date": "2026-09-17",
+  "oauth_requested_scope": "https://www.googleapis.com/auth/drive.readonly",
+  "oauth_token_scope_verified": ["https://www.googleapis.com/auth/drive.readonly"],
+  "previous_gmail_sheets_vault_untouched": true,
+  "document": {
+    "name": "ApeirON Memory Acceptance 20260916",
+    "drive_file_id": "1q7VIN8DOmi_zjpFcCdFkLL-1V3QfIP3sAHilADevoIg",
+    "revisions": [
+      { "revision": "1", "modified_at": "2026-09-16T21:02:53.840Z", "content_sha256": "f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5", "superseded_by": "doc:a292cd67e78f24ec3db6b38bae9ae2ac37276a03" },
+      { "revision": "2", "modified_at": "2026-09-16T21:03:07.936Z", "content_sha256": "19093400abf67d3e4f343a7194c34de208b937b137b9096f23a47bb6ba312317", "fact": "APN-MEM-20260916" }
+    ],
+    "current_document_id": "doc:a292cd67e78f24ec3db6b38bae9ae2ac37276a03"
+  },
+  "acceptance": {
+    "drive_content_read": "PASS",
+    "auto_ingest": "PASS_for_supported_text_and_explicit_FACT_lines",
+    "versioning": "PASS_real_preexisting_revisions_read_without_Drive_write",
+    "supersede": "PASS_historical_revision_linked_to_current",
+    "dedupe": "PASS_second_ingest_inserted_facts_0",
+    "provenance": "PASS_Drive_ID_and_version_hash",
+    "recall": "PASS_independent_process_and_retrieval_acceptance",
+    "source_explanation": "PASS",
+    "secret_fact_canary": "PASS_rejected",
+    "no_change_run": { "changed": 0, "content_reads": 0, "inserted_facts": 0, "full_rescans": 0 },
+    "drive_writes": 0,
+    "financial_writes": 0,
+    "bizimhesap_writes": 0,
+    "secrets_exposed": "FAIL_one_preexisting_OAuth_vault_payload_emitted_to_tool_output_during_probe"
+  },
+  "security_follow_up": "Rotate the exposed legacy Google OAuth refresh token and client secret in a coordinated maintenance window; do not revoke it blindly because the existing Gmail/Sheets watcher depends on it.",
+  "limitations": [
+    "Only supported text exports and explicit structured FACT lines or acceptance codes become durable facts; arbitrary prose is not inferred.",
+    "Google Sheets CSV export does not cover every tab; unsupported formats may receive a content hash without semantic facts.",
+    "The two revisions predated this development run; no Drive document was edited to generate a new version."
+  ]
+}

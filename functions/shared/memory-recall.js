@@ -49,12 +49,35 @@ async function teaRule(db) {
   };
 }
 
+async function driveFact(db, query) {
+  const needle = trim(query).match(/APN-MEM-[0-9]{8}(?:-V[0-9]+)?|\b[A-Za-z0-9_-]{30,}\b/i)?.[0] || trim(query);
+  const row = await db.prepare(`SELECT f.fact_key,f.subject,f.predicate,f.object_value,f.confidence,f.authority,f.valid_from,
+      o.object_key,q.freshness,q.last_verified_at,s.source_key,d.drive_file_id,d.canonical_name,d.version_hash,d.document_id
+      FROM memory_facts f JOIN memory_fact_sources fs ON fs.fact_id=f.id
+      JOIN memory_sources s ON s.id=fs.source_id AND s.source_type='google_drive'
+      JOIN memory_documents d ON s.source_key=('drive:'||d.drive_file_id||':'||d.version_hash)
+      LEFT JOIN memory_objects o ON o.object_type='FACT' AND o.canonical_ref=f.fact_key
+      LEFT JOIN memory_quality q ON q.object_key=o.object_key
+      WHERE f.status='active' AND d.superseded_by IS NULL AND
+        (f.object_value LIKE ? OR f.subject LIKE ? OR d.canonical_name LIKE ? OR d.drive_file_id=?)
+      ORDER BY d.document_date DESC LIMIT 1`)
+    .bind(`%${needle}%`,`%${needle}%`,`%${needle}%`,needle).first();
+  if (!row) return null;
+  return { answer: `${row.subject}: ${row.predicate} = ${row.object_value}. Kaynak: ${row.canonical_name} (Drive ${row.drive_file_id}).`,
+    object_key: row.object_key, confidence: row.confidence, freshness: row.freshness || 'unknown',
+    provenance: [{ source_type:'google_drive',source_ref:row.source_key,provenance_ref:row.source_key,
+      document_id:row.document_id,drive_file_id:row.drive_file_id,version_hash:row.version_hash,
+      verified_at:row.last_verified_at }],
+    data: { subject:row.subject,predicate:row.predicate,value:row.object_value,authority:row.authority,valid_from:row.valid_from } };
+}
+
 export async function recallMemory(db, question) {
   const q = lower(question);
   if (!q) throw new Error('recall_query_required');
   let result;
   const code = trim(question).match(/AI-\d{4,}/i)?.[0]?.toUpperCase();
-  if (code) result = await expense(db, code);
+  if (/APN-MEM-[0-9]{8}|\b[A-Za-z0-9_-]{30,}\b/i.test(question)) result = await driveFact(db, question);
+  else if (code) result = await expense(db, code);
   else if (q.includes('çay') || q.includes('cay')) result = await teaRule(db);
   else if ((q.includes('ilk') || q.includes('first')) && (q.includes('computer use') || q.includes('bizimhesap'))) result = await expense(db, 'AI-0646', true);
   else if (q.includes('nereden') || q.includes('kayna')) {

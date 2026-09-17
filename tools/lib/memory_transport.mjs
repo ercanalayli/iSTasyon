@@ -33,6 +33,6 @@ export async function memoryRequest(pathname, { method = 'GET', body } = {}) {
     signal: AbortSignal.timeout(20000),
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok || !data.ok) throw new Error(`memory_transport_http_${response.status}_${String(data.error || 'unknown').slice(0, 80)}`);
+  if (!response.ok || !data.ok) throw new Error(`memory_transport_http_${response.status}_${String(data.error || 'unknown').slice(0, 80)}_${String(data.message || '').replace(/[^a-z0-9_ .():-]/gi, '').slice(0,120)}`);
   return data;
 }
