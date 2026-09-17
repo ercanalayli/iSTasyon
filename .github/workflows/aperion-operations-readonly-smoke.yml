@@ -29,16 +29,31 @@ jobs:
           APERION_BRIDGE_SECRET: ${{ secrets.APERION_BRIDGE_SECRET }}
         run: |
           set -euo pipefail
-          test -n "$APERION_BRIDGE_SECRET"
-          body="$(curl --fail --silent --show-error --max-time 20 --retry 5 --retry-delay 5 --retry-all-errors \
+          if [ -z "$APERION_BRIDGE_SECRET" ]; then
+            echo '::error title=Operations acceptance::AUTH_SECRET_UNAVAILABLE'
+            exit 1
+          fi
+          response_file="$RUNNER_TEMP/aperion-operations-response.json"
+          status="$(curl --silent --show-error --max-time 20 --retry 5 --retry-delay 5 --retry-all-errors \
             -H "Authorization: Bearer $APERION_BRIDGE_SECRET" \
-            'https://aperion-istasyon.pages.dev/api/aperion-operations')"
-          printf '%s' "$body" | jq -e '.ok == true and .read_only == true and .financial_writes == false and
+            -o "$response_file" -w '%{http_code}' \
+            'https://aperion-istasyon.pages.dev/api/aperion-operations')" || {
+              echo '::error title=Operations acceptance::TRANSPORT_FAILURE'
+              exit 1
+            }
+          if [ "$status" != '200' ]; then
+            echo "::error title=Operations acceptance::HTTP_STATUS_$status"
+            exit 1
+          fi
+          if ! jq -e '.ok == true and .read_only == true and .financial_writes == false and
             .notifications.delivery_enabled == false and .notifications.status == "candidates_only" and
             .operating_mode == "bizimhesap_read_only_user_manual_entry" and
             (.reporting.status | type == "string") and (.procurement.status | type == "string") and
-            (.marketing.status | type == "string")' >/dev/null
-          printf '%s' "$body" | jq -r '"REPORTING_STATUS=" + .reporting.status,
+            (.marketing.status | type == "string")' "$response_file" >/dev/null; then
+            echo '::error title=Operations acceptance::RESPONSE_SHAPE_OR_DATA_FAILURE'
+            exit 1
+          fi
+          jq -r '"REPORTING_STATUS=" + .reporting.status,
             "PROCUREMENT_STATUS=" + .procurement.status,
             "MARKETING_STATUS=" + .marketing.status,
-            "FINANCIAL_WRITES=false", "NOTIFICATIONS_SENT=false"'
+            "FINANCIAL_WRITES=false", "NOTIFICATIONS_SENT=false"' "$response_file"
