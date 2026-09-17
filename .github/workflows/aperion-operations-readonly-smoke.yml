@@ -1,16 +1,17 @@
 name: ApeirON Operations Read-Only Smoke
 
 on:
-  workflow_run:
-    workflows: ["Deploy AperiON Cloudflare Pages"]
-    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - 'functions/api/aperion-operations.js'
+      - '.github/workflows/aperion-operations-readonly-smoke.yml'
 
 permissions:
   contents: read
 
 jobs:
   health:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -42,7 +43,10 @@ jobs:
               exit 1
             }
           if [ "$status" != '200' ]; then
-            echo "::error title=Operations acceptance::HTTP_STATUS_$status"
+            checkpoint_status="$(curl --silent --show-error --max-time 10 -o /dev/null -w '%{http_code}' \
+              -H "Authorization: Bearer $APERION_BRIDGE_SECRET" \
+              'https://aperion-istasyon.pages.dev/api/session-bootstrap' || true)"
+            echo "::error title=Operations acceptance::HTTP_STATUS_$status KNOWN_PROTECTED_HTTP_$checkpoint_status"
             exit 1
           fi
           if ! jq -e '.ok == true and .read_only == true and .financial_writes == false and
