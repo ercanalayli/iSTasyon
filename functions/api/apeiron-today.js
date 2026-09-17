@@ -1,5 +1,5 @@
 import { authorized } from './session-checkpoint.js';
-import { buildToday } from '../shared/attention-engine.js';
+import { buildToday, formatTodayBrief } from '../shared/attention-engine.js';
 import { resolveNaturalCommand, SKILL_REGISTRY_V1 } from '../shared/skill-registry.js';
 
 const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});
@@ -9,7 +9,11 @@ export async function onRequestGet({request,env}) {
   if (!await authorized(request,env)) return json({ok:false,error:'unauthorized'},401);
   const view=new URL(request.url).searchParams.get('view');
   if (view==='skills') return json({ok:true,registry_version:1,skills:Object.values(SKILL_REGISTRY_V1)});
-  try { return json({ok:true,view:'today',...await buildToday(env.APERION_DB)}); }
+  try {
+    const today=await buildToday(env.APERION_DB);
+    if (view==='brief') return json({ok:true,view:'brief',date:today.date,text:formatTodayBrief(today),read_only:true});
+    return json({ok:true,view:'today',...today});
+  }
   catch { return json({ok:false,error:'today_unavailable'},503); }
 }
 

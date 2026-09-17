@@ -1,6 +1,7 @@
 import { onRequestGet, onRequestPost } from '../../../functions/api/project-memory.js';
 import { authorized } from '../../../functions/api/session-checkpoint.js';
 import { recallMemory, recordRecallAcceptance } from '../../../functions/shared/memory-recall.js';
+import { onRequestGet as getToday, onRequestPost as resolveTodayCommand } from '../../../functions/api/apeiron-today.js';
 
 export default {
   async fetch(request, env) {
@@ -19,6 +20,11 @@ export default {
       } catch (error) {
         return Response.json({ ok: false, error: String(error.message || error).slice(0, 100) }, { status: 400 });
       }
+    }
+    if (url.pathname === '/v1/today') {
+      if (request.method === 'GET') return getToday({ request, env });
+      if (request.method === 'POST') return resolveTodayCommand({ request, env });
+      return new Response('Method not allowed', { status: 405, headers: { allow: 'GET, POST' } });
     }
     if (url.pathname !== '/v1/memory') return new Response('Not found', { status: 404 });
     if (request.method === 'GET') return onRequestGet({ request, env });
