@@ -44,3 +44,5 @@ Bunların varlığı satın alma veya pazarlamanın uçtan uca canlı olduğu an
 ## Şu anki sınır
 
 `/api/aperion-operations` veri okur, bildirim adayı üretir ve hiçbir mesaj/kampanya/satın alma işlemi göndermez. Pazarlama CRM kaynağı doğrulanmadığı sürece kapsam eksik gösterilir. Otomatik bildirim teslimi, satın alma ve pazarlama yürütmesi sonraki kabul aşamalarıdır.
+
+Canlı kabul (17.09.2026): Pages dağıtımı ve korumasız sağlık uç noktası PASS. GitHub Actions'taki yetkili anahtarla hem bu raporun veri ucu hem mevcut session-bootstrap HTTP 401 döndü; yani yetkili veri geri okuması FAIL. Bu anahtar uyuşmazlığı diğer çalışan erişim yollarını bozmadan ayrı giderilmeli; o zamana kadar canlı veri kapsamı PASS sayılmaz. Kanıt: GitHub Actions 35260574061, 35261199610 ve Memory OS olayı `codex:aperion:operations-protected-read-auth:20260917`.
