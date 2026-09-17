@@ -99,16 +99,22 @@ async function readDriveContent(token, file, revision) {
   const contentHash = crypto.createHash('sha256').update(bytes).digest('hex');
   const plain = /text\/|application\/(?:json|csv|xml)/.test(mime) || mime === 'application/vnd.google-apps.document' || mime === 'application/vnd.google-apps.spreadsheet';
   const content = plain ? bytes.toString('utf8') : '';
-  const facts = [];
-  for (const line of content.split(/\r?\n/)) {
-    const match = line.match(/^\s*(?:FACT|OLGU)\s*:\s*([^|]{1,160})\|([^|]{1,80})\|(.{1,240})\s*$/i);
-    if (!match) continue;
-    const [subject,predicate,object_value] = match.slice(1).map(value => value.trim());
-    if (!/\b(?:password|parola|sifre|şifre|token|secret|api[_ -]?key|otp|cvv|cvc)\b/i.test(predicate) &&
-        ![subject,predicate,object_value].some(containsSecret)) facts.push({ subject,predicate,object_value });
+  const candidates = [];
+  for (const [index,line] of content.split(/\r?\n/).entries()) {
+    const explicit = line.match(/^\s*(?:FACT|OLGU)\s*:\s*([^|]{1,160})\|([^|]{1,80})\|(.{1,240})\s*$/i);
+    const contextual = !explicit && line.match(/^\s*([^:]{3,80})\s*:\s*(.{3,240})\s*$/);
+    if (!explicit && !contextual) continue;
+    const [subject,predicate,object_value] = explicit
+      ? explicit.slice(1).map(value => value.trim())
+      : [file.name,contextual[1].trim(),contextual[2].trim()];
+    if (/\b(?:password|parola|sifre|şifre|token|secret|api[_ -]?key|otp|cvv|cvc)\b/i.test(`${subject} ${predicate} ${object_value}`) ||
+        [subject,predicate,object_value].some(containsSecret)) continue;
+    candidates.push({ subject,predicate,object_value,confidence:explicit?0.8:0.55,
+      source_authority:'unreviewed_document',extraction_method:explicit?'explicit_fact_line':'key_value_line',supporting_location:`line:${index+1}` });
+    if (candidates.length >= 30) break;
   }
   const acceptanceCode = content.match(/\bAPN-MEM-[0-9]{8}(?:-V[0-9]+)?\b/)?.[0] || null;
-  return { contentHash, facts: facts.slice(0,30), acceptanceCode };
+  return { contentHash, candidates, acceptanceCode };
 }
 
 async function gmailWatcher(token, state) {
@@ -162,26 +168,30 @@ async function driveWatcher(token, contentToken, state) {
   let duplicates = 0;
   let contentReads = 0;
   let insertedFacts = 0;
+  let extractedCandidates = 0;
+  let insertedCandidates = 0;
   for (const change of changes) {
     const file = change.file;
     if (change.removed || !file || file.trashed || !file.name || !file.modifiedTime || containsSecret(file.name)) continue;
     if (!/aperion|apeiron|alayl[ıi]|medikal|bizimhesap|ekstre|fatura|makbuz|dekont|mutabakat|s[oö]zle[sş]me|karar|banka/i.test(file.name)) continue;
     const extracted = contentToken ? await readDriveContent(contentToken,file,change.revision) : null;
     if (extracted) contentReads += 1;
+    extractedCandidates += extracted?.candidates?.length || 0;
     const versionHash = extracted?.contentHash || hash(`${file.id}|${file.modifiedTime}|${file.md5Checksum || file.size || ''}`);
     const result = await memoryRequest('/v1/memory', { method: 'POST', body: { kind: 'drive_change', document: {
       drive_file_id: file.id, canonical_name: file.name, document_type: file.mimeType || 'application/octet-stream',
       modified_at: file.modifiedTime, version_hash: versionHash, content_hash: extracted?.contentHash,
-      acceptance_code: extracted?.acceptanceCode, facts: extracted?.facts || [], cursor: pageToken,
+      acceptance_code: extracted?.acceptanceCode, candidates: extracted?.candidates || [], cursor: pageToken,
     } } });
     if (result.duplicate) duplicates += 1;
     else ingested += 1;
     insertedFacts += result.inserted_facts || 0;
+    insertedCandidates += result.inserted_candidates || 0;
   }
   // Commit the Drive cursor only after every selected change was persisted.
   state.drive = { pageToken, lastRunAt: now() };
   const provenance = changes.map(change => ({ fileFingerprint: hash(change.fileId), removed: Boolean(change.removed), mimeType: change.file?.mimeType || null, modifiedTime: change.file?.modifiedTime || null, contentHashPresent: Boolean(change.file?.md5Checksum), size: change.file?.size || null })).slice(0, 100);
-  return { status: 'healthy', last_success: now(), last_error: null, duration_ms: Date.now() - started, next_due: nextDue(60), source_health: contentToken ? 'connected_content_readonly' : 'connected_metadata_only', baseline_initialized: baselineInitialized, changed_metadata: changes.length, ingested_metadata_versions: ingested, duplicate_versions: duplicates, content_reads: contentReads, inserted_facts: insertedFacts, content_extraction: contentToken ? 'enabled' : 'blocked_by_drive_metadata_only_oauth_scope', unchanged: changes.length === 0, signals: baselineInitialized ? [] : provenance.map(item => ({ event_id: item.fileFingerprint, source: 'google_drive', scope: 'BELİRSİZ', importance: 'important', risk: 'low', event_type: item.removed ? 'file_removed' : 'file_metadata_changed', amount: null, due_date: null, required_action: 'none', summary: 'ApeirON operasyon dosyası metadata değişikliği algılandı.', provenance: { file_fingerprint: item.fileFingerprint, observed_at: now() }, confidence: 0.7 })), provenance };
+  return { status: 'healthy', last_success: now(), last_error: null, duration_ms: Date.now() - started, next_due: nextDue(60), source_health: contentToken ? 'connected_content_readonly' : 'connected_metadata_only', baseline_initialized: baselineInitialized, changed_metadata: changes.length, ingested_metadata_versions: ingested, duplicate_versions: duplicates, content_reads: contentReads, extracted_candidates:extractedCandidates, inserted_candidates:insertedCandidates, inserted_facts: insertedFacts, content_extraction: contentToken ? 'enabled' : 'blocked_by_drive_metadata_only_oauth_scope', unchanged: changes.length === 0, signals: baselineInitialized ? [] : provenance.map(item => ({ event_id: item.fileFingerprint, source: 'google_drive', scope: 'BELİRSİZ', importance: 'important', risk: 'low', event_type: item.removed ? 'file_removed' : 'file_metadata_changed', amount: null, due_date: null, required_action: 'none', summary: 'ApeirON operasyon dosyası metadata değişikliği algılandı.', provenance: { file_fingerprint: item.fileFingerprint, observed_at: now() }, confidence: 0.7 })), provenance };
 }
 
 async function chatgptStateWatcher() {

@@ -1,5 +1,5 @@
 import { authorized } from './session-checkpoint.js';
-import { appendEvent, ingestVerifiedResult, ingestRuleCandidate, upsertEntity, linkEntities, mapDriveDocument, ingestDriveChange } from '../shared/memory-event-ledger.js';
+import { appendEvent, ingestVerifiedResult, ingestCodexEnvelope, ingestRuleCandidate, upsertEntity, linkEntities, mapDriveDocument, ingestDriveChange } from '../shared/memory-event-ledger.js';
 
 function json(data, status = 200) { return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } }); }
 function clean(value) { return String(value || '').trim().slice(0, 200); }
@@ -14,6 +14,7 @@ export async function onRequestPost({ request, env }) {
     const kind = clean(body.kind);
     let result;
     if (kind === 'verified_result') result = await ingestVerifiedResult(env.APERION_DB, body.event);
+    else if (kind === 'codex_result_envelope') result = await ingestCodexEnvelope(env.APERION_DB, body.envelope);
     else if (kind === 'rule_candidate') result = await ingestRuleCandidate(env.APERION_DB, body.event);
     else if (kind === 'event') result = await appendEvent(env.APERION_DB, body.event);
     else if (kind === 'entity') result = { entity_id: await upsertEntity(env.APERION_DB, body.entity) };
@@ -42,6 +43,14 @@ export async function onRequestGet({ request, env }) {
         FROM memory_events WHERE (?='' OR source_ref=? OR task_id=? OR command_id=? OR json_extract(metadata_json,'$.document_no')=?) AND (?='' OR occurred_at>=?) AND (?='' OR occurred_at<=?) ORDER BY occurred_at DESC LIMIT 200`)
         .bind(ref,ref,ref,ref,ref,from,from,to,to).all();
       return json({ ok: true, view: 'ledger', rows: result.results || [] });
+    }
+    if (mode === 'executions') {
+      const result = await env.APERION_DB.prepare(`SELECT * FROM memory_executions WHERE (?='' OR execution_id=? OR task_type=? OR company=?) ORDER BY occurred_at DESC LIMIT 100`).bind(ref,ref,ref,ref).all();
+      return json({ ok:true, view:'executions', rows:result.results || [] });
+    }
+    if (mode === 'candidates') {
+      const result = await env.APERION_DB.prepare(`SELECT * FROM memory_document_candidates WHERE (?='' OR document_id=? OR status=?) ORDER BY created_at DESC LIMIT 100`).bind(ref,ref,ref).all();
+      return json({ ok:true, view:'candidates', rows:result.results || [] });
     }
     if (mode === 'entities') {
       const result = await env.APERION_DB.prepare(`SELECT e.*,r.predicate,o.entity_id AS related_id,o.canonical_name AS related_name,r.provenance_ref AS relation_provenance

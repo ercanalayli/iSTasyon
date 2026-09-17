@@ -25,15 +25,27 @@ for (const name of names.slice(0, 10)) {
   try { await fs.access(marker); alreadyProcessed = true; } catch {}
   if (alreadyProcessed) continue;
   try {
-    const event = JSON.parse(await fs.readFile(file, 'utf8'));
-    if (event.result_status !== 'completed_verified' || event.verification_status !== 'read_back_verified'
-      || !event.task_id || !event.provenance_ref) throw new Error('readback_proof_required');
-    const written = await memoryRequest('/v1/memory', { method: 'POST', body: { kind: 'verified_result', event } });
-    const ledger = await memoryRequest(`/v1/memory?view=ledger&ref=${encodeURIComponent(event.task_id)}`);
-    if (!ledger.rows.some(row => row.event_id === written.event_id && row.provenance_ref === event.provenance_ref))
-      throw new Error('independent_ledger_readback_missing');
-    await fs.writeFile(marker, `${JSON.stringify({ event_id: written.event_id, task_id: event.task_id,
-      duplicate: written.duplicate, verified_at: new Date().toISOString() })}\n`, 'utf8');
+    const payload = JSON.parse(await fs.readFile(file, 'utf8'));
+    const envelope = payload.kind === 'codex_result_envelope' ? payload.envelope : null;
+    let written;
+    if (envelope) {
+      if (!envelope.execution_id || !envelope.idempotency_key || !envelope.provenance) throw new Error('envelope_evidence_required');
+      written = await memoryRequest('/v1/memory', { method:'POST', body:payload });
+      const ledger = await memoryRequest(`/v1/memory?view=ledger&ref=${encodeURIComponent(envelope.execution_id)}`);
+      const ids = [written.task_event_id,written.result_event_id,written.verification_event_id].filter(Boolean);
+      if (!ids.every(id => ledger.rows.some(row => row.event_id === id && row.provenance_ref === envelope.provenance)))
+        throw new Error('independent_ledger_readback_missing');
+    } else {
+      const event = payload;
+      if (event.result_status !== 'completed_verified' || event.verification_status !== 'read_back_verified'
+        || !event.task_id || !event.provenance_ref) throw new Error('readback_proof_required');
+      written = await memoryRequest('/v1/memory', { method: 'POST', body: { kind: 'verified_result', event } });
+      const ledger = await memoryRequest(`/v1/memory?view=ledger&ref=${encodeURIComponent(event.task_id)}`);
+      if (!ledger.rows.some(row => row.event_id === written.event_id && row.provenance_ref === event.provenance_ref))
+        throw new Error('independent_ledger_readback_missing');
+    }
+    await fs.writeFile(marker, `${JSON.stringify({ event_id: written.event_id || written.result_event_id,
+      task_id: envelope?.execution_id || payload.task_id, duplicate: written.duplicate, verified_at: new Date().toISOString() })}\n`, 'utf8');
     processed += 1;
   } catch { failed += 1; }
 }

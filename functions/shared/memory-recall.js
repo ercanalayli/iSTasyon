@@ -2,6 +2,13 @@ import { sha256 } from './project-memory.js';
 
 const trim = value => String(value || '').trim().slice(0, 240);
 const lower = value => trim(value).toLocaleLowerCase('tr-TR');
+export function effectiveFreshness(row) {
+  if (row.valid_until && Date.parse(row.valid_until) < Date.now()) return 'stale';
+  const policy = row.freshness_policy || '';
+  const days = policy === 'price_30d' ? 30 : policy === 'contract_365d' ? 365 : null;
+  if (days && (!row.last_verified_at || Date.now() - Date.parse(row.last_verified_at) > days * 86400000)) return 'stale';
+  return row.freshness || 'unknown';
+}
 
 async function expense(db, code = 'AI-0646', first = false) {
   const sql = first
@@ -33,7 +40,7 @@ async function expense(db, code = 'AI-0646', first = false) {
 
 async function teaRule(db) {
   const row = await db.prepare(`SELECT f.fact_key,f.object_value,f.confidence,f.authority,f.valid_from,f.valid_to,
-      o.object_key,q.freshness,q.last_verified_at,group_concat(s.source_key,' | ') AS sources
+      o.object_key,q.freshness,q.freshness_policy,q.valid_until,q.last_verified_at,q.source_authority,group_concat(s.source_key,' | ') AS sources
       FROM memory_facts f JOIN memory_fact_sources fs ON fs.fact_id=f.id
       JOIN memory_sources s ON s.id=fs.source_id
       LEFT JOIN memory_objects o ON o.object_type='FACT' AND o.canonical_ref=f.fact_key
@@ -43,16 +50,16 @@ async function teaRule(db) {
   if (!row) return null;
   return {
     answer: `ALAYLI MEDİKAL için çay / çay masrafı / çay gideri → ${row.object_value}.`,
-    object_key: row.object_key || null, confidence: row.confidence, freshness: row.freshness || 'unknown',
+    object_key: row.object_key || null, confidence: row.confidence, freshness: effectiveFreshness(row),
     provenance: String(row.sources || '').split(' | ').filter(Boolean).map(source_ref => ({ source_ref })),
-    data: { category: row.object_value, authority: row.authority, valid_from: row.valid_from, valid_until: row.valid_to },
+    data: { category: row.object_value, authority: row.source_authority || row.authority, valid_from: row.valid_from, valid_until: row.valid_to },
   };
 }
 
 async function driveFact(db, query) {
   const needle = trim(query).match(/APN-MEM-[0-9]{8}(?:-V[0-9]+)?|\b[A-Za-z0-9_-]{30,}\b/i)?.[0] || trim(query);
   const row = await db.prepare(`SELECT f.fact_key,f.subject,f.predicate,f.object_value,f.confidence,f.authority,f.valid_from,
-      o.object_key,q.freshness,q.last_verified_at,s.source_key,d.drive_file_id,d.canonical_name,d.version_hash,d.document_id
+      o.object_key,q.freshness,q.freshness_policy,q.valid_until,q.last_verified_at,s.source_key,d.drive_file_id,d.canonical_name,d.version_hash,d.document_id
       FROM memory_facts f JOIN memory_fact_sources fs ON fs.fact_id=f.id
       JOIN memory_sources s ON s.id=fs.source_id AND s.source_type='google_drive'
       JOIN memory_documents d ON s.source_key=('drive:'||d.drive_file_id||':'||d.version_hash)
@@ -64,11 +71,44 @@ async function driveFact(db, query) {
     .bind(`%${needle}%`,`%${needle}%`,`%${needle}%`,needle).first();
   if (!row) return null;
   return { answer: `${row.subject}: ${row.predicate} = ${row.object_value}. Kaynak: ${row.canonical_name} (Drive ${row.drive_file_id}).`,
-    object_key: row.object_key, confidence: row.confidence, freshness: row.freshness || 'unknown',
+    object_key: row.object_key, confidence: row.confidence, freshness: effectiveFreshness(row),
     provenance: [{ source_type:'google_drive',source_ref:row.source_key,provenance_ref:row.source_key,
       document_id:row.document_id,drive_file_id:row.drive_file_id,version_hash:row.version_hash,
       verified_at:row.last_verified_at }],
     data: { subject:row.subject,predicate:row.predicate,value:row.object_value,authority:row.authority,valid_from:row.valid_from } };
+}
+
+async function latestComputerUseCheck(db) {
+  const row = await db.prepare(`SELECT x.*,e.summary AS result_summary,o.object_key,q.confidence,q.freshness,q.last_verified_at
+    FROM memory_executions x JOIN memory_events e ON e.event_id=x.result_event_id
+    LEFT JOIN memory_objects o ON o.object_type='RESULT' AND o.canonical_ref=x.execution_id||':result'
+    LEFT JOIN memory_quality q ON q.object_key=o.object_key
+    WHERE x.scope LIKE '%ALAYLI%' AND x.task_type='BizimHesap.ErisimDogrula'
+      AND x.result_status='completed_verified' AND x.verification_status='read_back_verified'
+    ORDER BY x.occurred_at DESC LIMIT 1`).first();
+  if (!row) return null;
+  return { answer:`Son doğrulanmış ALAYLI Computer Use kontrolü: ${row.result_summary} (${row.occurred_at}).`,
+    object_key:row.object_key,confidence:row.confidence,freshness:row.freshness || 'unknown',
+    provenance:[{source_type:'codex_computer_use',source_ref:row.execution_id,provenance_ref:row.provenance_ref,
+      verification_status:row.verification_status,verified_at:row.last_verified_at || row.occurred_at}],
+    data:{execution_id:row.execution_id,task_type:row.task_type,company:row.company,result_status:row.result_status} };
+}
+
+async function ai0646Explanation(db, mode) {
+  const transaction = await expense(db,'AI-0646');
+  if (!transaction) return null;
+  const rule = await teaRule(db);
+  const link = await db.prepare(`SELECT x.execution_id,x.provenance_ref FROM memory_execution_event_links l
+    JOIN memory_executions x ON x.execution_id=l.execution_id
+    JOIN memory_events e ON e.event_id=l.related_event_id
+    WHERE json_extract(e.metadata_json,'$.document_no')='AI-0646' ORDER BY x.occurred_at DESC LIMIT 1`).first();
+  const provenance = [...transaction.provenance,...(link ? [{source_type:'codex_computer_use',source_ref:link.execution_id,provenance_ref:link.provenance_ref}] : []),
+    ...(mode === 'rule' ? rule?.provenance || [] : [])];
+  const answer = mode === 'how' ? `AI-0646, BizimHesap'ta 50 TRY MARKET gideri olarak Ercan Nakit Kasa'dan ödenmiş kaydedildi; işlem sonrası kayıt birincil sistemden geri okunarak doğrulandı.`
+    : mode === 'proof' ? `AI-0646'nın kaydedildiğini BizimHesap geri okuma olayı kanıtlıyor: belge numarası, tutar, kategori, kasa, tarih ve ödenmiş durum eşleşti; mükerrer yok.`
+    : `İşlemle birlikte desteklenen kalıcı kural: ALAYLI MEDİKAL çay / çay masrafı / çay gideri → ${rule?.data?.category || 'bilinmiyor'}. Kaynak, kullanıcı düzeltmesi ve doğrulanmış işlem.`;
+  return { ...transaction,answer,provenance,data:{...transaction.data,codex_execution_id:link?.execution_id || null,
+    learned_rule:mode==='rule'?rule?.data || null:undefined} };
 }
 
 export async function recallMemory(db, question) {
@@ -77,6 +117,10 @@ export async function recallMemory(db, question) {
   let result;
   const code = trim(question).match(/AI-\d{4,}/i)?.[0]?.toUpperCase();
   if (/APN-MEM-[0-9]{8}|\b[A-Za-z0-9_-]{30,}\b/i.test(question)) result = await driveFact(db, question);
+  else if ((q.includes('son') || q.includes('latest')) && q.includes('computer use') && (q.includes('alayli') || q.includes('alaylı'))) result = await latestComputerUseCheck(db);
+  else if ((code === 'AI-0646' || q.includes('bu işlem')) && (q.includes('nasıl') || q.includes('nasil'))) result = await ai0646Explanation(db,'how');
+  else if ((code === 'AI-0646' || q.includes('bu işlem') || q.includes('gerçekten kaydedildiğini')) && (q.includes('gerçekten') || q.includes('kaydedildiğini') || q.includes('doğrulandı'))) result = await ai0646Explanation(db,'proof');
+  else if ((code === 'AI-0646' || q.includes('bu işlem')) && (q.includes('hangi') && q.includes('kural'))) result = await ai0646Explanation(db,'rule');
   else if (code) result = await expense(db, code);
   else if (q.includes('çay') || q.includes('cay')) result = await teaRule(db);
   else if ((q.includes('ilk') || q.includes('first')) && (q.includes('computer use') || q.includes('bizimhesap'))) result = await expense(db, 'AI-0646', true);

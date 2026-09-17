@@ -11,6 +11,7 @@ const native = new DatabaseSync(':memory:');
 native.exec(fs.readFileSync(path.join(root,'migrations','0022_project_conversation_memory.sql'),'utf8'));
 native.exec(fs.readFileSync(path.join(root,'migrations','0023_memory_event_ledger.sql'),'utf8'));
 native.exec(fs.readFileSync(path.join(root,'migrations','0024_memory_quality_recall.sql'),'utf8'));
+native.exec(fs.readFileSync(path.join(root,'migrations','0026_memory_freshness_policy.sql'),'utf8'));
 const db = { prepare(sql) { const statement=native.prepare(sql); let args=[]; return {
   bind(...values) { args=values; return this; }, first() { return statement.get(...args)||null; },
   all() { return {results:statement.all(...args)}; }, run() { return statement.run(...args); }

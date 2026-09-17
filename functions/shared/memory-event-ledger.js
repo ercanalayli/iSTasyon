@@ -61,10 +61,10 @@ export async function linkObject(db, type, canonicalRef, scope, eventId, superse
   return key;
 }
 
-async function quality(db, objectKey, { confidence, freshness, validFrom, scope, authority, verifiedAt, provenance }) {
+async function quality(db, objectKey, { confidence, freshness, validFrom, validUntil = null, scope, authority, verifiedAt, provenance, freshnessPolicy = 'source_review' }) {
   await db.prepare(`INSERT OR IGNORE INTO memory_quality
-    (object_key,confidence,freshness,valid_from,scope,source_authority,last_verified_at,provenance_ref)
-    VALUES(?,?,?,?,?,?,?,?)`).bind(objectKey,confidence,freshness,validFrom,scope,authority,verifiedAt,provenance).run();
+    (object_key,confidence,freshness,valid_from,valid_until,scope,source_authority,last_verified_at,provenance_ref,freshness_policy)
+    VALUES(?,?,?,?,?,?,?,?,?,?)`).bind(objectKey,confidence,freshness,validFrom,validUntil,scope,authority,verifiedAt,provenance,freshnessPolicy).run();
 }
 
 export async function ingestVerifiedResult(db, input) {
@@ -75,8 +75,84 @@ export async function ingestVerifiedResult(db, input) {
   const output = await linkObject(db,'RESULT',`${input.task_id}:result`,input.scope,result.event_id);
   const verification = await linkObject(db,'VERIFICATION',`${input.task_id}:verification`,input.scope,result.event_id);
   for (const objectKey of [task,output,verification]) await quality(db,objectKey,{ confidence:0.99,freshness:'historical_verified',validFrom:input.occurred_at,
-    scope:input.scope,authority:input.source_type,verifiedAt:input.occurred_at,provenance:input.provenance_ref });
+    scope:input.scope,authority:input.source_type,verifiedAt:input.occurred_at,provenance:input.provenance_ref,freshnessPolicy:'historical_event' });
   return result;
+}
+
+const envelopeText = (value, max = 240) => text(value, max);
+function safeRefs(value, name) {
+  if (value == null) return [];
+  if (!Array.isArray(value) || value.length > 20) throw new Error(`${name}_invalid`);
+  return value.map(item => {
+    const ref = envelopeText(item, 160);
+    if (!ref || containsSecret(ref)) throw new Error(`${name}_unsafe`);
+    return ref;
+  });
+}
+
+export async function ingestCodexEnvelope(db, input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('envelope_invalid');
+  const required = ['execution_id','task_type','occurred_at','scope','user_intent_summary','action_summary','result_status','verification_status','provenance','idempotency_key'];
+  for (const field of required) if (!envelopeText(input[field])) throw new Error(`envelope_${field}_required`);
+  if (input.source !== 'codex_computer_use') throw new Error('envelope_source_invalid');
+  if (!['completed_verified','failed','cancelled'].includes(input.result_status)) throw new Error('envelope_result_status_invalid');
+  if (input.result_status === 'completed_verified' && input.verification_status !== 'read_back_verified') throw new Error('envelope_readback_required');
+  if (!Number.isFinite(Date.parse(input.occurred_at))) throw new Error('envelope_time_invalid');
+  const executionId = envelopeText(input.execution_id,100);
+  const idempotencyKey = envelopeText(input.idempotency_key,160);
+  const provenance = envelopeText(input.provenance,240);
+  const company = envelopeText(input.company,160) || null;
+  const refs = {
+    entities: safeRefs(input.entities,'entities'),
+    artifacts: safeRefs(input.artifacts,'artifacts'),
+    document_refs: safeRefs(input.document_refs,'document_refs'),
+    external_record_refs: safeRefs(input.external_record_refs,'external_record_refs'),
+    related_event_ids: safeRefs(input.related_event_ids,'related_event_ids'),
+    learned_rule_candidates: safeRefs(input.learned_rule_candidates,'learned_rule_candidates'),
+  };
+  const scalars = [executionId,idempotencyKey,provenance,input.task_type,input.scope,company,input.user_intent_summary,input.action_summary,input.result_status,input.verification_status];
+  if (scalars.some(v => containsSecret(String(v || '')))) throw new Error('secret_material_rejected');
+  const prior = await db.prepare('SELECT * FROM memory_executions WHERE execution_id=? OR idempotency_key=? LIMIT 1').bind(executionId,idempotencyKey).first();
+  if (prior) {
+    if (prior.execution_id !== executionId || prior.idempotency_key !== idempotencyKey || prior.result_status !== input.result_status || prior.verification_status !== input.verification_status)
+      throw new Error('envelope_identity_conflict');
+  }
+  const base = { occurred_at: input.occurred_at, source_type: 'codex_computer_use', actor: 'Codex Computer Use',
+    scope: input.scope, company, task_id: executionId, risk_class: 'READ', result_status: input.result_status,
+    verification_status: input.verification_status, provenance_ref: provenance, entity_refs: refs.entities };
+  const task = await appendEvent(db, { ...base, event_type:'codex_task', source_ref:`${executionId}:task`, summary:envelopeText(input.user_intent_summary,600) });
+  const result = await appendEvent(db, { ...base, event_type:'codex_result', source_ref:`${executionId}:result`, summary:envelopeText(input.action_summary,600) });
+  const verification = input.result_status === 'completed_verified'
+    ? await appendEvent(db, { ...base, event_type:'codex_verification', source_ref:`${executionId}:verification`, summary:'Kaynak yeniden okunarak sonuç doğrulandı.' }) : null;
+  await db.prepare(`INSERT OR IGNORE INTO memory_executions(execution_id,idempotency_key,task_type,occurred_at,scope,company,result_status,verification_status,provenance_ref,refs_json,task_event_id,result_event_id,verification_event_id)
+    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(executionId,idempotencyKey,envelopeText(input.task_type,120),new Date(input.occurred_at).toISOString(),envelopeText(input.scope,120),company,input.result_status,input.verification_status,provenance,JSON.stringify(refs),task.event_id,result.event_id,verification?.event_id || null).run();
+  const taskObject = await linkObject(db,'TASK',executionId,input.scope,task.event_id);
+  const resultObject = await linkObject(db,'RESULT',`${executionId}:result`,input.scope,result.event_id);
+  const verificationObject = verification ? await linkObject(db,'VERIFICATION',`${executionId}:verification`,input.scope,verification.event_id) : null;
+  if (verification) for (const objectKey of [taskObject,resultObject,verificationObject]) await quality(db,objectKey,{ confidence:0.99,freshness:'historical_verified',validFrom:input.occurred_at,
+    scope:input.scope,authority:'codex_computer_use_readback',verifiedAt:input.occurred_at,provenance,freshnessPolicy:'historical_event' });
+  const entityIds = [];
+  for (const ref of refs.entities) {
+    const type = /bizimhesap/i.test(ref) ? 'application' : 'company';
+    entityIds.push(await upsertEntity(db,{ entity_type:type,canonical_name:ref,scope:input.scope,provenance_ref:provenance }));
+  }
+  for (const eventId of [task.event_id,result.event_id,verification?.event_id].filter(Boolean))
+    for (const entityId of entityIds) await db.prepare('INSERT OR IGNORE INTO memory_event_entity_links(event_id,entity_id,provenance_ref) VALUES(?,?,?)').bind(eventId,entityId,provenance).run();
+  for (const relatedId of refs.related_event_ids) {
+    const related = await db.prepare('SELECT event_id FROM memory_events WHERE event_id=?').bind(relatedId).first();
+    if (!related) throw new Error('related_event_not_found');
+    await db.prepare('INSERT OR IGNORE INTO memory_execution_event_links(execution_id,related_event_id,relation,provenance_ref) VALUES(?,?,?,?)')
+      .bind(executionId,relatedId,'provenance_backfill',provenance).run();
+  }
+  if (verification && input.task_type === 'BizimHesap.GiderKaydet' && !prior) {
+    const candidateKey = `skill:${(await sha256(`${input.scope}|${input.task_type}`)).slice(0,40)}`;
+    await db.prepare(`INSERT INTO memory_skill_candidates(candidate_key,task_type,scope,verified_executions,last_execution_id,provenance_ref)
+      VALUES(?,?,?,?,?,?) ON CONFLICT(candidate_key) DO UPDATE SET verified_executions=verified_executions+1,last_execution_id=excluded.last_execution_id,provenance_ref=excluded.provenance_ref,updated_at=datetime('now')`)
+      .bind(candidateKey,input.task_type,input.scope,1,executionId,provenance).run();
+  }
+  return { execution_id:executionId, duplicate:Boolean(prior), new_events:prior?0:verification?3:2, new_facts:0,
+    task_event_id:task.event_id, result_event_id:result.event_id, verification_event_id:verification?.event_id || null,
+    entity_ids:entityIds, learning:'NONE', skill_candidate:verification && input.task_type === 'BizimHesap.GiderKaydet' };
 }
 
 export async function ingestRuleCandidate(db, input) {
@@ -97,7 +173,7 @@ export async function ingestRuleCandidate(db, input) {
     authority: 'user_correction', event_id: event.event_id, observed_at: input.occurred_at });
   const factObject = await linkObject(db,'FACT',fact.fact_key,input.scope,event.event_id);
   for (const objectKey of [ruleObject,factObject]) await quality(db,objectKey,{ confidence:1,freshness:'current',validFrom:input.occurred_at,
-    scope:input.scope,authority:'user_correction',verifiedAt:verifiedSource?input.occurred_at:null,provenance:input.user_correction_ref });
+    scope:input.scope,authority:'user_correction',verifiedAt:verifiedSource?input.occurred_at:null,provenance:input.user_correction_ref,freshnessPolicy:'until_superseded' });
   if (verifiedSource) {
     const sourceKey = `${verifiedSource.source_type}:${verifiedSource.source_ref}`;
     await db.prepare(`INSERT OR IGNORE INTO memory_sources(source_key,source_type,source_date,content_hash,adapter_status) VALUES(?,?,?,?,?)`)
@@ -148,7 +224,10 @@ export async function upsertEntity(db, input) {
   const entityId = input.entity_id || `entity:${(await sha256(`${input.entity_type}|${normalize(input.scope)}|${normalize(input.canonical_name)}`)).slice(0,40)}`;
   await db.prepare('INSERT OR IGNORE INTO memory_entities(entity_id,entity_type,canonical_name,scope,external_ref,provenance_ref) VALUES(?,?,?,?,?,?)')
     .bind(entityId,input.entity_type,text(input.canonical_name,160),text(input.scope,120),text(input.external_ref,160)||null,text(input.provenance_ref,240)).run();
-  return entityId;
+  const stored = await db.prepare('SELECT entity_id FROM memory_entities WHERE entity_type=? AND scope=? AND canonical_name=? LIMIT 1')
+    .bind(input.entity_type,text(input.scope,120),text(input.canonical_name,160)).first();
+  if (!stored) throw new Error('entity_upsert_failed');
+  return stored.entity_id;
 }
 
 export async function linkEntities(db, input) {
@@ -168,6 +247,21 @@ export async function mapDriveDocument(db, input) {
   return documentId;
 }
 
+async function storeDocumentCandidates(db, { documentId, versionHash, candidates, provenanceRef }) {
+  let inserted = 0;
+  for (const candidate of candidates) {
+    const subject = text(candidate.subject,160), predicate = text(candidate.predicate,80), value = text(candidate.object_value,240);
+    const location = text(candidate.supporting_location,120);
+    const candidateId = `candidate:${(await sha256(`${documentId}|${subject}|${predicate}|${value}|${location}`)).slice(0,40)}`;
+    const entity = await db.prepare('SELECT entity_id FROM memory_entities WHERE scope=? AND canonical_name=? LIMIT 1').bind('ApeirON',subject).first();
+    const result = await db.prepare(`INSERT OR IGNORE INTO memory_document_candidates(candidate_id,document_id,version_hash,subject,entity_id,predicate,object_value,confidence,source_authority,extraction_method,supporting_location,status,provenance_ref)
+      VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(candidateId,documentId,versionHash,subject,entity?.entity_id || null,predicate,value,Number(candidate.confidence),text(candidate.source_authority,100)||'unreviewed_document',text(candidate.extraction_method,100),location,
+      Number(candidate.confidence)>=0.8?'awaiting_corroboration':'needs_review',provenanceRef).run();
+    inserted += Number(result?.meta?.changes ?? result?.changes ?? 0);
+  }
+  return inserted;
+}
+
 export async function ingestDriveChange(db, input) {
   const fileId = text(input?.drive_file_id,160);
   const versionHash = text(input?.version_hash,160);
@@ -178,17 +272,25 @@ export async function ingestDriveChange(db, input) {
   const contentHash = text(input.content_hash,80);
   if (contentHash && !/^[a-f0-9]{64}$/.test(contentHash)) throw new Error('drive_content_hash_invalid');
   const facts = Array.isArray(input.facts) ? input.facts.slice(0,30) : [];
+  const documentCandidates = Array.isArray(input.candidates) ? input.candidates.slice(0,30) : [];
   for (const fact of facts) {
     if (!fact || !['subject','predicate','object_value'].every(key => text(fact[key])) ||
       /\b(?:password|parola|sifre|şifre|token|secret|api[_ -]?key|otp|cvv|cvc)\b/i.test(String(fact.predicate)) ||
       [fact.subject,fact.predicate,fact.object_value].some(value => containsSecret(String(value)))) throw new Error('drive_fact_unsafe');
+  }
+  for (const candidate of documentCandidates) {
+    if (!candidate || !['subject','predicate','object_value','supporting_location','extraction_method'].every(key => text(candidate[key])) ||
+      !Number.isFinite(Number(candidate.confidence)) || Number(candidate.confidence) < 0 || Number(candidate.confidence) > 1 ||
+      [candidate.subject,candidate.predicate,candidate.object_value,candidate.supporting_location].some(value => containsSecret(String(value))))
+      throw new Error('drive_candidate_unsafe');
   }
   const code = text(input.acceptance_code,80);
   if (code && !/^APN-MEM-[0-9]{8}(?:-V[0-9]+)?$/.test(code)) throw new Error('drive_code_invalid');
   const sourceKey = `drive:${fileId}`;
   const versionKey = `${sourceKey}:${versionHash}`;
   const prior = await db.prepare('SELECT document_id,version_hash,document_date FROM memory_documents WHERE drive_file_id=? AND superseded_by IS NULL ORDER BY document_date DESC LIMIT 1').bind(fileId).first();
-  if (prior?.version_hash === versionHash) return { document_id: prior.document_id, duplicate: true };
+  if (prior?.version_hash === versionHash) return { document_id: prior.document_id, duplicate: true,
+    inserted_candidates: await storeDocumentCandidates(db,{documentId:prior.document_id,versionHash,candidates:documentCandidates,provenanceRef:versionKey}),inserted_facts:0 };
   const historical = Boolean(prior && Date.parse(modifiedAt) < Date.parse(prior.document_date));
   const summary = code ? `ApeirON kalıcı hafıza kabul kodu: ${code}` : contentHash ? 'ApeirON belge içeriği doğrulandı.' : 'ApeirON belge sürümü gözlendi.';
   const event = await appendEvent(db, { event_type: 'drive_document_version', occurred_at: modifiedAt,
@@ -203,7 +305,8 @@ export async function ingestDriveChange(db, input) {
   else if (prior && prior.document_id !== documentId) await db.prepare('UPDATE memory_documents SET superseded_by=? WHERE document_id=? AND superseded_by IS NULL').bind(documentId,prior.document_id).run();
   const documentObject = await linkObject(db,'DOCUMENT',documentId,'ApeirON',event.event_id);
   await quality(db,documentObject,{ confidence:contentHash?0.95:0.65,freshness:historical?'historical_verified':contentHash?'current':'unknown',validFrom:modifiedAt,
-    scope:'ApeirON',authority:contentHash?'source_content_verified':'source_metadata_verified',verifiedAt:contentHash?modifiedAt:null,provenance:versionKey });
+    scope:'ApeirON',authority:contentHash?'source_content_verified':'source_metadata_verified',verifiedAt:contentHash?modifiedAt:null,provenance:versionKey,freshnessPolicy:'until_new_version' });
+  const insertedCandidates = await storeDocumentCandidates(db,{documentId,versionHash,candidates:documentCandidates,provenanceRef:versionKey});
   const sourceHash = await sha256(`google_drive|${fileId}`);
   await db.prepare('INSERT OR IGNORE INTO memory_sources(source_key,source_type,source_date,content_hash,adapter_status) VALUES(?,?,?,?,?)')
     .bind(sourceKey,'google_drive',modifiedAt,sourceHash,'verified').run();
@@ -220,9 +323,9 @@ export async function ingestDriveChange(db, input) {
     factKeys.push(fact.fact_key);
     const objectKey = await linkObject(db,'FACT',fact.fact_key,'ApeirON',event.event_id);
     await quality(db,objectKey,{ confidence:0.95,freshness:'current',validFrom:modifiedAt,
-      scope:'ApeirON',authority:'verified_document_version',verifiedAt:modifiedAt,provenance:versionKey });
+      scope:'ApeirON',authority:'verified_document_version',verifiedAt:modifiedAt,provenance:versionKey,freshnessPolicy:'until_new_version' });
   }
   if (factKeys.length) await db.prepare('UPDATE memory_documents SET extracted_fact_keys_json=? WHERE document_id=?')
     .bind(JSON.stringify([...new Set(factKeys)]),documentId).run();
-  return { document_id: documentId, event_id: event.event_id, duplicate: event.duplicate, inserted_facts: insertedFacts, content_verified: Boolean(contentHash), historical };
+  return { document_id: documentId, event_id: event.event_id, duplicate: event.duplicate, inserted_facts: insertedFacts, inserted_candidates:insertedCandidates, content_verified: Boolean(contentHash), historical };
 }
