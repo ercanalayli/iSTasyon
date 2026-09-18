@@ -1,0 +1,47 @@
+name: AperiON Emergency Heal - Tek Tikla Kurtar
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Onayliyorum, Supabase temizlensin ve D1 aktif olsun'
+        required: true
+        default: 'evet'
+
+jobs:
+  heal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Supabase Kota Temizligi
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          npm install @supabase/supabase-js
+          node - <<'NODE'
+          const { createClient } = require('@supabase/supabase-js');
+          const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+          console.log('Supabase temizlik basliyor...');
+          const tables = [
+            { name: 'logs', days: 30 },
+            { name: 'job_runs', days: 30 },
+            { name: 'telegram_events', days: 15 }
+          ];
+          for (const t of tables) {
+            const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - t.days);
+            const { error } = await supabase.from(t.name).delete().lt('created_at', cutoff.toISOString());
+            console.log(t.name + ': ' + (error ? error.message : 'temizlendi'));
+          }
+          NODE
+
+      - name: Tum Fail Joblari Yeniden Baslat
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run "AperiON Cari Bakiye Sync" --ref main || true
+          sleep 5
+          gh workflow run "AperiON Tedarikci Ozet Sync" --ref main || true
+          sleep 5
+          gh workflow run "AperiON Telegram Health Check" --ref main || true
