@@ -12,9 +12,6 @@ on:
       - ".github/workflows/cari-odeme-sync.yml"
       - "tools/kuyruk_cari_odeme_gecmisi_sync.cjs"
       - "tools/kuyruk_bizimhesap_read_sync_common.cjs"
-  schedule:
-    # 06:50 Europe/Istanbul (UTC+3) - tedarikci sync'ten 10 dk sonra
-    - cron: '50 3 * * *'
 
 permissions:
   contents: read
