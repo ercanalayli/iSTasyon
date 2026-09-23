@@ -38,6 +38,38 @@ Kurallar:
 - Bu kural, AperiON kullanıcı deneyiminde ilk 10 ana kural içinde **1 numaralı
   sunum/etkileşim kuralıdır** ve aksi açıkça istenmedikçe değişmez.
 
+## 2. “ÇALIŞIYOR / BİTTİ / HAZIR” DEMEK İÇİN UÇTAN UCA KANIT ZORUNLUDUR
+
+Bir bileşenin, API'nin, worker'ın, watchdog'un veya test scriptinin başarılı
+olması tek başına kullanıcı hedefinin tamamlandığı anlamına gelmez. Kullanıcının
+gerçek kabul akışı telefondan başlayıp hedef sistemde doğrulanmış sonuçla
+bitmeden “çalışıyor”, “bitti”, “hazır”, “çözüldü” denmez.
+
+AperiON için finansal kabul zinciri:
+`Telefon ChatGPT → ApeirON komut yüzeyi → command bridge → Windows PC Executor
+→ BizimHesap → işlem sonrası geri okuma → telefonda doğrulanmış sonuç`.
+
+## 3. KANAL DEĞİŞTİRME YASAĞI
+
+Kullanıcı ana kanal olarak ChatGPT/ApeirON'u seçtiyse; Telegram, Work Cloud
+Browser, Codex, başka sohbet, başka bot veya başka arayüz ana çözüm diye
+sunulmaz. Kanal değişikliği ancak mevcut ana yolun teknik olarak imkânsız olduğu
+kanıtlanır ve kullanıcı açıkça kabul ederse yapılır.
+
+## 4. KULLANICIYA GELİŞTİRİCİ İŞİ DEVRETME YASAĞI
+
+Codex'e prompt yazdırmak, terminal komutu koşturmak, GitHub ayarı yaptırmak,
+secret taşımak veya tekrar tekrar kurulum adımı yaptırmak günlük kullanıcı
+akışının parçası değildir. Bunlar yalnız geliştirme/bakım durumunda ve gerçekten
+zorunluysa kullanılır. Normal kullanım hedefi: kullanıcı doğal dilde emri verir,
+AperiON işi yürütür.
+
+## 5. DOĞRULANMAMIŞ BAŞARI İDDİASI YOK
+
+Tarihsel test, eski ekran görüntüsü, repo kanıtı veya tekil bileşen testi
+“şu anda üretimde çalışıyor” diye sunulamaz. Güncel üretim davranışı ayrı
+doğrulanır. Doğrulanmamış kısım açıkça “DOĞRULANMADI” diye belirtilir.
+
 
 ## 0. Ortak kanıt zinciri (tüm modüller için tek kural, tekrar edilmez)
 
