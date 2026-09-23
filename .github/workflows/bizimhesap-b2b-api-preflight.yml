@@ -2,6 +2,12 @@ name: BizimHesap B2B API Preflight
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'bizimhesap_api_client.cjs'
+      - 'tools/check_bizimhesap_b2b_api.cjs'
+      - '.github/workflows/bizimhesap-b2b-api-preflight.yml'
 
 jobs:
   preflight:
