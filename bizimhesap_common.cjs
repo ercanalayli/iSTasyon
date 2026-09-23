@@ -118,10 +118,32 @@ function recordLoginSuccess() {
   writeBreaker({ consecutiveRateLimitFailures: 0, cooldownUntil: null, lastFailureType: null, lastFailureAt: null, lastFailureText: null, lastSuccessAt: new Date().toISOString() });
 }
 
+function readLocalBizimHesapPassword() {
+  if (process.platform !== 'win32') return '';
+  const secureFile = path.join(__dirname, '.aperion-secrets', 'bizimhesap_password.secure');
+  if (!fs.existsSync(secureFile)) return '';
+  try {
+    const { execFileSync } = require('child_process');
+    const escaped = secureFile.replace(/'/g, "''");
+    const script = [
+      "$s = Get-Content -LiteralPath '" + escaped + "' -Raw | ConvertTo-SecureString",
+      "$p = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($s)",
+      "try { [Runtime.InteropServices.Marshal]::PtrToStringBSTR($p) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($p) }"
+    ].join('; ');
+    return String(execFileSync(
+      'powershell.exe',
+      ['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-Command', script],
+      { windowsHide: true, encoding: 'utf8', timeout: 15000, maxBuffer: 16384, stdio: ['ignore','pipe','ignore'] }
+    ) || '').trim();
+  } catch {
+    return '';
+  }
+}
+
 function getBizimHesapConfig() {
   return {
     email: process.env.BIZIMHESAP_EMAIL || process.env.BIZIMHESAP_USER || 'alaylimedikal@gmail.com',
-    password: process.env.BIZIMHESAP_PASSWORD || process.env.BIZIMHESAP_PASS || '',
+    password: process.env.BIZIMHESAP_PASSWORD || process.env.BIZIMHESAP_PASS || readLocalBizimHesapPassword(),
     loginUrl: process.env.BIZIMHESAP_LOGIN_URL || 'https://bizimhesap.com/bhlogin',
     homeUrl: process.env.BIZIMHESAP_HOME_URL || 'https://bizimhesap.com/web/ngn/newportal',
     firmUrl: process.env.BIZIMHESAP_FIRM_URL || 'https://bizimhesap.com/web/ngn/sec/ngnmultiaccount',
