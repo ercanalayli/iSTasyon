@@ -66,3 +66,12 @@
 
 ## Kural
 Bu dosyayı her oturum sonunda güncelle. Yeni bir sohbet/oturum başlarken önce bu dosya okunmalı, hiçbir şey "muhtemelen yapılmıştır" diye varsayılmamalı.
+
+## 2026-09-23 - ChatGPT komut yüzeyi kararı
+
+- Windows PC Executor, watchdog ve tek listener sağlıklı olsa bile ChatGPT Project/Çalışma sohbeti bu yerel executor'ı kendiliğinden çağıramaz.
+- Kanonik telefon komut yüzeyi, mevcut ApeirON ChatGPT Action OpenAPI bağlantısının yüklü olduğu ApeirON özel GPT'sidir. Project/Çalışma sohbeti rutin finans komutları için operasyon yüzeyi sayılmayacak.
+- Production Action şeması: `https://aperion-command-bridge.yenicespor-finans.workers.dev/openapi.json`.
+- Action tarafında prepare + consequential approve akışı mevcut; Windows worker yalnız onaylı finans görevini lease eder.
+- Work/Cloud Browser yalnız araştırma veya son çare browser fallback olarak kalır; PC Executor'a doğrudan bağlıymış gibi raporlanmayacak.
+- Uzun vadeli hedef, aynı command bridge'i ChatGPT Plugin/App yüzeyine taşımaktır; mevcut Custom GPT Action kısa vadeli üretim köprüsüdür.
