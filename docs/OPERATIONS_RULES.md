@@ -13,6 +13,32 @@ doğruluk kaynağıdır. Kaynaklar: `BANK_RULES.md`, `BIZIMHESAP_RULES.md`,
 (maskelenmiş) hesap verisi içerir. Bir kural veya rakam hakkında emin
 değilseniz, sessizce tahmin etmek yerine kullanıcıya sorun.
 
+
+# İLK 10 ANA KURAL — EN YÜKSEK ÖNCELİK
+
+## 1. KOPYALANACAK METİN HER ZAMAN TEK TIKLA KOPYALANABİLİR VERİLİR
+
+Kullanıcının başka bir yere yazması, göndermesi, yapıştırması veya komut olarak
+kullanması beklenen **her metin** bağımsız bir kod bloğu içinde verilmelidir.
+Kullanıcı metni seçmek, parça parça kopyalamak veya açıklamadan ayıklamak
+zorunda bırakılmaz.
+
+Zorunlu biçim:
+
+```text
+Kopyalanacak içerik burada tek parça halinde yer alır.
+```
+
+Kurallar:
+- Kopyalanacak içeriğin içine açıklama, yorum veya alternatif metin karıştırılmaz.
+- Birden fazla ayrı kopyalanacak seçenek varsa her biri ayrı kod bloğu olarak verilir.
+- “Şunu yaz”, “bunu gönder”, “Codex'e ver”, “Telegram'a gönder”, “PowerShell'e yaz”,
+  “GPT'ye yapıştır” gibi tüm durumlarda bu kural otomatik uygulanır.
+- Kullanıcı ayrıca “tek tıkla kopyala” demek zorunda değildir.
+- Bu kural, AperiON kullanıcı deneyiminde ilk 10 ana kural içinde **1 numaralı
+  sunum/etkileşim kuralıdır** ve aksi açıkça istenmedikçe değişmez.
+
+
 ## 0. Ortak kanıt zinciri (tüm modüller için tek kural, tekrar edilmez)
 
 Her modülün kendi bölümünde tekrar tekrar yazdığı zincir tek ve değişmezdir:
