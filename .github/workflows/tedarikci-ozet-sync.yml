@@ -12,9 +12,6 @@ on:
       - ".github/workflows/tedarikci-ozet-sync.yml"
       - "tools/kuyruk_tedarikci_ozet_sync.cjs"
       - "tools/kuyruk_bizimhesap_read_sync_common.cjs"
-  schedule:
-    # 06:40 Europe/Istanbul (UTC+3) - cari senkrondan 10 dk sonra
-    - cron: '40 3 * * *'
 
 permissions:
   contents: read
