@@ -1,4 +1,5 @@
 const DEFAULT_BASE_URL = 'https://bizimhesap.com/api/b2b';
+const DEFAULT_B2B_KEY = 'BZMHB2B724018943908D0B82491F203F';
 
 function env(name, fallback = '') {
   return String(process.env[name] || fallback || '').trim();
@@ -9,7 +10,8 @@ function getBizimHesapApiConfig() {
   const firmId = env('BIZIMHESAP_FIRM_ID') || env('BIZIMHESAP_B2B_FIRM_ID');
   const baseUrl = env('BIZIMHESAP_B2B_BASE_URL', DEFAULT_BASE_URL).replace(/\/+$/, '');
   const authMode = env('BIZIMHESAP_B2B_AUTH_MODE', 'token-header').toLowerCase();
-  return { token, firmId, baseUrl, authMode };
+  const key = env('BIZIMHESAP_B2B_KEY', DEFAULT_B2B_KEY);
+  return { token, firmId, baseUrl, authMode, key };
 }
 
 function maskSecret(value) {
@@ -69,6 +71,7 @@ class BizimHesapB2BClient {
 
   headers(extra = {}) {
     const h = { Accept: 'application/json', ...extra };
+    if (this.config.key) h.Key = this.config.key;
     if (this.config.token && this.config.authMode !== 'bearer' && this.config.authMode !== 'query-token') h.token = this.config.token;
     if (this.config.token && this.config.authMode === 'bearer') h.Authorization = `Bearer ${this.config.token}`;
     return h;
@@ -120,6 +123,7 @@ class BizimHesapB2BClient {
 
 module.exports = {
   DEFAULT_BASE_URL,
+  DEFAULT_B2B_KEY,
   BizimHesapB2BClient,
   getBizimHesapApiConfig,
   maskSecret,
