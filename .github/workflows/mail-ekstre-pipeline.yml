@@ -14,14 +14,6 @@ on:
         description: "Dry-run basariliysa pending_bank_movements tablosuna canli yaz"
         type: boolean
         default: true
-  schedule:
-    # 09:00 Europe/Istanbul: fixed morning bank statement check.
-    - cron: "0 6 * * *"
-    # 17:00 Europe/Istanbul: fixed evening bank statement check.
-    - cron: "0 14 * * *"
-    # 09:00-20:45 Europe/Istanbul: intraday follow-up while bank mails keep arriving.
-    # 2026-07-01: trigger after Gmail OAuth refresh secret renewal.
-    - cron: "*/15 5-17 * * *"
   push:
     branches:
       - main
@@ -177,4 +169,5 @@ jobs:
             automation/logs/*.txt
             data/aperion_daily_bank_review.json
           if-no-files-found: ignore
+
 
