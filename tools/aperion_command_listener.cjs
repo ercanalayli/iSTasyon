@@ -737,14 +737,46 @@ async function bizimhesapPostTransfer(row) {
     log(`TRANSFER_DEBUG ID:${row.id} sayfa_url=${page.url()} hata_alani="${hataMetni}"`);
   }
 
-  // 2026-08-07: tarih+tutar eslesmesi YETERSIZDI - baska bir kayitla
-  // tesadufen ayni tarih/tutar paylasip YANLIS hesaba giden transferler
-  // "dogrulandi" diye raporlanmisti (Ercan aktivite loguyla yakaladi).
-  // Simdi benzersiz "APERION AUTO | ID:X" etiketini HEDEF hesap sayfasinda
-  // arıyoruz - bu hicbir zaman baska bir kayitla tesadufen eslesemez.
-  const acildi3 = await hesapAc(row.hesap);
-  const dogrulama = acildi3 ? await idIleDogrula(row.id, row.tutar) : { varMi: false, ozet: 'hedef hesap acilamadi' };
-  return { ok: dogrulama.varMi === true, mesaj: dogrulama.varMi ? `Transfer kaydedildi ve ID etiketiyle dogrulandi (hedef: ${dolduruldu.secilenHedef}).` : `Transfer sonrasi ID ile dogrulanamadi (hedef secimi: ${dolduruldu.secilenHedef}) - ${dogrulama.ozet}` };
+  // Transfer kaydinda tek tarafli ve hemen yapilan okuma yalanci negatif
+  // uretebiliyor: BizimHesap modal kapanisindan sonra hareket listeleri
+  // gecikmeli tazelenebiliyor. Gercek kabul kriteri iki tarafli read-back:
+  // kaynakta para cikisi + hedefte para girisi ayni benzersiz ID etiketiyle
+  // gorulmeli. Her hesap icin sinirli tekrar yap; yeniden POST etme.
+  async function transferKaniti(hesapAdi, taraf) {
+    let son = { varMi: false, ozet: `${taraf} hesap acilamadi` };
+    const beklemeler = [0, 1200, 2500, 4000];
+    for (let deneme = 0; deneme < beklemeler.length; deneme++) {
+      if (beklemeler[deneme]) await new Promise(r => setTimeout(r, beklemeler[deneme]));
+      const acildi = await hesapAc(hesapAdi);
+      if (!acildi) {
+        son = { varMi: false, ozet: `${taraf} hesap acilamadi: ${hesapAdi}` };
+        continue;
+      }
+      son = await idIleDogrula(row.id, row.tutar);
+      if (son.varMi) return { ...son, taraf, hesap: hesapAdi, deneme: deneme + 1 };
+    }
+    return { ...son, taraf, hesap: hesapAdi, deneme: beklemeler.length };
+  }
+
+  const hedefKaniti = await transferKaniti(row.hesap, 'hedef');
+  const kaynakKaniti = await transferKaniti(row.kaynakHesap, 'kaynak');
+  const ikiTarafDogrulandi = hedefKaniti.varMi === true && kaynakKaniti.varMi === true;
+
+  if (!ikiTarafDogrulandi) {
+    await savePageDiagnostics(page, `transfer_verify_failed_ID${row.id}`).catch(() => {});
+  }
+
+  return {
+    ok: ikiTarafDogrulandi,
+    mesaj: ikiTarafDogrulandi
+      ? `Transfer kaydedildi ve iki tarafli ID etiketiyle dogrulandi (kaynak: ${row.kaynakHesap}, hedef: ${dolduruldu.secilenHedef}).`
+      : `Transfer kaydi sonrasi iki tarafli dogrulama tamamlanamadi; YENIDEN KAYIT YAPMA. kaynak=${kaynakKaniti.ozet} | hedef=${hedefKaniti.ozet}`,
+    verification: {
+      source: kaynakKaniti,
+      target: hedefKaniti,
+      write_retried: false,
+    },
+  };
 }
 
 async function bizimhesapPostIncome(row) {
