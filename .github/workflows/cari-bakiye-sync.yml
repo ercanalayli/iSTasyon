@@ -12,9 +12,6 @@ on:
       - ".github/workflows/cari-bakiye-sync.yml"
       - "tools/kuyruk_cari_bakiye_sync.cjs"
       - "tools/kuyruk_bizimhesap_read_sync_common.cjs"
-  schedule:
-    # 06:30 Europe/Istanbul (UTC+3)
-    - cron: '30 3 * * *'
 
 permissions:
   contents: read
