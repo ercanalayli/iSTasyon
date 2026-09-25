@@ -68,6 +68,7 @@ assert.throws(() => transitionObligationStatus('open', 'archived'));
 const rules = [{ alias_key: 'furkan batki', canonical_name: 'Furkan Batkı' }];
 assert.equal(extractFinanceMemory('Furkan Batkı kira toplam 1000 TL vade tarihi 22.07.2026 kurum: Ev', { rules }).scope, 'SAHSI');
 assert.equal(extractFinanceMemory('ALAYLI SGK toplam 1000 TL vade tarihi 22.07.2026').scope, 'ALAYLI');
+assert.equal(extractFinanceMemory('ŞİRKET SGK toplam 1000 TL vade tarihi 22.07.2026').scope, 'ALAYLI');
 const companyRules = [{ alias_key: 'yapi kredi adios 9954 erhan', canonical_name: 'Yapı Kredi Adios 9954 Erhan', scope: 'ALAYLI' }];
 assert.equal(extractFinanceMemory('Yapı Kredi Adios 9954 Erhan kredi kartı toplam dönem borcu 1000 TL son ödeme tarihi 22.07.2026', { rules: companyRules }).scope, 'ALAYLI');
 const personalRules = [{ alias_key: 'teb ercan', canonical_name: 'TEB Ercan', scope: 'SAHSI' }];
