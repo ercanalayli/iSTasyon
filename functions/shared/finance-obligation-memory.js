@@ -56,12 +56,35 @@ function maskedIdentifier(text) {
   return only.length >= 4 ? `****${only.slice(-4)}` : null;
 }
 
+function normalizeScope(value) {
+  const normalized = fold(value);
+  if (['alayli','sirket','ticari','firma','business','company'].includes(normalized)) return 'ALAYLI';
+  if (['sahsi','kisisel','ercan','personal','individual'].includes(normalized)) return 'SAHSI';
+  return null;
+}
+
 function scopeFromText(text, rules = []) {
   const normalized = fold(text);
-  if (/\b(alayli|alaylı|sirket|şirket|ticari|firma)\b/i.test(text)) return 'ALAYLI';
-  if (/\b(sahsi|şahsi|bireysel|kisisel|kişisel)\b/i.test(text)) return 'SAHSI';
-  const rule = rules.find((item) => normalized.includes(fold(item.alias_key)) || normalized.includes(fold(item.canonical_name)));
-  return rule ? 'SAHSI' : 'BELIRSIZ';
+  const explicitScopes = new Set();
+  if (/\b(alayli|alaylı|sirket|şirket|ticari|firma)\b/i.test(text)) explicitScopes.add('ALAYLI');
+  if (/\b(sahsi|şahsi|bireysel|kisisel|kişisel)\b/i.test(text)) explicitScopes.add('SAHSI');
+  if (explicitScopes.size > 1) return 'BELIRSIZ';
+
+  const matchedRules = rules.filter((item) => {
+    const keys = [fold(item?.alias_key), fold(item?.canonical_name)].filter(Boolean);
+    return keys.some((key) => normalized.includes(key));
+  });
+  const ruleScopes = new Set(matchedRules.map((item) => normalizeScope(item?.scope || item?.owner_scope || item?.owner)).filter(Boolean));
+  if (ruleScopes.size > 1) return 'BELIRSIZ';
+
+  const explicitScope = [...explicitScopes][0] || null;
+  let ruleScope = [...ruleScopes][0] || null;
+  // Legacy rule rows represented known personal aliases without a scope column.
+  if (!ruleScope && matchedRules.length) ruleScope = 'SAHSI';
+
+  // Conflicting evidence must fail closed instead of silently forcing a bucket.
+  if (explicitScope && ruleScope && explicitScope !== ruleScope) return 'BELIRSIZ';
+  return explicitScope || ruleScope || 'BELIRSIZ';
 }
 
 function institutionFromText(text) {
