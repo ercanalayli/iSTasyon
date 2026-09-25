@@ -66,8 +66,8 @@ function normalizeScope(value) {
 function scopeFromText(text, rules = []) {
   const normalized = fold(text);
   const explicitScopes = new Set();
-  if (/\b(alayli|alaylı|sirket|şirket|ticari|firma)\b/i.test(text)) explicitScopes.add('ALAYLI');
-  if (/\b(sahsi|şahsi|bireysel|kisisel|kişisel)\b/i.test(text)) explicitScopes.add('SAHSI');
+  if (/\b(alayli|sirket|ticari|firma)\b/i.test(normalized)) explicitScopes.add('ALAYLI');
+  if (/\b(sahsi|bireysel|kisisel)\b/i.test(normalized)) explicitScopes.add('SAHSI');
   if (explicitScopes.size > 1) return 'BELIRSIZ';
 
   const matchedRules = rules.filter((item) => {
