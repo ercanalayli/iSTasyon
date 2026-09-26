@@ -44,8 +44,8 @@
     {
       "bank": "halkbank",
       "label": "Halkbank",
-      "scope": "alkam_mali_musavirlik",
-      "not": "Bu Halkbank hesabi ALKAM Mali Musavirlik'e ait - Ercan'in sahsi hesabi da degil, ALAYLI sirket hesabi da degil. ALKAM'in kendi company_id ayrimi henuz tasarlanmadi (bkz proje notu), bu yuzden simdilik ALAYLI defterine ASLA islenmez, ayri excluded olarak raporlanir.",
+      "scope": "alkam",
+      "not": "26.09.2026 Ercan talimatiyla ALKAM Mali / IstasyON read-only entegrasyonu acildi. Bu hesap company_id=alkam olarak islenir; ALAYLI, sahsi ve BizimHesap kuyruklarina karismaz. Muhasebe kesin kaydi ayri ALKAM onay/posting rotasi kurulana kadar yapilmaz.",
       "query": "Halkbank OR Halk Bankasi OR Hesap Ekstresi"
     },
     {
