@@ -149,6 +149,12 @@ function a1IsoDate_(value) {
   if (!text) return '';
   var m = text.match(/(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2})/);
   if (m) return m[3] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2);
+  var trMonths = {ocak:'01',subat:'02','şubat':'02',mart:'03',nisan:'04',mayis:'05','mayıs':'05',haziran:'06',temmuz:'07',agustos:'08','ağustos':'08',eylul:'09','eylül':'09',ekim:'10',kasim:'11','kasım':'11',aralik:'12','aralık':'12'};
+  var named = text.toLocaleLowerCase('tr-TR').match(/^(\d{1,2})\s+([a-zçğıöşü]+)\s+(\d{2}|20\d{2})$/i);
+  if (named && trMonths[named[2]]) {
+    var year = named[3].length === 2 ? '20' + named[3] : named[3];
+    return year + '-' + trMonths[named[2]] + '-' + ('0' + named[1]).slice(-2);
+  }
   var iso = text.match(/^(20\d{2})-(\d{2})-(\d{2})/);
   return iso ? iso[1] + '-' + iso[2] + '-' + iso[3] : text;
 }
@@ -175,7 +181,8 @@ function a1PaymentRows_(sheet, rangeA1) {
   return table.rows.map(function (row) {
     return {
       date: a1IsoDate_(row['TARİH']),
-      due: a1IsoDate_(row['VADE']),
+      due: a1IsoDate_(row['TARİH']),
+      due_status: String(row['VADE'] || ''),
       radar: String(row['RADAR'] || ''),
       status: String(row['DURUM'] || ''),
       accrual: a1Money_(row['TUTAR']),
