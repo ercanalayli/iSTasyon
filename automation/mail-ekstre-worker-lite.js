@@ -140,7 +140,7 @@ async function ingestViaControlPlane(rows){
       'content-type': 'application/json',
       'x-aperion-ingest-secret': secret
     },
-    body: JSON.stringify({ company_id: cfg.company_id || 'alayli', rows })
+    body: JSON.stringify({ company_id: (rows.find(row => row?.company_id)?.company_id || cfg.company_id || 'alayli'), rows })
   });
   const body = await response.json().catch(() => ({}));
   if(!response.ok || body.ok !== true){
@@ -338,7 +338,8 @@ function rowSignature(row){
   ].join('|');
 }
 
-async function filterAlreadyStoredRows(db, rows, report){
+async function filterAlreadyStoredRows(db, rows, report, companyId = null, reportKey = 'prefilter'){
+  const effectiveCompanyId = companyId || rows.find(row => row?.company_id)?.company_id || cfg.company_id || 'alayli';
   if(!rows.length || !db) return rows;
   const dates = rows.map(r => String(r.transaction_date || '').substring(0, 10)).filter(Boolean).sort();
   const from = dates[0], to = dates[dates.length - 1];
@@ -346,7 +347,7 @@ async function filterAlreadyStoredRows(db, rows, report){
   const { data, error } = await db
     .from('pending_bank_movements')
     .select('id,duplicate_key,bank_name,transaction_date,transaction_time,description,amount_in,amount_out,balance_after,status')
-    .eq('company_id', cfg.company_id || 'alayli')
+    .eq('company_id', effectiveCompanyId)
     .gte('transaction_date', from)
     .lte('transaction_date', to)
     .limit(20000);
@@ -372,7 +373,8 @@ async function filterAlreadyStoredRows(db, rows, report){
       fresh.push(row);
     }
   }
-  report.prefilter = {
+  report[reportKey] = {
+    company_id: effectiveCompanyId,
     checked_existing: (data || []).length,
     input: rows.length,
     skipped_existing: skipped.length,
@@ -442,25 +444,32 @@ async function main(){
     report.errors.push({ area: sourceMode, error: err.message || String(err) });
   }
 
-  // Kisisel hesaplar (Ã¶r. TEB) sirket (BizimHesap) defterine ASLA islenmez -
-  // ayri tutulup AperiON kisisel finans tablosuna yazilir. bank.scope='kisisel'
-  // mail-ekstre-config.json'da tanimli.
-  // scope "sirket" (veya bos/tanimsiz - varsayilan) disindaki HER SEY ALAYLI
-  // defterine islenmez. Sadece "kisisel" degil - baska bir sirkete (Ã¶r. ALKAM
-  // Mali Musavirlik) ait hesaplar da ayni sekilde disarida tutulmali; onlarin
-  // kendi company_id ayrimi henuz yok, o yuzden simdilik sadece raporlanip
-  // hicbir deftere yazilmiyorlar (ne ALAYLI'ya ne yanlislikla kisisele).
+  // Banka sahipligi / kapsam ayrimi.
+  // - sirket veya bos scope: ALAYLI
+  // - kisisel: Ercan sahsi finans
+  // - alkam: ALKAM Mali / IstasyON, company_id='alkam'
+  // ALKAM hareketleri ALAYLI toplamlarina ve BizimHesap kuyruguna karismaz.
   const personalRows = parsed.filter(r => r.scope === 'kisisel');
-  const otherCompanyRows = parsed.filter(r => r.scope && r.scope !== 'kisisel' && r.scope !== 'sirket');
-  const companyRows = parsed.filter(r => !r.scope || r.scope === 'sirket');
+  const alkamRows = parsed
+    .filter(r => r.scope === 'alkam')
+    .map(r => ({ ...r, company_id: 'alkam' }));
+  const otherCompanyRows = parsed.filter(r =>
+    r.scope && !['kisisel','sirket','alkam'].includes(r.scope)
+  );
+  const companyRows = parsed
+    .filter(r => !r.scope || r.scope === 'sirket')
+    .map(r => ({ ...r, company_id: cfg.company_id || 'alayli' }));
+
   report.personal_rows_excluded = personalRows.length;
+  report.alkam_rows = alkamRows.length;
   report.other_company_rows_excluded = otherCompanyRows.length;
   if(otherCompanyRows.length){
     report.other_company_scopes = [...new Set(otherCompanyRows.map(r => r.scope))];
   }
 
   if(dryRun){
-    report.ingest = { dry_run: true, input: companyRows.length, inserted: 0, duplicate: 0, failed: 0 };
+    report.ingest = { dry_run: true, company_id: cfg.company_id || 'alayli', input: companyRows.length, inserted: 0, duplicate: 0, failed: 0 };
+    report.alkam_ingest = { dry_run: true, company_id: 'alkam', input: alkamRows.length, inserted: 0, duplicate: 0, failed: 0, posting_route: 'read_only' };
     report.personal_ingest = { dry_run: true, input: personalRows.length, inserted: 0 };
   }else{
     const controlPlaneConfigured = Boolean(process.env.APERION_BANK_INGEST_URL && process.env.APERION_BANK_INGEST_SECRET);
@@ -472,24 +481,49 @@ async function main(){
           report.errors.push({ area: 'cloudflare_d1_ingest', error: error.message || String(error) });
         }
       } else {
-        report.ingest = { backend: 'cloudflare_d1', input: 0, inserted: 0, duplicate: 0, invalid: 0, telegram_sent: 0 };
+        report.ingest = { backend: 'cloudflare_d1', company_id: cfg.company_id || 'alayli', input: 0, inserted: 0, duplicate: 0, invalid: 0, telegram_sent: 0 };
       }
+
+      if(alkamRows.length) {
+        try {
+          report.alkam_ingest = await ingestViaControlPlane(alkamRows);
+          report.alkam_ingest.company_id = 'alkam';
+          report.alkam_ingest.posting_route = 'read_only';
+        } catch(error) {
+          report.errors.push({ area: 'cloudflare_d1_alkam_ingest', error: error.message || String(error) });
+        }
+      } else {
+        report.alkam_ingest = { backend: 'cloudflare_d1', company_id: 'alkam', input: 0, inserted: 0, duplicate: 0, invalid: 0, telegram_sent: 0, posting_route: 'read_only' };
+      }
+
       report.personal_ingest = { input: personalRows.length, inserted: 0, status: 'excluded_from_company_ledger' };
     }else{
       const db = openDb();
       if(!db){
-        report.errors.push({ area: 'storage', error: 'Cloudflare D1 ingest veya Supabase yapÄ±landÄ±rmasÄ± eksik' });
+        report.errors.push({ area: 'storage', error: 'Cloudflare D1 ingest veya Supabase yapilandirmasi eksik' });
       }else{
         if(companyRows.length){
-        const freshRows = await filterAlreadyStoredRows(db, companyRows, report);
-        const res = freshRows.length
-          ? await db.rpc('ingest_mail_bank_movements', { p_rows: freshRows })
-          : { data: { input: companyRows.length, inserted: 0, duplicate: report.prefilter?.skipped_existing || 0, failed: 0, prefiltered: true }, error: null };
-        if(res.error) report.errors.push({ area: 'ingest_rpc', error: res.error.message });
-        report.ingest = res.data || null;
+          const freshRows = await filterAlreadyStoredRows(db, companyRows, report, cfg.company_id || 'alayli', 'prefilter');
+          const res = freshRows.length
+            ? await db.rpc('ingest_mail_bank_movements', { p_rows: freshRows })
+            : { data: { input: companyRows.length, inserted: 0, duplicate: report.prefilter?.skipped_existing || 0, failed: 0, prefiltered: true }, error: null };
+          if(res.error) report.errors.push({ area: 'ingest_rpc', error: res.error.message });
+          report.ingest = res.data || null;
         }else{
-          report.ingest = { input: 0, inserted: 0, duplicate: 0, failed: 0 };
+          report.ingest = { company_id: cfg.company_id || 'alayli', input: 0, inserted: 0, duplicate: 0, failed: 0 };
         }
+
+        if(alkamRows.length){
+          const freshAlkamRows = await filterAlreadyStoredRows(db, alkamRows, report, 'alkam', 'alkam_prefilter');
+          const alkamRes = freshAlkamRows.length
+            ? await db.rpc('ingest_mail_bank_movements', { p_rows: freshAlkamRows })
+            : { data: { input: alkamRows.length, inserted: 0, duplicate: report.alkam_prefilter?.skipped_existing || 0, failed: 0, prefiltered: true }, error: null };
+          if(alkamRes.error) report.errors.push({ area: 'alkam_ingest_rpc', error: alkamRes.error.message });
+          report.alkam_ingest = { ...(alkamRes.data || {}), company_id: 'alkam', posting_route: 'read_only' };
+        }else{
+          report.alkam_ingest = { company_id: 'alkam', input: 0, inserted: 0, duplicate: 0, failed: 0, posting_route: 'read_only' };
+        }
+
         if(personalRows.length){
           report.personal_ingest = await ingestPersonalRows(db, personalRows, report);
         }
@@ -539,6 +573,9 @@ function buildConsoleSummary(report){
     parsed_rows_unique: report.parsed_rows_unique,
     duplicates_inside_run: report.duplicates_inside_run,
     ingest: report.ingest,
+    alkam_rows: report.alkam_rows || 0,
+    alkam_ingest: report.alkam_ingest || null,
+    other_company_rows_excluded: report.other_company_rows_excluded || 0,
     personal_rows_excluded: report.personal_rows_excluded || 0,
     personal_ingest: report.personal_ingest || null,
     errors: report.errors
