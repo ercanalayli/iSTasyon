@@ -255,10 +255,11 @@ function a1BuildSnapshot_() {
   var end7Iso = Utilities.formatDate(end7, 'Europe/Istanbul', 'yyyy-MM-dd');
 
   var allPayments = current.concat(next);
-  var open = allPayments.filter(function (r) { return r.remaining > 0; });
-  var overdue = open.filter(function (r) { return r.due && r.due < today; });
-  var dueToday = open.filter(function (r) { return r.due === today; });
-  var next7 = open.filter(function (r) { return r.due && r.due > today && r.due <= end7Iso; });
+  var openCurrent = current.filter(function (r) { return r.remaining > 0; });
+  var openAll = allPayments.filter(function (r) { return r.remaining > 0; });
+  var overdue = openCurrent.filter(function (r) { return r.due && r.due < today; });
+  var dueToday = openCurrent.filter(function (r) { return r.due === today; });
+  var next7 = openAll.filter(function (r) { return r.due && r.due > today && r.due <= end7Iso; });
   var sum = function (rows, key) { return Math.round(rows.reduce(function (a, r) { return a + Number(r[key] || 0); }, 0) * 100) / 100; };
 
   var snapshot = {
@@ -275,7 +276,7 @@ function a1BuildSnapshot_() {
       overdue_remaining: sum(overdue, 'remaining'),
       today_remaining: sum(dueToday, 'remaining'),
       next7_remaining: sum(next7, 'remaining'),
-      open_remaining: sum(open, 'remaining'),
+      open_remaining: sum(openCurrent, 'remaining'),
       open_tasks: tasks.filter(function (t) { return t.category === 'todo' && t.stage < 2; }).length,
       collections: tasks.filter(function (t) { return t.category === 'collect' && t.stage < 2; }).length,
       orders_to_place: tasks.filter(function (t) { return t.category === 'order' && t.stage < 2; }).length,
@@ -286,7 +287,7 @@ function a1BuildSnapshot_() {
       overdue: overdue,
       today: dueToday,
       next7: next7,
-      open_total: sum(open, 'remaining'),
+      open_total: sum(openCurrent, 'remaining'),
       overdue_accrual: sum(overdue, 'accrual'),
       overdue_paid: sum(overdue, 'paid')
     },
