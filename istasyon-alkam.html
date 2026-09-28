@@ -36,7 +36,7 @@ body{min-height:100vh}.app{max-width:1180px;margin:auto;padding:18px 18px 94px}.
     <div class="kpi"><div class="label">Bugün</div><div class="value" id="kToday">—</div><div class="foot">Açık aksiyon</div></div>
     <div class="kpi"><div class="label">Onay</div><div class="value" id="kApproval">—</div><div class="foot">Bekleyen kritik işlem</div></div>
     <div class="kpi"><div class="label">Cari</div><div class="value" id="kCari">75</div><div class="foot">Kanonik cari</div></div>
-    <div class="kpi"><div class="label">Kaynak</div><div class="value">5+</div><div class="foot">Drive dosyası doğrulandı</div></div>
+    <div class="kpi"><div class="label">Kaynak</div><div class="value">95/96</div><div class="foot">Belirsiz gider çözüldü</div></div>
   </div>
   <div class="grid">
     <div class="card"><h2>Öncelik Merkezi</h2><div class="caption">Bugün gerçekten ilgilenmen gerekenler</div><div class="rows" id="priorityRows">
@@ -57,7 +57,8 @@ body{min-height:100vh}.app{max-width:1180px;margin:auto;padding:18px 18px 94px}.
   <div class="grid">
     <div class="card"><h2>Finans Modülleri</h2><div class="rows">
       <div class="row"><div><strong>Banka Hareketleri</strong><small>Gelen / giden / eşleşme / inceleme</small></div><span class="tag info">CANLI</span></div>
-      <div class="row"><div><strong>Kasa</strong><small>Nakit + Emanet Kasa hareketleri</small></div><span class="tag warn">MUTABAKAT</span></div>
+      <div class="row"><div><strong>Operasyonel Kasa</strong><small>Drive geçmişi ayrı hesap; 2026 staging hazır</small></div><span class="tag warn">MUTABAKAT</span></div>
+   <div class="row"><div><strong>Emanet Kasa</strong><small>Bankadan ayrıştırılan emanet hareketleri; operasyonel kasadan ayrı</small></div><span class="tag info">AYRI HESAP</span></div>
       <div class="row"><div><strong>Moka / POS</strong><small>Ödeme ve taksit mutabakatı</small></div><span class="tag warn">AÇIK</span></div>
       <div class="row"><div><strong>Çek / Senet</strong><small>Portföy, vade, tahsilat</small></div><span class="tag info">MODÜL</span></div>
     </div></div>
@@ -85,11 +86,18 @@ body{min-height:100vh}.app{max-width:1180px;margin:auto;padding:18px 18px 94px}.
 
 <section id="sources" class="section">
   <div class="hero"><h1>Drive Kaynak Denetimi</h1><p>İstasyON’da her veri “hangi kaynak ailesinden geldi?” sorusuna cevap verecek.</p></div>
-  <div class="card sources"><div class="rows">
+  <div class="kpis" style="margin:14px 0 0">
+    <div class="kpi"><div class="label">Gider</div><div class="value">95/96</div><div class="foot">Boş kategori çözüldü</div></div>
+    <div class="kpi"><div class="label">Kasa</div><div class="value">181</div><div class="foot">2026 staging satırı</div></div>
+    <div class="kpi"><div class="label">Çek/Senet</div><div class="value">22/22</div><div class="foot">Kaynakla uyumlu</div></div>
+    <div class="kpi"><div class="label">Master</div><div class="value">23</div><div class="foot">VKN/TCKN doğrulandı</div></div>
+  </div>
+  <div class="card sources" style="margin-top:14px"><div class="rows">
     <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>Ortak kâr payı ekstreleri</strong><small>İki ortak için ayrı kaynak defterleri</small></div></div><span class="tag ok">OKUNDU</span></div>
     <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>Personel maaş ekstreleri</strong><small>Kaynak dosyalar ayrı doğrulandı</small></div></div><span class="tag ok">OKUNDU</span></div>
-    <div class="row"><div style="display:flex;gap:10px"><span class="dot"></span><div><strong>Çalışan master listesi</strong><small>Personel ana kart kaynağı</small></div></div><span class="tag warn">SIRADA</span></div>
-    <div class="row"><div style="display:flex;gap:10px"><span class="dot"></span><div><strong>Kasa / Moka / Çek / Gider / Satış</strong><small>Kaynak doğrulama paketi</small></div></div><span class="tag warn">SIRADA</span></div>
+    <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>Çalışan master listesi</strong><small>Kişi → rol → maaş / kâr payı modeli kuruldu</small></div></div><span class="tag ok">OKUNDU</span></div>
+    <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>Gider / Kasa / Moka / Çek / Satış</strong><small>Ana kaynaklar içerik seviyesinde okundu; staging ve mutabakat sürüyor</small></div></div><span class="tag info">İŞLENİYOR</span></div>
+   <div class="row"><div style="display:flex;gap:10px"><span class="dot"></span><div><strong>Gider bilgi gerekli</strong><small>Yalnız 1 tarihsel kayıt kaynaktan çözülemedi</small></div></div><span class="tag warn">1 KAYIT</span></div>
   </div></div>
 </section>
 
