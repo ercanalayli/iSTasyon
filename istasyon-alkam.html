@@ -70,40 +70,31 @@ body{min-height:100vh}.app{max-width:1180px;margin:auto;padding:18px 18px 94px}.
 </section>
 
 <section id="cari" class="section">
-  <div class="hero"><h1>Cari Merkezi</h1><p>Mükellefler, açık bakiye, ödeme sözü ve PDF ekstresi.</p></div>
-  <div class="card"><h2>Hızlı Cari</h2><div class="rows">
-    <div class="row"><div><strong>İZZ MOBİLYA</strong><small>Cari kartı ve PDF hazır</small></div><span class="tag info">AÇ</span></div>
-    <div class="row"><div><strong>YS MOBİLYA VE OTOMOTİV</strong><small>Cari kartı ve PDF hazır</small></div><span class="tag info">AÇ</span></div>
-    <div class="row"><div><strong>İSMAİL BEŞER · VAVELYA</strong><small>Ödeme sözü: 10.10.2026</small></div><span class="tag warn">SÖZ</span></div>
+  <div class="hero"><h1>Cari Merkezi</h1><p>Mükellefler, açık bakiye, ödeme sözü ve PDF ekstresi yalnız güvenli oturum açıldıktan sonra yüklenir.</p></div>
+  <div class="card"><h2>Güvenli Cari Görünümü</h2><div class="rows" id="cariRows">
+    <div class="row"><div><strong>Özel veri kilitli</strong><small>Bu cihazı Telegram ile eşleştir.</small></div><span class="tag warn">KİLİTLİ</span></div>
   </div></div>
 </section>
 
 <section id="people" class="section">
-  <div class="hero"><h1>Personel & Ortaklar</h1><p>Maaş ve kâr payı birbirinden ayrı izlenir.</p></div>
-  <div class="people">
-    <div class="person"><b>Uğur Kamacı</b><span>Mali Müşavir · Ortak</span><div class="split"><span class="chip">Maaş</span><span class="chip">Kâr Payı</span><span class="chip">Drive Kaynaklı</span></div></div>
-    <div class="person"><b>Ercan Alaylı</b><span>Mali Müşavir · Ortak</span><div class="split"><span class="chip">Maaş</span><span class="chip">Kâr Payı</span><span class="chip">Drive Kaynaklı</span></div></div>
-    <div class="person"><b>Kübra Bayram</b><span>Mali Müşavir</span><div class="split"><span class="chip">Maaş</span><span class="chip">Ekstre Kaynağı</span></div></div>
-    <div class="person"><b>Erkan Şahin</b><span>Muhasebe Sorumlusu</span><div class="split"><span class="chip">Maaş</span><span class="chip">Ekstre Kaynağı</span></div></div>
-    <div class="person"><b>Sibel Elif Kula</b><span>Çalışan</span><div class="split"><span class="chip">Maaş</span></div></div>
-  </div>
+  <div class="hero"><h1>Personel & Ortaklar</h1><p>Maaş ve kâr payı birbirinden ayrı izlenir; kişi detayları yalnız güvenli oturumda gösterilir.</p></div>
+  <div class="card"><div class="rows" id="peopleRows">
+    <div class="row"><div><strong>Personel verisi kilitli</strong><small>Tek seferlik Telegram eşleştirmesinden sonra otomatik açılır.</small></div><span class="tag warn">KİLİTLİ</span></div>
+  </div></div>
 </section>
 
 <section id="sources" class="section">
-  <div class="hero"><h1>Drive Kaynak Denetimi</h1><p>İstasyON’da her veri “hangi dosyadan geldi?” sorusuna cevap verecek.</p></div>
+  <div class="hero"><h1>Drive Kaynak Denetimi</h1><p>İstasyON’da her veri “hangi kaynak ailesinden geldi?” sorusuna cevap verecek.</p></div>
   <div class="card sources"><div class="rows">
-    <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>KAR UĞUR KA · Ekstre</strong><small>Kâr payı kaynağı</small></div></div><span class="tag ok">OKUNDU</span></div>
-    <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>KAR ERCAN A · Ekstre</strong><small>Kâr payı kaynağı</small></div></div><span class="tag ok">OKUNDU</span></div>
-    <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>MAAŞ UĞUR K · Ekstre</strong><small>Maaş kaynağı</small></div></div><span class="tag ok">OKUNDU</span></div>
-    <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>ERKAN · Ekstre</strong><small>Personel kaynağı</small></div></div><span class="tag ok">OKUNDU</span></div>
-    <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>KÜBRA BAYRA · Ekstre</strong><small>Personel kaynağı</small></div></div><span class="tag ok">OKUNDU</span></div>
-    <div class="row"><div style="display:flex;gap:10px"><span class="dot"></span><div><strong>calisan-listesi.xlsx</strong><small>Personel master</small></div></div><span class="tag warn">SIRADA</span></div>
+    <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>Ortak kâr payı ekstreleri</strong><small>İki ortak için ayrı kaynak defterleri</small></div></div><span class="tag ok">OKUNDU</span></div>
+    <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>Personel maaş ekstreleri</strong><small>Kaynak dosyalar ayrı doğrulandı</small></div></div><span class="tag ok">OKUNDU</span></div>
+    <div class="row"><div style="display:flex;gap:10px"><span class="dot"></span><div><strong>Çalışan master listesi</strong><small>Personel ana kart kaynağı</small></div></div><span class="tag warn">SIRADA</span></div>
     <div class="row"><div style="display:flex;gap:10px"><span class="dot"></span><div><strong>Kasa / Moka / Çek / Gider / Satış</strong><small>Kaynak doğrulama paketi</small></div></div><span class="tag warn">SIRADA</span></div>
   </div></div>
 </section>
 
-<div class="notice">Gerçek finansal rakamlar HTML kaynak koduna gömülmez. Canlı veri yalnız korumalı İstasyON/AperiON API üzerinden okunur.</div>
-<div class="auth"><input id="token" type="password" placeholder="Güvenli oturum anahtarı (yalnız bu cihazda saklanır)"><button class="btn" onclick="saveToken()">Bağlan</button></div>
+<div class="notice">Gerçek finans ve kişi verileri HTML kaynak koduna gömülmez. Bu cihaz Telegram üzerinden eşleştikten sonra korumalı API’den okunur.</div>
+<div class="auth" id="pairBox"><button class="btn" id="pairBtn" onclick="startPairing()">📲 Bu iPhone’u Telegram ile bağla</button><span id="pairMsg" style="font-size:11px;color:#9fb4cc"></span></div>Gerçek finansal rakamlar HTML kaynak koduna gömülmez. Canlı veri yalnız korumalı İstasyON/AperiON API üzerinden okunur.</div>
 </div>
 
 <nav class="nav">
@@ -118,25 +109,56 @@ body{min-height:100vh}.app{max-width:1180px;margin:auto;padding:18px 18px 94px}.
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 $$('.nav button').forEach(b=>b.onclick=()=>{ $$('.nav button').forEach(x=>x.classList.remove('active')); $$('.section').forEach(x=>x.classList.remove('active')); b.classList.add('active'); $('#'+b.dataset.target).classList.add('active'); scrollTo(0,0); });
-function getToken(){return localStorage.getItem('istasyon_bridge_token')||''}
-function saveToken(){const v=$('#token').value.trim(); if(v.length<32){alert('Geçerli güvenli oturum anahtarı gerekli.');return} localStorage.setItem('istasyon_bridge_token',v); $('#token').value=''; loadProtected();}
+function getToken(){return localStorage.getItem('istasyon_dashboard_token')||''}
+function randomNonce(){
+ const a=new Uint8Array(24); crypto.getRandomValues(a);
+ return btoa(String.fromCharCode(...a)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');
+}
+async function startPairing(){
+ const btn=$('#pairBtn'),msg=$('#pairMsg'); btn.disabled=true; msg.textContent='Telegram’a onay düğmesi gönderiliyor…';
+ const nonce=randomNonce(); sessionStorage.setItem('istasyon_pair_nonce',nonce);
+ try{
+   const r=await fetch('/api/istasyon-pair-request',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({browser_nonce:nonce})});
+   const j=await r.json(); if(!r.ok||!j.ok) throw new Error(j.error||'pair_failed');
+   msg.textContent='Telegram’da gelen “Bu iPhone’u bağla” düğmesine dokun.';
+   pollPair(nonce,0);
+ }catch(e){btn.disabled=false;msg.textContent='Eşleştirme başlatılamadı: '+(e.message||e)}
+}
+async function pollPair(nonce,attempt){
+ if(attempt>90){$('#pairBtn').disabled=false;$('#pairMsg').textContent='Süre doldu. Tekrar deneyebilirsin.';return}
+ try{
+   const r=await fetch('/api/istasyon-pair-status?nonce='+encodeURIComponent(nonce));
+   const j=await r.json();
+   if(j.status==='issued'&&j.dashboard_token){
+     localStorage.setItem('istasyon_dashboard_token',j.dashboard_token);
+     sessionStorage.removeItem('istasyon_pair_nonce');
+     $('#pairMsg').textContent='Bağlandı ✓'; $('#pairBtn').textContent='✓ Bu cihaz bağlı'; $('#pairBtn').disabled=true;
+     await loadProtected(); return;
+   }
+ }catch(_){}
+ setTimeout(()=>pollPair(nonce,attempt+1),2000);
+}
 async function loadProtected(){
- const token=getToken(); if(!token){$('#conn').textContent='Korumalı veri bağlantısı bekleniyor';return}
+ const token=getToken(); if(!token){$('#conn').textContent='Bu cihaz eşleştirilmedi';return}
  $('#conn').textContent='Bağlanıyor…';
  try{
-  const r=await fetch('/api/aperion-operations',{headers:{Authorization:'Bearer '+token}});
+  const r=await fetch('/api/istasyon-dashboard',{headers:{Authorization:'Bearer '+token}});
   const j=await r.json(); if(!r.ok||!j.ok) throw new Error(j.error||'connection_failed');
-  $('#conn').textContent='Canlı · Korumalı'; $('#apiState').textContent='CANLI'; $('#apiState').className='tag ok';
-  const items=j.reporting?.open_item_count??0; $('#kToday').textContent=items;
-  const ap=(j.reporting?.top_priorities||[]).filter(x=>String(x.status||'').toLowerCase().includes('approval')).length;
-  $('#kApproval').textContent=ap;
-  const p=(j.reporting?.top_priorities||[]).slice(0,5);
-  if(p.length) $('#priorityRows').innerHTML=p.map(x=>'<div class="row"><div><strong>'+escapeHtml(x.title||x.label||'Öncelik')+'</strong><small>'+escapeHtml((x.reason_codes||[]).join(' · ')||'Kaynak destekli öncelik')+'</small></div><span class="tag info">CANLI</span></div>').join('');
- }catch(e){$('#conn').textContent='Bağlantı yok'; $('#apiState').textContent='KORUMALI'; $('#apiState').className='tag warn'}
+  $('#conn').textContent='Canlı · Güvenli'; $('#apiState').textContent='CANLI'; $('#apiState').className='tag ok';
+  $('#kToday').textContent=j.open_commitment_count??'—';
+  $('#kApproval').textContent='✓';
+  $('#pairBtn').textContent='✓ Bu cihaz bağlı'; $('#pairBtn').disabled=true; $('#pairMsg').textContent='30 günlük güvenli oturum';
+  if(j.bank){
+    const foot=(j.bank.last_date?('Son banka: '+j.bank.last_date):'ALKAM banka kaynağı');
+    $('#priorityRows').insertAdjacentHTML('afterbegin','<div class="row"><div><strong>ALKAM banka bağlantısı</strong><small>'+escapeHtml(foot)+'</small></div><span class="tag ok">CANLI</span></div>');
+  }
+ }catch(e){
+   localStorage.removeItem('istasyon_dashboard_token');
+   $('#conn').textContent='Oturum yenilenmeli'; $('#apiState').textContent='KORUMALI'; $('#apiState').className='tag warn';
+   $('#pairBtn').disabled=false; $('#pairBtn').textContent='📲 Bu iPhone’u Telegram ile bağla'; $('#pairMsg').textContent='';
+ }
 }
-function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function runCommand(){const q=$('#cmd').value.trim(); if(!q)return; const lower=q.toLocaleLowerCase('tr-TR'); if(lower.includes('cari')){$('[data-target="cari"]').click()} else if(lower.includes('uğur')||lower.includes('ercan')||lower.includes('maaş')||lower.includes('kar pay')||lower.includes('kâr pay')){$('[data-target="people"]').click()} else if(lower.includes('kaynak')||lower.includes('drive')){$('[data-target="sources"]').click()} else {$('[data-target="finance"]').click()}}
-window.addEventListener('load',()=>{if(getToken())loadProtected()});
+window.addEventListener('load',()=>{const n=sessionStorage.getItem('istasyon_pair_nonce');if(n)pollPair(n,0);if(getToken())loadProtected()});
 </script>
 </body>
 </html>
