@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08111f">
+<title>İstasyON · ALKAM</title>
+<style>
+:root{--bg:#07101d;--panel:#0d1828;--panel2:#111e30;--line:#1d2d44;--text:#eef5ff;--muted:#8fa2bc;--blue:#5aa7ff;--green:#39d98a;--amber:#ffbf5b;--red:#ff6b7a;--cyan:#58e1ff;--r:18px}
+*{box-sizing:border-box}html,body{margin:0;background:linear-gradient(180deg,#07101d,#091523 45%,#07101d);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh}.app{max-width:1180px;margin:auto;padding:18px 18px 94px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 18px}.brand{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#1c7dff,#55e7ff);display:grid;place-items:center;color:#04101f;font-weight:950;box-shadow:0 0 26px #1c7dff45}.title{font-size:20px;font-weight:900}.sub{font-size:12px;color:var(--muted);margin-top:3px}.status{font-size:11px;padding:8px 10px;border:1px solid var(--line);background:#0b1625;border-radius:999px;color:var(--muted)}
+.hero{padding:20px;border:1px solid var(--line);background:linear-gradient(135deg,#0f1f34,#0b1727);border-radius:24px;box-shadow:0 18px 50px #0005}.hero h1{font-size:28px;line-height:1.12;margin:0 0 8px}.hero p{margin:0;color:var(--muted);font-size:13px}.command{margin-top:16px;display:flex;gap:10px}.command input{flex:1;background:#07111f;border:1px solid #263a57;color:var(--text);border-radius:15px;padding:14px 14px;font-size:14px;outline:none}.command button,.btn{border:0;border-radius:14px;padding:12px 15px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#318eff,#59dcff);color:#06111f}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}.kpi{padding:15px;border:1px solid var(--line);background:#0b1726;border-radius:18px}.kpi .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.kpi .value{font-size:23px;font-weight:900;margin-top:9px}.kpi .foot{font-size:11px;color:var(--muted);margin-top:5px}
+.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;margin-top:14px}.card{border:1px solid var(--line);background:linear-gradient(180deg,#0d1929,#0a1523);border-radius:20px;padding:16px}.card h2{font-size:15px;margin:0}.card .caption{font-size:11px;color:var(--muted);margin-top:4px}.rows{margin-top:12px;display:grid;gap:9px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid #1a2b42;background:#0a1422;border-radius:14px}.row strong{font-size:13px}.row small{display:block;color:var(--muted);margin-top:4px;font-size:11px}.tag{white-space:nowrap;font-size:10px;font-weight:800;border-radius:999px;padding:6px 8px}.ok{background:#123525;color:#6ff1ae}.warn{background:#3d2c0f;color:#ffd37a}.info{background:#102d4b;color:#86c8ff}.bad{background:#421923;color:#ff9ca8}
+.people{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.person{padding:13px;border-radius:15px;background:#091522;border:1px solid #1b2a40}.person b{font-size:13px}.person span{display:block;color:var(--muted);font-size:11px;margin-top:4px}.split{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.chip{font-size:10px;border:1px solid #27415f;border-radius:999px;padding:5px 7px;color:#a9c2df}
+.sources .row{align-items:flex-start}.dot{width:9px;height:9px;border-radius:50%;background:var(--amber);margin-top:4px;box-shadow:0 0 12px #ffbf5b80}.dot.ok{background:var(--green);box-shadow:0 0 12px #39d98a80}
+.section{display:none}.section.active{display:block}.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:max(10px,env(safe-area-inset-bottom));width:min(94%,720px);z-index:20;display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:7px;border:1px solid #263a55;background:#07111fee;backdrop-filter:blur(18px);border-radius:18px;box-shadow:0 14px 40px #0008}.nav button{border:0;background:transparent;color:#7890ad;border-radius:12px;padding:10px 4px;font-size:10px;font-weight:800}.nav button.active{background:#12243a;color:#ecf6ff}.nav i{font-style:normal;display:block;font-size:18px;margin-bottom:3px}
+.notice{margin-top:14px;padding:12px 14px;border:1px dashed #28425f;border-radius:14px;color:#a7bbd3;font-size:11px;background:#091624}.auth{display:flex;gap:8px;align-items:center;margin-top:12px}.auth input{min-width:0;flex:1;background:#081422;color:#fff;border:1px solid #263a55;border-radius:12px;padding:11px;font-size:12px}.auth button{padding:11px 12px}
+@media(max-width:800px){.app{padding:12px 12px 92px}.hero{padding:17px}.hero h1{font-size:24px}.kpis{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.status{display:none}.people{grid-template-columns:1fr}.command{flex-direction:column}.command button{width:100%}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="top">
+  <div class="brand"><div class="logo">İO</div><div><div class="title">İstasyON</div><div class="sub">ALKAM · Tek Kontrol Merkezi</div></div></div>
+  <div class="status" id="conn">Korumalı veri bağlantısı bekleniyor</div>
+</div>
+
+<section id="home" class="section active">
+  <div class="hero">
+    <h1>Bugün neye bakmam gerekiyor?</h1>
+    <p>Cari, banka, kasa, ödeme sözleri, personel, kâr payı ve onaylar tek ekranda.</p>
+    <div class="command"><input id="cmd" placeholder="Örn: Soner cari · Uğur kâr payı · bugün tahsilatlar"><button onclick="runCommand()">Sor</button></div>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><div class="label">Bugün</div><div class="value" id="kToday">—</div><div class="foot">Açık aksiyon</div></div>
+    <div class="kpi"><div class="label">Onay</div><div class="value" id="kApproval">—</div><div class="foot">Bekleyen kritik işlem</div></div>
+    <div class="kpi"><div class="label">Cari</div><div class="value" id="kCari">75</div><div class="foot">Kanonik cari</div></div>
+    <div class="kpi"><div class="label">Kaynak</div><div class="value">5+</div><div class="foot">Drive dosyası doğrulandı</div></div>
+  </div>
+  <div class="grid">
+    <div class="card"><h2>Öncelik Merkezi</h2><div class="caption">Bugün gerçekten ilgilenmen gerekenler</div><div class="rows" id="priorityRows">
+      <div class="row"><div><strong>Drive kaynak denetimi</strong><small>Orijinal ALKAM kaynakları sırayla okunuyor.</small></div><span class="tag warn">DEVAM</span></div>
+      <div class="row"><div><strong>AP / gider sınıflandırma</strong><small>AI gider inceleme kuyruğu kapandı.</small></div><span class="tag ok">TAMAM</span></div>
+      <div class="row"><div><strong>Onay merkezi</strong><small>Kritik finans yazımları kesin kayıt öncesi onay ister.</small></div><span class="tag info">KORUMALI</span></div>
+    </div></div>
+    <div class="card"><h2>Sistem Sağlığı</h2><div class="caption">Kaynak ve otomasyon görünümü</div><div class="rows">
+      <div class="row"><div><strong>İstasyON Finans</strong><small>Google Sheets kanonik kontrol merkezi</small></div><span class="tag ok">AKTİF</span></div>
+      <div class="row"><div><strong>AperiON API</strong><small>Korumalı operasyon katmanı</small></div><span class="tag info" id="apiState">KONTROL</span></div>
+      <div class="row"><div><strong>Canlı yazım</strong><small>Finansal final write</small></div><span class="tag warn">ONAYLI</span></div>
+    </div></div>
+  </div>
+</section>
+
+<section id="finance" class="section">
+  <div class="hero"><h1>Finans</h1><p>Banka, tahsilat, ödeme, kasa, Moka, çek-senet ve giderlerin yönetici görünümü.</p></div>
+  <div class="grid">
+    <div class="card"><h2>Finans Modülleri</h2><div class="rows">
+      <div class="row"><div><strong>Banka Hareketleri</strong><small>Gelen / giden / eşleşme / inceleme</small></div><span class="tag info">CANLI</span></div>
+      <div class="row"><div><strong>Kasa</strong><small>Nakit + Emanet Kasa hareketleri</small></div><span class="tag warn">MUTABAKAT</span></div>
+      <div class="row"><div><strong>Moka / POS</strong><small>Ödeme ve taksit mutabakatı</small></div><span class="tag warn">AÇIK</span></div>
+      <div class="row"><div><strong>Çek / Senet</strong><small>Portföy, vade, tahsilat</small></div><span class="tag info">MODÜL</span></div>
+    </div></div>
+    <div class="card"><h2>Onay Kapısı</h2><div class="caption">Finansal write güvenliği</div><div class="rows">
+      <div class="row"><div><strong>Taslak oluştur</strong><small>Serbest</small></div><span class="tag ok">EVET</span></div>
+      <div class="row"><div><strong>Kesin kayıt</strong><small>Açık onay gerekir</small></div><span class="tag warn">ONAY</span></div>
+      <div class="row"><div><strong>Readback</strong><small>Kayıt sonrası tekrar doğrula</small></div><span class="tag ok">ZORUNLU</span></div>
+    </div></div>
+  </div>
+</section>
+
+<section id="cari" class="section">
+  <div class="hero"><h1>Cari Merkezi</h1><p>Mükellefler, açık bakiye, ödeme sözü ve PDF ekstresi.</p></div>
+  <div class="card"><h2>Hızlı Cari</h2><div class="rows">
+    <div class="row"><div><strong>İZZ MOBİLYA</strong><small>Cari kartı ve PDF hazır</small></div><span class="tag info">AÇ</span></div>
+    <div class="row"><div><strong>YS MOBİLYA VE OTOMOTİV</strong><small>Cari kartı ve PDF hazır</small></div><span class="tag info">AÇ</span></div>
+    <div class="row"><div><strong>İSMAİL BEŞER · VAVELYA</strong><small>Ödeme sözü: 10.10.2026</small></div><span class="tag warn">SÖZ</span></div>
+  </div></div>
+</section>
+
+<section id="people" class="section">
+  <div class="hero"><h1>Personel & Ortaklar</h1><p>Maaş ve kâr payı birbirinden ayrı izlenir.</p></div>
+  <div class="people">
+    <div class="person"><b>Uğur Kamacı</b><span>Mali Müşavir · Ortak</span><div class="split"><span class="chip">Maaş</span><span class="chip">Kâr Payı</span><span class="chip">Drive Kaynaklı</span></div></div>
+    <div class="person"><b>Ercan Alaylı</b><span>Mali Müşavir · Ortak</span><div class="split"><span class="chip">Maaş</span><span class="chip">Kâr Payı</span><span class="chip">Drive Kaynaklı</span></div></div>
+    <div class="person"><b>Kübra Bayram</b><span>Mali Müşavir</span><div class="split"><span class="chip">Maaş</span><span class="chip">Ekstre Kaynağı</span></div></div>
+    <div class="person"><b>Erkan Şahin</b><span>Muhasebe Sorumlusu</span><div class="split"><span class="chip">Maaş</span><span class="chip">Ekstre Kaynağı</span></div></div>
+    <div class="person"><b>Sibel Elif Kula</b><span>Çalışan</span><div class="split"><span class="chip">Maaş</span></div></div>
+  </div>
+</section>
+
+<section id="sources" class="section">
+  <div class="hero"><h1>Drive Kaynak Denetimi</h1><p>İstasyON’da her veri “hangi dosyadan geldi?” sorusuna cevap verecek.</p></div>
+  <div class="card sources"><div class="rows">
+    <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>KAR UĞUR KA · Ekstre</strong><small>Kâr payı kaynağı</small></div></div><span class="tag ok">OKUNDU</span></div>
+    <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>KAR ERCAN A · Ekstre</strong><small>Kâr payı kaynağı</small></div></div><span class="tag ok">OKUNDU</span></div>
+    <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>MAAŞ UĞUR K · Ekstre</strong><small>Maaş kaynağı</small></div></div><span class="tag ok">OKUNDU</span></div>
+    <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>ERKAN · Ekstre</strong><small>Personel kaynağı</small></div></div><span class="tag ok">OKUNDU</span></div>
+    <div class="row"><div style="display:flex;gap:10px"><span class="dot ok"></span><div><strong>KÜBRA BAYRA · Ekstre</strong><small>Personel kaynağı</small></div></div><span class="tag ok">OKUNDU</span></div>
+    <div class="row"><div style="display:flex;gap:10px"><span class="dot"></span><div><strong>calisan-listesi.xlsx</strong><small>Personel master</small></div></div><span class="tag warn">SIRADA</span></div>
+    <div class="row"><div style="display:flex;gap:10px"><span class="dot"></span><div><strong>Kasa / Moka / Çek / Gider / Satış</strong><small>Kaynak doğrulama paketi</small></div></div><span class="tag warn">SIRADA</span></div>
+  </div></div>
+</section>
+
+<div class="notice">Gerçek finansal rakamlar HTML kaynak koduna gömülmez. Canlı veri yalnız korumalı İstasyON/AperiON API üzerinden okunur.</div>
+<div class="auth"><input id="token" type="password" placeholder="Güvenli oturum anahtarı (yalnız bu cihazda saklanır)"><button class="btn" onclick="saveToken()">Bağlan</button></div>
+</div>
+
+<nav class="nav">
+<button class="active" data-target="home"><i>⌂</i>Ana</button>
+<button data-target="finance"><i>₺</i>Finans</button>
+<button data-target="cari"><i>◎</i>Cari</button>
+<button data-target="people"><i>♙</i>İnsanlar</button>
+<button data-target="sources"><i>▣</i>Kaynak</button>
+</nav>
+
+<script>
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+$$('.nav button').forEach(b=>b.onclick=()=>{ $$('.nav button').forEach(x=>x.classList.remove('active')); $$('.section').forEach(x=>x.classList.remove('active')); b.classList.add('active'); $('#'+b.dataset.target).classList.add('active'); scrollTo(0,0); });
+function getToken(){return localStorage.getItem('istasyon_bridge_token')||''}
+function saveToken(){const v=$('#token').value.trim(); if(v.length<32){alert('Geçerli güvenli oturum anahtarı gerekli.');return} localStorage.setItem('istasyon_bridge_token',v); $('#token').value=''; loadProtected();}
+async function loadProtected(){
+ const token=getToken(); if(!token){$('#conn').textContent='Korumalı veri bağlantısı bekleniyor';return}
+ $('#conn').textContent='Bağlanıyor…';
+ try{
+  const r=await fetch('/api/aperion-operations',{headers:{Authorization:'Bearer '+token}});
+  const j=await r.json(); if(!r.ok||!j.ok) throw new Error(j.error||'connection_failed');
+  $('#conn').textContent='Canlı · Korumalı'; $('#apiState').textContent='CANLI'; $('#apiState').className='tag ok';
+  const items=j.reporting?.open_item_count??0; $('#kToday').textContent=items;
+  const ap=(j.reporting?.top_priorities||[]).filter(x=>String(x.status||'').toLowerCase().includes('approval')).length;
+  $('#kApproval').textContent=ap;
+  const p=(j.reporting?.top_priorities||[]).slice(0,5);
+  if(p.length) $('#priorityRows').innerHTML=p.map(x=>'<div class="row"><div><strong>'+escapeHtml(x.title||x.label||'Öncelik')+'</strong><small>'+escapeHtml((x.reason_codes||[]).join(' · ')||'Kaynak destekli öncelik')+'</small></div><span class="tag info">CANLI</span></div>').join('');
+ }catch(e){$('#conn').textContent='Bağlantı yok'; $('#apiState').textContent='KORUMALI'; $('#apiState').className='tag warn'}
+}
+function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function runCommand(){const q=$('#cmd').value.trim(); if(!q)return; const lower=q.toLocaleLowerCase('tr-TR'); if(lower.includes('cari')){$('[data-target="cari"]').click()} else if(lower.includes('uğur')||lower.includes('ercan')||lower.includes('maaş')||lower.includes('kar pay')||lower.includes('kâr pay')){$('[data-target="people"]').click()} else if(lower.includes('kaynak')||lower.includes('drive')){$('[data-target="sources"]').click()} else {$('[data-target="finance"]').click()}}
+window.addEventListener('load',()=>{if(getToken())loadProtected()});
+</script>
+</body>
+</html>
