@@ -41,14 +41,39 @@ jobs:
           api="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID"
           auth=(-H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
 
-          for endpoint in "pages/projects" "access/identity_providers" "access/apps"; do
-            body="$(curl -sS "${auth[@]}" "$api/$endpoint")"
-            if [ "$(jq -r '.success // false' <<<"$body")" != "true" ]; then
-              echo "::error::Cloudflare permission preflight failed for $endpoint"
-              jq -c '{errors,messages}' <<<"$body" || true
-              exit 1
+          pages="$(curl -sS "${auth[@]}" "$api/pages/projects")"
+          if [ "$(jq -r '.success // false' <<<"$pages")" != "true" ]; then
+            echo "::error::Cloudflare Pages permission preflight failed."
+            jq -c '{errors,messages}' <<<"$pages" || true
+            exit 1
+          fi
+
+          idps="$(curl -sS "${auth[@]}" "$api/access/identity_providers")"
+          if [ "$(jq -r '.success // false' <<<"$idps")" != "true" ]; then
+            if jq -e '.errors[]? | select((.message // "") | contains("Access is not enabled"))' <<<"$idps" >/dev/null; then
+              echo "Zero Trust Access is not enabled yet; attempting free organization setup."
+              org_payload="$(jq -nc '{auth_domain:"alkam-59990542.cloudflareaccess.com",name:"ALKAM Zero Trust",session_duration:"24h",deny_unmatched_requests:false,auto_redirect_to_identity:false,allow_authenticate_via_warp:false}')"
+              org="$(curl -sS -X POST "${auth[@]}" "$api/access/organizations" --data "$org_payload")"
+              if [ "$(jq -r '.success // false' <<<"$org")" != "true" ]; then
+                echo "::error::Could not enable free Cloudflare Access organization."
+                jq -c '{errors,messages}' <<<"$org" || true
+                exit 1
+              fi
+              idps="$(curl -sS "${auth[@]}" "$api/access/identity_providers")"
             fi
-          done
+          fi
+          if [ "$(jq -r '.success // false' <<<"$idps")" != "true" ]; then
+            echo "::error::Cloudflare Access identity-provider permission preflight failed."
+            jq -c '{errors,messages}' <<<"$idps" || true
+            exit 1
+          fi
+
+          apps="$(curl -sS "${auth[@]}" "$api/access/apps")"
+          if [ "$(jq -r '.success // false' <<<"$apps")" != "true" ]; then
+            echo "::error::Cloudflare Access Apps permission preflight failed."
+            jq -c '{errors,messages}' <<<"$apps" || true
+            exit 1
+          fi
           echo "Pages + Access API permissions verified before any ALKAM deployment."
 
       - name: Configure fail-closed Cloudflare Access
