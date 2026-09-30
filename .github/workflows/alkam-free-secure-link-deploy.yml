@@ -1,0 +1,201 @@
+name: Publish Secure Free ALKAM
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/alkam-free-secure-link-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alkam-free-secure-link-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PROJECT_NAME: alkam-mali-v2
+      APP_DOMAIN: alkam-mali-v2.pages.dev
+      GH_OWNER: ercanalayli
+      GH_OWNER_ID: "249922773"
+      GH_REPO_ID: "1231933832"
+      GH_REPO_NAME: alkam-mali-v2
+      GH_BRANCH: master
+    steps:
+      - name: Verify free Pages access
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CF_API_TOKEN"
+          test -n "$CF_ACCOUNT_ID"
+          api="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID"
+          resp="$(curl -sS -H "Authorization: Bearer $CF_API_TOKEN" "$api/pages/projects")"
+          if [ "$(jq -r '.success // false' <<<"$resp")" != "true" ]; then
+            echo "::error::Cloudflare Pages API access failed."
+            jq -c '{errors,messages}' <<<"$resp" || true
+            exit 1
+          fi
+          echo "Cloudflare Pages access OK."
+
+      - name: Create or validate private Git-backed project in guard mode
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID"
+          auth=(-H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
+          guard_cmd="rm -rf _cf_dist && mkdir -p _cf_dist && printf '%s\n' '<!doctype html><html lang=\"tr\"><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex,nofollow\"><title>ALKAM</title></head><body>ALKAM güvenli yayın hazırlığı.</body></html>' > _cf_dist/index.html && cp cloudflare-secure/_worker.js _cf_dist/_worker.js"
+
+          current="$(curl -sS "${auth[@]}" "$api/pages/projects/$PROJECT_NAME")"
+          if [ "$(jq -r '.success // false' <<<"$current")" = "true" ]; then
+            current_repo="$(jq -r '.result.source.config.repo_id // empty' <<<"$current")"
+            if [ -n "$current_repo" ] && [ "$current_repo" != "$GH_REPO_ID" ]; then
+              echo "::error::Existing project is linked to another repository; refusing to mutate."
+              exit 1
+            fi
+            patch="$(jq -nc --arg cmd "$guard_cmd" '{build_config:{build_command:$cmd,destination_dir:"_cf_dist"}}')"
+            resp="$(curl -sS -X PATCH "${auth[@]}" "$api/pages/projects/$PROJECT_NAME" --data "$patch")"
+            if [ "$(jq -r '.success // false' <<<"$resp")" != "true" ]; then
+              jq -c '{errors,messages}' <<<"$resp" || true
+              exit 1
+            fi
+          else
+            payload="$(jq -nc               --arg name "$PROJECT_NAME" --arg branch "$GH_BRANCH"               --arg owner "$GH_OWNER" --arg owner_id "$GH_OWNER_ID"               --arg repo_id "$GH_REPO_ID" --arg repo_name "$GH_REPO_NAME"               --arg cmd "$guard_cmd"               '{name:$name,production_branch:$branch,build_config:{build_command:$cmd,destination_dir:"_cf_dist"},source:{type:"github",config:{owner:$owner,owner_id:$owner_id,repo_id:$repo_id,repo_name:$repo_name,production_branch:$branch,production_deployments_enabled:false,preview_deployment_setting:"none",pr_comments_enabled:false}}}')"
+            resp="$(curl -sS -X POST "${auth[@]}" "$api/pages/projects" --data "$payload")"
+            if [ "$(jq -r '.success // false' <<<"$resp")" != "true" ]; then
+              echo "::error::Could not create the private Git-backed Pages project."
+              jq -c '{errors,messages}' <<<"$resp" || true
+              exit 1
+            fi
+          fi
+
+          project="$(curl -sS "${auth[@]}" "$api/pages/projects/$PROJECT_NAME")"
+          if [ "$(jq -r '.success // false' <<<"$project")" != "true" ]; then
+            exit 1
+          fi
+          repo="$(jq -r '.result.source.config.repo_id // empty' <<<"$project")"
+          if [ "$repo" != "$GH_REPO_ID" ]; then
+            echo "::error::Pages project is not linked to the expected private ALKAM repository."
+            exit 1
+          fi
+          echo "Private ALKAM repository link OK."
+
+      - name: Deploy harmless guarded page
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID"
+          auth=(-H "Authorization: Bearer $CF_API_TOKEN")
+          resp="$(curl -sS -X POST "${auth[@]}" "$api/pages/projects/$PROJECT_NAME/deployments" -F "branch=$GH_BRANCH")"
+          if [ "$(jq -r '.success // false' <<<"$resp")" != "true" ]; then
+            echo "::error::Guard deployment could not start."
+            jq -c '{errors,messages}' <<<"$resp" || true
+            exit 1
+          fi
+          id="$(jq -r '.result.id' <<<"$resp")"
+          for i in $(seq 1 90); do
+            d="$(curl -sS "${auth[@]}" "$api/pages/projects/$PROJECT_NAME/deployments/$id")"
+            s="$(jq -r '.result.latest_stage.status // empty' <<<"$d")"
+            [ "$s" = "success" ] && exit 0
+            if [ "$s" = "failure" ] || [ "$s" = "canceled" ]; then
+              echo "::error::Guard deployment failed."
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "::error::Guard deployment timed out."
+          exit 1
+
+      - name: Verify private gate before financial content
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sS -D /tmp/h -o /tmp/b "https://$APP_DOMAIN/" || true
+          code="$(awk 'NR==1{print $2}' /tmp/h)"
+          if [ "$code" != "401" ]; then
+            echo "::error::FAIL-CLOSED: expected 401 from security gate, got $code. Financial ALKAM will NOT be deployed."
+            exit 1
+          fi
+          if ! grep -q "Özel erişim" /tmp/b; then
+            echo "::error::FAIL-CLOSED: security gate signature not found."
+            exit 1
+          fi
+          echo "Private security gate verified."
+
+      - name: Switch to exact ALKAM release build
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID"
+          auth=(-H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
+          patch='{"build_config":{"build_command":"bash cloudflare-secure/build.sh","destination_dir":"_cf_dist"}}'
+          resp="$(curl -sS -X PATCH "${auth[@]}" "$api/pages/projects/$PROJECT_NAME" --data "$patch")"
+          if [ "$(jq -r '.success // false' <<<"$resp")" != "true" ]; then
+            jq -c '{errors,messages}' <<<"$resp" || true
+            exit 1
+          fi
+
+      - name: Deploy protected ALKAM
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID"
+          auth=(-H "Authorization: Bearer $CF_API_TOKEN")
+          resp="$(curl -sS -X POST "${auth[@]}" "$api/pages/projects/$PROJECT_NAME/deployments" -F "branch=$GH_BRANCH")"
+          if [ "$(jq -r '.success // false' <<<"$resp")" != "true" ]; then
+            echo "::error::Protected ALKAM deployment could not start."
+            jq -c '{errors,messages}' <<<"$resp" || true
+            exit 1
+          fi
+          id="$(jq -r '.result.id' <<<"$resp")"
+          for i in $(seq 1 90); do
+            d="$(curl -sS "${auth[@]}" "$api/pages/projects/$PROJECT_NAME/deployments/$id")"
+            s="$(jq -r '.result.latest_stage.status // empty' <<<"$d")"
+            if [ "$s" = "success" ]; then
+              echo "Protected ALKAM deploy completed."
+              exit 0
+            fi
+            if [ "$s" = "failure" ] || [ "$s" = "canceled" ]; then
+              echo "::error::Protected ALKAM deployment failed."
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "::error::Protected ALKAM deployment timed out."
+          exit 1
+
+      - name: Final anonymous privacy verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sS -D /tmp/h -o /tmp/b "https://$APP_DOMAIN/" || true
+          code="$(awk 'NR==1{print $2}' /tmp/h)"
+          if [ "$code" != "401" ]; then
+            echo "::error::CRITICAL: protected ALKAM did not return 401 to anonymous request."
+            exit 1
+          fi
+          if grep -qiE 'mükellef|banka|tahakkuk|moka|cari' /tmp/b; then
+            echo "::error::CRITICAL: anonymous response appears to contain ALKAM financial content."
+            exit 1
+          fi
+          echo "FINAL PRIVACY OK: anonymous visitors cannot read ALKAM."
+
+      - name: Enable future production updates
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID"
+          auth=(-H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json")
+          patch="$(jq -nc             --arg owner "$GH_OWNER" --arg owner_id "$GH_OWNER_ID"             --arg repo_id "$GH_REPO_ID" --arg repo_name "$GH_REPO_NAME" --arg branch "$GH_BRANCH"             '{source:{type:"github",config:{owner:$owner,owner_id:$owner_id,repo_id:$repo_id,repo_name:$repo_name,production_branch:$branch,production_deployments_enabled:true,preview_deployment_setting:"none",pr_comments_enabled:false}}}')"
+          resp="$(curl -sS -X PATCH "${auth[@]}" "$api/pages/projects/$PROJECT_NAME" --data "$patch")"
+          if [ "$(jq -r '.success // false' <<<"$resp")" != "true" ]; then
+            jq -c '{errors,messages}' <<<"$resp" || true
+            exit 1
+          fi
+          echo "Automatic protected production updates enabled."
