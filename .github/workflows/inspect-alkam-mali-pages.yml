@@ -1,0 +1,42 @@
+name: Inspect ALKAM Mali Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/inspect-alkam-mali-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PROJECT_NAME: alkam-mali
+    steps:
+      - name: Inspect current project safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CF_API_TOKEN"
+          test -n "$CF_ACCOUNT_ID"
+          api="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID"
+          resp="$(curl -sS -H "Authorization: Bearer $CF_API_TOKEN" "$api/pages/projects/$PROJECT_NAME")"
+          test "$(jq -r '.success // false' <<<"$resp")" = "true"
+          jq -c '{
+            name:.result.name,
+            subdomain:.result.subdomain,
+            production_branch:.result.production_branch,
+            source_type:(.result.source.type // null),
+            repo_id:(.result.source.config.repo_id // null),
+            repo_name:(.result.source.config.repo_name // null),
+            owner:(.result.source.config.owner // null),
+            production_deployments_enabled:(.result.source.config.production_deployments_enabled // null),
+            build_command:(.result.build_config.build_command // null),
+            destination_dir:(.result.build_config.destination_dir // null)
+          }' <<<"$resp"
