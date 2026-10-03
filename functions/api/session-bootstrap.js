@@ -50,9 +50,13 @@ function sourceStatus(result) {
 export async function onRequestGet({ request, env }) {
   if (!env.APERION_DB) return json({ ok: false, error: 'missing_d1_binding' }, 503);
   if (new URL(request.url).searchParams.get('health') === '1') {
-    return json({ ok: true, service: 'aperion-session-bootstrap', version: 'v153', data_access: 'protected' });
+    return json({ ok: true, service: 'aperion-session-bootstrap', version: 'v3', data_access: 'protected' });
   }
   if (!await authorized(request, env)) return json({ ok: false, error: 'unauthorized' }, 401);
+
+  const url = new URL(request.url);
+  const requestedSubject = String(url.searchParams.get('subject') || '').trim().slice(0, 200);
+  const subjectLike = '%' + requestedSubject + '%';
 
   const results = await Promise.all([
     safeQuery(env.APERION_DB, 'checkpoint', 'SELECT * FROM session_checkpoints ORDER BY created_at DESC LIMIT 1', 'first'),
@@ -69,6 +73,17 @@ export async function onRequestGet({ request, env }) {
     safeQuery(env.APERION_DB, 'memory_sources', "SELECT provider,title,import_status,user_fact_count,last_scanned_at,notes FROM external_conversation_sources ORDER BY CASE import_status WHEN 'complete' THEN 1 WHEN 'partial' THEN 2 WHEN 'inventoried' THEN 3 ELSE 4 END,title LIMIT 200"),
     safeQuery(env.APERION_DB, 'memory_import', "SELECT run_key,status,sources_seen,sources_scanned,candidates_created,memories_accepted,secrets_rejected,error_summary,started_at,completed_at FROM memory_import_runs ORDER BY started_at DESC LIMIT 1", 'first'),
     safeQuery(env.APERION_DB, 'standing_access_grants', "SELECT grant_key,principal,connector_key,scopes_json,status,granted_at,notes,updated_at FROM standing_access_grants WHERE status='active' AND revoked_at IS NULL ORDER BY connector_key"),
+    safeQuery(env.APERION_DB, 'project_memory_facts', requestedSubject
+      ? `SELECT f.fact_key,f.subject,f.predicate,f.object_value,f.scope,f.valid_from,f.valid_to,f.confidence,f.authority,f.last_seen,group_concat(s.source_key) AS source_keys
+         FROM memory_facts f LEFT JOIN memory_fact_sources fs ON fs.fact_id=f.id LEFT JOIN memory_sources s ON s.id=fs.source_id
+         WHERE f.status='active' AND f.subject LIKE '${subjectLike.replace(/'/g, "''")}'
+         GROUP BY f.id ORDER BY CASE f.authority WHEN 'user' THEN 1 WHEN 'document' THEN 2 ELSE 3 END,f.last_seen DESC LIMIT 120`
+      : "SELECT f.fact_key,f.subject,f.predicate,f.object_value,f.scope,f.valid_from,f.valid_to,f.confidence,f.authority,f.last_seen,group_concat(s.source_key) AS source_keys FROM memory_facts f LEFT JOIN memory_fact_sources fs ON fs.fact_id=f.id LEFT JOIN memory_sources s ON s.id=fs.source_id WHERE f.status='active' GROUP BY f.id ORDER BY CASE f.authority WHEN 'user' THEN 1 WHEN 'document' THEN 2 ELSE 3 END,f.last_seen DESC LIMIT 120"),
+    safeQuery(env.APERION_DB, 'project_memory_decisions', requestedSubject
+      ? `SELECT d.decision_key,d.decision,d.scope,d.effective_date,d.updated_at,s.source_key FROM memory_decisions d JOIN memory_sources s ON s.id=d.source_id WHERE d.status='active' AND (d.scope LIKE '${subjectLike.replace(/'/g, "''")}' OR d.decision LIKE '${subjectLike.replace(/'/g, "''")}') ORDER BY d.effective_date DESC,d.updated_at DESC LIMIT 80`
+      : "SELECT d.decision_key,d.decision,d.scope,d.effective_date,d.updated_at,s.source_key FROM memory_decisions d JOIN memory_sources s ON s.id=d.source_id WHERE d.status='active' ORDER BY d.effective_date DESC,d.updated_at DESC LIMIT 80"),
+    safeQuery(env.APERION_DB, 'recent_memory_events', "SELECT event_id,event_type,occurred_at,source_type,source_ref,actor,scope,company,summary,result_status,verification_status,provenance_ref FROM memory_events ORDER BY occurred_at DESC LIMIT 40"),
+    safeQuery(env.APERION_DB, 'conversation_memory_sources', "SELECT source_key,source_type,conversation_ref,session_ref,source_date,last_synced_at,adapter_status,metadata_json FROM memory_sources WHERE source_type LIKE '%conversation' ORDER BY last_synced_at DESC LIMIT 40"),
   ]);
 
   const byKey = Object.fromEntries(results.map((result) => [result.key, result]));
@@ -78,9 +93,9 @@ export async function onRequestGet({ request, env }) {
   return json({
     ok: true,
     degraded: blockedSources.length > 0,
-    protocol: 'aperion-session-bootstrap-v2',
+    protocol: 'aperion-session-bootstrap-v3',
     generated_at: new Date().toISOString(),
-    context_policy: { raw_chat_loaded: false, recent_turn_limit: 8, structured_memory: true },
+    context_policy: { raw_chat_loaded: false, recent_turn_limit: 8, structured_memory: true, conversation_memory_writer: true, bootstrap_reader: true },
     bootstrap_health: {
       status: blockedSources.length ? 'degraded' : 'healthy',
       blocked_sources: blockedSources,
@@ -104,6 +119,19 @@ export async function onRequestGet({ request, env }) {
       ...row,
       scopes: parseJson(row.scopes_json),
     })),
+    conversation_memory: {
+      subject: requestedSubject || null,
+      active_facts: byKey.project_memory_facts.rows.map((row) => ({
+        ...row,
+        source_keys: row.source_keys ? String(row.source_keys).split(',').filter(Boolean) : [],
+      })),
+      active_decisions: byKey.project_memory_decisions.rows,
+      recent_events: byKey.recent_memory_events.rows,
+      recent_sources: byKey.conversation_memory_sources.rows.map((row) => ({
+        ...row,
+        metadata: parseJson(row.metadata_json, {}),
+      })),
+    },
     objectives: byKey.objectives.rows,
     work_items: byKey.work_items.rows,
     pending_approvals: byKey.approvals.rows,

@@ -75,3 +75,15 @@ Bu dosyayı her oturum sonunda güncelle. Yeni bir sohbet/oturum başlarken önc
 - Action tarafında prepare + consequential approve akışı mevcut; Windows worker yalnız onaylı finans görevini lease eder.
 - Work/Cloud Browser yalnız araştırma veya son çare browser fallback olarak kalır; PC Executor'a doğrudan bağlıymış gibi raporlanmayacak.
 - Uzun vadeli hedef, aynı command bridge'i ChatGPT Plugin/App yüzeyine taşımaktır; mevcut Custom GPT Action kısa vadeli üretim köprüsüdür.
+
+
+## 2026-10-03 - Conversation Memory Writer + Bootstrap Reader
+
+- Yeni korumalı endpoint: `/api/conversation-memory-writer`. Yalnız yapılandırılmış önemli değişiklikleri kabul eder; ham uzun sohbeti kalıcı hafızaya kopyalamaz.
+- Desteklenen değişiklikler: fact, decision, durable memory. Kaynak/conversation/session/turn provenance, content hash ve sync-state tutulur.
+- Kullanıcının açık düzeltmesi aynı subject+predicate için eski fact'i silmez; supersede eder ve tarihçeyi korur.
+- Secret/token/parola/OTP benzeri içerik `secret_material_rejected` ile reddedilir. Finansal write yapmaz.
+- `/api/session-bootstrap` v3 oldu: mevcut checkpoint/working-state/durable memory yanında aktif proje factleri, kararlar, son memory eventleri ve conversation source durumunu tek bootstrap çıktısında verir.
+- Yeni sohbet varsayılanı: `raw_chat_loaded=false`; önce yapılandırılmış hafıza okunur. Ham geçmiş yalnız gerektiğinde kaynak olarak aranır.
+- Platform sınırı: normal ChatGPT sohbetlerinin her turn'ünü dış endpoint'e otomatik push eden desteklenen global hook/connector bu oturumda mevcut değildir. Backend Writer/Reader tamamlanır; ChatGPT tarafı hook gelene kadar önemli değişiklikler tool/action üzerinden gönderilmelidir. Durum: `BLOCKED_PLATFORM_ACCESS`.
+- Apeiron Kontrol Merkezi yapılacaklarına `CHAT-20261003-APERION-MEMORY-BRIDGE` eklendi ve `YAPILIYOR` durumuna alındı.

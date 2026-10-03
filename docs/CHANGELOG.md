@@ -1266,3 +1266,15 @@ için hâlâ tam sağlanmıyor — bkz. `docs/OPERATIONS_RULES.md` §9.)*
 - [ ] Kategori katsayisi ile hesaplanan maliyet kaynak notu tasiyor.
 - [ ] Cari karti satis/tahakkuk ile tahsilat/acik bakiye ayrimini karistirmiyor.
 - [ ] Eksik tahsilat veya bakiye kaynagi acikca isaretleniyor.
+
+
+## 2026-10-03 - Conversation Memory Writer / Bootstrap Reader
+
+- `functions/api/conversation-memory-writer.js` eklendi.
+- Sohbet kaynakları `memory_sources`, `external_conversation_sources`, `memory_sync_state`, `conversation_threads` ve referans düzeyinde `conversation_turns` ile izlenir; ham sohbet metni zorunlu depolanmaz.
+- Kullanıcı doğrulamalı fact düzeltmeleri append/supersede mantığıyla korunur; eski kayıt silinmez.
+- Decision yazımında otomatik geniş kapsamlı supersede yapılmaz; yalnız açık `supersedes_key` ile eski karar kapatılır.
+- Durable memory yazımı `memory_items` üzerinden kaynak referansı ve güven skoru ile yapılır.
+- Her writer isteği append-only `memory_events` kaydı ve source health sinyali üretir.
+- `functions/api/session-bootstrap.js` v3'e yükseltildi; `conversation_memory.active_facts`, `active_decisions`, `recent_events`, `recent_sources` döndürür.
+- Finansal sistem yazımı: 0. Secret ifşası: 0.
