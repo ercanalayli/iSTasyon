@@ -155,14 +155,25 @@ export async function decideBankMovement(db, movementId, action, chatId) {
   const row = await readBankMovement(db, movementId);
   if (!row) return { ok: false, error: 'not_found' };
   if (action === 'reject') {
-    if (row.status === 'approved' || row.status === 'queued') return { ok: false, error: 'already_approved', row };
+    if (row.status === 'approved' || row.status === 'queued' || row.status === 'approved_read_only') return { ok: false, error: 'already_approved', row };
     if (row.status === 'rejected') return { ok: true, duplicate: true, status: 'rejected', row };
     await db.prepare("UPDATE bank_statement_movements SET status='rejected',decided_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),decided_by=?,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=? AND status IN ('pending','needs_review')")
       .bind(`telegram:${chatId}`, movementId).run();
     return { ok: true, status: 'rejected', row };
   }
   if (row.status === 'rejected') return { ok: false, error: 'already_rejected', row };
-  if (row.status === 'approved' || row.status === 'queued') return { ok: true, duplicate: true, status: row.status, row };
+  if (row.status === 'approved' || row.status === 'queued' || row.status === 'approved_read_only') {
+    return { ok: true, duplicate: true, status: row.status, row, posting_route: row.company_id === 'alkam' ? 'istasyon_read_only' : 'bizimhesap_queue' };
+  }
+
+  // ALKAM / İstasyON banka hareketi onayı bir muhasebe posting onayı değildir.
+  // Bu kayıt BizimHesap veya genel bank_posting_queue hattına ASLA gönderilmez.
+  if (row.company_id === 'alkam') {
+    await db.prepare("UPDATE bank_statement_movements SET status='approved_read_only',decided_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),decided_by=?,approval_note='[ALKAM_ISTASYON_READ_ONLY]',updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=? AND status IN ('pending','needs_review')")
+      .bind(`telegram:${chatId}`, movementId).run();
+    return { ok: true, status: 'approved_read_only', row: { ...row, status: 'approved_read_only' }, posting_route: 'istasyon_read_only', financial_write: 0 };
+  }
+
   const queueId = crypto.randomUUID();
   const idempotencyKey = `bank:${row.duplicate_key}`;
   await db.batch([

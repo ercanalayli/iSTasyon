@@ -31,5 +31,8 @@ jobs:
     - name: Project conversation memory tests
       run: npm run verify:project-conversation-memory-v158
 
+    - name: ALKAM bank read-only safety
+      run: npm run verify:alkam-bank-readonly-v166
+
     - name: Docker Build Check
       run: docker build . -t istasyon-bot-test

@@ -408,12 +408,17 @@ await answerCallbackQuery(env, callbackQuery.id, decision.duplicate ? 'Bu hareke
 await sendMessage(env, chatId, '❌ <b>Banka hareketi reddedildi</b>\nKayıt BizimHesap kuyruğuna alınmadı.', null, { parse_mode: 'HTML' });
 return true;
 }
+if (decision.status === 'approved_read_only') {
+await answerCallbackQuery(env, callbackQuery.id, decision.duplicate ? 'İstasyON inceleme onayı zaten kayıtlı.' : 'İstasyON inceleme onayı kaydedildi.');
+await sendMessage(env, chatId, '✅ <b>ALKAM / İstasyON banka hareketi onaylandı</b>\nBu yalnız inceleme/eşleştirme onayıdır. BizimHesap kuyruğuna veya kesin muhasebe kaydına aktarılmadı.', null, { parse_mode: 'HTML' });
+return true;
+}
 await answerCallbackQuery(env, callbackQuery.id, decision.duplicate ? 'Bu hareket daha önce onaylandı.' : 'Onaylandı; güvenli işlem kuyruğuna alındı.');
 await sendMessage(env, chatId, '✅ <b>Banka hareketi onaylandı</b>\nBizimHesap güvenlik kuyruğuna aktarıldı. Cari eşleşmesi, mükerrer kontrolü ve kayıt kanıtı tamamlanmadan işlem kapanmış sayılmaz.', null, { parse_mode: 'HTML' });
 return true;
 }
 
-const lookup = await sbFetch(env, '/rest/v1/pending_bank_movements?select=id,status,bank_name,transaction_date,description,amount_in,amount_out&id=eq.' + encodeURIComponent(movementId) + '&limit=1');
+const lookup = await sbFetch(env, '/rest/v1/pending_bank_movements?select=id,company_id,status,bank_name,transaction_date,description,amount_in,amount_out&id=eq.' + encodeURIComponent(movementId) + '&limit=1');
 const row = lookup.ok && Array.isArray(lookup.data) ? lookup.data[0] : null;
 if (!row) {
 await answerCallbackQuery(env, callbackQuery.id, 'Hareket bulunamadı.');
@@ -441,6 +446,11 @@ return true;
 
 if (row.status === 'rejected') {
 await answerCallbackQuery(env, callbackQuery.id, 'Bu hareket daha önce reddedildi.');
+return true;
+}
+if (row.company_id === 'alkam') {
+await answerCallbackQuery(env, callbackQuery.id, 'İstasyON güvenli onay servisi hazır değil; kayıt yapılmadı.');
+await sendMessage(env, chatId, '⚠️ <b>ALKAM / İstasyON koruması</b>\nBu hareket BizimHesap kuyruğuna aktarılmadı. D1 İstasyON inceleme hattı erişilebilir olduğunda tekrar onaylanabilir.', null, { parse_mode: 'HTML' });
 return true;
 }
 const approved = await sbFetch(env, '/rest/v1/rpc/approve_pending_bank_movement', {
