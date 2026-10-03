@@ -88,6 +88,7 @@ function normalizeChange(raw = {}, index = 0) {
     domain: clean(raw.domain || 'company', 60),
     supersede: raw.supersede !== false,
     explicitKey: clean(raw.key || raw.fact_key || raw.decision_key || raw.memory_key, 180),
+    supersedesKey: clean(raw.supersedes_key || raw.supersedesKey, 180),
     metadata: raw.metadata && typeof raw.metadata === 'object' ? raw.metadata : {},
   };
 }
@@ -201,6 +202,9 @@ async function persistFact(db, change, sourceKey, observedAt) {
     const row = await db.prepare(
       `INSERT INTO current_state_facts(fact_key,subject_type,subject_ref,predicate,value_json,truth_state,source_ref,observed_at,valid_until,status)
        VALUES(?,?,?,?,?,'confirmed',?,?,?,'active')
+       ON CONFLICT(fact_key) DO UPDATE SET
+         value_json=excluded.value_json,truth_state='confirmed',source_ref=excluded.source_ref,
+         observed_at=excluded.observed_at,valid_until=excluded.valid_until,status='active'
        RETURNING id`
     ).bind(
       stateKey + ':' + (await sha256Hex(change.value)).slice(0, 12),
@@ -208,7 +212,7 @@ async function persistFact(db, change, sourceKey, observedAt) {
       sourceKey, observedAt, change.validUntil
     ).first();
     if (previousState && change.supersede && change.authority === 'user') {
-      await db.prepare(`UPDATE current_state_facts SET status='superseded',supersedes_fact_id=NULL,valid_until=COALESCE(valid_until,?) WHERE id=?`)
+      await db.prepare(`UPDATE current_state_facts SET status='superseded',valid_until=COALESCE(valid_until,?) WHERE id=?`)
         .bind(observedAt, previousState.id).run();
       await db.prepare('UPDATE current_state_facts SET supersedes_fact_id=? WHERE id=?').bind(previousState.id, row.id).run();
     }
@@ -222,9 +226,9 @@ async function persistDecision(db, change, sourceKey, observedAt) {
   const source = await db.prepare('SELECT id FROM memory_sources WHERE source_key=?').bind(sourceKey).first();
   if (!source) throw new Error('memory_source_missing');
 
-  const previous = change.supersede ? await db.prepare(
-    `SELECT id,decision_key FROM memory_decisions WHERE scope=? AND status='active' ORDER BY effective_date DESC,updated_at DESC LIMIT 1`
-  ).bind(change.scope).first() : null;
+  const previous = change.supersede && change.supersedesKey ? await db.prepare(
+    `SELECT id,decision_key FROM memory_decisions WHERE decision_key=? AND status='active' LIMIT 1`
+  ).bind(change.supersedesKey).first() : null;
 
   await db.prepare(
     `INSERT INTO memory_decisions(decision_key,decision,scope,effective_date,status,source_id,created_at,updated_at)
@@ -313,11 +317,12 @@ export async function onRequestPost({ request, env }) {
 
     const snapshotKey = await persistWorkingState(env.APERION_DB, thread, source, body, contentHash);
     const eventId = 'evt-conversation-memory-' + contentHash.slice(0, 32);
+    const eventSourceRef = sourceKey + '#' + (turnKey || contentHash.slice(0, 16));
     await env.APERION_DB.prepare(
       `INSERT OR IGNORE INTO memory_events(event_id,event_type,occurred_at,source_type,source_ref,actor,scope,company,entity_refs_json,summary,risk_class,result_status,verification_status,provenance_ref,metadata_json)
        VALUES(?,?,?,?,?,'chatgpt','aperion',NULL,'[]',?,'REVERSIBLE_LOW_RISK','recorded','source_backed',?,?)`
     ).bind(
-      eventId, 'conversation_memory_write', observedAt, clean(source.provider || 'chatgpt', 40), sourceKey,
+      eventId, 'conversation_memory_write', observedAt, clean(source.provider || 'chatgpt', 40), eventSourceRef,
       'Conversation memory: ' + written.length + ' structured change(s)',
       sourceKey,
       JSON.stringify({ turn_key: turnKey, snapshot_key: snapshotKey, keys: written.map((item) => item.key) })
