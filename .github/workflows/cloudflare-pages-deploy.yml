@@ -28,6 +28,7 @@ jobs:
       - name: Verify Cloudflare deployment access
         shell: bash
         run: |
+          set -euo pipefail
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"
 
@@ -39,3 +40,14 @@ jobs:
           wranglerVersion: "4.125.0"
           command: pages deploy . --project-name=aperion-istasyon --branch=main --commit-dirty=true
 
+      - name: Verify control path
+        shell: bash
+        run: |
+          set -euo pipefail
+          sleep 5
+          curl -fsSL --retry 10 --retry-delay 3 --retry-all-errors \
+            https://aperion-istasyon.pages.dev/control/ -o /tmp/aperion-control.html
+          test "$(wc -c < /tmp/aperion-control.html)" -gt 5000
+          grep -q 'ApeirON Control Center' /tmp/aperion-control.html
+          grep -q 'Günün tamamı tek kontrol yüzeyinde' /tmp/aperion-control.html
+          echo "APERION_CONTROL_PATH_VERIFY=PASS"
