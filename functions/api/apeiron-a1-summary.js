@@ -23,17 +23,12 @@ export async function onRequestOptions() {
 }
 
 async function ensureSchema(db) {
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS a1_dashboard_snapshots (
-      snapshot_key TEXT PRIMARY KEY,
-      generated_at TEXT NOT NULL,
-      source_modified_at TEXT,
-      payload_json TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-    );
-    CREATE INDEX IF NOT EXISTS idx_a1_dashboard_generated
-      ON a1_dashboard_snapshots(generated_at DESC);
-  `);
+  await db.prepare(
+    "CREATE TABLE IF NOT EXISTS a1_dashboard_snapshots (snapshot_key TEXT PRIMARY KEY, generated_at TEXT NOT NULL, source_modified_at TEXT, payload_json TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')))"
+  ).run();
+  await db.prepare(
+    "CREATE INDEX IF NOT EXISTS idx_a1_dashboard_generated ON a1_dashboard_snapshots(generated_at DESC)"
+  ).run();
 }
 
 export async function onRequestGet({ env }) {
