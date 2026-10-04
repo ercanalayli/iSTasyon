@@ -89,10 +89,10 @@
           <p>Yapılacaklar, ödemeler, tahsilatlar, siparişler, belgeler ve onaylar aynı merkezde. Kritik finansal yazma işlemleri açık onay olmadan çalışmaz.</p>
         </section>
         <section class="aperion-kpis">
-          <div class="aperion-kpi"><small>Bugün</small><b>—</b></div>
-          <div class="aperion-kpi"><small>7 Gün</small><b>—</b></div>
-          <div class="aperion-kpi"><small>Gecikmiş</small><b>—</b></div>
-          <div class="aperion-kpi"><small>Onay</small><b>—</b></div>
+          <div class="aperion-kpi"><small>Bugün</small><b data-aperion-kpi="today">—</b></div>
+          <div class="aperion-kpi"><small>7 Gün</small><b data-aperion-kpi="next7">—</b></div>
+          <div class="aperion-kpi"><small>Gecikmiş</small><b data-aperion-kpi="overdue">—</b></div>
+          <div class="aperion-kpi"><small>Onay</small><b data-aperion-kpi="approvals">—</b></div>
         </section>
         <section class="aperion-tabs">
           <button class="active" type="button" data-aperion-tab="Bugün">Bugün</button>
@@ -108,9 +108,9 @@
           <div class="aperion-card">
             <h2 data-aperion-title>Bugün</h2>
             <p data-aperion-description>Günün kritik işleri, vadeleri ve bekleyen kararları.</p>
-            <div class="aperion-empty">
-              <strong>Canlı ApeirON veri bağlantısı sıradaki adım</strong>
-              <span>Kaynak okunmadan sayı veya kayıt üretilmez. Bu alan Google Sheets / kontrol merkezi kaynaklarına bağlanacak.</span>
+            <div class="aperion-empty" data-aperion-live-body>
+              <strong>Canlı veri yükleniyor…</strong>
+              <span>Google Sheets → ApeirON korumalı snapshot hattı kontrol ediliyor.</span>
             </div>
           </div>
           <aside class="aperion-card aperion-alert">
@@ -134,6 +134,55 @@
       'Onay Kuyruğu':'Açık onay gerektiren kritik işlemler.'
     };
 
+    let liveSummary = null;
+    const summaryUrl = 'https://aperion-istasyon.pages.dev/api/apeiron-a1-summary';
+
+    const renderSummary = (label) => {
+      const body = modal.querySelector('[data-aperion-live-body]');
+      if (!body) return;
+      if (!liveSummary?.ok) {
+        body.innerHTML = '<strong>Canlı kaynak şu anda okunamadı</strong><span>Rakam uydurulmadı. Korumalı ApeirON snapshot hattı yeniden kontrol edilecek.</span>';
+        return;
+      }
+      const c = liveSummary.counts || {};
+      const stale = liveSummary.stale ? ' • VERİ ESKİ' : '';
+      const stamp = liveSummary.generated_at ? new Date(liveSummary.generated_at).toLocaleString('tr-TR') : '—';
+      const rows = {
+        'Bugün': `Bugün ödeme: ${c.today_payments || 0} kalem • Açık görev: ${c.open_tasks || 0} • Açık onay: ${c.approvals_open || 0}`,
+        'Yapılacaklar': `Açık yapılacak: ${c.open_tasks || 0}`,
+        'Ödemeler': `Gecikmiş: ${c.overdue_payments || 0} • Bugün: ${c.today_payments || 0} • Önümüzdeki 7 gün: ${c.next7_payments || 0}`,
+        'Tahsilatlar': `Takipte tahsilat: ${c.collections || 0}`,
+        'Verilecek Siparişler': `Verilecek sipariş: ${c.orders_to_place || 0}`,
+        'Alınan Siparişler': `Alınan sipariş: ${c.received_orders || 0}`,
+        'Belge Eşleşmeleri': `Eşleşme bekleyen belge: ${c.pending_documents || 0}`,
+        'Onay Kuyruğu': `Açık karar / bilgi onayı: ${c.approvals_open || 0}`
+      };
+      body.innerHTML = `<strong>${rows[label] || 'Canlı özet hazır'}${stale}</strong><span>Son snapshot: ${stamp}. Ayrıntılı cari, tutar ve belge içeriği public sayfaya çıkarılmaz; korumalı ApeirON kaynağında tutulur.</span>`;
+    };
+
+    const loadLiveSummary = async () => {
+      try {
+        const response = await fetch(summaryUrl, { cache: 'no-store' });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        liveSummary = await response.json();
+        if (!liveSummary?.ok) throw new Error(liveSummary?.error || 'summary_not_ready');
+        const c = liveSummary.counts || {};
+        const setKpi = (key, value) => {
+          const node = modal.querySelector(`[data-aperion-kpi="${key}"]`);
+          if (node) node.textContent = String(value ?? '—');
+        };
+        setKpi('today', c.today_payments);
+        setKpi('next7', c.next7_payments);
+        setKpi('overdue', c.overdue_payments);
+        setKpi('approvals', c.approvals_open);
+        const active = modal.querySelector('[data-aperion-tab].active')?.dataset?.aperionTab || 'Bugün';
+        renderSummary(active);
+      } catch (error) {
+        liveSummary = null;
+        renderSummary('Bugün');
+      }
+    };
+
     const setWorkspace = (workspace) => {
       const aperion = workspace === 'aperion';
       modal.classList.toggle('open', aperion);
@@ -154,6 +203,8 @@
     let initial = 'aperion';
     try { initial = localStorage.getItem('aperion-workspace') || 'aperion'; } catch (_) {}
     setWorkspace(initial === 'istasyon' ? 'istasyon' : 'aperion');
+    loadLiveSummary();
+    setInterval(loadLiveSummary, 60000);
   }
 
   function renderLiveApp(payload) {
