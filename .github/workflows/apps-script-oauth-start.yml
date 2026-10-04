@@ -1,0 +1,45 @@
+name: Apps Script OAuth Start
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apps-script-oauth-start.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  oauth-start:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build one-time Google authorization URL
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const id = process.env.GOOGLE_CLIENT_ID || '';
+          if (!id) throw new Error('GOOGLE_CLIENT_ID missing');
+          const u = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+          u.searchParams.set('client_id', id);
+          u.searchParams.set('redirect_uri', 'http://localhost');
+          u.searchParams.set('response_type', 'code');
+          u.searchParams.set('access_type', 'offline');
+          u.searchParams.set('prompt', 'consent');
+          u.searchParams.set('include_granted_scopes', 'true');
+          u.searchParams.set('scope', [
+            'https://www.googleapis.com/auth/script.projects',
+            'https://www.googleapis.com/auth/script.deployments'
+          ].join(' '));
+          fs.mkdirSync('automation/logs', { recursive: true });
+          fs.writeFileSync('automation/logs/apps-script-auth-url.txt', u.toString() + '\n');
+          console.log('AUTH_URL_ARTIFACT_READY');
+          NODE
+
+      - name: Upload authorization URL
+        uses: actions/upload-artifact@v4
+        with:
+          name: apps-script-auth-url
+          path: automation/logs/apps-script-auth-url.txt
+          retention-days: 1
