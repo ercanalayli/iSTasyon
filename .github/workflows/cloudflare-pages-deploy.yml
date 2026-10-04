@@ -40,14 +40,18 @@ jobs:
           wranglerVersion: "4.125.0"
           command: pages deploy . --project-name=aperion-istasyon --branch=main --commit-dirty=true
 
-      - name: Verify control path
+      - name: Verify root A1 path with iPhone Safari UA
         shell: bash
         run: |
           set -euo pipefail
           sleep 5
-          curl -fsSL --retry 10 --retry-delay 3 --retry-all-errors \
-            https://aperion-istasyon.pages.dev/control/ -o /tmp/aperion-control.html
-          test "$(wc -c < /tmp/aperion-control.html)" -gt 5000
-          grep -q 'ApeirON Control Center' /tmp/aperion-control.html
-          grep -q 'Günün tamamı tek kontrol yüzeyinde' /tmp/aperion-control.html
-          echo "APERION_CONTROL_PATH_VERIFY=PASS"
+          UA='Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Mobile/15E148 Safari/604.1'
+          curl -A "$UA" -fsSL --retry 10 --retry-delay 3 --retry-all-errors \
+            -D /tmp/a1-headers.txt \
+            https://aperion-istasyon.pages.dev/a1.html \
+            -o /tmp/a1-live.html
+          test "$(wc -c < /tmp/a1-live.html)" -gt 5000
+          grep -qi '^content-type: text/html' /tmp/a1-headers.txt
+          grep -q 'ApeirON Control Center' /tmp/a1-live.html
+          grep -q 'Günün tamamı tek kontrol yüzeyinde' /tmp/a1-live.html
+          echo "APERION_A1_IPHONE_VERIFY=PASS"
