@@ -136,37 +136,134 @@ async function safePublicCounts() {
   };
 }
 
+
+async function safeFirst(db, sql) {
+  if (!db) return { available: false, row: null };
+  try {
+    return { available: true, row: await db.prepare(sql).first() };
+  } catch (error) {
+    return { available: false, row: null, error: String(error?.message || error).slice(0, 120) };
+  }
+}
+
+async function safeAll(db, sql) {
+  if (!db) return { available: false, rows: [] };
+  try {
+    const result = await db.prepare(sql).all();
+    return { available: true, rows: result?.results || [] };
+  } catch (error) {
+    return { available: false, rows: [], error: String(error?.message || error).slice(0, 120) };
+  }
+}
+
+function normalizedType(value) {
+  return String(value || '')
+    .toLocaleLowerCase('tr-TR')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9çğıöşü]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+async function liveD1Counts(db) {
+  if (!db) return { available: false, fully_available: false, counts: null };
+  const [work, approvals, commitments] = await Promise.all([
+    safeFirst(db, "SELECT COUNT(*) AS count FROM work_items WHERE status NOT IN ('completed','cancelled','verified','done','closed')"),
+    safeFirst(db, "SELECT COUNT(*) AS count FROM approval_queue WHERE status IN ('needs_review','pending','approval_pending')"),
+    safeAll(db, "SELECT commitment_type FROM commitment_timeline WHERE status NOT IN ('completed','cancelled','verified','done','closed') LIMIT 2000"),
+  ]);
+
+  let collections = null;
+  let ordersToPlace = null;
+  let receivedOrders = null;
+  if (commitments.available) {
+    collections = 0;
+    ordersToPlace = 0;
+    receivedOrders = 0;
+    const collectionTypes = new Set(['receivable','collection','tahsilat']);
+    const placedTypes = new Set(['purchase_order','supplier_order','placed_order','verilen_siparis']);
+    const receivedTypes = new Set(['received_order','sales_order','customer_order','alinan_siparis']);
+    for (const row of commitments.rows) {
+      const type = normalizedType(row.commitment_type);
+      if (collectionTypes.has(type)) collections += 1;
+      if (placedTypes.has(type)) ordersToPlace += 1;
+      if (receivedTypes.has(type)) receivedOrders += 1;
+    }
+  }
+
+  return {
+    available: work.available || approvals.available || commitments.available,
+    fully_available: work.available && approvals.available && commitments.available,
+    sources: {
+      work_items: work.available,
+      approval_queue: approvals.available,
+      commitment_timeline: commitments.available,
+    },
+    counts: {
+      open_tasks: work.available ? Number(work.row?.count || 0) : null,
+      collections,
+      orders_to_place: ordersToPlace,
+      received_orders: receivedOrders,
+      approvals_open: approvals.available ? Number(approvals.row?.count || 0) : null,
+      pending_documents: null,
+    },
+  };
+}
+
+function sameKnownCounts(a, b) {
+  if (!a || !b) return null;
+  const keys = ['open_tasks','collections','orders_to_place','received_orders','approvals_open'];
+  let compared = 0;
+  for (const key of keys) {
+    if (a[key] == null || b[key] == null) continue;
+    compared += 1;
+    if (Number(a[key]) !== Number(b[key])) return false;
+  }
+  return compared ? true : null;
+}
+
 export async function onRequestGet({ env }) {
   try {
-    const [payments, protectedState] = await Promise.all([
+    const [payments, safeSheet, d1] = await Promise.all([
       livePaymentCounts(),
       safePublicCounts(),
+      liveD1Counts(env),
     ]);
 
-    const pc = protectedState.counts || {};
+    const safeFresh = safeSheet.available && safeSheet.stale === false && safeSheet.counts;
+    const d1Consistency = safeFresh ? sameKnownCounts(safeSheet.counts, d1.counts) : null;
+    const protectedCounts = safeFresh
+      ? safeSheet.counts
+      : (d1.fully_available && d1Consistency !== false ? d1.counts : null);
+    const protectedSource = safeFresh
+      ? 'privacy-safe-sheet-summary'
+      : (protectedCounts ? 'd1-live-core' : 'unavailable');
+
     return corsJson({
       ok: true,
-      protocol: 'aperion-a1-public-summary-v2',
+      protocol: 'aperion-a1-public-summary-v4',
       generated_at: new Date().toISOString(),
       stale: false,
-      protected_generated_at: protectedState.generated_at || null,
-      protected_stale: protectedState.stale !== false,
+      protected_generated_at: safeFresh ? safeSheet.generated_at : new Date().toISOString(),
+      protected_stale: !protectedCounts,
       source: {
         payments: 'live-gviz-counts-only',
         current_tab: payments.current_tab,
         next_tab: payments.next_tab,
-        protected_snapshot: protectedState.available ? 'privacy-safe-sheet-summary' : 'unavailable',
+        protected_snapshot: protectedSource,
+        d1_sources: d1.sources || null,
+        d1_consistent_with_safe_sheet: d1Consistency,
       },
       counts: {
         today_payments: payments.today_payments,
         overdue_payments: payments.overdue_payments,
         next7_payments: payments.next7_payments,
-        open_tasks: pc.open_tasks ?? null,
-        collections: pc.collections ?? null,
-        orders_to_place: pc.orders_to_place ?? null,
-        received_orders: pc.received_orders ?? null,
-        approvals_open: pc.approvals_open ?? null,
-        pending_documents: pc.pending_documents ?? null,
+        open_tasks: protectedCounts?.open_tasks ?? null,
+        collections: protectedCounts?.collections ?? null,
+        orders_to_place: protectedCounts?.orders_to_place ?? null,
+        received_orders: protectedCounts?.received_orders ?? null,
+        approvals_open: protectedCounts?.approvals_open ?? null,
+        pending_documents: protectedCounts?.pending_documents ?? null,
       },
     });
   } catch (error) {
