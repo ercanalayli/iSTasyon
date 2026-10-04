@@ -1,0 +1,27 @@
+name: Deploy ALKAMMALI Apps Script Free
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/deploy-alkammali-apps-script-free.yml'
+      - 'tools/deploy_alkammali_apps_script_free.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Update existing Apps Script deployment safely
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: node tools/deploy_alkammali_apps_script_free.mjs
