@@ -1,0 +1,95 @@
+name: Deploy ApeirON bridge to alkam-mali
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "deploy/alkam-live-patch.js"
+      - ".github/workflows/deploy-alkam-live-bridge.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Cloudflare deployment access
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - name: Preserve current live ALKAM shell
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf deploy-dist
+          mkdir -p deploy-dist
+
+          curl -fsSL --retry 3 https://alkam-mali.pages.dev/ -o deploy-dist/index.html
+          test "$(wc -c < deploy-dist/index.html)" -gt 100000
+          grep -qi "ALKAM" deploy-dist/index.html
+
+          cp deploy/alkam-live-patch.js deploy-dist/live-patch.js
+
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("deploy-dist/index.html")
+          s = p.read_text(encoding="utf-8")
+          tag = '<script src="/live-patch.js" defer></script>'
+          if tag not in s:
+              if "</body>" in s:
+                  s = s.replace("</body>", tag + "\n</body>")
+              else:
+                  s += "\n" + tag + "\n"
+          p.write_text(s, encoding="utf-8")
+          PY
+
+          if curl -fsSL --retry 2 https://alkam-mali.pages.dev/istasyon-live.json -o /tmp/istasyon-live.json; then
+            if jq -e 'type=="object" and (.counts|type=="object")' /tmp/istasyon-live.json >/dev/null 2>&1; then
+              cp /tmp/istasyon-live.json deploy-dist/istasyon-live.json
+            else
+              echo "Current live JSON is not valid structured data; preserving page without replacing it."
+            fi
+          fi
+
+          cat > deploy-dist/_headers <<'HEADERS'
+          /*
+            Cache-Control: no-store, private
+            X-Robots-Tag: noindex, nofollow, noarchive
+            X-Content-Type-Options: nosniff
+            Referrer-Policy: no-referrer
+          /live-patch.js
+            Cache-Control: no-store, private
+            Content-Type: application/javascript; charset=utf-8
+          /istasyon-live.json
+            Cache-Control: no-store, private
+            Content-Type: application/json; charset=utf-8
+          HEADERS
+
+      - name: Safety check ApeirON switch
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'APEIRON' deploy-dist/live-patch.js
+          grep -q 'İSTASYON' deploy-dist/live-patch.js
+          grep -q '/live-patch.js' deploy-dist/index.html
+
+      - name: Deploy to canonical ALKAM Pages project
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.125.0"
+          command: pages deploy deploy-dist --project-name=alkam-mali --branch=master --commit-dirty=true
