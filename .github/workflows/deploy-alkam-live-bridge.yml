@@ -1,4 +1,4 @@
-name: Deploy ApeirON bridge to alkam-mali
+name: Deploy ApeirON Control Center
 
 on:
   push:
@@ -86,10 +86,16 @@ jobs:
           grep -q 'İSTASYON' deploy-dist/live-patch.js
           grep -q '/live-patch.js' deploy-dist/index.html
 
-      - name: Deploy to canonical ALKAM Pages project
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: "4.125.0"
-          command: pages deploy deploy-dist --project-name=alkam-mali --branch=master --commit-dirty=true
+      - name: Ensure ApeirON Pages project exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! npx --yes wrangler@4.125.0 pages project list | grep -q 'aperion-control-center'; then
+            npx --yes wrangler@4.125.0 pages project create aperion-control-center --production-branch=main
+          fi
+
+      - name: Deploy ApeirON Control Center
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.125.0 pages deploy deploy-dist --project-name=aperion-control-center --branch=main --commit-dirty=true
