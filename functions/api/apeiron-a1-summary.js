@@ -22,10 +22,25 @@ export async function onRequestOptions() {
   return corsJson({ ok: true });
 }
 
+async function ensureSchema(db) {
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS a1_dashboard_snapshots (
+      snapshot_key TEXT PRIMARY KEY,
+      generated_at TEXT NOT NULL,
+      source_modified_at TEXT,
+      payload_json TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_a1_dashboard_generated
+      ON a1_dashboard_snapshots(generated_at DESC);
+  `);
+}
+
 export async function onRequestGet({ env }) {
   if (!env.APERION_DB) return corsJson({ ok: false, error: 'missing_d1_binding' }, 503);
 
   try {
+    await ensureSchema(env.APERION_DB);
     const row = await env.APERION_DB.prepare(
       'SELECT snapshot_key,generated_at,payload_json FROM a1_dashboard_snapshots ORDER BY generated_at DESC LIMIT 1'
     ).first();
