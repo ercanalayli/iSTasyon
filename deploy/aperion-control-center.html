@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0a1220">
+  <title>ApeirON Control Center</title>
+  <style>
+    :root{--bg:#eef3f8;--card:#fff;--ink:#172235;--muted:#6b788b;--line:#dce4ee;--dark:#0a1220;--blue:#0b63ce;--good:#0b7a49;--warn:#9b5c00}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+    body{padding:max(14px,env(safe-area-inset-top)) 12px max(18px,env(safe-area-inset-bottom))}
+    .wrap{width:min(1180px,100%);margin:0 auto}
+    .top{display:flex;justify-content:center;position:sticky;top:max(8px,env(safe-area-inset-top));z-index:10;margin-bottom:12px}
+    .switch{display:inline-flex;background:#fff;border:1px solid var(--line);padding:4px;border-radius:16px;box-shadow:0 10px 30px #001a3b18}
+    .switch button,.switch a{border:0;text-decoration:none;border-radius:12px;padding:10px 16px;font-weight:900;letter-spacing:.04em;font-size:12px}
+    .switch button{background:var(--dark);color:#fff}.switch a{color:#536174;background:transparent}
+    .hero{background:linear-gradient(135deg,#091522,#102a46);color:#fff;border-radius:24px;padding:24px 22px;box-shadow:0 18px 44px #001a3b1f}
+    .kicker{font-size:11px;font-weight:900;letter-spacing:.16em;color:#74e0b3;text-transform:uppercase}
+    h1{font-size:31px;line-height:1.1;margin:8px 0 8px} .hero p{margin:0;color:#bdc9d8;line-height:1.5}
+    .status{margin-top:14px;font-size:12px;color:#c7d3df}.status b{color:#fff}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+    .kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px}.kpi small{display:block;color:#7b8795;font-weight:800;text-transform:uppercase;font-size:11px;letter-spacing:.05em}.kpi b{display:block;font-size:28px;margin-top:4px}
+    .tabs{display:flex;gap:6px;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:16px;padding:6px;-webkit-overflow-scrolling:touch}
+    .tab{border:0;background:transparent;color:#637184;padding:10px 12px;border-radius:11px;font-weight:800;white-space:nowrap;display:flex;align-items:center;gap:6px}.tab.active{background:var(--dark);color:#fff}
+    .badge{min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#edf2f7;color:#334155;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}.tab.active .badge{background:#ffffff22;color:#fff}
+    .grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:14px;margin-top:14px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px}.card h2,.card h3{margin:0}.desc{color:var(--muted);line-height:1.5}
+    .summary{margin-top:14px;background:#f7f9fc;border:1px dashed #c9d3df;border-radius:14px;padding:20px}.summary strong{display:block;font-size:17px}.summary span{display:block;margin-top:6px;color:var(--muted);line-height:1.45;font-size:13px}
+    .rule{background:#fff8e8;border:1px solid #ecd69c;border-radius:12px;padding:11px 12px;margin-top:9px;font-size:13px;line-height:1.45}
+    .ok{color:var(--good)} .warn{color:var(--warn)}
+    .foot{margin-top:12px;text-align:center;color:#7a8798;font-size:11px}
+    @media(max-width:760px){h1{font-size:25px}.hero{padding:21px 18px}.kpis{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.kpi b{font-size:24px}.switch button,.switch a{padding:9px 13px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top">
+      <div class="switch">
+        <button type="button">APEIRON</button>
+        <a href="https://alkam-mali.pages.dev/" rel="noopener">İSTASYON</a>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="kicker">ApeirON Control Center</div>
+      <h1>Günün tamamı tek kontrol yüzeyinde.</h1>
+      <p>Yapılacaklar, ödemeler, tahsilatlar, siparişler, belgeler ve onaylar aynı merkezde. Eksik veri hiçbir zaman sıfır sayılmaz.</p>
+      <div class="status" id="sourceStatus">Canlı kaynak bağlanıyor…</div>
+    </section>
+
+    <section class="kpis">
+      <div class="kpi"><small>Bugün</small><b id="kToday">—</b></div>
+      <div class="kpi"><small>7 Gün</small><b id="k7">—</b></div>
+      <div class="kpi"><small>Gecikmiş</small><b id="kOverdue">—</b></div>
+      <div class="kpi"><small>Onay</small><b id="kApproval">—</b></div>
+    </section>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-key="today">Bugün <span class="badge" data-count="today">—</span></button>
+      <button class="tab" data-key="tasks">Yapılacaklar <span class="badge" data-count="tasks">—</span></button>
+      <button class="tab" data-key="payments">Ödemeler <span class="badge" data-count="payments">—</span></button>
+      <button class="tab" data-key="collections">Tahsilatlar <span class="badge" data-count="collections">—</span></button>
+      <button class="tab" data-key="orders">Siparişler <span class="badge" data-count="orders">—</span></button>
+      <button class="tab" data-key="received">Alınan Siparişler <span class="badge" data-count="received">—</span></button>
+      <button class="tab" data-key="docs">Belgeler <span class="badge" data-count="docs">—</span></button>
+      <button class="tab" data-key="approvals">Onaylar <span class="badge" data-count="approvals">—</span></button>
+    </nav>
+
+    <section class="grid">
+      <article class="card">
+        <h2 id="panelTitle">Bugün</h2>
+        <p class="desc" id="panelDesc">Günün kritik işleri, vadeleri ve bekleyen kararları.</p>
+        <div class="summary">
+          <strong id="panelMain">Canlı veri yükleniyor…</strong>
+          <span id="panelSub">ApeirON güvenli özet kaynağı kontrol ediliyor.</span>
+        </div>
+      </article>
+      <aside class="card">
+        <h3>Veri güvenliği</h3>
+        <div class="rule">Eksik veri sıfır kabul edilmez.</div>
+        <div class="rule">Cari, tutar ve belge ayrıntıları bu public sayfaya çıkarılmaz.</div>
+        <div class="rule">Finansal kayıt ve geri döndürülemez işlem açık onay gerektirir.</div>
+      </aside>
+    </section>
+    <div class="foot">ApeirON · salt okunur kontrol yüzeyi</div>
+  </main>
+
+  <script>
+    const API='https://aperion-istasyon.pages.dev/api/apeiron-a1-summary';
+    let data=null, active='today';
+    const $=s=>document.querySelector(s);
+    const show=v=>v==null?'—':String(v);
+    const desc={
+      today:'Günün kritik işleri, vadeleri ve bekleyen kararları.',
+      tasks:'Açık işler ve takip gerektiren görevler.',
+      payments:'Yaklaşan ve gecikmiş ödeme yükümlülükleri.',
+      collections:'Beklenen tahsilatlar ve takip edilmesi gereken işler.',
+      orders:'Planlanan ve onay bekleyen satın alma siparişleri.',
+      received:'Müşterilerden gelen siparişler.',
+      docs:'Belge ve kayıt eşleştirmeleri.',
+      approvals:'Açık onay gerektiren kararlar.'
+    };
+    const titles={today:'Bugün',tasks:'Yapılacaklar',payments:'Ödemeler',collections:'Tahsilatlar',orders:'Verilecek Siparişler',received:'Alınan Siparişler',docs:'Belge Eşleşmeleri',approvals:'Onay Kuyruğu'};
+
+    function render(){
+      $('#panelTitle').textContent=titles[active];
+      $('#panelDesc').textContent=desc[active];
+      if(!data?.ok){
+        $('#panelMain').textContent='Canlı kaynak şu anda okunamadı';
+        $('#panelSub').textContent='Rakam uydurulmadı. Sayfa yine çalışır; veri bağlantısı tekrar denenir.';
+        return;
+      }
+      const c=data.counts||{};
+      const rows={
+        today:`Bugün ödeme: ${show(c.today_payments)} • Açık görev: ${show(c.open_tasks)} • Açık onay: ${show(c.approvals_open)}`,
+        tasks:`Açık yapılacak: ${show(c.open_tasks)}`,
+        payments:`Gecikmiş: ${show(c.overdue_payments)} • Bugün: ${show(c.today_payments)} • 7 gün: ${show(c.next7_payments)}`,
+        collections:`Takipte tahsilat: ${show(c.collections)}`,
+        orders:`Verilecek sipariş: ${show(c.orders_to_place)}`,
+        received:`Alınan sipariş: ${show(c.received_orders)}`,
+        docs:`Bekleyen belge: ${show(c.pending_documents)}`,
+        approvals:`Açık onay: ${show(c.approvals_open)}`
+      };
+      $('#panelMain').textContent=rows[active]||'Canlı özet hazır';
+      const ts=data.generated_at?new Date(data.generated_at).toLocaleString('tr-TR'):'—';
+      $('#panelSub').textContent=`Son kontrol: ${ts}. Ayrıntılı özel veriler gösterilmez.`;
+    }
+
+    function setCount(k,v){const n=document.querySelector('[data-count="'+k+'"]');if(n)n.textContent=show(v)}
+    function update(d){
+      data=d; const c=d?.counts||{};
+      $('#kToday').textContent=show(c.today_payments);
+      $('#k7').textContent=show(c.next7_payments);
+      $('#kOverdue').textContent=show(c.overdue_payments);
+      $('#kApproval').textContent=show(c.approvals_open);
+      setCount('today',[c.today_payments,c.open_tasks,c.approvals_open].every(v=>v==null)?null:Number(c.today_payments||0)+Number(c.open_tasks||0)+Number(c.approvals_open||0));
+      setCount('tasks',c.open_tasks);
+      setCount('payments',[c.today_payments,c.overdue_payments,c.next7_payments].every(v=>v==null)?null:Number(c.today_payments||0)+Number(c.overdue_payments||0)+Number(c.next7_payments||0));
+      setCount('collections',c.collections);setCount('orders',c.orders_to_place);setCount('received',c.received_orders);setCount('docs',c.pending_documents);setCount('approvals',c.approvals_open);
+      const ok=d?.ok===true;
+      $('#sourceStatus').innerHTML=ok?'<b class="ok">CANLI</b> · güvenli özet kaynağı bağlı':'<b class="warn">KAYNAK UYARISI</b> · veri okunamadı';
+      render();
+    }
+
+    async function load(){
+      try{
+        const r=await fetch(API,{cache:'no-store'});
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        update(await r.json());
+      }catch(e){update({ok:false,counts:{}})}
+    }
+
+    document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      btn.classList.add('active');active=btn.dataset.key;render();
+    }));
+    load();setInterval(load,60000);
+  </script>
+</body>
+</html>
