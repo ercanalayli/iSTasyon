@@ -145,19 +145,20 @@
         return;
       }
       const c = liveSummary.counts || {};
-      const stale = liveSummary.stale ? ' • VERİ ESKİ' : '';
+      const show = (v) => v == null ? '—' : String(v);
+      const protectedState = liveSummary.protected_stale ? ' • Korumalı görev/onay kaynağı güncel değil' : '';
       const stamp = liveSummary.generated_at ? new Date(liveSummary.generated_at).toLocaleString('tr-TR') : '—';
       const rows = {
-        'Bugün': `Bugün ödeme: ${c.today_payments || 0} kalem • Açık görev: ${c.open_tasks || 0} • Açık onay: ${c.approvals_open || 0}`,
-        'Yapılacaklar': `Açık yapılacak: ${c.open_tasks || 0}`,
-        'Ödemeler': `Gecikmiş: ${c.overdue_payments || 0} • Bugün: ${c.today_payments || 0} • Önümüzdeki 7 gün: ${c.next7_payments || 0}`,
-        'Tahsilatlar': `Takipte tahsilat: ${c.collections || 0}`,
-        'Verilecek Siparişler': `Verilecek sipariş: ${c.orders_to_place || 0}`,
-        'Alınan Siparişler': `Alınan sipariş: ${c.received_orders || 0}`,
-        'Belge Eşleşmeleri': `Eşleşme bekleyen belge: ${c.pending_documents || 0}`,
-        'Onay Kuyruğu': `Açık karar / bilgi onayı: ${c.approvals_open || 0}`
+        'Bugün': `Bugün ödeme: ${show(c.today_payments)} kalem • Açık görev: ${show(c.open_tasks)} • Açık onay: ${show(c.approvals_open)}`,
+        'Yapılacaklar': `Açık yapılacak: ${show(c.open_tasks)}`,
+        'Ödemeler': `Gecikmiş: ${show(c.overdue_payments)} • Bugün: ${show(c.today_payments)} • Önümüzdeki 7 gün: ${show(c.next7_payments)}`,
+        'Tahsilatlar': `Takipte tahsilat: ${show(c.collections)}`,
+        'Verilecek Siparişler': `Verilecek sipariş: ${show(c.orders_to_place)}`,
+        'Alınan Siparişler': `Alınan sipariş: ${show(c.received_orders)}`,
+        'Belge Eşleşmeleri': `Eşleşme bekleyen belge: ${show(c.pending_documents)}`,
+        'Onay Kuyruğu': `Açık karar / bilgi onayı: ${show(c.approvals_open)}`
       };
-      body.innerHTML = `<strong>${rows[label] || 'Canlı özet hazır'}${stale}</strong><span>Son snapshot: ${stamp}. Ayrıntılı cari, tutar ve belge içeriği public sayfaya çıkarılmaz; korumalı ApeirON kaynağında tutulur.</span>`;
+      body.innerHTML = `<strong>${rows[label] || 'Canlı özet hazır'}${protectedState}</strong><span>Ödeme sayaçları güncel kaynaktan okunur. Son kontrol: ${stamp}. Cari, tutar ve belge ayrıntıları public sayfaya çıkarılmaz.</span>`;
     };
 
     const loadLiveSummary = async () => {
@@ -171,10 +172,10 @@
           const node = modal.querySelector(`[data-aperion-kpi="${key}"]`);
           if (node) node.textContent = String(value ?? '—');
         };
-        setKpi('today', c.today_payments);
-        setKpi('next7', c.next7_payments);
-        setKpi('overdue', c.overdue_payments);
-        setKpi('approvals', c.approvals_open);
+        setKpi('today', c.today_payments ?? '—');
+        setKpi('next7', c.next7_payments ?? '—');
+        setKpi('overdue', c.overdue_payments ?? '—');
+        setKpi('approvals', c.approvals_open ?? '—');
         const active = modal.querySelector('[data-aperion-tab].active')?.dataset?.aperionTab || 'Bugün';
         renderSummary(active);
       } catch (error) {
