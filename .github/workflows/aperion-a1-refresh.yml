@@ -2,13 +2,6 @@ name: ApeirON A1 Snapshot Refresh
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "*/5 * * * *"
-  push:
-    branches: [main]
-    paths:
-      - "tools/refresh_aperion_a1_snapshot.mjs"
-      - ".github/workflows/aperion-a1-refresh.yml"
 
 permissions:
   contents: read
