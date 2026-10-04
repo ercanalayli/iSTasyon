@@ -79,3 +79,29 @@ jobs:
           grep -q 'ApeirON Control Center' /tmp/aperion-live.html
           grep -q 'Günün tamamı tek kontrol yüzeyinde' /tmp/aperion-live.html
           echo "APERION_PUBLIC_VERIFY=PASS"
+
+      - name: Ensure mobile fallback Pages project exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! npx --yes wrangler@4.125.0 pages project list | grep -q 'aperion-mobile'; then
+            npx --yes wrangler@4.125.0 pages project create aperion-mobile --production-branch=main
+          fi
+
+      - name: Deploy mobile fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.125.0 pages deploy deploy-dist --project-name=aperion-mobile --branch=main --commit-dirty=true
+
+      - name: Verify mobile fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          sleep 5
+          curl -fsSL --retry 10 --retry-delay 3 --retry-all-errors \
+            https://aperion-mobile.pages.dev/ -o /tmp/aperion-mobile.html
+          test "$(wc -c < /tmp/aperion-mobile.html)" -gt 5000
+          grep -q 'ApeirON Control Center' /tmp/aperion-mobile.html
+          grep -q 'Günün tamamı tek kontrol yüzeyinde' /tmp/aperion-mobile.html
+          echo "APERION_MOBILE_VERIFY=PASS"
