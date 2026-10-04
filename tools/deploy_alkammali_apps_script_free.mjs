@@ -211,6 +211,9 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error('PRECHECK_FAILED', err.message);
+  const detail = err && err.body && typeof err.body === 'object'
+    ? { error: err.body.error || null, error_description: err.body.error_description || null }
+    : null;
+  console.error('PRECHECK_FAILED', err.message, detail ? JSON.stringify(detail) : '');
   process.exitCode = 1;
 });
