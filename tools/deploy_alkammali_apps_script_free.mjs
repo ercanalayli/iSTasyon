@@ -92,20 +92,93 @@ async function jsonFetch(url, options = {}) {
   return body;
 }
 
-async function getAccessToken() {
+async function getPendingAuthorizationCode() {
+  const base = process.env.SUPABASE_URL || '';
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  if (!base || !key) return null;
+  const now = new Date().toISOString();
+  const url = base.replace(/\/$/, '') +
+    '/rest/v1/automation_oauth_handoff' +
+    '?provider=eq.google_apps_script' +
+    '&status=eq.pending' +
+    '&expires_at=gt.' + encodeURIComponent(now) +
+    '&select=id,authorization_code' +
+    '&order=created_at.desc&limit=1';
+  const rows = await jsonFetch(url, {
+    headers: {
+      apikey: key,
+      authorization: 'Bearer ' + key
+    }
+  });
+  return Array.isArray(rows) && rows[0] && rows[0].authorization_code ? rows[0] : null;
+}
+
+async function consumeAuthorizationCode(row) {
+  const base = process.env.SUPABASE_URL || '';
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  if (!base || !key || !row || !row.id) return;
+  const url = base.replace(/\/$/, '') +
+    '/rest/v1/automation_oauth_handoff?id=eq.' + encodeURIComponent(String(row.id));
+  await jsonFetch(url, {
+    method: 'PATCH',
+    headers: {
+      apikey: key,
+      authorization: 'Bearer ' + key,
+      'content-type': 'application/json',
+      prefer: 'return=minimal'
+    },
+    body: JSON.stringify({
+      authorization_code: null,
+      status: 'consumed',
+      consumed_at: new Date().toISOString()
+    })
+  });
+}
+
+async function exchangeAuthorizationCode(row) {
   const body = new URLSearchParams({
     client_id: requireEnv('GOOGLE_CLIENT_ID'),
     client_secret: requireEnv('GOOGLE_CLIENT_SECRET'),
-    refresh_token: requireEnv('GOOGLE_REFRESH_TOKEN'),
-    grant_type: 'refresh_token'
+    code: row.authorization_code,
+    redirect_uri: 'http://localhost',
+    grant_type: 'authorization_code'
   });
   const tok = await jsonFetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: {'content-type':'application/x-www-form-urlencoded'},
     body
   });
-  if (!tok.access_token) throw new Error('no_access_token');
+  if (!tok.access_token) throw new Error('no_access_token_from_authorization_code');
+  await consumeAuthorizationCode(row);
   return tok.access_token;
+}
+
+async function getAccessToken() {
+  const refresh = process.env.GOOGLE_REFRESH_TOKEN || '';
+  if (refresh) {
+    try {
+      const body = new URLSearchParams({
+        client_id: requireEnv('GOOGLE_CLIENT_ID'),
+        client_secret: requireEnv('GOOGLE_CLIENT_SECRET'),
+        refresh_token: refresh,
+        grant_type: 'refresh_token'
+      });
+      const tok = await jsonFetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: {'content-type':'application/x-www-form-urlencoded'},
+        body
+      });
+      if (tok.access_token) return tok.access_token;
+    } catch (err) {
+      const code = err && err.body && err.body.error;
+      if (code !== 'invalid_grant') throw err;
+      console.log('STORED_REFRESH_TOKEN_INVALID_FALLING_BACK_TO_ONE_TIME_CODE');
+    }
+  }
+
+  const row = await getPendingAuthorizationCode();
+  if (!row) throw new Error('oauth_reauth_required_no_pending_code');
+  return exchangeAuthorizationCode(row);
 }
 
 function authHeaders(token) {
