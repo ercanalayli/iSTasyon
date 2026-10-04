@@ -52,7 +52,7 @@ jobs:
           set -euo pipefail
           test "$(wc -c < deploy-dist/index.html)" -gt 5000
           grep -q 'ApeirON Control Center' deploy-dist/index.html
-          grep -q 'aperion-a1-summary' deploy-dist/index.html
+          grep -q 'aperion-istasyon.pages.dev/api/' deploy-dist/index.html
           grep -q 'İSTASYON' deploy-dist/index.html
       - name: Ensure ApeirON Pages project exists
         shell: bash
