@@ -60,7 +60,7 @@
       .aperion-hero{background:#091522;color:white;border-radius:24px;padding:26px 28px;box-shadow:0 18px 48px #001a3b2b}
       .aperion-kicker{font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:#72e1b2}.aperion-hero h1{margin:8px 0 6px;font-size:32px;line-height:1.1}.aperion-hero p{margin:0;color:#b9c6d6;max-width:900px;line-height:1.55}
       .aperion-kpis{display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:12px;margin:16px 0}.aperion-kpi{background:#fff;border:1px solid #dce4ee;border-radius:16px;padding:16px}.aperion-kpi small{display:block;color:#7b8795;font-weight:800;text-transform:uppercase;letter-spacing:.06em}.aperion-kpi b{display:block;font-size:28px;margin-top:5px}
-      .aperion-tabs{display:flex;gap:6px;overflow:auto;background:#fff;border:1px solid #dce4ee;border-radius:16px;padding:6px}.aperion-tabs button{white-space:nowrap;border:0;border-radius:11px;background:transparent;padding:10px 13px;color:#637184;font-weight:800;cursor:pointer}.aperion-tabs button.active{background:#0b1728;color:#fff}
+      .aperion-tabs{display:flex;gap:6px;overflow:auto;background:#fff;border:1px solid #dce4ee;border-radius:16px;padding:6px}.aperion-tabs button{white-space:nowrap;border:0;border-radius:11px;background:transparent;padding:10px 13px;color:#637184;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:7px}.aperion-tabs button.active{background:#0b1728;color:#fff}.aperion-tab-count{min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#eef3f8;color:#334155;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}.aperion-tabs button.active .aperion-tab-count{background:#ffffff22;color:#fff}
       .aperion-panel{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:16px;margin-top:16px}.aperion-card{background:#fff;border:1px solid #dce4ee;border-radius:18px;padding:20px}.aperion-card h2,.aperion-card h3{margin:0}.aperion-card p{color:#69778a;line-height:1.5}.aperion-empty{margin-top:16px;border:1px dashed #c8d2df;border-radius:15px;background:#f7f9fc;padding:34px 18px;text-align:center}.aperion-empty strong{display:block;margin-bottom:7px}.aperion-alert{background:#fff7df;border-color:#ecd18d}.aperion-rule{background:#fff;border-radius:12px;padding:12px 13px;margin-top:10px;font-size:13px;line-height:1.45}
       @media(max-width:900px){#aperion-workspace-switch{top:8px}#aperion-workspace-switch button{padding:9px 12px;font-size:12px}#aperion-live-modal{padding:68px 10px 18px}.aperion-shell{width:100%}.aperion-hero{padding:21px 18px}.aperion-hero h1{font-size:25px}.aperion-kpis{grid-template-columns:1fr 1fr}.aperion-panel{grid-template-columns:1fr}}
       @media(max-width:900px){#ist-live-modal{padding:0}.ist-live-shell{width:100vw;height:100vh;border-radius:0}.ist-live-main{grid-template-columns:1fr}.ist-live-left{max-height:40vh;border-right:0;border-bottom:1px solid #dbe4ef}.ist-live-kpis{grid-template-columns:1fr 1fr}.ist-live-head small{display:none}}
@@ -95,14 +95,14 @@
           <div class="aperion-kpi"><small>Onay</small><b data-aperion-kpi="approvals">—</b></div>
         </section>
         <section class="aperion-tabs">
-          <button class="active" type="button" data-aperion-tab="Bugün">Bugün</button>
-          <button type="button" data-aperion-tab="Yapılacaklar">Yapılacaklar</button>
-          <button type="button" data-aperion-tab="Ödemeler">Ödemeler</button>
-          <button type="button" data-aperion-tab="Tahsilatlar">Tahsilatlar</button>
-          <button type="button" data-aperion-tab="Verilecek Siparişler">Siparişler</button>
-          <button type="button" data-aperion-tab="Alınan Siparişler">Alınan Siparişler</button>
-          <button type="button" data-aperion-tab="Belge Eşleşmeleri">Belgeler</button>
-          <button type="button" data-aperion-tab="Onay Kuyruğu">Onaylar</button>
+          <button class="active" type="button" data-aperion-tab="Bugün">Bugün <span class="aperion-tab-count" data-aperion-count="today_total">—</span></button>
+          <button type="button" data-aperion-tab="Yapılacaklar">Yapılacaklar <span class="aperion-tab-count" data-aperion-count="tasks">—</span></button>
+          <button type="button" data-aperion-tab="Ödemeler">Ödemeler <span class="aperion-tab-count" data-aperion-count="payments">—</span></button>
+          <button type="button" data-aperion-tab="Tahsilatlar">Tahsilatlar <span class="aperion-tab-count" data-aperion-count="collections">—</span></button>
+          <button type="button" data-aperion-tab="Verilecek Siparişler">Siparişler <span class="aperion-tab-count" data-aperion-count="orders">—</span></button>
+          <button type="button" data-aperion-tab="Alınan Siparişler">Alınan Siparişler <span class="aperion-tab-count" data-aperion-count="received">—</span></button>
+          <button type="button" data-aperion-tab="Belge Eşleşmeleri">Belgeler <span class="aperion-tab-count" data-aperion-count="documents">—</span></button>
+          <button type="button" data-aperion-tab="Onay Kuyruğu">Onaylar <span class="aperion-tab-count" data-aperion-count="approvals">—</span></button>
         </section>
         <section class="aperion-panel">
           <div class="aperion-card">
@@ -176,6 +176,20 @@
         setKpi('next7', c.next7_payments ?? '—');
         setKpi('overdue', c.overdue_payments ?? '—');
         setKpi('approvals', c.approvals_open ?? '—');
+
+        const setCount = (key, value) => {
+          const node = modal.querySelector(`[data-aperion-count="${key}"]`);
+          if (node) node.textContent = String(value ?? '—');
+        };
+        setCount('today_total', [c.today_payments, c.open_tasks, c.approvals_open].every(v => v == null) ? '—' : Number(c.today_payments || 0) + Number(c.open_tasks || 0) + Number(c.approvals_open || 0));
+        setCount('tasks', c.open_tasks);
+        setCount('payments', c.today_payments == null && c.overdue_payments == null && c.next7_payments == null ? '—' : Number(c.today_payments || 0) + Number(c.overdue_payments || 0) + Number(c.next7_payments || 0));
+        setCount('collections', c.collections);
+        setCount('orders', c.orders_to_place);
+        setCount('received', c.received_orders);
+        setCount('documents', c.pending_documents);
+        setCount('approvals', c.approvals_open);
+
         const active = modal.querySelector('[data-aperion-tab].active')?.dataset?.aperionTab || 'Bugün';
         renderSummary(active);
       } catch (error) {
@@ -199,6 +213,7 @@
       const label = btn.dataset.aperionTab;
       modal.querySelector('[data-aperion-title]').textContent = label;
       modal.querySelector('[data-aperion-description]').textContent = descriptions[label] || '';
+      renderSummary(label);
     }));
 
     let initial = 'aperion';
