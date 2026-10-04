@@ -100,72 +100,47 @@ async function livePaymentCounts() {
   };
 }
 
-async function ensureSchema(db) {
-  await db.prepare(
-    "CREATE TABLE IF NOT EXISTS a1_dashboard_snapshots (snapshot_key TEXT PRIMARY KEY, generated_at TEXT NOT NULL, source_modified_at TEXT, payload_json TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')))"
-  ).run();
-  await db.prepare(
-    "CREATE INDEX IF NOT EXISTS idx_a1_dashboard_generated ON a1_dashboard_snapshots(generated_at DESC)"
-  ).run();
-}
 
-function countOpenApprovals(rows) {
-  if (!Array.isArray(rows)) return null;
-  return rows.filter((row) => {
-    const status = String(row?.DURUM || '').toLocaleUpperCase('tr-TR');
-    return status && !status.includes('UYGULANDI') && !status.includes('TAMAMLANDI') && !status.includes('KAPANDI');
-  }).length;
-}
+async function safePublicCounts() {
+  const url = `https://docs.google.com/spreadsheets/d/${PAYMENT_SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=APERION_PUBLIC_SUMMARY&range=A1:B8`;
+  const response = await fetch(url, { headers: { 'user-agent': 'AperiON-Safe-Summary/1.0' } });
+  if (!response.ok) return { available: false, stale: true, counts: null };
 
-function protectedCounts(snapshot) {
-  const work = snapshot?.work || {};
-  const kpi = snapshot?.kpi || {};
-  const count = (kpiValue, rows) => {
-    if (Number.isFinite(Number(kpiValue))) return Number(kpiValue);
-    return Array.isArray(rows) ? rows.length : null;
-  };
-  return {
-    open_tasks: count(kpi.open_tasks, work.todo),
-    collections: count(kpi.collections, work.collections),
-    orders_to_place: count(kpi.orders_to_place, work.orders_to_place),
-    received_orders: count(kpi.received_orders, work.received_orders),
-    approvals_open: countOpenApprovals(snapshot?.approvals),
-    pending_documents: Array.isArray(snapshot?.pending_documents) ? snapshot.pending_documents.length : null,
-  };
-}
-
-async function readProtectedSnapshot(env) {
-  if (!env.APERION_DB) return { available: false, stale: true, counts: null };
-  try {
-    await ensureSchema(env.APERION_DB);
-    const row = await env.APERION_DB.prepare(
-      'SELECT generated_at,payload_json FROM a1_dashboard_snapshots ORDER BY generated_at DESC LIMIT 1'
-    ).first();
-    if (!row) return { available: false, stale: true, counts: null };
-    const ageSeconds = Math.max(0, Math.round((Date.now() - Date.parse(row.generated_at)) / 1000));
-    const snapshot = JSON.parse(row.payload_json || '{}');
-    return {
-      available: true,
-      generated_at: row.generated_at,
-      age_seconds: ageSeconds,
-      stale: ageSeconds > 600,
-      counts: ageSeconds > 600 ? null : protectedCounts(snapshot),
-    };
-  } catch (error) {
-    return {
-      available: false,
-      stale: true,
-      counts: null,
-      error: String(error?.message || error).slice(0, 120),
-    };
+  const payload = parseGviz(await response.text());
+  const rows = payload?.table?.rows || [];
+  const map = {};
+  for (const row of rows) {
+    const key = String(row?.c?.[0]?.v || '').replace(/\\_/g, '_');
+    const value = row?.c?.[1]?.v;
+    if (key) map[key] = value;
   }
+
+  const epoch = Number(map.generated_at_epoch);
+  const ageSeconds = Number.isFinite(epoch) ? Math.max(0, Math.round(Date.now() / 1000 - epoch)) : null;
+  const stale = ageSeconds == null || ageSeconds > 4500;
+  const n = (key) => Number.isFinite(Number(map[key])) ? Number(map[key]) : null;
+
+  return {
+    available: true,
+    generated_at: Number.isFinite(epoch) ? new Date(epoch * 1000).toISOString() : null,
+    age_seconds: ageSeconds,
+    stale,
+    counts: stale ? null : {
+      open_tasks: n('open_tasks'),
+      collections: n('collections'),
+      orders_to_place: n('orders_to_place'),
+      received_orders: n('received_orders'),
+      approvals_open: n('approvals_open'),
+      pending_documents: n('pending_documents'),
+    },
+  };
 }
 
 export async function onRequestGet({ env }) {
   try {
     const [payments, protectedState] = await Promise.all([
       livePaymentCounts(),
-      readProtectedSnapshot(env),
+      safePublicCounts(),
     ]);
 
     const pc = protectedState.counts || {};
@@ -180,7 +155,7 @@ export async function onRequestGet({ env }) {
         payments: 'live-gviz-counts-only',
         current_tab: payments.current_tab,
         next_tab: payments.next_tab,
-        protected_snapshot: protectedState.available ? 'd1' : 'unavailable',
+        protected_snapshot: protectedState.available ? 'privacy-safe-sheet-summary' : 'unavailable',
       },
       counts: {
         today_payments: payments.today_payments,
