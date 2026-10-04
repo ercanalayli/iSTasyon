@@ -67,3 +67,15 @@ jobs:
         run: |
           set -euo pipefail
           npx --yes wrangler@4.125.0 pages deploy deploy-dist --project-name=aperion-control-center --branch=main --commit-dirty=true
+
+      - name: Verify public ApeirON page
+        shell: bash
+        run: |
+          set -euo pipefail
+          sleep 5
+          curl -fsSL --retry 10 --retry-delay 3 --retry-all-errors \
+            https://aperion-control-center.pages.dev/ -o /tmp/aperion-live.html
+          test "$(wc -c < /tmp/aperion-live.html)" -gt 5000
+          grep -q 'ApeirON Control Center' /tmp/aperion-live.html
+          grep -q 'Günün tamamı tek kontrol yüzeyinde' /tmp/aperion-live.html
+          echo "APERION_PUBLIC_VERIFY=PASS"
