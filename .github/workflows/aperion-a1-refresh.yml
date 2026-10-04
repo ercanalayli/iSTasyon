@@ -1,0 +1,49 @@
+name: ApeirON A1 Snapshot Refresh
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/5 * * * *"
+  push:
+    branches: [main]
+    paths:
+      - "tools/refresh_aperion_a1_snapshot.mjs"
+      - ".github/workflows/aperion-a1-refresh.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aperion-a1-snapshot-refresh
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      APERION_BRIDGE_SECRET: ${{ secrets.APERION_BRIDGE_SECRET }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify protected read-only credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$GOOGLE_CLIENT_ID"
+          test -n "$GOOGLE_CLIENT_SECRET"
+          test -n "$GOOGLE_REFRESH_TOKEN"
+          test -n "$APERION_BRIDGE_SECRET"
+          echo "A1_REFRESH_SECRETS=READY"
+
+      - name: Refresh protected ApeirON A1 snapshot
+        run: node tools/refresh_aperion_a1_snapshot.mjs
