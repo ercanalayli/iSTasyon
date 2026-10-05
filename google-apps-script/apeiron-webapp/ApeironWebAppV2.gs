@@ -372,7 +372,23 @@ function runApeironSelfTest() {
     add('UNCAUGHT', false, e && e.stack ? e.stack : e);
   }
   const failed = checks.filter(x => !x.ok);
-  return {ok: failed.length === 0, version: APP.VERSION, checked_at: fmtDateTime_(new Date()), total: checks.length, failed: failed.length, checks: checks};
+  const result = {ok: failed.length === 0, version: APP.VERSION, checked_at: fmtDateTime_(new Date()), total: checks.length, failed: failed.length, checks: checks};
+  try {
+    const control = SpreadsheetApp.openById(APP.CONTROL_ID);
+    appendAuditEvent_(control, {
+      source: 'Apps Script Self Test',
+      area: 'WEB_APP',
+      event: 'APEIRON_V2_SELF_TEST',
+      status: result.ok ? 'PASS' : 'FAIL',
+      risk: result.ok ? 'DUSUK' : 'YUKSEK',
+      approval: 'TEST',
+      next: result.ok ? 'DEPLOY_EDILEBILIR' : 'HATALARI_DUZELT',
+      evidence: 'version=' + result.version + '; total=' + result.total + '; failed=' + result.failed + '; ' + failed.map(x => x.name + ':' + x.detail).join(' | ').slice(0,1200),
+      related: 'APERION_WEB_V2'
+    });
+    SpreadsheetApp.flush();
+  } catch (logErr) {}
+  return result;
 }
 
 function sheetObjects_(ss, sheetName, rangeA1, limit) {
