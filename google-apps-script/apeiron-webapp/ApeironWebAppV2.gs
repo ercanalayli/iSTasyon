@@ -16,7 +16,7 @@
  */
 
 const APP = Object.freeze({
-  VERSION: '2.0.0',
+  VERSION: '2.0.1',
   CONTROL_ID: '155hZ1PRVKH-vlztPY99LnaGEuX5wq8ebNgoiCgcHdmc',
   PAYMENT_ID: '1RdKOKgXRb5yt1bWnw-a4jYqpkkTk41941ZFlMFkEdxk',
   TZ: 'Europe/Istanbul',
@@ -492,7 +492,7 @@ function isoDate_(v) {
   let m = s.match(/^(20\d{2})-(\d{2})-(\d{2})/);
   if (m) return m[1]+'-'+m[2]+'-'+m[3];
 
-  m = s.match(/(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2}|20\d{2})/);
+  m = s.match(/(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2}|\d{2})/);
   if (m) {
     const y = m[3].length === 2 ? '20' + m[3] : m[3];
     return y+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2);
@@ -513,7 +513,7 @@ function isoDate_(v) {
     'ara':12,'aralik':12,'aralık':12
   };
   const clean = s.toLocaleLowerCase('tr-TR').replace(/\s+/g,' ').trim();
-  m = clean.match(/^(\d{1,2})\s+([a-zçğıöşü]+)\s+(\d{2}|20\d{2})/i);
+  m = clean.match(/^(\d{1,2})\s+([a-zçğıöşü]+)\s+(20\d{2}|\d{2})/i);
   if (m) {
     const mon = trMonths[m[2]];
     if (mon) {
