@@ -21,6 +21,9 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      APERION_BRIDGE_SECRET: ${{ secrets.APERION_BRIDGE_SECRET }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,6 +34,17 @@ jobs:
           set -euo pipefail
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_SERVICE_ROLE_KEY"
+          test -n "$APERION_BRIDGE_SECRET"
+
+      - name: Sync protected iSTASYON secrets to Pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' "$SUPABASE_URL" | npx --yes wrangler@4.125.0 pages secret put SUPABASE_URL --project-name=aperion-istasyon
+          printf '%s' "$SUPABASE_SERVICE_ROLE_KEY" | npx --yes wrangler@4.125.0 pages secret put SUPABASE_SERVICE_ROLE_KEY --project-name=aperion-istasyon
+          printf '%s' "$APERION_BRIDGE_SECRET" | npx --yes wrangler@4.125.0 pages secret put APERION_BRIDGE_SECRET --project-name=aperion-istasyon
 
       - name: Deploy main to canonical Pages project
         uses: cloudflare/wrangler-action@v3
@@ -55,3 +69,13 @@ jobs:
           grep -q 'ApeirON Control Center' /tmp/a1-live.html
           grep -q 'Günün tamamı tek kontrol yüzeyinde' /tmp/a1-live.html
           echo "APERION_A1_IPHONE_VERIFY=PASS"
+
+      - name: Verify iSTASYON HTML and health
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 10 --retry-delay 3 --retry-all-errors -D /tmp/istasyon-headers.txt https://aperion-istasyon.pages.dev/istasyon.html -o /tmp/istasyon.html
+          grep -qi '^content-type: text/html' /tmp/istasyon-headers.txt
+          grep -q 'iSTASYON' /tmp/istasyon.html
+          curl -fsSL --retry 10 --retry-delay 3 --retry-all-errors 'https://aperion-istasyon.pages.dev/api/istasyon?action=health' | grep -q '"ok":true'
+          echo "ISTASYON_HTML_VERIFY=PASS"
