@@ -1,5 +1,5 @@
-const SETUP_HASH = "f226b3fc116d4a3c4705e15f3a8e13c5448470332edb2770d12d9cadb54d19b9";
-const SETUP_EXPIRES = Date.parse("2026-10-06T09:00:00Z");
+const SETUP_HASH = "2ae219a1021c5c4f386b778eaf1adf793aa5c9c865d3571e1acc5bfefc1fe61d";
+const SETUP_EXPIRES = Date.parse("2026-10-06T20:00:00Z");
 const COOKIE = "istasyon_owner";
 const MAX_AGE = 60 * 60 * 24 * 90;
 
