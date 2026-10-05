@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05090f">
+<title>iSTASYON Canlı</title>
+<style>
+:root{--bg:#05090f;--p:#0a111a;--p2:#0f1926;--line:#203149;--text:#f1f7ff;--mut:#8fa5ba;--teal:#00d7ad;--blue:#48a0ff;--amber:#ffad33;--red:#ff5f6d;--r:17px}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 500px at 50% -10%,rgba(72,160,255,.11),transparent),var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input{font:inherit}.top{position:sticky;top:0;z-index:30;background:rgba(5,9,15,.92);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+.topin{max-width:1450px;margin:auto;padding:12px 16px;display:flex;align-items:center;gap:11px}.logo{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,var(--blue),var(--teal));font-weight:900}.brand b{letter-spacing:.12em}.brand small{display:block;color:var(--mut);font-size:10px}.sp{flex:1}.chip{border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:10px;font-weight:800;color:var(--mut)}.chip.ok{color:var(--teal);border-color:rgba(0,215,173,.3)}.chip.bad{color:var(--red)}
+.wrap{max-width:1450px;margin:auto;padding:14px}.tabs{display:flex;gap:7px;overflow:auto;padding:3px 0 12px;scrollbar-width:none}.tab{white-space:nowrap;border:1px solid var(--line);background:var(--p);color:var(--mut);padding:10px 13px;border-radius:11px;font-weight:800}.tab.active{color:#fff;background:rgba(0,215,173,.09);border-color:rgba(0,215,173,.28)}
+.view{display:none}.view.active{display:block}.grid{display:grid;gap:12px}.kpis{grid-template-columns:repeat(5,1fr);margin-bottom:12px}.card{background:rgba(10,17,26,.91);border:1px solid var(--line);border-radius:var(--r)}.kpi{padding:14px}.lab{font-size:9px;color:var(--mut);font-weight:900;text-transform:uppercase;letter-spacing:.08em}.val{font:850 25px ui-monospace,SFMono-Regular,monospace;margin-top:8px}.sub{font-size:10px;color:var(--mut);margin-top:5px}.sec{padding:14px}.head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:11px}.head h2{margin:0;font-size:14px}.head small{color:var(--mut)}
+.search{width:100%;background:#060b12;border:1px solid var(--line);color:#fff;padding:11px 12px;border-radius:11px;outline:none;margin-bottom:10px}.search:focus{border-color:var(--teal)}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:68vh}table{width:100%;border-collapse:collapse;min-width:760px;font-size:11px}th,td{padding:10px 11px;border-bottom:1px solid var(--line);text-align:left}th{position:sticky;top:0;background:#08101a;color:var(--mut);font-size:9px;text-transform:uppercase;z-index:2}tr.click{cursor:pointer}tr.click:hover td{background:rgba(255,255,255,.03)}
+.tag{display:inline-flex;padding:3px 6px;border-radius:6px;font:800 9px ui-monospace,monospace}.teal{color:var(--teal);background:rgba(0,215,173,.1)}.amber{color:var(--amber);background:rgba(255,173,51,.1)}.red{color:var(--red);background:rgba(255,95,109,.1)}.blue{color:var(--blue);background:rgba(72,160,255,.1)}
+.cols{grid-template-columns:1.25fr .75fr}.list{display:flex;flex-direction:column;gap:8px}.item{border:1px solid var(--line);background:var(--p2);border-radius:12px;padding:11px}.title{font-weight:850;font-size:12px}.meta{color:var(--mut);font-size:10px;margin-top:4px;line-height:1.45}.row{display:flex;justify-content:space-between;gap:10px}.amt{font:850 12px ui-monospace,monospace}.note{border:1px solid rgba(255,173,51,.25);background:rgba(255,173,51,.06);color:#e4d0ab;padding:11px 12px;border-radius:12px;font-size:11px;margin-bottom:12px}
+.drawer{position:fixed;inset:0;display:none;z-index:60;background:rgba(0,0,0,.62)}.drawer.show{display:block}.panel{position:absolute;right:0;top:0;bottom:0;width:min(620px,100%);background:#07101a;border-left:1px solid var(--line);padding:16px;overflow:auto}.close{float:right;border:1px solid var(--line);background:var(--p2);color:#fff;border-radius:10px;padding:8px 10px}.panel h2{font-size:17px;margin:3px 0 5px}.empty{padding:18px;text-align:center;color:var(--mut);border:1px dashed var(--line);border-radius:11px}
+@media(max-width:1050px){.kpis{grid-template-columns:repeat(3,1fr)}.cols{grid-template-columns:1fr}}@media(max-width:650px){.wrap{padding:9px}.topin{padding:9px}.kpis{grid-template-columns:1fr 1fr}.val{font-size:21px}.brand small{display:none}.chip:first-of-type{display:none}.sec{padding:11px}}
+</style>
+</head>
+<body>
+<div class="top"><div class="topin"><div class="logo">İ</div><div class="brand"><b>iSTASYON</b><small>ALKAM Mali Müşavirlik Operasyon Merkezi</small></div><div class="sp"></div><span class="chip">🛡 READ ONLY</span><span class="chip" id="live">● BAĞLANIYOR</span></div></div>
+<div class="wrap">
+<div class="tabs">
+<button class="tab active" data-v="home">Özet</button>
+<button class="tab" data-v="cari">Cari</button>
+<button class="tab" data-v="bank">Banka</button>
+<button class="tab" data-v="moka">Moka</button>
+<button class="tab" data-v="promise">Tahsilat / Sözler</button>
+<button class="tab" data-v="fees">Muhasebe Ücretleri</button>
+<button class="tab" data-v="tasks">Görevler</button>
+</div>
+
+<section class="view active" id="v-home">
+<div class="grid kpis">
+<div class="card kpi"><div class="lab">Aktif Mükellef</div><div class="val" id="kActive">—</div><div class="sub">Mükellef master</div></div>
+<div class="card kpi"><div class="lab">Açık Bakiye</div><div class="val" id="kBalance">—</div><div class="sub">Cari özet toplamı</div></div>
+<div class="card kpi"><div class="lab">Banka Satırı</div><div class="val" id="kBank">—</div><div class="sub">Kaynak hareket</div></div>
+<div class="card kpi"><div class="lab">Moka</div><div class="val" id="kMoka">—</div><div class="sub">Banka sınıflandırması</div></div>
+<div class="card kpi"><div class="lab">Açık Görev</div><div class="val" id="kTasks">—</div><div class="sub">iSTASYON operasyon</div></div>
+</div>
+<div class="grid cols">
+<div class="card sec"><div class="head"><h2>En Yüksek Açık Cariler</h2><small>satıra dokun → detay</small></div><div class="tablewrap"><table><thead><tr><th>Mükellef</th><th>Bakiye</th><th>Aylık Ücret</th><th>Son Tahsilat</th></tr></thead><tbody id="homeCari"></tbody></table></div></div>
+<div class="card sec"><div class="head"><h2>Ödeme Sözleri</h2><small>takip</small></div><div class="list" id="homePromises"></div></div>
+</div>
+</section>
+
+<section class="view" id="v-cari"><div class="card sec"><div class="head"><h2>Cari Merkezi</h2><small id="cariCount">—</small></div><input class="search" id="cariSearch" placeholder="Mükellef / VKN / vergi dairesi ara…"><div class="tablewrap"><table><thead><tr><th>Mükellef</th><th>VKN/TCKN</th><th>Durum</th><th>Bakiye</th><th>Aylık Ücret</th><th>Son Tahsilat</th></tr></thead><tbody id="cariBody"></tbody></table></div></div></section>
+
+<section class="view" id="v-bank"><div class="note"><b>Gerçek banka verisi:</b> kaynak hareketleri ve mutabakat satırları Supabase çekirdeğinden okunuyor.</div><div class="grid kpis"><div class="card kpi"><div class="lab">Kaynak Satırı</div><div class="val" id="bSource">—</div></div><div class="card kpi"><div class="lab">Gelen</div><div class="val" id="bIn">—</div></div><div class="card kpi"><div class="lab">Giden</div><div class="val" id="bOut">—</div></div><div class="card kpi"><div class="lab">Muhasebede Var</div><div class="val" id="bLedger">—</div></div><div class="card kpi"><div class="lab">Bekleyen</div><div class="val" id="bWait">—</div></div></div><div class="card sec"><div class="head"><h2>Banka Mutabakatı</h2><small id="bankDate">—</small></div><input class="search" id="bankSearch" placeholder="Cari / açıklama / durum ara…"><div class="tablewrap"><table><thead><tr><th>Tarih</th><th>Tutar</th><th>Cari</th><th>Sınıf</th><th>Kontrol</th><th>Durum</th></tr></thead><tbody id="bankBody"></tbody></table></div></div></section>
+
+<section class="view" id="v-moka"><div class="note"><b>Moka:</b> Şimdilik bankada MOKA olarak sınıflandırılmış hareketleri gösterir. POS alt defterinin tamamı ayrıca bağlanacak.</div><div class="grid kpis"><div class="card kpi"><div class="lab">Moka Satırı</div><div class="val" id="mCount">—</div></div><div class="card kpi"><div class="lab">Toplam</div><div class="val" id="mTotal">—</div></div></div><div class="card sec"><div class="head"><h2>Moka Banka Aktarımları</h2><small>alt defter kontrolü</small></div><div class="tablewrap"><table><thead><tr><th>Tarih</th><th>Tutar</th><th>Açıklama</th><th>Kontrol</th><th>Not</th></tr></thead><tbody id="mokaBody"></tbody></table></div></div></section>
+
+<section class="view" id="v-promise"><div class="card sec"><div class="head"><h2>Tahsilat / Ödeme Sözleri</h2><small>bekleyen + geciken</small></div><div class="list" id="promiseList"></div></div></section>
+<section class="view" id="v-fees"><div class="card sec"><div class="head"><h2>Muhasebe Ücretleri</h2><small>canlı kaynak</small></div><input class="search" id="feeSearch" placeholder="Mükellef ara…"><div class="tablewrap"><table><thead><tr><th>Mükellef</th><th>Dönem</th><th>Tutar</th><th>Durum</th><th>Eklenme</th></tr></thead><tbody id="feeBody"></tbody></table></div></div></section>
+<section class="view" id="v-tasks"><div class="card sec"><div class="head"><h2>iSTASYON Görevleri</h2><small>operasyon</small></div><div class="list" id="taskList"></div></div></section>
+</div>
+
+<div class="drawer" id="drawer"><div class="panel"><button class="close" id="close">Kapat ✕</button><div id="detail"><div class="empty">Detay yükleniyor…</div></div></div></div>
+
+<script>
+const S={d:null},$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=(s="")=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money=n=>{const x=Number(n);return Number.isFinite(x)?new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY",maximumFractionDigits:2}).format(x):"—"};
+const date=s=>{if(!s)return"—";const d=new Date(String(s).slice(0,10)+"T12:00:00");return isNaN(d)?"—":new Intl.DateTimeFormat("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric"}).format(d)};
+const tag=s=>/gec|soru|bek/i.test(String(s))?"amber":/islen|muhasebede_var|aktif/i.test(String(s))?"teal":"blue";
+$$(".tab").forEach(b=>b.onclick=()=>{$$(".tab").forEach(x=>x.classList.toggle("active",x===b));$$(".view").forEach(v=>v.classList.toggle("active",v.id==="v-"+b.dataset.v));scrollTo({top:0,behavior:"smooth"})});
+$("#close").onclick=()=>$("#drawer").classList.remove("show");$("#drawer").onclick=e=>{if(e.target===$("#drawer"))$("#drawer").classList.remove("show")};
+
+async function cariDetail(name){
+  $("#drawer").classList.add("show");$("#detail").innerHTML='<div class="empty">Detay yükleniyor…</div>';
+  const r=await fetch("/api/istasyon?action=cari&name="+encodeURIComponent(name),{cache:"no-store"});
+  const d=await r.json();if(!d.ok){$("#detail").innerHTML='<div class="empty">Detay alınamadı.</div>';return}
+  const m=d.master||{},c=d.summary||{},mv=d.movements||[];
+  $("#detail").innerHTML='<h2>'+esc(name)+'</h2><div class="meta">'+esc(m.tipi||"")+' · '+esc(m.vergi_dairesi||"")+' · '+esc(m.tckn_vkn||"VKN/TCKN yok")+'</div>'+
+  '<div class="grid kpis" style="grid-template-columns:repeat(3,1fr);margin-top:14px"><div class="card kpi"><div class="lab">Bakiye</div><div class="val">'+money(c.bakiye)+'</div></div><div class="card kpi"><div class="lab">Aylık Ücret</div><div class="val">'+money(c.aylik_ucret)+'</div></div><div class="card kpi"><div class="lab">Son Tahsilat</div><div class="val" style="font-size:16px">'+date(c.son_tahsilat)+'</div><div class="sub">'+money(c.son_tahsilat_tutar)+'</div></div></div>'+
+  '<div class="head" style="margin-top:18px"><h2>Cari Hareketler</h2><small>'+mv.length+' son hareket</small></div><div class="tablewrap"><table><thead><tr><th>Tarih</th><th>Tip</th><th>Açıklama</th><th>Borç</th><th>Alacak</th><th>Bakiye</th></tr></thead><tbody>'+
+  mv.map(x=>'<tr><td>'+date(x.tarih)+'</td><td>'+esc(x.tip||"")+'</td><td>'+esc(x.aciklama||"")+'</td><td class="amt">'+money(x.borc)+'</td><td class="amt">'+money(x.alacak)+'</td><td class="amt">'+money(x.bakiye)+'</td></tr>').join("")+'</tbody></table></div>';
+}
+function renderCari(filter=""){const d=S.d,map=new Map((d.cari||[]).map(x=>[x.mukellef,x])),q=filter.toLocaleLowerCase("tr-TR"),rows=(d.mukellefler||[]).filter(x=>[x.unvan,x.tckn_vkn,x.vergi_dairesi].join(" ").toLocaleLowerCase("tr-TR").includes(q));$("#cariCount").textContent=rows.length+" mükellef";$("#cariBody").innerHTML=rows.map(x=>{const c=map.get(x.unvan)||{};return '<tr class="click" data-cari="'+esc(x.unvan)+'"><td><b>'+esc(x.unvan)+'</b></td><td>'+esc(x.tckn_vkn||"")+'</td><td><span class="tag '+tag(x.durum)+'">'+esc(x.durum||"—")+'</span></td><td class="amt">'+money(c.bakiye)+'</td><td class="amt">'+money(c.aylik_ucret)+'</td><td>'+date(c.son_tahsilat)+'</td></tr>'}).join("");$$('#cariBody tr').forEach(tr=>tr.onclick=()=>cariDetail(tr.dataset.cari))}
+function renderBank(filter=""){const q=filter.toLocaleLowerCase("tr-TR"),rows=(S.d.bank||[]).filter(x=>[x.banka_cari,x.onerilen_cari,x.aciklama,x.banka_durum,x.kontrol_sonucu].join(" ").toLocaleLowerCase("tr-TR").includes(q));$("#bankBody").innerHTML=rows.map(x=>'<tr><td>'+date(x.tarih)+'</td><td class="amt">'+money(x.tutar)+'</td><td>'+esc(x.banka_cari||x.onerilen_cari||"—")+'</td><td>'+esc(x.sinif||"")+'</td><td><span class="tag '+tag(x.kontrol_sonucu)+'">'+esc(x.kontrol_sonucu||"—")+'</span></td><td>'+esc(x.banka_durum||"")+'</td></tr>').join("")}
+function renderFees(filter=""){const q=filter.toLocaleLowerCase("tr-TR"),rows=(S.d.fees||[]).filter(x=>String(x.mukellef||"").toLocaleLowerCase("tr-TR").includes(q));$("#feeBody").innerHTML=rows.map(x=>'<tr><td><b>'+esc(x.mukellef)+'</b></td><td>'+esc(x.donem||"")+'</td><td class="amt">'+money(x.tutar)+'</td><td>'+esc(x.durum||"")+'</td><td>'+esc(x.eklenme_tarihi||"")+'</td></tr>').join("")}
+async function load(){
+  try{
+    const r=await fetch("/api/istasyon?action=data",{cache:"no-store"});const d=await r.json();
+    if(r.status===401){$("#live").textContent="● OTURUM GEREKLİ";$("#live").className="chip bad";return}
+    if(!d.ok)throw new Error(d.error||"data");S.d=d;$("#live").textContent="● CANLI";$("#live").className="chip ok";
+    const s=d.summary||{},bs=d.bank_summary||{};$("#kActive").textContent=s.aktif_mukellef??"—";$("#kBalance").textContent=money(s.toplam_acik_bakiye);$("#kBank").textContent=bs.banka_kaynak_satiri||"—";$("#kMoka").textContent=(d.moka||[]).length;$("#kTasks").textContent=s.acik_gorev??"—";
+    $("#bSource").textContent=bs.banka_kaynak_satiri||"—";$("#bIn").textContent=bs.gelen_hareket||"—";$("#bOut").textContent=bs.giden_hareket||"—";$("#bLedger").textContent=bs.muhasebede_var??"—";$("#bWait").textContent=bs.bekleyen||"—";$("#bankDate").textContent="Son banka: "+(bs.son_banka_tarihi||"—");
+    $("#homeCari").innerHTML=(d.cari||[]).slice(0,12).map(c=>'<tr class="click" data-cari="'+esc(c.mukellef)+'"><td><b>'+esc(c.mukellef)+'</b></td><td class="amt">'+money(c.bakiye)+'</td><td class="amt">'+money(c.aylik_ucret)+'</td><td>'+date(c.son_tahsilat)+'</td></tr>').join("");$$('#homeCari tr').forEach(tr=>tr.onclick=()=>cariDetail(tr.dataset.cari));
+    $("#homePromises").innerHTML=(d.promises||[]).length?(d.promises||[]).map(x=>'<div class="item"><div class="row"><div><div class="title">'+esc(x.mukellef)+'</div><div class="meta">'+date(x.odeme_tarihi)+' · '+esc(x.odeme_sekli||"")+'</div></div><div class="amt">'+money(x.tutar)+'</div></div><span class="tag '+tag(x.durum)+'">'+esc(x.durum||"—")+'</span></div>').join(""):'<div class="empty">Ödeme sözü yok.</div>';
+    renderCari();renderBank();renderFees();
+    $("#mCount").textContent=(d.moka||[]).length;$("#mTotal").textContent=money((d.moka||[]).reduce((z,x)=>z+(Number(x.tutar)||0),0));$("#mokaBody").innerHTML=(d.moka||[]).map(x=>'<tr><td>'+date(x.tarih)+'</td><td class="amt">'+money(x.tutar)+'</td><td>'+esc(x.aciklama||"")+'</td><td>'+esc(x.kontrol_sonucu||"")+'</td><td>'+esc(x.notlar||"")+'</td></tr>').join("");
+    $("#promiseList").innerHTML=(d.promises||[]).map(x=>'<div class="item"><div class="row"><div><div class="title">'+esc(x.mukellef)+'</div><div class="meta">Ödeme tarihi: '+date(x.odeme_tarihi)+' · '+esc(x.odeme_sekli||"")+'</div></div><div class="amt">'+money(x.tutar)+'</div></div><span class="tag '+tag(x.durum)+'">'+esc(x.durum||"—")+'</span><div class="meta">'+esc(x.notlar||"")+'</div></div>').join("")||'<div class="empty">Kayıt yok.</div>';
+    const openTasks=(d.tasks||[]).filter(x=>!/TAMAMLANDI|KAPALI|IPTAL|İPTAL/i.test(String(x.durum||"")));$("#taskList").innerHTML=openTasks.map(x=>'<div class="item"><div class="title">'+esc(x.baslik)+'</div><div class="meta">'+esc(x.isi_yapacak_kisi||"")+' · '+esc(x.mukellef||"GENEL")+' · '+date(x.baslangic_tarihi)+'</div><span class="tag amber">'+esc(x.durum||"AÇIK")+'</span><div class="meta">'+esc(x.aciklama||"")+'</div></div>').join("")||'<div class="empty">Açık görev yok.</div>';
+  }catch(e){$("#live").textContent="● HATA";$("#live").className="chip bad";console.error(e)}
+}
+$("#cariSearch").oninput=e=>renderCari(e.target.value);$("#bankSearch").oninput=e=>renderBank(e.target.value);$("#feeSearch").oninput=e=>renderFees(e.target.value);load();
+</script>
+</body>
+</html>
