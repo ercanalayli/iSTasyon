@@ -1,0 +1,41 @@
+name: BizimHesap to ODE Mirror
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/bizimhesap-ode-live-mirror.yml'
+      - 'tools/sync_bizimhesap_ode.mjs'
+  workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bizimhesap-ode-mirror-prod
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      APERION_BRIDGE_SECRET: ${{ secrets.APERION_BRIDGE_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check required credentials
+        run: |
+          test -n "$GOOGLE_CLIENT_ID" || { echo "Missing GOOGLE_CLIENT_ID"; exit 1; }
+          test -n "$GOOGLE_CLIENT_SECRET" || { echo "Missing GOOGLE_CLIENT_SECRET"; exit 1; }
+          test -n "$GOOGLE_REFRESH_TOKEN" || { echo "Missing GOOGLE_REFRESH_TOKEN"; exit 1; }
+          test -n "$APERION_BRIDGE_SECRET" || { echo "Missing APERION_BRIDGE_SECRET"; exit 1; }
+      - name: Sync source-verified D1 events to BH tabs, never monthly payments
+        run: node tools/sync_bizimhesap_ode.mjs
