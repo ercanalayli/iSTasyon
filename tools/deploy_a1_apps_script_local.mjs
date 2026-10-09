@@ -85,11 +85,17 @@ function webAppUrl(deploymentId) {
 function patchSource(source) {
   const secretLine = "function aperionA1Verify_(payload){ try { var records=Array.isArray(payload.records)?payload.records:[]; if(!records.length)return true; var r=UrlFetchApp.fetch('https://aperion-istasyon.pages.dev/api/a1-sale-record-verify',{method:'post',contentType:'application/json',muteHttpExceptions:true,payload:JSON.stringify({records:records})}); if(r.getResponseCode()!==200)return false; var b=JSON.parse(r.getContentText()||'{}'); return b&&b.ok===true&&Number(b.verified||0)===records.length; } catch(e){ return false; } }";
   if (source.includes(MARKER)) {
-    if (/const APERION_A1_INGEST_SECRET\s*=\s*[^;]+;/.test(source)) {
-      return source.replace(/const APERION_A1_INGEST_SECRET\s*=\s*[^;]+;/,secretLine);
+    let upgraded = source;
+    if (/const APERION_A1_INGEST_SECRET\s*=\s*[^;]+;/.test(upgraded)) {
+      upgraded = upgraded.replace(/const APERION_A1_INGEST_SECRET\s*=\s*[^;]+;/,secretLine);
+    } else if (!upgraded.includes('function aperionA1Verify_(')) {
+      upgraded = upgraded.replace('// ' + MARKER, '// ' + MARKER + '\n' + secretLine);
     }
-    if (!source.includes('function aperionA1Verify_(')) return source.replace('// ' + MARKER, '// ' + MARKER + '\n' + secretLine);
-    return source;
+    upgraded = upgraded.replace(
+      /if \(!aperionA1Secret_\(\) \|\| String\(payload\.key \|\| ''\) !== aperionA1Secret_\(\)\) return aperionA1Json_\(\{ok:false,error:'unauthorized'\}\);/,
+      "if (!aperionA1Verify_(payload)) return aperionA1Json_({ok:false,error:'unverified_sale'});"
+    );
+    return upgraded;
   }
   const needle = 'function doPost(e)';
   if (!source.includes(needle)) throw new Error('legacy_doPost_not_found');
