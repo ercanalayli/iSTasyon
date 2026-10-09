@@ -115,6 +115,26 @@ async function telegram(env, text) {
 }
 
 
+
+function base64Url(bytes) {
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+async function hmacSha256(secret, value) {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value));
+  return base64Url(new Uint8Array(signature));
+}
+
+
 async function mirrorSalesToSheet(env, records) {
   const url = cleanText(env.APERION_SHEET_INGEST_URL || 'https://script.google.com/macros/s/AKfycbzm567JGBoRpHX-Sjxr0NKfpzckCEcNcSIiyqUHoND7M734kSk4_TdYFq9RBEzlottUPA/exec', 1000);
   const key = cleanText(env.APERION_SHEET_INGEST_KEY || env.APERION_BRIDGE_SECRET, 500);
@@ -137,12 +157,19 @@ async function mirrorSalesToSheet(env, records) {
   }
 
   try {
+    const timestamp = Date.now();
+    const payloadJson = JSON.stringify(payload);
+    const digest = await sha256(payloadJson);
+    const token = await hmacSha256(key, timestamp + '\n' + digest);
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         action: 'bizimhesap_sales',
-        key,
+        timestamp,
+        digest,
+        token,
+        verify_url: 'https://aperion-istasyon.pages.dev/api/sheet-ingest-verify',
         records: payload
       })
     });
@@ -304,7 +331,7 @@ export async function onRequestPost({ request, env }) {
          last_success_at=excluded.last_success_at,checked_at=excluded.checked_at,evidence_ref=excluded.evidence_ref`
     ).bind(`${records.length} satış kaydı D1'e kabul edildi`, cleanText(body.evidence_ref || records[0].source_url, 500)));
     await env.APERION_DB.batch(statements);
-    const sheet_mirror = await mirrorSalesToSheet(env, newSales);
+    const sheet_mirror = await mirrorSalesToSheet(env, records);
     let sales_notification = { sent: false, new_records: newSales.length };
     const pending = await env.APERION_DB.prepare(
       `SELECT event_key,payload_json FROM canonical_events
