@@ -149,10 +149,10 @@ async function mirrorSalesToSheet(env, records) {
     const body = await response.text();
     let parsed = null;
     try { parsed = body ? JSON.parse(body) : null; } catch {}
-    if (!response.ok) {
+    if (!response.ok || parsed?.ok === false) {
       return {
         sent: false,
-        reason: `sheet_mirror_http_${response.status}`,
+        reason: parsed?.error ? `sheet_mirror_${cleanText(parsed.error, 120)}` : `sheet_mirror_http_${response.status}`,
         detail: cleanText(parsed?.error || body, 500),
         accepted: 0
       };
