@@ -11,8 +11,7 @@ const CLIENT_VAULT = path.join(ROOT,'.aperion-secrets','google-oauth-rotation-cl
 const VAULT_SCRIPT = 'C:\\Users\\HP\\Documents\\Codex\\2026-08-27\\referenced-chatgpt-conversation-this-is-an\\work\\aperion-command-bridge\\tools\\google-oauth-dpapi.ps1';
 
 const SCRIPT_ID = '1cLRKKoLaJnIZc0ypC17b72_6Y_6s1TGqv7d3WGhC6T4WoWjlKS9H5z0Y';
-const DEPLOYMENT_ID = 'AKfycbyHhULNUaSFkteRSVNNPCARtqh9PTMSyRYOaMsOp2SvnDnQ5OrthACFxrzdD_SNovJUKw';
-const LIVE_URL = 'https://script.google.com/macros/s/' + DEPLOYMENT_ID + '/exec';
+const LEGACY_DEPLOYMENT_ID = 'AKfycbyHhULNUaSFkteRSVNNPCARtqh9PTMSyRYOaMsOp2SvnDnQ5OrthACFxrzdD_SNovJUKw';
 const CONTROL_ID = '155hZ1PRVKH-vlztPY99LnaGEuX5wq8ebNgoiCgcHdmc';
 const MARKER = 'A1_BIZIMHESAP_SHEET_INGEST_V1';
 
@@ -62,11 +61,25 @@ async function createVersion(token,description) {
     method:'POST',headers:authHeaders(token),body:JSON.stringify({description})
   },'create_version');
 }
-async function updateDeployment(token,versionNumber,description) {
-  return jsonFetch('https://script.googleapis.com/v1/projects/' + SCRIPT_ID + '/deployments/' + DEPLOYMENT_ID,{
+async function listDeployments(token) {
+  return jsonFetch('https://script.googleapis.com/v1/projects/' + SCRIPT_ID + '/deployments?pageSize=50',{
+    headers:authHeaders(token)
+  },'list_deployments');
+}
+async function createDeployment(token,versionNumber,description) {
+  return jsonFetch('https://script.googleapis.com/v1/projects/' + SCRIPT_ID + '/deployments',{
+    method:'POST',headers:authHeaders(token),
+    body:JSON.stringify({versionNumber,manifestFileName:'appsscript',description})
+  },'create_deployment');
+}
+async function updateDeployment(token,deploymentId,versionNumber,description) {
+  return jsonFetch('https://script.googleapis.com/v1/projects/' + SCRIPT_ID + '/deployments/' + deploymentId,{
     method:'PUT',headers:authHeaders(token),
     body:JSON.stringify({deploymentConfig:{scriptId:SCRIPT_ID,versionNumber,manifestFileName:'appsscript',description}})
   },'update_deployment');
+}
+function webAppUrl(deploymentId) {
+  return 'https://script.google.com/macros/s/' + deploymentId + '/exec';
 }
 
 function patchSource(source) {
@@ -154,9 +167,9 @@ function doPost(e) {
   return patched;
 }
 
-async function verifyLive() {
+async function verifyLive(liveUrl) {
   await new Promise(resolve=>setTimeout(resolve,6000));
-  const response = await fetch(LIVE_URL,{
+  const response = await fetch(liveUrl,{
     method:'POST',redirect:'follow',headers:{'content-type':'application/json'},
     body:JSON.stringify({action:'bizimhesap_sales',records:[]}),
     signal:AbortSignal.timeout(30000)
@@ -181,9 +194,23 @@ async function deploy(accessToken) {
   await putContent(accessToken,changed);
   const version = await createVersion(accessToken,'A1 BizimHesap -> Sheets live ingest local deploy 2026-10-09');
   if (!version?.versionNumber) throw new Error('version_create_failed');
-  await updateDeployment(accessToken,version.versionNumber,'A1 BizimHesap live sales mirror');
-  await verifyLive();
-  console.log(JSON.stringify({ok:true,a1_apps_script_deploy:'PASS',live_url:LIVE_URL,secrets_printed:false}));
+
+  const listed = await listDeployments(accessToken);
+  const deployments = Array.isArray(listed?.deployments) ? listed.deployments : [];
+  let selected = deployments.find(d => d.deploymentId === LEGACY_DEPLOYMENT_ID) ||
+    deployments.find(d => Array.isArray(d.entryPoints) && d.entryPoints.some(ep => ep.entryPointType === 'WEB_APP')) ||
+    deployments[0] || null;
+
+  if (selected?.deploymentId) {
+    await updateDeployment(accessToken,selected.deploymentId,version.versionNumber,'A1 BizimHesap live sales mirror');
+  } else {
+    selected = await createDeployment(accessToken,version.versionNumber,'A1 BizimHesap live sales mirror');
+  }
+  const deploymentId = selected?.deploymentId;
+  if (!deploymentId) throw new Error('deployment_id_missing');
+  const liveUrl = webAppUrl(deploymentId);
+  await verifyLive(liveUrl);
+  console.log(JSON.stringify({ok:true,a1_apps_script_deploy:'PASS',deployment_id:deploymentId,live_url:liveUrl,secrets_printed:false}));
 }
 
 async function main() {
