@@ -114,6 +114,60 @@ async function telegram(env, text) {
   return { sent: true };
 }
 
+
+async function mirrorSalesToSheet(env, records) {
+  const url = cleanText(env.APERION_SHEET_INGEST_URL, 1000);
+  const key = cleanText(env.APERION_SHEET_INGEST_KEY, 500);
+  if (!Array.isArray(records) || !records.length) {
+    return { sent: false, reason: 'no_new_records', accepted: 0 };
+  }
+  if (!url || !key) {
+    return { sent: false, reason: 'sheet_mirror_not_configured', accepted: 0 };
+  }
+
+  const receivedAt = new Date().toISOString();
+  const payload = [];
+  for (const sale of records) {
+    const hash = await sha256(saleFingerprint(sale));
+    payload.push({
+      ...sale,
+      event_key: `bizimhesap:sale:${hash}`,
+      received_at: receivedAt
+    });
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        action: 'bizimhesap_sales',
+        key,
+        records: payload
+      })
+    });
+    const body = await response.text();
+    let parsed = null;
+    try { parsed = body ? JSON.parse(body) : null; } catch {}
+    if (!response.ok) {
+      return {
+        sent: false,
+        reason: `sheet_mirror_http_${response.status}`,
+        detail: cleanText(parsed?.error || body, 500),
+        accepted: 0
+      };
+    }
+    return {
+      sent: true,
+      accepted: finiteNumber(parsed?.appended, payload.length),
+      duplicates: finiteNumber(parsed?.duplicates, 0),
+      sheet: cleanText(parsed?.sheet || 'BIZIMHESAP_CANLI_SATIS', 120)
+    };
+  } catch (error) {
+    return { sent: false, reason: 'sheet_mirror_fetch_failed', detail: cleanText(error?.message, 500), accepted: 0 };
+  }
+}
+
 async function sendSalesMilestoneIfNeeded(env, saleDate, previousRevenue) {
   const aggregate = await env.APERION_DB.prepare(
     `SELECT COUNT(*) AS record_count,
@@ -250,6 +304,7 @@ export async function onRequestPost({ request, env }) {
          last_success_at=excluded.last_success_at,checked_at=excluded.checked_at,evidence_ref=excluded.evidence_ref`
     ).bind(`${records.length} satış kaydı D1'e kabul edildi`, cleanText(body.evidence_ref || records[0].source_url, 500)));
     await env.APERION_DB.batch(statements);
+    const sheet_mirror = await mirrorSalesToSheet(env, newSales);
     let sales_notification = { sent: false, new_records: newSales.length };
     const pending = await env.APERION_DB.prepare(
       `SELECT event_key,payload_json FROM canonical_events
@@ -274,7 +329,7 @@ export async function onRequestPost({ request, env }) {
     for (const date of affectedDates) {
       milestone_notifications.push({ date, ...(await sendSalesMilestoneIfNeeded(env, date, previousRevenueByDate[date])) });
     }
-    return json({ ok: true, accepted: records.length, sales_notification, milestone_notifications, generated_at: new Date().toISOString() });
+    return json({ ok: true, accepted: records.length, sales_notification, sheet_mirror, milestone_notifications, generated_at: new Date().toISOString() });
   } catch (error) {
     return json({ ok: false, error: 'sales_sync_failed', message: error.message }, 400);
   }
