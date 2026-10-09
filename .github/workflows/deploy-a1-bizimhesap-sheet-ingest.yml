@@ -1,0 +1,31 @@
+name: Deploy A1 BizimHesap Sheet Ingest
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/deploy-a1-bizimhesap-sheet-ingest.yml'
+      - 'tools/deploy_a1_bizimhesap_sheet_ingest.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Deploy signed BizimHesap sales receiver to existing Apps Script web app
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          APERION_BRIDGE_SECRET: ${{ secrets.APERION_BRIDGE_SECRET }}
+        run: node tools/deploy_a1_bizimhesap_sheet_ingest.mjs
