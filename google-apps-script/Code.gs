@@ -350,3 +350,125 @@ function aperionA1Refresh() {
   }
   return JSON.parse(response.getContentText());
 }
+
+
+// ============================================================
+// BizimHesap -> Google Sheets live sales mirror
+// Receives only signed sales events from AperiON Cloudflare.
+// Writes operational mirror rows; it does not write back to BizimHesap.
+// ============================================================
+const APERION_BIZIMHESAP_SALES_SHEET = 'BIZIMHESAP_CANLI_SATIS';
+
+function aperionJson_(data, statusCode) {
+  return ContentService
+    .createTextOutput(JSON.stringify(Object.assign({ status: statusCode || 200 }, data)))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function aperionSalesHeaders_() {
+  return [
+    'EVENT_KEY','ALINDI_ZAMANI','FATURA_TARIHI','FATURA_NO','CARI_UNVAN','URUN_KODU',
+    'BARKOD','URUN','ADET','CIRO','SATIS_KDV_HARIC','SATIS_KDV_DAHIL',
+    'FIFO_MALIYET','BRUT_KAR','KAR_MARJI','ISKONTO_PCT','NEGATIF_STOK','KATEGORI',
+    'KAYNAK_SATIR','SOURCE_URL','FIRMA_ID','FIRMA_ADI','DURUM','HAM_JSON'
+  ];
+}
+
+function ensureAperionSalesSheet_() {
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty('APERION_CONTROL_SHEET_ID') || '155hZ1PRVKH-vlztPY99LnaGEuX5wq8ebNgoiCgcHdmc';
+  var ss = SpreadsheetApp.openById(id);
+  var sheet = ss.getSheetByName(APERION_BIZIMHESAP_SALES_SHEET) || ss.insertSheet(APERION_BIZIMHESAP_SALES_SHEET);
+  var headers = aperionSalesHeaders_();
+  if (sheet.getLastRow() === 0 || String(sheet.getRange(1, 1).getValue()) !== 'EVENT_KEY') {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function doPost(e) {
+  try {
+    var payload = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    if (payload.action !== 'bizimhesap_sales') {
+      return aperionJson_({ ok: false, error: 'unsupported_action' }, 400);
+    }
+
+    var props = PropertiesService.getScriptProperties();
+    var expected = String(props.getProperty('APERION_SHEET_INGEST_KEY') || '');
+    var supplied = String(payload.key || '');
+    if (!expected || expected.length < 24 || supplied !== expected) {
+      return aperionJson_({ ok: false, error: 'unauthorized' }, 401);
+    }
+
+    var records = Array.isArray(payload.records) ? payload.records.slice(0, 500) : [];
+    if (!records.length) return aperionJson_({ ok: true, appended: 0, duplicates: 0, sheet: APERION_BIZIMHESAP_SALES_SHEET }, 200);
+
+    var sheet = ensureAperionSalesSheet_();
+    var lastRow = sheet.getLastRow();
+    var existing = {};
+    if (lastRow > 1) {
+      var firstRow = Math.max(2, lastRow - 9999);
+      var keys = sheet.getRange(firstRow, 1, lastRow - firstRow + 1, 1).getValues();
+      keys.forEach(function (r) { if (r[0]) existing[String(r[0])] = true; });
+    }
+
+    var rows = [];
+    var duplicates = 0;
+    records.forEach(function (sale) {
+      var eventKey = String(sale.event_key || '');
+      if (!eventKey || existing[eventKey]) { duplicates++; return; }
+
+      var exVat = Number(sale.satis_kdv_haric);
+      if (!isFinite(exVat)) exVat = Number(sale.ciro) || 0;
+      var fifo = sale.fifo_cost == null || sale.fifo_cost === '' ? '' : Number(sale.fifo_cost);
+      var gross = fifo === '' || !isFinite(fifo) ? '' : exVat - fifo;
+      var margin = gross === '' || !exVat ? '' : gross / exVat;
+
+      rows.push([
+        eventKey,
+        String(sale.received_at || new Date().toISOString()),
+        String(sale.tarih || ''),
+        String(sale.fatura_no || ''),
+        String(sale.unvan || ''),
+        String(sale.urun_kod || ''),
+        String(sale.barkod || ''),
+        String(sale.urun || ''),
+        Number(sale.adet) || 0,
+        Number(sale.ciro) || 0,
+        exVat,
+        Number(sale.satis_kdv_dahil) || Number(sale.ciro) || 0,
+        fifo,
+        gross,
+        margin,
+        sale.discount_pct == null ? '' : Number(sale.discount_pct),
+        sale.negative_stock === true ? 'EVET' : 'HAYIR',
+        String(sale.kategori || ''),
+        Number(sale.kaynak_satir) || 0,
+        String(sale.source_url || ''),
+        String(sale.firma_id || ''),
+        String(sale.firma_adi || ''),
+        'CANLI',
+        JSON.stringify(sale)
+      ]);
+      existing[eventKey] = true;
+    });
+
+    if (rows.length) {
+      var start = sheet.getLastRow() + 1;
+      sheet.getRange(start, 1, rows.length, 24).setValues(rows);
+      sheet.getRange(start, 10, rows.length, 5).setNumberFormat('#,##0.00');
+      sheet.getRange(start, 15, rows.length, 1).setNumberFormat('0.00%');
+    }
+
+    return aperionJson_({
+      ok: true,
+      appended: rows.length,
+      duplicates: duplicates,
+      sheet: APERION_BIZIMHESAP_SALES_SHEET
+    }, 200);
+  } catch (error) {
+    return aperionJson_({ ok: false, error: String(error && error.message ? error.message : error) }, 500);
+  }
+}
