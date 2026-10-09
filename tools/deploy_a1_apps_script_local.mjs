@@ -202,7 +202,12 @@ async function deploy(accessToken) {
     deployments[0] || null;
 
   if (selected?.deploymentId) {
-    await updateDeployment(accessToken,selected.deploymentId,version.versionNumber,'A1 BizimHesap live sales mirror');
+    try {
+      await updateDeployment(accessToken,selected.deploymentId,version.versionNumber,'A1 BizimHesap live sales mirror');
+    } catch (error) {
+      if (!String(error?.message || '').includes('Read-only deployments may not be modified')) throw error;
+      selected = await createDeployment(accessToken,version.versionNumber,'A1 BizimHesap live sales mirror');
+    }
   } else {
     selected = await createDeployment(accessToken,version.versionNumber,'A1 BizimHesap live sales mirror');
   }
