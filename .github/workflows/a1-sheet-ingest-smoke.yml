@@ -1,0 +1,32 @@
+name: A1 Sheet Ingest Smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/a1-sheet-ingest-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      APERION_BRIDGE_SECRET: ${{ secrets.APERION_BRIDGE_SECRET }}
+      A1_SHEET_INGEST_URL: https://script.google.com/macros/s/AKfycbzm567JGBoRpHX-Sjxr0NKfpzckCEcNcSIiyqUHoND7M734kSk4_TdYFq9RBEzlottUPA/exec
+    steps:
+      - name: Verify signed empty ingest
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$APERION_BRIDGE_SECRET"
+          BODY="$(curl -fsSL --retry 3 --retry-delay 2 \
+            -H 'content-type: application/json' \
+            --data "$(jq -nc --arg key "$APERION_BRIDGE_SECRET" '{action:"bizimhesap_sales",key:$key,records:[]}')" \
+            "$A1_SHEET_INGEST_URL")"
+          echo "$BODY" | jq -c '{ok,error,appended,duplicates,sheet}'
+          echo "$BODY" | jq -e '.ok == true' >/dev/null
+          echo "A1_SHEET_INGEST_SMOKE=PASS"
