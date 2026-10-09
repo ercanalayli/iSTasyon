@@ -33,13 +33,14 @@ async function unprotectClient() {
   return client;
 }
 
-async function jsonFetch(url,options={}) {
+async function jsonFetch(url,options={},stage='api') {
   const response = await fetch(url,options);
   const text = await response.text();
   let body = null;
   try { body = text ? JSON.parse(text) : null; } catch { body = text; }
   if (!response.ok) {
-    const error = new Error('HTTP_' + response.status);
+    const safeDetail = body && typeof body === 'object' ? (body.error?.message || body.error?.status || body.error || '') : String(body || '');
+    const error = new Error(stage + '_HTTP_' + response.status + (safeDetail ? ':' + String(safeDetail).slice(0,180) : ''));
     error.body = body;
     throw error;
   }
@@ -49,23 +50,23 @@ async function jsonFetch(url,options={}) {
 const authHeaders = token => ({authorization:'Bearer ' + token,'content-type':'application/json'});
 
 async function getContent(token) {
-  return jsonFetch('https://script.googleapis.com/v1/projects/' + SCRIPT_ID + '/content',{headers:authHeaders(token)});
+  return jsonFetch('https://script.googleapis.com/v1/projects/' + SCRIPT_ID + '/content',{headers:authHeaders(token)},'get_content');
 }
 async function putContent(token,content) {
   return jsonFetch('https://script.googleapis.com/v1/projects/' + SCRIPT_ID + '/content',{
     method:'PUT',headers:authHeaders(token),body:JSON.stringify({files:content.files})
-  });
+  },'put_content');
 }
 async function createVersion(token,description) {
   return jsonFetch('https://script.googleapis.com/v1/projects/' + SCRIPT_ID + '/versions',{
     method:'POST',headers:authHeaders(token),body:JSON.stringify({description})
-  });
+  },'create_version');
 }
 async function updateDeployment(token,versionNumber,description) {
   return jsonFetch('https://script.googleapis.com/v1/projects/' + SCRIPT_ID + '/deployments/' + DEPLOYMENT_ID,{
     method:'PUT',headers:authHeaders(token),
     body:JSON.stringify({deploymentConfig:{scriptId:SCRIPT_ID,versionNumber,manifestFileName:'appsscript',description}})
-  });
+  },'update_deployment');
 }
 
 function patchSource(source) {
@@ -198,7 +199,8 @@ async function main() {
   const server = http.createServer(async (request,response)=>{
     try {
       const callback = new URL(request.url,redirectUri);
-      if (callback.pathname !== '/oauth2/callback' || callback.searchParams.get('state') !== state) throw new Error('oauth_callback_invalid');
+      if (callback.pathname !== '/oauth2/callback') { response.writeHead(204); response.end(); return; }
+      if (callback.searchParams.get('state') !== state) throw new Error('oauth_state_invalid');
       const code = callback.searchParams.get('code');
       if (!code) throw new Error('oauth_consent_not_granted');
 
