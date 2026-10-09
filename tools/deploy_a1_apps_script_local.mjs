@@ -83,12 +83,12 @@ function webAppUrl(deploymentId) {
 }
 
 function patchSource(source) {
-  const secretLine = "function aperionA1Secret_(){ return String(PropertiesService.getScriptProperties().getProperty('APERION_BRIDGE_SECRET') || ''); }";
+  const secretLine = "function aperionA1Verify_(payload){ try { var records=Array.isArray(payload.records)?payload.records:[]; if(!records.length)return true; var r=UrlFetchApp.fetch('https://aperion-istasyon.pages.dev/api/a1-sale-record-verify',{method:'post',contentType:'application/json',muteHttpExceptions:true,payload:JSON.stringify({records:records})}); if(r.getResponseCode()!==200)return false; var b=JSON.parse(r.getContentText()||'{}'); return b&&b.ok===true&&Number(b.verified||0)===records.length; } catch(e){ return false; } }";
   if (source.includes(MARKER)) {
     if (/const APERION_A1_INGEST_SECRET\s*=\s*[^;]+;/.test(source)) {
       return source.replace(/const APERION_A1_INGEST_SECRET\s*=\s*[^;]+;/,secretLine);
     }
-    if (!source.includes('function aperionA1Secret_()')) return source.replace('// ' + MARKER, '// ' + MARKER + '\n' + secretLine);
+    if (!source.includes('function aperionA1Verify_(')) return source.replace('// ' + MARKER, '// ' + MARKER + '\n' + secretLine);
     return source;
   }
   const needle = 'function doPost(e)';
@@ -115,7 +115,7 @@ function aperionA1EnsureSalesSheet_() {
   return sh;
 }
 function aperionA1BizimHesapSales_(payload) {
-  if (!aperionA1Secret_() || String(payload.key || '') !== aperionA1Secret_()) return aperionA1Json_({ok:false,error:'unauthorized'});
+  if (!aperionA1Verify_(payload)) return aperionA1Json_({ok:false,error:'unverified_sale'});
   var records = Array.isArray(payload.records) ? payload.records.slice(0,500) : [];
   if (!records.length) return aperionA1Json_({ok:true,appended:0,duplicates:0,sheet:APERION_A1_SALES_SHEET});
   var sh = aperionA1EnsureSalesSheet_();
