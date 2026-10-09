@@ -168,16 +168,22 @@ function doPost(e) {
 }
 
 async function verifyLive(liveUrl) {
-  await new Promise(resolve=>setTimeout(resolve,6000));
-  const response = await fetch(liveUrl,{
-    method:'POST',redirect:'follow',headers:{'content-type':'application/json'},
-    body:JSON.stringify({action:'bizimhesap_sales',records:[]}),
-    signal:AbortSignal.timeout(30000)
-  });
-  const text = await response.text();
-  let body = null;
-  try { body = JSON.parse(text); } catch {}
-  if (!response.ok) throw new Error('live_http_' + response.status);
+  let lastStatus = 0;
+  let lastText = '';
+  for (let attempt = 1; attempt <= 12; attempt++) {
+    await new Promise(resolve=>setTimeout(resolve, attempt === 1 ? 8000 : 5000));
+    const response = await fetch(liveUrl,{
+      method:'POST',redirect:'follow',headers:{'content-type':'application/json'},
+      body:JSON.stringify({action:'bizimhesap_sales',records:[]}),
+      signal:AbortSignal.timeout(30000)
+    });
+    const text = await response.text();
+    lastStatus = response.status;
+    lastText = text;
+    if (response.ok) return true;
+    if (response.status !== 404) break;
+  }
+  throw new Error('live_http_' + lastStatus + (lastText ? ':' + String(lastText).replace(/\s+/g,' ').slice(0,120) : ''));
 }
 
 async function deploy(accessToken) {
@@ -213,7 +219,8 @@ async function deploy(accessToken) {
   }
   const deploymentId = selected?.deploymentId;
   if (!deploymentId) throw new Error('deployment_id_missing');
-  const liveUrl = webAppUrl(deploymentId);
+  const webEntry = Array.isArray(selected?.entryPoints) ? selected.entryPoints.find(ep => ep?.entryPointType === 'WEB_APP' && ep?.webApp?.url) : null;
+  const liveUrl = webEntry?.webApp?.url || webAppUrl(deploymentId);
   await verifyLive(liveUrl);
   console.log(JSON.stringify({ok:true,a1_apps_script_deploy:'PASS',deployment_id:deploymentId,live_url:liveUrl,secrets_printed:false}));
 }
