@@ -1,0 +1,40 @@
+name: A1 Sales Sheet Replay
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/a1-sales-sheet-replay.yml'
+      - 'functions/api/a1-sales-replay.js'
+      - 'functions/api/a1-sale-record-verify.js'
+  workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: a1-sales-sheet-replay
+  cancel-in-progress: false
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      APERION_BRIDGE_SECRET: ${{ secrets.APERION_BRIDGE_SECRET }}
+    steps:
+      - name: Replay confirmed D1 sales to A1 Sheet
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$APERION_BRIDGE_SECRET"
+          BODY="$(curl -fsSL --retry 5 --retry-delay 3 \
+            -H "Authorization: Bearer $APERION_BRIDGE_SECRET" \
+            -H 'content-type: application/json' \
+            --data '{"limit":200}' \
+            'https://aperion-istasyon.pages.dev/api/a1-sales-replay')"
+          echo "$BODY" | jq -c '{ok,replayed,appended,duplicates,sheet,error,detail}'
+          echo "$BODY" | jq -e '.ok == true' >/dev/null
+          echo "A1_SALES_SHEET_REPLAY=PASS"
