@@ -116,7 +116,7 @@ async function telegram(env, text) {
 
 
 async function mirrorSalesToSheet(env, records) {
-  const url = cleanText(env.APERION_SHEET_INGEST_URL || 'https://script.google.com/macros/s/AKfycbyHhULNUaSFkteRSVNNPCARtqh9PTMSyRYOaMsOp2SvnDnQ5OrthACFxrzdD_SNovJUKw/exec', 1000);
+  const url = cleanText(env.APERION_SHEET_INGEST_URL || 'https://script.google.com/macros/s/AKfycbzm567JGBoRpHX-Sjxr0NKfpzckCEcNcSIiyqUHoND7M734kSk4_TdYFq9RBEzlottUPA/exec', 1000);
   const key = cleanText(env.APERION_SHEET_INGEST_KEY || env.APERION_BRIDGE_SECRET, 500);
   if (!Array.isArray(records) || !records.length) {
     return { sent: false, reason: 'no_new_records', accepted: 0 };
