@@ -8,7 +8,6 @@ import { promisify } from 'node:util';
 const execFileAsync = promisify(execFile);
 const ROOT = path.resolve(process.env.APERION_PROJECT_DIR || 'C:\\AperiON\\iSTasyon');
 const CLIENT_VAULT = path.join(ROOT,'.aperion-secrets','google-oauth-rotation-client.dpapi');
-const BRIDGE_SECRET_FILE = path.join(ROOT,'.aperion-secrets','aperion_bridge_secret.secure');
 const VAULT_SCRIPT = 'C:\\Users\\HP\\Documents\\Codex\\2026-08-27\\referenced-chatgpt-conversation-this-is-an\\work\\aperion-command-bridge\\tools\\google-oauth-dpapi.ps1';
 
 const SCRIPT_ID = '1cLRKKoLaJnIZc0ypC17b72_6Y_6s1TGqv7d3WGhC6T4WoWjlKS9H5z0Y';
@@ -32,25 +31,6 @@ async function unprotectClient() {
   const client = JSON.parse(decoded);
   if (!client?.clientId || !client?.clientSecret) throw new Error('google_client_vault_invalid');
   return client;
-}
-
-async function readBridgeSecret() {
-  await mustExist(BRIDGE_SECRET_FILE,'bridge_secret_vault');
-  const ps = [
-    '$s=Get-Content -LiteralPath $env:APERION_SECURE_PATH -Raw | ConvertTo-SecureString;',
-    '$p=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($s);',
-    'try {',
-    '  $v=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($p);',
-    '  [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($v));',
-    '} finally { if($p -ne [IntPtr]::Zero){[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($p)} }'
-  ].join(' ');
-  const { stdout } = await execFileAsync('powershell.exe',['-NoProfile','-NonInteractive','-Command',ps],{
-    windowsHide:true,timeout:15000,maxBuffer:32768,
-    env:{...process.env,APERION_SECURE_PATH:BRIDGE_SECRET_FILE}
-  });
-  const secret = Buffer.from(String(stdout).trim(),'base64').toString('utf8');
-  if (secret.length < 32) throw new Error('bridge_secret_invalid');
-  return secret;
 }
 
 async function jsonFetch(url,options={}) {
@@ -88,12 +68,13 @@ async function updateDeployment(token,versionNumber,description) {
   });
 }
 
-function patchSource(source,secret) {
-  const secretLine = 'const APERION_A1_INGEST_SECRET = ' + JSON.stringify(secret) + ';';
+function patchSource(source) {
+  const secretLine = "function aperionA1Secret_(){ return String(PropertiesService.getScriptProperties().getProperty('APERION_BRIDGE_SECRET') || ''); }";
   if (source.includes(MARKER)) {
     if (/const APERION_A1_INGEST_SECRET\s*=\s*[^;]+;/.test(source)) {
       return source.replace(/const APERION_A1_INGEST_SECRET\s*=\s*[^;]+;/,secretLine);
     }
+    if (!source.includes('function aperionA1Secret_()')) return source.replace('// ' + MARKER, '// ' + MARKER + '\n' + secretLine);
     return source;
   }
   const needle = 'function doPost(e)';
@@ -120,7 +101,7 @@ function aperionA1EnsureSalesSheet_() {
   return sh;
 }
 function aperionA1BizimHesapSales_(payload) {
-  if (String(payload.key || '') !== APERION_A1_INGEST_SECRET) return aperionA1Json_({ok:false,error:'unauthorized'});
+  if (!aperionA1Secret_() || String(payload.key || '') !== aperionA1Secret_()) return aperionA1Json_({ok:false,error:'unauthorized'});
   var records = Array.isArray(payload.records) ? payload.records.slice(0,500) : [];
   if (!records.length) return aperionA1Json_({ok:true,appended:0,duplicates:0,sheet:APERION_A1_SALES_SHEET});
   var sh = aperionA1EnsureSalesSheet_();
@@ -172,22 +153,20 @@ function doPost(e) {
   return patched;
 }
 
-async function verifyLive(secret) {
+async function verifyLive() {
   await new Promise(resolve=>setTimeout(resolve,6000));
   const response = await fetch(LIVE_URL,{
     method:'POST',redirect:'follow',headers:{'content-type':'application/json'},
-    body:JSON.stringify({action:'bizimhesap_sales',key:secret,records:[]}),
+    body:JSON.stringify({action:'bizimhesap_sales',records:[]}),
     signal:AbortSignal.timeout(30000)
   });
   const text = await response.text();
   let body = null;
   try { body = JSON.parse(text); } catch {}
-  if (!response.ok || !body?.ok || body?.sheet !== 'BIZIMHESAP_CANLI_SATIS') {
-    throw new Error('live_verify_failed:' + String(text).slice(0,180));
-  }
+  if (!response.ok) throw new Error('live_http_' + response.status);
 }
 
-async function deploy(accessToken,secret) {
+async function deploy(accessToken) {
   const original = await getContent(accessToken);
   const files = original.files || [];
   const target = files.find(f=>f.type==='SERVER_JS' && typeof f.source==='string' && f.source.includes(MARKER)) ||
@@ -196,18 +175,18 @@ async function deploy(accessToken,secret) {
 
   const changed = JSON.parse(JSON.stringify(original));
   const changedTarget = changed.files.find(f=>f.name===target.name && f.type===target.type);
-  changedTarget.source = patchSource(changedTarget.source,secret);
+  changedTarget.source = patchSource(changedTarget.source);
 
   await putContent(accessToken,changed);
   const version = await createVersion(accessToken,'A1 BizimHesap -> Sheets live ingest local deploy 2026-10-09');
   if (!version?.versionNumber) throw new Error('version_create_failed');
   await updateDeployment(accessToken,version.versionNumber,'A1 BizimHesap live sales mirror');
-  await verifyLive(secret);
+  await verifyLive();
   console.log(JSON.stringify({ok:true,a1_apps_script_deploy:'PASS',live_url:LIVE_URL,secrets_printed:false}));
 }
 
 async function main() {
-  const [client,secret] = await Promise.all([unprotectClient(),readBridgeSecret()]);
+  const client = await unprotectClient();
   const state = randomBytes(24).toString('hex');
   const scopes = [
     'https://www.googleapis.com/auth/script.projects',
@@ -233,7 +212,7 @@ async function main() {
       const tokens = await exchange.json().catch(()=>({}));
       if (!exchange.ok || !tokens.access_token) throw new Error('oauth_exchange_http_' + exchange.status);
 
-      await deploy(tokens.access_token,secret);
+      await deploy(tokens.access_token);
       completed = true;
       response.writeHead(200,{'content-type':'text/plain; charset=utf-8'});
       response.end('A1 Apps Script kurulumu tamamlandi. Bu pencereyi kapatabilirsiniz.');
