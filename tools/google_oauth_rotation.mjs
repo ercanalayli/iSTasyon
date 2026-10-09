@@ -70,8 +70,7 @@ if (mode === '--stage-client') {
   console.log(JSON.stringify({ok:true,client_staged:true,plaintext_download_removed:true,secrets_printed:false}));
 } else if (mode === '--authorize') {
   const client = await unprotect(clientVault);
-  const port = 53684;
-  const redirectUri = `http://127.0.0.1:${port}/oauth2/callback`;
+  let redirectUri = '';
   const state = randomBytes(24).toString('hex');
   const scopes = [
     'https://www.googleapis.com/auth/gmail.readonly',
@@ -102,7 +101,12 @@ if (mode === '--stage-client') {
       console.error(JSON.stringify({ok:false,error:String(error.message||error).slice(0,80)}));
     } finally { server.close(); }
   });
-  server.listen(port,'127.0.0.1',()=>{
+  server.listen(0,'127.0.0.1',()=>{
+    const address = server.address();
+    const port = address && typeof address === 'object' ? address.port : 0;
+    if (!port) throw new Error('oauth_dynamic_port_missing');
+    redirectUri = `http://127.0.0.1:${port}/oauth2/callback`;
+    url.searchParams.set('redirect_uri', redirectUri);
     spawn('rundll32.exe',['url.dll,FileProtocolHandler',url.toString()],{detached:true,stdio:'ignore',windowsHide:true}).unref();
     console.log(JSON.stringify({ok:true,awaiting_google_consent:true,project:'aperion-506810',scopes:scopes.map(x=>x.split('/').at(-1)),secrets_printed:false}));
   });
