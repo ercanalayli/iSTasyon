@@ -1,0 +1,31 @@
+name: AperiON BizimHesap Session Broker Check
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/aperion_command_listener.cjs'
+      - 'tools/lib/bizimhesap_session_ports.cjs'
+      - 'tools/test_bizimhesap_session_ports.cjs'
+      - '.github/workflows/bizimhesap-session-broker-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  broker-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify syntax and safe port fallback
+        run: |
+          node --check tools/lib/bizimhesap_session_ports.cjs
+          node --check tools/aperion_command_listener.cjs
+          node --check tools/test_bizimhesap_session_ports.cjs
+          node tools/test_bizimhesap_session_ports.cjs
