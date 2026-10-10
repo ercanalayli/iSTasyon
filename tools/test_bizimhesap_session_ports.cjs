@@ -33,13 +33,16 @@ assert.ok(!probe.includes('puppeteer.launch('));
 assert.ok(!probe.includes('loginBizimHesap('));
 assert.ok(!probe.includes('.goto('));
 
-// Financial writes must not auto-replay when an interrupted process restarts.
+// Restart recovery must fail closed for all unknown and write-like commands.
 const recovery = listener.slice(listener.lastIndexOf("const { data: yarimKalanlar"));
-assert.match(recovery, /nonReplayable/);
-for (const command of ['bizimhesap_process', 'bizimhesap_expense', 'bizimhesap_diaper_proforma',
-    'bizimhesap_sil_bir', 'bizimhesap_masraf_sil', 'bizimhesap_sil_tumu']) {
-  assert.ok(recovery.includes(command), command + ': protected from automatic retry');
+assert.match(recovery, /safeToReplay/);
+assert.match(recovery, /if \(!safeToReplay\.has\(cmd\.command\)\)/);
+for (const command of ['bizimhesap_health', 'bizimhesap_fetch', 'bizimhesap_verify',
+    'bizimhesap_row_menu', 'bizimhesap_table_diag', 'bizimhesap_scroll_diag',
+    'bizimhesap_id_dogrula', 'bizimhesap_hesap_ekstre_dump']) {
+  assert.ok(recovery.includes(command), command + ': explicit safe replay whitelist');
 }
 assert.match(recovery, /FINANSAL_YENIDEN_YAZMA_ENGELLENDI/);
 assert.ok(!recovery.includes("update({ status: 'pending' }).eq('status', 'processing')"));
-console.log('BizimHesap port fallback, safe health probe and financial replay protection: PASS');
+assert.ok(probe.includes("if (browserOwnedByListener && browser)"));
+console.log('BizimHesap safe health and read-only-only restart replay: PASS');
