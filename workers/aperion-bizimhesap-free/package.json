@@ -1,0 +1,15 @@
+{
+  "name": "aperion-bizimhesap-free",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/index.js",
+    "deploy": "wrangler deploy --config wrangler.jsonc"
+  },
+  "dependencies": {
+    "@cloudflare/puppeteer": "1.1.0"
+  },
+  "devDependencies": {
+    "wrangler": "4.125.0"
+  }
+}
