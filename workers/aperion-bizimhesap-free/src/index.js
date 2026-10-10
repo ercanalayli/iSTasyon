@@ -1,4 +1,5 @@
 // READ-ONLY PROBE. No account credentials, payment operations or POST endpoints.
+// Cloudflare Workers Git Builds production deployment trigger: 2026-10-10.
 // Authorization is a Cloudflare Worker secret, never accepted in URL/query params.
 import puppeteer from '@cloudflare/puppeteer';
 
