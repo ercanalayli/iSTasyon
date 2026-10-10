@@ -1,10 +1,7 @@
 name: AperiON BizimHesap Free Browser Preflight
+# Cloudflare Git Builds will deploy this specific Worker after one-time connection.
+# This legacy workflow remains manually runnable for future permissions audits.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'workers/aperion-bizimhesap-free/**'
-      - '.github/workflows/aperion-bizimhesap-free-probe.yml'
   workflow_dispatch:
 
 permissions:
