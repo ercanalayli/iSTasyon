@@ -13,7 +13,7 @@ export const BIZIMHESAP_API_CAPABILITIES = Object.freeze([
   {id:'inventory',method:'GET',path:'/inventory/{depoId}',module:'stok',documented:true,live:'verified_partial',details:'First depot read',risk:'read'},
   {id:'customers',method:'GET',path:'/customers',module:'cari',documented:false,live:'verified',details:'5782 customers',risk:'read'},
   {id:'suppliers',method:'GET',path:'/suppliers',module:'tedarikci',documented:false,live:'verified',details:'HTTP 200 resultCode=1',risk:'read'},
-  {id:'abstract',method:'GET',path:'/abstract/{customerId}',module:'cari_ekstre',documented:false,live:'rate_limited',details:'HTTP 429',risk:'read'},
+  {id:'abstract',method:'GET',path:'/abstract/{customerId}',module:'cari_ekstre',documented:false,live:'verified',details:'2026-10-11 B2B customer abstract HTTP200/resultCode=1 on 8 customer cards; 6 sales header numbers+amounts live confirmed; rate limiting can recur',risk:'read'},
   {id:'supplierabstract',method:'GET',path:'/supplierabstract/{supplierId}',module:'tedarikci_ekstre',documented:false,live:'untested',details:'Edge Function implementation exists',risk:'read'},
   {id:'addinvoice',method:'POST',path:'/addinvoice',module:'alis_satis_fatura_siparis',documented:true,live:'verified_write_guid',details:'2026-10-10 posted 1 TL total request and got invoice guid 14A652F2FD1F4432910BC799E02F0AB7 and printout URL; stored total not independently read back; auto-created customer verified in /customers; cancellation not executed',risk:'financial_write'},
   {id:'cancelinvoice',method:'POST',path:'/cancelinvoice',module:'fatura_iptal',documented:false,live:'execution_blocked',details:'2026-10-10 approved test cancellation was blocked by tool execution policy; do not claim cancelled',risk:'destructive_write'},
@@ -23,7 +23,7 @@ export const BIZIMHESAP_API_CAPABILITIES = Object.freeze([
 
 export const BIZIMHESAP_NO_CONFIRMED_B2B_API = Object.freeze([
   'expense_create','expense_list','cash_transaction_create','bank_transaction_create',
-  'payment_create','collection_create','cash_transfer','sales_invoice_list'
+  'payment_create','collection_create','cash_transfer','sales_invoice_list','native_proforma_draft_save'
 ]);
 
 const index=new Map(BIZIMHESAP_API_CAPABILITIES.map(x=>[x.id,x]));
@@ -60,7 +60,7 @@ export function preferredBizimHesapChannel(commandCode) {
     'bizimhesap.suppliers_read':'suppliers',
     'bizimhesap.customer_abstract_read':'abstract',
     'bizimhesap.supplier_abstract_read':'supplierabstract',
-    'bizimhesap.invoice_draft':'addinvoice',
+    'bizimhesap.invoice_draft':'native_proforma_draft_save',
     'bizimhesap.invoice_post':'addinvoice',
     'bizimhesap.expense_post':'expense_create',
     'bizimhesap.cash_transfer_post':'cash_transfer',
