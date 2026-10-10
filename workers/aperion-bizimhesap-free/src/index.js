@@ -29,7 +29,10 @@ async function isAuthorized(given, expected) {
 const SETUP_EXPIRES_AT = Date.parse('2026-10-10T20:30:00Z');
 const SETUP_HASH = '85be88abe2b64de6db631a03a47221897c1f7b2281011498aae73fafc32f3e1e';
 async function validSetupToken(request) {
-  const candidate = request.headers.get('x-aperion-setup') || '';
+  // Cookie is set only after a verified handoff and is HttpOnly, Secure, SameSite=Strict.
+  const cookie = request.headers.get('Cookie') || '';
+  const cookieToken = cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('aperion_setup='))?.slice('aperion_setup='.length) || '';
+  const candidate = request.headers.get('x-aperion-setup') || cookieToken;
   if (Date.now() > SETUP_EXPIRES_AT || candidate.length < 30 || candidate.length > 200) return false;
   const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(candidate));
   const actual = [...new Uint8Array(bytes)].map(x=>x.toString(16).padStart(2,'0')).join('');
@@ -38,7 +41,7 @@ async function validSetupToken(request) {
   return mismatch===0;
 }
 function setupPage() {
-  const html = "<!doctype html><html lang=\"tr\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"referrer\" content=\"no-referrer\"><title>AperiON · BizimHesap Güvenli Giriş</title><style>body{font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:auto;padding:28px 20px;background:#10161e;color:#f3f5f8;line-height:1.55}h1{font-size:25px}p{color:#bac7d5}.info{padding:18px;border:1px solid #394556;border-radius:12px;margin-top:20px}a,button{background:#2d79e6;color:white;border:0;text-decoration:none;padding:14px 18px;border-radius:10px;display:block;text-align:center;font-weight:600;font-size:16px;width:100%;box-sizing:border-box}#open,#verify{display:none;margin-top:16px}small{color:#9aafc2}</style></head><body><h1>AperiON · BizimHesap</h1><p>Bu girişte <strong>şifreni ChatGPT'ye yazmayacaksın.</strong> Açılacak ekran, sunucunun kullandığı tarayıcıdır.</p><div class=\"info\"><div id=\"state\" role=\"status\">Güvenli tarayıcı hazırlanıyor...</div><a id=\"open\" rel=\"noreferrer\" target=\"_blank\">BizimHesap giriş ekranını aç</a><button id=\"verify\" type=\"button\">Girişi kontrol et</button></div><p><small>Yalnız bağlantı kontrolü yapılır. Gider, fatura veya finans kaydı oluşturulmaz. Bağlantıyı paylaşma.</small></p><script>\nconst state=document.getElementById('state'),open=document.getElementById('open'),verify=document.getElementById('verify');\nconst token=decodeURIComponent(location.hash.slice(1));let sessionId=null;history.replaceState(null,'',location.pathname);\nasync function request(action,body={}){const r=await fetch('/setup/'+action,{method:'POST',headers:{'content-type':'application/json','x-aperion-setup':token},body:JSON.stringify(body),cache:'no-store'});return {ok:r.ok,data:await r.json()}}\nasync function start(){if(!token){state.textContent='Giriş bağlantısı eksik. ChatGPT’den yeni bağlantı iste.';return;}try{const r=await request('start');if(!r.ok||!r.data.ok){state.textContent='Tarayıcı başlatılamadı: '+(r.data.error||'Bağlantı sorunu');return;}sessionId=r.data.session_id;open.href=r.data.live_view_url;open.style.display='block';verify.style.display='block';state.textContent='Tarayıcı hazır. Aşağıdan BizimHesap girişini aç. Giriş tamamlanınca buraya dönüp kontrol et.';}catch(e){state.textContent='Sunucu bağlantısı kurulamadı.';}}\nverify.addEventListener('click',async()=>{if(!sessionId)return;state.textContent='Giriş kontrol ediliyor...';try{const r=await request('check',{session_id:sessionId});state.textContent=r.data.authenticated===true?'Giriş doğrulandı! ChatGPT sohbetine “Girdim” yaz.':'Giriş henüz doğrulanmadı. Giriş ekranını tamamla ve tekrar kontrol et.';}catch(e){state.textContent='Oturum kontrol edilemedi. Süresi dolmuş olabilir.';}});\nstart();</script></body></html>";
+  const html = "<!doctype html><html lang=\"tr\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"referrer\" content=\"no-referrer\"><title>AperiON BizimHesap Güvenli Giriş</title><style>body{font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:auto;padding:28px 20px;background:#10161e;color:#f3f5f8;line-height:1.55}h1{font-size:25px}p{color:#bac7d5}.info{padding:18px;border:1px solid #394556;border-radius:12px;margin-top:20px}a,button{background:#2d79e6;color:white;border:0;text-decoration:none;padding:14px 18px;border-radius:10px;display:block;text-align:center;font-weight:600;font-size:16px;width:100%;box-sizing:border-box}#open,#verify{display:none;margin-top:16px}small{color:#9aafc2}</style></head><body><h1>AperiON · BizimHesap</h1><p>Şifreni bu sayfaya veya ChatGPT sohbetine yazma. Açılacak bağlantı, sunucunun tarayıcısını gösterecek.</p><div class=\"info\"><div id=\"state\" role=\"status\">Güvenli tarayıcı hazırlanıyor...</div><a id=\"open\" target=\"_blank\" rel=\"noreferrer noopener\">BizimHesap giriş ekranını aç</a><button id=\"verify\" type=\"button\">Girişi kontrol et</button></div><p><small>Yalnızca giriş kontrolü. Muhasebe kaydı oluşturulmaz. Oturum geçici ve bağlantı kişiseldir.</small></p><script>\nconst state=document.getElementById('state'),open=document.getElementById('open'),verify=document.getElementById('verify');let sessionId=null;\nasync function ask(action,body={}){const r=await fetch('/setup/'+action,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body),cache:'no-store'});return {ok:r.ok,data:await r.json()}}\nasync function start(){try{const r=await ask('start');if(!r.ok||!r.data.ok){state.textContent='Tarayıcı başlatılamadı: '+(r.data.error||'Bağlantı hatası');return;}sessionId=r.data.session_id;open.href=r.data.live_view_url;open.style.display='block';verify.style.display='block';state.textContent='Tarayıcı hazır. BizimHesap girişini aç, kendi hesabına giriş yap. Ardından buraya dönüp kontrol et.';}catch(_){state.textContent='Tarayıcı başlatılamadı. Bağlantıyı yeniden dene.'}}\nverify.addEventListener('click',async()=>{if(!sessionId)return;state.textContent='Giriş kontrol ediliyor...';try{const r=await ask('check',{session_id:sessionId});state.textContent=r.data.authenticated===true?'Giriş doğrulandı. ChatGPT’ye “Girdim” yaz.':'Giriş henüz doğrulanmadı: '+(r.data.reason||r.data.error||'yeniden dene');}catch(_){state.textContent='Oturum kontrolü başarısız.'}});\nstart();</script></body></html>";
   return new Response(html,{headers:{
     'content-type':'text/html;charset=utf-8','cache-control':'no-store, private',
     'x-content-type-options':'nosniff','referrer-policy':'no-referrer',
@@ -86,7 +89,22 @@ async function checkSecureSetup(env,request) {
 export default {
   async fetch(request, env) {
     const u = new URL(request.url);
-    if (u.pathname === '/setup' && request.method === 'GET') return setupPage();
+    if (u.pathname === '/setup' && request.method === 'GET') {
+      const handoff = u.searchParams.get('handoff') || '';
+      if (handoff) {
+        const verified = await validSetupToken(new Request('https://localhost/',{headers:{'x-aperion-setup':handoff}}));
+        if (!verified) return json({ok:false,error:'invalid_or_expired_handoff'},401);
+        return new Response(null,{status:303,headers:{
+          'Location':'/setup',
+          'Set-Cookie':'aperion_setup='+handoff+'; Max-Age=900; HttpOnly; Secure; SameSite=Strict; Path=/setup',
+          'Cache-Control':'no-store, private',
+          'Referrer-Policy':'no-referrer',
+          'X-Robots-Tag':'noindex, nofollow'
+        }});
+      }
+      if (!await validSetupToken(request)) return json({ok:false,error:'open_using_chatgpt_handoff_link'},401);
+      return setupPage();
+    }
     if ((u.pathname === '/setup/start'||u.pathname === '/setup/check') && request.method === 'POST') {
       if(!await validSetupToken(request)) return json({ok:false,error:'unauthorized_or_expired'},401);
       return u.pathname === '/setup/start' ? startSecureSetup(env) : checkSecureSetup(env,request);
