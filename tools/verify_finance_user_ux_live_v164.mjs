@@ -7,8 +7,23 @@ const execFileAsync=promisify(execFile), endpoint='https://aperion-command-bridg
 const bridgeRoot='C:\\Users\\HP\\Documents\\Codex\\2026-08-27\\referenced-chatgpt-conversation-this-is-an\\work\\aperion-command-bridge';
 async function secret(){const file=path.join(bridgeRoot,'state','chatgpt-action-secret.dpapi').replaceAll("'","''");const shell='C:\\Users\\HP\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\powershell\\pwsh.exe';const script=`$s=ConvertTo-SecureString (Get-Content -LiteralPath '${file}' -Raw).Trim();$p=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($s);try{[Runtime.InteropServices.Marshal]::PtrToStringBSTR($p)}finally{[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($p)}`;const {stdout}=await execFileAsync(shell,['-NoProfile','-NonInteractive','-Command',script],{windowsHide:true,maxBuffer:4096,timeout:15000});return String(stdout||'').trim();}
 const key=await secret(), conversation_key=crypto.randomUUID(), event_id=crypto.randomUUID();
-async function post(namespace,id){const started=performance.now();const r=await fetch(`${endpoint}/v1/chatgpt/commands`,{method:'POST',headers:{authorization:`Bearer ${key}`,'content-type':'application/json'},body:JSON.stringify({command_text:'10 TL Ercan nakit kasa dan Akbank a',event_id:id,conversation_key,idempotency_namespace:namespace}),signal:AbortSignal.timeout(15000)});const data=await r.json();assert(r.ok,JSON.stringify(data));return {data,ms:performance.now()-started};}
+function trStamp(d=new Date()){
+  const p=new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).formatToParts(d);
+  const m=Object.fromEntries(p.map(x=>[x.type,x.value]));
+  return `${m.year}-${m.month}-${m.day} ${m.hour}:${m.minute}:${m.second} TRT`;
+}
+async function post(namespace,id){const sentAt=new Date();const started=performance.now();const r=await fetch(`${endpoint}/v1/chatgpt/commands`,{method:'POST',headers:{authorization:`Bearer ${key}`,'content-type':'application/json'},body:JSON.stringify({command_text:'10 TL Ercan nakit kasa dan Akbank a',event_id:id,conversation_key,idempotency_namespace:namespace}),signal:AbortSignal.timeout(15000)});const data=await r.json();const receivedAt=new Date();assert(r.ok,JSON.stringify(data));return {data,ms:performance.now()-started,sentAt,receivedAt};}
 const production=await post('production:user-command',event_id);
+const commandId=production.data?._internal_approval_context?.command_id || production.data?.command_id || null;
+const shortId=commandId ? String(commandId).slice(0,8).toUpperCase() : null;
+console.log(JSON.stringify({
+  telegram_prepare_sent:true,
+  operation_id:shortId,
+  sent_at_tr:trStamp(production.sentAt),
+  response_at_tr:trStamp(production.receivedAt),
+  prepare_ms:+production.ms.toFixed(2),
+  message:production.data.message
+},null,2));
 const expected='10 TL Transfer\nErcan Nakit Kasa → Akbank Şirket';assert.equal(production.data.message,expected);assert.deepEqual(Object.keys(production.data).sort(),['_internal_approval_context','message','reply_options']);assert(production.data._internal_approval_context.command_id);assert(production.data._internal_approval_context.payload_hash);
-const report={checked_at:new Date().toISOString(),status:'PASS',production_version:'cf145401-69a1-4592-a02c-9cf6d4fc3cec',new_production_event_id:event_id,new_production_command_id_audit_only:production.data._internal_approval_context.command_id,conversation_key_redacted:true,user_visible_response:{message:production.data.message,reply_options:production.data.reply_options},internal_context_present_not_user_visible:true,namespace_live:{single_production_prepare:true},prepare_ms:+production.ms.toFixed(2),financial_writes:0,bizimhesap_writes:0,secrets_exposed:0};
+const report={checked_at:new Date().toISOString(),status:'PASS',production_version:'cf145401-69a1-4592-a02c-9cf6d4fc3cec',new_production_event_id:event_id,new_production_command_id_audit_only:production.data._internal_approval_context.command_id,operation_id:shortId,sent_at_tr:trStamp(production.sentAt),response_at_tr:trStamp(production.receivedAt),prepare_ms:+production.ms.toFixed(2),conversation_key_redacted:true,user_visible_response:{message:production.data.message,reply_options:production.data.reply_options},internal_context_present_not_user_visible:true,namespace_live:{single_production_prepare:true},prepare_ms:+production.ms.toFixed(2),financial_writes:0,bizimhesap_writes:0,secrets_exposed:0};
 const out=new URL('../evidence/finance-user-ux-live-v164.json',import.meta.url);await fs.writeFile(out,JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({...report,evidence:out.pathname},null,2));
