@@ -1,0 +1,36 @@
+name: ApeirON Cloudflare Build Log Diagnosis
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/aperion-cloudflare-build-log-diagnosis.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Safely inspect failed Worker build logs
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/builds/builds/1659fd43-f1ad-4c53-8f42-aa87f1d7fd76/logs"
+          HTTP=$(curl -sS --max-time 25 -o /tmp/aperion-build-audit.json -w '%{http_code}' -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$URL")
+          echo "WORKERS_BUILD_LOG_HTTP=$HTTP"
+          node - <<'NODE'
+          const fs=require('fs');
+          let obj={};try{obj=JSON.parse(fs.readFileSync('/tmp/aperion-build-audit.json','utf8'))}catch(e){console.log('BUILD_LOG_JSON_UNAVAILABLE');process.exit(0)}
+          const safe=s=>String(s??'').replace(/(?:Bearer|token|password|secret|apikey|key)\s*[:= ]\s*[^\s,;]+/ig,'[credential]').replace(/[A-Za-z0-9_-]{34,}/g,'[redacted]').slice(0,220);
+          console.log('BUILD_LOG_SUCCESS='+Boolean(obj.success));
+          console.log('BUILD_LOG_ERRORS='+JSON.stringify((obj.errors||[]).map(e=>({code:e.code,message:safe(e.message)})).slice(0,5)));
+          const lines=obj.result?.lines||[];
+          const all=lines.map(x=>Array.isArray(x)?x.map(y=>safe(y)).join(' | '):safe(x));
+          const err=all.filter(x=>/fail|error|denied|permission|not found|unsupported|cannot|exception|exit code|invalid/i.test(x));
+          console.log('ERROR_LINES='+JSON.stringify(err.slice(-12)));
+          console.log('LOG_LINES_COUNT='+all.length);
+          NODE
