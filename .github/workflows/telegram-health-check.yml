@@ -30,6 +30,47 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Diagnose Telegram bot routing (read-only, no tokens logged)
+        env:
+          HEALTH_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          WATCHDOG_BOT_TOKEN: ${{ secrets.HERMES_TELEGRAM_BOT_TOKEN }}
+        run: |
+          node <<'NODE'
+          async function check(label, token) {
+            if (!token) return {role: label, configured: false};
+            try {
+              const response = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`, {
+                signal: AbortSignal.timeout(8000)
+              });
+              const json = await response.json();
+              const data = json?.result || {};
+              return {
+                role: label, configured: true, api_ok: response.ok && json?.ok === true,
+                webhook_url: data.url || '', pending_update_count: data.pending_update_count ?? null,
+                error_present: Boolean(data.last_error_message)
+              };
+            } catch (error) {
+              return {role: label, configured: true, api_ok: false, error: String(error?.message || error)};
+            }
+          }
+          (async () => {
+            const health = process.env.HEALTH_BOT_TOKEN || '';
+            const watchdog = process.env.WATCHDOG_BOT_TOKEN || '';
+            const sameBot = health && watchdog ? health === watchdog : null;
+            const results = await Promise.all([
+              check('telegram_health_workflow', health),
+              check('telegram_watchdog_workflow', watchdog)
+            ]);
+            console.log(JSON.stringify({
+              comparison: sameBot === null ? 'unknown_missing_token' : (sameBot ? 'SAME_BOT' : 'DISTINCT_BOTS'),
+              warning: sameBot === true
+                ? 'Two workflows expect different webhook targets for the same Telegram bot; do not repair blindly.'
+                : null,
+              results
+            }, null, 2));
+          })().catch(error => { console.error('routing_diagnostic_failed', error.message); process.exitCode = 1; });
+          NODE
+
       - name: Check Telegram health
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
