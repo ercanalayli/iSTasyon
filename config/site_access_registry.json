@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "mode": "chatgpt_command_center",
+  "defaults": {
+    "credential_storage": "windows_dpapi",
+    "prefer_existing_session": true,
+    "allow_automatic_login": true,
+    "mfa_policy": "user_present",
+    "captcha_policy": "stop_and_request_user",
+    "read": "automatic",
+    "prepare": "automatic",
+    "final_write": "explicit_single_use_approval",
+    "delete": "explicit_single_use_approval",
+    "verify_after_write": true,
+    "idempotency_required": true,
+    "audit_required": true
+  },
+  "sites": {
+    "bizimhesap": {
+      "enabled": true,
+      "title": "BizimHesap",
+      "domains": [
+        "bizimhesap.com",
+        "uygulama.bizimhesap.com"
+      ],
+      "home_url": "https://bizimhesap.com/web/ngn/newportal",
+      "session_strategy": [
+        "existing_chrome_session",
+        "persistent_profile",
+        "dpapi_credential"
+      ],
+      "credential_key": "bizimhesap",
+      "adapter": "bizimhesap",
+      "capabilities": [
+        "read",
+        "prepare",
+        "expense",
+        "cash_transfer",
+        "invoice",
+        "customer",
+        "stock",
+        "payment",
+        "collection"
+      ],
+      "final_write_requires_approval": true
+    },
+    "farmazon": {
+      "enabled": false,
+      "title": "Farmazon",
+      "domains": [],
+      "session_strategy": [
+        "existing_chrome_session",
+        "dpapi_credential"
+      ],
+      "credential_key": "farmazon",
+      "adapter": "generic_browser",
+      "capabilities": [
+        "read",
+        "prepare"
+      ],
+      "final_write_requires_approval": true
+    },
+    "vizor": {
+      "enabled": false,
+      "title": "Vizor B2B",
+      "domains": [],
+      "session_strategy": [
+        "existing_chrome_session",
+        "dpapi_credential"
+      ],
+      "credential_key": "vizor",
+      "adapter": "generic_browser",
+      "capabilities": [
+        "read",
+        "prepare"
+      ],
+      "final_write_requires_approval": true
+    },
+    "gozdemed": {
+      "enabled": false,
+      "title": "Gözde Med",
+      "domains": [],
+      "session_strategy": [
+        "existing_chrome_session",
+        "dpapi_credential"
+      ],
+      "credential_key": "gozdemed",
+      "adapter": "generic_browser",
+      "capabilities": [
+        "read",
+        "prepare"
+      ],
+      "final_write_requires_approval": true
+    }
+  }
+}
