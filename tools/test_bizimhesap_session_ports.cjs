@@ -5,7 +5,7 @@ const path = require('node:path');
 const { brokerCandidateURLs, attachOnly } = require('./lib/bizimhesap_session_ports.cjs');
 
 assert.deepEqual(brokerCandidateURLs({}), [
-  'http://127.0.0.1:9223', 'http://127.0.0.1:9222'
+  'http://127.0.0.1:9222', 'http://127.0.0.1:9223'
 ]);
 assert.deepEqual(
   brokerCandidateURLs({ APERION_BIZIMHESAP_BROWSER_URL: 'http://127.0.0.1:9222' }),
@@ -13,7 +13,7 @@ assert.deepEqual(
 );
 assert.deepEqual(
   brokerCandidateURLs({ APERION_BIZIMHESAP_BROWSER_URL: 'http://127.0.0.1:9333' }),
-  ['http://127.0.0.1:9333', 'http://127.0.0.1:9223', 'http://127.0.0.1:9222']
+  ['http://127.0.0.1:9333', 'http://127.0.0.1:9222', 'http://127.0.0.1:9223']
 );
 assert.equal(attachOnly({ APERION_CHROME_ATTACH_MODE: 'attach-only' }), true);
 assert.equal(attachOnly({ APERION_CHROME_ATTACH_MODE: 'ATTACH-ONLY' }), true);
@@ -46,3 +46,56 @@ assert.match(recovery, /FINANSAL_YENIDEN_YAZMA_ENGELLENDI/);
 assert.ok(!recovery.includes("update({ status: 'pending' }).eq('status', 'processing')"));
 assert.ok(probe.includes("if (browserOwnedByListener && browser)"));
 console.log('BizimHesap safe health and read-only-only restart replay: PASS');
+
+const vm = require('node:vm');
+const authStart = listener.indexOf('async function hasAuthenticatedBizimHesapPage(candidate)');
+const authEnd = listener.indexOf('async function connectAuthenticatedSessionBroker()', authStart);
+assert.ok(authStart >= 0 && authEnd > authStart, 'identity checker present');
+const authSource = listener.slice(authStart, authEnd);
+assert.match(authSource, /firm\.dsFirm/);
+assert.match(authSource, /ALAYLI MEDIKAL/);
+async function verifyAuthWithFakeBrowser({ url = 'https://uygulama.bizimhesap.com/web/ngn/acc/ngncostss', closed = false, ok = true, payload = {} }) {
+  const context = {
+    URL,
+    fetch: async () => ({ ok, json: async () => payload }),
+  };
+  const checker = vm.runInNewContext(authSource + '\\n;hasAuthenticatedBizimHesapPage', context);
+  const candidate = {
+    isClosed: () => closed,
+    url: () => url,
+    evaluate: async fn => fn(),
+  };
+  return checker(candidate);
+}
+async function verifyIdentity() {
+  assert.equal(await verifyAuthWithFakeBrowser({
+    payload: { Data: { dsFirm: 'ALAYLI MEDİKAL ORTOPEDİ TAŞIMACILIK LTD ŞTİ' } }
+  }), true, 'authenticates confirmed ALAYLI firm in BizimHesap dsFirm field');
+  assert.equal(await verifyAuthWithFakeBrowser({
+    payload: { Data: { Name: 'ALAYLI MEDIKAL' } }
+  }), true, 'supports legacy Name schema');
+  assert.equal(await verifyAuthWithFakeBrowser({
+    payload: { Data: { dsFirm: 'BAŞKA MEDİKAL LTD' } }
+  }), false, 'must reject another firm even in authenticated session');
+  assert.equal(await verifyAuthWithFakeBrowser({
+    payload: { Data: { Id: 1234 } }
+  }), false, 'firm ID alone cannot authorize writes');
+  assert.equal(await verifyAuthWithFakeBrowser({
+    payload: { Data: [{ dsFirm: 'ALAYLI MEDİKAL' }] }
+  }), false, 'firm list does not prove selected firm');
+  assert.equal(await verifyAuthWithFakeBrowser({
+    ok: false, payload: { Data: { dsFirm: 'ALAYLI MEDİKAL' } }
+  }), false, 'HTTP auth failure cannot authorize a write');
+  assert.equal(await verifyAuthWithFakeBrowser({
+    url: 'https://bizimhesap.com/', payload: { Data: { dsFirm: 'ALAYLI MEDİKAL' } }
+  }), false, 'marketing page is never a firm-confirmed tab');
+  assert.equal(await verifyAuthWithFakeBrowser({
+    url: 'https://evil.bizimhesap.com/web/ngn/acc/ngncostss',
+    payload: { Data: { dsFirm: 'ALAYLI MEDİKAL' } }
+  }), false, 'reject unrecognized browser origin');
+  assert.equal(await verifyAuthWithFakeBrowser({
+    closed: true, payload: { Data: { dsFirm: 'ALAYLI MEDİKAL' } }
+  }), false, 'closed tabs are rejected');
+  console.log('9222 priority, selected ALAYLI firm and deny-unknown-company checks: PASS');
+}
+verifyIdentity().catch(err => { console.error(err); process.exitCode = 1; });
