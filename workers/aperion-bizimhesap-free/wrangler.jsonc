@@ -1,0 +1,11 @@
+{
+  "name": "aperion-bizimhesap-free",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-10",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "browser": {
+    "binding": "BROWSER"
+  }
+}
