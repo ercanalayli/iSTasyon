@@ -1,0 +1,56 @@
+name: AperiON BizimHesap Free Browser Preflight
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/aperion-bizimhesap-free/**'
+      - '.github/workflows/aperion-bizimhesap-free-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aperion-bizimhesap-free-probe
+  cancel-in-progress: true
+
+jobs:
+  deploy-read-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: workers/aperion-bizimhesap-free
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      APERION_BRIDGE_SECRET: ${{ secrets.APERION_BRIDGE_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify existing Cloudflare credentials
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          test -n "$APERION_BRIDGE_SECRET"
+      - name: Install pinned runtime
+        run: npm install --no-audit --no-fund
+      - name: Static syntax validation
+        run: npm run check
+      - name: Deploy isolated, read-only Browser Run Worker
+        run: npx --no-install wrangler deploy --config wrangler.jsonc
+      - name: Install pre-existing bridge auth secret
+        run: printf '%s' "$APERION_BRIDGE_SECRET" | npx --no-install wrangler secret put APERION_BRIDGE_SECRET --config wrangler.jsonc
+      - name: Verify no public write surface and test private browser preflight
+        run: |
+          set -euo pipefail
+          BASE='https://aperion-bizimhesap-free.yenicespor-finans.workers.dev'
+          for i in $(seq 1 8); do
+            if curl -fsS --max-time 12 "$BASE/health" -o /tmp/bh-free-health.json; then break; fi
+            sleep 3
+          done
+          grep -q '"write_enabled":false' /tmp/bh-free-health.json
+          UNAUTH=$(curl -sS -o /tmp/bh-free-unauth.json -w '%{http_code}' "$BASE/probe")
+          test "$UNAUTH" = '401'
+          echo "BIZIMHESAP_FREE_HEALTH=PASS; PROBE_AUTH=PASS"
+          curl -fsS --max-time 55 -H "x-aperion-bridge-secret: $APERION_BRIDGE_SECRET" "$BASE/probe" -o /tmp/bh-free-probe.json
+          node -e "const d=require('/tmp/bh-free-probe.json');if(d.write_enabled!==false)process.exit(1);console.log('BIZIMHESAP_BROWSER_PREFLIGHT='+JSON.stringify(d))"
