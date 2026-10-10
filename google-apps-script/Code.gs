@@ -328,7 +328,10 @@ function aperionA1Refresh() {
   var jsonText = JSON.stringify(snapshot);
   if (jsonText.length > 48000) throw new Error('A1 snapshot cell limitine yaklasti: ' + jsonText.length);
 
-  var cache = built.control.getSheetByName('A1_SNAPSHOT') || built.control.insertSheet('A1_SNAPSHOT');
+  // CRITICAL: Generic payment/task A1 must NEVER clear or overwrite the
+  // Hasta Bezi ERP A1_SNAPSHOT, which is versioned and audit locked.
+  // Keep the generic A1 in its own independent tab.
+  var cache = built.control.getSheetByName('APEIRON_GENEL_A1_SNAPSHOT') || built.control.insertSheet('APEIRON_GENEL_A1_SNAPSHOT');
   cache.clearContents();
   cache.getRange('A1:B4').setValues([
     ['PROTOCOL', snapshot.protocol],
