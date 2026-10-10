@@ -21,8 +21,8 @@ function maskSecret(value) {
   return `${text.slice(0, 4)}***${text.slice(-4)}`;
 }
 
-// API financial amounts: do not remove decimal dots (1.23 must never become 123.00).
-// Turkish/English grouped values are supported; ambiguous or invalid values fail closed.
+// Monetary amounts sent to BizimHesap must preserve decimal separators.
+// Never silently convert 1.23 into 123.00; invalid input fails closed.
 function normalizeMoney(value) {
   if (value === null || value === undefined || value === '') return '0.00';
   if (typeof value === 'number') {
@@ -33,13 +33,37 @@ function normalizeMoney(value) {
   if (!/^-?\d[\d.,]*$/.test(raw)) throw new Error('invalid_invoice_money');
   const dots = (raw.match(/\./g) || []).length;
   const commas = (raw.match(/,/g) || []).length;
-  let normalized;
+  let clean;
   if (dots && commas) {
-    const decimal = raw.lastIndexOf('.') > raw.lastIndexOf(',') ? '.' : ',';
-    const thousands = decimal === '.' ? ',' : '.';
-    const halves = raw.split(decimal);
-    if (halves.length !== 2 ||
-        !new RegExp('^-?\\d{1,3}(?:\\' + thousands + '\\d{3})+
+    if (raw.lastIndexOf('.') > raw.lastIndexOf(',')) {
+      if (!/^-?\d{1,3}(,\d{3})+\.\d{1,4}$/.test(raw)) throw new Error('ambiguous_invoice_money');
+      clean = raw.replace(/,/g, '');
+    } else {
+      if (!/^-?\d{1,3}(\.\d{3})+,\d{1,4}$/.test(raw)) throw new Error('ambiguous_invoice_money');
+      clean = raw.replace(/\./g, '').replace(',', '.');
+    }
+  } else if (dots || commas) {
+    const sep = dots ? '.' : ',';
+    const groups = raw.split(sep);
+    if (groups.length > 2) {
+      if (!/^-?\d{1,3}$/.test(groups[0]) || !groups.slice(1).every(g => /^\d{3}$/.test(g))) {
+        throw new Error('ambiguous_invoice_money');
+      }
+      clean = groups.join('');
+    } else if (groups.length === 2 && groups[1].length === 3 && /^-?[1-9]\d{0,2}$/.test(groups[0])) {
+      clean = groups.join('');
+    } else if (groups.length === 2 && /^\d{1,4}$/.test(groups[1])) {
+      clean = groups[0] + '.' + groups[1];
+    } else {
+      throw new Error('ambiguous_invoice_money');
+    }
+  } else {
+    clean = raw;
+  }
+  const amount = Number(clean);
+  if (!Number.isFinite(amount)) throw new Error('invalid_invoice_money');
+  return amount.toFixed(2);
+}
 
 function normalizeInvoicePayload(input = {}, firmId = '') {
   const details = Array.isArray(input.details) ? input.details : [];
