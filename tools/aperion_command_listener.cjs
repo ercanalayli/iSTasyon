@@ -116,7 +116,11 @@ async function probeAuthenticatedBizimHesapSession() {
   const cached = Boolean(browser && page && !page.isClosed() &&
     await hasAuthenticatedBizimHesapPage(page));
   if (cached) return { authenticated: true, source: 'existing_session', checked_at: new Date().toISOString() };
-  if (browser && !browserOwnedByListener) await disconnectBrowser();
+  // A listener-owned browser must not be orphaned by another broker attach.
+  if (browserOwnedByListener && browser) {
+    return { authenticated: false, source: 'owned_session_not_authenticated', checked_at: new Date().toISOString() };
+  }
+  if (browser) await disconnectBrowser();
   const authenticated = await connectAuthenticatedSessionBroker();
   return { authenticated, source: authenticated ? 'existing_authenticated_broker' : 'not_authenticated', checked_at: new Date().toISOString() };
 }
@@ -2148,12 +2152,15 @@ async function tick() {
   } else if (yarimKalanlar && yarimKalanlar.length) {
     // A previous ERP write may have succeeded before its result persisted.
     // A crash must never trigger a second financial posting or deletion.
-    const nonReplayable = new Set([
-      'bizimhesap_process', 'bizimhesap_expense', 'bizimhesap_diaper_proforma',
-      'bizimhesap_sil_bir', 'bizimhesap_masraf_sil', 'bizimhesap_sil_tumu'
+    // On restart ONLY these explicitly inspected read-only commands are
+    // eligible for replay. New command types are fail-closed by default.
+    const safeToReplay = new Set([
+      'bizimhesap_health', 'bizimhesap_fetch', 'bizimhesap_verify',
+      'bizimhesap_row_menu', 'bizimhesap_table_diag', 'bizimhesap_scroll_diag',
+      'bizimhesap_id_dogrula', 'bizimhesap_hesap_ekstre_dump'
     ]);
     for (const cmd of yarimKalanlar) {
-      if (nonReplayable.has(cmd.command)) {
+      if (!safeToReplay.has(cmd.command)) {
         const { error } = await db.from('bot_commands').update({
           status: 'failed',
           result: 'BELIRSIZ_DURUM: islem ortasinda servis yeniden basladi; BizimHesapta kayit/silme gerceklesmis olabilir. Salt-okunur ERP geri kontrolu olmadan TEKRARLAMA.',
