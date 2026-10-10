@@ -1,6 +1,6 @@
 # A1 — ALAYLI MEDİKAL Hasta Bezi Operasyon / ERP-CFO-İç Kontrol Standardı
 
-**Aktif politika:** `A1-POLICY-20261010-v4` · **Kapsam:** 02–07.10.2026 tarihli 6 siparişlik sevkiyat grubu ve sonraki A1 işlemleri için denetim standardı · **Kaynak:** 10.10.2026 kullanıcının bu sohbette paylaştığı 17 bölümlü tam talimat.  
+**Aktif politika:** `A1-POLICY-20261010-v1` · **Kapsam:** 02–07.10.2026 tarihli 6 siparişlik sevkiyat grubu ve sonraki A1 işlemleri için denetim standardı · **Kaynak:** 10.10.2026 kullanıcının bu sohbette paylaştığı 17 bölümlü tam talimat.  
 **Yerine geçtiği:** `A1-POLICY-20261009-v3`. Bu sürüm özellikle **sabit 1.500 TL lojistiği İPTAL eder**, rota/yakıt maliyetine bağlı olmayan kâr değerini FINAL yapmayı yasaklar ve **14 kolonlu** ERP/Audit müşteri tablosunu tanımlar. Eski kayıtlar SİLİNMEZ; kaynak+eski/yeni değer+değişiklik zamanı ile audit'te kalır.
 
 ## 1 — Kanıt ve audit kilidi
