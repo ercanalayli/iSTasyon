@@ -6,7 +6,17 @@ param(
 $ErrorActionPreference='Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $registryPath = Join-Path $root 'config\site_access_registry.json'
-if (-not (Test-Path -LiteralPath $registryPath)) { throw 'site_access_registry.json bulunamadi.' }
+if (-not (Test-Path -LiteralPath $registryPath)) {
+  $configDir = Split-Path -Parent $registryPath
+  New-Item -ItemType Directory -Force -Path $configDir | Out-Null
+  try {
+    $registryContent = & git -C $root show origin/main:config/site_access_registry.json 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $registryContent) { throw 'git_show_failed' }
+    [IO.File]::WriteAllLines($registryPath, $registryContent, [Text.UTF8Encoding]::new($false))
+  } catch {
+    throw 'site_access_registry.json bulunamadi ve origin/main uzerinden getirilemedi.'
+  }
+}
 
 $registry = Get-Content -LiteralPath $registryPath -Raw | ConvertFrom-Json
 $key = $Site.ToLowerInvariant()
