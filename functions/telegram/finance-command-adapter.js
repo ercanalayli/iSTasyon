@@ -13,7 +13,10 @@ export function toHermesApproval(internalContext) {
 }
 
 export function userFacingPrepare(response) {
-  return { message:String(response?.message || 'İşlem hazırlanamadı.'), native_confirmation_required:true };
+  const id = String(response?._internal_approval_context?.command_id || response?.command_id || '').trim();
+  const shortId = id ? id.slice(0, 8).toUpperCase() : null;
+  const base = String(response?.message || 'İşlem hazırlanamadı.');
+  return { message: shortId ? `${base}\n\nİşlem ID: ${shortId}` : base, native_confirmation_required:true, operation_id:shortId };
 }
 
 export function userFacingResult(response, summary) {
