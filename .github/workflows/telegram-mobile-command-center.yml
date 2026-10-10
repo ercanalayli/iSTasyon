@@ -48,24 +48,17 @@ jobs:
           echo "::add-mask::$WEBHOOK_SECRET"
           echo "WEBHOOK_SECRET=$WEBHOOK_SECRET" >> "$GITHUB_ENV"
 
-      - name: Rotate Pages webhook secret
+      - name: Sync command bridge Telegram secrets
         shell: bash
         run: |
-          printf '%s' "$HERMES_TELEGRAM_BOT_TOKEN" | npx wrangler pages secret put HERMES_TELEGRAM_BOT_TOKEN --project-name aperion-istasyon
-          printf '%s' "$TELEGRAM_ALLOWED_CHAT_IDS" | npx wrangler pages secret put TELEGRAM_ALLOWED_CHAT_IDS --project-name aperion-istasyon
-          printf '%s' "$WEBHOOK_SECRET" | npx wrangler pages secret put TELEGRAM_WEBHOOK_SECRET --project-name aperion-istasyon
+          printf '%s' "$HERMES_TELEGRAM_BOT_TOKEN" | npx wrangler secret put TELEGRAM_BOT_TOKEN --name aperion-command-bridge
+          printf '%s' "$TELEGRAM_ALLOWED_CHAT_IDS" | npx wrangler secret put TELEGRAM_ALLOWED_USERS --name aperion-command-bridge
+          printf '%s' "$WEBHOOK_SECRET" | npx wrangler secret put TELEGRAM_WEBHOOK_SECRET --name aperion-command-bridge
 
-      - name: Deploy hardened Pages functions
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy . --project-name=aperion-istasyon --branch=main --commit-dirty=true
-
-      - name: Register hardened Telegram webhook
+      - name: Register command bridge Telegram webhook
         shell: bash
         run: |
-          expected_url="https://aperion-istasyon.pages.dev/telegram/webhook"
+          expected_url="https://aperion-command-bridge.yenicespor-finans.workers.dev/telegram/webhook"
           for attempt in 1 2 3; do
             response="$(curl --fail --silent --show-error \
               --request POST \
@@ -94,16 +87,11 @@ jobs:
             --header 'content-type: application/json' \
             --header "x-telegram-bot-api-secret-token: $WEBHOOK_SECRET" \
             --data "{\"update_id\":0,\"message\":{\"message_id\":0,\"from\":{\"id\":$TEST_CHAT_ID},\"chat\":{\"id\":$TEST_CHAT_ID,\"type\":\"private\"}}}" \
-            https://aperion-istasyon.pages.dev/telegram/webhook)"
+            https://aperion-command-bridge.yenicespor-finans.workers.dev/telegram/webhook)"
           printf '%s' "$response" | jq -e '.ok == true and .ignored == true' >/dev/null
 
-      - name: Verify live security status
+      - name: Verify live webhook registration
         shell: bash
         run: |
-          response="$(curl --fail --silent --show-error https://aperion-istasyon.pages.dev/telegram/webhook)"
-          printf '%s' "$response" | jq -e '
-            .ok == true and
-            .mode == "mobile-command-center-v2" and
-            .identity_guard_configured == true and
-            .webhook_secret_configured == true
-          ' >/dev/null
+          info="$(curl --fail --silent --show-error \"https://api.telegram.org/bot${HERMES_TELEGRAM_BOT_TOKEN}/getWebhookInfo\")"
+          printf '%s' "$info" | jq -e '.ok == true and .result.url == "https://aperion-command-bridge.yenicespor-finans.workers.dev/telegram/webhook" and (.result.last_error_message // "") == ""' >/dev/null
