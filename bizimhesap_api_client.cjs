@@ -66,12 +66,17 @@ function normalizeMoney(value) {
 }
 
 function normalizeInvoicePayload(input = {}, firmId = '') {
-  const details = Array.isArray(input.details) ? input.details : [];
+  const details = Array.isArray(input.details) ? input.details : Array.isArray(input.Details) ? input.Details : [];
   const amounts = input.amounts || {};
+  const selectedFirmId = input.firmId || input.FirmId || firmId;
+  if (firmId && selectedFirmId !== firmId) throw new Error('invoice_firm_mismatch');
+  if (!/^[a-f0-9]{32}$/i.test(String(selectedFirmId))) throw new Error('invoice_firm_id_invalid');
+  const invoiceType = Number(input.invoiceType ?? input.InvoiceType);
+  if (![3, 5].includes(invoiceType)) throw new Error('invoice_type_must_be_3_or_5');
   return {
-    firmId: input.firmId || input.FirmId || firmId,
+    firmId: selectedFirmId,
     invoiceNo: input.invoiceNo || input.InvoiceNo || '',
-    invoiceType: Number(input.invoiceType || input.InvoiceType || 5),
+    invoiceType,
     note: input.note || input.Note || '',
     dates: input.dates || input.Dates || {},
     customer: input.customer || input.Customer || {},
@@ -98,6 +103,43 @@ function normalizeInvoicePayload(input = {}, firmId = '') {
       total: normalizeMoney(d.total || d.Total || 0),
     })),
   };
+}
+
+// Prevent incorrect firms, 100x prices, mismatched VAT/totals and partial
+// invoices from reaching the live API. Runs before any network request.
+function validateInvoicePayload(p) {
+  if (!p || !/^[a-f0-9]{32}$/i.test(String(p.firmId || ''))) throw new Error('invoice_firm_id_invalid');
+  if (![3, 5].includes(p.invoiceType)) throw new Error('invoice_type_invalid');
+  if (!p.customer || !(String(p.customer.customerId || p.customer.CustomerId || '').trim() ||
+                         String(p.customer.title || p.customer.Title || '').trim())) {
+    throw new Error('invoice_customer_missing');
+  }
+  if (!Array.isArray(p.details) || p.details.length === 0) throw new Error('invoice_lines_missing');
+  const money = value => {
+    const number = Number(value);
+    if (!Number.isFinite(number)) throw new Error('invoice_amount_nonfinite');
+    return number;
+  };
+  const total = money(p.amounts?.total);
+  const net = money(p.amounts?.net);
+  const tax = money(p.amounts?.tax);
+  if (total <= 0 || net < 0 || tax < 0) throw new Error('invoice_amount_invalid');
+  if (Math.abs(total - net - tax) > 0.010001) throw new Error('invoice_total_vat_mismatch');
+  let lineTotal = 0;
+  for (const line of p.details) {
+    if (!(String(line.productId || '').trim() || String(line.productName || '').trim())) {
+      throw new Error('invoice_product_missing');
+    }
+    if (!Number.isFinite(line.quantity) || line.quantity <= 0) throw new Error('invoice_quantity_invalid');
+    if (money(line.net) < 0 || money(line.tax) < 0) throw new Error('invoice_line_invalid');
+    const amount = money(line.total);
+    if (Math.abs(amount - money(line.net) - money(line.tax)) > 0.010001) {
+      throw new Error('invoice_line_vat_mismatch');
+    }
+    lineTotal += amount;
+  }
+  if (Math.abs(total - lineTotal) > 0.010001) throw new Error('invoice_line_sum_mismatch');
+  return true;
 }
 
 class BizimHesapB2BClient {
@@ -150,7 +192,9 @@ class BizimHesapB2BClient {
   }
 
   addInvoice(payload) {
-    return this.request('POST', 'addinvoice', normalizeInvoicePayload(payload, this.config.firmId));
+    const normalized = normalizeInvoicePayload(payload, this.config.firmId);
+    validateInvoicePayload(normalized);
+    return this.request('POST', 'addinvoice', normalized);
   }
 
   cancelInvoice(guid) {
@@ -290,4 +334,6 @@ module.exports = {
   getBizimHesapApiConfig,
   maskSecret,
   normalizeInvoicePayload,
+  normalizeMoney,
+  validateInvoicePayload,
 };
