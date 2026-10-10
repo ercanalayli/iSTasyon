@@ -111,6 +111,16 @@ async function connectAuthenticatedSessionBroker() {
   return false;
 }
 
+// Read-only probe. Does not navigate, launch another Chrome or re-login.
+async function probeAuthenticatedBizimHesapSession() {
+  const cached = Boolean(browser && page && !page.isClosed() &&
+    await hasAuthenticatedBizimHesapPage(page));
+  if (cached) return { authenticated: true, source: 'existing_session', checked_at: new Date().toISOString() };
+  if (browser && !browserOwnedByListener) await disconnectBrowser();
+  const authenticated = await connectAuthenticatedSessionBroker();
+  return { authenticated, source: authenticated ? 'existing_authenticated_broker' : 'not_authenticated', checked_at: new Date().toISOString() };
+}
+
 function log(msg) { console.log(`[${new Date().toISOString()}] ${msg}`); }
 
 const DESKTOP_TARGETS = Object.freeze({
@@ -1812,6 +1822,9 @@ async function handleCommand(cmd) {
     }
     if (cmd.command === 'desktop_open_url') {
       outcome = await openDesktopTarget(params.target);
+    } else if (cmd.command === 'bizimhesap_health') {
+      const health = await probeAuthenticatedBizimHesapSession();
+      outcome = { ok: health.authenticated, output: JSON.stringify(health) };
     } else {
     await ensureSession();
     if (cmd.command === 'bizimhesap_diaper_proforma') {
@@ -2128,8 +2141,32 @@ async function tick() {
   // bir daha ASLA islenmiyordu (#209/ID:179'da yakalandi). Baslangicta
   // yarim kalmis (processing) komutlar 'pending'e geri alinir, otomatik
   // yeniden denenir.
-  const { data: yarimKalanlar } = await db.from('bot_commands').update({ status: 'pending' }).eq('status', 'processing').select('id');
-  if (yarimKalanlar && yarimKalanlar.length) log(`UYARI: ${yarimKalanlar.length} yarim kalmis komut (onceki calistirmadan) yeniden kuyruga alindi: ${yarimKalanlar.map(r => r.id).join(',')}`);
+  const { data: yarimKalanlar, error: recoveryReadError } = await db.from('bot_commands')
+    .select('id,command').eq('status', 'processing');
+  if (recoveryReadError) {
+    log(`YARIM_KALAN_KOMUT_KONTROL_HATASI: ${recoveryReadError.message}`);
+  } else if (yarimKalanlar && yarimKalanlar.length) {
+    // A previous ERP write may have succeeded before its result persisted.
+    // A crash must never trigger a second financial posting or deletion.
+    const nonReplayable = new Set([
+      'bizimhesap_process', 'bizimhesap_expense', 'bizimhesap_diaper_proforma',
+      'bizimhesap_sil_bir', 'bizimhesap_masraf_sil', 'bizimhesap_sil_tumu'
+    ]);
+    for (const cmd of yarimKalanlar) {
+      if (nonReplayable.has(cmd.command)) {
+        const { error } = await db.from('bot_commands').update({
+          status: 'failed',
+          result: 'BELIRSIZ_DURUM: islem ortasinda servis yeniden basladi; BizimHesapta kayit/silme gerceklesmis olabilir. Salt-okunur ERP geri kontrolu olmadan TEKRARLAMA.',
+          completed_at: new Date().toISOString()
+        }).eq('id', cmd.id).eq('status', 'processing');
+        log(`FINANSAL_YENIDEN_YAZMA_ENGELLENDI #${cmd.id}: ${error ? error.message : cmd.command}`);
+      } else {
+        const { error } = await db.from('bot_commands').update({ status: 'pending' })
+          .eq('id', cmd.id).eq('status', 'processing');
+        log(`YARIM_KALAN_SALT_OKUMA #${cmd.id}: ${error ? error.message : cmd.command}`);
+      }
+    }
+  }
   // 2026-08-10: baslangic girisi try/catch DISINDA idi - BizimHesap giris
   // sayfasi gecici yavas yanit verince (12sn timeout) ensureSession() reddedip
   // butun process'i cokertiyordu, watchdog her 5dk'da yeni Chrome acip ayni
