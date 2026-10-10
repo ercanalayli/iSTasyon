@@ -1,3 +1,18 @@
+# AperiON iSTasyon - Güncel Durum (10 Ekim 2026)
+
+## Yeni ChatGPT sohbetlerinde ortak hafıza — 10 Ekim 2026
+
+- **Kanonik mevcut kaynak:** Google Sheets [Apeiron Kontrol Merkezi](https://docs.google.com/spreadsheets/d/155hZ1PRVKH-vlztPY99LnaGEuX5wq8ebNgoiCgcHdmc/edit), sekmeler `CONTEXT_FAST` (gid 2041898444), `OTURUM_HAFIZASI` (gid 105), `KURALLAR`, `A1_SNAPSHOT` (gid 522523951). **Canlı salt-okuma doğrulandı.** `CONTEXT_FAST` 2. satırında `aperion-global-crosschat-canonical-20261010` güncel ana checkpointi; BizimHesap, İstasyON ve Hasta Bezi için ilgili konu kayıtları mevcut.
+- **ChatGPT geçmiş bağlamdan geri çağırma:** Ayrı bir sohbetten kullanıcının 26 Eylül 2026 `herhangi bir yeni sohbet, sıfır tekrar` talimatı geri getirilebildi. Bu ilgili sohbetleri arama yeteneğini doğrular; **bütün ham ChatGPT konuşmalarının eksiksiz ve otomatik dış D1 sistemine aktarıldığı anlamına gelmez**.
+- **Kullanıcı kararı:** Herhangi bir ChatGPT sohbetinde geçmişi yeniden anlatmak, kopyala-yapıştır, yeni abonelik, Work/Codex kredisi zorunluluğu olmamalı. Yanıt veren agent önce ilgili kişisel bağlam, `CONTEXT_FAST` ana ve konu checkpointi, aktif kurallar, A1 olduğunda `A1_SNAPSHOT` okur, sonra orijinal kaynaklarla gerekirse doğrular.
+- **Güncellik önceliği:** D1 proje hafızası 14 Eylül 2026 kanıtı 725 aktif fact/28 karar/11 kaynak **geçmişe aittir**, bugünkü D1 toplamı doğrulanmadı. Korunan D1 `/api/session-bootstrap` API anahtarı olmadan yalnız Google Drive/Sheets kaynakları kullanılır; güvenlik koruması gevşetilmez. Normal ChatGPT yeni sohbetlerin otomatik açılış tetikleyicisi ve her tur için dış kalıcı yazma **uçtan uca kanıtlanmadı**.
+- **Güncel referans:** `AGENTS.md` başındaki `Cross-chat AperiON bootstrap — 2026-10-10` protokolü. Tek hafıza mimarisi korunur, ek rakip database açılmaz.
+- **BizimHesap:** Resmî API ile ürün kartı oluşturma ve fatura oluşturma kimliği geri geldi; 1 TL faturanın uygulamada saklanan tutarı bağımsız okunmadı, fatura iptali yapılmadı; 500 TL akaryakıt gideri kayıtlı değil. Kaynak: `docs/BIZIMHESAP_REAL_1TL_API_WRITE_2026-10-10.md`.
+- **Hasta Bezi:** Mayıs liste Drive XLSX `1Pt2r4JyKcGSa6SHDHDS8sx1T3lRHlu7u`, Ağustos liste `1Te8I7rA_TUian6CIryZj1ZxhdWN697lq` ve ikinci kopya `1VFU_8SaT2efxoaDLWUaUfEMeWdocQ1qH`; kopyalar fiyat bazında karşılaştırılmadan Ağustos fiyatıyla fatura çıkarma iddiası yok.
+- **Bir sonraki somut adım:** Canlı `CONTEXT_FAST` için doğrudan giriş/değişiklik yazmasının destekli ChatGPT aracıyla otomatik çalıştığını bağımsız yeni sohbet kabul testiyle kanıtlamak. ChatGPT platformu böyle bir otomatik tetik sağlamazsa sınıra açıkça `BLOCKED_PLATFORM_ACCESS` de; sahte otomasyon işareti koyma.
+
+---
+
 # AperiON iSTasyon - Güncel Durum (14 Eylül 2026)
 
 ## Proje sohbetleri ortak hafızası (14 Eylül 2026)
