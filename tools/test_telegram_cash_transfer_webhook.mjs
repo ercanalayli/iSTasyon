@@ -98,7 +98,10 @@ assert.equal(db.approvals.size, 1);
 
 const sendPayload = transmissions.find(item => item.url.endsWith('/sendMessage'))?.body;
 assert.match(sendPayload.text, /TEST MODU/);
+assert.match(sendPayload.text, /YAZMA KİLİTLİ/);
 assert.match(sendPayload.text, /3\.500,00 TL/);
+assert.match(sendPayload.reply_markup.inline_keyboard[0][0].text, /TEST ONAY/);
+assert.match(sendPayload.reply_markup.inline_keyboard[0][0].text, /YAZMA YOK/);
 const callbackData = sendPayload.reply_markup.inline_keyboard[0][0].callback_data;
 
 const callbackResponse = await onRequestPost({
