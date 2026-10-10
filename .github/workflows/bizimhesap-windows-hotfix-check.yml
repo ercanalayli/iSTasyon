@@ -1,0 +1,59 @@
+name: BizimHesap Windows Hotfix Safety
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/Install-AperiON-BizimHesap-Hotfix.ps1'
+      - 'tools/AperiON-BizimHesap-Guncelle.cmd'
+      - 'tools/aperion_command_listener.cjs'
+      - 'tools/lib/bizimhesap_session_ports.cjs'
+      - 'tools/test_bizimhesap_session_ports.cjs'
+      - '.github/workflows/bizimhesap-windows-hotfix-check.yml'
+permissions:
+  contents: read
+jobs:
+  hotfix-syntax-and-safety:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Windows PowerShell hotfix syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $issues = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path 'tools/Install-AperiON-BizimHesap-Hotfix.ps1').Path,
+            [ref]$tokens, [ref]$issues
+          ) | Out-Null
+          if ($issues.Count -gt 0) {
+            $issues | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+          Write-Host 'Windows hotfix PowerShell parse: PASS'
+      - name: Assert pinned download and financial write guards
+        shell: pwsh
+        run: |
+          $ps1 = Get-Content -Raw tools/Install-AperiON-BizimHesap-Hotfix.ps1
+          $cmd = Get-Content -Raw tools/AperiON-BizimHesap-Guncelle.cmd
+          foreach ($value in @(
+            'e2a96052c3e706d3689bc07c4a76e72329b07ce7',
+            'CheckIdle', 'CheckHealth', 'node --check',
+            'AperiON_BizimHesap_Listener_Watchdog', 'hash-object'
+          )) {
+            if (-not $ps1.Contains($value)) { throw "Guard missing: $value" }
+          }
+          if (-not $cmd.Contains('33a491da34ffd0b96d4927f62d0a1e2ada38b1c2')) { throw 'Launcher source not pinned' }
+          if (-not $cmd.Contains('141297208eba3e4eed16933635ed3f86d059d466')) { throw 'Launcher hash not pinned' }
+          if ($ps1 -match 'bizimhesap_expense|bizimhesap_process') { throw 'Hotfix must not post financial commands' }
+          Write-Host 'Immutable pin, idle guard and no-financial-write checks: PASS'
+      - name: Verify Node broker behavior
+        shell: pwsh
+        run: |
+          node --check tools/aperion_command_listener.cjs
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          node tools/test_bizimhesap_session_ports.cjs
+          if ($LASTEXITCODE -ne 0) { exit 1 }
