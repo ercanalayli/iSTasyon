@@ -24,4 +24,22 @@ assert.match(listener, /for \(const browserURL of brokerCandidateURLs\(\)\)/);
 assert.match(listener, /hasAuthenticatedBizimHesapPage\(candidate\)/);
 assert.match(listener, /getcurrentfirm/);
 assert.match(listener, /if \(attachOnly\(\)\)/);
-console.log('BizimHesap 9223/9222 broker and attach-only safety checks: PASS');
+// A health check must be read-only, without a new login/relaunch.
+assert.match(listener, /cmd\.command === 'bizimhesap_health'/);
+assert.match(listener, /probeAuthenticatedBizimHesapSession\(\)/);
+const probe = listener.slice(listener.indexOf('async function probeAuthenticatedBizimHesapSession()'), listener.indexOf('function log(msg)'));
+assert.ok(probe.includes('connectAuthenticatedSessionBroker()'));
+assert.ok(!probe.includes('puppeteer.launch('));
+assert.ok(!probe.includes('loginBizimHesap('));
+assert.ok(!probe.includes('.goto('));
+
+// Financial writes must not auto-replay when an interrupted process restarts.
+const recovery = listener.slice(listener.lastIndexOf("const { data: yarimKalanlar"));
+assert.match(recovery, /nonReplayable/);
+for (const command of ['bizimhesap_process', 'bizimhesap_expense', 'bizimhesap_diaper_proforma',
+    'bizimhesap_sil_bir', 'bizimhesap_masraf_sil', 'bizimhesap_sil_tumu']) {
+  assert.ok(recovery.includes(command), command + ': protected from automatic retry');
+}
+assert.match(recovery, /FINANSAL_YENIDEN_YAZMA_ENGELLENDI/);
+assert.ok(!recovery.includes("update({ status: 'pending' }).eq('status', 'processing')"));
+console.log('BizimHesap port fallback, safe health probe and financial replay protection: PASS');
