@@ -124,7 +124,7 @@ function validateInvoicePayload(p) {
   const net = money(p.amounts?.net);
   const tax = money(p.amounts?.tax);
   if (total <= 0 || net < 0 || tax < 0) throw new Error('invoice_amount_invalid');
-  if (Math.abs(total - net - tax) > 0.010001) throw new Error('invoice_total_vat_mismatch');
+  if (Math.abs(total - net - tax) > 0.000001) throw new Error('invoice_total_vat_mismatch');
   let lineTotal = 0;
   for (const line of p.details) {
     if (!(String(line.productId || '').trim() || String(line.productName || '').trim())) {
@@ -133,12 +133,12 @@ function validateInvoicePayload(p) {
     if (!Number.isFinite(line.quantity) || line.quantity <= 0) throw new Error('invoice_quantity_invalid');
     if (money(line.net) < 0 || money(line.tax) < 0) throw new Error('invoice_line_invalid');
     const amount = money(line.total);
-    if (Math.abs(amount - money(line.net) - money(line.tax)) > 0.010001) {
+    if (Math.abs(amount - money(line.net) - money(line.tax)) > 0.000001) {
       throw new Error('invoice_line_vat_mismatch');
     }
     lineTotal += amount;
   }
-  if (Math.abs(total - lineTotal) > 0.010001) throw new Error('invoice_line_sum_mismatch');
+  if (Math.abs(total - lineTotal) > 0.000001) throw new Error('invoice_line_sum_mismatch');
   return true;
 }
 
