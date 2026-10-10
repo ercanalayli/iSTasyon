@@ -31,14 +31,28 @@ export async function onRequestGet({ env }) {
            FROM source_health WHERE source_key='bizimhesap' LIMIT 1`
       )
     ]);
+    const recentRows = (recent.results || []).map(row => ({ ...row, payload: JSON.parse(row.payload_json || '{}'), payload_json: undefined }));
+    const salesRows = (sales.results || []).map(row => ({ occurred_at: row.occurred_at, ...JSON.parse(row.payload_json || '{}') }));
+    const latestValid = recentRows.find(row => {
+      const p = row.payload || {};
+      const product = String(p.urun || '').trim().toLowerCase();
+      return Number(p.ciro || 0) > 0 && product && product !== 'no data available in table';
+    }) || null;
+    const healthRow = health.results?.[0] || null;
+    const lastSuccessMs = healthRow?.last_success_at ? Date.parse(String(healthRow.last_success_at).replace(' ', 'T') + 'Z') : NaN;
+    const ageSeconds = Number.isFinite(lastSuccessMs) ? Math.max(0, Math.floor((Date.now() - lastSuccessMs) / 1000)) : null;
+    const fresh = ageSeconds !== null && ageSeconds <= 300;
     return json({
       ok: true,
       generated_at: new Date().toISOString(),
       source: 'cloudflare_d1.canonical_events',
+      fresh,
+      age_seconds: ageSeconds,
+      latest_valid: latestValid,
       summary: summary.results || [],
-      recent: (recent.results || []).map(row => ({ ...row, payload: JSON.parse(row.payload_json || '{}'), payload_json: undefined })),
-      sales: (sales.results || []).map(row => ({ occurred_at: row.occurred_at, ...JSON.parse(row.payload_json || '{}') })),
-      health: health.results?.[0] || null
+      recent: recentRows,
+      sales: salesRows,
+      health: healthRow
     });
   } catch (error) {
     return json({ ok: false, error: 'sales_summary_not_ready', message: error.message }, 503);
