@@ -1,7 +1,18 @@
 {
-  "mode": "read_only_advisory",
-  "bizimhesap_writes_enabled": false,
-  "effective_date": "2026-09-17",
+  "mode": "approval_gated_live",
+  "bizimhesap_writes_enabled": true,
+  "effective_date": "2026-10-10",
   "authority": "explicit_user_instruction",
-  "reason": "User handles BizimHesap record entry; ApeirON focuses on reporting, notifications, procurement and marketing."
+  "reason": "User wants ChatGPT/AperiON to execute BizimHesap and selected-site actions; all final financial writes remain explicit single-use approval gated.",
+  "safeguards": {
+    "read_automatic": true,
+    "prepare_automatic": true,
+    "final_write_requires_approval": true,
+    "approval_policy": "explicit_single_use",
+    "idempotency_required": true,
+    "duplicate_check_required": true,
+    "verify_after_write": true,
+    "audit_required": true,
+    "captcha_or_mfa": "stop_and_request_user"
+  }
 }
