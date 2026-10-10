@@ -49,12 +49,15 @@ function setupPage() {
   }});
 }
 async function startSecureSetup(env) {
-  let browser;
+  let browser; let stage='launch';
   try{
-    browser=await puppeteer.launch(env.BROWSER,{keep_alive:600000});
+    browser=await puppeteer.launch(env.BROWSER,{keep_alive:180000});
+    stage='open_tab';
     const page=await browser.newPage();
+    stage='navigate';
     await page.goto('https://uygulama.bizimhesap.com/web/ngn/newportal',{waitUntil:'domcontentloaded',timeout:20000});
     const cdp=await page.createCDPSession();
+    stage='live_view';
     const result=await cdp.send('Cloudflare.getLiveView',{mode:'tab',expiresInMs:900000});
     const session_id=browser.sessionId();
     const live_view_url=result.devtoolsFrontendUrl;
@@ -63,7 +66,11 @@ async function startSecureSetup(env) {
     return json({ok:true,session_id,live_view_url,write_enabled:false});
   }catch(error){
     if(browser){try{await browser.close()}catch(_){}}
-    return json({ok:false,error:error?.name==='TimeoutError'?'navigation_timeout':'browser_setup_unavailable'},503);
+    const message=String(error?.message||'');
+    const quota=/429|time limit exceeded for today|daily browser|quota exceeded/i.test(message);
+    const concurrency=/concurrent|too many sessions|too many browsers/i.test(message);
+    const category=quota?'daily_browser_quota_exceeded':concurrency?'browser_concurrency_limit':error?.name==='TimeoutError'?'navigation_timeout':'browser_setup_unavailable';
+    return json({ok:false,error:category,stage},quota?429:503);
   }
 }
 async function checkSecureSetup(env,request) {
