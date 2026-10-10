@@ -1,3 +1,13 @@
+# Hasta Bezi A1 latest independent-control contract — 2026-10-10
+
+When the user's input is **A1** in the Hasta Bezi context, do not ask questions or provide a brief synopsis. Read [Drive A1_SNAPSHOT](https://docs.google.com/spreadsheets/d/155hZ1PRVKH-vlztPY99LnaGEuX5wq8ebNgoiCgcHdmc/edit#gid=522523951) current_version **A1-20261010-v1**, full 33 line JSON and current [A1 contract](https://docs.google.com/document/d/1sSh_FnMi1CwLqv70Y4QRuflmqwZ8-kxB0pet0MUg6hA/edit); render all stops, complete **14-column** product tables and mandatory 14 audit controls, then route, cost/FIFO and master, without inventing records. A1 is an **audit-able ERP report**, not a chat summary. Previous A1 v3 and 7-column UI are **SUPERSEDED**.
+
+Scope: six shipment orders in the 2026-10-02—07 group use May 2026 Kardağ list minus 3% (user's 2026-10-10 written command). No double discount. Other orders retain their own evidence-based discounts. Recomputed 6 stops / 33 lines / 85 full bales / 0 open packs / 366 packages / 10,542 pieces. Independent arithmetic net **149,763.92 TRY**, VAT **14,976.40 TRY**, gross **164,740.32 TRY**, **PROVISIONAL ROUNDING RECONCILIATION +0.02 TRY vs previous**; do not claim amounts approved in BizimHesap. **Old fixed 1,500 TRY/stop freight and 9,000 total CANCELLED**, NOT zero. Route KM, “%10 fuel” interpretation, sourced fuel price, FIFO/COGS, invoices and shipment documents are **BLOCKED** pending source records. A1 0040 Hakan Jender XXL **6 packages / one bale / 120 units** is confirmed revision (prior four superseded). No invoice written without action-scoped explicit approval and source read-back.
+
+CAUTION: Older `google-apps-script/Code.gs` generic finance `aperionA1Refresh()` incorrectly cleared the audit-locked `A1_SNAPSHOT` tab. Repository source is patched to use `APEIRON_GENEL_A1_SNAPSHOT`; **deployment to live Apps Script has not been independently verified**. Do NOT run any old deployed generic refresh until patched; it can overwrite Hasta Bezi financial audit data. GitHub Actions generic A1 refresh is manually dispatched and does not write this Sheet.
+
+---
+
 # Cross-chat AperiON bootstrap — 2026-10-10
 
 **Primary instruction for any new task from a ChatGPT/Codex/agent session:** Do not ask the user to repeat past decisions, prices, or records until the existing sources have been checked. ChatGPT's own memory is a retrieval helper, **not** an exhaustive or authoritative transcript archive. No worker, repository instruction, or connector can force an unrelated new ChatGPT conversation to open this file automatically; never claim otherwise.
@@ -8,7 +18,7 @@
 1. `CONTEXT_FAST` gid `2041898444`: inspect row **2** (`aperion-global-crosschat-canonical-20261010`), then only rows relevant to the user's current subject. Row 2 is the global checkpoint, not proof that all the original conversations were migrated.
 2. `KURALLAR`: active explicit business rules and later user corrections.
 3. `OTURUM_HAFIZASI`: scoped project checkpoint and next action.
-4. `A1_SNAPSHOT` gid `522523951` **only** for the actual Hasta Bezi/A1 context; latest inspected version `A1-20261008-v3`, `AUDIT_LOCKED`. Never confuse it with the generic finance A1 or invent a newer version.
+4. `A1_SNAPSHOT` gid `522523951` **only** for the actual Hasta Bezi/A1 context; latest live-verified version **`A1-20261010-v1`, `AUDIT_LOCKED_WITH_BLOCKERS`** (verified 2026-10-10). Previous `A1-20261008-v3` is **SUPERSEDED** and archived in the same tab. Never confuse it with the generic finance A1 or reuse an old snapshot.
 5. Resolve referenced originals via connected Drive, BizimHesap read-only API, and this GitHub repository. Source-of-truth order: confirmed live source -> later explicit user correction -> dated approved source -> derived summary. When records disagree, record the disagreement and do not silently pick a number.
 
 **As of 2026-10-10:** Live Drive read of `CONTEXT_FAST` row 2 and `OTURUM_HAFIZASI` succeeded, and cross-conversation ChatGPT history retrieval returned the user's 2026-09-26 standing direction to continue projects without re-copying. These checks demonstrate *retrieval*, **not** that every chat turn is auto-synced to D1 or available in every future session. Protected D1 session-bootstrap requires `APERION_BRIDGE_SECRET`; do not expose this credential or make that endpoint public. Prior D1 snapshot 2026-09-14 (725 facts, 28 decisions, 11 sources) is **stale**.
