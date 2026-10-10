@@ -2,6 +2,10 @@ name: AperiON Telegram Mobile Command Center
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/telegram-mobile-command-center.yml'
 
 permissions:
   contents: read
