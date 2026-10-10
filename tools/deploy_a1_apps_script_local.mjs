@@ -12,6 +12,7 @@ const VAULT_SCRIPT = 'C:\\Users\\HP\\Documents\\Codex\\2026-08-27\\referenced-ch
 
 const SCRIPT_ID = '1cLRKKoLaJnIZc0ypC17b72_6Y_6s1TGqv7d3WGhC6T4WoWjlKS9H5z0Y';
 const LEGACY_DEPLOYMENT_ID = 'AKfycbyHhULNUaSFkteRSVNNPCARtqh9PTMSyRYOaMsOp2SvnDnQ5OrthACFxrzdD_SNovJUKw';
+const CURRENT_A1_DEPLOYMENT_ID = 'AKfycbzm567JGBoRpHX-Sjxr0NKfpzckCEcNcSIiyqUHoND7M734kSk4_TdYFq9RBEzlottUPA';
 const CONTROL_ID = '155hZ1PRVKH-vlztPY99LnaGEuX5wq8ebNgoiCgcHdmc';
 const MARKER = 'A1_BIZIMHESAP_SHEET_INGEST_V1';
 
@@ -209,8 +210,10 @@ async function deploy(accessToken) {
 
   const listed = await listDeployments(accessToken);
   const deployments = Array.isArray(listed?.deployments) ? listed.deployments : [];
-  let selected = deployments.find(d => d.deploymentId === LEGACY_DEPLOYMENT_ID) ||
-    deployments.find(d => Array.isArray(d.entryPoints) && d.entryPoints.some(ep => ep.entryPointType === 'WEB_APP')) ||
+  let selected = deployments.find(d => d.deploymentId === CURRENT_A1_DEPLOYMENT_ID) ||
+    deployments.find(d => String(d.deploymentConfig?.description || '').includes('A1 BizimHesap live sales mirror')) ||
+    deployments.find(d => Array.isArray(d.entryPoints) && d.entryPoints.some(ep => ep.entryPointType === 'WEB_APP') && d.deploymentId !== LEGACY_DEPLOYMENT_ID) ||
+    deployments.find(d => d.deploymentId === LEGACY_DEPLOYMENT_ID) ||
     deployments[0] || null;
 
   if (selected?.deploymentId) {
