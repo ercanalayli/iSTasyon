@@ -1,0 +1,49 @@
+name: ApeirON BizimHesap Package Preflight
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/aperion-bizimhesap-package-preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: aperion-bizimhesap-package-preflight
+  cancel-in-progress: true
+jobs:
+  validate-and-lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Lock exact resolved dependencies
+        working-directory: workers/aperion-bizimhesap-free
+        run: npm install --package-lock-only --no-audit --no-fund
+      - name: Confirm clean reproducible install
+        working-directory: workers/aperion-bizimhesap-free
+        run: npm ci --no-audit --no-fund
+      - name: Validate JavaScript syntax
+        working-directory: workers/aperion-bizimhesap-free
+        run: node --check src/index.js
+      - name: Validate Wrangler bundle without publishing
+        working-directory: workers/aperion-bizimhesap-free
+        run: npx --no-install wrangler deploy --dry-run --config wrangler.jsonc --outdir /tmp/aperion-bizimhesap-preflight
+      - name: Commit verified lockfile to current main branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add workers/aperion-bizimhesap-free/package-lock.json
+          if git diff --staged --quiet; then
+            echo "LOCKFILE_ALREADY_COMMITTED"
+            exit 0
+          fi
+          git commit -m "Lock and validate AperiON BizimHesap free browser dependencies"
+          git push origin HEAD:main
+          echo "BIZIMHESAP_PACKAGE_PREFLIGHT=PASS"
