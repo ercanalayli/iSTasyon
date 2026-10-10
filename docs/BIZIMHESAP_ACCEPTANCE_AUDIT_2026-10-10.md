@@ -13,11 +13,11 @@
 | Cloudflare Git Builds üretim deploy | `aperion-bizimhesap-free` | e1785eef-6d5e-4557-b367-5595c577d756: GitHub commit b67cf887, Cloudflare Workers Builds SUCCESS | GEÇTİ |
 | Worker sağlık | `/health` | HTTP 200, `ok:true`, `write_enabled:false`, `browser_binding:true` | GEÇTİ (yalnız servis/binding; gerçek BizimHesap login değil) |
 | Yetkisiz tarayıcı erişimi | `/probe` | Yetkisiz istek HTTP 401 | GEÇTİ |
-| Ürün okuma | Resmî B2B `GET /api/b2b/products` | HTTP 200; application/json; 1.334.980 bayt; JSON nesnesi; HTML veya tanınan yetkisiz-hata cevabı değil | GEÇTİ: gerçek API veri yanıtı, ayrıca zaman/satır bazlı mutabakat gerekli |
+| Ürün okuma | Resmî B2B `GET /api/b2b/products` | HTTP 200; `resultCode:1`; `data.products`: 3.035 ürün; 1.334.980 bayt JSON yanıt | GEÇTİ: gerçek API veri yanıtı, zaman/satır mutabakatı ayrıca gerekli |
 | Depolar | Resmî B2B `GET /api/b2b/warehouses` | HTTP 200; `resultCode:1`; `data.warehouses` içinde 2 nesne; `id` ve `title` alanları | GEÇTİ |
 | Bir deponun stokları | Resmî B2B `GET /api/b2b/inventory/{depo-id}` | HTTP 200; `resultCode:1`; 733.501 bayt; `data.inventory` alanı | GEÇTİ |
 | İki deponun tam mutabakatı | İkinci depo stokları ve depo bazlı stok farkları | İkinci depo ve ürün bazında karşılaştırma henüz çalıştırılmadı | KANIT YOK |
-| Giriş yapılmış BizimHesap hesabı | Cloudflare Browser Run gerçek oturum | Bağlantı binding'i var; uygulama oturumu doğrudan doğrulanmadı | KANIT YOK |
+| Sunucu tarayıcısı / BizimHesap erişimi | Cloudflare Browser Run gerçek oturum | Gerçek sunucu tarayıcısı çalıştırıldı; masraf URL'sinden HTTP 200; `challenge_detected:false`; `login_detected:true`; `app_navigation_detected:false` | TARAYICI ÇALIŞTI; SUNUCUDA OTURUM YOK |
 | Gider kaydetme | 500 TL Akaryakıt / 10.10.2026 / Ercan Nakit Kasa | Kullanıcı onayı saklı: `3a45b935-f6e7-40aa-aca2-cf648601e1fc`, durum `control_waiting`; gönderilmiş işlem yok | GEÇMEDİ: gerçek ERP kayıt kanıtı yok |
 | Kaydı BizimHesap'tan tekrar okuma | Yeni giderin benzersiz kaynak ID'si + tutar/hesap karşılaştırması | Kayıt henüz yapılmadı | KANIT YOK |
 | Mükerrer kayıt koruması | Aynı komutu iki kez gönderip kaynakta tek kayıt doğrulama | Gerçek ERP yazma için uygulanmadı | KANIT YOK |
@@ -66,6 +66,6 @@ Bu satırlar kaynak ERP'nin son hareket zamanı veya anlık bütünlük gösterg
 
 ## Hâlen eksik olanlar
 
-Canlı BizimHesap masraf/kasa oturumu, Cloudflare Browser Run'ın BizimHesap üzerinde gerçekten gezinmesi, finansal yazmanın yetkili kaydı ve geri okuma. Bu modüllerin tamamlandığı iddia edilemez.
+Canlı BizimHesap masraf/kasa oturumu, Cloudflare Browser Run'da kimlik doğrulanmış modül gezintisi, finansal yazmanın yetkili kaydı ve geri okuma. Bulut tarayıcısının masraf URL'sini açtığı kanıtlandı; uygulama giriş sayfasında kaldığı için iç modüle erişim kanıtı yok. Bu modüllerin tamamlandığı iddia edilemez.
 
-Sonuç: **B2B ürün/depo/ilk stok okuması kanıtlandı. Tam ön muhasebe otomasyonu ve tek tıklamasız sohbetten kayıt KANITLANMADI.**
+Sonuç: **B2B canlı 3.035 ürün/2 depo/ilk depo stok okuması; Browser Run teknik çalıştırma kanıtlandı. Sunucu oturumu bulunamadı. Tam ön muhasebe otomasyonu ve tek tıklamasız sohbetten kayıt KANITLANMADI.**
