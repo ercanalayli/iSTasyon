@@ -26,8 +26,8 @@ async function isAuthorized(given, expected) {
 }
 
 
-const SETUP_EXPIRES_AT = Date.parse('2026-10-10T20:30:00Z');
-const SETUP_HASH = '85be88abe2b64de6db631a03a47221897c1f7b2281011498aae73fafc32f3e1e';
+const SETUP_EXPIRES_AT = Date.parse('2026-10-10T21:35:54Z');
+const SETUP_HASH = '0bcc035e22940e0a63810b18295f6d14aecaa240dc2cc90399ea7b7401360f47';
 async function validSetupToken(request) {
   // Cookie is set only after a verified handoff and is HttpOnly, Secure, SameSite=Strict.
   const cookie = request.headers.get('Cookie') || '';
@@ -118,7 +118,7 @@ export default {
     }
 
     if (u.pathname === '/health' && request.method === 'GET') {
-      return json({ ok: true, mode: 'READ_ONLY_PREFLIGHT', write_enabled: false, browser_binding: !!env.BROWSER });
+      return json({ ok: true, mode: 'READ_ONLY_PREFLIGHT', write_enabled: false, browser_binding: !!env.BROWSER, setup_version:'20261010-mobile-v2', setup_expires_at: new Date(SETUP_EXPIRES_AT).toISOString() });
     }
     if (u.pathname !== '/probe') return json({ error: 'not_found' }, 404);
     if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405);
