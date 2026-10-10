@@ -46,4 +46,28 @@ pass('invalid amount is rejected before network I/O',()=>{
  client.request=()=>{throw Error('NETWORK_MUST_NOT_BE_CALLED')};
  assert.throws(()=>client.addInvoice({...valid,amounts:{...valid.amounts,total:'100.00'}}),/invoice_total_vat_mismatch/);
 });
+pass('Gamze Eczanesi May 2026 3 percent discount: four real SKU amounts match 9531.92',()=>{
+ const real = {
+  firmId, invoiceType:3,
+  customer:{customerId:'219C65ACD6C24DB6AA977C9F49561B19',title:'GAMZE ECZANESİ ECZ. HÜLYA NİZAM'},
+  amounts:{currency:'TL',gross:'8933.40',discount:'268.01',net:'8665.39',tax:'866.53',total:'9531.92'},
+  details:[
+   {productId:'7DE6C284FBD64BA1BDC7BC097EC3151E',productName:'JENDER BEL BANTLI LARGE 7LI',quantity:36,unitPrice:'134.64',grossPrice:'4847.04',discount:'145.41',net:'4701.63',tax:'470.16',taxRate:10,total:'5171.79'},
+   {productId:'5F2A75998EFD4F6EAFF4E939DC061CDE',productName:'JENDER BEL BANTLI MEDIUM 8LI',quantity:12,unitPrice:'129.88',grossPrice:'1558.56',discount:'46.76',net:'1511.80',tax:'151.18',taxRate:10,total:'1662.98'},
+   {productId:'662756EF22EB4F0EBC1A7248B0DD4B7B',productName:'JENDER BEL BANTLI XL 7LI',quantity:12,unitPrice:'140.08',grossPrice:'1680.96',discount:'50.43',net:'1630.53',tax:'163.05',taxRate:10,total:'1793.58'},
+   {productId:'4E82B2A9F2A24C349B3F02707B5ACC45',productName:'MOLY SERME 60X90',quantity:6,unitPrice:'141.14',grossPrice:'846.84',discount:'25.41',net:'821.43',tax:'82.14',taxRate:10,total:'903.57'}
+  ]
+ };
+ const payload=normalizeInvoicePayload(real,firmId);
+ assert.equal(validateInvoicePayload(payload),true);
+ assert.equal(payload.amounts.total,'9531.92');
+ const wrong={...payload,details:payload.details.map(x=>({...x}))};
+ wrong.details[0].discount='145.40';
+ assert.throws(()=>validateInvoicePayload(wrong),/invoice_line_discount_mismatch/);
+ const wrongHeader={...payload,amounts:{...payload.amounts,discount:'268.00'}};
+ assert.throws(()=>validateInvoicePayload(wrongHeader),/invoice_header_discount_mismatch/);
+ const wrongTax={...payload,details:payload.details.map(x=>({...x}))};
+ wrongTax.details[0].tax='470.17';wrongTax.details[0].total='5171.80';
+ assert.throws(()=>validateInvoicePayload(wrongTax),/invoice_line_tax_rate_mismatch/);
+});
 console.log('BIZIMHESAP_MONEY_SAFETY_PASS='+passed+'; REMOTE_WRITES=0');
