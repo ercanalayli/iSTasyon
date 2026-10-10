@@ -46,7 +46,7 @@ $meta = [ordered]@{
 [IO.File]::WriteAllText($metaPath,($meta | ConvertTo-Json -Depth 4),[Text.UTF8Encoding]::new($false))
 
 try {
-  & icacls $dir /inheritance:r /grant:r "$env:USERNAME:(OI)(CI)F" | Out-Null
+  & icacls $dir /inheritance:r /grant:r "${env:USERNAME}:(OI)(CI)F" | Out-Null
 } catch {}
 
 Write-Host ("OK - {0} kimlik bilgisi DPAPI ile yerelde saklandi. Sifre ekrana veya repoya yazilmadi." -f $key)
