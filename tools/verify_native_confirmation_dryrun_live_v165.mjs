@@ -34,7 +34,7 @@ const preparedResponse = await fetch(`${endpoint}/v1/chatgpt/commands`, {
 });
 const prepared = await preparedResponse.json();
 assert(preparedResponse.ok, JSON.stringify(prepared));
-assert.equal(prepared.message, '10 TL Transfer\nErcan Nakit Kasa → Akbank Şirket');
+assert.equal(prepared.message, '10 TL Transfer\nErcan Nakit Kasa \u2192 Akbank \u015eirket');
 assert.deepEqual(Object.keys(prepared).sort(), ['_internal_approval_context', 'message']);
 assert.equal(prepared._internal_approval_context.conversation_key, conversationKey);
 assert.match(prepared._internal_approval_context.command_id, /^[0-9a-f-]{36}$/i);
@@ -48,7 +48,7 @@ const approvalResponse = await fetch(`${endpoint}/v1/chatgpt/approve`, {
     command_id: prepared._internal_approval_context.command_id,
     payload_hash: prepared._internal_approval_context.payload_hash,
     conversation_key: conversationKey,
-    approval_text: 'Onaylıyorum',
+    approval_text: 'Onayl\u0131yorum',
   }),
   signal: AbortSignal.timeout(15000),
 });
