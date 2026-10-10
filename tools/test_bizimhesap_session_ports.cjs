@@ -59,7 +59,7 @@ async function verifyAuthWithFakeBrowser({ url = 'https://uygulama.bizimhesap.co
     URL,
     fetch: async () => ({ ok, json: async () => payload }),
   };
-  const checker = vm.runInNewContext(authSource + '\\n;hasAuthenticatedBizimHesapPage', context);
+  const checker = vm.runInNewContext(authSource + '\n;hasAuthenticatedBizimHesapPage', context);
   const candidate = {
     isClosed: () => closed,
     url: () => url,
