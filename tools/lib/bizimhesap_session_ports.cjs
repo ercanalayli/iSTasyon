@@ -3,8 +3,9 @@
 // Reuse an already authenticated Chrome session; never infer that an open
 // BizimHesap tab means authenticated access.
 const LOCAL_BROKERS = Object.freeze([
-  'http://127.0.0.1:9223',
+  // The user's active signed-in Chrome was explicitly verified on 9222.
   'http://127.0.0.1:9222',
+  'http://127.0.0.1:9223',
 ]);
 
 function brokerCandidateURLs(env = process.env) {
