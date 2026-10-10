@@ -1,5 +1,20 @@
 # AperiON iSTasyon - Güncel Durum (10 Ekim 2026)
 
+## Hasta Bezi A1 — Denetlenebilir ERP/CFO Standardı (10 Ekim 2026)
+
+**CANLI GOOGLE SHEETS'E YAZILDI VE TEKRAR OKUNARAK DOĞRULANDI:** `A1_SNAPSHOT` current_version `A1-20261010-v1`, audit-locked with evidence blockers. Previous `A1-20261008-v3` complete original JSON is archived in `A1_SNAPSHOT` as `SUPERSEDED_SNAPSHOT_A1_20261008_V3`, **deleted or overwritten değildir**.
+
+**Yeni 17 bölümlü kullanıcı sözleşmesi:** [A1 ERP + CFO + 14 kolonlu bağımsız denetim standardı](https://docs.google.com/document/d/1sSh_FnMi1CwLqv70Y4QRuflmqwZ8-kxB0pet0MUg6hA/edit). `KURALLAR` içinde `A1_FULL_AUDIT_CONTRACT_20261010`, `A1_POLICY_MANIFEST` içinde `A1-POLICY-20261010-v1`. `DENETIM_RAPORLARI` içinde `A1-AUDIT-20261010-v1` ve `CONTEXT_FAST` ilgili son checkpoint güncellendi. `A1` tek komutu artık özet değil, bütün 6 stop/33 satır/14 sütun/14 audit kontrolü, fiyat ve kaynak linkleriyle TAM RAPOR; soru sorulmaz.
+
+**Sınırlı güncel sevkiyat grubu:** 6 müşteri, 33 kalem, 85 tam balya, 0 açık paket, 366 paket, 10.542 tekil ürün adedi. Mayıs 2026 Kardağ kaynak ürün listesi, bu sevkiyat grubu için kullanıcı talimatı %3 indirim, %10 KDV. **PROVISIONAL** kuruş yuvarlama hesabı: Mayıs liste hrç 154.395,79 TL; %3 indirim 4.631,87 TL; net 149.763,92 TL; KDV 14.976,40 TL; brüt 164.740,32 TL. Eski 164.740,30 TL brüt ile **+0,02 TL** fark, `ROUNDING RECONCILIATION`; BizimHesap gerçek son yuvarlama kanıtı olmadan FINAL değil. Altı müşteri her satırdan yeniden hesaplandı. Hakan XXL 6 paket ×20=120 adet, 1 balya.
+
+**LOJİSTİK REVİZYONU:** önceki 1.500 TL/stop ve 9.000 TL master maliyet **CANCELLED**, yeni masraf “0 TL” değil, “kanıt bekleniyor”. Gerçek adres / route km / “%10 yakıt gideri” yorumunun doğrulanması / litre fiyatı / FIFO alış faturaları-lot yok: **BLOCKED**. Fatura no + shipment tarihi olmadan POSTED, SHIPPED, CLOSED denmez. Gamze Eczanesi ve Kent ayrı operasyonlar; bu altı stopa sessizce katılmaz.
+
+**KRİTİK GÜVENLİK RİSKİ:** eski `google-apps-script/Code.gs` genel finans A1 `aperionA1Refresh()`, `A1_SNAPSHOT` tabını **`clearContents()` ile silen yanlış eski kod** içeriyordu. Repo kodu 10.10.2026'da `APEIRON_GENEL_A1_SNAPSHOT` sekmesini kullanacak şekilde değiştirildi (commit `b1f88e073934c29634fd20de4c6be1cc0c6dd4d9`), fakat **canlı Apps Script'e dağıtıldığı doğrulanmadı**. Eski dağıtımın generic A1 refresh'i çalıştırılırsa Hasta Bezi A1 snapshot silinebilir. Koruyucu yama üretime alınana kadar eski A1 refresh'i tetikleme. Pazartesi yerel kurulum planında bu kontrole öncelik ver.
+
+---
+
+
 ## Yeni ChatGPT sohbetlerinde ortak hafıza — 10 Ekim 2026
 
 - **Kanonik mevcut kaynak:** Google Sheets [Apeiron Kontrol Merkezi](https://docs.google.com/spreadsheets/d/155hZ1PRVKH-vlztPY99LnaGEuX5wq8ebNgoiCgcHdmc/edit), sekmeler `CONTEXT_FAST` (gid 2041898444), `OTURUM_HAFIZASI` (gid 105), `KURALLAR`, `A1_SNAPSHOT` (gid 522523951). **Canlı salt-okuma doğrulandı.** `CONTEXT_FAST` 2. satırında `aperion-global-crosschat-canonical-20261010` güncel ana checkpointi; BizimHesap, İstasyON ve Hasta Bezi için ilgili konu kayıtları mevcut.
