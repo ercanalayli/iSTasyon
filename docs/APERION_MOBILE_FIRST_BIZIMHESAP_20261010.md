@@ -49,3 +49,14 @@
 **Etkin aşama:** SERVER_HEALTH_PASS / BROWSER_BINDING_PASS / AUTH_SESSION_BLOCKED / LIVE_INVOICE_READBACK_BLOCKED / FINANCIAL_WRITE_DISABLED.
 
 **Sürüm mantığı:** Bu belge A1 14 kolonlu sabit tabloyu değiştirmez; sadece görevleri mobil server-first yürütür.
+
+## 11.10.2026 teknik ilerleme — self-hosted VPS okuyucu prototipi (kurulum bekliyor)
+
+**Bağlı VPS/SSH araç yetkisi bu ChatGPT oturumunda mevcut değil.** Bu yüzden canlı Hostinger'a dosya kopyalandı/servis başlatıldı denemez. Ayrı bir çalıştırılabilir paket üretildi: `aperion-bizimhesap-vps-reader-mvp.zip` (ChatGPT çalışma çıktısı). İçerik: Docker Compose, Dockerfile, `server.mjs`, `audit-core.mjs`, 6 adet otomatik test, paket bildirimi, güvenlik/kurulum dokümanı ve örnek env. Testler local Node 22 ile **6/6 PASS**, gerçek BizimHesap fatura okuma testi yapılmadı.
+
+Mimari: Mevcut Hostinger VPS üzerinde açık kaynak Chromium Docker, kalıcı sunucu tarayıcı profili, yalnız localhost'a bağlanan 3001 GUI/4876 salt-okuma okuyucu; CDP 9222 hiçbir zaman internete açık olmayacak. Okuyucu sadece listede görünen satırları **CANDIDATES_ONLY** kaydeder; boş liste **fatura yok kanıtı değildir**. Fatura satır/PDF/XML bağımsız okuması henüz uygulanmadı; gerçek kullanımda `CLOSED` yok. Fatura oluşturma/gider/tahsilat vb. POST yok.
+
+**Önemli ücretli plan düzeltmesi:** Tailscale'in Personal ücretsiz planı işletme kullanımı için uygun değildir (resmî https://tailscale.com/pricing). İlave abonelik gerektirmeyen tercih, VPS üzerinde **self-hosted WireGuard VPN** ve iPhone WireGuard istemcisidir. VPS kaynaklarının, WireGuard ve Chromium güvenliğinin ayrı denetimi gerekir. Port 3001/4876/9222'nin internete açılması yasak. LinuxServer Chromium GUI ayrıca terminal/yüksek yetkili erişim sunabildiğinden sadece güvenli özel ağdan ve denetimli kullanıcı erişimiyle açılır: https://docs.linuxserver.io/images/docker-chromium/.
+
+**Sonraki teknik kabul zinciri:** VPS erişim yetkisi → çalışan Hermes/Docker envanteri → mevcut işlemi bozmadan kapsüllenmiş reader dağıtımı → WireGuard özel mobil giriş → kullanıcı MFA → canlı BizimHesap fatura ekranı ve bütün satır+PDF/XML → 8 sipariş mutabakatı ve duplicate gate → sağlık/recovery/backup/audit izi. Bu adımlar yerine gelmeden 7/24 çalışan diye sunulmaz.
+
