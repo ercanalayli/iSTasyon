@@ -17,6 +17,7 @@ const { sendFinanceResult } = require('./telegram_finance_result.cjs');
 const { loadDiaperPriceCatalog, resolveDiaperCatalogItem, parseDiscountPercent } = require('./diaper_price_catalog.cjs');
 const { userSafeDesktopResult } = require('./desktop_result_formatter.cjs');
 const { assertBizimHesapWriteEnabled } = require('./lib/bizimhesap_write_policy.cjs');
+const { brokerCandidateURLs, attachOnly } = require('./lib/bizimhesap_session_ports.cjs');
 
 const ENV_FILE = path.join(__dirname, '..', 'local-secrets', 'bizimhesap.local.env');
 if (!fs.existsSync(ENV_FILE)) { console.error('HATA: local-secrets/bizimhesap.local.env yok.'); process.exit(1); }
@@ -72,37 +73,42 @@ async function disconnectBrowser() {
   browserOwnedByListener = false;
 }
 
+async function hasAuthenticatedBizimHesapPage(candidate) {
+  if (!candidate || candidate.isClosed() || !/bizimhesap\.com\/web\//i.test(candidate.url())) return false;
+  return candidate.evaluate(async () => {
+    try {
+      const response = await fetch('/api/AngularControllers/firms/getcurrentfirm', { credentials: 'include' });
+      if (!response.ok) return false;
+      const payload = await response.json().catch(() => null);
+      const firm = payload?.Data || payload?.data || payload;
+      return Boolean(firm && typeof firm === 'object' &&
+        (firm.Id || firm.id || firm.FirmId || firm.firmId || firm.Name || firm.name));
+    } catch { return false; }
+  }).catch(() => false);
+}
+
 async function connectAuthenticatedSessionBroker() {
-  const browserURL = process.env.APERION_BIZIMHESAP_BROWSER_URL || 'http://127.0.0.1:9223';
-  let connected;
-  try {
-    connected = await puppeteer.connect({ browserURL, defaultViewport: null });
-    const pages = await connected.pages();
-    const candidates = pages.filter(candidate => /bizimhesap\.com/i.test(candidate.url()));
-    for (const candidate of candidates) {
-      let url = candidate.url();
-      if (!/\/web\//i.test(url)) continue;
-      const authenticated = await candidate.evaluate(async () => {
-        try {
-          const response = await fetch('/api/AngularControllers/firms/getcurrentfirm', { credentials: 'include' });
-          if (!response.ok) return false;
-          const payload = await response.json().catch(() => null);
-          const firm = payload?.Data || payload?.data || payload;
-          return Boolean(firm && typeof firm === 'object' && (firm.Id || firm.id || firm.FirmId || firm.firmId || firm.Name || firm.name));
-        } catch { return false; }
-      }).catch(() => false);
-      if (!authenticated) continue;
-      browser = connected;
-      page = candidate;
-      browserOwnedByListener = false;
-      return true;
+  // Windows currently has different 9222/9223 broker paths. Attach to either
+  // only after a real firm API auth check; never assume a visible tab is logged in.
+  for (const browserURL of brokerCandidateURLs()) {
+    let connected;
+    try {
+      connected = await puppeteer.connect({ browserURL, defaultViewport: null });
+      const pages = await connected.pages();
+      for (const candidate of pages.filter(p => /bizimhesap\.com/i.test(p.url()))) {
+        if (!(await hasAuthenticatedBizimHesapPage(candidate))) continue;
+        browser = connected;
+        page = candidate;
+        browserOwnedByListener = false;
+        log('Kimligi dogrulanmis BizimHesap broker baglandi: ' + browserURL);
+        return true;
+      }
+      connected.disconnect();
+    } catch (_error) {
+      try { connected?.disconnect(); } catch {}
     }
-    connected.disconnect();
-    return false;
-  } catch (_error) {
-    try { connected?.disconnect(); } catch {}
-    return false;
   }
+  return false;
 }
 
 function log(msg) { console.log(`[${new Date().toISOString()}] ${msg}`); }
@@ -237,12 +243,7 @@ const trToNumber = s => Number(String(s || '').replace(/\./g, '').replace(',', '
 
 async function ensureSession() {
   if (browser && page && !page.isClosed() && !browserOwnedByListener) {
-    const brokerAuthenticated = await page.evaluate(async () => {
-      try {
-        const response = await fetch('/api/AngularControllers/firms/getcurrentfirm', { credentials: 'include' });
-        return response.ok;
-      } catch { return false; }
-    }).catch(() => false);
+    const brokerAuthenticated = await hasAuthenticatedBizimHesapPage(page);
     if (brokerAuthenticated) return;
     await disconnectBrowser();
   }
@@ -253,6 +254,10 @@ async function ensureSession() {
   if (await connectAuthenticatedSessionBroker()) {
     log('Gözetlenen BizimHesap oturum brokerına bağlanıldı; ikinci giriş açılmadı.');
     return;
+  }
+
+  if (attachOnly()) {
+    throw new Error('BizimHesap brokerinda 9223 ve 9222 oturumlari dogrulanamadi; attach-only modu yeni giris veya ikinci Chrome acilmasini engelledi.');
   }
 
   // 2026-08-10: bu kontrol ONCE "browser && page zaten var mi" hizli-yolundan
