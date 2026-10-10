@@ -2,6 +2,8 @@
 
 **Primary instruction for any new task from a ChatGPT/Codex/agent session:** Do not ask the user to repeat past decisions, prices, or records until the existing sources have been checked. ChatGPT's own memory is a retrieval helper, **not** an exhaustive or authoritative transcript archive. No worker, repository instruction, or connector can force an unrelated new ChatGPT conversation to open this file automatically; never claim otherwise.
 
+**Shared ChatGPT + Gemini entry document (Google Drive, owner-only):** https://docs.google.com/document/d/1FXjgBKSW5WyGVu-RqNthgVJ1KWrmx54o8Kh-9UMecO4/edit — a navigation/instruction document, **not** an independent memory copy. Add it and the canonical sheet as knowledge/project sources in each assistant's own UI; these per-product settings have not been confirmed connected.
+
 **Single canonical cross-session source (not a new database):** Google Sheets [Apeiron Kontrol Merkezi](https://docs.google.com/spreadsheets/d/155hZ1PRVKH-vlztPY99LnaGEuX5wq8ebNgoiCgcHdmc/edit), in this exact order:
 1. `CONTEXT_FAST` gid `2041898444`: inspect row **2** (`aperion-global-crosschat-canonical-20261010`), then only rows relevant to the user's current subject. Row 2 is the global checkpoint, not proof that all the original conversations were migrated.
 2. `KURALLAR`: active explicit business rules and later user corrections.
