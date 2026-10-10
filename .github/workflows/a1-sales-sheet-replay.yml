@@ -30,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$APERION_BRIDGE_SECRET"
-          BODY="$(curl -fsSL --retry 5 --retry-delay 3 \
+          BODY="$(curl -sSL --retry 2 --retry-delay 2 \
             -H "Authorization: Bearer $APERION_BRIDGE_SECRET" \
             -H 'content-type: application/json' \
             --data '{"limit":200}' \
