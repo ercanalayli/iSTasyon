@@ -1,3 +1,5 @@
+import { preferredBizimHesapChannel } from '../shared/bizimhesap-api-capabilities.js';
+
 export const DESKTOP_TARGETS = Object.freeze({
   bizimhesap: {
     title: 'BizimHesap',
@@ -208,7 +210,7 @@ function parseNaturalFinance(normalized, rawText) {
   }
   if (expense) {
     const source = accounts[0] || null;
-    const parsed = { ...common, code:'bizimhesap.expense_post', operation:'gider', expenseCategory:/\b(cay|ikram)\b/.test(normalized)?'Çay / İkram':'Genel Gider', sourceAccount:source?.name || null, sourceAccountId:source?.id || null };
+    const parsed = { ...common, code:'bizimhesap.expense_post', operation:'gider', expenseCategory:/\b(cay|ikram)\b/.test(normalized)?'Çay / İkram':/\b(akaryakit|yakit|benzin|motorin)\b/.test(normalized)?'Akaryakıt':'Genel Gider', sourceAccount:source?.name || null, sourceAccountId:source?.id || null };
     return source ? { ...parsed, status:'approval_required', duplicateCheck:'required' } : clarification(parsed, ['source_account'], `${amount.toLocaleString('tr-TR')} TL gider. Hangi kasa/hesaptan ödendi?`);
   }
   const operation = collection ? 'tahsilat' : payment ? 'odeme' : 'fatura_taslagi';
@@ -238,7 +240,7 @@ function parseFinanceExpense(normalized, rawText) {
     parsedScope: 'ALAYLI',
     amount,
     currency: 'TRY',
-    expenseCategory: tea ? 'Çay / İkram' : 'Genel Gider',
+    expenseCategory: tea ? 'Çay / İkram' : /\b(akaryakit|yakit|benzin|motorin)\b/.test(normalized) ? 'Akaryakıt' : 'Genel Gider',
     sourceAccount: ercanCash ? 'Ercan Nakit Kasa' : null,
     sourceAccountId: ercanCash ? '1525267' : null,
     target: 'BizimHesap',
@@ -272,7 +274,10 @@ export function parseUniversalCommand(text) {
   }
 
   const naturalFinance = parseNaturalFinance(normalized, rawText);
-  if (naturalFinance) return naturalFinance;
+  if (naturalFinance) {
+    const apiPreference = preferredBizimHesapChannel(naturalFinance.code);
+    return { ...naturalFinance, apiPreference };
+  }
 
   const sensitiveCategory = approvalCategory(normalized);
   if (sensitiveCategory) {
