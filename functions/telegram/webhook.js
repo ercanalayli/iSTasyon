@@ -766,7 +766,7 @@ return { ok: false, error: 'approval_queue_failed', detail: error.message };
 
 function transferApprovalText(intent) {
 return [
-'🧪 TEST MODU — BizimHesap kaydı yapılmayacak',
+'🧪 TEST MODU — YAZMA KİLİTLİ — BizimHesap kaydı yapılmayacak',
 '',
 'Kaynak hesap adayı: ' + intent.source_account_candidate,
 'Hedef hesap adayı: ' + intent.target_account_candidate,
@@ -780,7 +780,7 @@ function transferApprovalButtons(approvalId) {
 return {
 inline_keyboard: [
 [
-{ text: 'ONAYLA (TEST)', callback_data: `ct:a:${approvalId}` },
+{ text: '🧪 TEST ONAY — YAZMA YOK', callback_data: `ct:a:${approvalId}` },
 { text: 'REDDET', callback_data: `ct:r:${approvalId}` }
 ],
 [{ text: 'HESAP DÜZELT', callback_data: `ct:e:${approvalId}` }]
