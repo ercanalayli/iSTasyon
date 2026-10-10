@@ -31,5 +31,11 @@ jobs:
     - name: Project conversation memory tests
       run: npm run verify:project-conversation-memory-v158
 
+    - name: Site action policy safety
+      run: node tools/test_site_action_contract_v1.cjs
+
+    - name: Telegram transfer approval isolation
+      run: node tools/test_telegram_cash_transfer_webhook.mjs
+
     - name: Docker Build Check
       run: docker build . -t istasyon-bot-test
