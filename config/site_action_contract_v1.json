@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "command_center": "ChatGPT",
+  "execution_engine": "AperiON",
+  "terminal_states": [
+    "completed_verified",
+    "failed_safe",
+    "needs_review",
+    "approval_required"
+  ],
+  "risk_classes": {
+    "read": {
+      "execution": "automatic",
+      "approval": false
+    },
+    "prepare": {
+      "execution": "automatic",
+      "approval": false
+    },
+    "write": {
+      "execution": "after_explicit_single_use_approval",
+      "approval": true
+    },
+    "destructive": {
+      "execution": "after_explicit_single_use_approval",
+      "approval": true
+    }
+  },
+  "required_execution_guards": [
+    "site_registered",
+    "capability_allowed",
+    "session_or_credential_available",
+    "idempotency_key_present",
+    "duplicate_check_passed",
+    "approval_bound_to_exact_payload_for_write",
+    "post_action_readback",
+    "audit_event_written"
+  ],
+  "stop_conditions": [
+    "captcha",
+    "mfa_required",
+    "ambiguous_target",
+    "ambiguous_amount",
+    "session_identity_mismatch",
+    "unexpected_page_shape",
+    "post_action_verification_failed"
+  ],
+  "result_channels": [
+    "chatgpt",
+    "telegram"
+  ]
+}
