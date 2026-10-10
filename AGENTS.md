@@ -1,3 +1,11 @@
+## TEK KANONİK APERION HAFIZASI — 2026-10-11, ÖNCE BURAYI OKU
+
+**Sohbetler arası güncel tek AÇILIŞ MANIFESTİ** Google Drive `Apeiron Kontrol Merkezi → TEK_HAFIZA!B2`: https://docs.google.com/spreadsheets/d/155hZ1PRVKH-vlztPY99LnaGEuX5wq8ebNgoiCgcHdmc/edit#gid=1630062029. **Kökte CURRENT checkpoint: `APERION-CORE-20261011-01`.** Eski sohbet özetleri, `OTURUM_HAFIZASI`, `CONTEXT_FAST`, alt A1 sürümleri ve bu dosyanın tarihsel notları çelişirse **son kullanıcı teyidi + canlı ERP kanıtı + güncel TEK_HAFIZA checkpoint** esas; güncel alt modül kaydı ayrıca okunur, eskisi kalıcı olarak silinmez.
+
+Yeni bir ChatGPT oturumu yalnız bu dosya veya eski hafıza bağlamından tüm kayıtları otomatik görmüş sayılmaz. Bağlı Google Drive üzerinden **TEK_HAFIZA!B2'yi gerçekten oku**, sonra görevle ilgili `A1_SNAPSHOT` veya İstasyON kanonik defterini doğrula. Erişim yoksa açıkça bildir; otomatik bağlandım demek yasak. Tek hafıza bir **indeks/kontrol checkpoint'i**; fatura/kasa gerçek kaynakları ERP ve alt tablolardır. Yeni abonelik/PC şartı yok; fatura/finansal POST ancak spesifik kullanıcı izni+düşük tekrar riski+geriye okuma ile.
+
+**11.10 son kritik teyit:** Kullanıcı `CHAT-20261004-GAMZE-HASTA-BEZI-FATURA` eski iş kaydı ile 10.10 WhatsApp `WA-20261010-GAMZE` 36 Jender 7'li paketin **AYNI SEVKİYAT** olduğunu açıkça doğruladı. Bunlar iki sipariş/fatura DEĞİL. Gamze 66 paket 4 kalem 9.531,92 TL iç taslak; 36 paket beden/Moly varyantı ve ERP taslak kaydı hâlâ açık. Kent 10 kalem 188 paket iç taslak 76.124,09 TL, eski ön hesap 76.124,20 TL arası 0,11 TL fark çözümsüz. Altı A1 başlık belgesi BizimHesap GET /abstract API ile doğrulandı toplam 164.740,32 TL. Hiçbir ERP fatura taslağının kaydedildiği veya gerçek finansal yazma yapıldığı iddia edilmemeli.
+
 ## EN GÜNCEL A1 KANITI — 2026-10-11, öncelikli kaynak
 
 **Eski "faturaları API ile bulamıyoruz" iddiası GEÇERSİZ:** Resmî BizimHesap B2B `GET /invoices` HTTP404 verse de **`GET /api/b2b/abstract/{customerId}` canlı cari ekstre üzerinden satış numarası, tarih ve tutar DOĞRUDAN OKUNDU**. Bu 6 müşteri kaydı Supabase üzerinden 2026-10-11'de HTTP200 `resultCode=1` ile doğrulandı, A1 snapshot'a işlendi ve Google Sheets'ten tekrar okundu.
