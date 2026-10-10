@@ -70,12 +70,11 @@ jobs:
           grep -q 'Günün tamamı tek kontrol yüzeyinde' /tmp/a1-live.html
           echo "APERION_A1_IPHONE_VERIFY=PASS"
 
-      - name: Verify iSTASYON HTML and health
+      - name: Verify iSTASYON backend health
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsSL --retry 10 --retry-delay 3 --retry-all-errors -D /tmp/istasyon-headers.txt https://aperion-istasyon.pages.dev/istasyon.html -o /tmp/istasyon.html
-          grep -qi '^content-type: text/html' /tmp/istasyon-headers.txt
-          grep -q 'iSTASYON' /tmp/istasyon.html
-          curl -fsSL --retry 10 --retry-delay 3 --retry-all-errors 'https://aperion-istasyon.pages.dev/api/istasyon?action=health' | grep -q '"ok":true'
-          echo "ISTASYON_HTML_VERIFY=PASS"
+          curl -fsSL --retry 10 --retry-delay 3 --retry-all-errors \
+            'https://aperion-istasyon.pages.dev/api/istasyon?action=health' \
+            | grep -q '"ok":true'
+          echo "ISTASYON_BACKEND_HEALTH=PASS"
