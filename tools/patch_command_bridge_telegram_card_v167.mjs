@@ -40,20 +40,22 @@ if (!textParam) {
 }
 
 const insertAt = match.index + match[0].length;
-const inject = `
-  // APERION_TELEGRAM_CARD_ID_V167
-  if (typeof ${textParam} === 'string' && ${textParam}.includes('BİZİMHESAP TRANSFER ONAYI') && !${textParam}.includes('İşlem ID:')) {
-    const _args = Array.from(arguments);
-    const _serialized = JSON.stringify(_args);
-    const _uuid = _serialized.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i)?.[0] || null;
-    const _shortId = _uuid ? _uuid.slice(0,8).toUpperCase() : 'ID-YOK';
-    const _now = new Date();
-    const _parts = new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).formatToParts(_now);
-    const _p = Object.fromEntries(_parts.map(x=>[x.type,x.value]));
-    const _stamp = `${_p.year}-${_p.month}-${_p.day} ${_p.hour}:${_p.minute}:${_p.second} TRT`;
-    ${textParam} = ${textParam}.replace('BİZİMHESAP TRANSFER ONAYI', `BİZİMHESAP TRANSFER ONAYI\\nİşlem ID: ${_shortId}\\nGönderim: ${_stamp}`);
-  }
-`;
+const inject = [
+  '',
+  '  // APERION_TELEGRAM_CARD_ID_V167',
+  "  if (typeof " + textParam + " === 'string' && " + textParam + ".includes('BİZİMHESAP TRANSFER ONAYI') && !" + textParam + ".includes('İşlem ID:')) {",
+  "    const _args = Array.from(arguments);",
+  "    const _serialized = JSON.stringify(_args);",
+  "    const _uuid = _serialized.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i)?.[0] || null;",
+  "    const _shortId = _uuid ? _uuid.slice(0,8).toUpperCase() : 'ID-YOK';",
+  "    const _now = new Date();",
+  "    const _parts = new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).formatToParts(_now);",
+  "    const _p = Object.fromEntries(_parts.map(x=>[x.type,x.value]));",
+  "    const _stamp = _p.year + '-' + _p.month + '-' + _p.day + ' ' + _p.hour + ':' + _p.minute + ':' + _p.second + ' TRT';",
+  "    " + textParam + " = " + textParam + ".replace('BİZİMHESAP TRANSFER ONAYI', 'BİZİMHESAP TRANSFER ONAYI\\nİşlem ID: ' + _shortId + '\\nGönderim: ' + _stamp);",
+  "  }",
+  ''
+].join('\\n');
 
 fs.copyFileSync(target,backup);
 const next = src.slice(0,insertAt) + inject + src.slice(insertAt);
