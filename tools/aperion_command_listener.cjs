@@ -74,19 +74,37 @@ async function disconnectBrowser() {
 }
 
 async function hasAuthenticatedBizimHesapPage(candidate) {
-  if (!candidate || candidate.isClosed() || !/bizimhesap\.com\/web\//i.test(candidate.url())) return false;
+  // CDP lists an open tab, not proof of which company is authenticated.
+  // Reuse that EXACT existing tab, verify the selected firm read-only and
+  // never accept another firm's session for a financial action.
+  if (!candidate || candidate.isClosed()) return false;
+  let url;
+  try { url = new URL(candidate.url()); } catch { return false; }
+  if (url.protocol !== 'https:' ||
+      !['bizimhesap.com', 'uygulama.bizimhesap.com'].includes(url.hostname) ||
+      !url.pathname.startsWith('/web/')) return false;
   return candidate.evaluate(async () => {
     try {
-      const response = await fetch('/api/AngularControllers/firms/getcurrentfirm', { credentials: 'include' });
+      const response = await fetch('/api/AngularControllers/firms/getcurrentfirm', {
+        method: 'GET', credentials: 'include', cache: 'no-store'
+      });
       if (!response.ok) return false;
       const payload = await response.json().catch(() => null);
-      const firm = payload?.Data || payload?.data || payload;
-      return Boolean(firm && typeof firm === 'object' &&
-        (firm.Id || firm.id || firm.FirmId || firm.firmId || firm.Name || firm.name));
+      const envelope = payload?.Data ?? payload?.data ?? payload?.Result ?? payload?.result ?? payload;
+      const firm = envelope?.CurrentFirm ?? envelope?.currentFirm ??
+        envelope?.Firm ?? envelope?.firm ?? envelope;
+      if (!firm || typeof firm !== 'object' || Array.isArray(firm)) return false;
+      // BizimHesap uses dsFirm in authenticated responses. The old
+      // implementation only checked Id/Name and falsely rejected this tab.
+      const name = String(firm.dsFirm ?? firm.dsFirmName ?? firm.FirmName ??
+        firm.firmName ?? firm.Name ?? firm.name ?? firm.CompanyName ??
+        firm.companyName ?? firm.Title ?? firm.title ?? '').trim()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/ı/g, 'i').toUpperCase().replace(/\s+/g, ' ');
+      return /^ALAYLI MEDIKAL(?:\b|\s)/.test(name);
     } catch { return false; }
   }).catch(() => false);
 }
-
 async function connectAuthenticatedSessionBroker() {
   // Windows currently has different 9222/9223 broker paths. Attach to either
   // only after a real firm API auth check; never assume a visible tab is logged in.
