@@ -70,6 +70,22 @@ jobs:
           grep -q 'Günün tamamı tek kontrol yüzeyinde' /tmp/a1-live.html
           echo "APERION_A1_IPHONE_VERIFY=PASS"
 
+      - name: Verify protected A2 iPhone read-only page
+        shell: bash
+        run: |
+          set -euo pipefail
+          UA='Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile Safari/604.1'
+          curl -A "$UA" -fsSL --retry 10 --retry-delay 3 --retry-all-errors \
+            https://aperion-istasyon.pages.dev/a2-gamze.html -o /tmp/a2-live.html
+          test "$(wc -c < /tmp/a2-live.html)" -gt 5000
+          grep -q 'AperiON A2' /tmp/a2-live.html
+          grep -q 'Canlı cari ekstre ön kontrolünü çalıştır' /tmp/a2-live.html
+          CODE=$(curl -A "$UA" -s -o /tmp/a2-unauth.json -w '%{http_code}' \
+            https://aperion-istasyon.pages.dev/api/a2-gamze-summary)
+          test "$CODE" = '401'
+          grep -q '"postingAllowed":false' /tmp/a2-unauth.json
+          echo "APERION_A2_IPHONE_READONLY_VERIFY=PASS"
+
       - name: Verify iSTASYON backend health
         shell: bash
         run: |

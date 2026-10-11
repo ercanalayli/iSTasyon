@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="tr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09182a"><title>AperiON A2 · Gamze Eczanesi</title>
+<style>
+:root{color-scheme:dark;--bg:#07111e;--surface:#102035;--line:#304258;--fg:#f1f6ff;--muted:#a6b6cb;--warn:#f8cf8a;--good:#74e0ba}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px}
+main{max-width:720px;margin:auto;padding:max(16px,env(safe-area-inset-top)) 16px max(40px,env(safe-area-inset-bottom))}
+a{color:#9ecfff}h1{margin:8px 0;font-size:28px}h2{margin:0 0 8px;font-size:18px}
+p{line-height:1.5;color:var(--muted)}small{color:var(--muted)}header{margin-bottom:16px}
+.brand{font-size:12px;letter-spacing:.15em;font-weight:900;color:var(--good)}.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:17px;margin:12px 0}
+.row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:12px 0}.row:last-child{border:0}
+.row b{text-align:right}.tag{display:inline-block;background:#2e311b;color:var(--warn);border-radius:9px;padding:6px 10px;font-weight:750;font-size:12px}
+.warn{color:var(--warn)}.good{color:var(--good)}button,.action{display:block;width:100%;border:0;border-radius:14px;padding:14px;background:#69c8ef;color:#03111c;font-size:15px;font-weight:800;cursor:pointer;text-align:center;text-decoration:none}
+button:disabled{opacity:.5;cursor:wait}.secondary{background:#1b334d;color:#e4f1ff;border:1px solid #48617c;margin-top:10px}
+#checkResult{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;font-size:13px;padding:12px;border-radius:12px;background:#0a1929;margin-top:12px}
+li{margin:7px 0;color:var(--muted)}.lineName{font-size:13px;max-width:73%}
+[hidden]{display:none!important}
+</style></head><body><main>
+<header><div class="brand">APERION · A2 / iPHONE</div><h1>Gamze Eczanesi</h1>
+<p>Onaylı satış hazırlığı ve BizimHesap mükerrerlik ön kontrolü. <strong>Bu sayfa satış kaydı oluşturmaz.</strong></p>
+<span class="tag" id="state">Güvenli oturum bekleniyor</span></header>
+<section class="card" id="gate"><h2>Yetkili erişim</h2><p>Satış bilgileri yalnız bu iPhone Telegram ile güvenli biçimde eşleştirildiğinde açılır. Şifre veya API tokenı paylaşılmaz.</p>
+<button id="pair">Bu iPhone’u Telegram ile bağla</button><p id="pairMsg" role="status"></p></section>
+<section id="details" hidden>
+<div class="card"><h2>Onaylı yerel satış hazırlığı</h2><small id="source"></small>
+<div class="row"><span>Belge</span><b id="ref"></b></div>
+<div class="row"><span>Toplam</span><b id="total"></b></div>
+<div class="row"><span>Paket</span><b id="packs"></b></div>
+<div class="row"><span>İskonto / KDV</span><b id="rates"></b></div>
+<div class="row"><span>Tür</span><b id="kind"></b></div>
+<div class="row"><span>e-Fatura / ayrıca tahsilat</span><b>YOK / YOK</b></div></div>
+<div class="card"><h2>Dört ürün</h2><div id="lines"></div></div>
+<div class="card"><h2>BizimHesap kontrolü</h2>
+<p>Kaynak cari ekstrede olası eşleşmeleri sorgular. Eşleşme bulunmaması satışın yokluğunu kesinlikle kanıtlamaz.</p>
+<button id="check">Canlı cari ekstre ön kontrolünü çalıştır</button>
+<div id="checkResult" aria-live="polite">Henüz canlı kontrol yapılmadı.</div>
+<a class="action secondary" href="https://uygulama.bizimhesap.com/" target="_blank" rel="noopener noreferrer">BizimHesap'ı aç · satışları manuel doğrula</a>
+<p><strong>Kesin satış oluşturma bu ekrandan kapalıdır.</strong> Gerçek ERP belge no, dört ürün satırı, toplam, e-Fatura ve tahsilat durumu bağımsız okunmadan işlem tamamlandı denmez.</p>
+</div></section>
+<p><a href="/a1.html">← ApeirON ana kontrol</a></p>
+</main><script>
+'use strict';
+const $=id=>document.getElementById(id);
+const tokenKey='istasyon_dashboard_token';
+const token=()=>localStorage.getItem(tokenKey)||'';
+const fmt=c=>(Number(c)/100).toLocaleString('tr-TR',{style:'currency',currency:'TRY'});
+const set=(id,value)=>{$(id).textContent=String(value);};
+const state=(message,ok=false)=>{set('state',message);$('state').className=ok?'tag good':'tag warn';};
+async function api(path,opts={}){
+ const response=await fetch(path,{cache:'no-store',...opts});
+ let body;try{body=await response.json();}catch{throw Error('Geçerli kaynak yanıtı alınamadı');}
+ if(!response.ok||!body.ok)throw Error(body.error||body.status||'Kaynak hatası');
+ return body;
+}
+async function load(){
+ if(!token()){state('Eşleştirme gerekli');$('gate').hidden=false;$('details').hidden=true;return;}
+ try{
+  const r=await api('/api/a2-gamze-summary',{headers:{Authorization:'Bearer '+token()}});
+  if(r.source!=='APPROVED_LOCAL_PROPOSAL_NOT_ERP'||r.postingAllowed!==false)throw Error('Kaynak kimliği doğrulanamadı');
+  set('source','Kaynak: onaylı iç taslak · BizimHesap belgesi değildir');
+  set('ref',r.sourceId);set('total',fmt(r.invoiceTotalKurus));set('packs',r.packageCount);
+  set('rates','%3 / %10');set('kind','Normal satış (3) · peşin');
+  const target=$('lines');target.replaceChildren();
+  for(const x of r.lines||[]){
+   const div=document.createElement('div');div.className='row';
+   const label=document.createElement('div');label.className='lineName';label.textContent=x.sku+' · '+x.name;
+   const value=document.createElement('b');value.textContent=x.packages+' paket · '+fmt(x.totalKurus);
+   div.append(label,value);target.append(div);
+  }
+  $('gate').hidden=true;$('details').hidden=false;state('Onaylı iç taslak yüklendi · ERP kaydı doğrulanmadı',true);
+ }catch(e){
+  $('details').hidden=true;$('gate').hidden=false;state('Oturum / veri kaynağı doğrulanamadı');
+  set('pairMsg',String(e.message||e));localStorage.removeItem(tokenKey);
+ }
+}
+function nonce(){
+ const bytes=new Uint8Array(24);crypto.getRandomValues(bytes);
+ return btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');
+}
+async function pollPair(n,attempt=0){
+ if(attempt>=90){$('pair').disabled=false;set('pairMsg','Süre doldu; yeniden başlatabilirsin.');return;}
+ try{
+  const r=await fetch('/api/istasyon-pair-status?nonce='+encodeURIComponent(n),{cache:'no-store'});
+  const x=await r.json();
+  if(x.status==='issued'&&x.dashboard_token){
+   localStorage.setItem(tokenKey,x.dashboard_token);
+   sessionStorage.removeItem('aperion_a2_pair_nonce');set('pairMsg','Bu iPhone eşleştirildi.');
+   await load();return;
+  }
+  if(x.status==='expired'||x.status==='rejected'){throw Error('Eşleştirme reddedildi veya süresi doldu');}
+ }catch(e){if(String(e.message||'').includes('reddedildi')){set('pairMsg',e.message);$('pair').disabled=false;return;}}
+ setTimeout(()=>pollPair(n,attempt+1),2000);
+}
+$('pair').onclick=async()=>{
+ $('pair').disabled=true;set('pairMsg','Telegram onay isteği gönderiliyor…');
+ const n=nonce();sessionStorage.setItem('aperion_a2_pair_nonce',n);
+ try{await api('/api/istasyon-pair-request',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({browser_nonce:n})});
+  set('pairMsg','Telegram’daki «Bu iPhone’u bağla» bağlantısına dokun.');pollPair(n);
+ }catch(e){$('pair').disabled=false;set('pairMsg','Eşleştirme başarısız: '+e.message);}
+};
+$('check').onclick=async()=>{
+ $('check').disabled=true;set('checkResult','BizimHesap cari hareketleri okunuyor…');
+ try{
+  const r=await api('/api/a2-gamze-erp-preflight',{headers:{Authorization:'Bearer '+token()}});
+  let text='Kaynak: '+(r.source||'bilinmiyor')+'\nSorgu: '+(r.checkedAt||'zaman yok')+'\n';
+  if(r.status==='POSSIBLE_EXISTING_SALE'){
+   text+='OLASI MÜKERRER KAYIT! Önce mevcut ERP belgesini incele.\n';
+   for(const m of r.matches||[])text+='Eşleşme: '+(m.date||'tarih yok')+' | '+(m.documentReference||'belge no yok')+'\n';
+  }else if(r.status==='NO_MATCH_NOT_PROOF'){
+   text+='Cari ekstrede eşleşme görünmedi. Bu, satışın hiç olmadığının kanıtı DEĞİL.';
+  }else{text+='Kaynak yeterli değil; satış kaydı kesinlikle engellenmiş olarak kalır.';}
+  text+='\nSatış oluşturma yetkisi: KAPALI';
+  set('checkResult',text);
+ }catch(e){set('checkResult','Kaynak kontrolü başarısız: '+e.message+'\nSatış oluşturma yetkisi: KAPALI');}
+ finally{$('check').disabled=false;}
+};
+const pending=sessionStorage.getItem('aperion_a2_pair_nonce');
+if(pending&&!token())pollPair(pending);load();
+</script></body></html>
