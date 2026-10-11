@@ -36,6 +36,7 @@
       <button data-module="finance">₺ Finans<small>Ödeme, vade, nakit</small></button>
       <button data-module="bank">▤ Banka<small>Ekstre ve mutabakat</small></button>
       <button data-module="sales">↗ Satış & Ürün<small>Satış, stok, sevkiyat</small></button>
+      <button data-module="a2">A2 · Satış İnceleme<small>Gamze · güvenli görüntüleme</small></button>
       <button data-view="legacy">▦ Tüm Ekranlar<small>Silinmeyen eski kayıtlar</small></button>
     </nav>
   </aside>
@@ -56,6 +57,7 @@
       <article class="card" data-module="finance"><div class="icon">₺</div><h2>Finans ve Ödemeler</h2><p>Kritik ödemeler, vadeler, kartlar, faturalar ve nakit görünümü.</p><span class="state">Tek finans çatısı</span></article>
       <article class="card" data-module="bank"><div class="icon">▤</div><h2>Banka ve Ekstre</h2><p>Mail ekstre, banka hareketleri, POS/Moka transferleri ve mutabakat.</p><span class="state">Kanıt öncelikli</span></article>
       <article class="card" data-module="sales"><div class="icon">↗</div><h2>Satış, Ürün ve Stok</h2><p>Satış analizi, cari, stok, fiyat, sevkiyat ve hasta bezi operasyonu.</p><span class="state">Operasyon modülleri</span></article>
+      <article class="card" data-module="a2"><div class="icon">A2</div><h2>Satış İnceleme</h2><p>Gamze Eczanesi · 4 kalem / 66 paket · korumalı görüntüleme.</p><span class="state">Finansal kayıt henüz kapalı</span></article>
       <article class="card span6" data-module="work"><div class="icon">✦</div><h2>AperiON İş Merkezi</h2><p>CEO/CFO bakışı, öncelik radarı, görevler ve yapay zekâ karar desteği.</p><span class="state">Üst akıl görünümü</span></article>
       <article class="card span6" data-view="legacy"><div class="icon">▦</div><h2>Korunan Ekranlar ve Fikir Arşivi</h2><p>Bütün HTML ekranları; başlık, kategori ve özellik sinyalleriyle aranabilir.</p><span class="state" id="surfaceCount">Envanter yükleniyor</span></article>
     </section>
@@ -75,6 +77,7 @@ const MODULES={
   finance:{title:'Finans ve Ödemeler',url:'/aperion-finans-takvimi-live.html'},
   bank:{title:'Banka ve Ekstre Merkezi',url:'/mail-ekstre-canli.html'},
   sales:{title:'Satış, Ürün ve Stok',url:'/alayli-merkez.html'},
+  a2:{title:'A2 · Satış İnceleme',url:'/a2-satis.html'},
   work:{title:'AperiON İş Merkezi',url:'/aperion-is-merkezi.html'}
 };
 const $=id=>document.getElementById(id);

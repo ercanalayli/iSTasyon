@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-26T13:08:56.908Z",
+  "generated_at": "2026-10-11T14:00:00.000Z",
   "preservation_policy": "No HTML surface is deleted. Legacy screens remain addressable from the unified catalog.",
-  "total_html_surfaces": 54,
+  "total_html_surfaces": 55,
   "category_counts": {
-    "Satış ve ürün": 7,
+    "Satış ve ürün": 8,
     "Diğer araç": 4,
     "Ana ekran türevi": 17,
     "Finans": 12,
@@ -12,6 +12,25 @@
     "Veri ve sistem": 7
   },
   "surfaces": [
+    {
+      "file": "a2-satis.html",
+      "url": "/a2-satis.html",
+      "title": "AperiON A2 · Satış İnceleme",
+      "heading": "A2 · Satış ve Operasyon",
+      "category": "Satış ve ürün",
+      "size_bytes": 5613,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": false,
+        "finance": false,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    },
     {
       "file": "alayli-fiyat-sevkiyat-launcher.html",
       "url": "/alayli-fiyat-sevkiyat-launcher.html",
@@ -162,25 +181,6 @@
         "sales": false,
         "inventory": false,
         "tasks": false
-      }
-    },
-    {
-      "file": "aperion_ui_upgrade_pack.html",
-      "url": "/aperion_ui_upgrade_pack.html",
-      "title": "AperiON UI Upgrade Pack",
-      "heading": "AperiON UI Upgrade Pack",
-      "category": "Ana ekran türevi",
-      "size_bytes": 9282,
-      "signals": {
-        "pwa": false,
-        "supabase": false,
-        "charts": false,
-        "approval": true,
-        "bank": true,
-        "finance": false,
-        "sales": true,
-        "inventory": true,
-        "tasks": true
       }
     },
     {
@@ -355,6 +355,25 @@
       }
     },
     {
+      "file": "aperion_ui_upgrade_pack.html",
+      "url": "/aperion_ui_upgrade_pack.html",
+      "title": "AperiON UI Upgrade Pack",
+      "heading": "AperiON UI Upgrade Pack",
+      "category": "Ana ekran türevi",
+      "size_bytes": 9282,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": true,
+        "finance": false,
+        "sales": true,
+        "inventory": true,
+        "tasks": true
+      }
+    },
+    {
       "file": "banka_onay.html",
       "url": "/banka_onay.html",
       "title": "AperiON Banka Onayı",
@@ -450,25 +469,6 @@
       }
     },
     {
-      "file": "finance_dashboard_embed.html",
-      "url": "/finance_dashboard_embed.html",
-      "title": "finance_dashboard_embed.html",
-      "heading": "finance_dashboard_embed.html",
-      "category": "Finans",
-      "size_bytes": 1231,
-      "signals": {
-        "pwa": false,
-        "supabase": false,
-        "charts": false,
-        "approval": true,
-        "bank": false,
-        "finance": true,
-        "sales": true,
-        "inventory": false,
-        "tasks": false
-      }
-    },
-    {
       "file": "finance-command-center-live.html",
       "url": "/finance-command-center-live.html",
       "title": "AperiON Finans Komuta Merkezi Live",
@@ -504,6 +504,25 @@
         "sales": true,
         "inventory": false,
         "tasks": true
+      }
+    },
+    {
+      "file": "finance_dashboard_embed.html",
+      "url": "/finance_dashboard_embed.html",
+      "title": "finance_dashboard_embed.html",
+      "heading": "finance_dashboard_embed.html",
+      "category": "Finans",
+      "size_bytes": 1231,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": true,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
       }
     },
     {
@@ -678,6 +697,25 @@
       }
     },
     {
+      "file": "index.html",
+      "url": "/index.html",
+      "title": "AperiON - ErpaltH",
+      "heading": "AperiON - ErpaltH",
+      "category": "Ana ekran türevi",
+      "size_bytes": 533425,
+      "signals": {
+        "pwa": true,
+        "supabase": true,
+        "charts": true,
+        "approval": true,
+        "bank": true,
+        "finance": true,
+        "sales": true,
+        "inventory": true,
+        "tasks": true
+      }
+    },
+    {
       "file": "index_ui_v2.html",
       "url": "/index_ui_v2.html",
       "title": "AperiON UI v2 Preview",
@@ -764,25 +802,6 @@
         "pwa": false,
         "supabase": false,
         "charts": false,
-        "approval": true,
-        "bank": true,
-        "finance": true,
-        "sales": true,
-        "inventory": true,
-        "tasks": true
-      }
-    },
-    {
-      "file": "index.html",
-      "url": "/index.html",
-      "title": "AperiON - ErpaltH",
-      "heading": "AperiON - ErpaltH",
-      "category": "Ana ekran türevi",
-      "size_bytes": 533425,
-      "signals": {
-        "pwa": true,
-        "supabase": true,
-        "charts": true,
         "approval": true,
         "bank": true,
         "finance": true,
@@ -982,25 +1001,6 @@
       }
     },
     {
-      "file": "veri_yukle.html",
-      "url": "/veri_yukle.html",
-      "title": "AperiON Veri Yükle",
-      "heading": "AperiON Veri Yükle",
-      "category": "Veri ve sistem",
-      "size_bytes": 2822,
-      "signals": {
-        "pwa": false,
-        "supabase": true,
-        "charts": false,
-        "approval": false,
-        "bank": false,
-        "finance": false,
-        "sales": false,
-        "inventory": false,
-        "tasks": false
-      }
-    },
-    {
       "file": "veri-durumu-v2.html",
       "url": "/veri-durumu-v2.html",
       "title": "AperiON Veri Durumu v2",
@@ -1034,6 +1034,25 @@
         "bank": false,
         "finance": false,
         "sales": true,
+        "inventory": false,
+        "tasks": false
+      }
+    },
+    {
+      "file": "veri_yukle.html",
+      "url": "/veri_yukle.html",
+      "title": "AperiON Veri Yükle",
+      "heading": "AperiON Veri Yükle",
+      "category": "Veri ve sistem",
+      "size_bytes": 2822,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": false,
         "inventory": false,
         "tasks": false
       }
