@@ -28,7 +28,13 @@ check({resultCode:0,data:[]},'SOURCE_INSUFFICIENT');
 check({resultCode:1,error:'quota',data:[]},'SOURCE_INSUFFICIENT');
 check(undefined,'SOURCE_INSUFFICIENT');
 check({resultCode:1,data:{history:Array(350).fill({date:'2026-10-11'})}},'SOURCE_INSUFFICIENT');
-check({resultCode:1,data:[{tutar:'9.531,92',tarih:'10.10.2026'}]},'NO_MATCH_NOT_PROOF');
+// 04 Oct delivery and 10 Oct WhatsApp reference are ONE shipment: neither
+// may be silently accepted as a brand-new sale just because the ERP date differs.
+const earlier=check({resultCode:1,data:[{tutar:'9.531,92',tarih:'04.10.2026'}]},'POSSIBLE_EXISTING_SALE');
+assert.equal(earlier.matches[0].basis,'DATE_AND_AMOUNT_POSSIBLE_MATCH');
+check({resultCode:1,data:[{tutar:'9.531,92',tarih:'10.10.2026'}]},'POSSIBLE_EXISTING_SALE');
+check({resultCode:1,data:[{tutar:'9.531,92',tarih:'03.10.2026'}]},'NO_MATCH_NOT_PROOF');
+check({resultCode:1,data:[{tutar:'1,00',tarih:'10.10.2026',note:'APERION API TEST 20261010 2152 CARI'}]},'NO_MATCH_NOT_PROOF');
 
 const token='test-telegram-paired-dashboard-session';
 const tokenHash=createHash('sha256').update(token).digest('hex');

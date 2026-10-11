@@ -81,7 +81,11 @@ export function evaluateGamzeAbstractReadOnly(abstract, options={}){
     const date=parseDate(rawDate);
     const amountText=firstValue(row,FIELDS.amounts);
     const amountKurus=amountText===null?null:parseKurus(amountText);
-    const headerSame=amountKurus===expected.amountsKurus.total&&date==='2026-10-11';
+    // One shipment: 04 Oct delivery record and 10 Oct WhatsApp order are NOT
+    // separate sales. A same-value ERP header on either date (or the approved
+    // 11 Oct sale date) is a DUPLICATE CANDIDATE, never permission to POST.
+    const reviewDates=new Set(['2026-10-04','2026-10-10','2026-10-11']);
+    const headerSame=amountKurus===expected.amountsKurus.total&&reviewDates.has(date);
     if(!exactSource&&!headerSame)continue;
     hits.push({
       basis:exactSource?'SOURCE_REFERENCE':'DATE_AND_AMOUNT_POSSIBLE_MATCH',
