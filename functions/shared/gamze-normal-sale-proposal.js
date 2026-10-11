@@ -1,3 +1,4 @@
+import {compareNormalSaleReadback} from './a2-normal-sale-readback.js';
 /**
  * AperiON A2 — Gamze Eczanesi approved NORMAL SALES RECORD proposal.
  * Source: WA-20261010-GAMZE, explicitly approved 2026-10-11 ("Onaylıyorum peşin").
@@ -103,17 +104,17 @@ export function prepareGamzeBizimHesapApiPayload() {
     noEInvoice:true,noPayment:true,noRetry:true,apiPayload:payload,financialWrites:0};
 }
 
+/**
+ * Field comparison only, NEVER a final ERP confirmation.
+ * Source authentication and trustworthy item-level readback are separate
+ * server-side responsibilities. Legacy boolean summaries are rejected.
+ */
 export function verifyGamzeSaleReadback(evidence={}) {
-  // A GUID or HTTP 200 alone does not prove 4 correct lines and their totals.
-  const valid=Boolean(
-    evidence.erpRecordReadBack===true &&
-    evidence.erpSaleGuid && GUID.test(String(evidence.erpSaleGuid)) &&
-    evidence.customerGuid===GAMZE_CUSTOMER_GUID &&
-    evidence.sourceId===GAMZE_ORDER_KEY &&
-    evidence.lineCount===4 && evidence.packageCount===66 &&
-    evidence.totalKurus===953192 &&
-    evidence.eFaturaIssued===false &&
-    evidence.paymentRecorded===false
-  );
-  return {verified:valid,status:valid?"BIZIMHESAP_SALE_VERIFIED":"ERP_WRITE_NOT_VERIFIED",financialWrites:0};
+  const candidate=compareNormalSaleReadback(buildGamzeNormalSaleProposal(),evidence);
+  return {...candidate,
+    status:candidate.matchesExpected
+      ? "ERP_FIELDS_MATCH_BUT_PROVIDER_ATTESTATION_PENDING"
+      : "ERP_WRITE_NOT_VERIFIED",
+    verified:false,
+    financialWrites:0};
 }
