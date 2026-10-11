@@ -45,9 +45,32 @@ const cases=[
 ];
 for(const mutate of cases){const changed=buildGamzeNormalSaleProposal();mutate(changed);assert.equal(validateGamzeNormalSaleProposal(changed).valid,false,"unexpected acceptance "+String(mutate));}
 assert.equal(verifyGamzeSaleReadback({erpSaleGuid:"A".repeat(32)}).verified,false);
-assert.equal(verifyGamzeSaleReadback({
+// Historical boolean-only "read back" reports are NOT independent ERP proof.
+const legacy={
   erpRecordReadBack:true,erpSaleGuid:"A".repeat(32),customerGuid:GAMZE_CUSTOMER_GUID,
   sourceId:GAMZE_ORDER_KEY,lineCount:4,packageCount:66,totalKurus:953192,
   eFaturaIssued:false,paymentRecorded:false
-}).verified,true);
+};
+assert.equal(verifyGamzeSaleReadback(legacy).verified,false);
+assert.equal(verifyGamzeSaleReadback(legacy).matchesExpected,false);
+const candidate={
+  source:"BIZIMHESAP_DOCUMENT_DETAIL",capturedAt:"2026-10-11T15:00:00+03:00",
+  eInvoiceState:"NOT_ISSUED",paymentState:"NOT_BOOKED",
+  document:{
+    erpGuid:"A".repeat(32),customerGuid:p.customerGuid,invoiceType:3,
+    note:"APERION NORMAL SATIS | "+p.sourceId+" | E-FATURA GONDERME",
+    invoiceDate:p.invoiceDate,amountsKurus:{...p.amountsKurus},
+    lines:p.lines.map(x=>({
+      productId:x.productId,quantity:x.quantity,taxRate:x.taxRate,
+      grossKurus:x.gross,discountKurus:x.discount,
+      netKurus:x.net,taxKurus:x.tax,totalKurus:x.total
+    }))
+  }
+};
+const matches=verifyGamzeSaleReadback(candidate);
+assert.equal(matches.matchesExpected,true);
+assert.equal(matches.verified,false,"offline fields do not authenticate provider origin");
+assert.equal(matches.status,"ERP_FIELDS_MATCH_BUT_PROVIDER_ATTESTATION_PENDING");
+const bad=structuredClone(candidate);bad.document.lines[0].quantity=35;
+assert.equal(verifyGamzeSaleReadback(bad).matchesExpected,false);
 console.log("APERION_GAMZE_NORMAL_SALE_PREP_PASS · 4 SKU · 66 packs · 9531.92 TRY · NO ERP POST");
