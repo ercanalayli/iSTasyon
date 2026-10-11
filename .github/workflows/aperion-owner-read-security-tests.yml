@@ -1,0 +1,21 @@
+name: AperiON owner-only ERP read security
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/functions/aperion-bizimhesap-owner-read/**'
+      - 'tools/test_aperion_owner_read_guard.mjs'
+      - '.github/workflows/aperion-owner-read-security-tests.yml'
+  workflow_dispatch:
+jobs:
+  owner-read-security:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test owner authenticated GET only with mocked sources
+        run: node tools/test_aperion_owner_read_guard.mjs
