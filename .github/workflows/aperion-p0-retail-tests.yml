@@ -1,0 +1,25 @@
+name: AperiON retail sales protocol P0
+on:
+  pull_request:
+    paths:
+      - 'functions/shared/retail-sales-protocol.js'
+      - 'functions/telegram/webhook.js'
+      - 'tools/test_retail_sales_protocol_p0.mjs'
+      - '.github/workflows/aperion-p0-retail-tests.yml'
+  workflow_dispatch:
+jobs:
+  retail-p0:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Retail staging and no-write verification
+        run: node tools/test_retail_sales_protocol_p0.mjs
+      - name: Telegram webhook syntax
+        run: node --check functions/telegram/webhook.js
+      - name: Retail module syntax
+        run: node --check functions/shared/retail-sales-protocol.js

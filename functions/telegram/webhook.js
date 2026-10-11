@@ -1,3 +1,4 @@
+import { handleRetailTelegramCommand } from '../shared/retail-sales-protocol.js';
 import { getMobileSecurityStatus, handleMobileCommand, verifyTelegramRequest } from './mobile-command-center.js';
 import { DESKTOP_TARGETS, desktopTargetSummary, parseUniversalCommand } from './universal-command-router.js';
 import { deviceHealth, queueDeviceCommand } from './device-bridge.js';
@@ -1506,6 +1507,16 @@ const chatId = msg.chat.id;
 const text = clean(msg.text);
 const lower = lowerTR(text);
 const directReport = detectDirectEntityReport(text);
+
+// P0: the retail-sale command only stages an audit record. No BizimHesap writes.
+const retailResult = await handleRetailTelegramCommand({ env, message: msg, identity, sendMessage });
+if (retailResult.handled) return json({
+  ok: retailResult.status !== 'draft_storage_failed' && retailResult.status !== 'identity_blocked',
+  retail_sale_test: true,
+  status: retailResult.status,
+  record_id: retailResult.recordId || null,
+  financial_writes: 0
+}, retailResult.status === 'draft_storage_failed' ? 503 : 200);
 
 if (await handleDiaperLifecycle(env, msg)) {
 return json({ ok: true, diaper_lifecycle: true });
