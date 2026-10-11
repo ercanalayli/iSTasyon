@@ -10,6 +10,9 @@ on:
       - 'specs/a2_sale_intent_postgres_NOT_DEPLOYED.sql'
       - 'tools/test_a2_gamze_erp_preflight.mjs'
       - 'functions/api/a2-gamze-erp-preflight.js'
+      - 'functions/api/a2-gamze-summary.js'
+      - 'a2-gamze.html'
+      - 'tools/test_a2_gamze_iphone_readonly.mjs'
       - 'functions/shared/a2-gamze-abstract-preflight.js'
       - 'tools/test_a2_normal_sale_readback.mjs'
       - 'functions/shared/a2-normal-sale-readback.js'
@@ -35,6 +38,8 @@ jobs:
         run: node tools/test_a2_idempotency_sql_contract.mjs
       - name: A2 authenticated BizimHesap abstract preflight (GET ONLY)
         run: node tools/test_a2_gamze_erp_preflight.mjs
+      - name: A2 iPhone authorized read-only review (GET ONLY)
+        run: node tools/test_a2_gamze_iphone_readonly.mjs
       - name: Source syntax
         run: |
           node --check functions/shared/approved-normal-sale-engine.js
@@ -42,3 +47,4 @@ jobs:
           node --check functions/shared/a2-normal-sale-readback.js
           node --check functions/shared/a2-gamze-abstract-preflight.js
           node --check functions/api/a2-gamze-erp-preflight.js
+          node --check functions/api/a2-gamze-summary.js
