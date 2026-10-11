@@ -44,6 +44,34 @@ export async function handleRequest(req, runtime) {
     ok:true,service:'aperion-bizimhesap-owner-read',
     mode:'READ_ONLY',ownerAuthenticated:true,upstreamChecked:false
   });
+  // Owner-only configuration inventory. No credentials or FirmId are returned,
+  // and a 32-character api_key is NOT evidence of a verified provider FirmId.
+  // This endpoint is diagnostic only; it cannot enable any financial write.
+  if(action==='credential_status'){
+    const {data:integration,error:integrationError}=await dbClient
+      .from('integrations')
+      .select('api_token,api_key')
+      .eq('provider','bizimhesap')
+      .eq('is_active',true)
+      .single();
+    if(integrationError||!integration)return reply({
+      ok:false,error:'INTEGRATION_LOOKUP_FAILED',writeReady:false
+    },503);
+    const tokenPresent=typeof integration.api_token==='string'&&integration.api_token.trim().length>0;
+    const possibleFirmId=/^[a-f0-9]{32}$/i.test(String(integration.api_key||'').trim());
+    return reply({
+      ok:true,mode:'READ_ONLY',
+      provider:'bizimhesap',
+      credentials:{
+        tokenConfigured:tokenPresent,
+        firmIdCandidatePresent:possibleFirmId,
+        firmIdVerified:false
+      },
+      verifiedProviderWriteAccess:false,
+      writeReady:false,
+      nextCheck:'Confirm api_key meaning against provider FirmId using independently authorized, non-writing evidence.'
+    });
+  }
   if(!ALLOWED.has(action))return reply({ok:false,error:'UNSUPPORTED_ACTION'},400);
 
   const id=reqUrl.searchParams.get('musteriId')||reqUrl.searchParams.get('depoId')||'';

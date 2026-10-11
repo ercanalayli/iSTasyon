@@ -70,7 +70,7 @@ function runtime(options={}){
         if(table==='aperion_users')return {select(){return {eq(){return {eq(){return {limit:async()=>({data:isAdmin?[{rol:'admin'}]:[],error:null})}}}}}}};
         assert.equal(table,'integrations');
         dbCalls++;
-        return {select(){return {eq(){return {eq(){return {single:async()=>({data:{api_token:'vendor-api-token'},error:null})}}}}}}};
+        return {select(){return {eq(){return {eq(){return {single:async()=>({data:{api_token:'vendor-api-token',api_key:'A'.repeat(32)},error:null})}}}}}}};
       }};
     },
     fetch:async(url,opts)=>{
@@ -105,4 +105,22 @@ assert.equal(json.data.resultCode,1);
 assert.equal(approved.headers.get('cache-control'),'private, no-store, max-age=0');
 assert.equal(vendorCalls,1);
 assert.equal(dbCalls,1);
-console.log('APERION_OWNER_JWT_READONLY_GUARD_PASS · NO_PROVIDER_WRITES · STAGED_NEW_ENDPOINT');
+const beforeVendor=vendorCalls;
+const noCredentialsAnon=await handleRequest(req('GET',anonKey,'credential_status'),runtime());
+assert.equal(noCredentialsAnon.status,401,'credential_status must require owner JWT');
+const credentialResponse=await handleRequest(req('GET',jwt,'credential_status'),runtime());
+assert.equal(credentialResponse.status,200);
+const credentialStatus=await credentialResponse.json();
+assert.equal(credentialStatus.ok,true);
+assert.equal(credentialStatus.credentials.tokenConfigured,true);
+assert.equal(credentialStatus.credentials.firmIdCandidatePresent,true);
+assert.equal(credentialStatus.credentials.firmIdVerified,false);
+assert.equal(credentialStatus.writeReady,false);
+assert.equal(credentialStatus.verifiedProviderWriteAccess,false);
+assert.equal(vendorCalls,beforeVendor,'configuration check must not contact BizimHesap');
+assert.equal(JSON.stringify(credentialStatus).includes('vendor-api-token'),false);
+assert.equal(JSON.stringify(credentialStatus).includes('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'),false);
+const sourceCode=readFileSync(path,'utf8');
+assert.doesNotMatch(sourceCode,/BIZIMHESAP_TOKEN|BIZIMHESAP_FIRM_ID/);
+assert.equal(sourceCode.includes('addinvoice'),false);
+console.log('APERION_OWNER_JWT_READONLY_GUARD_PASS · OWNER_CREDENTIAL_DIAGNOSTICS_PASS · NO_PROVIDER_WRITES');
