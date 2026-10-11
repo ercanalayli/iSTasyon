@@ -1,0 +1,28 @@
+name: AperiON approved normal sales workflow
+on:
+  pull_request:
+    paths:
+      - 'functions/shared/gamze-normal-sale-proposal.js'
+      - 'functions/shared/approved-normal-sale-engine.js'
+      - 'tools/test_gamze_normal_sale_proposal.mjs'
+      - 'tools/test_approved_normal_sale_engine.mjs'
+      - '.github/workflows/gamze-sale-proposal-tests.yml'
+  workflow_dispatch:
+jobs:
+  approved-normal-sale:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Existing Gamze signed-off proposal
+        run: node tools/test_gamze_normal_sale_proposal.mjs
+      - name: Generic reusable normal sale engine
+        run: node tools/test_approved_normal_sale_engine.mjs
+      - name: Source syntax
+        run: |
+          node --check functions/shared/approved-normal-sale-engine.js
+          node --check functions/shared/gamze-normal-sale-proposal.js
