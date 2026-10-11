@@ -121,5 +121,6 @@ assert.equal(vendorCalls,beforeVendor,'configuration check must not contact Bizi
 assert.equal(JSON.stringify(credentialStatus).includes('vendor-api-token'),false);
 assert.equal(JSON.stringify(credentialStatus).includes('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'),false);
 const sourceCode=readFileSync(path,'utf8');
-assert.doesNotMatch(sourceCode,/BIZIMHESAP_TOKEN|BIZIMHESAP_FIRM_ID|fetch\\('https:\/\/bizimhesap.com\/api\/b2b\/addinvoice/);
+assert.doesNotMatch(sourceCode,/BIZIMHESAP_TOKEN|BIZIMHESAP_FIRM_ID/);
+assert.equal(sourceCode.includes('addinvoice'),false);
 console.log('APERION_OWNER_JWT_READONLY_GUARD_PASS · OWNER_CREDENTIAL_DIAGNOSTICS_PASS · NO_PROVIDER_WRITES');
