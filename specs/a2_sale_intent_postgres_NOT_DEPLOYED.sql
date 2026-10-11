@@ -53,6 +53,65 @@ ALTER TABLE public.aperion_a2_sale_intents ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.aperion_a2_sale_intents FROM anon,authenticated;
 -- NO permissive RLS policies; NO RPC; NO scheduler; NO POST adapter.
 
+-- Defense in depth for the eventual separately authorized application:
+-- database prevents changing transaction identity or replaying an approval.
+CREATE OR REPLACE FUNCTION public.aperion_a2_intent_guard_v1()
+RETURNS trigger LANGUAGE plpgsql AS $a2guard$
+DECLARE allowed boolean := false;
+BEGIN
+  IF TG_OP='INSERT' THEN
+    IF NEW.status <> 'PREPARED' THEN
+      RAISE EXCEPTION 'sale_intent_must_start_prepared';
+    END IF;
+    RETURN NEW;
+  END IF;
+
+  IF NEW.company_key IS DISTINCT FROM OLD.company_key
+     OR NEW.source_id IS DISTINCT FROM OLD.source_id
+     OR NEW.proposal_sha256 IS DISTINCT FROM OLD.proposal_sha256
+     OR NEW.expected_amount_kurus IS DISTINCT FROM OLD.expected_amount_kurus THEN
+    RAISE EXCEPTION 'sale_intent_identity_immutable';
+  END IF;
+  IF OLD.status <> 'PREPARED'
+     AND (NEW.owner_user_id IS DISTINCT FROM OLD.owner_user_id
+       OR NEW.approved_at IS DISTINCT FROM OLD.approved_at
+       OR NEW.approval_expires_at IS DISTINCT FROM OLD.approval_expires_at
+       OR NEW.approved_proposal_sha256 IS DISTINCT FROM OLD.approved_proposal_sha256) THEN
+    RAISE EXCEPTION 'sale_approval_immutable';
+  END IF;
+  IF OLD.erp_document_guid IS NOT NULL
+     AND NEW.erp_document_guid IS DISTINCT FROM OLD.erp_document_guid THEN
+    RAISE EXCEPTION 'erp_guid_immutable';
+  END IF;
+
+  IF OLD.status <> NEW.status THEN
+    allowed := CASE OLD.status
+      WHEN 'PREPARED' THEN NEW.status IN ('APPROVED','BLOCKED','REJECTED')
+      WHEN 'APPROVED' THEN NEW.status IN ('POSTING','BLOCKED','REJECTED')
+      WHEN 'POSTING' THEN NEW.status IN ('POSTED_UNVERIFIED','OUTCOME_UNKNOWN','BLOCKED')
+      WHEN 'OUTCOME_UNKNOWN' THEN NEW.status IN ('POSTED_UNVERIFIED','BLOCKED')
+      WHEN 'POSTED_UNVERIFIED' THEN NEW.status IN ('VERIFIED','BLOCKED')
+      ELSE false END;
+    IF NOT allowed THEN RAISE EXCEPTION 'sale_illegal_status_transition'; END IF;
+  END IF;
+  IF NEW.status='POSTING' AND OLD.status='APPROVED'
+     AND (OLD.approval_expires_at<=now() OR OLD.approved_proposal_sha256<>OLD.proposal_sha256) THEN
+    RAISE EXCEPTION 'sale_approval_invalid_or_expired';
+  END IF;
+  IF NEW.status='VERIFIED' AND (NEW.erp_document_guid IS NULL
+       OR NEW.verified_at IS NULL OR NEW.audit_evidence_ref IS NULL) THEN
+    RAISE EXCEPTION 'sale_readback_evidence_required';
+  END IF;
+  NEW.updated_at:=now();
+  RETURN NEW;
+END;
+$a2guard$;
+
+DROP TRIGGER IF EXISTS aperion_a2_intent_guard_on_write ON public.aperion_a2_sale_intents;
+CREATE TRIGGER aperion_a2_intent_guard_on_write
+BEFORE INSERT OR UPDATE ON public.aperion_a2_sale_intents
+FOR EACH ROW EXECUTE FUNCTION public.aperion_a2_intent_guard_v1();
+
 -- SQL skeleton, to execute ONLY inside a separately reviewed backend:
 -- UPDATE public.aperion_a2_sale_intents
 --    SET status='POSTING',claimed_at=now(),updated_at=now()
