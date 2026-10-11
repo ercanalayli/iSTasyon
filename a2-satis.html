@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071326"><meta name="robots" content="noindex,nofollow">
+<title>AperiON A2 · Satış İnceleme</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#f0f5ff;background:#071326}
+*{box-sizing:border-box}body{margin:0;background:#071326;min-height:100dvh}
+main{max-width:740px;margin:auto;padding:20px 16px 95px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
+h1{font-size:21px;margin:0}h2{font-size:17px;margin:4px 0 10px}
+p{line-height:1.5}small,.muted{color:#a7b8cd}.muted{font-size:13px}
+.card{background:#101f33;border:1px solid #27415f;border-radius:17px;padding:16px;margin-bottom:12px}
+.topline{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.tag{background:#392918;color:#ffce87;font-size:11px;border:1px solid #906b39;border-radius:999px;padding:6px 10px}
+strong.total{font-size:26px;display:block;margin:10px 0;font-variant-numeric:tabular-nums}
+.item{display:flex;align-items:start;justify-content:space-between;gap:10px;border-bottom:1px solid #2b3d53;padding:11px 0}
+.item:last-child{border-bottom:0}.item span{font-size:12px;color:#adc0d2}.item b{font-size:14px}
+.notice{background:#261d13;color:#ffce93;border:1px solid #75562c;padding:14px;border-radius:12px;font-size:13px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+a,button{font:inherit;font-weight:650;color:#eaf4ff;background:#16365b;border:1px solid #40688e;text-decoration:none;border-radius:12px;padding:11px 15px;cursor:pointer}
+button:disabled{opacity:.54;cursor:not-allowed}
+footer{position:fixed;bottom:0;left:0;right:0;background:#071326;border-top:1px solid #29405c;display:flex;gap:10px;justify-content:center;padding:12px 12px calc(12px + env(safe-area-inset-bottom))}
+footer a{flex:1;text-align:center;max-width:365px}
+</style>
+</head><body>
+<main>
+<header><div><small>AperiON · Komuta Merkezi</small><h1>A2 · Satış ve Operasyon</h1></div><span class="tag">GÜVENLİ ÖN İNCELEME</span></header>
+<div class="card"><div class="topline"><h2>Gamze Eczanesi</h2><small id="state">Oturum kontrol ediliyor</small></div>
+<p class="muted" id="msg">Bu ekran yalnızca doğrulanmış AperiON sahibiyle verileri paylaşır.</p>
+<div id="details" hidden>
+<p><b id="customer"></b><br><span class="muted" id="date"></span></p>
+<strong class="total" id="total"></strong>
+<div class="muted" id="summary"></div>
+<div id="items"></div>
+<p class="notice">Bu ekran yalnızca satış incelemesi yapar. BizimHesap'a kayıt veya e-Fatura göndermez. Bağımsız işlem onayı, tekillik kilidi ve ERP geri doğrulaması tamamlanana kadar kayıt düğmesi açılmaz.</p>
+<div class="actions"><button type="button" disabled>Satışı kaydet · henüz etkin değil</button></div>
+</div></div>
+<div class="card" id="pair" hidden><h2>Güvenli telefon eşleştirmesi gerekiyor</h2><p class="muted">İstasyON'da Telegram üzerinden bu iPhone'u bağlayıp yeniden buraya dönebilirsin.</p><a href="/istasyon-alkam.html">Telefonu eşleştir</a></div>
+<div class="actions"><button type="button" id="refresh">Yenile</button><a href="/aperion-merkez.html">AperiON Ana Ekran</a></div>
+</main>
+<footer><a href="/aperion-merkez.html">⌂ Ana Ekran</a><a href="/istasyon-alkam.html">İstasyON</a></footer>
+<script>
+(()=>{
+"use strict";
+const el=id=>document.getElementById(id),trMoney=c=>new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY'}).format(c/100);
+async function refresh(){
+ el('state').textContent='Kontrol ediliyor';el('details').hidden=true;el('pair').hidden=true;
+ const token=localStorage.getItem('istasyon_dashboard_token');
+ if(!token){el('state').textContent='Giriş gerekli';el('pair').hidden=false;el('msg').textContent='Bu iPhone henüz eşleştirilmemiş.';return;}
+ try{
+ const res=await fetch('/api/a2-sale-review',{cache:'no-store',headers:{Authorization:'Bearer '+token}});
+ if(res.status===401){el('pair').hidden=false;el('state').textContent='Oturum gerekli';el('msg').textContent='Güvenli eşleştirme yenilenmeli.';return;}
+ const data=await res.json();
+ if(!res.ok||!data.ok)throw new Error(data.error||'Erişilemedi');
+ if(data.postingAvailable!==false)throw new Error('Unexpected financial state');
+ el('state').textContent='Hazırlanmış · kayıt bekliyor';
+ el('customer').textContent=data.customer;el('date').textContent=data.salesDate.slice(0,10)+' · Sipariş: '+data.sourceId;
+ el('total').textContent=trMoney(data.amountsKurus.total);
+ el('summary').textContent=data.quantity+' paket · '+data.items.length+' kalem · %10 KDV · Tahsilat kaydedilmedi';
+ const root=el('items');root.replaceChildren();
+ for(const item of data.items){
+  const line=document.createElement('div');line.className='item';
+  const left=document.createElement('div');const title=document.createElement('b');title.textContent=item.name;
+  const detail=document.createElement('div');detail.className='muted';detail.textContent=item.sku+' · '+item.quantity+' paket';
+  left.append(title,detail);const amount=document.createElement('b');amount.textContent=trMoney(item.subtotalKurus);line.append(left,amount);root.append(line);
+ }
+ el('details').hidden=false;el('msg').textContent='Kayıt yapılmadı. Canlı ERP kaynağı henüz doğrulanmadı.';
+ }catch(err){el('state').textContent='Kontrol edilemedi';el('msg').textContent=String(err?.message||err); }
+}
+el('refresh').onclick=refresh;refresh();
+})();
+</script>
+</body></html>
