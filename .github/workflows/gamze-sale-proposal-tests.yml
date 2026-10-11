@@ -6,6 +6,8 @@ on:
       - 'functions/shared/approved-normal-sale-engine.js'
       - 'tools/test_gamze_normal_sale_proposal.mjs'
       - 'tools/test_approved_normal_sale_engine.mjs'
+      - 'tools/test_a2_idempotency_sql_contract.mjs'
+      - 'specs/a2_sale_intent_postgres_NOT_DEPLOYED.sql'
       - 'tools/test_a2_normal_sale_readback.mjs'
       - 'functions/shared/a2-normal-sale-readback.js'
       - '.github/workflows/gamze-sale-proposal-tests.yml'
@@ -26,6 +28,8 @@ jobs:
         run: node tools/test_approved_normal_sale_engine.mjs
       - name: A2 ERP candidate readback guard (no writes)
         run: node tools/test_a2_normal_sale_readback.mjs
+      - name: A2 PostgreSQL idempotency contract (static no DB calls)
+        run: node tools/test_a2_idempotency_sql_contract.mjs
       - name: Source syntax
         run: |
           node --check functions/shared/approved-normal-sale-engine.js
