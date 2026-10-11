@@ -7,6 +7,10 @@ on:
       - 'tools/test_gamze_normal_sale_proposal.mjs'
       - 'tools/test_approved_normal_sale_engine.mjs'
       - 'tools/test_a2_normal_sale_readback.mjs'
+      - 'tools/test_a2_owner_sale_review.mjs'
+      - 'functions/api/a2-sale-review.js'
+      - 'a2-satis.html'
+      - 'aperion-merkez.html'
       - 'functions/shared/a2-normal-sale-readback.js'
       - '.github/workflows/gamze-sale-proposal-tests.yml'
   workflow_dispatch:
@@ -26,8 +30,11 @@ jobs:
         run: node tools/test_approved_normal_sale_engine.mjs
       - name: A2 ERP candidate readback guard (no writes)
         run: node tools/test_a2_normal_sale_readback.mjs
+      - name: A2 owner-only review / no-post tests
+        run: node tools/test_a2_owner_sale_review.mjs
       - name: Source syntax
         run: |
           node --check functions/shared/approved-normal-sale-engine.js
           node --check functions/shared/gamze-normal-sale-proposal.js
           node --check functions/shared/a2-normal-sale-readback.js
+          node --check functions/api/a2-sale-review.js
