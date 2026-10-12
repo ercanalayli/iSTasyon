@@ -1,0 +1,27 @@
+name: AperiON device online evidence
+on:
+  pull_request:
+    paths:
+      - "functions/telegram/device-bridge.js"
+      - "functions/telegram/webhook.js"
+      - "tools/verify_aperion_device_bridge_v141.mjs"
+      - ".github/workflows/aperion-device-online-evidence.yml"
+  workflow_dispatch:
+
+jobs:
+  device-health:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate syntax
+        run: |
+          node --check functions/telegram/device-bridge.js
+          node --check functions/telegram/webhook.js
+          node --check tools/verify_aperion_device_bridge_v141.mjs
+      - name: Device identity and online evidence regressions
+        run: node tools/verify_aperion_device_bridge_v141.mjs
