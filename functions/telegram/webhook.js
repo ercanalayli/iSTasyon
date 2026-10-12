@@ -1521,6 +1521,20 @@ if (lower === '/bhbagla' || lower === '/bhiptal') {
       : '⚠ İptal veri kasasında doğrulanamadı. Erişim statüsü belirsiz; yetkili incelemesi gerekli.');
     return json({ok:revoked.ok,mobile_pairing:revoked.ok?'revoked':'failed',financial_writes:0},revoked.ok?200:503);
   }
+  // Never send a handoff until the separate Worker has actually deployed
+  // and its existing D1-backed pairing store has passed a live preflight.
+  let mobileWorkerReady=false;
+  try {
+    const h=await fetch('https://aperion-bizimhesap-free.yenicespor-finans.workers.dev/health',
+      {signal:AbortSignal.timeout(6000),headers:{'accept':'application/json'}});
+    const state=h.ok?await h.json():{};
+    mobileWorkerReady=h.ok && state.setup_version==='20261012-mobile-revocable-v3'
+      && state.pairing_store_ready===true && state.write_enabled===false;
+  } catch (_) {}
+  if (!mobileWorkerReady) {
+    await sendMessage(env,chatId,'⚠ BizimHesap güvenli telefon eşleştirmesi henüz etkin değil. Kurulum tamamlanmadan bağlantı vermiyorum; finansal kayıt yapılmadı.');
+    return json({ok:false,mobile_pairing:'worker_not_ready',financial_writes:0},503);
+  }
   const issued=await issueMobileTicket(env.APERION_DB,{
     chatId,userId:msg.from.id,messageId:msg.message_id
   });
