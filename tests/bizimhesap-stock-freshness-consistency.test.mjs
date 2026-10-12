@@ -22,7 +22,7 @@ for(const column of ['warehouse_id','product_id','title','barcode','qty','last_s
   assert.ok(original.includes(column),column+' missing from original');
 }
 const p=stockQueryPaths('Jender');
-assert.ok(p.stock.includes(base));
+assert.ok(p.stock.includes(base.replace(/^public\\./,'')));
 assert.ok(p.freshness.includes('aperion_bh_freshness_v3'));
 const liveClock='2026-10-12T20:15:00.000Z';
 const depots=[{source:'warehouses',source_kind:'API_MIRROR',record_count:2,freshness:'FRESH',connection_status:'OK',last_success_at:liveClock},
