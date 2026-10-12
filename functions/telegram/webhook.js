@@ -1,4 +1,5 @@
 import { handleRetailTelegramCommand } from '../shared/retail-sales-protocol.js';
+import { buildMobileStatusReport } from '../shared/mobile-status-report.js';
 import { getMobileSecurityStatus, handleMobileCommand, verifyTelegramRequest } from './mobile-command-center.js';
 import { DESKTOP_TARGETS, desktopTargetSummary, parseUniversalCommand } from './universal-command-router.js';
 import { deviceHealth, queueDeviceCommand } from './device-bridge.js';
@@ -1063,22 +1064,18 @@ await sendMessage(env, chatId,
 }
 
 async function handleDurumIntent(env, chatId) {
-const stokR = await sbFetch(env, '/rest/v1/stock_raw?select=tarih&order=tarih.desc&limit=1');
-const eventR = await sbFetch(env, '/rest/v1/bizimhesap_events?select=created_at&order=created_at.desc&limit=1');
-const lines = ['AperiON Durum (Supabase üzerinden):', ''];
-if (stokR.ok && stokR.data && stokR.data[0]) {
-lines.push('• Stok verisi: son güncelleme ' + trTarih(stokR.data[0].tarih));
-} else {
-lines.push('• Stok verisi: okunamadı');
-}
-if (eventR.ok && eventR.data && eventR.data[0]) {
-const dt = new Date(eventR.data[0].created_at);
-lines.push('• Son BizimHesap olayı: ' + dt.toLocaleString('tr-TR'));
-} else {
-lines.push('• BizimHesap olay kaydı: okunamadı');
-}
-lines.push('', 'Not: bu özet yalnızca buluttaki (Supabase) verilere bakar; bilgisayarınızdaki senkron scriptinin şu anki canlı çalışma durumunu göstermez.');
-await sendMessage(env, chatId, lines.join('\n'));
+const [stokR, eventR, freshR] = await Promise.all([
+  sbFetch(env, '/rest/v1/stock_raw?select=tarih&order=tarih.desc&limit=1'),
+  sbFetch(env, '/rest/v1/bizimhesap_events?select=created_at&order=created_at.desc&limit=1'),
+  sbFetch(env, '/rest/v1/aperion_bh_freshness_v3?select=source,source_kind,last_success_at,freshness,connection_status&limit=50')
+]);
+const status = buildMobileStatusReport({
+  stockRow: stokR.ok ? stokR.data?.[0] : null,
+  eventRow: eventR.ok ? eventR.data?.[0] : null,
+  sources: freshR.ok ? freshR.data : null,
+  freshnessOk: freshR.ok && Array.isArray(freshR.data)
+});
+await sendMessage(env, chatId, status);
 }
 // ---------------------------------------------------------------------------
 
