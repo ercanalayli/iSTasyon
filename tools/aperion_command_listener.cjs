@@ -18,6 +18,7 @@ const { loadDiaperPriceCatalog, resolveDiaperCatalogItem, parseDiscountPercent }
 const { userSafeDesktopResult } = require('./desktop_result_formatter.cjs');
 const { assertBizimHesapWriteEnabled } = require('./lib/bizimhesap_write_policy.cjs');
 const { brokerCandidateURLs, attachOnly } = require('./lib/bizimhesap_session_ports.cjs');
+const { readOnlyHealth: bizimhesapB2BHealth, postApprovedInvoice: bizimhesapB2BPostApprovedInvoice } = require('./bizimhesap_b2b_canonical.cjs');
 
 const ENV_FILE = path.join(__dirname, '..', 'local-secrets', 'bizimhesap.local.env');
 if (!fs.existsSync(ENV_FILE)) { console.error('HATA: local-secrets/bizimhesap.local.env yok.'); process.exit(1); }
@@ -1844,6 +1845,13 @@ async function handleCommand(cmd) {
     }
     if (cmd.command === 'desktop_open_url') {
       outcome = await openDesktopTarget(params.target);
+    } else if (cmd.command === 'bizimhesap_b2b_health') {
+      const health = await bizimhesapB2BHealth();
+      outcome = { ok: health.ok, output: JSON.stringify(health) };
+    } else if (cmd.command === 'bizimhesap_b2b_invoice') {
+      assertBizimHesapWriteEnabled();
+      const result = await bizimhesapB2BPostApprovedInvoice(params);
+      outcome = { ok: result.ok, output: JSON.stringify(result) };
     } else if (cmd.command === 'bizimhesap_health') {
       const health = await probeAuthenticatedBizimHesapSession();
       outcome = { ok: health.authenticated, output: JSON.stringify(health) };
