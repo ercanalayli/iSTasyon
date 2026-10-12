@@ -69,7 +69,14 @@ async function googleToken(){
     client_secret:required('GOOGLE_CLIENT_SECRET'),
     refresh_token:required('GOOGLE_REFRESH_TOKEN'),grant_type:'refresh_token'}),
   signal:AbortSignal.timeout(20000)});
- const obj=await response.json();if(!response.ok||!obj.access_token)throw Error('google_oauth_refresh_failed');
+ const obj=await response.json().catch(()=>({}));
+ if(!response.ok||!obj.access_token){
+   // Error identifiers only: never log tokens, request bodies or Google descriptions.
+   const allowed=new Set(['invalid_grant','invalid_client','unauthorized_client',
+     'invalid_scope','access_denied','temporarily_unavailable']);
+   const cause=allowed.has(String(obj.error))?String(obj.error):'unknown';
+   throw Error('google_oauth_refresh_failed_'+cause+'_http_'+response.status);
+ }
  return obj.access_token;
 }
 async function read(token,ranges){
