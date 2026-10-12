@@ -19,6 +19,13 @@
     .main{padding:22px;min-width:0}.top{display:flex;gap:14px;align-items:center;justify-content:space-between;margin-bottom:18px}.top h1{font-size:23px;margin:0}.top p{margin:4px 0 0;color:var(--muted)}.owner-name{flex:1;min-width:180px;text-align:center;font-size:27px;font-weight:800;color:#f5f8ff;letter-spacing:-.025em;white-space:nowrap}.badges{display:flex;gap:8px;flex-wrap:wrap}.badge{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 10px;color:var(--muted)}.badge strong{color:var(--green)}
     .notice{border:1px solid #755b28;background:#281f10;border-radius:12px;padding:12px 14px;color:#ffdc9c;margin-bottom:16px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.card{grid-column:span 3;background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:15px;padding:15px;min-height:126px;cursor:pointer;transition:.18s}.card:hover{transform:translateY(-2px);border-color:#3f6390}.card .icon{font-size:22px}.card h2{font-size:15px;margin:18px 0 5px}.card p{color:var(--muted);margin:0;font-size:12px;line-height:1.5}.card .state{display:inline-block;margin-top:11px;color:var(--green);font-size:11px;font-weight:700}.span6{grid-column:span 6}
     .dataTitle{grid-column:1/-1;margin:10px 2px 0;font-size:13px;color:#c9d7eb}.dataCard{cursor:default;min-height:152px}.dataCard:hover{transform:none}.dataCard h2{margin:8px 0 2px}.metric{font-size:23px;font-weight:850;letter-spacing:-.03em}.meta{display:grid;gap:4px;margin-top:10px;color:var(--muted);font-size:11px}.status{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800}.status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--amber)}.status.ok::before{background:var(--green)}.status.bad::before{background:var(--red)}.status.bad{color:#ff9ba2}.status.warn{color:#ffd181}
+    .appsSurface{grid-column:1/-1;border:1px solid #2b5275;background:linear-gradient(130deg,#0b1c31,#091525);border-radius:16px;padding:13px;min-width:0}
+    .appsSurfaceHead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+    .appsSurfaceHead h2{font-size:17px;margin:0 0 4px}.appsSurfaceHead p{font-size:12px;color:var(--muted);line-height:1.5;margin:0}
+    .appsActions{display:flex;gap:8px;flex-wrap:wrap}.appsActions a,.appsActions button{color:var(--text);text-decoration:none;background:#143251;border:1px solid #365e83;border-radius:9px;padding:9px 13px;cursor:pointer;font-size:12px;font-weight:700}
+    .appsActions a:hover,.appsActions button:hover{border-color:#50aaff}
+    #homeAppsScriptFrame{height:65dvh;min-height:490px;background:#0b1628;border:1px solid #29476a;border-radius:12px}
+    .appsSourceHint{color:#ffca75;font-size:11px;margin-top:9px;line-height:1.5}
     .workspace{display:none;margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}.workspace.on{display:block}.workspaceHead{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-bottom:1px solid var(--line)}.workspaceHead b{font-size:13px}.actions{display:flex;gap:8px}.actions a,.actions button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:9px;padding:7px 10px;text-decoration:none;cursor:pointer}iframe{display:block;border:0;width:100%;height:72dvh;background:#fff}
     .legacy{display:none}.legacy.on{display:block}.legacyTop{display:flex;gap:10px;margin-bottom:12px}.legacy input{width:100%;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:11px;padding:12px}.legacyList{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.legacyItem{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px;cursor:pointer}.legacyItem b{display:block;font-size:13px}.legacyItem span{display:block;color:var(--muted);font-size:11px;margin-top:5px}.legacyItem em{display:inline-block;color:var(--blue);font-size:10px;font-style:normal;margin-top:8px}
     @media(max-width:900px){.owner-name{flex:none;text-align:left;font-size:24px}.shell{grid-template-columns:1fr}.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:12px}.brand{margin-bottom:10px}.sectionLabel{display:none}.nav{display:flex;overflow:auto}.nav button{white-space:nowrap;min-width:max-content}.main{padding:14px}.top{align-items:flex-start;flex-direction:column}.card{grid-column:span 6}.legacyList{grid-template-columns:1fr 1fr}iframe{height:68dvh}}
@@ -48,6 +55,14 @@
     </header>
     <div class="notice">Açık onay olmadan dış sisteme kayıt yok. Eski ekranların hiçbiri silinmedi; “Tüm Ekranlar” kataloğunda korunuyor.</div>
     <section id="overview" class="grid">
+      <article class="appsSurface" aria-label="ApeirON iş takibi Google Apps Script">
+        <div class="appsSurfaceHead">
+          <div><h2>ApeirON İş Takibi · Google Apps Script</h2><p>ÖDE ve görev kayıtlarının mevcut Google kaynak uygulaması, ana ekranın içinde.</p></div>
+          <div class="appsActions"><button id="homeAppsScriptReload" type="button">Yenile</button><a id="homeAppsScriptNewTab" href="https://script.google.com/macros/s/AKfycbwQO76klWyRLCXCx20IrSmW48-EQqzEh_qyNw6oSfKYvJGfVE9pUi2wC19PqyYsLZh2/exec" target="_blank" rel="noopener noreferrer">Uygulamayı ayrı aç ↗</a></div>
+        </div>
+        <iframe id="homeAppsScriptFrame" title="ApeirON İş Takibi · Google Apps Script" loading="lazy" referrerpolicy="no-referrer"></iframe>
+        <div class="appsSourceHint">Kaynak: Google Apps Script + Sheets. Bu ekranı görmek BizimHesap e-fatura, banka ve ödeme hareketlerinin anlık mutabık olduğunu kanıtlamaz.</div>
+      </article>
       <h2 class="dataTitle">Gerçek Veri Durumu</h2>
       <article class="card dataCard"><div class="status warn" id="bankDataStatus">Banka verisi okunuyor</div><h2>Banka Onay</h2><div class="metric" id="bankDataMetric">—</div><p id="bankDataText">Kaynak bağlantısı kontrol ediliyor.</p><div class="meta"><span id="bankDataDate">Veri tarihi: —</span><span>Kaynak: Banka onay status JSON</span></div></article>
       <article class="card dataCard"><div class="status warn" id="paymentDataStatus">Ödemeler okunuyor</div><h2>Ödenecekler</h2><div class="metric" id="paymentDataMetric">—</div><p id="paymentDataText">Kaynak bağlantısı kontrol ediliyor.</p><div class="meta"><span id="paymentDataDate">Veri tarihi: —</span><span>Kaynak: Ödeme yükümlülükleri</span></div></article>
@@ -72,13 +87,14 @@
   </main>
 </div>
 <script>
+const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbwQO76klWyRLCXCx20IrSmW48-EQqzEh_qyNw6oSfKYvJGfVE9pUi2wC19PqyYsLZh2/exec';
 const MODULES={
   approval:{title:'Onay ve Kanıt Merkezi',url:'/aperion-home-v3.html?legacy=1#approval'},
   finance:{title:'Finans ve Ödemeler',url:'/aperion-finans-takvimi-live.html'},
   bank:{title:'Banka ve Ekstre Merkezi',url:'/mail-ekstre-canli.html'},
   sales:{title:'Satış, Ürün ve Stok',url:'/alayli-merkez.html'},
   work:{title:'AperiON İş Merkezi',url:'/aperion-is-merkezi.html'},
-  taskSource:{title:'ApeirON Görevler · Kaynak Uygulama',url:'https://script.google.com/macros/s/AKfycbwQO76klWyRLCXCx20IrSmW48-EQqzEh_qyNw6oSfKYvJGfVE9pUi2wC19PqyYsLZh2/exec'}
+  taskSource:{title:'ApeirON Görevler · Kaynak Uygulama',url:APPS_SCRIPT_URL}
 };
 const $=id=>document.getElementById(id);
 let surfaces=[];
@@ -135,6 +151,12 @@ function showLegacy(target){$('overview').style.display='none';$('workspace').cl
 function renderLegacy(query){const q=query.toLocaleLowerCase('tr');const rows=surfaces.filter(item=>`${item.file} ${item.title} ${item.heading} ${item.category}`.toLocaleLowerCase('tr').includes(q));$('legacyList').innerHTML=rows.map(item=>{const url=safeLegacyUrl(item.url);return url?`<article class="legacyItem" data-url="${esc(url)}"><b>${esc(item.title||item.file)}</b><span>${esc(item.file)}</span><em>${esc(item.category)}</em></article>`:''}).join('');document.querySelectorAll('.legacyItem').forEach(item=>item.onclick=()=>{const url=safeLegacyUrl(item.dataset.url);if(!url)return;$('legacy').classList.remove('on');$('workspace').classList.add('on');$('moduleFrame').src=url;$('moduleTitle').textContent=item.querySelector('b').textContent;$('moduleNewTab').href=url})}
 document.addEventListener('click',event=>{const moduleTarget=event.target.closest('[data-module]');if(moduleTarget)openModule(moduleTarget.dataset.module,moduleTarget.matches('#mainNav button')?moduleTarget:null);const viewTarget=event.target.closest('[data-view]');if(viewTarget){if(viewTarget.dataset.view==='legacy')showLegacy(viewTarget.matches('#mainNav button')?viewTarget:null);else showOverview(viewTarget)}});$('moduleClose').onclick=()=>showOverview(document.querySelector('[data-view="overview"]'));$('legacySearch').oninput=event=>renderLegacy(event.target.value);
 fetch('/data/aperion_surface_inventory.json',{cache:'no-store'}).then(response=>response.json()).then(data=>{surfaces=data.surfaces||[];$('surfaceCount').textContent=`${surfaces.length} ekran korunuyor`}).catch(()=>{$('surfaceCount').textContent='Envanter okunamadı'});
+// Embed the existing Google app on the main dashboard; do not proxy or persist Google credentials.
+$('homeAppsScriptFrame').src=APPS_SCRIPT_URL;
+$('homeAppsScriptReload').addEventListener('click',()=>{
+  // Explicit reload; do not disrupt a user in the middle of an Apps Script task.
+  $('homeAppsScriptFrame').src=APPS_SCRIPT_URL;
+});
 loadRealData();
 // Screen refresh only re-reads available source files; it is NOT instant ERP synchronization.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadRealData()});
