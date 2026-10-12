@@ -40,3 +40,6 @@ jobs:
           $json=Get-Content -LiteralPath $reports[-1].FullName -Raw|ConvertFrom-Json
           if($json.finance_writes -ne 0){throw 'Unexpected financial operation status'}
           Write-Host 'PASS: actual CMD launched; local diagnostic saved, no financial writes'
+          # This offline test intentionally lacks credentials. The diagnostic returns 1;
+          # the test itself succeeds only after verifying fail-closed receipt.
+          exit 0
