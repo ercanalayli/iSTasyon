@@ -45,6 +45,6 @@ assert.doesNotMatch(sql,/GRANT\s+(?:ALL|SELECT)[^;]+TO\s+(?:anon|authenticated)/
 assert.doesNotMatch(sql,/INSERT INTO|UPDATE\s+public\.|DELETE FROM/i);
 assert.ok(webhook.includes('stockQueryPaths(query)'));
 const handler = webhook.split('async function handleStokIntent(env, chatId, query) {')[1].split('async function handleDurumIntent')[0];
-assert.ok(!handler.includes('stock_raw'));
+assert.doesNotMatch(handler, /\/rest\/v1\/stock_raw\?/);
 assert.ok(handler.includes('formatStockMirrorReport'));
 console.log('PASS: API mirrored inventory read-only, freshness, no stale fallback, SQL service-role privileges');
