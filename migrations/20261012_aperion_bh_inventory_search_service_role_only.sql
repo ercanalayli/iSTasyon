@@ -21,6 +21,8 @@ LEFT JOIN aperion_internal.bh_sync_health_v1 AS h ON h.source_type=s.source_type
 WHERE s.source_type LIKE 'inventory:%' AND jsonb_typeof(s.payload)='array';
 
 REVOKE ALL PRIVILEGES ON public.aperion_bh_inventory_search_v1 FROM PUBLIC, anon, authenticated;
+-- Supabase may pre-grant non-SELECT privileges to service_role on new public views.
+REVOKE ALL PRIVILEGES ON public.aperion_bh_inventory_search_v1 FROM service_role;
 GRANT SELECT ON public.aperion_bh_inventory_search_v1 TO service_role;
 COMMIT;
 
