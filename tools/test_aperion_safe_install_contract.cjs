@@ -69,7 +69,7 @@ for (const token of [
   "merged_targets=@($mergedFiles)"
 ]) assert.ok(ps.includes(token), 'missing all-target merge safety: ' + token);
 
-const preflight = ps.indexOf('  $blockedPaths = @()');
+const preflight = ps.indexOf('  # First test Git index membership');
 const stage = ps.indexOf('  New-Item -ItemType Directory -Path $stage,$backup -Force | Out-Null');
 const mergeAll = ps.indexOf('  foreach ($rel in $modifiedFiles) {');
 const syntaxAll = ps.slice(mergeAll).search(/  foreach \(\$rel in \$Targets\.Keys\) \{\r?\n    & node\.exe --check/) + mergeAll;
@@ -78,7 +78,7 @@ assert.ok(preflight >= 0 && stage > preflight, 'scan all targets before download
 assert.ok(mergeAll > stage && syntaxAll > mergeAll && liveCopy > syntaxAll,
   'all staged merges and syntax/tests must precede live-file replacement');
 assert.ok(ps.includes("$blockedPaths += ($rel + ' [STAGED]')"));
-assert.ok(ps.includes("$blockedPaths += ($rel + ' [UNTRACKED]')"));
+assert.ok(ps.includes("$blockedPaths += ($rel + ' [UNTRACKED_CONTENT_DIFFERS_FROM_VERIFIED_SOURCE]')"));
 assert.ok(ps.includes("$mergeConflicts += ($rel + ' [MERGE_CONFLICT]')"));
 assert.ok(ps.includes("if ($mergeConflicts.Count)"));
 assert.ok(ps.includes("foreach ($rel in $modifiedFiles)"), 'all dirty target files must be handled');
