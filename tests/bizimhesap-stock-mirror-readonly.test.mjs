@@ -44,6 +44,7 @@ assert.match(formatStockMirrorReport(paths,healthy,[{...rows[0],source_health:'S
 
 assert.match(sql,/CREATE OR REPLACE VIEW public\.aperion_bh_inventory_search_v1/);
 assert.match(sql,/REVOKE ALL PRIVILEGES[^;]+FROM PUBLIC, anon, authenticated/i);
+assert.match(sql,/REVOKE ALL PRIVILEGES[^;]+FROM service_role/i);
 assert.match(sql,/GRANT SELECT[^;]+TO service_role/i);
 assert.doesNotMatch(sql,/GRANT\s+(?:ALL|SELECT)[^;]+TO\s+(?:anon|authenticated)/i);
 assert.doesNotMatch(sql,/INSERT INTO|UPDATE\s+public\.|DELETE FROM/i);
