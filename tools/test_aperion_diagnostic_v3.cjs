@@ -1,0 +1,10 @@
+'use strict';
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const s=fs.readFileSync('tools/AperiON-TekTik-OtoRapor-V3-20261012.cmd','utf8');
+assert.ok(s.includes('aperion_probe=v3_cmd_start'));
+assert.ok(s.includes('aperion_windows_diagnostics_v1'));
+assert.ok(s.includes('finance_writes = 0'));
+assert.ok(s.includes('Copy-Item -LiteralPath $file -Destination $saved'));
+assert.ok(s.indexOf('aperion_probe=v3_cmd_start') < s.indexOf('set "APERION_SELF_FILE=%~f0"'));
+console.log('PASS: startup connectivity probe and preserved safety checks');
