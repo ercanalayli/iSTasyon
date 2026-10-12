@@ -61,7 +61,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: result.status,
     })
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ ok: false, error: 'UPSTREAM_READ_UNAVAILABLE', financialWrites: 0 }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 502,
     })
   }
