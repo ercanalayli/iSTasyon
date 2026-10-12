@@ -1,0 +1,23 @@
+name: AperiON stock source health contract
+on:
+  pull_request:
+    paths:
+      - "migrations/20261012_aperion_bh_stock_freshness_consistent_v2.sql"
+      - "tests/bizimhesap-stock-freshness-consistency.test.mjs"
+      - ".github/workflows/aperion-stock-freshness-consistency.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stock-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Syntax and policy regression
+        run: |
+          node --check tests/bizimhesap-stock-freshness-consistency.test.mjs
+          node tests/bizimhesap-stock-freshness-consistency.test.mjs
+          node tests/bizimhesap-stock-mirror-readonly.test.mjs
