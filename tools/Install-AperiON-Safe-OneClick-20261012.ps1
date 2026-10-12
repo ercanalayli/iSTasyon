@@ -68,7 +68,11 @@ function QueueSnapshot($cfg) {
   $uri = $cfg.SUPABASE_URL.TrimEnd('/') +
     '/rest/v1/bot_commands?select=id,command,status&status=in.%28pending,processing%29&limit=201'
   try {
-    return @(Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -TimeoutSec 18)
+    # Windows PowerShell's default User-Agent starts with Mozilla/5.0.
+    # Supabase intentionally returns 401 for sb_secret_ keys used with
+    # browser-looking User-Agents. This is a trusted LOCAL backend installer,
+    # not a browser/client. Keep the real apikey + server-side privileges.
+    return @(Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -UserAgent 'AperiON-Windows-Backend/1.0' -TimeoutSec 18)
   } catch {
     $statusCode = 0
     try { $statusCode = [int]$_.Exception.Response.StatusCode } catch {}

@@ -23,7 +23,7 @@ for (const [, p, hash] of manifests) {
   assertClean(p);
   assert.equal(canonicalSha(p), hash, 'pinned content does not match ' + p);
 }
-assert.match(cmd, /dd6dd6b38091b34bf9b29cb959772eaddd737f29/);
+assert.match(cmd, /15ff84bd15ab26c211698d91310f5469336744c4/);
 assertClean('tools/Install-AperiON-Safe-OneClick-20261012.ps1');
 assert.ok(cmd.includes(canonicalSha('tools/Install-AperiON-Safe-OneClick-20261012.ps1')),
   'bootstrap must pin installer git blob hash');
@@ -44,6 +44,11 @@ const queueRegion = ps.slice(ps.indexOf('function QueueSnapshot($cfg) {'),
   ps.indexOf('function AssertSafeQueue($cfg) {'));
 assert.ok(queueRegion.includes("$headers = @{ apikey = $cfg.SUPABASE_SERVICE_ROLE_KEY }"));
 assert.ok(queueRegion.includes("if ($cfg.AUTH_MODE -eq 'legacy_service_jwt')"));
+assert.ok(queueRegion.includes("-UserAgent 'AperiON-Windows-Backend/1.0'"),
+  'a non-browser server UA is essential: sb_secret_ rejects Mozilla/WindowsPowerShell default');
+const requestLine = queueRegion.split('\n').find(line => line.includes('Invoke-RestMethod -Method Get'));
+assert.ok(requestLine.includes("-UserAgent 'AperiON-Windows-Backend/1.0'"));
+assert.ok(!requestLine.includes('Mozilla/5.0'));
 assert.ok(queueRegion.includes("$headers.Authorization = 'Bearer ' + $cfg.SUPABASE_SERVICE_ROLE_KEY"));
 assert.ok(!queueRegion.includes('Start-ScheduledTask'));
 const initialRegion = ps.slice(ps.indexOf('  $cfg = ReadConfig'), ps.indexOf('  $repoCheck'));
