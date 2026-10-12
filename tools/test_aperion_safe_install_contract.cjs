@@ -23,7 +23,7 @@ for (const [, p, hash] of manifests) {
   assertClean(p);
   assert.equal(canonicalSha(p), hash, 'pinned content does not match ' + p);
 }
-assert.match(cmd, /15ff84bd15ab26c211698d91310f5469336744c4/);
+assert.match(cmd, /56dde134b6623bde13e208b2e843b97d6df6ea9e/);
 assertClean('tools/Install-AperiON-Safe-OneClick-20261012.ps1');
 assert.ok(cmd.includes(canonicalSha('tools/Install-AperiON-Safe-OneClick-20261012.ps1')),
   'bootstrap must pin installer git blob hash');
@@ -53,5 +53,33 @@ assert.ok(queueRegion.includes("$headers.Authorization = 'Bearer ' + $cfg.SUPABA
 assert.ok(!queueRegion.includes('Start-ScheduledTask'));
 const initialRegion = ps.slice(ps.indexOf('  $cfg = ReadConfig'), ps.indexOf('  $repoCheck'));
 assert.ok(initialRegion.includes('AssertSafeQueue'), 'fail closed before updating local code');
+
+
+for (const token of [
+  "BLOCKED_STAGED_LISTENER_CHANGES_PRESERVED",
+  "BLOCKED_UNTRACKED_LISTENER_PRESERVED",
+  "BLOCKED_LISTENER_MERGE_CONFLICT_LOCAL_FILE_UNTOUCHED",
+  "BLOCKED_LISTENER_MERGE_SAFETY_GUARDS_MISSING",
+  "git.exe merge-file",
+  "Copy-Item -LiteralPath $local -Destination $ours -Force",
+  "Copy-Item -LiteralPath $ours -Destination $theirs -Force",
+  "$locallyMerged = $true"
+]) assert.ok(ps.includes(token), 'missing local-edits safety: ' + token);
+const stageMerge = ps.indexOf('& git.exe merge-file $ours $base $theirs');
+const installCopy = ps.indexOf('Copy-Item -LiteralPath (Join-Path $stage (Rel $rel)) -Destination $target -Force');
+assert.ok(stageMerge > 0 && installCopy > stageMerge, 'merge must precede any local file replacement');
+// Smoke-test Git's 3-way merge behavior on fixtures WITHOUT running the installer.
+const os = require('node:os');
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(),'aperion-safe-merge-'));
+try {
+ const b=path.join(tmp,'base.cjs'), o=path.join(tmp,'ours.cjs'), t=path.join(tmp,'theirs.cjs');
+ fs.writeFileSync(b,'module.exports = {name: "orig", role: "base"};\n');
+ fs.writeFileSync(o,'module.exports = {name: "ours", role: "base"};\n');
+ fs.writeFileSync(t,'module.exports = {name: "theirs", role: "base"};\n');
+ const cp=require('node:child_process');
+ const x=cp.spawnSync('git',['merge-file',o,b,t],{encoding:'utf8'});
+ assert.notEqual(x.status,0, 'conflicting local edits must stop instead of overwriting');
+ assert.ok(fs.readFileSync(o,'utf8').includes('<<<<<<<'), 'conflict stays in stage only');
+} finally { fs.rmSync(tmp,{recursive:true,force:true}); }
 
 console.log('PASS: seven pinned blobs, fixed launcher fingerprint, fail-closed finance checks (no write)');
