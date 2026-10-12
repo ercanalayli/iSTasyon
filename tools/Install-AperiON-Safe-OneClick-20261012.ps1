@@ -25,7 +25,8 @@ $backup = Join-Path $folder 'backup'
 $installed = $false
 $sourceVerified = $false
 $credentialMode = 'unknown'
-$locallyMerged = $false
+$modifiedFiles = @()
+$mergedFiles = @()
 function Info([string]$s) { Write-Host ('AperiON | ' + $s) }
 function Rel([string]$p) { return $p.Replace('/', '\') }
 function GetListenerProcesses {
@@ -102,7 +103,8 @@ function WriteResult([string]$state, [string]$detail) {
   $result = @{
     status=$state; detail=$detail; checkedAt=(Get-Date).ToString('o');
     source_commit=$Commit; source_verified=$sourceVerified; backup_path=$backup;
-    credential_mode=$credentialMode; local_listener_merged=$locallyMerged;
+    credential_mode=$credentialMode; modified_targets=@($modifiedFiles);
+    merged_targets=@($mergedFiles);
     financial_writes=0; approvals_changed=0; new_browser_logins=0
   }
   $result | ConvertTo-Json -Depth 4 |
@@ -129,26 +131,33 @@ try {
   if ($LASTEXITCODE -ne 0 -or $repoCheck.Trim() -ne 'true') {
     throw 'BLOCKED_WORKSPACE_IS_NOT_GIT_CHECKOUT'
   }
-  # A locally modified listener is not discarded: if possible, merge ONLY
-  # non-conflicting edits from the existing Git checkout into a staged copy.
-  # Staged/index changes cannot be safely reconstructed from the worktree.
-  $dirtyListener = $false
+  # Inspect ALL target files before staging, never fail one-at-a-time.
+  # A staged/index change or untracked target is not a safe merge base.
+  $blockedPaths = @()
   foreach ($rel in $Targets.Keys) {
     $target = Join-Path $Root (Rel $rel)
     if (!(Test-Path -LiteralPath $target)) { continue }
     $changes = @(& git.exe -C $Root status --porcelain -- $rel)
-    if ($LASTEXITCODE -ne 0) { throw ('BLOCKED_LOCAL_GIT_STATUS_FAILED: ' + $rel) }
+    if ($LASTEXITCODE -ne 0) { throw 'BLOCKED_LOCAL_GIT_STATUS_FAILED' }
     if (($changes -join '').Trim()) {
-      if ($rel -ne 'tools/aperion_command_listener.cjs') {
-        throw ('BLOCKED_LOCAL_CHANGES_PRESERVED: ' + $rel)
-      }
       & git.exe -C $Root diff --cached --quiet -- $rel
-      if ($LASTEXITCODE -ne 0) { throw 'BLOCKED_STAGED_LISTENER_CHANGES_PRESERVED' }
+      if ($LASTEXITCODE -ne 0) {
+        $blockedPaths += ($rel + ' [STAGED]')
+        continue
+      }
       & git.exe -C $Root ls-files --error-unmatch -- $rel 1>$null 2>$null
-      if ($LASTEXITCODE -ne 0) { throw 'BLOCKED_UNTRACKED_LISTENER_PRESERVED' }
-      $dirtyListener = $true
-      Info 'Local listener edits detected; trying conflict-free 3-way merge into STAGE only.'
+      if ($LASTEXITCODE -ne 0) {
+        $blockedPaths += ($rel + ' [UNTRACKED]')
+        continue
+      }
+      $modifiedFiles += $rel
     }
+  }
+  if ($modifiedFiles.Count) {
+    Info ('Local edited files (all): ' + ($modifiedFiles -join ', '))
+  }
+  if ($blockedPaths.Count) {
+    throw ('BLOCKED_LOCAL_INDEX_OR_UNTRACKED_FILES: ' + ($blockedPaths -join ', '))
   }
   New-Item -ItemType Directory -Path $stage,$backup -Force | Out-Null
   foreach ($rel in $Targets.Keys) {
@@ -161,41 +170,63 @@ try {
       throw ('BLOCKED_PINNED_SOURCE_HASH_MISMATCH: ' + $rel)
     }
   }
-  if ($dirtyListener) {
-    $rel = 'tools/aperion_command_listener.cjs'
+  # Merge EVERY locally edited pinned target into STAGING, not only the
+  # first file. Reject ANY conflict before installing a single live file.
+  $mergeConflicts = @()
+  foreach ($rel in $modifiedFiles) {
     $local = Join-Path $Root (Rel $rel)
     $theirs = Join-Path $stage (Rel $rel)
-    $ours = Join-Path $stage 'listener-user-merged.cjs'
-    $base = Join-Path $stage 'listener-HEAD-base.cjs'
+    $safeName = $rel.Replace('/','_')
+    $ours = Join-Path $stage ('user-merged-' + $safeName)
+    $base = Join-Path $stage ('git-HEAD-base-' + $safeName)
     Copy-Item -LiteralPath $local -Destination $ours -Force
-    # Node saves the exact binary Git blob. PowerShell 5.1 redirection would
-    # transform it to UTF-16, invalidating a textual 3-way merge.
-    $saveBase = "const fs=require('fs');const cp=require('child_process');fs.writeFileSync(process.argv[1],cp.execFileSync('git',['-C',process.argv[2],'show','HEAD:tools/aperion_command_listener.cjs'],{maxBuffer:16*1024*1024}));"
-    & node.exe -e $saveBase $base $Root
+    # Export binary Git HEAD blob to a staging copy without PowerShell
+    # re-encoding it to UTF-16. All relative paths are from fixed manifest.
+    $saveBase = "const fs=require('fs');const cp=require('child_process');fs.writeFileSync(process.argv[1],cp.execFileSync('git',['-C',process.argv[2],'show','HEAD:'+process.argv[3]],{maxBuffer:16*1024*1024}));"
+    & node.exe -e $saveBase $base $Root $rel
     if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $base)) {
-      throw 'BLOCKED_LOCAL_GIT_BASE_UNAVAILABLE'
+      $mergeConflicts += ($rel + ' [BASE_UNAVAILABLE]')
+      continue
     }
-    # Windows checkout may use CRLF while pinned Git blobs use LF.
-    # Normalize only temporary copies, never the user's original file.
     $normalize = "const fs=require('fs');for(const file of process.argv.slice(1)){const s=fs.readFileSync(file,'utf8');if(s.includes('\u0000'))process.exit(3);fs.writeFileSync(file,s.replace(/\r\n/g,'\n'),'utf8')}"
     & node.exe -e $normalize $ours $base $theirs
-    if ($LASTEXITCODE -ne 0) { throw 'BLOCKED_LISTENER_MERGE_NORMALIZATION_FAILED' }
-    # git merge-file modifies OUR STAGED COPY, never the user's local file.
-    & git.exe merge-file $ours $base $theirs
     if ($LASTEXITCODE -ne 0) {
-      throw 'BLOCKED_LISTENER_MERGE_CONFLICT_LOCAL_FILE_UNTOUCHED'
+      $mergeConflicts += ($rel + ' [NORMALIZATION_FAILED]')
+      continue
+    }
+    & git.exe merge-file $ours $base $theirs 1>$null 2>$null
+    if ($LASTEXITCODE -ne 0) {
+      $mergeConflicts += ($rel + ' [MERGE_CONFLICT]')
+      continue
     }
     $mergedText = [IO.File]::ReadAllText($ours)
-    if (!$mergedText.Contains('claimPendingBotCommand(db, cmd.id)') -or
-        !$mergedText.Contains('bizimhesapB2BPostApprovedInvoice')) {
-      throw 'BLOCKED_LISTENER_MERGE_SAFETY_GUARDS_MISSING'
-    }
     if ($mergedText.Contains('<<<<<<< ') -or $mergedText.Contains('>>>>>>> ')) {
-      throw 'BLOCKED_LISTENER_MERGE_CONFLICT_MARKERS'
+      $mergeConflicts += ($rel + ' [CONFLICT_MARKERS]')
+      continue
+    }
+    if ($rel -eq 'tools/aperion_command_listener.cjs') {
+      if (!$mergedText.Contains('claimPendingBotCommand(db, cmd.id)') -or
+          !$mergedText.Contains('bizimhesapB2BPostApprovedInvoice')) {
+        $mergeConflicts += ($rel + ' [COMMAND_CLAIM_SAFETY_MISSING]')
+        continue
+      }
+    }
+    if ($rel -eq 'tools/bizimhesap_b2b_canonical.cjs') {
+      if (!$mergedText.Contains('guardSingleInvoiceAttempt(db, idempotencyKey, params.command_id)') -or
+          !$mergedText.Contains('params.approved !== true') -or
+          !$mergedText.Contains("authMode: 'token-header'")) {
+        $mergeConflicts += ($rel + ' [FINANCE_GUARD_MISSING]')
+        continue
+      }
     }
     Copy-Item -LiteralPath $ours -Destination $theirs -Force
-    $locallyMerged = $true
-    Info 'Conflict-free listener merge prepared. User changes kept in staged candidate.'
+    $mergedFiles += $rel
+  }
+  if ($mergeConflicts.Count) {
+    throw ('BLOCKED_ALL_LOCAL_MERGE_CONFLICTS: ' + ($mergeConflicts -join ', '))
+  }
+  if ($mergedFiles.Count) {
+    Info ('STAGED conflict-free merges (all): ' + ($mergedFiles -join ', '))
   }
   foreach ($rel in $Targets.Keys) {
     & node.exe --check (Join-Path $stage (Rel $rel))

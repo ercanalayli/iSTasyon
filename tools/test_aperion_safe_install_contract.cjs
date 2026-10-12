@@ -23,14 +23,14 @@ for (const [, p, hash] of manifests) {
   assertClean(p);
   assert.equal(canonicalSha(p), hash, 'pinned content does not match ' + p);
 }
-assert.match(cmd, /b9376a8861ce26aec6eb1ae657fc1e97f19e1cf4/);
+assert.match(cmd, /197db31d8c8f1a2924dd56d7a33beac58200ac0a/);
 assertClean('tools/Install-AperiON-Safe-OneClick-20261012.ps1');
 assert.ok(cmd.includes(canonicalSha('tools/Install-AperiON-Safe-OneClick-20261012.ps1')),
   'bootstrap must pin installer git blob hash');
 for (const fragment of [
   'AssertSafeQueue $cfg', 'BLOCKED_COMMAND_CURRENTLY_PROCESSING',
   'BLOCKED_UNREVIEWED_PENDING_FINANCIAL_OR_UNKNOWN_COMMAND',
-  'BLOCKED_LOCAL_CHANGES_PRESERVED', 'Stop-Process',
+  'BLOCKED_LOCAL_INDEX_OR_UNTRACKED_FILES', 'Stop-Process',
   'Start-ScheduledTask', "APERION_CHROME_ATTACH_MODE",
   'FINANCIAL', 'GetListenerProcesses', 'source_verified=$sourceVerified',
   "StartsWith('sb_secret_')", "AUTH_MODE = 'secret_apikey_only'",
@@ -56,19 +56,34 @@ assert.ok(initialRegion.includes('AssertSafeQueue'), 'fail closed before updatin
 
 
 for (const token of [
-  "BLOCKED_STAGED_LISTENER_CHANGES_PRESERVED",
-  "BLOCKED_UNTRACKED_LISTENER_PRESERVED",
-  "BLOCKED_LISTENER_MERGE_CONFLICT_LOCAL_FILE_UNTOUCHED",
-  "BLOCKED_LISTENER_MERGE_SAFETY_GUARDS_MISSING",
-  "BLOCKED_LISTENER_MERGE_NORMALIZATION_FAILED",
+  "BLOCKED_LOCAL_INDEX_OR_UNTRACKED_FILES",
+  "BLOCKED_ALL_LOCAL_MERGE_CONFLICTS",
+  "[FINANCE_GUARD_MISSING]",
+  "claimPendingBotCommand(db, cmd.id)",
+  "guardSingleInvoiceAttempt(db, idempotencyKey, params.command_id)",
   "git.exe merge-file",
   "Copy-Item -LiteralPath $local -Destination $ours -Force",
   "Copy-Item -LiteralPath $ours -Destination $theirs -Force",
-  "$locallyMerged = $true"
-]) assert.ok(ps.includes(token), 'missing local-edits safety: ' + token);
-const stageMerge = ps.indexOf('& git.exe merge-file $ours $base $theirs');
-const installCopy = ps.indexOf('Copy-Item -LiteralPath (Join-Path $stage (Rel $rel)) -Destination $target -Force');
-assert.ok(stageMerge > 0 && installCopy > stageMerge, 'merge must precede any local file replacement');
+  "$mergedFiles += $rel",
+  "merged_targets=@($mergedFiles)"
+]) assert.ok(ps.includes(token), 'missing all-target merge safety: ' + token);
+
+const preflight = ps.indexOf('  $blockedPaths = @()');
+const stage = ps.indexOf('  New-Item -ItemType Directory -Path $stage,$backup -Force | Out-Null');
+const mergeAll = ps.indexOf('  foreach ($rel in $modifiedFiles) {');
+const syntaxAll = ps.slice(mergeAll).search(/  foreach \(\$rel in \$Targets\.Keys\) \{\r?\n    & node\.exe --check/) + mergeAll;
+const liveCopy = ps.indexOf('Copy-Item -LiteralPath (Join-Path $stage (Rel $rel)) -Destination $target -Force');
+assert.ok(preflight >= 0 && stage > preflight, 'scan all targets before downloading pinned sources');
+assert.ok(mergeAll > stage && syntaxAll > mergeAll && liveCopy > syntaxAll,
+  'all staged merges and syntax/tests must precede live-file replacement');
+assert.ok(ps.includes("$blockedPaths += ($rel + ' [STAGED]')"));
+assert.ok(ps.includes("$blockedPaths += ($rel + ' [UNTRACKED]')"));
+assert.ok(ps.includes("$mergeConflicts += ($rel + ' [MERGE_CONFLICT]')"));
+assert.ok(ps.includes("if ($mergeConflicts.Count)"));
+assert.ok(ps.includes("foreach ($rel in $modifiedFiles)"), 'all dirty target files must be handled');
+assert.ok(!ps.includes("if ($rel -ne 'tools/aperion_command_listener.cjs')"),
+  'listener-only whitelist would strand the next locally changed file');
+
 // Smoke-test Git's 3-way merge behavior on fixtures WITHOUT running the installer.
 const os = require('node:os');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(),'aperion-safe-merge-'));
