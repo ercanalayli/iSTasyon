@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { SiteSessionAdapter, redact } = require('./lib/site_session_adapter.cjs');
+const { superviseSupabaseListener } = require('./lib/supabase_listener_supervisor.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const POLICY = JSON.parse(fs.readFileSync(path.join(ROOT, 'config', 'hermes_runtime_policy_v160.json'), 'utf8'));
@@ -46,6 +47,9 @@ async function main() {
   const state = readState();
   const checks = {};
   checks.runtimeEnsure = runPowerShell(ENSURE_RUNTIME);
+  // The v160 unified supervisor replaced the old listener scheduled task,
+  // but must still keep the existing Supabase listener alive. No new bot.
+  checks.supabaseListener = superviseSupabaseListener();
   const site = new SiteSessionAdapter({
     id: 'bizimhesap',
     profile: 'APERION_BIZIMHESAP',
