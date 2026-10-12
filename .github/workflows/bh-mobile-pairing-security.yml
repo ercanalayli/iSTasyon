@@ -1,0 +1,47 @@
+name: BizimHesap mobile device pairing security
+on:
+  pull_request:
+    paths:
+      - "functions/telegram/webhook.js"
+      - "functions/shared/bizimhesap-mobile-pairing.js"
+      - "workers/aperion-bizimhesap-free/**"
+      - "tests/bizimhesap-mobile-pairing.test.mjs"
+      - ".github/workflows/bh-mobile-pairing-security.yml"
+  workflow_dispatch:
+jobs:
+  secure-mobile-pairing:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Parse all pairing code
+        run: |
+          node --check functions/telegram/webhook.js
+          node --check functions/shared/bizimhesap-mobile-pairing.js
+          node --check workers/aperion-bizimhesap-free/src/mobile-pairing.js
+          node --check workers/aperion-bizimhesap-free/src/index.js
+      - name: D1 pairing security regression
+        run: node --test tests/bizimhesap-mobile-pairing.test.mjs
+      - name: Maintain read-only ERP safety gates
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const src=fs.readFileSync('workers/aperion-bizimhesap-free/src/index.js','utf8');
+          assert.match(src,/write_enabled:false/);
+          assert.match(src,/matchingOrigin\(request\)/);
+          assert.match(src,/claimTicket\(env\.APERION_DB/);
+          assert.match(src,/checkSession\(env\.APERION_DB/);
+          assert.match(src,/navigation_detected/);
+          assert.match(src,/authenticated:false/);
+          assert.doesNotMatch(src,/SETUP_HASH|SETUP_EXPIRES_AT/);
+          const srcPair=fs.readFileSync('functions/telegram/webhook.js','utf8');
+          assert.match(srcPair,/lower === '\/bhbagla'/);
+          assert.match(srcPair,/msg\.chat\?\.type !== 'private'/);
+          assert.match(srcPair,/identity\.hardened/);
+          assert.match(srcPair,/financial_writes:0/);
+          JS
