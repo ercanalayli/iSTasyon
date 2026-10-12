@@ -15,9 +15,10 @@ export function stockQueryPaths(raw) {
   };
 }
 
-export function formatStockMirrorReport(paths, freshness, rows, { mirrorOk = true } = {}) {
-  if (!paths) return 'Kullanım: /stok ürün adı (en az 2 karakter).';
-  if (!Array.isArray(freshness)) return '⚠️ Stok kaynak durumu doğrulanamadı. Tarihsel stok rakamı canlı gösterilmedi.';
+// Pure source-state gate. Do not infer health from formatted Turkish text;
+// a healthy lookup with zero product rows must still query the product view.
+export function stockMirrorSourcesReady(freshness) {
+  if (!Array.isArray(freshness)) return false;
   const depots = freshness.filter(x => String(x?.source || '').startsWith('inventory:'));
   const warehouses = freshness.find(x => x?.source === 'warehouses');
   const expectedDepots = Number(warehouses?.record_count);
@@ -30,12 +31,19 @@ export function formatStockMirrorReport(paths, freshness, rows, { mirrorOk = tru
     x.source_kind === 'API_MIRROR' && x.freshness === 'FRESH' &&
     x.connection_status === 'OK' && Boolean(x.last_success_at)
   );
-  if (!allFresh) return '🔴 BizimHesap depo aynalarının güncelliği doğrulanamadı. Eski stock_raw rakamı kullanılmadı.';
+  return Boolean(allFresh);
+}
+
+export function formatStockMirrorReport(paths, freshness, rows, { mirrorOk = true } = {}) {
+  if (!paths) return 'Kullanım: /stok ürün adı (en az 2 karakter).';
+  if (!Array.isArray(freshness)) return '⚠️ Stok kaynak durumu doğrulanamadı. Tarihsel stok rakamı canlı gösterilmedi.';
+  if (!stockMirrorSourcesReady(freshness)) return '🔴 BizimHesap depo aynalarının güncelliği doğrulanamadı. Eski stock_raw rakamı kullanılmadı.';
   if (!mirrorOk || !Array.isArray(rows))
     return '⚠️ Güncel stok aynası okunamadı. Önce yetkili görünüm kurulmalı; eski stok rakamı kullanılmadı.';
   if (!rows.length) return '“' + paths.query + '” için güncel depo aynasında sonuç bulunamadı. Kapsamın eksiksizliği doğrulanmadı.';
   if (rows.some(x => x?.source_health !== 'FRESH'))
     return '🔴 Eşleşen stok satırlarının kaynak sağlığı doğrulanamadı. Miktar gösterilmedi.';
+  const depots = freshness.filter(x => String(x?.source || '').startsWith('inventory:'));
   const latest = depots.map(x => Date.parse(x.last_success_at)).filter(Number.isFinite);
   const stamp = latest.length ? new Date(Math.min(...latest)).toLocaleString('tr-TR', {timeZone:'Europe/Istanbul'}) : 'bilinmiyor';
   const lines = rows.map(x => {
@@ -49,4 +57,25 @@ export function formatStockMirrorReport(paths, freshness, rows, { mirrorOk = tru
     '\nSon başarılı aktarım (en eski depo): ' + stamp +
     '\n' + lines.join('\n') +
     '\nNot: Depo kaydıdır; rezerv/lot ve tüm SKU kapsamı ayrıca doğrulanmalı.';
+}
+
+ 
+// Inject a read-only REST loader (the bot supplies authenticated Supabase GET).
+// Fail closed on missing data and stale sources; no financial writes or queue calls.
+export async function lookupStockMirror(query, load) {
+  const paths = stockQueryPaths(query);
+  if (!paths) return formatStockMirrorReport(null, null, null);
+  let freshness;
+  try { freshness = await load(paths.freshness); }
+  catch { return formatStockMirrorReport(paths, null, null); }
+  const sourceRows = freshness?.ok && Array.isArray(freshness.data) ? freshness.data : null;
+  if (!sourceRows) return formatStockMirrorReport(paths, null, null);
+  if (!stockMirrorSourcesReady(sourceRows)) return formatStockMirrorReport(paths, sourceRows, []);
+  let mirror;
+  try { mirror = await load(paths.stock); }
+  catch { return formatStockMirrorReport(paths, sourceRows, null, { mirrorOk: false }); }
+  return formatStockMirrorReport(paths, sourceRows,
+    mirror?.ok && Array.isArray(mirror.data) ? mirror.data : null,
+    { mirrorOk: mirror?.ok === true }
+  );
 }
