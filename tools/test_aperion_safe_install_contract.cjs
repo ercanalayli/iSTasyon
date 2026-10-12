@@ -23,7 +23,8 @@ for (const [, p, hash] of manifests) {
   assertClean(p);
   assert.equal(canonicalSha(p), hash, 'pinned content does not match ' + p);
 }
-assert.match(cmd, /197db31d8c8f1a2924dd56d7a33beac58200ac0a/);
+assert.match(cmd, /https:\/\/raw\.githubusercontent\.com\/ercanalayli\/iSTasyon\/[a-f0-9]{40}\/tools\/Install-AperiON-Safe-OneClick-20261012\.ps1/,
+  'CMD must pin immutable installer commit, not a moving branch');
 assertClean('tools/Install-AperiON-Safe-OneClick-20261012.ps1');
 assert.ok(cmd.includes(canonicalSha('tools/Install-AperiON-Safe-OneClick-20261012.ps1')),
   'bootstrap must pin installer git blob hash');
@@ -68,7 +69,7 @@ for (const token of [
   "merged_targets=@($mergedFiles)"
 ]) assert.ok(ps.includes(token), 'missing all-target merge safety: ' + token);
 
-const preflight = ps.indexOf('  $blockedPaths = @()');
+const preflight = ps.indexOf('  # First test Git index membership');
 const stage = ps.indexOf('  New-Item -ItemType Directory -Path $stage,$backup -Force | Out-Null');
 const mergeAll = ps.indexOf('  foreach ($rel in $modifiedFiles) {');
 const syntaxAll = ps.slice(mergeAll).search(/  foreach \(\$rel in \$Targets\.Keys\) \{\r?\n    & node\.exe --check/) + mergeAll;
@@ -77,12 +78,45 @@ assert.ok(preflight >= 0 && stage > preflight, 'scan all targets before download
 assert.ok(mergeAll > stage && syntaxAll > mergeAll && liveCopy > syntaxAll,
   'all staged merges and syntax/tests must precede live-file replacement');
 assert.ok(ps.includes("$blockedPaths += ($rel + ' [STAGED]')"));
-assert.ok(ps.includes("$blockedPaths += ($rel + ' [UNTRACKED]')"));
+assert.ok(ps.includes("$blockedPaths += ($rel + ' [UNTRACKED_CONTENT_DIFFERS_FROM_VERIFIED_SOURCE]')"));
 assert.ok(ps.includes("$mergeConflicts += ($rel + ' [MERGE_CONFLICT]')"));
 assert.ok(ps.includes("if ($mergeConflicts.Count)"));
 assert.ok(ps.includes("foreach ($rel in $modifiedFiles)"), 'all dirty target files must be handled');
 assert.ok(!ps.includes("if ($rel -ne 'tools/aperion_command_listener.cjs')"),
   'listener-only whitelist would strand the next locally changed file');
+
+// Regression: on Windows PowerShell 5.1, stderr from Git --error-unmatch
+// becomes a terminating exception before a safe untracked classification.
+const indexPreflight = ps.slice(ps.indexOf('  # First test Git index membership'),
+  ps.indexOf('  New-Item -ItemType Directory -Path $stage,$backup -Force | Out-Null'));
+assert.ok(indexPreflight.includes('git.exe -C $Root ls-files --cached -- $rel'));
+assert.ok(!indexPreflight.includes('git.exe -C $Root ls-files --error-unmatch'),
+  'untracked local files must never produce terminating Git pathspec errors');
+assert.ok(indexPreflight.indexOf('ls-files --cached') < indexPreflight.indexOf('status --porcelain'),
+  'check index membership before inspecting changes, including Git-ignored files');
+assert.ok(indexPreflight.includes('[UNTRACKED_CONTENT_DIFFERS_FROM_VERIFIED_SOURCE]'),
+  'unknown untracked local code must block instead of being overwritten');
+assert.ok(indexPreflight.includes('if ($localSha -eq $Targets[$rel])'),
+  'only hash-identical untracked files may safely proceed');
+assert.ok(ps.includes('untracked_targets=@($untrackedFiles)'));
+assert.ok(ps.includes('blocked_paths=@($blockedPaths)'));
+
+// Git index membership query must exit 0 on *both* untracked and ignored
+// files, so PowerShell's Stop policy cannot short-circuit classification.
+const indexTmp = fs.mkdtempSync(path.join(require('node:os').tmpdir(),'aperion-git-index-'));
+try {
+ const cp=require('node:child_process');
+ assert.equal(cp.spawnSync('git',['init','-q',indexTmp],{encoding:'utf8'}).status,0);
+ fs.mkdirSync(path.join(indexTmp,'tools'));
+ fs.writeFileSync(path.join(indexTmp,'tools/bizimhesap_b2b_canonical.cjs'),'// valuable user-only code\n');
+ fs.writeFileSync(path.join(indexTmp,'.gitignore'),'tools/ignored.cjs\n');
+ fs.writeFileSync(path.join(indexTmp,'tools/ignored.cjs'),'// ignored, still valuable\n');
+ for (const file of ['tools/bizimhesap_b2b_canonical.cjs','tools/ignored.cjs']) {
+   const tracked=cp.spawnSync('git',['-C',indexTmp,'ls-files','--cached','--',file],{encoding:'utf8'});
+   assert.equal(tracked.status,0, 'untracked Git index query should succeed');
+   assert.equal(tracked.stdout.trim(),'','no index entry is not an error');
+ }
+} finally { fs.rmSync(indexTmp,{recursive:true,force:true}); }
 
 // Smoke-test Git's 3-way merge behavior on fixtures WITHOUT running the installer.
 const os = require('node:os');

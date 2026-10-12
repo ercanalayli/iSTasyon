@@ -27,6 +27,9 @@ $sourceVerified = $false
 $credentialMode = 'unknown'
 $modifiedFiles = @()
 $mergedFiles = @()
+$untrackedFiles = @()
+$verifiedUntrackedFiles = @()
+$blockedPaths = @()
 function Info([string]$s) { Write-Host ('AperiON | ' + $s) }
 function Rel([string]$p) { return $p.Replace('/', '\') }
 function GetListenerProcesses {
@@ -105,6 +108,9 @@ function WriteResult([string]$state, [string]$detail) {
     source_commit=$Commit; source_verified=$sourceVerified; backup_path=$backup;
     credential_mode=$credentialMode; modified_targets=@($modifiedFiles);
     merged_targets=@($mergedFiles);
+    untracked_targets=@($untrackedFiles);
+    verified_identical_untracked_targets=@($verifiedUntrackedFiles);
+    blocked_paths=@($blockedPaths);
     financial_writes=0; approvals_changed=0; new_browser_logins=0
   }
   $result | ConvertTo-Json -Depth 4 |
@@ -131,12 +137,31 @@ try {
   if ($LASTEXITCODE -ne 0 -or $repoCheck.Trim() -ne 'true') {
     throw 'BLOCKED_WORKSPACE_IS_NOT_GIT_CHECKOUT'
   }
-  # Inspect ALL target files before staging, never fail one-at-a-time.
-  # A staged/index change or untracked target is not a safe merge base.
-  $blockedPaths = @()
+  # First test Git index membership without --error-unmatch. On Windows
+  # PowerShell 5.1, that Git error writes to stderr and ErrorActionPreference
+  # Stop throws before a safe exit-code check can classify the local file.
+  # Check EVERY existing target, including ignored files with empty status.
   foreach ($rel in $Targets.Keys) {
     $target = Join-Path $Root (Rel $rel)
     if (!(Test-Path -LiteralPath $target)) { continue }
+    $trackedEntries = @(& git.exe -C $Root ls-files --cached -- $rel)
+    if ($LASTEXITCODE -ne 0) { throw 'BLOCKED_LOCAL_GIT_INDEX_QUERY_FAILED' }
+    $exactEntries = @($trackedEntries | Where-Object { [string]$_ -ceq $rel })
+    if ($exactEntries.Count -ne 1) {
+      $untrackedFiles += $rel
+      $localSha = (& git.exe hash-object $target).Trim()
+      if ($LASTEXITCODE -ne 0) {
+        $blockedPaths += ($rel + ' [UNTRACKED_HASH_FAILED]')
+      } elseif ($localSha -eq $Targets[$rel]) {
+        # Only this *byte-identical, independently pinned* local file can
+        # proceed with the normal before-write backup. No implicit merge base.
+        $verifiedUntrackedFiles += $rel
+      } else {
+        # No common ancestor exists; never overwrite unknown original code.
+        $blockedPaths += ($rel + ' [UNTRACKED_CONTENT_DIFFERS_FROM_VERIFIED_SOURCE]')
+      }
+      continue
+    }
     $changes = @(& git.exe -C $Root status --porcelain -- $rel)
     if ($LASTEXITCODE -ne 0) { throw 'BLOCKED_LOCAL_GIT_STATUS_FAILED' }
     if (($changes -join '').Trim()) {
@@ -145,16 +170,14 @@ try {
         $blockedPaths += ($rel + ' [STAGED]')
         continue
       }
-      & git.exe -C $Root ls-files --error-unmatch -- $rel 1>$null 2>$null
-      if ($LASTEXITCODE -ne 0) {
-        $blockedPaths += ($rel + ' [UNTRACKED]')
-        continue
-      }
       $modifiedFiles += $rel
     }
   }
   if ($modifiedFiles.Count) {
     Info ('Local edited files (all): ' + ($modifiedFiles -join ', '))
+  }
+  if ($untrackedFiles.Count) {
+    Info ('Not tracked by this local Git checkout: ' + ($untrackedFiles -join ', '))
   }
   if ($blockedPaths.Count) {
     throw ('BLOCKED_LOCAL_INDEX_OR_UNTRACKED_FILES: ' + ($blockedPaths -join ', '))
