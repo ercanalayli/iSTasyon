@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { enrollmentPayload } from '../functions/telegram/device-bridge.js';
+import { enrollmentPayload, deviceHealth } from '../functions/telegram/device-bridge.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const source = fs.readFileSync(path.join(root, 'functions/telegram/device-bridge.js'), 'utf8');
@@ -35,4 +35,42 @@ assert.match(installer, /HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Ru
 assert.match(installer, /AperiON_Device_Bridge/);
 assert.match(installerLauncher, /install_aperion_device_bridge\.ps1/);
 
-console.log('AperiON cihaz köprüsü v141 doğrulaması geçti.');
+
+// Regression: a registered device is not necessarily online. Report recent
+// authenticated polling separately, with no Chrome/login inference.
+const fakeEnv = (registered, recentlySeen) => ({
+  APERION_DB: {
+    prepare(sql) {
+      return {
+        async run() { return { success: true }; },
+        async first() {
+          if (sql.includes('FROM aperion_device_commands')) return { count: 2 };
+          if (sql.includes('FROM aperion_devices') && sql.includes('last_seen_at IS NOT NULL'))
+            return { count: recentlySeen };
+          if (sql.includes('FROM aperion_devices')) return { count: registered };
+          throw new Error('unexpected test SQL');
+        }
+      };
+    }
+  }
+});
+const offline = await deviceHealth(fakeEnv(1, 0));
+assert.equal(offline.configured, true);
+assert.equal(offline.activeDeviceCount, 1); // backward compatibility only
+assert.equal(offline.registeredDeviceCount, 1);
+assert.equal(offline.onlineDeviceCount, 0);
+assert.equal(offline.devicePresence, 'not_recently_seen');
+assert.equal(offline.pendingCommandCount, 2);
+const online = await deviceHealth(fakeEnv(1, 1));
+assert.equal(online.onlineDeviceCount, 1);
+assert.equal(online.devicePresence, 'recent_device_poll');
+const absent = await deviceHealth(fakeEnv(0, 0));
+assert.equal(absent.devicePresence, 'no_registered_device');
+const unavailable = await deviceHealth({});
+assert.equal(unavailable.devicePresence, 'unavailable');
+assert.match(webhook, /desktop_bridge_online_device_count: desktopBridge\.onlineDeviceCount/);
+assert.match(webhook, /desktop_bridge_presence: desktopBridge\.devicePresence/);
+// Public health is read-only: no device command, ERP posting or authorization granted.
+assert.doesNotMatch(source.slice(source.indexOf('export async function deviceHealth')), /queueDeviceCommand|completeDeviceCommand/);
+
+console.log('AperiON cihaz köprüsü v141: kayıt / çevrimiçi ayrımı doğrulandı.');
