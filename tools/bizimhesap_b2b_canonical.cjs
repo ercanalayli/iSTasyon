@@ -2,6 +2,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const { BizimHesapB2BClient, maskSecret } = require('../bizimhesap_api_client.cjs');
+const { guardSingleInvoiceAttempt } = require('./lib/bot_command_safety.cjs');
 
 function required(name, value) {
   const v = String(value || '').trim();
@@ -70,17 +71,12 @@ async function postApprovedInvoice(params = {}, env = process.env) {
   const serviceKey = required('SUPABASE_SERVICE_ROLE_KEY', env.SUPABASE_SERVICE_ROLE_KEY);
   const db = createClient(url, serviceKey, { auth: { persistSession: false } });
 
-  const { data: previous, error: previousError } = await db
-    .from('bot_commands')
-    .select('id,status,result,params')
-    .eq('command', 'bizimhesap_b2b_invoice')
-    .eq('status', 'completed')
-    .contains('params', { idempotency_key: idempotencyKey })
-    .limit(1);
-
-  if (previousError) throw new Error('idempotency_lookup_failed:' + previousError.message);
-  if (previous?.length) {
-    return { ok: true, duplicate_blocked: true, prior_command_id: previous[0].id, prior_result: previous[0].result || '' };
+  // The exact queue row must be atomically claimed. Prepared, pending,
+  // completed, or untracked calls may never post. Other attempts with the
+  // same business event key (including failed/uncertain ones) block posting.
+  const guard = await guardSingleInvoiceAttempt(db, idempotencyKey, params.command_id);
+  if (guard.duplicate_blocked) {
+    return { ok: true, ...guard };
   }
 
   const { client } = await createBizimHesapClientFromCanonicalIntegration(env);
