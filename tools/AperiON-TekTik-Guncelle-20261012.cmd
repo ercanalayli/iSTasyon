@@ -13,7 +13,7 @@ if errorlevel 1 (
   exit /b 1
 )
 set "APERION_TEMP_INSTALLER=%TEMP%\AperiON_SafeInstall_20261012_%RANDOM%.ps1"
-powershell.exe -NoProfile -NonInteractive -Command "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; $p=$env:APERION_TEMP_INSTALLER; $u='https://raw.githubusercontent.com/ercanalayli/iSTasyon/dd6dd6b38091b34bf9b29cb959772eaddd737f29/tools/Install-AperiON-Safe-OneClick-20261012.ps1'; Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $p -TimeoutSec 30; $hash=(& git.exe hash-object $p).Trim(); if($hash -ne 'c748344d3e3c4b112913e722ac865b5861c52e96'){throw 'PINNED_INSTALLER_HASH_MISMATCH'}; Write-Host 'AperiON: imzasi dogrulanan kurulum hazir.'"
+powershell.exe -NoProfile -NonInteractive -Command "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; $p=$env:APERION_TEMP_INSTALLER; $u='https://raw.githubusercontent.com/ercanalayli/iSTasyon/15ff84bd15ab26c211698d91310f5469336744c4/tools/Install-AperiON-Safe-OneClick-20261012.ps1'; Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $p -TimeoutSec 30; $hash=(& git.exe hash-object $p).Trim(); if($hash -ne '9757f37b24cf35091f057f3c2716b5a0eccb7490'){throw 'PINNED_INSTALLER_HASH_MISMATCH'}; Write-Host 'AperiON: imzasi dogrulanan kurulum hazir.'"
 if errorlevel 1 (
   echo DURDURULDU: guvenli kurulum indirilemedi ya da hash dogrulamadi.
   del /q "%APERION_TEMP_INSTALLER%" >nul 2>nul
