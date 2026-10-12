@@ -63,6 +63,12 @@ async function api(token,url,options={}){
  return data;
 }
 async function googleToken(){
+ // Preferred: short-lived token minted by GitHub OIDC -> Google Workload Identity Federation.
+ // Only if WIF is not configured fall back to the existing user OAuth refresh flow.
+ if(env.GOOGLE_ACCESS_TOKEN){
+   if(env.GOOGLE_ACCESS_TOKEN.length<40)throw Error('google_wif_access_token_invalid');
+   return env.GOOGLE_ACCESS_TOKEN;
+ }
  const response=await fetch('https://oauth2.googleapis.com/token',{
   method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
   body:new URLSearchParams({client_id:required('GOOGLE_CLIENT_ID'),
