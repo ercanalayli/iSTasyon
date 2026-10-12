@@ -17,6 +17,18 @@
     .brand{display:flex;gap:12px;align-items:center;margin:0 6px 20px}.mark{width:44px;height:44px;border-radius:13px;background:linear-gradient(145deg,#1473d4,#071c38);display:grid;place-items:center;font-weight:900;font-size:18px;box-shadow:0 8px 26px #1473d455}.brand b{display:block;font-size:18px}.brand span{color:var(--muted);font-size:12px}
     .sectionLabel{margin:18px 8px 8px;color:#6f83a1;font-size:10px;font-weight:800;letter-spacing:.13em}.nav{display:grid;gap:6px}.nav button{border:1px solid transparent;border-radius:11px;background:transparent;color:var(--muted);padding:11px 12px;text-align:left;cursor:pointer}.nav button:hover,.nav button.on{background:var(--panel2);border-color:var(--line);color:var(--text)}.nav small{display:block;color:#6f83a1;margin-top:3px}
     .main{padding:22px;min-width:0}.top{display:flex;gap:14px;align-items:center;justify-content:space-between;margin-bottom:18px}.top h1{font-size:23px;margin:0}.top p{margin:4px 0 0;color:var(--muted)}.owner-name{flex:1;min-width:180px;text-align:center;font-size:27px;font-weight:800;color:#f5f8ff;letter-spacing:-.025em;white-space:nowrap}.badges{display:flex;gap:8px;flex-wrap:wrap}.badge{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 10px;color:var(--muted)}.badge strong{color:var(--green)}
+    .criticalWatch{border:2px solid #f04b52;background:linear-gradient(110deg,#48111d,#260e19);box-shadow:0 0 0 1px rgba(248,65,87,.18),0 8px 24px rgba(0,0,0,.18);border-radius:14px;margin-bottom:16px;padding:13px 16px;display:grid;gap:7px;color:#fff}
+    .criticalWatch.is-ok{border-color:#247e60;background:#0d3027;box-shadow:none}
+    .criticalWatchHead{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .criticalWatchTitle{font-size:15px;font-weight:900;letter-spacing:.01em}
+    .criticalWatchDetails{font-size:12px;line-height:1.45;color:#ffe4e7}
+    .criticalWatch.is-ok .criticalWatchDetails{color:#a9e6d3}
+    .criticalWatchActions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .criticalWatchActions a{color:#fff;font-size:12px;text-decoration:underline;font-weight:700}
+    .criticalWatchActions button{border:1px solid #e68e98;border-radius:8px;background:#641e2a;color:#fff;cursor:pointer;padding:6px 10px;font-weight:700}
+    .criticalWatch.is-ok .criticalWatchActions button{background:#12513e;border-color:#58b093}
+    .criticalWatchMeta{color:#f6b9c0;font-size:11px}
+    .criticalWatch.is-ok .criticalWatchMeta{color:#a9e6d3}
     .notice{border:1px solid #755b28;background:#281f10;border-radius:12px;padding:12px 14px;color:#ffdc9c;margin-bottom:16px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.card{grid-column:span 3;background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:15px;padding:15px;min-height:126px;cursor:pointer;transition:.18s}.card:hover{transform:translateY(-2px);border-color:#3f6390}.card .icon{font-size:22px}.card h2{font-size:15px;margin:18px 0 5px}.card p{color:var(--muted);margin:0;font-size:12px;line-height:1.5}.card .state{display:inline-block;margin-top:11px;color:var(--green);font-size:11px;font-weight:700}.span6{grid-column:span 6}
     .dataTitle{grid-column:1/-1;margin:10px 2px 0;font-size:13px;color:#c9d7eb}.dataCard{cursor:default;min-height:152px}.dataCard:hover{transform:none}.dataCard h2{margin:8px 0 2px}.metric{font-size:23px;font-weight:850;letter-spacing:-.03em}.meta{display:grid;gap:4px;margin-top:10px;color:var(--muted);font-size:11px}.status{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800}.status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--amber)}.status.ok::before{background:var(--green)}.status.bad::before{background:var(--red)}.status.bad{color:#ff9ba2}.status.warn{color:#ffd181}
     .appsSurface{grid-column:1/-1;border:1px solid #2b5275;background:linear-gradient(130deg,#0b1c31,#091525);border-radius:16px;padding:13px;min-width:0}
@@ -54,6 +66,12 @@
       <div class="badges"><span class="badge">Aktif şirket: <strong>ALAYLI Medikal</strong></span><span class="badge">Safe mode: <strong>Açık</strong></span></div>
     </header>
     <div class="notice">Açık onay olmadan dış sisteme kayıt yok. Eski ekranların hiçbiri silinmedi; “Tüm Ekranlar” kataloğunda korunuyor.</div>
+    <section class="criticalWatch" id="criticalSyncWatch" role="status" aria-live="polite" aria-label="Kritik BizimHesap senkronizasyon alarmı">
+      <div class="criticalWatchHead"><span class="criticalWatchTitle" id="criticalSyncTitle">🚨 KRİTİK · BizimHesap → ÖDE doğrulanamadı</span>
+      <div class="criticalWatchActions"><a id="criticalSyncRunLink" target="_blank" rel="noopener noreferrer" href="https://github.com/ercanalayli/iSTasyon/actions/workflows/bizimhesap-ode-live-mirror.yml">Çalışma kayıtları ↗</a><button type="button" id="criticalSyncNow">Şimdi kontrol et</button></div></div>
+      <div class="criticalWatchDetails" id="criticalSyncDetails">Canlı kaynak, OAuth yetkisi ve finansal veri güncelliği kontrol ediliyor. Kanıt gelene kadar kırmızı alarm aktif kalır.</div>
+      <div class="criticalWatchMeta" id="criticalSyncMeta">Kaynak: GitHub aktarımı + Supabase sağlık kontrolü · Otomatik kontrol: 30 saniye</div>
+    </section>
     <section id="overview" class="grid">
       <article class="appsSurface" aria-label="ApeirON iş takibi Google Apps Script">
         <div class="appsSurfaceHead">
@@ -156,6 +174,45 @@ $('homeAppsScriptReload').addEventListener('click',()=>{
   // Explicit reload; do not disrupt a user in the middle of an Apps Script task.
   $('homeAppsScriptFrame').src=APPS_SCRIPT_URL;
 });
+const CRITICAL_API='/api/aperion-critical-sync-watch';
+let criticalLoading=false;
+async function loadCriticalWatch(){
+  if(criticalLoading)return;
+  criticalLoading=true;
+  const banner=$('criticalSyncWatch'),title=$('criticalSyncTitle'),description=$('criticalSyncDetails'),meta=$('criticalSyncMeta');
+  try{
+    const controller=new AbortController();
+    const guard=setTimeout(()=>controller.abort(),12000);
+    let payload;
+    try{
+      const r=await fetch(CRITICAL_API,{cache:'no-store',signal:controller.signal});
+      if(!r.ok)throw Error('status_http_'+r.status);
+      payload=await r.json();
+    }finally{clearTimeout(guard)}
+    if(payload?.ok!==true||!payload.mirror||!payload.sources)throw Error('source_contract_incomplete');
+    const critical=payload.state!=='OK'||payload.mirror.state!=='OK'||payload.sources.state!=='OK';
+    banner.classList.toggle('is-ok',!critical);
+    title.textContent=critical?'🚨 KIRMIZI ALARM · BizimHesap → ÖDE / Finans veri akışı':'✓ Aktarım izleme · Son kontrol başarılı';
+    const failedSources=(payload.sources.sources||[]).filter(s=>s.state!=='OK').map(s=>s.source).join(', ');
+    const mirrorText=payload.mirror.state==='OK'?'GitHub aktarımının son başarılı çalışması tespit edildi.':
+      'GitHub aktarım sorunu: '+String(payload.mirror.reason||'doğrulanmadı');
+    const sourceText=payload.sources.state==='OK'?'Finans kaynaklarının güncelliği doğrulandı.':
+      'Finans kaynakları eski/doğrulanmamış: '+(failedSources||String(payload.sources.reason||'kaynak hatası'));
+    description.textContent=mirrorText+' '+sourceText+(critical?' Finansal otomatik kapatma ve ödeme onayı yapılmayacak.':' İşlem bazında belge mutabakatı yine gereklidir.');
+    const last=payload.mirror.last_success_at;
+    meta.textContent='Son kontrol: '+dateTime(payload.checked_at)+' · GitHub son başarı: '+(last?dateTime(last):'doğrulanamadı')+' · Ekran 30 sn aralıklarla kontrol eder (anlık webhook değildir).';
+    const link=String(payload.mirror.latest_run_url||'');
+    if(/^https:\/\/github\.com\/ercanalayli\/iSTasyon\/actions\/runs\/\d+$/.test(link))$('criticalSyncRunLink').href=link;
+  }catch(e){
+    banner.classList.remove('is-ok');
+    title.textContent='🚨 KIRMIZI ALARM · Senkronizasyon izleyicisi yanıt vermiyor';
+    description.textContent='BizimHesap → ÖDE bağlantısının sağlıklı olduğuna dair kanıt alınamadı. Kaynak yeniden erişilebilir olana kadar işlemler güncel kabul edilmeyecek.';
+    meta.textContent='Kontrol hatası: '+String(e.message||'erişilemiyor').slice(0,70)+' · Son deneme: '+dateTime(new Date().toISOString());
+  }finally{criticalLoading=false}
+}
+$('criticalSyncNow').addEventListener('click',loadCriticalWatch);
+loadCriticalWatch();
+setInterval(loadCriticalWatch,30000);
 loadRealData();
 // Screen refresh only re-reads available source files; it is NOT instant ERP synchronization.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadRealData()});
