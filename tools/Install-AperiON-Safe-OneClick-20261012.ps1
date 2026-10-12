@@ -175,6 +175,11 @@ try {
     if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $base)) {
       throw 'BLOCKED_LOCAL_GIT_BASE_UNAVAILABLE'
     }
+    # Windows checkout may use CRLF while pinned Git blobs use LF.
+    # Normalize only temporary copies, never the user's original file.
+    $normalize = "const fs=require('fs');for(const file of process.argv.slice(1)){const s=fs.readFileSync(file,'utf8');if(s.includes('\\u0000'))process.exit(3);fs.writeFileSync(file,s.replace(/\\r\\n/g,'\\n'),'utf8')}"
+    & node.exe -e $normalize $ours $base $theirs
+    if ($LASTEXITCODE -ne 0) { throw 'BLOCKED_LISTENER_MERGE_NORMALIZATION_FAILED' }
     # git merge-file modifies OUR STAGED COPY, never the user's local file.
     & git.exe merge-file $ours $base $theirs
     if ($LASTEXITCODE -ne 0) {
