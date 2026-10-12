@@ -123,7 +123,7 @@ async function loadRealData(){
     const syncDate=data.finishedAt||data.startedAt, days=ageDays(syncDate), healthy=data.ok===true&&failed===0&&days!==null&&days<=1;
     setStatus('syncDataStatus',healthy?'Kaynak raporu yeni':data.ok?'Kaynak raporu eski':'Senkron başarısız',healthy?'ok':'bad');
     set('syncDataMetric',healthy?'Kaynak OK':data.ok?'Eski':'Doğrulanmadı');
-    set('syncDataText',healthy?'İş sonucu güncel görünüyor; satış, banka, e-fatura ve tahsilat için bağımsız mutabakat şart.':'Bu dosya güncel ERP satış, fatura veya banka hareketlerinin alındığını kanıtlamaz.');
+    set('syncDataText',healthy?'İş sonucu güncel görünüyor; satış, banka, e-fatura ve tahsilat için bağımsız mutabakat şart.':'Bu dosyaya bakarak satış, stok, masraf ve banka hareketleri güncel kabul edilemez; ERP kaynaklarının ayrıca mutabakatı gerekir.');
     set('syncDataDate',`Son çalışma: ${dateTime(syncDate)}${days==null?'':` · ${days} gün önce`}`);
   }else{setStatus('syncDataStatus','Kaynak okunamadı','bad');set('syncDataText','Son senkron kanıtı erişilemiyor.')}
 }
