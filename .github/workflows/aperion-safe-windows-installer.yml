@@ -1,0 +1,34 @@
+name: AperiON Windows OneClick Safe Installer
+on:
+  pull_request:
+    paths:
+      - 'tools/Install-AperiON-Safe-OneClick-20261012.ps1'
+      - 'tools/AperiON-TekTik-Guncelle-20261012.cmd'
+      - 'tools/test_aperion_safe_install_contract.cjs'
+      - '.github/workflows/aperion-safe-windows-installer.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-only:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify pinned source hashes, security boundaries, bootstrap integrity
+        shell: pwsh
+        run: node tools/test_aperion_safe_install_contract.cjs
+      - name: Windows PowerShell 5.1 installer syntax
+        shell: powershell
+        run: |
+          $tokens = $null
+          $errors = $null
+          $installer = (Resolve-Path 'tools/Install-AperiON-Safe-OneClick-20261012.ps1').Path
+          [System.Management.Automation.Language.Parser]::ParseFile($installer, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+          Write-Host 'PowerShell syntax validated; no local install or financial POST was executed.'
