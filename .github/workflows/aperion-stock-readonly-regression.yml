@@ -1,0 +1,25 @@
+name: AperiON stock API mirror read only
+on:
+  pull_request:
+    paths:
+      - "functions/shared/bizimhesap-stock-mirror.js"
+      - "functions/telegram/webhook.js"
+      - "migrations/20261012_aperion_bh_inventory_search_service_role_only.sql"
+      - "tests/bizimhesap-stock-mirror-readonly.test.mjs"
+      - ".github/workflows/aperion-stock-readonly-regression.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stock-readonly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: |
+          node --check functions/shared/bizimhesap-stock-mirror.js
+          node --check functions/telegram/webhook.js
+          node --check tests/bizimhesap-stock-mirror-readonly.test.mjs
+      - run: node tests/bizimhesap-stock-mirror-readonly.test.mjs
