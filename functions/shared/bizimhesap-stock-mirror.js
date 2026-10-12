@@ -43,6 +43,7 @@ export function formatStockMirrorReport(paths, freshness, rows, { mirrorOk = tru
   if (!rows.length) return '“' + paths.query + '” için güncel depo aynasında sonuç bulunamadı. Kapsamın eksiksizliği doğrulanmadı.';
   if (rows.some(x => x?.source_health !== 'FRESH'))
     return '🔴 Eşleşen stok satırlarının kaynak sağlığı doğrulanamadı. Miktar gösterilmedi.';
+  const depots = freshness.filter(x => String(x?.source || '').startsWith('inventory:'));
   const latest = depots.map(x => Date.parse(x.last_success_at)).filter(Number.isFinite);
   const stamp = latest.length ? new Date(Math.min(...latest)).toLocaleString('tr-TR', {timeZone:'Europe/Istanbul'}) : 'bilinmiyor';
   const lines = rows.map(x => {
