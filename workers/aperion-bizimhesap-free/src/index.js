@@ -144,8 +144,9 @@ export default {
       }
     }
     if (u.pathname === '/health' && request.method === 'GET') {
+      const pairingStoreReady=await ensurePairStore(env.APERION_DB);
       return json({ok:true,mode:'READ_ONLY_PREFLIGHT',write_enabled:false,
-        browser_binding:!!env.BROWSER,pairing_store_configured:!!env.APERION_DB,
+        browser_binding:!!env.BROWSER,pairing_store_ready:pairingStoreReady,
         setup_version:'20261012-mobile-revocable-v3'});
     }
     if (u.pathname !== '/probe') return json({ error: 'not_found' }, 404);
