@@ -1,0 +1,23 @@
+name: Mobile status read-only regression
+on:
+  pull_request:
+    paths:
+      - "functions/telegram/webhook.js"
+      - "functions/shared/mobile-status-report.js"
+      - "tests/mobile-status-report.test.mjs"
+      - ".github/workflows/mobile-status-readonly-test.yml"
+  workflow_dispatch:
+jobs:
+  mobile-status:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Read-only status formatting regression
+        run: node --test tests/mobile-status-report.test.mjs
+      - name: Cloudflare webhook source syntax
+        run: node --check functions/telegram/webhook.js
