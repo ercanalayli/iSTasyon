@@ -57,8 +57,53 @@ async function readOnlyHealth(env = process.env) {
   };
 }
 
+async function postApprovedInvoice(params = {}, env = process.env) {
+  if (params.approved !== true) throw new Error('explicit_approval_required');
+  const approvalId = String(params.approval_id || '').trim();
+  if (!/^[0-9a-f-]{36}$/i.test(approvalId)) throw new Error('approval_id_invalid');
+  const idempotencyKey = String(params.idempotency_key || '').trim();
+  if (!idempotencyKey) throw new Error('idempotency_key_missing');
+  const invoice = params.invoice;
+  if (!invoice || typeof invoice !== 'object') throw new Error('invoice_payload_missing');
+
+  const url = required('SUPABASE_URL', env.SUPABASE_URL);
+  const serviceKey = required('SUPABASE_SERVICE_ROLE_KEY', env.SUPABASE_SERVICE_ROLE_KEY);
+  const db = createClient(url, serviceKey, { auth: { persistSession: false } });
+
+  const { data: previous, error: previousError } = await db
+    .from('bot_commands')
+    .select('id,status,result,params')
+    .eq('command', 'bizimhesap_b2b_invoice')
+    .eq('status', 'completed')
+    .contains('params', { idempotency_key: idempotencyKey })
+    .limit(1);
+
+  if (previousError) throw new Error('idempotency_lookup_failed:' + previousError.message);
+  if (previous?.length) {
+    return { ok: true, duplicate_blocked: true, prior_command_id: previous[0].id, prior_result: previous[0].result || '' };
+  }
+
+  const { client } = await createBizimHesapClientFromCanonicalIntegration(env);
+  const response = await client.addInvoice(invoice);
+  const guid = String(response?.guid || response?.Guid || '').trim();
+  const errorText = String(response?.error || response?.Error || '').trim();
+  if (errorText) throw new Error('bizimhesap_addinvoice_error:' + errorText);
+  if (!guid) throw new Error('bizimhesap_addinvoice_guid_missing');
+
+  return {
+    ok: true,
+    duplicate_blocked: false,
+    approval_id: approvalId,
+    idempotency_key: idempotencyKey,
+    guid,
+    url: String(response?.url || response?.Url || ''),
+    e_invoice_no: String(response?.eInvoiceNo || response?.EInvoiceNo || ''),
+  };
+}
+
 module.exports = {
   loadBizimHesapIntegrationFromSupabase,
   createBizimHesapClientFromCanonicalIntegration,
   readOnlyHealth,
+  postApprovedInvoice,
 };
