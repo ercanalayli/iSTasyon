@@ -31,7 +31,7 @@ export function getMobileCookie(request){
 }
 export const sessionCookie=(token,maxAge=2592000)=>
  "bh_mobile_access="+token+"; Path=/setup; Max-Age="+maxAge+
- "; HttpOnly; Secure; SameSite=Strict";
+ "; HttpOnly; Secure; SameSite=Lax";
 export async function validTicket(db,token,now=Date.now()){
  if (!/^[0-9a-f]{64}$/.test(token)||!(await ensurePairStore(db)))return false;
  const row=await db.prepare("SELECT ticket_hash FROM bh_mobile_pair_grants WHERE ticket_hash=? AND expires_at_ms>? AND claimed_at_ms IS NULL AND revoked_at_ms IS NULL LIMIT 1")
