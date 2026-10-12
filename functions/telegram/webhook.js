@@ -2,6 +2,7 @@ import { handleRetailTelegramCommand } from '../shared/retail-sales-protocol.js'
 import { issueMobileTicket, revokeMobileTickets } from '../shared/bizimhesap-mobile-pairing.js';
 import { buildMobileStatusReport } from '../shared/mobile-status-report.js';
 import { lookupStockMirror } from '../shared/bizimhesap-stock-mirror.js';
+import { ownerPrivateTelegram, readOwnerCariAbstract } from '../shared/bizimhesap-telegram-cari-read.js';
 import { getMobileSecurityStatus, handleMobileCommand, verifyTelegramRequest } from './mobile-command-center.js';
 import { DESKTOP_TARGETS, desktopTargetSummary, parseUniversalCommand } from './universal-command-router.js';
 import { deviceHealth, queueDeviceCommand } from './device-bridge.js';
@@ -1138,6 +1139,7 @@ mode: 'mobile-command-center-v2',
 command_router_version: 'v143',
 durum_report_version: 'finance-freshness-v1',
 stock_report_version: 'api-inventory-mirror-v2-stock-query',
+cari_report_version: 'telegram-owner-abstract-v1',
 device_status_command: '/cihazdurum',
 desktop_target_count: Object.keys(DESKTOP_TARGETS).length,
 desktop_bridge_configured: desktopBridge.configured,
@@ -1542,6 +1544,50 @@ if (lower === '/bhbagla' || lower === '/bhiptal') {
   return json({ok:true,mobile_pairing:'ticket_sent',financial_writes:0});
 }
 
+
+// /cariekstre is a DIFFERENT authenticated channel from Supabase owner-JWT.
+// Only Telegram's hardened, private, allowlisted owner identity may read.
+// No global service key/token is sent to Telegram or written to any audit row.
+if (/^\/cariekstre(?:@\w+)?(?:\s|$)/i.test(text)) {
+  if (!ownerPrivateTelegram(identity, msg)) {
+    await sendMessage(env, chatId, '🔒 Bu sorgu yalnız doğrulanmış özel sahip sohbetinden yapılabilir. Kayıt yapılmadı.');
+    return json({ok:true,cari_read:'identity_blocked',financial_writes:0});
+  }
+  if (!env.APERION_DB) {
+    await sendMessage(env, chatId, '⚠️ Cari okuma tekilleştirme veritabanı erişilemiyor. Hiçbir sorgu gönderilmedi.');
+    return json({ok:false,cari_read:'dedup_store_unavailable',financial_writes:0},503);
+  }
+  let claimed=false;
+  try {
+    await env.APERION_DB.prepare(`CREATE TABLE IF NOT EXISTS owner_cari_read_requests (
+      command_key TEXT PRIMARY KEY, received_at TEXT NOT NULL
+      DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+    )`).run();
+    const key=`telegram:cari:${chatId}:${msg.message_id}`;
+    const result=await env.APERION_DB.prepare(
+      'INSERT OR IGNORE INTO owner_cari_read_requests (command_key) VALUES (?)'
+    ).bind(key).run();
+    claimed=result?.meta?.changes===1;
+  } catch (_error) {
+    await sendMessage(env,chatId,'⚠️ Cari sorgusu güvenli kuyruğa alınamadı. Hiçbir BizimHesap işlemi yapılmadı.');
+    return json({ok:false,cari_read:'dedup_store_error',financial_writes:0},503);
+  }
+  if (!claimed) return json({ok:true,cari_read:'duplicate_or_unconfirmed',financial_writes:0});
+  const report=await readOwnerCariAbstract({
+    env,message:msg,identity,
+    dbGet:path=>sbFetch(env,path),
+    providerGet:async (url,token)=>{
+      const res=await fetch(url,{method:'GET',headers:{token,accept:'application/json'},
+        signal:AbortSignal.timeout(18000)});
+      if (!res.ok) return {status:res.status,json:null};
+      if(Number(res.headers.get('content-length')||0)>750000)return {status:413,json:null};
+      const body=await res.json().catch(()=>null);
+      return {status:res.status,json:body};
+    }
+  });
+  const delivered=await sendMessage(env,chatId,report);
+  return json({ok:Boolean(delivered?.ok),cari_read:'read_only',telegram_delivered:Boolean(delivered?.ok),financial_writes:0},delivered?.ok?200:502);
+}
 
 // P0: the retail-sale command only stages an audit record. No BizimHesap writes.
 const retailResult = await handleRetailTelegramCommand({ env, message: msg, identity, sendMessage });

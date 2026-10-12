@@ -1,0 +1,27 @@
+name: AperiON Telegram owner cari read only
+on:
+  pull_request:
+    paths:
+      - "functions/shared/bizimhesap-telegram-cari-read.js"
+      - "functions/telegram/webhook.js"
+      - "migrations/20261012_aperion_bh_customer_owner_lookup_v1.sql"
+      - "tests/aperion_telegram_owner_cari_readonly_20261012.test.mjs"
+      - ".github/workflows/aperion-telegram-owner-cari-readonly.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cari-readonly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate syntax
+        run: |
+          node --check functions/shared/bizimhesap-telegram-cari-read.js
+          node --check functions/telegram/webhook.js
+          node --check tests/aperion_telegram_owner_cari_readonly_20261012.test.mjs
+      - name: Owner-only read regressions
+        run: node tests/aperion_telegram_owner_cari_readonly_20261012.test.mjs
