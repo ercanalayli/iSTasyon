@@ -215,17 +215,33 @@ export async function completeDeviceCommand(env, device, body) {
   return { ok: true, status: 200, command: row, result_summary: summary };
 }
 
+// "active" in the registry means enrolled, NOT an online device. A recent
+// authenticated poll is separate evidence of connectivity. Never treat this
+// health check as proof that Chrome or BizimHesap is authenticated.
 export async function deviceHealth(env) {
   if (!env.APERION_DB || !(await ensureDeviceSchema(env.APERION_DB))) {
-    return { configured: false, activeDeviceCount: 0, pendingCommandCount: 0 };
+    return {
+      configured: false, activeDeviceCount: 0, registeredDeviceCount: 0,
+      onlineDeviceCount: 0, devicePresence: 'unavailable',
+      pendingCommandCount: 0
+    };
   }
-  const [devices, commands] = await Promise.all([
+  const [devices, onlineDevices, commands] = await Promise.all([
     env.APERION_DB.prepare(`SELECT COUNT(*) AS count FROM aperion_devices WHERE status='active'`).first(),
+    env.APERION_DB.prepare(`SELECT COUNT(*) AS count FROM aperion_devices
+      WHERE status='active' AND last_seen_at IS NOT NULL
+      AND last_seen_at >= datetime('now', '-90 seconds')`).first(),
     env.APERION_DB.prepare(`SELECT COUNT(*) AS count FROM aperion_device_commands WHERE status='pending'`).first()
   ]);
+  const enrolled = Number(devices?.count || 0);
+  const online = Number(onlineDevices?.count || 0);
   return {
-    configured: Number(devices?.count || 0) > 0,
-    activeDeviceCount: Number(devices?.count || 0),
+    configured: enrolled > 0,
+    activeDeviceCount: enrolled, // legacy field: enrollment count, NOT connectivity
+    registeredDeviceCount: enrolled,
+    onlineDeviceCount: online,
+    devicePresence: enrolled === 0 ? 'no_registered_device'
+      : online > 0 ? 'recent_device_poll' : 'not_recently_seen',
     pendingCommandCount: Number(commands?.count || 0)
   };
 }
