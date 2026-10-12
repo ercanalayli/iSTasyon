@@ -8,7 +8,7 @@ const ps=cmd.slice(last+marker.length);
 assert.ok(cmd.includes('set "APERION_SELF_FILE=%~f0"'), 'launcher must execute its own file');
 assert.ok(!cmd.includes('Invoke-WebRequest'), 'bootstrap must work without downloading a second file');
 assert.ok(!cmd.includes('raw.githubusercontent.com'), 'no GitHub fetch during execution');
-for(const s of ['aperion_windows_diagnostics_v1', 'GetExistingHeaders','Get-FileHash','Copy-Item -LiteralPath $file',
+for(const s of ['aperion_windows_diagnostics_v1', 'GetAuth','Get-FileHash','Copy-Item -LiteralPath $file',
 'git.exe -C $root ls-files --cached -- $rel','node.exe --check $file','finance_writes = 0',
 'params.approved !== true','claimPendingBotCommand(db, cmd.id)',"authMode: 'token-header'",
 "Invoke-RestMethod -Uri $uri -Method Post","-MaximumRedirection 0", "AperiON-Windows-Backend/1.0",
