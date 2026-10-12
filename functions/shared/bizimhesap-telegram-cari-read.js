@@ -106,7 +106,7 @@ export function summarizeVerifiedAbstract(vendor,{title,sourceLastSuccess,nowIso
     'Okuma: '+safeText(nowIso,30)+'\n'+
     'Cari listesinin son aktarımı: '+safeText(sourceLastSuccess,32)+'\n'+
     sectionLines.join('\n')+
-    '\n⚠️ Bunlar kaynak yanıtından belge örnekleridir. Tam ekstre, hareket türü ve borç/alacak yönü ayrıca doğrulanmalı. Kayıt yapılmadı.';
+    '\n⚠️ Bunlar kaynak yanıtından belge örnekleridir; borç/alacak yönü ve ekstre kapsamı ayrıca doğrulanmalı. Kayıt yapılmadı.';
 }
 
 export async function readOwnerCariAbstract({env,message,identity,dbGet,providerGet}) {
