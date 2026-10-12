@@ -3,7 +3,7 @@
 const STOCK_VIEW = 'aperion_bh_inventory_search_v1';
 
 export function stockQueryPaths(raw) {
-  const query = String(raw || '').replace(/[,*()%\\]/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, 64);
+  const query = String(raw || '').replace(/[,*()%\\]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 64);
   if (query.length < 2) return null;
   const text = encodeURIComponent('*' + query + '*');
   return {
@@ -37,7 +37,7 @@ export function formatStockMirrorReport(paths, freshness, rows, { mirrorOk = tru
       ' — Depo ' + depot + ': ' + qty;
   });
   return '📦 BizimHesap API depo aynası — ' + paths.query +
-    '\\nSon başarılı aktarım (en eski depo): ' + stamp +
-    '\\n' + lines.join('\\n') +
-    '\\nNot: Depo kaydıdır; rezerv/lot ve tüm SKU kapsamı ayrıca doğrulanmalı.';
+    '\nSon başarılı aktarım (en eski depo): ' + stamp +
+    '\n' + lines.join('\n') +
+    '\nNot: Depo kaydıdır; rezerv/lot ve tüm SKU kapsamı ayrıca doğrulanmalı.';
 }
