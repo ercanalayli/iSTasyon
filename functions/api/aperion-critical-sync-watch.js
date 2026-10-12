@@ -5,7 +5,10 @@ const json=(body,status=200)=>new Response(JSON.stringify(body),{
     'cache-control':'no-store, max-age=0','x-content-type-options':'nosniff'}
 });
 const GH='https://api.github.com/repos/ercanalayli/iSTasyon/actions/workflows/bizimhesap-ode-live-mirror.yml/runs?per_page=5';
-const REQUIRED=['bizimhesap_events','bizimhesap_hesap_hareketleri','sales_raw'];
+// These must each have independent, source-verified live ingestion.
+// A working customer/stock API cannot satisfy e-invoice or payment coverage.
+const REQUIRED=['bizimhesap_events','bizimhesap_hesap_hareketleri','sales_raw',
+  'e_invoice_live','payment_collection_live'];
 const PUBLIC_RUN='https://github.com/ercanalayli/iSTasyon/actions/runs/';
 async function fetchJson(url,headers,timeoutMs=10000){
   const response=await fetch(url,{headers,signal:AbortSignal.timeout(timeoutMs),cf:{cacheTtl:0}});
