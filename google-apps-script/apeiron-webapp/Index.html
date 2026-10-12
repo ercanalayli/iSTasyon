@@ -78,7 +78,7 @@
 let DATA=null, ACTIVE='critical';
 const NAV=[
  ['critical','Kritik'],['today','Bugün'],['next7','7 Gün'],['todo','Yapılacaklar'],['payment','Ödenecekler'],
- ['collect','Tahsilatlar'],['order','Verilecek Siparişler'],['received','Alınan Siparişler'],['ready','Hazır Kayıtlar'],
+ ['collect','Tahsilatlar'],['order','Verilecek Siparişler'],['received','Alınan Siparişler'],['prior_unreconciled','Önceki Ay · Mutabakat'],['ready','Hazır Kayıtlar'],
  ['completed','Tamamlananlar']
 ];
 
@@ -92,14 +92,19 @@ function duePill(d){if(!d)return '<span class="pill">Tarihsiz</span>';const t=ne
 function titleOf(x){return x.title||x.account||x.ISLEM||x.OZET||x.OLAY||'Kayıt'}
 function hay(x){return JSON.stringify(x).toLocaleLowerCase('tr-TR')}
 
+let refreshing=false;
 function loadData(){
+  if(refreshing)return;
+  refreshing=true;
   generated.textContent='Veri okunuyor…';
   google.script.run.withSuccessHandler(d=>{
-    DATA=d; generated.textContent='CANLI · '+d.generated_at;
+    refreshing=false;
+    DATA=d; generated.textContent='TABLODAN OKUNDU · '+d.generated_at+' · ERP MUTABAKATI AYRI';
     source1.textContent='Kontrol: '+shortTime(d.sources.control_modified_at);
     source2.textContent='Ödeme: '+shortTime(d.sources.payment_modified_at)+' · '+d.sources.payment_tabs.join(', ');
     renderAll();
   }).withFailureHandler(e=>{
+    refreshing=false;
     content.innerHTML='<div class="error">Veri okunamadı: '+esc(e.message||e)+'</div>';
     generated.textContent='BAĞLANTI HATASI';
   }).getAppBootstrap();
@@ -138,8 +143,8 @@ function card(x){
    if(x.category)meta+='<span class="pill">'+esc(x.category)+'</span>';
    if(x.owner)meta+='<span class="pill">'+esc(x.owner)+'</span>';
  }
- const note=esc(x.note||x.ACIKLAMA||x['AÇIKLAMA']||x.KANIT||'');
- const canComplete=!isPayment && ['todo','order','received'].includes(x.category) && !x.completed_at;
+ const note=esc(x.reconciliation_warning||x.note||x.ACIKLAMA||x['AÇIKLAMA']||x.KANIT||'');
+ const canComplete=!isPayment && ['todo','order'].includes(x.category) && !x.completed_at;
  const action=canComplete?'<button class="action" onclick="completeTask(\''+esc(x.id)+'\')">Tamamlandı</button>':'';
  return '<div class="item"><div class="itemTop"><div><h3>'+title+'</h3><div class="meta">'+meta+'</div></div>'+action+'</div>'+
         (note?'<div class="note">'+note+'</div>':'')+'</div>';
@@ -159,5 +164,9 @@ function renderIstasyon(){
  finance.innerHTML='<table class="financeTable">'+rows.map(r=>'<tr>'+r.slice(0,5).map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</table>';
 }
 loadData();
+// The source is re-read after a tab returns and periodically while visible.
+// This does not imply BizimHesap ERP events are instant or fully reconciled.
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadData()});
+setInterval(()=>{if(!document.hidden)loadData()},60000);
 </script>
 </body></html>
