@@ -1,0 +1,23 @@
+name: AperiON BizimHesap legacy GET-only guard
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/bizimhesap-b2b/**"
+      - "tools/test_bizimhesap_legacy_get_only_security_20261012.mjs"
+      - ".github/workflows/aperion-b2b-legacy-readonly-security.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  legacy-b2b-readonly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate guard and zero posting
+        run: |
+          node --check supabase/functions/bizimhesap-b2b/legacy-read-guard.js
+          node --check tools/test_bizimhesap_legacy_get_only_security_20261012.mjs
+          node tools/test_bizimhesap_legacy_get_only_security_20261012.mjs
