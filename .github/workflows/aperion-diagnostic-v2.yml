@@ -1,0 +1,42 @@
+name: AperiON One Click Diagnostic V2
+on:
+  pull_request:
+    paths:
+      - 'tools/AperiON-TekTik-OtoRapor-V2-20261012.cmd'
+      - 'tools/test_aperion_diagnostic_v2.cjs'
+      - '.github/workflows/aperion-diagnostic-v2.yml'
+permissions:
+  contents: read
+jobs:
+  windows-e2e-offline:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Static safe-contract check
+        shell: pwsh
+        run: node tools/test_aperion_diagnostic_v2.cjs
+      - name: Parse PowerShell 5.1 payload
+        shell: powershell
+        run: |
+          $raw=[IO.File]::ReadAllText('tools/AperiON-TekTik-OtoRapor-V2-20261012.cmd')
+          $tag=':APERION_EMBEDDED_PAYLOAD_START'
+          $i=$raw.LastIndexOf($tag)
+          $scriptText=$raw.Substring($i+$tag.Length)
+          $tokens=$null
+          $errors=$null
+          [System.Management.Automation.Language.Parser]::ParseInput($scriptText,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count){$errors|ForEach-Object{Write-Error $_.Message}; exit 1}
+      - name: Offline smoke test of actual CMD launcher
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory 'C:\AperiON\iSTasyon\local-secrets' -Force|Out-Null
+          & cmd.exe /c 'tools\AperiON-TekTik-OtoRapor-V2-20261012.cmd'
+          if($LASTEXITCODE -eq 0){throw 'No private credentials on CI: delivery must not claim success'}
+          $reports=@(Get-ChildItem 'C:\AperiON\iSTasyon\local-secrets\safe-updates' -Filter diagnostic.json -Recurse -ErrorAction SilentlyContinue)
+          if(!$reports.Count){throw 'One-click launcher never wrote local diagnostic receipt'}
+          $json=Get-Content -LiteralPath $reports[-1].FullName -Raw|ConvertFrom-Json
+          if($json.finance_writes -ne 0){throw 'Unexpected financial operation status'}
+          Write-Host 'PASS: actual CMD launched; local diagnostic saved, no financial writes'
