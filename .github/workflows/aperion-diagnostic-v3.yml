@@ -1,0 +1,42 @@
+name: AperiON one-click diagnostic V3
+on:
+  pull_request:
+    paths:
+      - 'tools/AperiON-TekTik-OtoRapor-V3-20261012.cmd'
+      - 'tools/test_aperion_diagnostic_v3.cjs'
+      - '.github/workflows/aperion-diagnostic-v3.yml'
+permissions:
+  contents: read
+jobs:
+  windows-contract:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Contract test
+        shell: pwsh
+        run: node tools/test_aperion_diagnostic_v3.cjs
+      - name: Parse embedded PowerShell 5.1
+        shell: powershell
+        run: |
+          $raw=[IO.File]::ReadAllText('tools/AperiON-TekTik-OtoRapor-V3-20261012.cmd')
+          $tag=':APERION_EMBEDDED_PAYLOAD_START'
+          $i=$raw.LastIndexOf($tag)
+          $t=$null; $errs=$null
+          [System.Management.Automation.Language.Parser]::ParseInput($raw.Substring($i+$tag.Length),[ref]$t,[ref]$errs)|Out-Null
+          if($errs.Count){$errs|ForEach-Object{Write-Error $_.Message};exit 1}
+          Write-Host 'PASS: Windows PowerShell 5.1 syntax validated'
+      - name: Smoke test of actual CMD (no credentials)
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory 'C:\AperiON\iSTasyon\local-secrets' -Force|Out-Null
+          & cmd.exe /c 'tools\AperiON-TekTik-OtoRapor-V3-20261012.cmd'
+          if($LASTEXITCODE -eq 0){throw 'Offline CI lacks secrets; script must report failure'}
+          $files=@(Get-ChildItem 'C:\AperiON\iSTasyon\local-secrets\safe-updates' -Filter diagnostic.json -Recurse -ErrorAction SilentlyContinue)
+          if(!$files.Count){throw 'Actual CMD failed to write local diagnostic receipt'}
+          $j=Get-Content -LiteralPath $files[-1].FullName -Raw|ConvertFrom-Json
+          if($j.finance_writes -ne 0){throw 'Unexpected finance write indicator'}
+          Write-Host 'PASS: CMD started, saved fail-closed local receipt, no finance writes'
+          exit 0
