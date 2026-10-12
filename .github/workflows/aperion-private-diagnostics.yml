@@ -1,0 +1,33 @@
+name: AperiON clipboard-free Windows diagnostics
+on:
+  pull_request:
+    paths:
+      - 'tools/Read-AperiON-Local-Safety-20261012.ps1'
+      - 'tools/AperiON-TekTik-Tani-20261012.cmd'
+      - 'tools/test_aperion_private_diagnostics.cjs'
+      - '.github/workflows/aperion-private-diagnostics.yml'
+permissions:
+  contents: read
+jobs:
+  read-only-contract:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Static safe-contract and hash verification
+        shell: pwsh
+        run: node tools/test_aperion_private_diagnostics.cjs
+      - name: Windows PowerShell 5.1 parser validation
+        shell: powershell
+        run: |
+          $tokens = $null
+          $errors = $null
+          $script = (Resolve-Path 'tools/Read-AperiON-Local-Safety-20261012.ps1').Path
+          [System.Management.Automation.Language.Parser]::ParseFile($script, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+          Write-Host 'PASS: Windows syntax, no customer endpoint or local Windows access performed.'
