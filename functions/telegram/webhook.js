@@ -1517,7 +1517,7 @@ if (lower === '/bhbagla' || lower === '/bhiptal') {
   if (lower === '/bhiptal') {
     const revoked = await revokeMobileTickets(env.APERION_DB,{chatId});
     await sendMessage(env,chatId,revoked.ok
-      ? '🔒 AperiON mobil BizimHesap eşleştirmeleri iptal edildi. Açık bağlantılar da geçersiz. Finansal kayıt yapılmadı.'
+      ? '🔒 AperiON cihaz eşleştirmeleri iptal edildi. Önceden açılmış geçici bulut tarayıcı pencereleri kendi süreleri bitene kadar açık kalabilir; gerekirse BizimHesap’tan çıkış yap. Finansal kayıt yapılmadı.'
       : '⚠ İptal veri kasasında doğrulanamadı. Erişim statüsü belirsiz; yetkili incelemesi gerekli.');
     return json({ok:revoked.ok,mobile_pairing:revoked.ok?'revoked':'failed',financial_writes:0},revoked.ok?200:503);
   }
