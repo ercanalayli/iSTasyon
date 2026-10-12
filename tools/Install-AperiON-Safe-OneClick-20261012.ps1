@@ -24,6 +24,7 @@ $stage = Join-Path $folder 'stage'
 $backup = Join-Path $folder 'backup'
 $installed = $false
 $sourceVerified = $false
+$credentialMode = 'unknown'
 function Info([string]$s) { Write-Host ('AperiON | ' + $s) }
 function Rel([string]$p) { return $p.Replace('/', '\') }
 function GetListenerProcesses {
@@ -42,19 +43,44 @@ function ReadConfig {
   if (!$cfg.SUPABASE_URL -or !$cfg.SUPABASE_SERVICE_ROLE_KEY) {
     throw 'BLOCKED_SUPABASE_CONFIG_INCOMPLETE'
   }
-  if ($cfg.SUPABASE_URL -notmatch '^https://[a-z0-9-]+\.supabase\.co/?$') {
-    throw 'BLOCKED_UNEXPECTED_DATABASE_URL'
+  if ($cfg.SUPABASE_URL.TrimEnd('/') -ne 'https://iilfwosoroflzubkaryj.supabase.co') {
+    throw 'BLOCKED_UNEXPECTED_SUPABASE_PROJECT'
   }
+  # Secret API keys are opaque, not bearer JWTs.
+  $key = [string]$cfg.SUPABASE_SERVICE_ROLE_KEY
+  if ($key.StartsWith('sb_secret_')) {
+    $cfg.AUTH_MODE = 'secret_apikey_only'
+  } elseif ($key -match '^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$') {
+    $cfg.AUTH_MODE = 'legacy_service_jwt'
+  } else {
+    throw 'BLOCKED_SUPABASE_KEY_FORMAT_UNRECOGNIZED'
+  }
+  $script:credentialMode = $cfg.AUTH_MODE
   return $cfg
 }
 function QueueSnapshot($cfg) {
-  $headers = @{
-    apikey = $cfg.SUPABASE_SERVICE_ROLE_KEY
-    Authorization = 'Bearer ' + $cfg.SUPABASE_SERVICE_ROLE_KEY
+  $headers = @{ apikey = $cfg.SUPABASE_SERVICE_ROLE_KEY }
+  if ($cfg.AUTH_MODE -eq 'legacy_service_jwt') {
+    $headers.Authorization = 'Bearer ' + $cfg.SUPABASE_SERVICE_ROLE_KEY
+  } elseif ($cfg.AUTH_MODE -ne 'secret_apikey_only') {
+    throw 'BLOCKED_SUPABASE_AUTH_MODE_NOT_SUPPORTED'
   }
   $uri = $cfg.SUPABASE_URL.TrimEnd('/') +
     '/rest/v1/bot_commands?select=id,command,status&status=in.%28pending,processing%29&limit=201'
-  return @(Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -TimeoutSec 18)
+  try {
+    return @(Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -TimeoutSec 18)
+  } catch {
+    $statusCode = 0
+    try { $statusCode = [int]$_.Exception.Response.StatusCode } catch {}
+    if ($statusCode -eq 401) {
+      throw ('BLOCKED_SUPABASE_QUEUE_AUTH_401_' + $cfg.AUTH_MODE + '_CHECK_EXISTING_LOCAL_CREDENTIAL')
+    }
+    if ($statusCode -eq 403) {
+      throw ('BLOCKED_SUPABASE_QUEUE_FORBIDDEN_403_' + $cfg.AUTH_MODE)
+    }
+    # Never include API response: it could contain credentials.
+    throw ('BLOCKED_SUPABASE_QUEUE_READ_HTTP_' + $statusCode)
+  }
 }
 function AssertSafeQueue($cfg) {
   $rows = @(QueueSnapshot $cfg)
@@ -71,6 +97,7 @@ function WriteResult([string]$state, [string]$detail) {
   $result = @{
     status=$state; detail=$detail; checkedAt=(Get-Date).ToString('o');
     source_commit=$Commit; source_verified=$sourceVerified; backup_path=$backup;
+    credential_mode=$credentialMode;
     financial_writes=0; approvals_changed=0; new_browser_logins=0
   }
   $result | ConvertTo-Json -Depth 4 |
@@ -88,6 +115,7 @@ try {
       throw ('BLOCKED_MISSING_' + $binary)
     }
   }
+  New-Item -ItemType Directory -Path $folder -Force | Out-Null
   $cfg = ReadConfig
   $initialProcesses = @(GetListenerProcesses)
   if ($initialProcesses.Count -gt 1) { throw 'BLOCKED_MULTIPLE_EXISTING_LISTENERS' }
@@ -154,20 +182,22 @@ try {
     Start-Sleep -Seconds 2
   }
   if (@(GetListenerProcesses).Count) { throw 'BLOCKED_LISTENER_DID_NOT_STOP' }
+  # Start-ScheduledTask would not inherit ATTACH-ONLY from this process.
+  # Launch the already installed watchdog directly with its scoped setting.
   $task = Get-ScheduledTask -TaskName 'AperiON_Watchdog_1Min' -ErrorAction Stop
   if ($task.State -eq 'Disabled') { throw 'BLOCKED_UNIFIED_WATCHDOG_DISABLED' }
-  # Startup uses existing configured supervisor and only an authenticated
-  # Chrome broker (ATTACH-ONLY). No second login or new browser profile.
   $env:APERION_CHROME_ATTACH_MODE = 'ATTACH-ONLY'
   try {
-    Start-ScheduledTask -TaskName 'AperiON_Watchdog_1Min'
+    & (Join-Path $Root 'tools\aperion_listener_watchdog.ps1')
+    if (!$?) { throw 'BLOCKED_EXISTING_WATCHDOG_START_FAILED' }
     $alive = $false
     for ($i = 0; $i -lt 24; $i++) {
       Start-Sleep -Seconds 5
       if (@(GetListenerProcesses).Count -eq 1) { $alive = $true; break }
     }
-    if (!$alive) { throw 'BLOCKED_LISTENER_NOT_RUNNING_AFTER_UNIFIED_WATCHDOG' }
+    if (!$alive) { throw 'BLOCKED_LISTENER_NOT_RUNNING_AFTER_EXISTING_WATCHDOG' }
   } finally { Remove-Item Env:APERION_CHROME_ATTACH_MODE -ErrorAction SilentlyContinue }
+  # Unified supervisor resumes on the normal schedule; no new task created.
   # A process health check is NOT ERP/queue proof: report this honestly.
   $remaining = @(QueueSnapshot $cfg)
   WriteResult 'UPDATED_PROCESS_RUNNING_QUEUE_NOT_YET_VERIFIED' (
