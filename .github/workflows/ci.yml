@@ -42,6 +42,9 @@ jobs:
         node --check tools/aperion_command_listener.cjs
         node --check tools/bizimhesap_b2b_canonical.cjs
         node tools/test_bot_command_safety.cjs
+        node --check tools/aperion_runtime_7x24.cjs
+        node --check tools/lib/supabase_listener_supervisor.cjs
+        node tools/test_supabase_listener_supervisor.cjs
 
     - name: Docker Build Check
       run: docker build . -t istasyon-bot-test
