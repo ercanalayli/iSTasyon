@@ -25,6 +25,7 @@ $backup = Join-Path $folder 'backup'
 $installed = $false
 $sourceVerified = $false
 $credentialMode = 'unknown'
+$locallyMerged = $false
 function Info([string]$s) { Write-Host ('AperiON | ' + $s) }
 function Rel([string]$p) { return $p.Replace('/', '\') }
 function GetListenerProcesses {
@@ -101,7 +102,7 @@ function WriteResult([string]$state, [string]$detail) {
   $result = @{
     status=$state; detail=$detail; checkedAt=(Get-Date).ToString('o');
     source_commit=$Commit; source_verified=$sourceVerified; backup_path=$backup;
-    credential_mode=$credentialMode;
+    credential_mode=$credentialMode; local_listener_merged=$locallyMerged;
     financial_writes=0; approvals_changed=0; new_browser_logins=0
   }
   $result | ConvertTo-Json -Depth 4 |
@@ -128,13 +129,25 @@ try {
   if ($LASTEXITCODE -ne 0 -or $repoCheck.Trim() -ne 'true') {
     throw 'BLOCKED_WORKSPACE_IS_NOT_GIT_CHECKOUT'
   }
+  # A locally modified listener is not discarded: if possible, merge ONLY
+  # non-conflicting edits from the existing Git checkout into a staged copy.
+  # Staged/index changes cannot be safely reconstructed from the worktree.
+  $dirtyListener = $false
   foreach ($rel in $Targets.Keys) {
-    $path = Join-Path $Root (Rel $rel)
-    if (Test-Path -LiteralPath $path) {
-      $changes = @(& git.exe -C $Root status --porcelain -- $rel)
-      if ($LASTEXITCODE -ne 0 -or ($changes -join '').Trim()) {
+    $target = Join-Path $Root (Rel $rel)
+    if (!(Test-Path -LiteralPath $target)) { continue }
+    $changes = @(& git.exe -C $Root status --porcelain -- $rel)
+    if ($LASTEXITCODE -ne 0) { throw ('BLOCKED_LOCAL_GIT_STATUS_FAILED: ' + $rel) }
+    if (($changes -join '').Trim()) {
+      if ($rel -ne 'tools/aperion_command_listener.cjs') {
         throw ('BLOCKED_LOCAL_CHANGES_PRESERVED: ' + $rel)
       }
+      & git.exe -C $Root diff --cached --quiet -- $rel
+      if ($LASTEXITCODE -ne 0) { throw 'BLOCKED_STAGED_LISTENER_CHANGES_PRESERVED' }
+      & git.exe -C $Root ls-files --error-unmatch -- $rel 1>$null 2>$null
+      if ($LASTEXITCODE -ne 0) { throw 'BLOCKED_UNTRACKED_LISTENER_PRESERVED' }
+      $dirtyListener = $true
+      Info 'Local listener edits detected; trying conflict-free 3-way merge into STAGE only.'
     }
   }
   New-Item -ItemType Directory -Path $stage,$backup -Force | Out-Null
@@ -147,6 +160,37 @@ try {
     if ($LASTEXITCODE -ne 0 -or $sha -ne $Targets[$rel]) {
       throw ('BLOCKED_PINNED_SOURCE_HASH_MISMATCH: ' + $rel)
     }
+  }
+  if ($dirtyListener) {
+    $rel = 'tools/aperion_command_listener.cjs'
+    $local = Join-Path $Root (Rel $rel)
+    $theirs = Join-Path $stage (Rel $rel)
+    $ours = Join-Path $stage 'listener-user-merged.cjs'
+    $base = Join-Path $stage 'listener-HEAD-base.cjs'
+    Copy-Item -LiteralPath $local -Destination $ours -Force
+    # Node saves the exact binary Git blob. PowerShell 5.1 redirection would
+    # transform it to UTF-16, invalidating a textual 3-way merge.
+    $saveBase = "const fs=require('fs');const cp=require('child_process');fs.writeFileSync(process.argv[1],cp.execFileSync('git',['-C',process.argv[2],'show','HEAD:tools/aperion_command_listener.cjs'],{maxBuffer:16*1024*1024}));"
+    & node.exe -e $saveBase $base $Root
+    if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $base)) {
+      throw 'BLOCKED_LOCAL_GIT_BASE_UNAVAILABLE'
+    }
+    # git merge-file modifies OUR STAGED COPY, never the user's local file.
+    & git.exe merge-file $ours $base $theirs
+    if ($LASTEXITCODE -ne 0) {
+      throw 'BLOCKED_LISTENER_MERGE_CONFLICT_LOCAL_FILE_UNTOUCHED'
+    }
+    $mergedText = [IO.File]::ReadAllText($ours)
+    if (!$mergedText.Contains('claimPendingBotCommand(db, cmd.id)') -or
+        !$mergedText.Contains('bizimhesapB2BPostApprovedInvoice')) {
+      throw 'BLOCKED_LISTENER_MERGE_SAFETY_GUARDS_MISSING'
+    }
+    if ($mergedText.Contains('<<<<<<< ') -or $mergedText.Contains('>>>>>>> ')) {
+      throw 'BLOCKED_LISTENER_MERGE_CONFLICT_MARKERS'
+    }
+    Copy-Item -LiteralPath $ours -Destination $theirs -Force
+    $locallyMerged = $true
+    Info 'Conflict-free listener merge prepared. User changes kept in staged candidate.'
   }
   foreach ($rel in $Targets.Keys) {
     & node.exe --check (Join-Path $stage (Rel $rel))
