@@ -34,6 +34,7 @@
       <button class="on" data-view="overview">⌂ Genel Bakış<small>Tek karar ekranı</small></button>
       <button data-module="approval">✓ Onay Merkezi<small>Kanıt ve kullanıcı kararı</small></button>
       <button data-module="finance">₺ Finans<small>Ödeme, vade, nakit</small></button>
+      <button data-module="taskSource">✓ Canlı Görev Kaynağı<small>Google tablosu · son kontrol</small></button>
       <button data-module="bank">▤ Banka<small>Ekstre ve mutabakat</small></button>
       <button data-module="sales">↗ Satış & Ürün<small>Satış, stok, sevkiyat</small></button>
       <button data-view="legacy">▦ Tüm Ekranlar<small>Silinmeyen eski kayıtlar</small></button>
@@ -75,7 +76,8 @@ const MODULES={
   finance:{title:'Finans ve Ödemeler',url:'/aperion-finans-takvimi-live.html'},
   bank:{title:'Banka ve Ekstre Merkezi',url:'/mail-ekstre-canli.html'},
   sales:{title:'Satış, Ürün ve Stok',url:'/alayli-merkez.html'},
-  work:{title:'AperiON İş Merkezi',url:'/aperion-is-merkezi.html'}
+  work:{title:'AperiON İş Merkezi',url:'/aperion-is-merkezi.html'},
+  taskSource:{title:'ApeirON Görevler · Kaynak Uygulama',url:'https://script.google.com/macros/s/AKfycbwQO76klWyRLCXCx20IrSmW48-EQqzEh_qyNw6oSfKYvJGfVE9pUi2wC19PqyYsLZh2/exec'}
 };
 const $=id=>document.getElementById(id);
 let surfaces=[];
@@ -119,9 +121,9 @@ async function loadRealData(){
   if(sync.status==='fulfilled'){
     const data=sync.value, jobs=data.jobs||[], failed=jobs.filter(job=>job.status==='failed').length;
     const syncDate=data.finishedAt||data.startedAt, days=ageDays(syncDate), healthy=data.ok===true&&failed===0&&days!==null&&days<=1;
-    setStatus('syncDataStatus',healthy?'Senkron başarılı':data.ok?'Senkron eski':'Senkron başarısız',healthy?'ok':'bad');
-    set('syncDataMetric',data.ok?'Güncel':`${failed} hata`);
-    set('syncDataText',data.ok?'BizimHesap veri yenilemesi tamamlandı.':'Bugünkü satış, stok ve masraf güncel kabul edilemez.');
+    setStatus('syncDataStatus',healthy?'Kaynak raporu yeni':data.ok?'Kaynak raporu eski':'Senkron başarısız',healthy?'ok':'bad');
+    set('syncDataMetric',healthy?'Kaynak OK':data.ok?'Eski':'Doğrulanmadı');
+    set('syncDataText',healthy?'İş sonucu güncel görünüyor; satış, banka, e-fatura ve tahsilat için bağımsız mutabakat şart.':'Bu dosya güncel ERP satış, fatura veya banka hareketlerinin alındığını kanıtlamaz.');
     set('syncDataDate',`Son çalışma: ${dateTime(syncDate)}${days==null?'':` · ${days} gün önce`}`);
   }else{setStatus('syncDataStatus','Kaynak okunamadı','bad');set('syncDataText','Son senkron kanıtı erişilemiyor.')}
 }
@@ -133,6 +135,9 @@ function renderLegacy(query){const q=query.toLocaleLowerCase('tr');const rows=su
 document.addEventListener('click',event=>{const moduleTarget=event.target.closest('[data-module]');if(moduleTarget)openModule(moduleTarget.dataset.module,moduleTarget.matches('#mainNav button')?moduleTarget:null);const viewTarget=event.target.closest('[data-view]');if(viewTarget){if(viewTarget.dataset.view==='legacy')showLegacy(viewTarget.matches('#mainNav button')?viewTarget:null);else showOverview(viewTarget)}});$('moduleClose').onclick=()=>showOverview(document.querySelector('[data-view="overview"]'));$('legacySearch').oninput=event=>renderLegacy(event.target.value);
 fetch('/data/aperion_surface_inventory.json',{cache:'no-store'}).then(response=>response.json()).then(data=>{surfaces=data.surfaces||[];$('surfaceCount').textContent=`${surfaces.length} ekran korunuyor`}).catch(()=>{$('surfaceCount').textContent='Envanter okunamadı'});
 loadRealData();
+// Screen refresh only re-reads available source files; it is NOT instant ERP synchronization.
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadRealData()});
+setInterval(()=>{if(!document.hidden)loadRealData()},60000);
 </script>
 <script src="/aperion-mobile.js"></script>
 </body>
