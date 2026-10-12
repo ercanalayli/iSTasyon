@@ -71,7 +71,7 @@ for (const token of [
 const preflight = ps.indexOf('  $blockedPaths = @()');
 const stage = ps.indexOf('  New-Item -ItemType Directory -Path $stage,$backup -Force | Out-Null');
 const mergeAll = ps.indexOf('  foreach ($rel in $modifiedFiles) {');
-const syntaxAll = ps.indexOf('  foreach ($rel in $Targets.Keys) {\n    & node.exe --check',mergeAll);
+const syntaxAll = ps.slice(mergeAll).search(/  foreach \(\$rel in \$Targets\.Keys\) \{\r?\n    & node\.exe --check/) + mergeAll;
 const liveCopy = ps.indexOf('Copy-Item -LiteralPath (Join-Path $stage (Rel $rel)) -Destination $target -Force');
 assert.ok(preflight >= 0 && stage > preflight, 'scan all targets before downloading pinned sources');
 assert.ok(mergeAll > stage && syntaxAll > mergeAll && liveCopy > syntaxAll,
