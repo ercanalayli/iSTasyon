@@ -1,3 +1,4 @@
+import { inspectAbstractEnvelope } from './bizimhesap-abstract-shape.js';
 /**
  * Owner-only Telegram BizimHesap customer statement, READ ONLY.
  * Independent channel authentication: verified Telegram webhook secret,
@@ -48,36 +49,64 @@ export function selectUniqueFreshCustomer(rows) {
   return {ok:true,customerId:rows[0].customer_id,title:rows[0].title.trim(),sourceLastSuccess:rows[0].last_success_at};
 }
 
-const first=(r,fields)=>fields.map(f=>r?.[f]).find(v=>typeof v==='string'||typeof v==='number');
-const dateFields=['documentDate','DocumentDate','invoiceDate','InvoiceDate','transactionDate','date','Date','tarih','Tarih'];
-const noFields=['documentNo','DocumentNo','invoiceNo','InvoiceNo','reference','Reference','belgeNo','BelgeNo'];
-const amountFields=['amount','Amount','totalAmount','TotalAmount','tutar','Tutar'];
-const arrays=(x)=>[x?.data,x?.data?.rows,x?.data?.items,x?.data?.records,x?.data?.documents,x?.data?.movements,x?.data?.transactions,x?.rows,x?.movements,x?.result];
+const fieldsNormalized = x => String(x).toLowerCase().replace(/[^a-z0-9]/g,'');
+const first=(row,fields)=>{
+  const want=new Set(fields.map(fieldsNormalized));
+  const containers=[row,row?.dates,row?.Dates,row?.amounts,row?.Amounts];
+  for(const obj of containers){
+    if(!obj || typeof obj!=='object' || Array.isArray(obj))continue;
+    for(const [key,value] of Object.entries(obj)){
+      if(want.has(fieldsNormalized(key)) && (typeof value==='string'||typeof value==='number') &&
+        String(value).trim())return value;
+    }
+  }
+  return null;
+};
+const dateFields=['documentDate','docDate','invoiceDate','issueDate','transactionDate','date','tarih','createdAt','islemTarihi','belgeTarihi','recordDate'];
+const noFields=['documentNo','docNo','invoiceNo','invoiceNumber','documentNumber','reference','Reference','belgeNo','voucherNo','refNo','serialNo','faturaNo','guid'];
+const amountFields=['amount','Amount','totalAmount','AmountTotal','gross','netAmount','paymentAmount','total','tutar','Tutar'];
 const safeText=(v,max=75)=>String(v??'').replace(/[\r\n\t\u0000-\u001f]/g,' ').slice(0,max).trim();
 
 export function summarizeVerifiedAbstract(vendor,{title,sourceLastSuccess,nowIso}) {
   if(!vendor||typeof vendor!=='object'||![1,'1'].includes(vendor.resultCode))
     return noData('BİZİMHESAP_BAŞARI_KODU_YOK');
-  const statement=arrays(vendor).find(Array.isArray);
-  if(!Array.isArray(statement))return '⚠️ BizimHesap okuması başarılı (resultCode=1), ancak cari hareket satırlarının biçimi doğrulanamadı. Ekstre VERIFIED değil.';
-  if(statement.length>300)return '⚠️ Cari ekstre çok büyük veya eksik sayfalanmış olabilir. Kısmi veriyi tam ekstre saymıyorum.';
-  if(statement.length===0)return '⚠️ BizimHesap bu sorguda sıfır satır döndürdü. Bu, müşteri hareketi olmadığına ilişkin kesin kanıt değil.';
-  if(statement.some(r=>!r||typeof r!=='object'||Array.isArray(r)))
-    return '⚠️ Cari ekstre satır şeması doğrulanamadı; ham veriler paylaşılmadı.';
-  const rows=statement.slice(0,5).map(r=>{
-    const date=safeText(first(r,dateFields),24),ref=safeText(first(r,noFields),65);
-    const amount=safeText(first(r,amountFields),28);
-    if(!date&&!ref)return null;
-    return '• '+(date||'Tarih yok')+' · '+(ref||'Belge no yok')+(amount?' · bildirilen tutar: '+amount:'');
-  });
-  if(rows.every(x=>x===null))return '⚠️ BizimHesap işlem satırları döndü fakat tarih/belge alanları doğrulanamadı. Ekstre VERIFIED değil.';
+  const inspection=inspectAbstractEnvelope(vendor);
+  if(inspection.status==='OVERFLOW')
+    return '⚠️ BizimHesap cari veri yapısı çok büyük veya derin. Eksik bölümü tam ekstre saymıyorum.';
+  if(inspection.status==='UNSUPPORTED') {
+    // Keys and types only; NEVER expose financial values, account IDs, tokens,
+    // emails, phone numbers or raw provider response via error diagnostics.
+    return '⚠️ BizimHesap okuması başarılı (resultCode=1), ancak cari hareket satırlarının biçimi doğrulanamadı. Ekstre VERIFIED değil.\n'+
+      'Güvenli biçim özeti (yalnız alan adları): '+
+      inspection.hints.join(' | ').slice(0,650);
+  }
+  if(inspection.status==='EMPTY')
+    return '⚠️ BizimHesap yanıtında boş hareket dizileri var. Bu, müşterinin hareketi olmadığına veya kapsamın tam olduğuna ilişkin kesin kanıt değil.';
+  const sectionLines=[];
+  let foundDocument=false;
+  for(const section of inspection.sections.slice(0,4)){
+    const printable=[];
+    for(const row of section.rows.slice(0,4)){
+      if(!row||typeof row!=='object'||Array.isArray(row))continue;
+      const date=safeText(first(row,dateFields),24),ref=safeText(first(row,noFields),65);
+      const amount=safeText(first(row,amountFields),28);
+      if(!date&&!ref)continue;
+      foundDocument=true;
+      printable.push('• '+(date||'Tarih yok')+' · '+(ref||'Belge no yok')+
+        (amount?' · bildirilen tutar: '+amount:''));
+    }
+    const location=safeText(section.path,90);
+    sectionLines.push('Bölüm: '+location+' · kaynak satırları: '+section.rows.length+
+      (printable.length?'\n'+printable.join('\n'):' · belge alanları doğrulanamadı'));
+  }
+  if(!foundDocument)return '⚠️ Cari veri dizileri bulundu, ancak tarih/belge alanları doğrulanamadı. Ekstre VERIFIED değil.';
   return '📄 BizimHesap cari ekstresi — salt okuma\n'+
     'Cari: '+safeText(title,105)+'\n'+
     'Kaynak: GET /abstract · resultCode=1\n'+
     'Okuma: '+safeText(nowIso,30)+'\n'+
     'Cari listesinin son aktarımı: '+safeText(sourceLastSuccess,32)+'\n'+
-    'Dönen satır: '+statement.length+' (ilk 5 örnek)\n'+rows.filter(Boolean).join('\n')+
-    '\n⚠️ Borç/alacak yönü ve ekstre kapsamı ayrıca doğrulanmalı. Kayıt yapılmadı.';
+    sectionLines.join('\n')+
+    '\n⚠️ Bunlar kaynak yanıtından belge örnekleridir; borç/alacak yönü ve ekstre kapsamı ayrıca doğrulanmalı. Kayıt yapılmadı.';
 }
 
 export async function readOwnerCariAbstract({env,message,identity,dbGet,providerGet}) {
