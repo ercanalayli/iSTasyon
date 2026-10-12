@@ -17,6 +17,7 @@ const { sendFinanceResult } = require('./telegram_finance_result.cjs');
 const { loadDiaperPriceCatalog, resolveDiaperCatalogItem, parseDiscountPercent } = require('./diaper_price_catalog.cjs');
 const { userSafeDesktopResult } = require('./desktop_result_formatter.cjs');
 const { assertBizimHesapWriteEnabled } = require('./lib/bizimhesap_write_policy.cjs');
+const { claimPendingBotCommand } = require('./lib/bot_command_safety.cjs');
 const { brokerCandidateURLs, attachOnly } = require('./lib/bizimhesap_session_ports.cjs');
 const { readOnlyHealth: bizimhesapB2BHealth, postApprovedInvoice: bizimhesapB2BPostApprovedInvoice } = require('./bizimhesap_b2b_canonical.cjs');
 
@@ -1835,8 +1836,11 @@ async function bizimhesapDiaperProforma(params) {
 }
 
 async function handleCommand(cmd) {
-  log(`Komut alindi: #${cmd.id} komut=${cmd.command} params=${JSON.stringify(cmd.params)}`);
-  await db.from('bot_commands').update({ status: 'processing', started_at: new Date().toISOString() }).eq('id', cmd.id);
+  // Claim first; a second worker reading the same pending row must not run it.
+  const claimed = await claimPendingBotCommand(db, cmd.id);
+  if (!claimed) { log(`KOMUT_BASKA_ISCI_TARAFINDAN_ALINDI #${cmd.id}`); return; }
+  // Do not log raw params: financial payloads and session fields are sensitive.
+  log(`Komut alindi: #${cmd.id} komut=${cmd.command}`);
   const params = cmd.params || {};
   let outcome;
   try {
@@ -1850,7 +1854,7 @@ async function handleCommand(cmd) {
       outcome = { ok: health.ok, output: JSON.stringify(health) };
     } else if (cmd.command === 'bizimhesap_b2b_invoice') {
       assertBizimHesapWriteEnabled();
-      const result = await bizimhesapB2BPostApprovedInvoice(params);
+      const result = await bizimhesapB2BPostApprovedInvoice({ ...params, command_id: cmd.id });
       outcome = { ok: result.ok, output: JSON.stringify(result) };
     } else if (cmd.command === 'bizimhesap_health') {
       const health = await probeAuthenticatedBizimHesapSession();
@@ -2084,7 +2088,10 @@ async function handleCommand(cmd) {
   } catch (e) {
     outcome = { ok: false, output: String(e.message || e) };
   }
-  await db.from('bot_commands').update({ status: outcome.ok ? 'completed' : 'failed', result: outcome.output.slice(0, 8000), completed_at: new Date().toISOString() }).eq('id', cmd.id);
+  const { data: persisted, error: persistError } = await db.from('bot_commands')
+    .update({ status: outcome.ok ? 'completed' : 'failed', result: outcome.output.slice(0, 8000), completed_at: new Date().toISOString() })
+    .eq('id', cmd.id).eq('status', 'processing').select('id').maybeSingle();
+  if (persistError || !persisted) log(`KOMUT_SONUC_KAYDI_BASARISIZ #${cmd.id}: ${persistError?.message || 'state_changed'} - tekrar finansal islem yapma`);
   if ((cmd.command === 'desktop_open_url' || cmd.command === 'bizimhesap_expense' || (cmd.command === 'bizimhesap_diaper_proforma' && !outcome.ok)) && params.chat_id) {
     await sendTelegramCommandResult(params.chat_id, userSafeDesktopResult(cmd.command, outcome, params));
   }

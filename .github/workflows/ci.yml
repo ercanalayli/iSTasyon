@@ -37,5 +37,11 @@ jobs:
     - name: Telegram transfer approval isolation
       run: node tools/test_telegram_cash_transfer_webhook.mjs
 
+    - name: AperiON BizimHesap command claim and duplicate safety
+      run: |
+        node --check tools/aperion_command_listener.cjs
+        node --check tools/bizimhesap_b2b_canonical.cjs
+        node tools/test_bot_command_safety.cjs
+
     - name: Docker Build Check
       run: docker build . -t istasyon-bot-test
