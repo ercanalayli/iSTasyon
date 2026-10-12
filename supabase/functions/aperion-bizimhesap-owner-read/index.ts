@@ -103,6 +103,20 @@ export async function handleRequest(req, runtime) {
   let result;
   try{result=await response.json();}
   catch{return reply({ok:false,error:'INVALID_UPSTREAM_JSON'},502);}
+  // The vendor may return HTTP 200 even if a specific customer abstract
+  // fails. A successful transport alone must never certify ERP movements.
+  // Limit this contract to abstract actions until other actions have
+  // independently verified vendor envelope semantics.
+  if(['abstract','supplierabstract'].includes(action) &&
+     (!result || typeof result!=='object' ||
+      ![1,'1'].includes(result.resultCode))) {
+    return reply({
+      ok:false,error:'UPSTREAM_BUSINESS_RESULT_NOT_SUCCESS',
+      source:'bizimhesap_b2b',action,
+      httpTransportSucceeded:true,ledgerVerified:false,
+      financialWrites:0
+    },502);
+  }
   return reply({
     ok:true,source:'bizimhesap_b2b',action,
     fetched_at:new Date().toISOString(),
