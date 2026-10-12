@@ -23,7 +23,7 @@ function doGet(e) {
     return ContentService.createTextOutput(JSON.stringify({
       ok: true,
       app: 'Apeiron | İstasyON',
-      version: 'SCRIPT_SHEETS_V1',
+      version: 'SCRIPT_SHEETS_V2_AUDITED',
       time: new Date().toISOString()
     })).setMimeType(ContentService.MimeType.JSON);
   }
@@ -60,7 +60,12 @@ function getAppBootstrap() {
   const received = tasks.filter(t => !t.completed_at && t.category === 'received' && t.stage < 3);
   const completedToday = tasks.filter(t => String(t.completed_at || '').slice(0,10) === today);
 
-  const openPayments = payments.rows.filter(p => p.remaining > 0);
+  // Previous-month balances can also be carried into this month. Show them
+  // separately for audit; NEVER add them twice to the current payment total.
+  const priorUnreconciled = payments.rows.filter(p => p.period === 'previous' && p.remaining > 0)
+    .map(p => Object.assign({}, p, {kind:'prior_unreconciled', audit_status:'ONCEKI_DONEM_MUTABAKAT_BEKLIYOR',
+      reconciliation_warning:'Önceki dönem bakiyesi: devretmiş olabilir. Bağımsız ödeme/devir eşleştirmesi olmadan yeniden borç toplamına eklenmez.'}));
+  const openPayments = payments.rows.filter(p => p.period !== 'previous' && p.remaining > 0);
   const overduePayments = openPayments.filter(p => p.due && p.due < today);
   const todayPayments = openPayments.filter(p => p.due === today);
   const next7Payments = openPayments.filter(p => p.due && p.due > today && p.due <= next7);
@@ -94,7 +99,7 @@ function getAppBootstrap() {
 
   return {
     ok: true,
-    version: 'SCRIPT_SHEETS_V1',
+    version: 'SCRIPT_SHEETS_V2_AUDITED',
     generated_at: fmtDateTime_(now),
     generated_iso: now.toISOString(),
     read_only_default: true,
@@ -103,7 +108,8 @@ function getAppBootstrap() {
       control_modified_at: DriveApp.getFileById(APP.CONTROL_ID).getLastUpdated().toISOString(),
       payment_sheet_id: APP.PAYMENT_ID,
       payment_modified_at: DriveApp.getFileById(APP.PAYMENT_ID).getLastUpdated().toISOString(),
-      payment_tabs: payments.tabs
+      payment_tabs: payments.tabs,
+      source_truth: 'SHEETS_READ_ONLY; BIZIMHESAP_INVOICE_PAYMENT_AND_BANK_MOVEMENT_FRESHNESS_NOT_VERIFIED'
     },
     config: config,
     menu: menu.filter(x => norm_(x.STATUS) === 'aktif'),
@@ -124,6 +130,7 @@ function getAppBootstrap() {
       next7: next7Items,
       todo,
       payment: openPayments,
+      prior_unreconciled: priorUnreconciled,
       collect,
       order,
       received,
@@ -164,7 +171,12 @@ function completeOperationalTask(taskId) {
     if (category === 'collect' || category === 'payment') {
       throw new Error('Finansal sonuç doğuran kayıtlar web panelinden tamamlanamaz; açık onay gerekir.');
     }
-    if (!['todo','order','received'].includes(category)) {
+    // All received orders require independently verified e-invoice, item match
+    // and shipment evidence. Manual Sheets closure must never bypass that gate.
+    if (category === 'received') {
+      throw new Error('Alınan sipariş kapanışı engellendi: doğrulanmış e-fatura, cari/ürün/tutar eşleşmesi ve sevkiyat/teslim kanıtı gerekir.');
+    }
+    if (!['todo','order'].includes(category)) {
       throw new Error('Bu kategori web panelinden tamamlanmaya kapalı.');
     }
 
@@ -177,7 +189,7 @@ function completeOperationalTask(taskId) {
 
     const stamp = new Date().toISOString();
     sh.getRange(rowNo, completedCol).setValue(stamp);
-    sh.getRange(rowNo, stageCol).setValue(category === 'received' ? 3 : 2);
+    sh.getRange(rowNo, stageCol).setValue(2);
     sh.getRange(rowNo, updatedCol).setValue(stamp);
 
     appendAuditEvent_(ss, {
@@ -229,7 +241,7 @@ function readTasks_(ss) {
 }
 
 function readPayments_(ss, now) {
-  const tabNames = [monthTab_(now), monthTab_(new Date(now.getFullYear(), now.getMonth()+1, 1))];
+  const tabNames = [monthTab_(new Date(now.getFullYear(), now.getMonth()-1, 1)), monthTab_(now), monthTab_(new Date(now.getFullYear(), now.getMonth()+1, 1))];
   let rows = [];
   const used = [];
   tabNames.forEach(name => {
@@ -245,6 +257,7 @@ function readPayments_(ss, now) {
       const remaining = remainingRaw === '' ? Math.max(accrual-paid,0) : money_(remainingRaw);
       rows.push({
         tab:name,
+        period: name === tabNames[0] ? 'previous' : (name === tabNames[1] ? 'current' : 'next'),
         due: isoDate_(first_(x,['TARİH','TARIH'])),
         due_status: String(first_(x,['VADE']) || ''),
         radar: String(first_(x,['RADAR']) || ''),
@@ -377,7 +390,21 @@ function isoDate_(v) {
   if (m) return m[1]+'-'+m[2]+'-'+m[3];
   m = s.match(/(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2})/);
   if (m) return m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2);
-  return s;
+  // Sheets displays Turkish dates such as "10 Eylül 26": do not misclassify as ISO.
+  const monthNames = {ocak:1,subat:2,mart:3,nisan:4,mayis:5,haziran:6,
+    temmuz:7,agustos:8,eylul:9,ekim:10,kasim:11,aralik:12};
+  const normalized = s.toLocaleLowerCase('tr-TR').replace(/ı/g,'i').replace(/ğ/g,'g')
+    .replace(/ü/g,'u').replace(/ş/g,'s').replace(/ö/g,'o').replace(/ç/g,'c');
+  m = normalized.match(/^(\\d{1,2})\\s+(ocak|subat|mart|nisan|mayis|haziran|temmuz|agustos|eylul|ekim|kasim|aralik)\\s+(\\d{2,4})$/);
+  if (m) {
+    const year = m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3]);
+    const month = monthNames[m[2]];
+    const day = Number(m[1]);
+    const check = new Date(Date.UTC(year, month-1, day));
+    if (check.getUTCFullYear() === year && check.getUTCMonth() === month-1 && check.getUTCDate() === day)
+      return year + '-' + ('0'+month).slice(-2) + '-' + ('0'+day).slice(-2);
+  }
+  return ''; // invalid due date is unknown, never a valid date
 }
 function fmtDateTime_(d) { return Utilities.formatDate(d,APP.TZ,'dd.MM.yyyy HH:mm'); }
 function sum_(rows,key) { return Math.round(rows.reduce((a,r)=>a+Number(r[key]||0),0)*100)/100; }
