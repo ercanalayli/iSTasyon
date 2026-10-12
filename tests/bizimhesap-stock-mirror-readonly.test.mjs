@@ -49,6 +49,7 @@ assert.match(sql,/GRANT SELECT[^;]+TO service_role/i);
 assert.doesNotMatch(sql,/GRANT\s+(?:ALL|SELECT)[^;]+TO\s+(?:anon|authenticated)/i);
 assert.doesNotMatch(sql,/INSERT INTO|UPDATE\s+public\.|DELETE FROM/i);
 assert.ok(webhook.includes('stockQueryPaths(query)'));
+assert.ok(webhook.includes("stock_report_version: 'api-inventory-mirror-v1'"));
 const handler = webhook.split('async function handleStokIntent(env, chatId, query) {')[1].split('async function handleDurumIntent')[0];
 assert.doesNotMatch(handler, /\/rest\/v1\/stock_raw\?/);
 assert.ok(handler.includes('formatStockMirrorReport'));
