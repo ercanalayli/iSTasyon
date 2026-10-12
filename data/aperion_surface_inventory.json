@@ -2,16 +2,54 @@
   "schema_version": 1,
   "generated_at": "2026-07-26T13:08:56.908Z",
   "preservation_policy": "No HTML surface is deleted. Legacy screens remain addressable from the unified catalog.",
-  "total_html_surfaces": 54,
+  "total_html_surfaces": 60,
   "category_counts": {
-    "Satış ve ürün": 7,
+    "Ana ekran türevi": 19,
+    "Satış ve ürün": 8,
     "Diğer araç": 4,
-    "Ana ekran türevi": 17,
-    "Finans": 12,
-    "Banka ve onay": 7,
-    "Veri ve sistem": 7
+    "Veri ve sistem": 9,
+    "Finans": 13,
+    "Banka ve onay": 7
   },
   "surfaces": [
+    {
+      "file": "a1.html",
+      "title": "ApeirON Control Center",
+      "heading": "Günün tamamı tek kontrol yüzeyinde.",
+      "category": "Ana ekran türevi",
+      "size_bytes": 10412,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      },
+      "url": "/a1.html"
+    },
+    {
+      "file": "a2-gamze.html",
+      "title": "AperiON A2 · Gamze Eczanesi",
+      "heading": "Gamze Eczanesi",
+      "category": "Satış ve ürün",
+      "size_bytes": 8585,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      },
+      "url": "/a2-gamze.html"
+    },
     {
       "file": "alayli-fiyat-sevkiyat-launcher.html",
       "url": "/alayli-fiyat-sevkiyat-launcher.html",
@@ -184,6 +222,25 @@
       }
     },
     {
+      "file": "aperion-device-enroll.html",
+      "title": "AperiON Cihaz Eşleştirme",
+      "heading": "AperiON Cihaz Eşleştirme",
+      "category": "Veri ve sistem",
+      "size_bytes": 2370,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      },
+      "url": "/aperion-device-enroll.html"
+    },
+    {
       "file": "aperion-finans-takvimi-live.html",
       "url": "/aperion-finans-takvimi-live.html",
       "title": "AperiON Finans Takvimi Live",
@@ -315,6 +372,25 @@
         "inventory": true,
         "tasks": true
       }
+    },
+    {
+      "file": "aperion-system-health.html",
+      "title": "AperiON Sistem Sağlığı",
+      "heading": "AperiON Sistem Sağlığı",
+      "category": "Veri ve sistem",
+      "size_bytes": 2344,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": false,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      },
+      "url": "/aperion-system-health.html"
     },
     {
       "file": "aperion-ust-akil.html",
@@ -790,6 +866,44 @@
         "inventory": true,
         "tasks": true
       }
+    },
+    {
+      "file": "istasyon-alkam.html",
+      "title": "İstasyON · ALKAM",
+      "heading": "Bugün neye bakmam gerekiyor?",
+      "category": "Finans",
+      "size_bytes": 17710,
+      "signals": {
+        "pwa": false,
+        "supabase": false,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": true,
+        "inventory": false,
+        "tasks": false
+      },
+      "url": "/istasyon-alkam.html"
+    },
+    {
+      "file": "istasyon.html",
+      "title": "iSTASYON Canlı",
+      "heading": "iSTASYON Canlı",
+      "category": "Ana ekran türevi",
+      "size_bytes": 17657,
+      "signals": {
+        "pwa": false,
+        "supabase": true,
+        "charts": false,
+        "approval": false,
+        "bank": false,
+        "finance": true,
+        "sales": false,
+        "inventory": false,
+        "tasks": false
+      },
+      "url": "/istasyon.html"
     },
     {
       "file": "klon.html",
