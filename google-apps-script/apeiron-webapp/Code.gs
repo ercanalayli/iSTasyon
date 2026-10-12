@@ -395,7 +395,7 @@ function isoDate_(v) {
     temmuz:7,agustos:8,eylul:9,ekim:10,kasim:11,aralik:12};
   const normalized = s.toLocaleLowerCase('tr-TR').replace(/ı/g,'i').replace(/ğ/g,'g')
     .replace(/ü/g,'u').replace(/ş/g,'s').replace(/ö/g,'o').replace(/ç/g,'c');
-  m = normalized.match(/^(\\d{1,2})\\s+(ocak|subat|mart|nisan|mayis|haziran|temmuz|agustos|eylul|ekim|kasim|aralik)\\s+(\\d{2,4})$/);
+  m = normalized.match(/^(\d{1,2})\s+(ocak|subat|mart|nisan|mayis|haziran|temmuz|agustos|eylul|ekim|kasim|aralik)\s+(\d{2,4})$/);
   if (m) {
     const year = m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3]);
     const month = monthNames[m[2]];
