@@ -38,6 +38,9 @@ async function createBizimHesapClientFromCanonicalIntegration(env = process.env)
     firmId: creds.firmId,
     token: creds.token,
     authMode: 'token-header',
+    // The verified 10 Oct B2B route accepted the token header only. Do not
+    // inject the generic shared Key header into this canonical integration.
+    key: '',
   });
   return { client, creds };
 }
