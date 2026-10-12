@@ -55,8 +55,28 @@ async function checkSourceHealth(env){
       fresh_api_mirrors:current, required_sources:REQUIRED.length,sources:items};
   }catch(e){return {state:'CRITICAL',reason:'SOURCE_HEALTH_READ_FAILED',sources:[]};}
 }
+// Cache only the publicly visible workflow health, not ERP data or tokens.
+// A short cache prevents GitHub's unauthenticated API from being rate-limited by UI polling.
+async function checkGithubCached(){
+  const storage=typeof caches!=='undefined'?caches.default:null;
+  if(!storage)return checkGithub();
+  const key=new Request('https://aperion-istasyon.pages.dev/__health_cache/gh_ode_mirror_v1');
+  try{
+    const cached=await storage.match(key);
+    if(cached)return cached.json();
+  }catch(_){}
+  const fresh=await checkGithub();
+  if(fresh.state==='OK'||fresh.reason!=='WORKFLOW_STATUS_UNAVAILABLE'){
+    try{
+      await storage.put(key,new Response(JSON.stringify(fresh),{
+        headers:{'Content-Type':'application/json','Cache-Control':'public, max-age=75'}
+      }));
+    }catch(_){}
+  }
+  return fresh;
+}
 export async function onRequestGet({env}){
-  const [mirror,sources]=await Promise.all([checkGithub(),checkSourceHealth(env)]);
+  const [mirror,sources]=await Promise.all([checkGithubCached(),checkSourceHealth(env)]);
   const critical=mirror.state!=='OK'||sources.state!=='OK';
   return json({ok:true,service:'aperion-critical-sync-watch',version:'v1',
     checked_at:new Date().toISOString(),state:critical?'CRITICAL':'OK',
