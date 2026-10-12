@@ -11,8 +11,8 @@ $Targets = [ordered]@{
   'tools/lib/bot_command_safety.cjs'           = 'e3f494e4694d99299bfda721e56adce81613acbf'
   'tools/aperion_runtime_7x24.cjs'             = 'a46f16b2087a40f2c2c4e488895f05c1d4a99527'
   'tools/lib/supabase_listener_supervisor.cjs' = 'ccea529c784ddd19ee48bbc15ff95caa672f34e9'
-  'tools/test_bot_command_safety.cjs'          = 'ba003b5c5c79d9e4f7c839ebc78d73d10d1ba25a'
-  'tools/test_supabase_listener_supervisor.cjs'= '585678dad4b7b0cbe6828a5ef75c40ee59b1a813'
+  'tools/test_bot_command_safety.cjs'          = 'c54ef70b22209be83cb2f3342e35f509b6ec8c5e'
+  'tools/test_supabase_listener_supervisor.cjs'= 'fdd4583713a5fc7f855cbb38cdae366ec53e9c34'
 }
 $AllowedPending = @(
   'bizimhesap_fetch', 'bizimhesap_health', 'bizimhesap_verify',
@@ -23,6 +23,7 @@ $folder = Join-Path $Root ('local-secrets\safe-updates\' + $stamp)
 $stage = Join-Path $folder 'stage'
 $backup = Join-Path $folder 'backup'
 $installed = $false
+$sourceVerified = $false
 function Info([string]$s) { Write-Host ('AperiON | ' + $s) }
 function Rel([string]$p) { return $p.Replace('/', '\') }
 function GetListenerProcesses {
@@ -69,7 +70,7 @@ function AssertSafeQueue($cfg) {
 function WriteResult([string]$state, [string]$detail) {
   $result = @{
     status=$state; detail=$detail; checkedAt=(Get-Date).ToString('o');
-    source_commit=$Commit; source_verified=$true; backup_path=$backup;
+    source_commit=$Commit; source_verified=$sourceVerified; backup_path=$backup;
     financial_writes=0; approvals_changed=0; new_browser_logins=0
   }
   $result | ConvertTo-Json -Depth 4 |
@@ -126,6 +127,7 @@ try {
     & node.exe 'tools/test_supabase_listener_supervisor.cjs'
     if ($LASTEXITCODE -ne 0) { throw 'BLOCKED_SUPERVISOR_TEST' }
   } finally { Pop-Location }
+  $sourceVerified = $true
   $null = AssertSafeQueue $cfg
   if (@(GetListenerProcesses).Count -gt 1) { throw 'BLOCKED_MULTIPLE_LISTENERS_BEFORE_INSTALL' }
   foreach ($rel in $Targets.Keys) {
