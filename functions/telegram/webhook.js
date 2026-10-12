@@ -1,4 +1,5 @@
 import { handleRetailTelegramCommand } from '../shared/retail-sales-protocol.js';
+import { issueMobileTicket, revokeMobileTickets } from '../shared/bizimhesap-mobile-pairing.js';
 import { buildMobileStatusReport } from '../shared/mobile-status-report.js';
 import { getMobileSecurityStatus, handleMobileCommand, verifyTelegramRequest } from './mobile-command-center.js';
 import { DESKTOP_TARGETS, desktopTargetSummary, parseUniversalCommand } from './universal-command-router.js';
@@ -1505,6 +1506,52 @@ const chatId = msg.chat.id;
 const text = clean(msg.text);
 const lower = lowerTR(text);
 const directReport = detectDirectEntityReport(text);
+// Read-only, owner-only iPhone pairing for the separate BizimHesap cloud browser.
+// Financial approval or ERP write capabilities are NEVER granted here.
+if (lower === '/bhbagla' || lower === '/bhiptal') {
+  if (!identity.hardened || msg.chat?.type !== 'private' ||
+      !msg.from?.id || String(msg.from.id) !== String(chatId)) {
+    await sendMessage(env, chatId, '🔒 Eşleştirme yalnız doğrulanmış özel Telegram sohbetinde yapılır. BizimHesap kaydı yapılmadı.');
+    return json({ok:true, mobile_pairing:'identity_blocked',financial_writes:0});
+  }
+  if (lower === '/bhiptal') {
+    const revoked = await revokeMobileTickets(env.APERION_DB,{chatId});
+    await sendMessage(env,chatId,revoked.ok
+      ? '🔒 AperiON cihaz eşleştirmeleri iptal edildi. Önceden açılmış geçici bulut tarayıcı pencereleri kendi süreleri bitene kadar açık kalabilir; gerekirse BizimHesap’tan çıkış yap. Finansal kayıt yapılmadı.'
+      : '⚠ İptal veri kasasında doğrulanamadı. Erişim statüsü belirsiz; yetkili incelemesi gerekli.');
+    return json({ok:revoked.ok,mobile_pairing:revoked.ok?'revoked':'failed',financial_writes:0},revoked.ok?200:503);
+  }
+  // Never send a handoff until the separate Worker has actually deployed
+  // and its existing D1-backed pairing store has passed a live preflight.
+  let mobileWorkerReady=false;
+  try {
+    const h=await fetch('https://aperion-bizimhesap-free.yenicespor-finans.workers.dev/health',
+      {signal:AbortSignal.timeout(6000),headers:{'accept':'application/json'}});
+    const state=h.ok?await h.json():{};
+    mobileWorkerReady=h.ok && state.setup_version==='20261012-mobile-revocable-v3'
+      && state.pairing_store_ready===true && state.write_enabled===false;
+  } catch (_) {}
+  if (!mobileWorkerReady) {
+    await sendMessage(env,chatId,'⚠ BizimHesap güvenli telefon eşleştirmesi henüz etkin değil. Kurulum tamamlanmadan bağlantı vermiyorum; finansal kayıt yapılmadı.');
+    return json({ok:false,mobile_pairing:'worker_not_ready',financial_writes:0},503);
+  }
+  const issued=await issueMobileTicket(env.APERION_DB,{
+    chatId,userId:msg.from.id,messageId:msg.message_id
+  });
+  if (!issued.ok) {
+    await sendMessage(env,chatId,'⚠ Telefon eşleştirmesi hazırlanamadı ('+issued.error+'). Yeni bağlantı verilmedi.');
+    return json({ok:false,mobile_pairing:'blocked',financial_writes:0},503);
+  }
+  const setupUrl='https://aperion-bizimhesap-free.yenicespor-finans.workers.dev/setup?handoff='+encodeURIComponent(issued.token);
+  const delivered=await sendMessage(env,chatId,
+    '📱 AperiON · BizimHesap güvenli iPhone eşleştirmesi\n\n' +
+    'Bağlantı 10 dakika geçerli, bir kez kullanılabilir. BizimHesap şifreni yalnız kendi giriş ekranına yaz. Bu yetki yalnız oturum açmaya yarar; gider, fatura, transfer veya silme izni vermez.\n\n' +
+    'Kaybolan telefonu iptal etmek için /bhiptal',
+    {inline_keyboard:[[{text:'🔐 iPhone eşleştirmesini aç',url:setupUrl}]]});
+  if (!delivered?.ok) return json({ok:false,mobile_pairing:'telegram_delivery_failed',financial_writes:0},502);
+  return json({ok:true,mobile_pairing:'ticket_sent',financial_writes:0});
+}
+
 
 // P0: the retail-sale command only stages an audit record. No BizimHesap writes.
 const retailResult = await handleRetailTelegramCommand({ env, message: msg, identity, sendMessage });
