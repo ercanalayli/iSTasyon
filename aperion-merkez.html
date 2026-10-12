@@ -60,7 +60,7 @@
           <div><h2>ApeirON İş Takibi · Google Apps Script</h2><p>ÖDE ve görev kayıtlarının mevcut Google kaynak uygulaması, ana ekranın içinde.</p></div>
           <div class="appsActions"><button id="homeAppsScriptReload" type="button">Yenile</button><a id="homeAppsScriptNewTab" href="https://script.google.com/macros/s/AKfycbwQO76klWyRLCXCx20IrSmW48-EQqzEh_qyNw6oSfKYvJGfVE9pUi2wC19PqyYsLZh2/exec" target="_blank" rel="noopener noreferrer">Uygulamayı ayrı aç ↗</a></div>
         </div>
-        <iframe id="homeAppsScriptFrame" title="ApeirON İş Takibi · Google Apps Script" loading="lazy" referrerpolicy="no-referrer"></iframe>
+        <iframe id="homeAppsScriptFrame" title="ApeirON İş Takibi · Google Apps Script" src="https://script.google.com/macros/s/AKfycbwQO76klWyRLCXCx20IrSmW48-EQqzEh_qyNw6oSfKYvJGfVE9pUi2wC19PqyYsLZh2/exec" loading="eager" referrerpolicy="no-referrer"></iframe>
         <div class="appsSourceHint">Kaynak: Google Apps Script + Sheets. Bu ekranı görmek BizimHesap e-fatura, banka ve ödeme hareketlerinin anlık mutabık olduğunu kanıtlamaz.</div>
       </article>
       <h2 class="dataTitle">Gerçek Veri Durumu</h2>
@@ -151,8 +151,7 @@ function showLegacy(target){$('overview').style.display='none';$('workspace').cl
 function renderLegacy(query){const q=query.toLocaleLowerCase('tr');const rows=surfaces.filter(item=>`${item.file} ${item.title} ${item.heading} ${item.category}`.toLocaleLowerCase('tr').includes(q));$('legacyList').innerHTML=rows.map(item=>{const url=safeLegacyUrl(item.url);return url?`<article class="legacyItem" data-url="${esc(url)}"><b>${esc(item.title||item.file)}</b><span>${esc(item.file)}</span><em>${esc(item.category)}</em></article>`:''}).join('');document.querySelectorAll('.legacyItem').forEach(item=>item.onclick=()=>{const url=safeLegacyUrl(item.dataset.url);if(!url)return;$('legacy').classList.remove('on');$('workspace').classList.add('on');$('moduleFrame').src=url;$('moduleTitle').textContent=item.querySelector('b').textContent;$('moduleNewTab').href=url})}
 document.addEventListener('click',event=>{const moduleTarget=event.target.closest('[data-module]');if(moduleTarget)openModule(moduleTarget.dataset.module,moduleTarget.matches('#mainNav button')?moduleTarget:null);const viewTarget=event.target.closest('[data-view]');if(viewTarget){if(viewTarget.dataset.view==='legacy')showLegacy(viewTarget.matches('#mainNav button')?viewTarget:null);else showOverview(viewTarget)}});$('moduleClose').onclick=()=>showOverview(document.querySelector('[data-view="overview"]'));$('legacySearch').oninput=event=>renderLegacy(event.target.value);
 fetch('/data/aperion_surface_inventory.json',{cache:'no-store'}).then(response=>response.json()).then(data=>{surfaces=data.surfaces||[];$('surfaceCount').textContent=`${surfaces.length} ekran korunuyor`}).catch(()=>{$('surfaceCount').textContent='Envanter okunamadı'});
-// Embed the existing Google app on the main dashboard; do not proxy or persist Google credentials.
-$('homeAppsScriptFrame').src=APPS_SCRIPT_URL;
+// Main screen embeds the existing Google app in HTML; no credentials are proxied or stored.
 $('homeAppsScriptReload').addEventListener('click',()=>{
   // Explicit reload; do not disrupt a user in the middle of an Apps Script task.
   $('homeAppsScriptFrame').src=APPS_SCRIPT_URL;
