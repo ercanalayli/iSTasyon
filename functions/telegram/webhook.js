@@ -1,7 +1,7 @@
 import { handleRetailTelegramCommand } from '../shared/retail-sales-protocol.js';
 import { issueMobileTicket, revokeMobileTickets } from '../shared/bizimhesap-mobile-pairing.js';
 import { buildMobileStatusReport } from '../shared/mobile-status-report.js';
-import { stockQueryPaths, formatStockMirrorReport } from '../shared/bizimhesap-stock-mirror.js';
+import { lookupStockMirror } from '../shared/bizimhesap-stock-mirror.js';
 import { getMobileSecurityStatus, handleMobileCommand, verifyTelegramRequest } from './mobile-command-center.js';
 import { DESKTOP_TARGETS, desktopTargetSummary, parseUniversalCommand } from './universal-command-router.js';
 import { deviceHealth, queueDeviceCommand } from './device-bridge.js';
@@ -1044,31 +1044,10 @@ await sendMessage(env, chatId, mesaj);
 // ---------------------------------------------------------------------------
 
 async function handleStokIntent(env, chatId, query) {
-  const paths = stockQueryPaths(query);
-  if (!paths) {
-    await sendMessage(env, chatId, 'Kullanım: /stok ürün adı (en az 2 karakter).');
-    return;
-  }
-  // Fail closed on missing or stale inventory mirrors. Never silently fall
-  // back to historical stock_raw, whose latest date is not live inventory.
-  const freshness = await sbFetch(env, paths.freshness);
-  const sourceRows = freshness.ok && Array.isArray(freshness.data) ? freshness.data : null;
-  if (!sourceRows) {
-    await sendMessage(env, chatId, formatStockMirrorReport(paths, null, null));
-    return;
-  }
-  // The formatter gates stale data; do not even query the view if unhealthy.
-  const preview = formatStockMirrorReport(paths, sourceRows, []);
-  if (preview.includes('doğrulanamadı')) {
-    await sendMessage(env, chatId, preview);
-    return;
-  }
-  const mirror = await sbFetch(env, paths.stock);
-  const message = formatStockMirrorReport(paths, sourceRows,
-    mirror.ok && Array.isArray(mirror.data) ? mirror.data : null,
-    { mirrorOk: mirror.ok }
-  );
-  await sendMessage(env, chatId, message);
+  // The lookup has an explicit source freshness gate, never a text substring
+  // gate: a healthy source must continue to the actual product GET.
+  const report = await lookupStockMirror(query, path => sbFetch(env, path));
+  await sendMessage(env, chatId, report);
 }
 
 async function handleDurumIntent(env, chatId) {
