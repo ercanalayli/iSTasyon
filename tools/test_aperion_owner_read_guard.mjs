@@ -78,7 +78,9 @@ function runtime(options={}){
       assert.equal(opts.method,'GET');
       assert.equal(opts.headers.token,'vendor-api-token');
       assert.equal(url,'https://bizimhesap.com/api/b2b/abstract/219C65ACD6C24DB6AA977C9F49561B19');
-      return new Response(JSON.stringify({resultCode:1,data:[]}),{status:200});
+      const envelope=Object.prototype.hasOwnProperty.call(options,'vendorEnvelope')
+        ?options.vendorEnvelope:{resultCode:1,data:[]};
+      return new Response(JSON.stringify(envelope),{status:200});
     }
   };
 }
@@ -105,6 +107,19 @@ assert.equal(json.data.resultCode,1);
 assert.equal(approved.headers.get('cache-control'),'private, no-store, max-age=0');
 assert.equal(vendorCalls,1);
 assert.equal(dbCalls,1);
+// HTTP 200 is only transport success: supplier/customer abstract envelope
+// must explicitly report BizimHesap resultCode=1 before any ERP success claim.
+const businessFailure=await handleRequest(req(),runtime({vendorEnvelope:{resultCode:0,data:[]}}));
+assert.equal(businessFailure.status,502);
+const failureJson=await businessFailure.json();
+assert.equal(failureJson.ok,false);
+assert.equal(failureJson.error,'UPSTREAM_BUSINESS_RESULT_NOT_SUCCESS');
+assert.equal(failureJson.ledgerVerified,false);
+assert.equal(failureJson.financialWrites,0);
+assert.ok(!('data' in failureJson),'failed upstream body must not be relayed');
+assert.equal((await handleRequest(req(),runtime({vendorEnvelope:{message:'not authorized'}})).status,502);
+assert.equal((await handleRequest(req(),runtime({vendorEnvelope:null}))).status,502);
+assert.equal((await handleRequest(req(),runtime({vendorEnvelope:{resultCode:'1',data:[]}}))).status,200);
 const beforeVendor=vendorCalls;
 const noCredentialsAnon=await handleRequest(req('GET',anonKey,'credential_status'),runtime());
 assert.equal(noCredentialsAnon.status,401,'credential_status must require owner JWT');
