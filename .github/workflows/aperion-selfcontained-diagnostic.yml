@@ -1,0 +1,33 @@
+name: AperiON self-contained Windows diagnostics
+on:
+  pull_request:
+    paths:
+      - 'tools/AperiON-TekTik-OtoRapor-20261012.cmd'
+      - 'tools/test_aperion_selfcontained_diagnostic.cjs'
+      - '.github/workflows/aperion-selfcontained-diagnostic.yml'
+permissions:
+  contents: read
+jobs:
+  win51-parser-and-contract:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Confirm one-file no-clipboard contract
+        shell: pwsh
+        run: node tools/test_aperion_selfcontained_diagnostic.cjs
+      - name: Check extracted payload with Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          $all = [IO.File]::ReadAllText('tools/AperiON-TekTik-OtoRapor-20261012.cmd')
+          $tag = ':APERION_EMBEDDED_PAYLOAD_START'
+          $idx = $all.LastIndexOf($tag)
+          if ($idx -lt 0) { throw 'EMBEDDED_SCRIPT_NOT_FOUND' }
+          $body = $all.Substring($idx + $tag.Length)
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseInput($body, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }
+          Write-Host 'PASS: PowerShell 5.1 parse only, no local deployment or network access.'
