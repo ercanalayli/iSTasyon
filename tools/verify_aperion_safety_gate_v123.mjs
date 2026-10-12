@@ -10,7 +10,7 @@ const payments=readJson('data/aperion_payment_obligation_registry.json');
 const sales=readJson('data/sales_report_summary_2025_2026.json');
 const sync=readJson('data/aperion_last_sync.json');
 
-check('single PWA entry is unified center',manifest.id==='/aperion-merkez.html'&&manifest.start_url.startsWith('/aperion-merkez.html'));
+check('installed PWA ID remains stable and new launches use unified center',manifest.id==='/aperion-ust-akil.html'&&manifest.start_url.startsWith('/aperion-merkez.html'));
 check('safe-mode promise is visible',html.includes('Açık onay olmadan dış sisteme kayıt yok'));
 check('live financial JSON is network-only',sw.includes("url.pathname.startsWith('/data/')")&&sw.includes("cache:'no-store'"));
 check('offline live-data response is explicit 503',sw.includes('LIVE_DATA_UNAVAILABLE')&&sw.includes('status:503'));
