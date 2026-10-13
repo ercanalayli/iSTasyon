@@ -80,7 +80,7 @@ async function load(){
     $('existingEvidence').hidden=false;
     set('existingGuid',r.providerResponseEvidence.guid);
     set('existingTotal',fmt(r.providerResponseEvidence.reportedTotalKurus));
-    set('existingNotice','Kaynak: sahibinin paylaştığı BizimHesap addinvoice yanıtı. Satırlar ayrıca teyit edilecek.');
+    set('existingNotice','Kaynak: sahibinin paylaştığı BizimHesap satış oluşturma yanıtı. Satırlar ayrıca teyit edilecek.');
   }else{$('existingEvidence').hidden=true;}
   $('gate').hidden=true;$('details').hidden=false;
   state('Mevcut belge GUID bildirildi · yeniden fatura KAPALI',true);
