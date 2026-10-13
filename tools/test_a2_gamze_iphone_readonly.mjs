@@ -46,7 +46,12 @@ try{
   assert.equal(b.discountKurus,26801);
   assert.deepEqual(b.lines.map(x=>x.packages),[36,12,12,6]);
   assert.equal(b.lines.reduce((sum,x)=>sum+x.totalKurus,0),953192);
-  assert.equal(b.erpPosted,false);
+  assert.equal(b.erpPosted,null,'real ERP content cannot be inferred from local proposal');
+  assert.equal(b.duplicateGuard,'EXISTING_GUID_DO_NOT_POST');
+  assert.equal(b.providerResponseEvidence?.guid,'A782C5B8C1D64F649F4A8010F937F923');
+  assert.equal(b.providerResponseEvidence?.reportedTotalKurus,953192);
+  assert.equal(b.providerResponseEvidence?.actualDocumentItemsReadBack,false);
+  assert.equal(b.providerResponseEvidence?.eInvoiceIssuedVerified,false);
   assert.equal(b.postingAllowed,false);
   assert.equal(b.financialWrites,0);
   assert.equal(b.eInvoice,false);
