@@ -1,0 +1,96 @@
+name: AperiON Command Bridge Live Read-Only Audit
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/aperion-command-bridge-live-readonly-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: aperion-command-bridge-live-readonly-audit
+  cancel-in-progress: false
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      GH_RUN_ID: ${{ github.run_id }}
+    steps:
+      - name: Check deployed Worker source and bindings without mutations
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/aperion-cf-readonly
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            printf 'NOT_CONFIGURED' >/tmp/aperion-cf-readonly/verify.code
+            printf 'NOT_CONFIGURED' >/tmp/aperion-cf-readonly/script.code
+            printf 'NOT_CONFIGURED' >/tmp/aperion-cf-readonly/settings.code
+          else
+            api="https://api.cloudflare.com/client/v4"
+            header="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+            code=$(curl --silent --show-error --max-time 20 -o /tmp/aperion-cf-readonly/verify.json -w '%{http_code}' -H "$header" "$api/user/tokens/verify" || true)
+            printf '%s' "$code" >/tmp/aperion-cf-readonly/verify.code
+            # No requests are made to the public Workers URL: its legacy GET
+            # route invokes Telegram setWebhook and can change the live bot.
+            worker="$api/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/aperion-command-bridge"
+            code=$(curl --silent --show-error --max-time 25 -o /tmp/aperion-cf-readonly/script.bin -w '%{http_code}' -H "$header" "$worker" || true)
+            printf '%s' "$code" >/tmp/aperion-cf-readonly/script.code
+            code=$(curl --silent --show-error --max-time 20 -o /tmp/aperion-cf-readonly/settings.json -w '%{http_code}' -H "$header" -H "Accept: application/json" "$worker/settings" || true)
+            printf '%s' "$code" >/tmp/aperion-cf-readonly/settings.code
+          fi
+      - name: Summarize only non-sensitive status and SHA256
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=commonjs <<'NODE'
+          const fs=require('fs'),crypto=require('crypto');
+          const root='/tmp/aperion-cf-readonly/';
+          const read=n=>fs.existsSync(root+n)?fs.readFileSync(root+n,'utf8'):'';
+          const code=n=>read(n+'.code')||'NOT_RUN';
+          const scriptOk=code('script')==='200';
+          const source=scriptOk?fs.readFileSync(root+'script.bin'):null;
+          const sourceText=source?source.toString('utf8'):'';
+          let settings={};
+          if(code('settings')==='200') {
+            try { settings=JSON.parse(read('settings.json')); } catch {}
+          }
+          const bindings=Array.isArray(settings.result?.bindings)?settings.result.bindings:[];
+          const hasD1=bindings.some(x=>x.type==='d1' || x.type==='d1_database');
+          const version=source?crypto.createHash('sha256').update(source).digest('hex'):'UNAVAILABLE';
+          const rows=[
+            '## AperiON Worker CANLI salt-okuma denetimi',
+            '',
+            'Run: https://github.com/'+process.env.GH_REPO+'/actions/runs/'+process.env.GH_RUN_ID,
+            '',
+            '| Kanıt | Sonuç |',
+            '|---|---|',
+            '| Cloudflare token doğrulama HTTP | '+code('verify')+' |',
+            '| `aperion-command-bridge` kaynak GET HTTP | '+code('script')+' |',
+            '| Worker ayarları GET HTTP | '+code('settings')+' |',
+            '| Canlı Worker kaynak SHA-256 | `'+version+'` |',
+            '| Worker kaynakta `setWebhook` metni | '+(source?String(sourceText.includes('setWebhook')):'UNKNOWN')+' |',
+            '| Worker kaynakta `addinvoice` metni | '+(source?String(sourceText.toLowerCase().includes('addinvoice')):'UNKNOWN')+' |',
+            '| Worker kaynakta `GAMZE ONAY` metni | '+(source?String(sourceText.includes('GAMZE ONAY')):'UNKNOWN')+' |',
+            '| Worker ayarlarda D1 bağlantısı | '+(code('settings')==='200'?String(hasD1):'UNKNOWN')+' |',
+            '',
+            '**İşlemler:** yalnız Cloudflare API GET; Telegram webhook ayarlama YOK, Worker deploy YOK, BizimHesap finansal POST YOK.',
+            'Cloudflare token, bot tokenı, Worker kaynak gövdesi, binding değerleri ve firma kimliği bu rapora yazılmaz.',
+            'Worker script HTTP 200 dönmezse kaynak doğrulanmış kabul edilmez.',
+          ];
+          fs.writeFileSync(root+'audit-comment.md',rows.join('\n')+'\n');
+          console.log(rows.join('\n'));
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,rows.join('\n')+'\n');
+          NODE
+      - name: Attach safe inventory result to AperiON audit issue
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f /tmp/aperion-cf-readonly/audit-comment.md || exit 0
+          gh issue comment 58 --repo "$GH_REPO" --body-file /tmp/aperion-cf-readonly/audit-comment.md
