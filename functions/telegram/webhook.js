@@ -1139,7 +1139,7 @@ mode: 'mobile-command-center-v2',
 command_router_version: 'v143',
 durum_report_version: 'finance-freshness-v1',
 stock_report_version: 'api-inventory-mirror-v2-stock-query',
-cari_report_version: 'telegram-owner-abstract-v2-nested-shape',
+cari_report_version: 'telegram-owner-abstract-v3-private-schema-log',
 device_status_command: '/cihazdurum',
 desktop_target_count: Object.keys(DESKTOP_TARGETS).length,
 desktop_bridge_configured: desktopBridge.configured,
@@ -1576,6 +1576,15 @@ if (/^\/cariekstre(?:@\w+)?(?:\s|$)/i.test(text)) {
   const report=await readOwnerCariAbstract({
     env,message:msg,identity,
     dbGet:path=>sbFetch(env,path),
+    evidenceSink:async evidence=>{
+      // This POST is internal, metadata-only Supabase diagnostics, NEVER an
+      // ERP/financial transaction. Supabase grants service_role INSERT only.
+      await sbFetch(env,'/rest/v1/aperion_owner_cari_schema_evidence_v1',{
+        method:'POST',
+        headers:{Prefer:'return=minimal'},
+        body:JSON.stringify(evidence)
+      });
+    },
     providerGet:async (url,token)=>{
       const res=await fetch(url,{method:'GET',headers:{token,accept:'application/json'},
         signal:AbortSignal.timeout(18000)});
