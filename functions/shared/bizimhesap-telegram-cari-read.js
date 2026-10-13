@@ -89,6 +89,19 @@ export function summarizeVerifiedAbstract(vendor,{title,sourceLastSuccess,nowIso
     for(const row of section.rows.slice(0,4)){
       if(!row||typeof row!=='object'||Array.isArray(row))continue;
       const date=safeText(first(row,dateFields),24),ref=safeText(first(row,noFields),65);
+      if(section.path==='root.data.abstract' && Object.hasOwn(row,'trxdate')) {
+        if(!date)continue;
+        const fields=[['duedate','Vade'],['id','Hareket ID'],['type','Tür'],
+          ['note','Açıklama'],['payment','Payment (API)'],
+          ['debit','Borç (API)'],['credit','Alacak (API)'],
+          ['balance','Bakiye (API)']];
+        const values=fields.filter(([key])=>typeof row[key]==='string' ||
+          typeof row[key]==='number').map(([key,label])=>
+            label+': '+safeText(row[key],key==='note'?65:32));
+        printable.push('• İşlem: '+date+' · '+values.join(' · '));
+        foundDocument=true;
+        continue;
+      }
       const amount=safeText(first(row,amountFields),28);
       if(!date&&!ref)continue;
       foundDocument=true;
