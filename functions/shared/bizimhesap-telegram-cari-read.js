@@ -62,7 +62,7 @@ const first=(row,fields)=>{
   }
   return null;
 };
-const dateFields=['documentDate','docDate','invoiceDate','issueDate','transactionDate','date','tarih','createdAt','islemTarihi','belgeTarihi','recordDate'];
+const dateFields=['documentDate','docDate','invoiceDate','issueDate','transactionDate','trxdate','date','tarih','createdAt','islemTarihi','belgeTarihi','recordDate'];
 const noFields=['documentNo','docNo','invoiceNo','invoiceNumber','documentNumber','reference','Reference','belgeNo','voucherNo','refNo','serialNo','faturaNo','guid'];
 const amountFields=['amount','Amount','totalAmount','AmountTotal','gross','netAmount','paymentAmount','total','tutar','Tutar'];
 const safeText=(v,max=75)=>String(v??'').replace(/[\r\n\t\u0000-\u001f]/g,' ').slice(0,max).trim();
