@@ -31,9 +31,14 @@ export async function onRequest({request,env}){
     receiptToCash:false,eInvoice:false,erpPosted:null,
     providerResponseEvidence:{
       source:'OWNER_SHARED_B2B_ADDINVOICE_RESPONSE',
-      guid:'A782C5B8C1D64F649F4A8010F937F923',
+      guid:'FCB82CD3053A491986C6B2D1C9F5D329',
       invoiceNo:'',eInvoiceNo:'',reportedTotalKurus:953192,
       reportedNetKurus:866538,reportedTaxKurus:86654,
+      ownerReportedCustomerTitle:'GAMZE ECZANESİ ECZ. HÜLYA NİZAM',
+      customerCardMatchVerified:false,
+      previousGuid:'A782C5B8C1D64F649F4A8010F937F923',
+      previousCancelApiError:'',previousCancelApiStatus:'0',
+      previousCancellationIndependentlyVerified:false,
       actualDocumentItemsReadBack:false,eInvoiceIssuedVerified:false
     },
     duplicateGuard:'EXISTING_GUID_DO_NOT_POST',
