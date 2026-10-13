@@ -8,6 +8,8 @@ on:
       - "migrations/20261012_aperion_bh_customer_owner_lookup_v1.sql"
       - "tests/aperion_telegram_owner_cari_readonly_20261012.test.mjs"
       - "tests/aperion_abstract_envelope_diagnostics_20261013.test.mjs"
+      - "tests/aperion_cari_shape_audit_20261013.test.mjs"
+      - "migrations/20261013_aperion_cari_schema_metadata_insert_only.sql"
       - ".github/workflows/aperion-telegram-owner-cari-readonly.yml"
   workflow_dispatch:
 permissions:
@@ -30,3 +32,4 @@ jobs:
         run: |
           node tests/aperion_telegram_owner_cari_readonly_20261012.test.mjs
           node tests/aperion_abstract_envelope_diagnostics_20261013.test.mjs
+          node tests/aperion_cari_shape_audit_20261013.test.mjs
