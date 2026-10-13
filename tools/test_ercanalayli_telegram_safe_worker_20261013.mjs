@@ -77,7 +77,7 @@ try {
   assert.equal(a1.status,200);
   assert.match(posted.at(-1).data.text,/Canlı, kanıtlı rapor kaynağı henüz bağlanmadı/);
   assert.doesNotMatch(posted.at(-1).data.text,/164.740,30/);
-  assert.doesNotMatch(posted.at(-1).data.text,/9.000 TL/);
+  assert.match(posted.at(-1).data.text,/9.000 TL lojistik iptal edildi/);
 
   const gamze=await request('GAMZE ONAY',{update_id:103,message_id:103});
   assert.equal(gamze.status,200);
