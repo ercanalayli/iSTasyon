@@ -6,9 +6,26 @@
 const { createHash } = require('node:crypto');
 const KNOWN_POSTED_SALES = Object.freeze({
   'WA-20261010-GAMZE': Object.freeze({
-    guid: 'A782C5B8C1D64F649F4A8010F937F923',
+    // This order was already posted twice by an external PowerShell session:
+    // first acknowledged cancellation, then a new sales GUID.
+    // Even if the first one is cancelled, there is still a newer sale.
+    guid: 'FCB82CD3053A491986C6B2D1C9F5D329',
     responseTotal: '9531.92',
     source: 'OWNER_PROVIDED_ADDINVOICE_RESPONSE',
+    history: Object.freeze([
+      Object.freeze({
+        guid:'A782C5B8C1D64F649F4A8010F937F923',
+        cancelApiError:'',cancelApiStatus:'0',
+        cancellationIndependentlyVerified:false,
+        source:'OWNER_PROVIDED_CANCELINVOICE_RESPONSE'
+      }),
+      Object.freeze({
+        guid:'FCB82CD3053A491986C6B2D1C9F5D329',
+        customerTitle:'GAMZE ECZANESİ ECZ. HÜLYA NİZAM',
+        actualCustomerCardMatched:false,
+        source:'OWNER_PROVIDED_REISSUED_ADDINVOICE_RESPONSE'
+      })
+    ]),
     providerLineReadbackVerified: false,
     eInvoiceIssuedVerified: false,
   })
@@ -30,7 +47,11 @@ function existingSaleGuard(sourceReference) {
     blocked: true, status: 'EXISTING_PROVIDER_GUID_RECONCILIATION_REQUIRED',
     sourceReference: ref, existingGuid: existing.guid,
     responseTotal: existing.responseTotal, eInvoiceIssuedVerified: false,
-    providerLineReadbackVerified: false, financialWrites: 0
+    providerLineReadbackVerified: false,
+    historicalGuids: existing.history.map(row=>row.guid),
+    firstCancellationReadbackVerified: false,
+    reissuedCustomerCardMatchVerified: false,
+    financialWrites: 0
   };
   return { blocked: false, sourceReference: ref, financialWrites: 0 };
 }
