@@ -113,7 +113,7 @@ export function summarizeVerifiedAbstract(vendor,{title,sourceLastSuccess,nowIso
 // customer document or credential is saved. No financial write is performed.
 export function safeCariShapeEvidence(payload) {
   const inspection=inspectAbstractEnvelope(payload);
-  const allowed=/^[A-Za-z0-9_.,:\\[\\]{} ]{1,110}$/;
+  const allowed=/^[A-Za-z0-9_.,:{}\[\] ]{1,110}$/;
   const prohibited=/token|secret|password|auth|cookie|bearer|apikey|credential|email|phone|address|taxno|session/i;
   const key_shape_hints=inspection.hints.filter(x=>allowed.test(x)&&!prohibited.test(x)).slice(0,12);
   return {classification:inspection.status,key_shape_hints};
