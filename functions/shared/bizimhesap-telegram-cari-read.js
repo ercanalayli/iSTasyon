@@ -109,7 +109,17 @@ export function summarizeVerifiedAbstract(vendor,{title,sourceLastSuccess,nowIso
     '\n⚠️ Bunlar kaynak yanıtından belge örnekleridir; borç/alacak yönü ve ekstre kapsamı ayrıca doğrulanmalı. Kayıt yapılmadı.';
 }
 
-export async function readOwnerCariAbstract({env,message,identity,dbGet,providerGet}) {
+// The telemetry is limited to allowlisted JSON key names. Nothing from a
+// customer document or credential is saved. No financial write is performed.
+export function safeCariShapeEvidence(payload) {
+  const inspection=inspectAbstractEnvelope(payload);
+  const allowed=/^[A-Za-z0-9_.,:\\[\\]{} ]{1,110}$/;
+  const prohibited=/token|secret|password|auth|cookie|bearer|apikey|credential|email|phone|address|taxno|session/i;
+  const key_shape_hints=inspection.hints.filter(x=>allowed.test(x)&&!prohibited.test(x)).slice(0,12);
+  return {classification:inspection.status,key_shape_hints};
+}
+
+export async function readOwnerCariAbstract({env,message,identity,dbGet,providerGet,evidenceSink}) {
   if(!ownerPrivateTelegram(identity,message))return noData('YETKİLİ_ÖZEL_SOHBET_GEREKLİ');
   const name=parseCariSearch(message.text);
   if(!name)return 'Kullanım: /cariekstre cari adı (en az 3 karakter).';
@@ -132,5 +142,9 @@ export async function readOwnerCariAbstract({env,message,identity,dbGet,provider
   if(!response||response.status===429||response.status===503)return noData('SAĞLAYICI_HIZ_SINIRI_VEYA_KESİNTİ');
   if(response.status!==200)return noData('SAĞLAYICI_HTTP_HATASI');
   if(!response.json||typeof response.json!=='object')return noData('SAĞLAYICI_JSON_HATASI');
+  if([1,'1'].includes(response.json.resultCode) && typeof evidenceSink==='function') {
+    try { await evidenceSink(safeCariShapeEvidence(response.json)); }
+    catch (_) { /* Schema telemetry must never break the owner read response. */ }
+  }
   return summarizeVerifiedAbstract(response.json,{...selected,nowIso:new Date().toISOString()});
 }
