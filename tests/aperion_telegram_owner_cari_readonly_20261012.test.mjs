@@ -96,7 +96,7 @@ assert.match(sql,/GRANT SELECT[\s\S]*TO service_role/);
 assert.doesNotMatch(sql,/\bINSERT INTO\b|\bDELETE FROM\b|\bUPDATE\s+public\./i);
 assert.match(webhook,/ownerPrivateTelegram\(identity, msg\)/);
 assert.match(webhook,/readOwnerCariAbstract\(/);
-assert.match(webhook,/cari_report_version: 'telegram-owner-abstract-v3-private-schema-log'/);
+assert.match(webhook,/cari_report_version: 'telegram-owner-abstract-v4-trxdate-ledger-preview'/);
 assert.match(webhook,/owner_cari_read_requests/);
 assert.match(webhook,/result\?\.meta\?\.changes===1/);
 assert.match(webhook,/AbortSignal\.timeout\(18000\)/);
