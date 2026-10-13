@@ -79,7 +79,8 @@ const db=(r)=>({from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:r,e
  assert.match(engine,/BIZIMHESAP_TOKEN_ROTATION_CONFIRMED/);
  assert.match(engine,/full_provider_duplicate_reconciliation_required/);
  assert.match(engine,/guardSingleInvoiceAttempt/);
- assert.ok(engine.indexOf('checkInvoicePreflight({')<engine.indexOf('createBizimHesapClientFromCanonicalIntegration(env)'));
+ const guardedEngine=engine.slice(engine.indexOf('async function postApprovedInvoice('));
+ assert.ok(guardedEngine.indexOf('checkInvoicePreflight({')<guardedEngine.indexOf('createBizimHesapClientFromCanonicalIntegration(env)'));
  // No network calls in this test; original Gamze sale is never posted again.
  console.log('PASS: known GUID duplicate lock, exact approval snapshot, token rotation, fail-closed preflight. ERP_POST=0');
 })().catch(e=>{console.error(e.message);process.exitCode=1;});
