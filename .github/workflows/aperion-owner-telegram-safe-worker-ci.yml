@@ -1,0 +1,25 @@
+name: AperiON Owner Telegram Worker Safety
+on:
+  pull_request:
+    paths:
+      - 'workers/ercanalayli-telegram-safe/**'
+      - 'tools/test_ercanalayli_telegram_safe_worker_20261013.mjs'
+      - '.github/workflows/aperion-owner-telegram-safe-worker-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fail-closed-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax checks
+        run: |
+          node --check workers/ercanalayli-telegram-safe/index.mjs
+          node --check tools/test_ercanalayli_telegram_safe_worker_20261013.mjs
+      - name: Telegram owner read-only security tests
+        run: node tools/test_ercanalayli_telegram_safe_worker_20261013.mjs
