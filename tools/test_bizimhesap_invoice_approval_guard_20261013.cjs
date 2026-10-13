@@ -7,7 +7,13 @@ const {
 
 const known=existingSaleGuard('WA-20261010-GAMZE');
 assert.equal(known.blocked,true);
-assert.equal(known.existingGuid,'A782C5B8C1D64F649F4A8010F937F923');
+assert.equal(known.existingGuid,'FCB82CD3053A491986C6B2D1C9F5D329');
+assert.deepEqual(known.historicalGuids,[
+  'A782C5B8C1D64F649F4A8010F937F923',
+  'FCB82CD3053A491986C6B2D1C9F5D329'
+]);
+assert.equal(known.firstCancellationReadbackVerified,false);
+assert.equal(known.reissuedCustomerCardMatchVerified,false);
 assert.equal(known.responseTotal,'9531.92');
 assert.equal(known.providerLineReadbackVerified,false);
 assert.equal(known.eInvoiceIssuedVerified,false);
