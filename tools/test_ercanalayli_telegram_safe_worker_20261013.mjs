@@ -1,4 +1,15 @@
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const wrangler=JSON.parse(readFileSync(new URL('../workers/ercanalayli-telegram-safe/wrangler.jsonc',import.meta.url),'utf8'));
+assert.equal(wrangler.name,'aperion-command-bridge','Git integration must match actual existing Worker');
+assert.equal(wrangler.main,'index.mjs');
+assert.equal(wrangler.d1_databases?.[0]?.binding,'APERION_DB');
+assert.equal(wrangler.vars,undefined,'never put credentials in public Worker configuration');
+assert.equal(wrangler.triggers,undefined,'do not alter active webhook or cron triggers');
+assert.equal(wrangler.routes,undefined,'do not modify production routing');
+const stagingInstructions=readFileSync(new URL('../workers/ercanalayli-telegram-safe/README_GIT_NATIVE_STAGING.md',import.meta.url),'utf8');
+assert.match(stagingInstructions,/wrangler@4\.125\.0 versions upload --config wrangler\.jsonc/);
+assert.match(stagingInstructions,/worker.*production|üretim/i);
 import {handleTelegramRequest} from '../workers/ercanalayli-telegram-safe/index.mjs';
 
 const seen=new Map(),posted=[];
