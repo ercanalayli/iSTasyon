@@ -9,7 +9,7 @@ assert.match(migration,/GRANT INSERT ON public\.aperion_owner_cari_schema_eviden
 assert.match(migration,/REVOKE ALL ON public\.aperion_owner_cari_schema_evidence_v1/);
 assert.doesNotMatch(migration,/GRANT SELECT ON public\.aperion_owner_cari_schema_evidence_v1/);
 assert.match(bot,/evidenceSink:async evidence/);
-assert.match(bot,/cari_report_version: 'telegram-owner-abstract-v3-private-schema-log'/);
+assert.match(bot,/cari_report_version: 'telegram-owner-abstract-v4-trxdate-ledger-preview'/);
 const data={resultCode:1,data:{ledger:[{invoiceDate:'2026-10-13',invoiceNo:'DOC-100',totalAmount:125}]}};
 const evidence=safeCariShapeEvidence(data);
 assert.equal(evidence.classification,'ROWS');

@@ -62,7 +62,7 @@ const first=(row,fields)=>{
   }
   return null;
 };
-const dateFields=['documentDate','docDate','invoiceDate','issueDate','transactionDate','date','tarih','createdAt','islemTarihi','belgeTarihi','recordDate'];
+const dateFields=['documentDate','docDate','invoiceDate','issueDate','transactionDate','trxdate','date','tarih','createdAt','islemTarihi','belgeTarihi','recordDate'];
 const noFields=['documentNo','docNo','invoiceNo','invoiceNumber','documentNumber','reference','Reference','belgeNo','voucherNo','refNo','serialNo','faturaNo','guid'];
 const amountFields=['amount','Amount','totalAmount','AmountTotal','gross','netAmount','paymentAmount','total','tutar','Tutar'];
 const safeText=(v,max=75)=>String(v??'').replace(/[\r\n\t\u0000-\u001f]/g,' ').slice(0,max).trim();
@@ -89,6 +89,19 @@ export function summarizeVerifiedAbstract(vendor,{title,sourceLastSuccess,nowIso
     for(const row of section.rows.slice(0,4)){
       if(!row||typeof row!=='object'||Array.isArray(row))continue;
       const date=safeText(first(row,dateFields),24),ref=safeText(first(row,noFields),65);
+      if(section.path==='root.data.abstract' && Object.hasOwn(row,'trxdate')) {
+        if(!date)continue;
+        const fields=[['duedate','Vade'],['id','Hareket ID'],['type','Tür'],
+          ['note','Açıklama'],['payment','Payment (API)'],
+          ['debit','Borç (API)'],['credit','Alacak (API)'],
+          ['balance','Bakiye (API)']];
+        const values=fields.filter(([key])=>typeof row[key]==='string' ||
+          typeof row[key]==='number').map(([key,label])=>
+            label+': '+safeText(row[key],key==='note'?65:32));
+        printable.push('• İşlem: '+date+' · '+values.join(' · '));
+        foundDocument=true;
+        continue;
+      }
       const amount=safeText(first(row,amountFields),28);
       if(!date&&!ref)continue;
       foundDocument=true;

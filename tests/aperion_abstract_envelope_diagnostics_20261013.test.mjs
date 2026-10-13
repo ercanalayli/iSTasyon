@@ -33,6 +33,32 @@ assert.match(overview,/S-10/);
 assert.match(overview,/C-2/);
 assert.match(overview,/ekstre kapsamı ayrıca doğrulanmalı/);
 
+// Real owner-provided BizimHesap /abstract schema (field names only).
+// Synthetic example values; NEVER treat this fixture as a real invoice.
+const actualStructure={resultCode:1,errorText:'',data:{
+  title:'Sample',balance:115,debitSum:220,creditSum:105,link:'',
+  abstract:[
+    {id:'movement-1',trxdate:'2026-10-12',duedate:'2026-11-12',
+      type:'B2B',note:'Synthetic row',payment:0,debit:220,credit:0,balance:115},
+    {id:'movement-2',trxdate:'2026-10-13',duedate:'2026-11-13',
+      type:'Payment',note:'Synthetic second row',payment:1,debit:0,credit:105,balance:10}
+  ]}};
+assert.equal(inspectAbstractEnvelope(actualStructure).status,'ROWS');
+assert.equal(inspectAbstractEnvelope(actualStructure).sections[0].path,'root.data.abstract');
+const actualMessage=summarizeVerifiedAbstract(actualStructure,params);
+assert.match(actualMessage,/İşlem: 2026-10-12/);
+assert.match(actualMessage,/Vade: 2026-11-12/);
+assert.match(actualMessage,/Hareket ID: movement-1/);
+assert.match(actualMessage,/Borç \(API\): 220/);
+assert.match(actualMessage,/Alacak \(API\): 0/);
+assert.match(actualMessage,/Bakiye \(API\): 115/);
+assert.match(actualMessage,/Payment \(API\): 0/);
+assert.match(actualMessage,/Synthetic row/);
+assert.match(actualMessage,/ekstre kapsamı ayrıca doğrulanmalı/);
+assert.ok(!actualMessage.includes('VERIFIED') || actualMessage.includes('doğrulanmalı'));
+assert.ok(!actualMessage.includes('debitSum'));
+assert.ok(!actualMessage.includes('creditSum'));
+
 const hidden={resultCode:1,data:{internal:{authorization:'Bearer TOP-SECRET-777',secret:'CARD-ABC-345',userEmail:'person@example.com',mystery:'ACCOUNT-444'}}};
 const response=summarizeVerifiedAbstract(hidden,params);
 assert.match(response,/Güvenli biçim özeti/);

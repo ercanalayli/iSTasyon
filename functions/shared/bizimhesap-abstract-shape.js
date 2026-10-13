@@ -3,7 +3,7 @@
  * and schema KEY NAMES, never body values or credentials as diagnostics.
  * No provider writes, no dynamic evaluation, no assumptions about debit/credit.
  */
-const DATE = new Set(['documentdate','docdate','invoicedate','transactiondate','date','tarih','createdat','issuedate','islemtarihi','belgetarihi','recorddate']);
+const DATE = new Set(['documentdate','docdate','invoicedate','transactiondate','trxdate','date','tarih','createdat','issuedate','islemtarihi','belgetarihi','recorddate']);
 const REF = new Set(['documentno','invoiceno','documentnumber','invoicenumber','belgeno','belgenumarasi','voucherno','refno','reference','number','guid','invoiceguid','documentguid','serialno','faturano']);
 const AMOUNT = new Set(['amount','totalamount','amounttotal','total','tutar','gross','netamount','paymentamount','debit','credit','borc','alacak']);
 const IDENT = /^[A-Za-z_][A-Za-z0-9_]{0,39}$/;
