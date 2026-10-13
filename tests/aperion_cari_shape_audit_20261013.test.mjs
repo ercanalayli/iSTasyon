@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { safeCariShapeEvidence } from '../functions/shared/bizimhesap-telegram-cari-read.js';
+
+const migration=fs.readFileSync(new URL('../migrations/20261013_aperion_cari_schema_metadata_insert_only.sql',import.meta.url),'utf8');
+const bot=fs.readFileSync(new URL('../functions/telegram/webhook.js',import.meta.url),'utf8');
+assert.match(migration,/ENABLE ROW LEVEL SECURITY/);
+assert.match(migration,/GRANT INSERT ON public\.aperion_owner_cari_schema_evidence_v1 TO service_role/);
+assert.match(migration,/REVOKE ALL ON public\.aperion_owner_cari_schema_evidence_v1/);
+assert.doesNotMatch(migration,/GRANT SELECT ON public\.aperion_owner_cari_schema_evidence_v1/);
+assert.match(bot,/evidenceSink:async evidence/);
+assert.match(bot,/cari_report_version: 'telegram-owner-abstract-v3-private-schema-log'/);
+const data={resultCode:1,data:{ledger:[{invoiceDate:'2026-10-13',invoiceNo:'DOC-100',totalAmount:125}]}};
+const evidence=safeCariShapeEvidence(data);
+assert.equal(evidence.classification,'ROWS');
+assert.ok(evidence.key_shape_hints.length>0);
+assert.ok(evidence.key_shape_hints.length<=12);
+const metadata=JSON.stringify(evidence);
+assert.ok(!metadata.includes('DOC-100'));
+assert.ok(!metadata.includes('2026-10-13'));
+assert.ok(!metadata.includes('125'));
+assert.equal(safeCariShapeEvidence({resultCode:1,data:{unknown:{status:true}}}).classification,'UNSUPPORTED');
+console.log('PASS: diagnostic stores only structural information, read blocked');
