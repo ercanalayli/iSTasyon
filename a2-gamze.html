@@ -30,6 +30,14 @@ li{margin:7px 0;color:var(--muted)}.lineName{font-size:13px;max-width:73%}
 <div class="row"><span>İskonto / KDV</span><b id="rates"></b></div>
 <div class="row"><span>Tür</span><b id="kind"></b></div>
 <div class="row"><span>e-Fatura / ayrıca tahsilat</span><b>YOK / YOK</b></div></div>
+<div class="card" id="existingEvidence" hidden>
+<h2>BizimHesap · Daha önce oluşturulmuş belge</h2>
+<p id="existingNotice">Sağlayıcı yanıtı mevcut; belge satırları bağımsız doğrulanmadı.</p>
+<div class="row"><span>Belge GUID</span><b id="existingGuid"></b></div>
+<div class="row"><span>Sağlayıcının bildirdiği toplam</span><b id="existingTotal"></b></div>
+<div class="row"><span>e-Fatura</span><b id="existingEInvoice">Gönderildiği doğrulanmadı</b></div>
+<p class="warn">Bu siparişe ikinci kez fatura oluşturma isteği gönderilmez. İç taslak ile gerçek belge kalemleri ve yuvarlamaları farklı olabilir.</p>
+</div>
 <div class="card"><h2>Dört ürün</h2><div id="lines"></div></div>
 <div class="card"><h2>BizimHesap kontrolü</h2>
 <p>Kaynak cari ekstrede olası eşleşmeleri sorgular. Eşleşme bulunmaması satışın yokluğunu kesinlikle kanıtlamaz.</p>
@@ -68,7 +76,14 @@ async function load(){
    const value=document.createElement('b');value.textContent=x.packages+' paket · '+fmt(x.totalKurus);
    div.append(label,value);target.append(div);
   }
-  $('gate').hidden=true;$('details').hidden=false;state('Onaylı iç taslak yüklendi · ERP kaydı doğrulanmadı',true);
+  if(r.duplicateGuard==='EXISTING_GUID_DO_NOT_POST' && r.providerResponseEvidence?.guid){
+    $('existingEvidence').hidden=false;
+    set('existingGuid',r.providerResponseEvidence.guid);
+    set('existingTotal',fmt(r.providerResponseEvidence.reportedTotalKurus));
+    set('existingNotice','Kaynak: sahibinin paylaştığı BizimHesap satış oluşturma yanıtı. Satırlar ayrıca teyit edilecek.');
+  }else{$('existingEvidence').hidden=true;}
+  $('gate').hidden=true;$('details').hidden=false;
+  state('Mevcut belge GUID bildirildi · yeniden fatura KAPALI',true);
  }catch(e){
   $('details').hidden=true;$('gate').hidden=false;state('Oturum / veri kaynağı doğrulanamadı');
   set('pairMsg',String(e.message||e));localStorage.removeItem(tokenKey);

@@ -1,0 +1,30 @@
+name: AperiON BizimHesap invoice once-only guard
+on:
+  pull_request:
+    paths:
+      - "tools/lib/bizimhesap_invoice_approval_guard.cjs"
+      - "tools/bizimhesap_b2b_canonical.cjs"
+      - "tools/test_bizimhesap_invoice_approval_guard_20261013.cjs"
+      - "functions/api/a2-gamze-summary.js"
+      - ".github/workflows/aperion-bh-invoice-approval-guard.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  invoice-approval-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Syntax check
+        run: |
+          node --check tools/lib/bizimhesap_invoice_approval_guard.cjs
+          node --check tools/bizimhesap_b2b_canonical.cjs
+          node --check tools/test_bizimhesap_invoice_approval_guard_20261013.cjs
+          node --check functions/api/a2-gamze-summary.js
+      - name: Guard tests (no real API requests)
+        run: |
+          node tools/test_bizimhesap_invoice_approval_guard_20261013.cjs
+          node tools/test_bizimhesap_money_safety_v164.cjs

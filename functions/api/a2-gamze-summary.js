@@ -28,7 +28,17 @@ export async function onRequest({request,env}){
     approval:proposal.approval,sourceId:proposal.sourceId,
     customer:proposal.customerTitle,
     invoiceType:3,paymentTerm:'peşin',
-    receiptToCash:false,eInvoice:false,erpPosted:false,
+    receiptToCash:false,eInvoice:false,erpPosted:null,
+    providerResponseEvidence:{
+      source:'OWNER_SHARED_B2B_ADDINVOICE_RESPONSE',
+      guid:'A782C5B8C1D64F649F4A8010F937F923',
+      invoiceNo:'',eInvoiceNo:'',reportedTotalKurus:953192,
+      reportedNetKurus:866538,reportedTaxKurus:86654,
+      actualDocumentItemsReadBack:false,eInvoiceIssuedVerified:false
+    },
+    duplicateGuard:'EXISTING_GUID_DO_NOT_POST',
+    contentComparison:'APPROVED_LOCAL_PROPOSAL_DIFFERS_FROM_OWNER_REPORTED_PROVIDER_POST',
+
     invoiceTotalKurus:proposal.amountsKurus.total,
     vatKurus:proposal.amountsKurus.tax,
     discountKurus:proposal.amountsKurus.discount,
@@ -37,8 +47,8 @@ export async function onRequest({request,env}){
       sku:x.sku,name:x.productName,packages:x.quantity,
       totalKurus:x.total,vatRate:x.taxRate
     })),
-    mode:'PREPARED_NOT_POSTED',
-    next:'OWNER_ERP_DUPLICATE_CHECK_AND_INDEPENDENT_DOCUMENT_READBACK_REQUIRED',
+    mode:'PROVIDER_GUID_REPORTED_LINE_READBACK_PENDING',
+    next:'EXISTING_GUID_DOCUMENT_READBACK_REQUIRED_NO_NEW_POST',
     checkedAt:new Date().toISOString()
   });
 }
