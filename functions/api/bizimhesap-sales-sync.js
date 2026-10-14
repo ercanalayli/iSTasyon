@@ -135,6 +135,29 @@ async function hmacSha256(secret, value) {
 }
 
 
+/**
+ * Signed transport shared by the live mirror and the authorized replay.
+ * Receivers MUST independently verify digest, HMAC, and max-age.
+ * No bearer/key is sent in cleartext with the request body.
+ */
+export async function signedSalesSheetRequest(key, records, timestamp = Date.now()) {
+  if (typeof key !== 'string' || key.length < 24) throw new Error('sheet_mirror_secret_required');
+  if (!Array.isArray(records) || records.length < 1 || records.length > 500) {
+    throw new Error('sheet_records_out_of_range');
+  }
+  if (!Number.isSafeInteger(timestamp) || timestamp <= 0) throw new Error('invalid_mirror_timestamp');
+  const payloadJson = JSON.stringify(records);
+  const digest = await sha256(payloadJson);
+  const token = await hmacSha256(key, timestamp + '\\n' + digest);
+  return {
+    action: 'bizimhesap_sales',
+    timestamp,
+    digest,
+    token,
+    records
+  };
+}
+
 async function mirrorSalesToSheet(env, records) {
   const url = cleanText(env.APERION_SHEET_INGEST_URL || 'https://script.google.com/macros/s/AKfycbzm567JGBoRpHX-Sjxr0NKfpzckCEcNcSIiyqUHoND7M734kSk4_TdYFq9RBEzlottUPA/exec', 1000);
   const key = cleanText(env.APERION_SHEET_INGEST_KEY || env.APERION_BRIDGE_SECRET, 500);
@@ -157,26 +180,21 @@ async function mirrorSalesToSheet(env, records) {
   }
 
   try {
-    const timestamp = Date.now();
-    const payloadJson = JSON.stringify(payload);
-    const digest = await sha256(payloadJson);
-    const token = await hmacSha256(key, timestamp + '\n' + digest);
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        action: 'bizimhesap_sales',
-        timestamp,
-        digest,
-        token,
-        verify_url: 'https://aperion-istasyon.pages.dev/api/sheet-ingest-verify',
-        records: payload
-      })
+      body: JSON.stringify(await signedSalesSheetRequest(key, payload)),
+      signal: AbortSignal.timeout(30000)
     });
     const body = await response.text();
     let parsed = null;
     try { parsed = body ? JSON.parse(body) : null; } catch {}
-    if (!response.ok || parsed?.ok === false) {
+    const verifiedAck = response.ok && parsed?.ok === true &&
+      parsed?.status === 200 && parsed?.sheet === 'BIZIMHESAP_CANLI_SATIS' &&
+      Number.isSafeInteger(parsed?.appended) && parsed.appended >= 0 &&
+      Number.isSafeInteger(parsed?.duplicates) && parsed.duplicates >= 0 &&
+      parsed.appended + parsed.duplicates === payload.length;
+    if (!verifiedAck) {
       return {
         sent: false,
         reason: parsed?.error ? `sheet_mirror_${cleanText(parsed.error, 120)}` : `sheet_mirror_http_${response.status}`,
@@ -184,12 +202,7 @@ async function mirrorSalesToSheet(env, records) {
         accepted: 0
       };
     }
-    return {
-      sent: true,
-      accepted: finiteNumber(parsed?.appended, payload.length),
-      duplicates: finiteNumber(parsed?.duplicates, 0),
-      sheet: cleanText(parsed?.sheet || 'BIZIMHESAP_CANLI_SATIS', 120)
-    };
+    return { sent: true, accepted: parsed.appended, duplicates: parsed.duplicates, sheet: parsed.sheet };
   } catch (error) {
     return { sent: false, reason: 'sheet_mirror_fetch_failed', detail: cleanText(error?.message, 500), accepted: 0 };
   }
