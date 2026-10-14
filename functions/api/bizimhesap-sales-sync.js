@@ -148,7 +148,7 @@ export async function signedSalesSheetRequest(key, records, timestamp = Date.now
   if (!Number.isSafeInteger(timestamp) || timestamp <= 0) throw new Error('invalid_mirror_timestamp');
   const payloadJson = JSON.stringify(records);
   const digest = await sha256(payloadJson);
-  const token = await hmacSha256(key, timestamp + '\\n' + digest);
+  const token = await hmacSha256(key, timestamp + '\n' + digest);
   return {
     action: 'bizimhesap_sales',
     timestamp,
