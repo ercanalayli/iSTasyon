@@ -19,6 +19,7 @@ const { userSafeDesktopResult } = require('./desktop_result_formatter.cjs');
 const { assertBizimHesapWriteEnabled } = require('./lib/bizimhesap_write_policy.cjs');
 const { claimPendingBotCommand } = require('./lib/bot_command_safety.cjs');
 const { brokerCandidateURLs, attachOnly } = require('./lib/bizimhesap_session_ports.cjs');
+const { assertDistinctVisibleSourceRows } = require('./lib/source_row_guard.cjs');
 const { readOnlyHealth: bizimhesapB2BHealth, postApprovedInvoice: bizimhesapB2BPostApprovedInvoice } = require('./bizimhesap_b2b_canonical.cjs');
 
 const ENV_FILE = path.join(__dirname, '..', 'local-secrets', 'bizimhesap.local.env');
@@ -1361,6 +1362,8 @@ async function bizimhesapHesapEkstreDump(guid, hesapAdi) {
   for (let i = 0; i < 1200 && sabitTur < 5; i++) {
     const satirlar = await page.evaluate(tabloSatirlariniOku);
     const parsed = satirlariAyristir(satirlar);
+    // Fail closed: distinct visible rows with the same synthetic key must not merge.
+    assertDistinctVisibleSourceRows(parsed, row => row.satir_hash, 'bank_ledger');
     parsed.forEach(k => birikenMap.set(k.satir_hash, k));
     const pencereImza = parsed.length ? (parsed[0].satir_hash + '|' + parsed[parsed.length - 1].satir_hash) : '';
     if (pencereImza === oncekiPencereImza) sabitTur++; else sabitTur = 0;
@@ -1473,6 +1476,11 @@ async function bizimhesapCariOdemeGecmisiSync(limit) {
       }
       return [];
     });
+    // Two same-day/same-amount/same-method rows can be two real payments.
+    // Do not let a database upsert silently collapse visible collisions.
+    assertDistinctVisibleSourceRows(odemeler, row =>
+      [COMPANY_ID, c.cari_unvan, row[0], paraSayi(row[1]), String(row[2] || '').trim()].join('|'),
+    'customer_payments');
     taranan++;
     for (const r of odemeler) {
       const [tarihTxt, tutarTxt, sekli] = r;
