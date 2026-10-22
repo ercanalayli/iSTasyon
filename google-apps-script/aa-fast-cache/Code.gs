@@ -29,7 +29,7 @@ function aaFastMetricRows_(rows) {
     if (key) d[key] = String(r[1] == null ? '' : r[1]).trim();
   });
   ['SIPARIS_ADEDI','FATURA_KANITI_VAR','BELGE_SONUCU_BELIRSIZ','TESLIM_KANITI_VAR'].forEach(function(k) {
-    if (!/^\\d+$/.test(d[k] || '')) throw new Error('AA source invalid: ' + k);
+    if (!/^\d+$/.test(d[k] || '')) throw new Error('AA source invalid: ' + k);
   });
   var all = Number(d.SIPARIS_ADEDI);
   var billed = Number(d.FATURA_KANITI_VAR);
@@ -50,7 +50,7 @@ function aaFastSnapshot_(ss, now) {
   var metrics = aaFastMetricRows_(master.getRange('A12:B18').getDisplayValues());
   var observed = master.getRange('N2:N9').getDisplayValues()
     .map(function(r) { return String(r[0] || '').trim(); })
-    .filter(function(s) { return /^20\\d{2}-\\d{2}-\\d{2}/.test(s); })
+    .filter(function(s) { return /^20\d{2}-\d{2}-\d{2}/.test(s); })
     .sort();
   var rows = finance.getRange('A2:E5').getDisplayValues();
   var expected = ['SATIŞLAR', 'FATURALAR', 'TAHSİLATLAR', 'BANKA-KASA HAREKETLERİ'];
