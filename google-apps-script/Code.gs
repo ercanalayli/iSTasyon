@@ -391,6 +391,43 @@ function ensureAperionSalesSheet_() {
   return sheet;
 }
 
+// Signed BizimHesap mirror receiver. No plaintext shared-key in POST body.
+function aperionSafeCompare_(a, b) {
+  a = String(a || ''); b = String(b || '');
+  var different = a.length ^ b.length;
+  for (var i = 0; i < Math.max(a.length, b.length); i++) {
+    different |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  }
+  return different === 0;
+}
+
+function aperionHex_(bytes) {
+  return bytes.map(function (byte) {
+    return (byte & 255).toString(16).padStart(2, '0');
+  }).join('');
+}
+
+function aperionVerifySalesEnvelope_(body, secret) {
+  if (!secret || secret.length < 24) throw new Error('sheet_ingest_secret_unavailable');
+  var timestamp = Number(body.timestamp);
+  if (!Number.isSafeInteger(timestamp) || timestamp < 1 ||
+      Math.abs(Date.now() - timestamp) > 5 * 60 * 1000) throw new Error('expired_signature');
+  if (!Array.isArray(body.records) || body.records.length < 1 ||
+      body.records.length > 500) throw new Error('invalid_record_count');
+  var digest = String(body.digest || '');
+  var token = String(body.token || '');
+  if (!/^[a-f0-9]{64}$/.test(digest) || !/^[A-Za-z0-9_-]{43}$/.test(token)) {
+    throw new Error('invalid_signature_format');
+  }
+  var payloadJson = JSON.stringify(body.records);
+  var actualDigest = aperionHex_(Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256, payloadJson, Utilities.Charset.UTF_8));
+  if (!aperionSafeCompare_(actualDigest, digest)) throw new Error('digest_mismatch');
+  var expected = Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(
+    String(timestamp) + '\n' + digest, secret, Utilities.Charset.UTF_8)).replace(/=+$/, '');
+  if (!aperionSafeCompare_(expected, token)) throw new Error('signature_mismatch');
+}
+
 function doPost(e) {
   try {
     var payload = JSON.parse((e && e.postData && e.postData.contents) || '{}');
@@ -400,20 +437,23 @@ function doPost(e) {
 
     var props = PropertiesService.getScriptProperties();
     var expected = String(props.getProperty('APERION_SHEET_INGEST_KEY') || '');
-    var supplied = String(payload.key || '');
-    if (!expected || expected.length < 24 || supplied !== expected) {
-      return aperionJson_({ ok: false, error: 'unauthorized' }, 401);
+    try {
+      aperionVerifySalesEnvelope_(payload, expected);
+    } catch (authError) {
+      // Deliberately do not disclose whether the digest, key or clock failed.
+      return aperionJson_({ ok: false, error: 'invalid_signed_envelope' }, 401);
     }
 
-    var records = Array.isArray(payload.records) ? payload.records.slice(0, 500) : [];
-    if (!records.length) return aperionJson_({ ok: true, appended: 0, duplicates: 0, sheet: APERION_BIZIMHESAP_SALES_SHEET }, 200);
-
+    var records = payload.records;
+    var lock = LockService.getScriptLock();
+    if (!lock.tryLock(15000)) return aperionJson_({ ok: false, error: 'sheet_lock_busy' }, 503);
+    try {
     var sheet = ensureAperionSalesSheet_();
     var lastRow = sheet.getLastRow();
     var existing = {};
     if (lastRow > 1) {
-      var firstRow = Math.max(2, lastRow - 9999);
-      var keys = sheet.getRange(firstRow, 1, lastRow - firstRow + 1, 1).getValues();
+      // Full-key scan prevents replay collisions beyond the latest 10k rows.
+      var keys = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
       keys.forEach(function (r) { if (r[0]) existing[String(r[0])] = true; });
     }
 
@@ -471,6 +511,9 @@ function doPost(e) {
       duplicates: duplicates,
       sheet: APERION_BIZIMHESAP_SALES_SHEET
     }, 200);
+    } finally {
+      lock.releaseLock();
+    }
   } catch (error) {
     return aperionJson_({ ok: false, error: String(error && error.message ? error.message : error) }, 500);
   }

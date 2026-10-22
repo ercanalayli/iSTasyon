@@ -1,0 +1,28 @@
+name: AperiON sales sheet signed ingest (dry test)
+
+on:
+  push:
+    branches:
+      - "fix/sales-sheet-signed-ingest-*"
+  pull_request:
+    paths:
+      - "functions/api/bizimhesap-sales-sync.js"
+      - "functions/api/a1-sales-replay.js"
+      - "google-apps-script/Code.gs"
+      - "tests/sales-sheet-signed-ingest.test.mjs"
+      - ".github/workflows/aperion-sales-sheet-signed-ingest-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  signed-mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Pure unit tests, no live credentials, no network calls
+        run: node --test tests/sales-sheet-signed-ingest.test.mjs
