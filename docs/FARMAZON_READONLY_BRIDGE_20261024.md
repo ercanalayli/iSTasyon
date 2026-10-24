@@ -53,3 +53,19 @@ Primary business objective: **ALAYLI MEDIKAL as FARMAZON SELLER**, not Farmazon 
 - The existing Farmazon Gmail ingestion function records purchases by ALAYLI; it is not proof that seller operations are connected.
 - Current PR only adds site session health. It does not give Windows click/type permissions or live seller read/write capabilities, and must remain a draft until live Windows tests pass.
 - Existing purchase records and workflows remain unchanged.
+
+## Deployment boundary — user decision, 24 October 2026
+
+**Computer-on-only, Windows-local execution.** ALAYLI's Windows PC is normally kept powered on. AperiON automation is required only while that machine is on, network-connected, and its authorized local worker is running. No VPS-hosted browser, Work/Cloud Browser, or second always-on remote PC is needed for Farmazon or BizimHesap operations. The existing authenticated cloud command *relay* may still be used as a transport, but the actual browser executor must run on the user's Windows PC.
+
+Operational contract:
+
+1. Reuse a single existing Windows AperiON worker, starting with Windows sign-in (or via the already configured scheduled task); prevent duplicate workers. Do not silently replace the working Chrome profile or re-enter credentials.
+2. Keep the current logged-in Farmazon and BizimHesap sessions. Recheck Farmazon health every five minutes via the existing local watchdog; browser data reads must be separately authorized and site-scoped. No automatic CAPTCHA/MFA bypass.
+3. A command typed in an authorized ChatGPT conversation must reach the existing authenticated relay, be bound to the user and a unique task ID, then be leased and executed only by the Windows worker. The extension's read-only session is not a command or write channel.
+4. **Machine off / locked out / offline / worker down:** report OFFLINE or ACTION_REQUIRED with last verified observation timestamp; never claim a live listing read, edit, or purchase. Queue only non-mutating reads with a bounded age. Expire stale tasks; **never automatically replay money, listing-publication, price/stock mutation, shipping, or customer-commitment tasks when the PC comes back online**.
+5. Separate Farmazon SELL (ALAYLI listings, incoming customer orders, fulfillment, sales invoices, payouts) from Farmazon BUY (supplier orders, incoming goods, purchase invoices). Never cross-post.
+6. Every definitive action needs explicit single-use user approval, payload/hash binding, idempotency, source readback and an audit record. No background financial changes.
+7. Acceptance test before claiming ready: from normal ChatGPT, request a read-only seller-panel health check; confirm a unique task ID, Windows worker execution evidence, seller-identity proof, and a result returned to the same conversation. Then check a real ALAYLI-owned seller listing ID and observation timestamp. The mere existence of CI tests or Chrome tabs is insufficient.
+
+**Current status:** This section is a requirement and code design only. PR #87 is draft; no Windows install, end-to-end command test, or sales-listing retrieval has been verified.
