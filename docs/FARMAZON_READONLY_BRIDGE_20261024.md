@@ -69,3 +69,12 @@ Operational contract:
 7. Acceptance test before claiming ready: from normal ChatGPT, request a read-only seller-panel health check; confirm a unique task ID, Windows worker execution evidence, seller-identity proof, and a result returned to the same conversation. Then check a real ALAYLI-owned seller listing ID and observation timestamp. The mere existence of CI tests or Chrome tabs is insufficient.
 
 **Current status:** This section is a requirement and code design only. PR #87 is draft; no Windows install, end-to-end command test, or sales-listing retrieval has been verified.
+
+## Windows one-click diagnostics package v2 (24 Oct 2026)
+
+- Produced a new Windows installation ZIP in the ChatGPT conversation. It preserves the original 02_AperiON_Farmazon_Guvenli_Kur.ps1 installation bytes; the upgrade only adds a read-only 03_AperiON_Canli_Durum.ps1 probe and runs it from 01_BASLAT.cmd following the installer.
+- Probe reports scheduled-task state, node process counts, last watchdog observation and only the *number* of already-open Farmazon/BizimHesap CDP tabs on 127.0.0.1:9222/9223. It does not expose browser URLs, accounts, cookies or tokens, and never opens Chrome.
+- Output file: AperiON_Yerel_Durum.json (local next-to-installer). This can be uploaded to ChatGPT to distinguish OFFLINE vs missing account binding vs no CDP from actual confirmed session health. Missing identity binding never implies a logged-in seller account.
+- Bundle integrity was checked offline; the core installer was byte-for-byte identical to v1. Static inspection confirmed the new diagnostics contain no POST, process restart or scheduled task mutation.
+- **No Windows execution has occurred via this conversation. No output report is available yet. Neither Farmazon sales panel access nor remote ChatGPT task execution is certified.**
+- The existing database bot_commands queue blocked insertion under the 14 Oct 2026 single-writer policy. Preserve that rule; do not enable old queue or use direct SQL INSERT as a workaround.
