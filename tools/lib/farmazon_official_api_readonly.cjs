@@ -1,0 +1,156 @@
+'use strict';
+
+/**
+ * Farmazon official seller API - read-only, fail-closed connector.
+ * Source: https://yardim.farmazon.com.tr/tr/articles/3106355-farmazon-api-dokumani
+ * No authentication/login request or HTTP write exists in this module.
+ * Bearer token must be provided by an authorized *local* vault adapter, never
+ * passed via user messages, D1, GitHub, logs or a browser extension.
+ */
+const ORIGINS = Object.freeze({
+  staging: 'https://staging.lab.farmazon.com.tr',
+  production: 'https://lab.farmazon.com.tr'
+});
+const PATHS = Object.freeze({
+  listings: '/api/v2/listings/getlistings',
+  listing: '/api/v1/listings/getlisting',
+  soldOrders: '/api/v1/orders/getsoldorders'
+});
+const MIN_INTERVAL_MS = 7000; // strictly below 10 requests/minute
+
+class FarmazonReadError extends Error {
+  constructor(code) { super(code); this.name = 'FarmazonReadError'; }
+}
+function whole(v, min, max, code) {
+  if (!Number.isInteger(v) || v < min || v > max) throw new FarmazonReadError(code);
+  return v;
+}
+function date(v) {
+  if (v === undefined || v === null) return null;
+  if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v) ||
+      Number.isNaN(Date.parse(v + 'T00:00:00Z')) ||
+      new Date(v + 'T00:00:00Z').toISOString().slice(0,10) !== v) {
+    throw new FarmazonReadError('invalid_date');
+  }
+  return v;
+}
+function listRecord(v) {
+  if (!v || typeof v !== 'object' || !Number.isSafeInteger(v.id)) throw new FarmazonReadError('invalid_listing');
+  const product = v.product;
+  if (!product || typeof product !== 'object') throw new FarmazonReadError('invalid_product');
+  return {
+    listing_id: v.id, product_id: Number.isSafeInteger(product.id) ? product.id : null,
+    product_name: String(product.name || '').slice(0,200),
+    sku: product.sku == null ? null : String(product.sku).slice(0,100),
+    barcodes: Array.isArray(product.barcodes)
+      ? product.barcodes.filter(x => x && x.isSelected === true)
+        .map(x => String(x.barcode || '').slice(0,40)).filter(Boolean).slice(0,10) : [],
+    price: typeof v.price === 'number' && Number.isFinite(v.price) ? v.price : null,
+    stock: Number.isSafeInteger(v.stock) ? v.stock : null,
+    expiry: typeof v.expiration === 'string' ? v.expiration.slice(0,19) : null,
+    vat_from_source: Number.isFinite(product.vat) ? product.vat : null,
+    status: v.listingState === 1 ? 'ACTIVE' : v.listingState === 2 ? 'PASSIVE' : 'UNSPECIFIED'
+  };
+}
+function soldRecord(v, expectedUsername) {
+  if (!v || typeof v !== 'object' || !Number.isSafeInteger(v.orderId)) throw new FarmazonReadError('invalid_sold_order');
+  if (expectedUsername && String(v.sellerUsername || '').trim().toLocaleLowerCase('tr-TR') !== expectedUsername.toLocaleLowerCase('tr-TR')) {
+    throw new FarmazonReadError('seller_username_mismatch');
+  }
+  return {
+    direction: 'ALAYLI_SELL_CANDIDATE',
+    order_id: v.orderId,
+    order_date: typeof v.orderDate === 'string' ? v.orderDate.slice(0,19) : null,
+    order_state_id: Number.isSafeInteger(v.orderStateId) ? v.orderStateId : null,
+    order_reference: typeof v.orderReferenceNo === 'string' ? v.orderReferenceNo.slice(0,100) : null,
+    order_price: Number.isFinite(v.orderPrice) ? v.orderPrice : null,
+    seller_username_verified: Boolean(expectedUsername),
+    lines: Array.isArray(v.orderDetails) ? v.orderDetails.slice(0,500).map(x => ({
+      listing_id: Number.isSafeInteger(x.orderDetailListingId) ? x.orderDetailListingId : null,
+      product_id: Number.isSafeInteger(x.orderDetailProductId) ? x.orderDetailProductId : null,
+      barcode: typeof x.orderDetailProductBarcode === 'string' ? x.orderDetailProductBarcode.slice(0,40) : null,
+      product_name: typeof x.orderDetailProductName === 'string' ? x.orderDetailProductName.slice(0,200) : null,
+      quantity: Number.isSafeInteger(x.orderDetailListingCount) ? x.orderDetailListingCount : null,
+      line_price: Number.isFinite(x.orderDetailPrice) ? x.orderDetailPrice : null,
+      expiry: typeof x.orderDetailListingExpiration === 'string' ? x.orderDetailListingExpiration.slice(0,19) : null
+    })) : []
+  };
+}
+
+function createFarmazonReadOnlyApi({
+  environment = 'staging', getBearerToken, userAgent,
+  fetchImpl = fetch, now = Date.now, minIntervalMs = MIN_INTERVAL_MS
+} = {}) {
+  if (!Object.hasOwn(ORIGINS, environment)) throw new FarmazonReadError('invalid_environment');
+  if (typeof getBearerToken !== 'function') throw new FarmazonReadError('local_token_provider_required');
+  if (typeof userAgent !== 'string' || !/^API_[A-Za-z0-9._-]{2,100}$/.test(userAgent)) {
+    throw new FarmazonReadError('invalid_api_user_agent');
+  }
+  if (!Number.isInteger(minIntervalMs) || minIntervalMs < MIN_INTERVAL_MS) {
+    throw new FarmazonReadError('rate_guard_required');
+  }
+  let lastRequestMs = -Infinity;
+  async function get(pathKey, params) {
+    const at = now();
+    if (!Number.isFinite(at) || at - lastRequestMs < minIntervalMs) throw new FarmazonReadError('rate_guard_wait');
+    const token = await getBearerToken();
+    if (typeof token !== 'string' || token.length < 20 || /[\r\n\s]/.test(token)) {
+      throw new FarmazonReadError('api_token_unavailable');
+    }
+    const url = new URL(PATHS[pathKey], ORIGINS[environment]);
+    for (const [key, value] of Object.entries(params)) if (value !== null && value !== undefined) url.searchParams.set(key, String(value));
+    lastRequestMs = at; // reserve before awaited fetch; concurrent calls cannot bypass it
+    let response;
+    try {
+      response = await fetchImpl(url.href, {
+        method: 'GET', redirect: 'error', signal: AbortSignal.timeout(12000),
+        headers: { authorization: 'Bearer ' + token, 'user-agent': userAgent, accept: 'application/json' }
+      });
+    } catch {
+      throw new FarmazonReadError('api_transport_failed');
+    }
+    if (response.status === 401 || response.status === 403) throw new FarmazonReadError('api_authorization_failed');
+    if (response.status === 429) throw new FarmazonReadError('api_rate_limited');
+    if (!response.ok) throw new FarmazonReadError('api_http_unavailable');
+    let body;
+    try { body = await response.json(); } catch { throw new FarmazonReadError('api_response_not_json'); }
+    if (body?.statusCode !== 200 || body?.result == null) throw new FarmazonReadError('api_result_unverified');
+    return body.result;
+  }
+  return Object.freeze({
+    async getListings({ page = 1, count = 50, listingState = 1 } = {}) {
+      whole(page, 1, 10000, 'invalid_page'); whole(count, 1, 50, 'invalid_count');
+      whole(listingState, 1, 2, 'invalid_listing_state');
+      const result = await get('listings', {page,count,listingState});
+      if (!result || !Array.isArray(result.items) ||
+          !Number.isInteger(result.totalPageCount) || result.totalPageCount < 0 ||
+          result.totalPageCount > 10000 || result.totalPageCount < (result.items.length ? page : 0)) {
+        throw new FarmazonReadError('listing_pagination_unverified');
+      }
+      return { source: 'Farmazon official API', flow: 'SELL_LISTINGS', environment,
+        page, total_pages: result.totalPageCount, listing_state: listingState,
+        identity: 'SELLER_LEGAL_ENTITY_NOT_VERIFIED',
+        items: result.items.map(listRecord), read_only: true, observed_at: new Date().toISOString() };
+    },
+    async getListing({ listingId } = {}) {
+      whole(listingId, 1, Number.MAX_SAFE_INTEGER, 'invalid_listing_id');
+      const result = await get('listing', {listingId});
+      return { source: 'Farmazon official API', flow:'SELL_LISTING', environment,
+        item: listRecord(result), read_only: true, observed_at: new Date().toISOString() };
+    },
+    async getSoldOrders({page=1,count=50,orderState=0,startDate=null,endDate=null,expectedSellerUsername=null} = {}) {
+      whole(page,1,10000,'invalid_page'); whole(count,1,50,'invalid_count');
+      whole(orderState,0,6,'invalid_order_state');
+      const start = date(startDate), end = date(endDate);
+      if (start && end && start > end) throw new FarmazonReadError('date_order_invalid');
+      const username = expectedSellerUsername == null ? null : String(expectedSellerUsername).trim();
+      if (username !== null && !/^[A-Za-z0-9._-]{2,100}$/.test(username)) throw new FarmazonReadError('invalid_expected_seller');
+      const result = await get('soldOrders', {page,count,orderState,startDate:start,endDate:end});
+      if (!Array.isArray(result)) throw new FarmazonReadError('sold_orders_response_unverified');
+      return { source: 'Farmazon official API', flow: 'SELL_ORDERS', environment,
+        identity: username ? 'SELLER_USERNAME_MATCHED_PER_ORDER_LEGAL_ENTITY_UNVERIFIED' : 'SELLER_UNVERIFIED',
+        items: result.map(x=>soldRecord(x,username)), read_only: true, observed_at: new Date().toISOString() };
+    }
+  });
+}
+module.exports = { createFarmazonReadOnlyApi, FarmazonReadError, PATHS, ORIGINS, MIN_INTERVAL_MS };
