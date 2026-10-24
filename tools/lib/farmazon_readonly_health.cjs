@@ -27,6 +27,7 @@ async function probeFarmazonSession(options = {}) {
   const connect = options.connect ?? ((args) => require('puppeteer').connect(args));
   const brokers = options.brokers ?? BROKERS;
   let browserReached = false;
+  let farmazonTabSeen = false;
   for (const browserURL of brokers) {
     if (!BROKERS.includes(browserURL)) continue;
     let browser = null;
@@ -37,28 +38,34 @@ async function probeFarmazonSession(options = {}) {
       const pages = await browser.pages();
       for (const page of pages) {
         if (!allowedFarmazonPage(page.url())) continue;
-        const state = await page.evaluate((expected) => {
-          const normal = value => String(value || '').trim()
-            .toLocaleUpperCase('tr-TR').replace(/\s+/g, ' ');
-          const accountMatches = [...document.querySelectorAll('button')]
-            .some(button => normal(button.textContent) === normal(expected));
-          const links = [...document.querySelectorAll('a[href]')].map(a => a.href);
-          const sameSitePath = (href, path) => {
-            try {
-              const u = new URL(href, location.href);
-              return u.origin === location.origin && u.pathname === path;
-            } catch { return false; }
-          };
-          return {
-            accountMatches,
-            hasOrders: links.some(href => sameSitePath(href, '/myprofile/orders')),
-            hasCart: links.some(href => sameSitePath(href, '/cart'))
-          };
-        }, expectedAccount);
-        const authenticated = Boolean(state && state.accountMatches &&
-          state.hasOrders && state.hasCart);
-        return result(authenticated ? 'authenticated_ui_verified' :
-          'account_or_page_mismatch', true, authenticated);
+        farmazonTabSeen = true;
+        try {
+          const state = await page.evaluate((expected) => {
+            const normal = value => String(value || '').trim()
+              .toLocaleUpperCase('tr-TR').replace(/\s+/g, ' ');
+            const accountMatches = [...document.querySelectorAll('button')]
+              .some(button => normal(button.textContent) === normal(expected));
+            const links = [...document.querySelectorAll('a[href]')].map(a => a.href);
+            const sameSitePath = (href, path) => {
+              try {
+                const u = new URL(href, location.href);
+                return u.origin === location.origin && u.pathname === path;
+              } catch { return false; }
+            };
+            return {
+              accountMatches,
+              hasOrders: links.some(href => sameSitePath(href, '/myprofile/orders')),
+              hasCart: links.some(href => sameSitePath(href, '/cart'))
+            };
+          }, expectedAccount);
+          // A stale / logged-out Farmazon tab is not proof that another tab
+          // isn't signed in. Keep searching already-open tabs and brokers.
+          if (state && state.accountMatches && state.hasOrders && state.hasCart) {
+            return result('authenticated_ui_verified', true, true);
+          }
+        } catch {
+          // A page may be closing or inaccessible; skip it without navigation.
+        }
       }
     } catch {
       // Do not retry login or open a new browser; try the next existing broker.
@@ -66,8 +73,9 @@ async function probeFarmazonSession(options = {}) {
       try { browser?.disconnect(); } catch {}
     }
   }
-  return result(browserReached ? 'farmazon_tab_not_found_in_broker' :
-    'browser_broker_unavailable');
+  return result(farmazonTabSeen ? 'account_or_page_mismatch' :
+    browserReached ? 'farmazon_tab_not_found_in_broker' :
+    'browser_broker_unavailable', farmazonTabSeen);
 }
 
 module.exports = { allowedFarmazonPage, probeFarmazonSession };
