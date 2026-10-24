@@ -28,3 +28,28 @@
 
 ## Known limitation
 The ChatGPT Browser connector is currently read-only in Chat mode. This draft does **not** grant generic mouse or keyboard control, does not turn on Farmazon purchasing and does not establish an active connection to the user's local Windows machine. Work/Cloud Browser is not used.
+
+## Corrected business scope: 24 October 2026
+
+Primary business objective: **ALAYLI MEDIKAL as FARMAZON SELLER**, not Farmazon purchases.
+
+### Two isolated flows
+
+- **Farmazon BUY:** ALAYLI is the customer purchasing from other sellers. Its purchase orders belong to the existing aperion_alis_siparis and supplier/payable workflow. The FZ-75DD66C6 and FZ-D898DBF4 purchase references are not seller orders or sales revenue. Parent status VERILDI can represent that a purchase order was placed while an event says KARGODA: do not call it an inconsistency without confirming the field's exact semantics.
+- **Farmazon SELL:** ALAYLI lists its own goods, sets asking prices, tracks offered stock, receives customer orders, dispatches, invoices and reconciles payout. Seller listings and incoming sales orders use a separate namespace and financial flow. Never infer sales turnover from Farmazon buying email.
+
+### Seller operating contract (not yet deployed)
+
+1. Verify the authenticated Sales Panel: active seller privileges and legal invoice issuer independently of the displayed username. A menu link alone does not establish merchant activation.
+2. Read ALAYLI's own listing identifiers, SKU/EAN, barcode, name, unit and pack, price, available quantity, listing state, expiry/lot where relevant, and observation timestamp. Link verified SKUs to BizimHesap product/warehouse inventory; ambiguous or missing matches remain BLOCKED.
+3. Before pricing, independently validate COGS, tax, marketplace commission, shipping and return fees. If unknown, profit calculation stays BLOCKED; never invent cost or a final selling price.
+4. Keep seller incoming orders separate from purchase orders; ingest seller order IDs with idempotency, timestamp, customer order status, SKU, quantity and reserve/availability evidence.
+5. Track picking, lot/SKT, shipping, buyer invoice and settlement. Prevent duplicate stock decrements, duplicate invoicing and unreconciled payouts. Recheck Farmazon plus independent finance evidence.
+6. Read/search/report and nonbinding drafts can run automatically. Publishing or modifying listings, price, stock, shipment commitments, invoices, refunds, payments or irreversible actions require explicit per-action user approval and source readback with audit IDs.
+
+### Current capability boundary
+
+- Read-only Chrome homepage evidence showed an accessible Sales Panel link; ALAYLI's current listings and incoming seller orders have NOT been verified.
+- The existing Farmazon Gmail ingestion function records purchases by ALAYLI; it is not proof that seller operations are connected.
+- Current PR only adds site session health. It does not give Windows click/type permissions or live seller read/write capabilities, and must remain a draft until live Windows tests pass.
+- Existing purchase records and workflows remain unchanged.
