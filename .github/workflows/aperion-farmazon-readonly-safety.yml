@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'tools/lib/farmazon_readonly_health.cjs'
+      - 'tools/lib/farmazon_official_api_readonly.cjs'
+      - 'tools/test_farmazon_official_api_readonly.cjs'
       - 'tools/lib/desktop_agent_v1.cjs'
       - 'tools/test_farmazon_readonly_health.cjs'
       - 'config/site_access_registry.json'
@@ -27,6 +29,8 @@ jobs:
           node-version: '22'
       - name: Farmazon account and origin checks
         run: node tools/test_farmazon_readonly_health.cjs
+      - name: Official API strictly read-only mocked test
+        run: node tools/test_farmazon_official_api_readonly.cjs
       - name: Site registry safety
         run: node tools/test_site_access_registry_v1.cjs
       - name: Watchdog Farmazon session policy
