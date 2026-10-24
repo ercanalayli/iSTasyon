@@ -70,7 +70,8 @@ function soldRecord(v, expectedUsername) {
       product_id: Number.isSafeInteger(x.orderDetailProductId) ? x.orderDetailProductId : null,
       barcode: typeof x.orderDetailProductBarcode === 'string' ? x.orderDetailProductBarcode.slice(0,40) : null,
       product_name: typeof x.orderDetailProductName === 'string' ? x.orderDetailProductName.slice(0,200) : null,
-      quantity: Number.isSafeInteger(x.orderDetailListingCount) ? x.orderDetailListingCount : null,
+      // Official field is listing count, not independently proven sold quantity.
+      source_listing_count: Number.isSafeInteger(x.orderDetailListingCount) ? x.orderDetailListingCount : null,
       line_price: Number.isFinite(x.orderDetailPrice) ? x.orderDetailPrice : null,
       expiry: typeof x.orderDetailListingExpiration === 'string' ? x.orderDetailListingExpiration.slice(0,19) : null
     })) : []
