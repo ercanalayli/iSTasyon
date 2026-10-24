@@ -91,3 +91,32 @@ Conversation ZIP: `AperiON_Farmazon_Windows_Kurulum_v3.zip`. It retains **identi
 - No Windows execution or local result files have been observed in this chat. PR stays draft and no automatic deployment is authorized.
 
 Local ZIP integrity / installer byte-preservation verified on the build host; a PowerShell run on the user's Windows PC has **not** been performed.
+
+## Official Farmazon API-first path — verified 25 October 2026
+
+**Priority changed to official API**, not browser clicking. Farmazon's provider documentation:
+https://yardim.farmazon.com.tr/tr/articles/3106355-farmazon-api-dokumani (published 30 June 2026).
+
+Farmazon documents these scoped seller GET routes:
+
+- `GET /api/v2/listings/getlistings` (active/passive listings, SKU/barcode, offer, stock, expiration, pagination)
+- `GET /api/v1/listings/getlisting` (specific listing)
+- `GET /api/v1/orders/getsoldorders` (ALAYLI as seller, **not** existing purchase workflow)
+- `GET /api/v1/orders/getsoldorder` (individual seller order; currently not implemented in our adapter)
+
+Dedicated repo implementation: `tools/lib/farmazon_official_api_readonly.cjs` plus `tools/test_farmazon_official_api_readonly.cjs`.
+It is strictly GET-only, fixed HTTPS origins, no login/credential extraction, controlled request spacing >=7 sec (<10 requests/min), no price/stock/order mutations, no raw customer/financial identity export. `orderDetailListingCount` is **not** treated as verified sold quantity.
+
+The authorized Windows-local executor must retrieve bearer credentials from an already approved local encrypted credential store. The module intentionally does not manage signin or tokens; until official Farmazon credentials are issued, no live API calls occur. Provider says to reuse tokens until their ~one-week expiry, not repeatedly authenticate. Staging is available weekdays 08:00–20:00; production host is lab.farmazon.com.tr. Do not test staged API outside its supported hours and call it offline.
+
+**Vendor authorization:** Provider requires verified company official to email request specifying account username(s), use case and outbound IP list. Gmail and Drive search 25 October found no authenticated API credentials or previous approval. A Gmail **draft**, not a sent request, was created to official general Farmazon support; confirm seller account legal entity, username, permitted IP / dynamic-IP handling and API key delivery. Never place API keys or password in a public repo, ChatGPT, Slack, ordinary email reply or control dashboard.
+
+### What is and is not ready
+
+- READ-ONLY API adapter mocked offline tests: PASS in PR #87 GitHub Actions.
+- LIVE Farmazon API authorization and seller legal identity: NOT VERIFIED.
+- LIVE Windows-local agent deployment: NOT VERIFIED.
+- Remote ChatGPT -> authorized relay -> Windows agent -> seller API -> evidence response: NOT VERIFIED.
+- Seller offer publication, price/stock edits, order approval, invoice, payment: NOT ENABLED and require explicit single-use action approval.
+
+**Do not tell owner the integration is complete** until an authenticated real-world seller-order/listing read has been independently verified and associated with the correct legal merchant.
