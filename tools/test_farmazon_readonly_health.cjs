@@ -71,6 +71,46 @@ async function main() {
   assert.equal(health.authenticated, true); tests++;
   assert.equal(agent.riskClass('browser.click'), 'WRITE_EXTERNAL'); tests++;
   assert.equal(agent.riskClass('site.session.health'), 'READ'); tests++;
+  let tabChecks = 0;
+  const multiTab = await probeFarmazonSession({
+    expectedAccount: 'TEST ACCOUNT', brokers: ['http://127.0.0.1:9222'],
+    connect: async () => ({
+      pages: async () => [
+        { url: () => 'https://www.farmazon.com.tr/homepage',
+          evaluate: async () => { tabChecks++; return {...validUI, accountMatches:false}; } },
+        { url: () => 'https://www.farmazon.com.tr/homepage',
+          evaluate: async () => { tabChecks++; return validUI; } }
+      ],
+      disconnect: () => {}
+    })
+  });
+  assert.equal(multiTab.authenticated, true); tests++;
+  assert.equal(tabChecks, 2); tests++;
+  let brokerConnections = 0;
+  const secondBroker = await probeFarmazonSession({
+    expectedAccount: 'TEST ACCOUNT',
+    brokers: ['http://127.0.0.1:9222', 'http://127.0.0.1:9223'],
+    connect: async ({browserURL}) => {
+      brokerConnections++;
+      return {
+        pages: async () => [{url: () => 'https://www.farmazon.com.tr/homepage',
+          evaluate: async () => browserURL.endsWith('9223') ?
+            validUI : {...validUI, accountMatches:false}}],
+        disconnect: () => {}
+      };
+    }
+  });
+  assert.equal(secondBroker.authenticated, true); tests++;
+  assert.equal(brokerConnections, 2); tests++;
+  const mismatchResult = await probeFarmazonSession({
+    expectedAccount: 'TEST ACCOUNT', brokers: ['http://127.0.0.1:9222'],
+    connect: async () => ({pages:async()=>[{
+      url:()=> 'https://www.farmazon.com.tr/homepage',
+      evaluate: async()=>({...validUI, accountMatches:false})
+    }], disconnect:()=>{}})
+  });
+  assert.equal(mismatchResult.status, 'account_or_page_mismatch'); tests++;
+  assert.equal(mismatchResult.session_found, true); tests++;
   console.log(JSON.stringify({status:'PASS',tests,scope:'mocked read-only checks',
     financial_writes:0,orders_submitted:0,live_windows_tested:false}));
 }
