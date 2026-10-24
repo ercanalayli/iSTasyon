@@ -78,3 +78,16 @@ Operational contract:
 - Bundle integrity was checked offline; the core installer was byte-for-byte identical to v1. Static inspection confirmed the new diagnostics contain no POST, process restart or scheduled task mutation.
 - **No Windows execution has occurred via this conversation. No output report is available yet. Neither Farmazon sales panel access nor remote ChatGPT task execution is certified.**
 - The existing database bot_commands queue blocked insertion under the 14 Oct 2026 single-writer policy. Preserve that rule; do not enable old queue or use direct SQL INSERT as a workaround.
+
+## v3 one-click local acceptance (25 Oct 2026, not executed on Windows)
+
+Conversation ZIP: `AperiON_Farmazon_Windows_Kurulum_v3.zip`. It retains **identical bytes** for the v2 installer and local readiness diagnostics. The launcher adds `04_AperiON_KomutKoprusu_Test.ps1`.
+
+- New probe checks the Git blob SHA of existing `tools/verify_desktop_bridge_live_v1.mjs` before invoking it. A changed or missing script is BLOCKED/SKIPPED.
+- Only `desktop.health` is submitted through the existing **authenticated** command relay; no old `bot_commands` insert, new worker, browser launch, listing/purchase operation or financial action.
+- Reports redacted `AperiON_KomutKoprusu_Sonuc.json` with the queue and Windows-result attestation boolean. No bearer token, raw response, credentials, browser content or personal data is exported.
+- This read-only task may create a metadata task in the existing Worker task queue as part of the user's one-click test.
+- `PASS_DESKTOP_READ_ONLY` does **not** mean Farmazon seller-page authorization, seller listing ingestion or any-ChatGPT-chat tool availability was verified. Those are separate end-to-end acceptance gates.
+- No Windows execution or local result files have been observed in this chat. PR stays draft and no automatic deployment is authorized.
+
+Local ZIP integrity / installer byte-preservation verified on the build host; a PowerShell run on the user's Windows PC has **not** been performed.
