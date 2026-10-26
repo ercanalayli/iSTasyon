@@ -15,7 +15,8 @@ const PATHS = Object.freeze({
   listings: '/api/v2/listings/getlistings',
   listing: '/api/v1/listings/getlisting',
   soldOrders: '/api/v1/orders/getsoldorders',
-  soldOrder: '/api/v1/orders/getsoldorder'
+  soldOrder: '/api/v1/orders/getsoldorder',
+  pricingBotRules: '/api/v1/listings/getpricingbotrules'
 });
 const MIN_INTERVAL_MS = 7000; // strictly below 10 requests/minute
 // Farmazon's orderStateId values are NOT the 0..6 GET filter values.
@@ -98,6 +99,27 @@ function soldRecord(v, expectedUsername) {
   };
 }
 
+function pricingRuleRecord(v) {
+  if (!v || !Number.isSafeInteger(v.id) || v.id < 1 ||
+      !Number.isSafeInteger(v.listingId) || v.listingId < 1 ||
+      !Number.isFinite(v.marginAmount) || v.marginAmount < 0 ||
+      !Number.isFinite(v.minPrice) || v.minPrice <= 0 ||
+      !Number.isFinite(v.maxPrice) || v.maxPrice < v.minPrice ||
+      !Number.isSafeInteger(v.stockThreshold) || v.stockThreshold < 0) {
+    throw new FarmazonReadError('pricing_rule_unverified');
+  }
+  return {
+    rule_id: v.id, listing_id: v.listingId,
+    product_name: String(v.productName || '').slice(0,200),
+    barcode: v.barcode == null ? null : String(v.barcode).slice(0,40),
+    competitor_price_difference: v.marginAmount,
+    min_price: v.minPrice, max_price: v.maxPrice,
+    min_competitor_stock: v.stockThreshold,
+    min_competitor_expiry: typeof v.expirationThreshold === 'string' ?
+      v.expirationThreshold.slice(0,19) : null
+  };
+}
+
 function createFarmazonReadOnlyApi({
   environment = 'staging', getBearerToken, userAgent,
   fetchImpl = fetch, now = Date.now, minIntervalMs = MIN_INTERVAL_MS
@@ -139,6 +161,29 @@ function createFarmazonReadOnlyApi({
     return body.result;
   }
   return Object.freeze({
+    async getPricingBotRules({page=1,pageSize=20,search=null} = {}) {
+      whole(page,1,10000,'invalid_page'); whole(pageSize,1,100,'invalid_page_size');
+      if (search !== null && (typeof search !== 'string' ||
+          search.length > 100 || /[\r\n]/.test(search))) {
+        throw new FarmazonReadError('invalid_search');
+      }
+      const result = await get('pricingBotRules',{page,pageSize,search});
+      if (!result || !Array.isArray(result.rules) ||
+          !Number.isSafeInteger(result.totalCount) || result.totalCount < 0 ||
+          !Number.isSafeInteger(result.totalPages) || result.totalPages < 0 ||
+          !Number.isSafeInteger(result.currentPage) || result.currentPage !== page ||
+          !Number.isSafeInteger(result.pageSize) || result.pageSize !== pageSize ||
+          result.rules.length > pageSize ||
+          result.rules.length > result.totalCount ||
+          (result.totalCount > 0 && result.totalPages < 1) ||
+          (result.rules.length > 0 && result.totalPages < page)) {
+        throw new FarmazonReadError('pricing_pagination_unverified');
+      }
+      return {source:'Farmazon official API',flow:'SELL_PRICING_RULES',
+        environment,identity:'SELLER_LEGAL_ENTITY_NOT_VERIFIED',
+        page,total_pages:result.totalPages,total_count:result.totalCount,
+        rules:result.rules.map(pricingRuleRecord),read_only:true,observed_at:new Date().toISOString()};
+    },
     async getListings({ page = 1, count = 50, listingState = 1 } = {}) {
       whole(page, 1, 10000, 'invalid_page'); whole(count, 1, 50, 'invalid_count');
       whole(listingState, 1, 2, 'invalid_listing_state');
