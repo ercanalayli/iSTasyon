@@ -14,9 +14,21 @@ const ORIGINS = Object.freeze({
 const PATHS = Object.freeze({
   listings: '/api/v2/listings/getlistings',
   listing: '/api/v1/listings/getlisting',
-  soldOrders: '/api/v1/orders/getsoldorders'
+  soldOrders: '/api/v1/orders/getsoldorders',
+  soldOrder: '/api/v1/orders/getsoldorder'
 });
 const MIN_INTERVAL_MS = 7000; // strictly below 10 requests/minute
+// Farmazon's orderStateId values are NOT the 0..6 GET filter values.
+const SOLD_ORDER_STATES = Object.freeze({
+  1: 'AWAITING_SELLER_APPROVAL',
+  2: 'AWAITING_SHIPMENT',
+  4: 'IN_TRANSIT',
+  32: 'COMPLETED',
+  64: 'CANCELLED',
+  512: 'AWAITING_BUYER_APPROVAL',
+  1024: 'PREORDER_PAYMENT_NOT_RECEIVED'
+});
+
 
 class FarmazonReadError extends Error {
   constructor(code) { super(code); this.name = 'FarmazonReadError'; }
@@ -53,6 +65,11 @@ function listRecord(v) {
     status: v.listingState === 1 ? 'ACTIVE' : v.listingState === 2 ? 'PASSIVE' : 'UNSPECIFIED'
   };
 }
+function sellerUsername(v) {
+  const name = v == null ? null : String(v).trim();
+  if (name !== null && !/^[A-Za-z0-9._-]{2,100}$/.test(name)) throw new FarmazonReadError('invalid_expected_seller');
+  return name;
+}
 function soldRecord(v, expectedUsername) {
   if (!v || typeof v !== 'object' || !Number.isSafeInteger(v.orderId)) throw new FarmazonReadError('invalid_sold_order');
   if (expectedUsername && String(v.sellerUsername || '').trim().toLocaleLowerCase('tr-TR') !== expectedUsername.toLocaleLowerCase('tr-TR')) {
@@ -63,6 +80,8 @@ function soldRecord(v, expectedUsername) {
     order_id: v.orderId,
     order_date: typeof v.orderDate === 'string' ? v.orderDate.slice(0,19) : null,
     order_state_id: Number.isSafeInteger(v.orderStateId) ? v.orderStateId : null,
+    order_state: Number.isSafeInteger(v.orderStateId)
+      ? SOLD_ORDER_STATES[v.orderStateId] || 'UNKNOWN' : 'UNKNOWN',
     order_reference: typeof v.orderReferenceNo === 'string' ? v.orderReferenceNo.slice(0,100) : null,
     order_price: Number.isFinite(v.orderPrice) ? v.orderPrice : null,
     seller_username_verified: Boolean(expectedUsername),
@@ -145,14 +164,25 @@ function createFarmazonReadOnlyApi({
       whole(orderState,0,6,'invalid_order_state');
       const start = date(startDate), end = date(endDate);
       if (start && end && start > end) throw new FarmazonReadError('date_order_invalid');
-      const username = expectedSellerUsername == null ? null : String(expectedSellerUsername).trim();
-      if (username !== null && !/^[A-Za-z0-9._-]{2,100}$/.test(username)) throw new FarmazonReadError('invalid_expected_seller');
+      const username = sellerUsername(expectedSellerUsername);
       const result = await get('soldOrders', {page,count,orderState,startDate:start,endDate:end});
       if (!Array.isArray(result)) throw new FarmazonReadError('sold_orders_response_unverified');
       return { source: 'Farmazon official API', flow: 'SELL_ORDERS', environment,
         identity: username ? 'SELLER_USERNAME_MATCHED_PER_ORDER_LEGAL_ENTITY_UNVERIFIED' : 'SELLER_UNVERIFIED',
         items: result.map(x=>soldRecord(x,username)), read_only: true, observed_at: new Date().toISOString() };
+    },
+    async getSoldOrder({orderId,expectedSellerUsername=null} = {}) {
+      whole(orderId,1,Number.MAX_SAFE_INTEGER,'invalid_order_id');
+      const username = sellerUsername(expectedSellerUsername);
+      const result = await get('soldOrder',{orderId});
+      // Official v1 sample returns an array. Reject ambiguous/mismatched IDs.
+      if (!Array.isArray(result) || result.length !== 1 || result[0]?.orderId !== orderId) {
+        throw new FarmazonReadError('sold_order_id_unverified');
+      }
+      return {source:'Farmazon official API',flow:'SELL_ORDER',environment,
+        identity:username ? 'SELLER_USERNAME_MATCHED_PER_ORDER_LEGAL_ENTITY_UNVERIFIED' : 'SELLER_UNVERIFIED',
+        item:soldRecord(result[0],username),read_only:true,observed_at:new Date().toISOString()};
     }
   });
 }
-module.exports = { createFarmazonReadOnlyApi, FarmazonReadError, PATHS, ORIGINS, MIN_INTERVAL_MS };
+module.exports = { createFarmazonReadOnlyApi, FarmazonReadError, PATHS, ORIGINS, MIN_INTERVAL_MS, SOLD_ORDER_STATES };
