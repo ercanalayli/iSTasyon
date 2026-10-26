@@ -45,6 +45,17 @@ const fetchImpl = async (url,opts) => {
     case 'singleAmbiguous': body = {statusCode:200,result:[{
       orderId:321,sellerUsername:'ALAYLI_TEST',orderStateId:32},
       {orderId:321,sellerUsername:'ALAYLI_TEST',orderStateId:32}]};break;
+    case 'pricingRules': body={statusCode:200,result:{
+      rules:[{id:78,listingId:123456,productName:'Jender Large',
+        barcode:'8699956094113',marginAmount:2,minPrice:550,maxPrice:610,
+        stockThreshold:5,expirationThreshold:'2027-05-01T00:00:00',
+        buyerFullName:'DO_NOT_EXPOSE'}],
+      totalCount:1,currentPage:1,pageSize:20,totalPages:1}};break;
+    case 'pricingRulesEmpty': body={statusCode:200,result:{
+      rules:[],totalCount:0,currentPage:1,pageSize:20,totalPages:0}};break;
+    case 'pricingRulesUnsafe': body={statusCode:200,result:{
+      rules:[{id:79,listingId:123456,marginAmount:2,minPrice:10,maxPrice:5,
+        stockThreshold:5}],totalCount:1,currentPage:1,pageSize:20,totalPages:1}};break;
     case 'bad': body = {statusCode:200,result:{items:[]}};break;
     case 'wrong':body={statusCode:200,result:[{orderId:321,sellerUsername:'DIFFERENT'}]};break;
     default:body={statusCode:401,result:null};
@@ -112,6 +123,29 @@ const tick=()=>{now+=MIN_INTERVAL_MS;};
   tick();mode='singleAmbiguous';
   await assert.rejects(client.getSoldOrder({orderId:321,expectedSellerUsername:'ALAYLI_TEST'}),
     e=>e.message==='sold_order_id_unverified');
+  tick();mode='pricingRules';
+  const rules=await client.getPricingBotRules({page:1,pageSize:20});
+  assert.equal(rules.flow,'SELL_PRICING_RULES');
+  assert.equal(rules.rules.length,1);
+  assert.equal(rules.rules[0].listing_id,123456);
+  assert.equal(rules.rules[0].min_price,550);
+  assert.equal(rules.rules[0].max_price,610);
+  assert.equal(rules.rules[0].min_competitor_stock,5);
+  assert.equal(rules.identity,'SELLER_LEGAL_ENTITY_NOT_VERIFIED');
+  assert.ok(!JSON.stringify(rules).includes('DO_NOT_EXPOSE'));
+  assert.equal(new URL(calls.at(-1).url).pathname,'/api/v1/listings/getpricingbotrules');
+  assert.equal(new URL(calls.at(-1).url).searchParams.get('pageSize'),'20');
+  await assert.rejects(client.getPricingBotRules(),e=>e.message==='rate_guard_wait');
+  tick();mode='pricingRulesEmpty';
+  const empty=await client.getPricingBotRules();
+  assert.deepEqual(empty.rules,[]);
+  tick();mode='pricingRulesUnsafe';
+  await assert.rejects(client.getPricingBotRules(),e=>e.message==='pricing_rule_unverified');
+  const callsBeforePricingBadInput=calls.length;
+  for(const opt of [{page:0},{pageSize:101},{search:'a\\nb'},{search:'x'.repeat(101)}]) {
+    await assert.rejects(client.getPricingBotRules(opt),e=>e instanceof FarmazonReadError);
+  }
+  assert.equal(calls.length,callsBeforePricingBadInput,'invalid pricing input made no requests');
   const callsBeforeBadInput=calls.length;
   await assert.rejects(client.getSoldOrder({orderId:0}),e=>e.message==='invalid_order_id');
   assert.equal(calls.length,callsBeforeBadInput);
@@ -123,7 +157,7 @@ const tick=()=>{now+=MIN_INTERVAL_MS;};
     e=>e.message==='invalid_api_user_agent');
   assert.ok(calls.every(x=>x.method==='GET'));
   const summary={status:'PASS',test_scope:'offline mocked API no actual credentials',
-    methods:['getListings','getListing','getSoldOrders','getSoldOrder'],writes:0,
+    methods:['getListings','getListing','getSoldOrders','getSoldOrder','getPricingBotRules'],writes:0,
     api_calls:calls.length,credential_leaks:0,live_api_verified:false};
   console.log(JSON.stringify(summary));
 })().catch(e=>{console.error(e);process.exitCode=1;});
