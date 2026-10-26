@@ -102,7 +102,7 @@ Farmazon documents these scoped seller GET routes:
 - `GET /api/v2/listings/getlistings` (active/passive listings, SKU/barcode, offer, stock, expiration, pagination)
 - `GET /api/v1/listings/getlisting` (specific listing)
 - `GET /api/v1/orders/getsoldorders` (ALAYLI as seller, **not** existing purchase workflow)
-- `GET /api/v1/orders/getsoldorder` (individual seller order; currently not implemented in our adapter)
+- `GET /api/v1/orders/getsoldorder` (individual seller order; now implemented with exact order ID and optional seller-username verification, privacy-redacted result)
 
 Dedicated repo implementation: `tools/lib/farmazon_official_api_readonly.cjs` plus `tools/test_farmazon_official_api_readonly.cjs`.
 It is strictly GET-only, fixed HTTPS origins, no login/credential extraction, controlled request spacing >=7 sec (<10 requests/min), no price/stock/order mutations, no raw customer/financial identity export. `orderDetailListingCount` is **not** treated as verified sold quantity.
@@ -120,3 +120,13 @@ The authorized Windows-local executor must retrieve bearer credentials from an a
 - Seller offer publication, price/stock edits, order approval, invoice, payment: NOT ENABLED and require explicit single-use action approval.
 
 **Do not tell owner the integration is complete** until an authenticated real-world seller-order/listing read has been independently verified and associated with the correct legal merchant.
+
+
+## 26 October 2026 — vendor-identity compliance and correct seller statuses
+
+- Farmazon official membership FAQ says the platform is for licensed pharmacists with GLN registration. The currently open Chrome homepage shows an **Erhan Alaylı** display name but that is **not** legal proof that ALAYLI MEDİKAL is the seller/merchant. Before any business sale, stock write, settlement, or invoice integration: request Farmazon confirmation of merchant legal name/GLN, registered seller username, account permissions, and whether ALAYLI is solely an ERP operator. Do not conflate login-display name with tax issuer.
+- The provider's **GET filter** orderState uses values 0..6, while the **response** orderStateId uses 1,2,4,32,64,512,1024. Do NOT interpret response code 4 as 'completed': 4 is IN_TRANSIT; 32 is COMPLETED; 64 CANCELLED. New `SOLD_ORDER_STATES` maps the real response values, with UNKNOWN for undocumented values.
+- Added strictly GET-only `getSoldOrder(orderId)` calling `/api/v1/orders/getsoldorder` and rejecting missing/multiple/mismatched ID results. Optional expected seller username must match; buyer personal data is not copied into the returned operational summary. Client credentials still required from a future approved secure local vault, not ChatGPT.
+- Draft Gmail request **updated 26 Oct** to explicitly seek GLN, seller legal entity, API user/IP permissions and eligibility confirmation. It is **DRAFT / NOT SENT**; user must review and authorize sending. No Farmazon vendor authorization has yet been received.
+- GitHub run `40298539566` Farmazon read-only safety PASS; general CI run `40298539472` PASS (offline/CI only). No Windows live acceptance, no seller listing retrieved, no real Farmazon API request, no orders/finance/listing mutations.
+- Source: https://yardim.farmazon.com.tr/tr/articles/3106355-farmazon-api-dokumani and https://yardim.farmazon.com.tr/tr/articles/2706011-farmazon-nedir-nasil-uye-olabilirim
