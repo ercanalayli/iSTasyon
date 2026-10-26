@@ -32,6 +32,10 @@ const fetchImpl = async (url,opts) => {
         orderDetailProductBarcode:'1234567890123',orderDetailProductName:'Test product',
         orderDetailListingCount:4,orderDetailPrice:95.50}]}]};
       break;
+    case 'detail': body = {statusCode:200,result:{
+      id:123,sku:'V1_ROOT_SKU',price:45.50,stock:2,listingState:1,
+      product:{id:1,name:'Detailed listing',barcodes:[{barcode:'1234567890123',isSelected:true}]}
+    }};break;
     case 'bad': body = {statusCode:200,result:{items:[]}};break;
     case 'wrong':body={statusCode:200,result:[{orderId:321,sellerUsername:'DIFFERENT'}]};break;
     default:body={statusCode:401,result:null};
@@ -76,6 +80,11 @@ const tick=()=>{now+=MIN_INTERVAL_MS;};
   await assert.rejects(client.getListing({listingId:'1; DROP TABLE'}),
     e=>e.message==='invalid_listing_id');
   assert.equal(calls.length,invalidBefore,'invalid input made no requests');
+  tick(); mode='detail';
+  const detail=await client.getListing({listingId:123});
+  assert.equal(detail.item.sku,'V1_ROOT_SKU', 'V1 listing root SKU is preserved');
+  assert.equal(detail.item.status,'ACTIVE');
+  assert.equal(new URL(calls.at(-1).url).pathname,'/api/v1/listings/getlisting');
   assert.throws(()=>createFarmazonReadOnlyApi({environment:'http://evil',
     userAgent:'API_test',getBearerToken}),e=>e.message==='invalid_environment');
   assert.throws(()=>createFarmazonReadOnlyApi({userAgent:'API_test',getBearerToken,
