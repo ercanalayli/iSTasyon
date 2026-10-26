@@ -142,7 +142,7 @@ const tick=()=>{now+=MIN_INTERVAL_MS;};
   tick();mode='pricingRulesUnsafe';
   await assert.rejects(client.getPricingBotRules(),e=>e.message==='pricing_rule_unverified');
   const callsBeforePricingBadInput=calls.length;
-  for(const opt of [{page:0},{pageSize:101},{search:'a\\nb'},{search:'x'.repeat(101)}]) {
+  for(const opt of [{page:0},{pageSize:101},{search:String.fromCharCode(10)},{search:'x'.repeat(101)}]) {
     await assert.rejects(client.getPricingBotRules(opt),e=>e instanceof FarmazonReadError);
   }
   assert.equal(calls.length,callsBeforePricingBadInput,'invalid pricing input made no requests');
