@@ -41,7 +41,8 @@ function listRecord(v) {
   return {
     listing_id: v.id, product_id: Number.isSafeInteger(product.id) ? product.id : null,
     product_name: String(product.name || '').slice(0,200),
-    sku: product.sku == null ? null : String(product.sku).slice(0,100),
+    // V2 listing collection nests SKU under product; V1 getlisting may return it at root.
+    sku: (v.sku ?? product.sku) == null ? null : String(v.sku ?? product.sku).slice(0,100),
     barcodes: Array.isArray(product.barcodes)
       ? product.barcodes.filter(x => x && x.isSelected === true)
         .map(x => String(x.barcode || '').slice(0,40)).filter(Boolean).slice(0,10) : [],
