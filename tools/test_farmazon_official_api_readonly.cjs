@@ -36,6 +36,15 @@ const fetchImpl = async (url,opts) => {
       id:123,sku:'V1_ROOT_SKU',price:45.50,stock:2,listingState:1,
       product:{id:1,name:'Detailed listing',barcodes:[{barcode:'1234567890123',isSelected:true}]}
     }};break;
+    case 'single': body = {statusCode:200,result:[{
+      orderId:321,sellerUsername:'ALAYLI_TEST',orderStateId:32,
+      buyerFullName:'SECRET CUSTOMER',buyerInvoiceAddress:'SECRET ADDRESS',
+      orderPrice:95.50,orderDetails:[]}]};break;
+    case 'singleWrongId': body = {statusCode:200,result:[{
+      orderId:999,sellerUsername:'ALAYLI_TEST',orderStateId:64}]};break;
+    case 'singleAmbiguous': body = {statusCode:200,result:[{
+      orderId:321,sellerUsername:'ALAYLI_TEST',orderStateId:32},
+      {orderId:321,sellerUsername:'ALAYLI_TEST',orderStateId:32}]};break;
     case 'bad': body = {statusCode:200,result:{items:[]}};break;
     case 'wrong':body={statusCode:200,result:[{orderId:321,sellerUsername:'DIFFERENT'}]};break;
     default:body={statusCode:401,result:null};
@@ -61,6 +70,8 @@ const tick=()=>{now+=MIN_INTERVAL_MS;};
   assert.equal(orders.items.length,1);
   assert.equal(orders.items[0].direction,'ALAYLI_SELL_CANDIDATE');
   assert.equal(orders.items[0].seller_username_verified,true);
+  assert.equal(orders.items[0].order_state,'AWAITING_SHIPMENT');
+  assert.equal(orders.items[0].order_state_id,2);
   assert.ok(!JSON.stringify(orders).includes('PRIVATE BUYER'));
   assert.ok(!JSON.stringify(orders).includes('SECRET TAX'));
   assert.equal(new URL(calls[1].url).pathname,'/api/v1/orders/getsoldorders');
@@ -85,6 +96,25 @@ const tick=()=>{now+=MIN_INTERVAL_MS;};
   assert.equal(detail.item.sku,'V1_ROOT_SKU', 'V1 listing root SKU is preserved');
   assert.equal(detail.item.status,'ACTIVE');
   assert.equal(new URL(calls.at(-1).url).pathname,'/api/v1/listings/getlisting');
+  tick();mode='single';
+  const single=await client.getSoldOrder({orderId:321,expectedSellerUsername:'ALAYLI_TEST'});
+  assert.equal(single.item.order_id,321);
+  assert.equal(single.item.order_state,'COMPLETED');
+  assert.equal(single.item.order_state_id,32);
+  assert.equal(single.item.seller_username_verified,true);
+  assert.ok(!JSON.stringify(single).includes('SECRET CUSTOMER'));
+  assert.ok(!JSON.stringify(single).includes('SECRET ADDRESS'));
+  assert.equal(new URL(calls.at(-1).url).pathname,'/api/v1/orders/getsoldorder');
+  assert.equal(new URL(calls.at(-1).url).searchParams.get('orderId'),'321');
+  tick();mode='singleWrongId';
+  await assert.rejects(client.getSoldOrder({orderId:321,expectedSellerUsername:'ALAYLI_TEST'}),
+    e=>e.message==='sold_order_id_unverified');
+  tick();mode='singleAmbiguous';
+  await assert.rejects(client.getSoldOrder({orderId:321,expectedSellerUsername:'ALAYLI_TEST'}),
+    e=>e.message==='sold_order_id_unverified');
+  const callsBeforeBadInput=calls.length;
+  await assert.rejects(client.getSoldOrder({orderId:0}),e=>e.message==='invalid_order_id');
+  assert.equal(calls.length,callsBeforeBadInput);
   assert.throws(()=>createFarmazonReadOnlyApi({environment:'http://evil',
     userAgent:'API_test',getBearerToken}),e=>e.message==='invalid_environment');
   assert.throws(()=>createFarmazonReadOnlyApi({userAgent:'API_test',getBearerToken,
@@ -93,7 +123,7 @@ const tick=()=>{now+=MIN_INTERVAL_MS;};
     e=>e.message==='invalid_api_user_agent');
   assert.ok(calls.every(x=>x.method==='GET'));
   const summary={status:'PASS',test_scope:'offline mocked API no actual credentials',
-    methods:['getListings','getListing','getSoldOrders'],writes:0,
+    methods:['getListings','getListing','getSoldOrders','getSoldOrder'],writes:0,
     api_calls:calls.length,credential_leaks:0,live_api_verified:false};
   console.log(JSON.stringify(summary));
 })().catch(e=>{console.error(e);process.exitCode=1;});
