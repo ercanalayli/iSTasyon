@@ -56,6 +56,28 @@ const fetchImpl = async (url,opts) => {
     case 'pricingRulesUnsafe': body={statusCode:200,result:{
       rules:[{id:79,listingId:123456,marginAmount:2,minPrice:10,maxPrice:5,
         stockThreshold:5}],totalCount:1,currentPage:1,pageSize:20,totalPages:1}};break;
+    case 'buyOrders': body={statusCode:200,result:[{
+      orderId:444,buyerUsername:'BUYER_TEST',sellerUsername:'SELLER_TEST',
+      buyerFullName:'PRIVATE NAME',buyerInvoiceTaxOrTcNo:'SECRET TAX',
+      buyerDeliveryAddress:'SECRET ADDRESS',orderStateId:4,
+      orderPaidPrice:125,orderCargoPaidPrice:9,
+      orderDetails:[{orderDetailProductBarcode:'8680196901453',
+        orderDetailProductName:'Octacare 10cm 4m',orderDetailPaidPrice:125,
+        orderDetailProductVAT:10,orderDetailListingCount:5,
+        buyerEmail:'SENSITIVE EMAIL'}]}]};break;
+    case 'buyWrongBuyer': body={statusCode:200,result:[{
+      orderId:444,buyerUsername:'OTHER_BUYER',sellerUsername:'SELLER_TEST',
+      orderStateId:32,orderDetails:[]}]};break;
+    case 'buySingle': body={statusCode:200,result:[{
+      orderId:444,buyerUsername:'BUYER_TEST',sellerUsername:'SELLER_TEST',
+      buyerDeliveryAddress:'NEVER_EXPOSE',orderStateId:32,orderDetails:[]}]};break;
+    case 'buySingleWrong': body={statusCode:200,result:[{
+      orderId:445,buyerUsername:'BUYER_TEST',orderStateId:32,orderDetails:[]}]};break;
+    case 'buySingleAmbiguous': body={statusCode:200,result:[{
+      orderId:444,buyerUsername:'BUYER_TEST',orderStateId:32,orderDetails:[]},{
+      orderId:444,buyerUsername:'BUYER_TEST',orderStateId:32,orderDetails:[]}]};break;
+    case 'buyMalformed': body={statusCode:200,result:[{
+      orderId:444,buyerUsername:'BUYER_TEST',orderDetails:'NOT_ARRAY'}]};break;
     case 'bad': body = {statusCode:200,result:{items:[]}};break;
     case 'wrong':body={statusCode:200,result:[{orderId:321,sellerUsername:'DIFFERENT'}]};break;
     default:body={statusCode:401,result:null};
@@ -146,6 +168,47 @@ const tick=()=>{now+=MIN_INTERVAL_MS;};
     await assert.rejects(client.getPricingBotRules(opt),e=>e instanceof FarmazonReadError);
   }
   assert.equal(calls.length,callsBeforePricingBadInput,'invalid pricing input made no requests');
+  tick();mode='buyOrders';
+  const purchased=await client.getPurchasedOrders({
+    expectedBuyerUsername:'BUYER_TEST',page:1,count:50});
+  assert.equal(purchased.flow,'BUY_ORDERS');
+  assert.equal(purchased.items.length,1);
+  assert.equal(purchased.items[0].direction,'FARMAZON_BUY_ORDER');
+  assert.equal(purchased.items[0].order_id,444);
+  assert.equal(purchased.items[0].order_state,'IN_TRANSIT');
+  assert.equal(purchased.items[0].seller_username,'SELLER_TEST');
+  assert.equal(purchased.items[0].lines[0].barcode,'8680196901453');
+  assert.equal(purchased.items[0].lines[0].line_paid_price,125);
+  assert.equal(purchased.items[0].buyer_username_verified,true);
+  assert.ok(!JSON.stringify(purchased).includes('PRIVATE NAME'));
+  assert.ok(!JSON.stringify(purchased).includes('SECRET TAX'));
+  assert.ok(!JSON.stringify(purchased).includes('SECRET ADDRESS'));
+  assert.ok(!JSON.stringify(purchased).includes('SENSITIVE EMAIL'));
+  assert.equal(new URL(calls.at(-1).url).pathname,'/api/v1/orders/getpurchasedorders');
+  tick();mode='buyWrongBuyer';
+  await assert.rejects(client.getPurchasedOrders({expectedBuyerUsername:'BUYER_TEST'}),
+    e=>e.message==='buyer_username_mismatch');
+  tick();mode='buyMalformed';
+  await assert.rejects(client.getPurchasedOrders({expectedBuyerUsername:'BUYER_TEST'}),
+    e=>e.message==='purchased_lines_unverified');
+  tick();mode='buySingle';
+  const buyOrder=await client.getPurchasedOrder({orderId:444,expectedBuyerUsername:'BUYER_TEST'});
+  assert.equal(buyOrder.flow,'BUY_ORDER');
+  assert.equal(buyOrder.item.order_state,'COMPLETED');
+  assert.equal(buyOrder.item.order_id,444);
+  assert.ok(!JSON.stringify(buyOrder).includes('NEVER_EXPOSE'));
+  assert.equal(new URL(calls.at(-1).url).pathname,'/api/v1/orders/getpurchasedorder');
+  assert.equal(new URL(calls.at(-1).url).searchParams.get('orderId'),'444');
+  tick();mode='buySingleWrong';
+  await assert.rejects(client.getPurchasedOrder({orderId:444}),e=>e.message==='purchased_order_id_unverified');
+  tick();mode='buySingleAmbiguous';
+  await assert.rejects(client.getPurchasedOrder({orderId:444}),e=>e.message==='purchased_order_id_unverified');
+  const beforeBadBuy=calls.length;
+  for(const opts of [{page:0},{count:99},{orderState:32},{startDate:'2026-02-30'}]){
+    await assert.rejects(client.getPurchasedOrders(opts),e=>e instanceof FarmazonReadError);
+  }
+  await assert.rejects(client.getPurchasedOrder({orderId:0}),e=>e.message==='invalid_order_id');
+  assert.equal(calls.length,beforeBadBuy);
   const callsBeforeBadInput=calls.length;
   await assert.rejects(client.getSoldOrder({orderId:0}),e=>e.message==='invalid_order_id');
   assert.equal(calls.length,callsBeforeBadInput);
@@ -157,7 +220,7 @@ const tick=()=>{now+=MIN_INTERVAL_MS;};
     e=>e.message==='invalid_api_user_agent');
   assert.ok(calls.every(x=>x.method==='GET'));
   const summary={status:'PASS',test_scope:'offline mocked API no actual credentials',
-    methods:['getListings','getListing','getSoldOrders','getSoldOrder','getPricingBotRules'],writes:0,
+    methods:['getListings','getListing','getSoldOrders','getSoldOrder','getPricingBotRules','getPurchasedOrders','getPurchasedOrder'],writes:0,
     api_calls:calls.length,credential_leaks:0,live_api_verified:false};
   console.log(JSON.stringify(summary));
 })().catch(e=>{console.error(e);process.exitCode=1;});
