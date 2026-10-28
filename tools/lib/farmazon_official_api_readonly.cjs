@@ -188,13 +188,18 @@ function createFarmazonReadOnlyApi({
   async function get(pathKey, params) {
     const at = now();
     if (!Number.isFinite(at) || at - lastRequestMs < minIntervalMs) throw new FarmazonReadError('rate_guard_wait');
-    const token = await getBearerToken();
+    // Reserve synchronously BEFORE the async vault lookup. Otherwise two
+    // overlapping calls both pass the guard while the token lookup is pending.
+    // A failed token lookup also consumes this slot (fail-closed).
+    lastRequestMs = at;
+    let token;
+    try { token = await getBearerToken(); }
+    catch { throw new FarmazonReadError('api_token_unavailable'); }
     if (typeof token !== 'string' || token.length < 20 || /[\r\n\s]/.test(token)) {
       throw new FarmazonReadError('api_token_unavailable');
     }
     const url = new URL(PATHS[pathKey], ORIGINS[environment]);
     for (const [key, value] of Object.entries(params)) if (value !== null && value !== undefined) url.searchParams.set(key, String(value));
-    lastRequestMs = at; // reserve before awaited fetch; concurrent calls cannot bypass it
     let response;
     try {
       response = await fetchImpl(url.href, {
