@@ -260,6 +260,41 @@ const tick=()=>{now+=MIN_INTERVAL_MS;};
   }
   await assert.rejects(client.getPurchasedOrder({orderId:0}),e=>e.message==='invalid_order_id');
   assert.equal(calls.length,beforeBadBuy);
+  // Regression: two concurrent requests must NOT both pass while local
+  // secure-vault token retrieval is still pending. The slot is reserved first.
+  let releaseVault;
+  let vaultCalls=0, raceFetchCalls=0;
+  const waitingToken=new Promise(resolve=>{releaseVault=resolve;});
+  const raceClient=createFarmazonReadOnlyApi({
+    getBearerToken:async()=>{vaultCalls++;return waitingToken;},
+    userAgent:'API_test_store',now:()=>777000,
+    fetchImpl:async(url,opts)=>{
+      raceFetchCalls++;
+      assert.equal(opts.method,'GET');
+      return {ok:true,status:200,json:async()=>({
+        statusCode:200,result:{items:[],totalPageCount:0}})};
+    }
+  });
+  const inFlight=raceClient.getListings();
+  await assert.rejects(raceClient.getListings(),
+    e=>e.message==='rate_guard_wait');
+  assert.equal(vaultCalls,1,'only first call reached vault');
+  assert.equal(raceFetchCalls,0,'token lookup pending, no network requests yet');
+  releaseVault(token);
+  const afterWait=await inFlight;
+  assert.deepEqual(afterWait.items,[]);
+  assert.equal(raceFetchCalls,1,'exactly one GET after vault released');
+  let deniedCalls=0;
+  const deniedClient=createFarmazonReadOnlyApi({
+    getBearerToken:async()=>{deniedCalls++;throw new Error('VAULT_PRIVATE_MESSAGE');},
+    userAgent:'API_test_store',now:()=>888000,
+    fetchImpl:async()=>{throw new Error('should never be called');}
+  });
+  await assert.rejects(deniedClient.getListings(),
+    e=>e.message==='api_token_unavailable' &&
+       !String(e).includes('VAULT_PRIVATE_MESSAGE'));
+  await assert.rejects(deniedClient.getListings(),e=>e.message==='rate_guard_wait');
+  assert.equal(deniedCalls,1,'failed vault also consumes a guard slot');
   const callsBeforeBadInput=calls.length;
   await assert.rejects(client.getSoldOrder({orderId:0}),e=>e.message==='invalid_order_id');
   assert.equal(calls.length,callsBeforeBadInput);
