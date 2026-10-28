@@ -16,6 +16,8 @@ const PATHS = Object.freeze({
   listing: '/api/v1/listings/getlisting',
   soldOrders: '/api/v1/orders/getsoldorders',
   soldOrder: '/api/v1/orders/getsoldorder',
+  purchasedOrders: '/api/v1/orders/getpurchasedorders',
+  purchasedOrder: '/api/v1/orders/getpurchasedorder',
   pricingBotRules: '/api/v1/listings/getpricingbotrules'
 });
 const MIN_INTERVAL_MS = 7000; // strictly below 10 requests/minute
@@ -96,6 +98,49 @@ function soldRecord(v, expectedUsername) {
       line_price: Number.isFinite(x.orderDetailPrice) ? x.orderDetailPrice : null,
       expiry: typeof x.orderDetailListingExpiration === 'string' ? x.orderDetailListingExpiration.slice(0,19) : null
     })) : []
+  };
+}
+
+function purchasedRecord(v, expectedBuyerUsername) {
+  if (!v || typeof v !== 'object' || !Number.isSafeInteger(v.orderId)) {
+    throw new FarmazonReadError('invalid_purchased_order');
+  }
+  if (expectedBuyerUsername &&
+      String(v.buyerUsername || '').trim().toLocaleLowerCase('tr-TR') !==
+      expectedBuyerUsername.toLocaleLowerCase('tr-TR')) {
+    throw new FarmazonReadError('buyer_username_mismatch');
+  }
+  if (v.orderDetails !== undefined && !Array.isArray(v.orderDetails)) {
+    throw new FarmazonReadError('purchased_lines_unverified');
+  }
+  if (Array.isArray(v.orderDetails) && v.orderDetails.length > 500) {
+    throw new FarmazonReadError('purchased_lines_too_many');
+  }
+  return {
+    direction: 'FARMAZON_BUY_ORDER',
+    order_id: v.orderId,
+    order_date: typeof v.orderDate === 'string' ? v.orderDate.slice(0,19) : null,
+    order_state_id: Number.isSafeInteger(v.orderStateId) ? v.orderStateId : null,
+    order_state: Number.isSafeInteger(v.orderStateId)
+      ? SOLD_ORDER_STATES[v.orderStateId] || 'UNKNOWN' : 'UNKNOWN',
+    order_reference: typeof v.orderReferenceNo === 'string' ? v.orderReferenceNo.slice(0,100) : null,
+    seller_username: typeof v.sellerUsername === 'string' ? v.sellerUsername.slice(0,100) : null,
+    order_price: Number.isFinite(v.orderPrice) ? v.orderPrice : null,
+    order_paid_price: Number.isFinite(v.orderPaidPrice) ? v.orderPaidPrice : null,
+    order_cargo_paid_price: Number.isFinite(v.orderCargoPaidPrice) ? v.orderCargoPaidPrice : null,
+    buyer_username_verified: Boolean(expectedBuyerUsername),
+    // Do not expose buyer name, shipping address, invoice details, email, or tax ID.
+    lines: (v.orderDetails || []).map(x => ({
+      product_id: Number.isSafeInteger(x.orderDetailProductId) ? x.orderDetailProductId : null,
+      barcode: typeof x.orderDetailProductBarcode === 'string' ? x.orderDetailProductBarcode.slice(0,40) : null,
+      product_name: typeof x.orderDetailProductName === 'string' ? x.orderDetailProductName.slice(0,200) : null,
+      vat_from_source: Number.isFinite(x.orderDetailProductVAT) ? x.orderDetailProductVAT : null,
+      source_listing_count: Number.isSafeInteger(x.orderDetailListingCount) ? x.orderDetailListingCount : null,
+      listing_price: Number.isFinite(x.orderDetailListingPrice) ? x.orderDetailListingPrice : null,
+      line_paid_price: Number.isFinite(x.orderDetailPaidPrice) ? x.orderDetailPaidPrice : null,
+      expiry: typeof x.orderDetailListingExpiration === 'string'
+        ? x.orderDetailListingExpiration.slice(0,19) : null
+    }))
   };
 }
 
@@ -203,6 +248,31 @@ function createFarmazonReadOnlyApi({
       const result = await get('listing', {listingId});
       return { source: 'Farmazon official API', flow:'SELL_LISTING', environment,
         item: listRecord(result), read_only: true, observed_at: new Date().toISOString() };
+    },
+    async getPurchasedOrders({page=1,count=50,orderState=0,startDate=null,endDate=null,expectedBuyerUsername=null} = {}) {
+      whole(page,1,10000,'invalid_page'); whole(count,1,50,'invalid_count');
+      whole(orderState,0,6,'invalid_order_state');
+      const start=date(startDate), end=date(endDate);
+      if(start && end && start>end) throw new FarmazonReadError('date_order_invalid');
+      const buyer=sellerUsername(expectedBuyerUsername);
+      const result=await get('purchasedOrders',{page,count,orderState,startDate:start,endDate:end});
+      if(!Array.isArray(result) || result.length>count) {
+        throw new FarmazonReadError('purchased_orders_response_unverified');
+      }
+      return {source:'Farmazon official API',flow:'BUY_ORDERS',environment,
+        identity:buyer?'BUYER_USERNAME_MATCHED_PER_ORDER_LEGAL_ENTITY_UNVERIFIED':'BUYER_UNVERIFIED',
+        items:result.map(x=>purchasedRecord(x,buyer)),read_only:true,observed_at:new Date().toISOString()};
+    },
+    async getPurchasedOrder({orderId,expectedBuyerUsername=null} = {}) {
+      whole(orderId,1,Number.MAX_SAFE_INTEGER,'invalid_order_id');
+      const buyer=sellerUsername(expectedBuyerUsername);
+      const result=await get('purchasedOrder',{orderId});
+      if(!Array.isArray(result) || result.length!==1 || result[0]?.orderId!==orderId) {
+        throw new FarmazonReadError('purchased_order_id_unverified');
+      }
+      return {source:'Farmazon official API',flow:'BUY_ORDER',environment,
+        identity:buyer?'BUYER_USERNAME_MATCHED_PER_ORDER_LEGAL_ENTITY_UNVERIFIED':'BUYER_UNVERIFIED',
+        item:purchasedRecord(result[0],buyer),read_only:true,observed_at:new Date().toISOString()};
     },
     async getSoldOrders({page=1,count=50,orderState=0,startDate=null,endDate=null,expectedSellerUsername=null} = {}) {
       whole(page,1,10000,'invalid_page'); whole(count,1,50,'invalid_count');
