@@ -16,6 +16,7 @@ const PATHS = Object.freeze({
   listing: '/api/v1/listings/getlisting',
   soldOrders: '/api/v1/orders/getsoldorders',
   soldOrder: '/api/v1/orders/getsoldorder',
+  updatedSoldOrders: '/api/v1/orders/getUpdatedSoldOrders',
   purchasedOrders: '/api/v1/orders/getpurchasedorders',
   purchasedOrder: '/api/v1/orders/getpurchasedorder',
   pricingBotRules: '/api/v1/listings/getpricingbotrules'
@@ -78,6 +79,12 @@ function soldRecord(v, expectedUsername) {
   if (expectedUsername && String(v.sellerUsername || '').trim().toLocaleLowerCase('tr-TR') !== expectedUsername.toLocaleLowerCase('tr-TR')) {
     throw new FarmazonReadError('seller_username_mismatch');
   }
+  // Missing/oversized lines must not appear as a genuine zero-line order.
+  if (!Array.isArray(v.orderDetails)) throw new FarmazonReadError('sold_lines_unverified');
+  if (v.orderDetails.length > 500) throw new FarmazonReadError('sold_lines_too_many');
+  if (v.orderDetails.some(x => !x || typeof x !== 'object' || Array.isArray(x))) {
+    throw new FarmazonReadError('invalid_sold_line');
+  }
   return {
     direction: 'ALAYLI_SELL_CANDIDATE',
     order_id: v.orderId,
@@ -88,7 +95,7 @@ function soldRecord(v, expectedUsername) {
     order_reference: typeof v.orderReferenceNo === 'string' ? v.orderReferenceNo.slice(0,100) : null,
     order_price: Number.isFinite(v.orderPrice) ? v.orderPrice : null,
     seller_username_verified: Boolean(expectedUsername),
-    lines: Array.isArray(v.orderDetails) ? v.orderDetails.slice(0,500).map(x => ({
+    lines: v.orderDetails.map(x => ({
       listing_id: Number.isSafeInteger(x.orderDetailListingId) ? x.orderDetailListingId : null,
       product_id: Number.isSafeInteger(x.orderDetailProductId) ? x.orderDetailProductId : null,
       barcode: typeof x.orderDetailProductBarcode === 'string' ? x.orderDetailProductBarcode.slice(0,40) : null,
@@ -97,7 +104,7 @@ function soldRecord(v, expectedUsername) {
       source_listing_count: Number.isSafeInteger(x.orderDetailListingCount) ? x.orderDetailListingCount : null,
       line_price: Number.isFinite(x.orderDetailPrice) ? x.orderDetailPrice : null,
       expiry: typeof x.orderDetailListingExpiration === 'string' ? x.orderDetailListingExpiration.slice(0,19) : null
-    })) : []
+    }))
   };
 }
 
@@ -281,10 +288,27 @@ function createFarmazonReadOnlyApi({
       if (start && end && start > end) throw new FarmazonReadError('date_order_invalid');
       const username = sellerUsername(expectedSellerUsername);
       const result = await get('soldOrders', {page,count,orderState,startDate:start,endDate:end});
-      if (!Array.isArray(result)) throw new FarmazonReadError('sold_orders_response_unverified');
+      if (!Array.isArray(result) || result.length>count) throw new FarmazonReadError('sold_orders_response_unverified');
       return { source: 'Farmazon official API', flow: 'SELL_ORDERS', environment,
         identity: username ? 'SELLER_USERNAME_MATCHED_PER_ORDER_LEGAL_ENTITY_UNVERIFIED' : 'SELLER_UNVERIFIED',
         items: result.map(x=>soldRecord(x,username)), read_only: true, observed_at: new Date().toISOString() };
+    },
+    // Provider endpoint supports date-scoped readback of seller orders, useful for
+    // a bounded incremental scan; it does not prove that *all* historical edits
+    // were returned, nor that all pages have been read.
+    async getUpdatedSoldOrders({page=1,count=50,fromDate,expectedSellerUsername=null} = {}) {
+      whole(page,1,10000,'invalid_page'); whole(count,1,50,'invalid_count');
+      const from=date(fromDate);
+      if (!from) throw new FarmazonReadError('from_date_required');
+      const username=sellerUsername(expectedSellerUsername);
+      const result=await get('updatedSoldOrders',{page,count,fromDate:from});
+      if (!Array.isArray(result) || result.length>count) {
+        throw new FarmazonReadError('updated_sold_orders_response_unverified');
+      }
+      return {source:'Farmazon official API',flow:'SELL_UPDATED_ORDERS',environment,
+        identity:username?'SELLER_USERNAME_MATCHED_PER_ORDER_LEGAL_ENTITY_UNVERIFIED':'SELLER_UNVERIFIED',
+        from_date:from,page,has_more_hint:result.length===count,completeness:'PAGE_ONLY',
+        items:result.map(x=>soldRecord(x,username)),read_only:true,observed_at:new Date().toISOString()};
     },
     async getSoldOrder({orderId,expectedSellerUsername=null} = {}) {
       whole(orderId,1,Number.MAX_SAFE_INTEGER,'invalid_order_id');
