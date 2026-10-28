@@ -32,6 +32,21 @@ const fetchImpl = async (url,opts) => {
         orderDetailProductBarcode:'1234567890123',orderDetailProductName:'Test product',
         orderDetailListingCount:4,orderDetailPrice:95.50}]}]};
       break;
+    case 'updatedSale': body = {statusCode:200,result:[{
+      orderId:777,sellerUsername:'ALAYLI_TEST',
+      buyerFullName:'PRIVATE UPDATED BUYER',orderStateId:4,
+      orderDetails:[{orderDetailListingId:123,orderDetailProductId:1,
+        orderDetailProductName:'Test product'}]}]};break;
+    case 'saleNoLines': body={statusCode:200,result:[{
+      orderId:778,sellerUsername:'ALAYLI_TEST',orderStateId:2}]};break;
+    case 'saleTooManyLines': body={statusCode:200,result:[{
+      orderId:779,sellerUsername:'ALAYLI_TEST',orderStateId:2,
+      orderDetails:Array(501).fill({orderDetailListingId:123})}]};break;
+    case 'saleBadLine': body={statusCode:200,result:[{
+      orderId:780,sellerUsername:'ALAYLI_TEST',orderStateId:2,orderDetails:[null]}]};break;
+    case 'saleOverPage': body={statusCode:200,result:[{
+      orderId:781,sellerUsername:'ALAYLI_TEST',orderStateId:2,orderDetails:[]},{
+      orderId:782,sellerUsername:'ALAYLI_TEST',orderStateId:2,orderDetails:[]}]};break;
     case 'detail': body = {statusCode:200,result:{
       id:123,sku:'V1_ROOT_SKU',price:45.50,stock:2,listingState:1,
       product:{id:1,name:'Detailed listing',barcodes:[{barcode:'1234567890123',isSelected:true}]}
@@ -108,7 +123,43 @@ const tick=()=>{now+=MIN_INTERVAL_MS;};
   assert.ok(!JSON.stringify(orders).includes('PRIVATE BUYER'));
   assert.ok(!JSON.stringify(orders).includes('SECRET TAX'));
   assert.equal(new URL(calls[1].url).pathname,'/api/v1/orders/getsoldorders');
-  tick(); mode='wrong';
+  tick();mode='updatedSale';
+  const updated=await client.getUpdatedSoldOrders({
+    page:1,count:1,fromDate:'2026-10-20',expectedSellerUsername:'ALAYLI_TEST'});
+  assert.equal(updated.flow,'SELL_UPDATED_ORDERS');
+  assert.equal(updated.from_date,'2026-10-20');
+  assert.equal(updated.page,1);
+  assert.equal(updated.completeness,'PAGE_ONLY');
+  assert.equal(updated.has_more_hint,true);
+  assert.equal(updated.items[0].order_state,'IN_TRANSIT');
+  assert.ok(!JSON.stringify(updated).includes('PRIVATE UPDATED BUYER'));
+  const u=new URL(calls.at(-1).url);
+  assert.equal(u.pathname,'/api/v1/orders/getUpdatedSoldOrders');
+  assert.equal(u.searchParams.get('fromDate'),'2026-10-20');
+  assert.equal(u.searchParams.get('count'),'1');
+  const beforeUpdatedBadInput=calls.length;
+  for(const opt of [{},{fromDate:'2026-02-30'},{fromDate:'2026-10-20',count:60},
+                    {fromDate:'2026-10-20',page:0}]) {
+    await assert.rejects(client.getUpdatedSoldOrders(opt),e=>e instanceof FarmazonReadError);
+  }
+  assert.equal(calls.length,beforeUpdatedBadInput);
+  tick();mode='saleNoLines';
+  await assert.rejects(client.getUpdatedSoldOrders({
+    fromDate:'2026-10-20',expectedSellerUsername:'ALAYLI_TEST'}),
+    e=>e.message==='sold_lines_unverified');
+  tick();mode='saleTooManyLines';
+  await assert.rejects(client.getUpdatedSoldOrders({
+    fromDate:'2026-10-20',expectedSellerUsername:'ALAYLI_TEST'}),
+    e=>e.message==='sold_lines_too_many');
+  tick();mode='saleBadLine';
+  await assert.rejects(client.getUpdatedSoldOrders({
+    fromDate:'2026-10-20',expectedSellerUsername:'ALAYLI_TEST'}),
+    e=>e.message==='invalid_sold_line');
+  tick();mode='saleOverPage';
+  await assert.rejects(client.getUpdatedSoldOrders({
+    fromDate:'2026-10-20',count:1,expectedSellerUsername:'ALAYLI_TEST'}),
+    e=>e.message==='updated_sold_orders_response_unverified');
+  tick();mode='wrong';
   await assert.rejects(client.getSoldOrders({expectedSellerUsername:'ALAYLI_TEST'}),
     e=>e.message==='seller_username_mismatch');
   tick(); mode='bad';
@@ -220,7 +271,7 @@ const tick=()=>{now+=MIN_INTERVAL_MS;};
     e=>e.message==='invalid_api_user_agent');
   assert.ok(calls.every(x=>x.method==='GET'));
   const summary={status:'PASS',test_scope:'offline mocked API no actual credentials',
-    methods:['getListings','getListing','getSoldOrders','getSoldOrder','getPricingBotRules','getPurchasedOrders','getPurchasedOrder'],writes:0,
+    methods:['getListings','getListing','getSoldOrders','getSoldOrder','getUpdatedSoldOrders','getPricingBotRules','getPurchasedOrders','getPurchasedOrder'],writes:0,
     api_calls:calls.length,credential_leaks:0,live_api_verified:false};
   console.log(JSON.stringify(summary));
 })().catch(e=>{console.error(e);process.exitCode=1;});
