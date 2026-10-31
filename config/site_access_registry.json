@@ -45,20 +45,23 @@
       "final_write_requires_approval": true
     },
     "farmazon": {
-      "enabled": false,
+      "enabled": true,
       "title": "Farmazon",
-      "domains": [],
+      "domains": [
+        "www.farmazon.com.tr",
+        "farmazon.com.tr"
+      ],
       "session_strategy": [
-        "existing_chrome_session",
-        "dpapi_credential"
+        "existing_chrome_session"
       ],
       "credential_key": "farmazon",
-      "adapter": "generic_browser",
+      "adapter": "farmazon_readonly",
       "capabilities": [
-        "read",
-        "prepare"
+        "read"
       ],
-      "final_write_requires_approval": true
+      "final_write_requires_approval": true,
+      "home_url": "https://www.farmazon.com.tr/homepage",
+      "read_only_until_verified": true
     },
     "vizor": {
       "enabled": false,

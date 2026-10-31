@@ -117,6 +117,16 @@ async function executeRead(capability, payload = {}, dependencies = {}) {
       return { path: payload.path, content: bytes.toString('utf8'), sha256: createHash('sha256').update(bytes).digest('hex') };
     }
     case 'site.session.health': {
+      if (payload.site_id === 'farmazon') {
+        // Restricted account-and-menu checks only. No general DOM, tabs,
+        // browsing, clicks, credentials or customer data leave this adapter.
+        const { probeFarmazonSession } = require('./farmazon_readonly_health.cjs');
+        const state = typeof dependencies.farmazonHealth === 'function'
+          ? await dependencies.farmazonHealth()
+          : await probeFarmazonSession();
+        return { site_id: 'farmazon', authenticated: state.authenticated === true,
+          browser_status: state.status, profile: 'existing_chrome_broker' };
+      }
       if (payload.site_id !== 'bizimhesap') throw new Error('site_not_configured');
       if (typeof dependencies.bizimhesapHealth !== 'function') throw new Error('site_adapter_unavailable');
       const state = await dependencies.bizimhesapHealth();

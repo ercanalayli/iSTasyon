@@ -1,0 +1,39 @@
+name: AperiON Farmazon read-only safety
+
+on:
+  pull_request:
+    paths:
+      - 'tools/lib/farmazon_readonly_health.cjs'
+      - 'tools/lib/farmazon_official_api_readonly.cjs'
+      - 'tools/test_farmazon_official_api_readonly.cjs'
+      - 'tools/lib/desktop_agent_v1.cjs'
+      - 'tools/test_farmazon_readonly_health.cjs'
+      - 'config/site_access_registry.json'
+      - 'config/hermes_runtime_policy_v160.json'
+      - 'tools/aperion_runtime_7x24.cjs'
+      - 'tools/verify_hermes_runtime_v160.cjs'
+      - '.github/workflows/aperion-farmazon-readonly-safety.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  read-only-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Farmazon account and origin checks
+        run: node tools/test_farmazon_readonly_health.cjs
+      - name: Official API strictly read-only mocked test
+        run: node tools/test_farmazon_official_api_readonly.cjs
+      - name: Site registry safety
+        run: node tools/test_site_access_registry_v1.cjs
+      - name: Watchdog Farmazon session policy
+        run: node tools/verify_hermes_runtime_v160.cjs
+      - name: Desktop capability fail-closed checks
+        run: node tools/test_desktop_agent_v1.cjs
