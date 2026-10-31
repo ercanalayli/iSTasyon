@@ -1,3 +1,4 @@
+import { signedSalesSheetRequest } from './bizimhesap-sales-sync.js';
 function json(value,status=200){
   return new Response(JSON.stringify(value),{
     status,
@@ -30,17 +31,26 @@ export async function onRequestPost({request,env}){
       }catch{}
     }
     if(!records.length)return json({ok:true,replayed:0,appended:0,duplicates:0});
-    const response=await fetch(LIVE_URL,{
+    const key=String(env.APERION_SHEET_INGEST_KEY||env.APERION_BRIDGE_SECRET||'');
+    const url=String(env.APERION_SHEET_INGEST_URL||LIVE_URL);
+    if(!url.startsWith('https://script.google.com/macros/s/'))return json({ok:false,error:'sheet_url_not_allowlisted'},503);
+    const payload=await signedSalesSheetRequest(key,records);
+    const response=await fetch(url,{
       method:'POST',
       headers:{'content-type':'application/json'},
-      body:JSON.stringify({action:'bizimhesap_sales',records}),
-      signal:AbortSignal.timeout(45000)
+      body:JSON.stringify(payload),
+      signal:AbortSignal.timeout(30000)
     });
     const text=await response.text();
     let result={};
     try{result=JSON.parse(text||'{}');}catch{result={ok:false,error:'invalid_sheet_response'};}
-    if(!response.ok||result.ok!==true){
-      return json({ok:false,error:'sheet_replay_failed',sheet_status:response.status,detail:String(result.error||text).slice(0,180)},502);
+    const verifiedAck=response.ok&&result.ok===true&&result.status===200&&
+      result.sheet==='BIZIMHESAP_CANLI_SATIS'&&
+      Number.isSafeInteger(result.appended)&&result.appended>=0&&
+      Number.isSafeInteger(result.duplicates)&&result.duplicates>=0&&
+      result.appended+result.duplicates===records.length;
+    if(!verifiedAck){
+      return json({ok:false,error:'sheet_replay_unverified',sheet_status:response.status,detail:String(result.error||text).slice(0,180)},502);
     }
     return json({
       ok:true,
