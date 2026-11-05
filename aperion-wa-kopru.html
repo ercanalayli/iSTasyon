@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ApeirON WA Köprü</title>
+<style>body{font:12px system-ui;margin:8px;background:#111;color:#9f9}#l{white-space:pre-wrap}</style></head>
+<body><b>ApeirON · WhatsApp ↔ Sayım köprüsü</b> <span id="d">bekliyor</span><div id="l"></div>
+<script>
+// claudeai1625260511 · WhatsApp sekmesi CSP yüzünden veritabanına ulaşamıyor; bu pencere (WhatsApp'ın açtığı) postMessage ile aldığı sayım cevaplarını Supabase'e iletir ve BH'YE YAZILDI duyurularını geri yollar. Kapatmayın.
+const SB='https://iilfwosoroflzubkaryj.supabase.co/rest/v1/rpc/';
+const K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlpbGZ3b3Nvcm9mbHp1YmthcnlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjcyMDUsImV4cCI6MjA4ODY0MzIwNX0.JbiiE6tUU4bXD6zmTFM8A9U2HQeU2OPjOsqJWIPgjFE';
+const IZINLI=['aperion_sayim_canli_cevap','aperion_sayim_duyuru_al'];
+async function rpc(f,b){const r=await fetch(SB+f,{method:'POST',headers:{apikey:K,Authorization:'Bearer '+K,'Content-Type':'application/json'},body:JSON.stringify(b||{})});if(!r.ok)throw new Error(f+' '+r.status);return r.json();}
+const L=t=>{const e=document.getElementById('l');e.textContent=(new Date().toTimeString().slice(0,8)+' '+t+'\n'+e.textContent).slice(0,3000);};
+window.addEventListener('message',async e=>{
+ if(e.origin!=='https://web.whatsapp.com')return;const m=e.data||{};if(!m.id||!IZINLI.includes(m.f))return;
+ try{const r=await rpc(m.f,m.b);e.source.postMessage({id:m.id,ok:true,r},e.origin);L(m.f+' ok');}
+ catch(x){e.source.postMessage({id:m.id,ok:false,hata:String(x.message)},e.origin);L(m.f+' HATA '+x.message);}
+});
+setInterval(()=>{document.getElementById('d').textContent=(window.opener&&!window.opener.closed)?'bağlı':'WhatsApp sekmesi yok';},5000);
+if(window.opener)window.opener.postMessage({kopru:'hazir'},'https://web.whatsapp.com');
+</script></body></html>
