@@ -72,6 +72,7 @@ select option{color:#000}
 <button id="bas" class="on">Bas</button>
 <button id="drm" class="on">Darbuka</button>
 <button id="cnt" class="on">4 say</button>
+<button id="akort" class="on">🎻 Türk akordu</button>
 <button id="rep">🔁</button>
 </div>
 <div class="stat"><span id="st">Notaya dokun: oradan başlar. İki kez dokun: A–B döngü.</span><span class="note" id="hn"></span></div>
@@ -154,6 +155,7 @@ function buildBeats(seq){const beats=[];const expect=[];let gb=0;
 // ===== durum =====
 const $=id=>document.getElementById(id);
 let mode='fixed',playing=false,seq=FULL,TL=null,bi=0,nextT=0,spb=1,timer=null,uiQ=[],raf=null,loopOn=false;
+let TR=-5;try{const v=localStorage.getItem('ork_tr');if(v!==null)TR=+v}catch(e){}
 let mel=1;const MELV=[0,.05,.15],MELT=['🎻 Melodi: kapalı (sen çal)','🎻 Melodi: kılavuz','🎻 Melodi: tam'];
 const on=id=>$(id).classList.contains('on');
 let loopA=null,loopB=null;
@@ -170,6 +172,8 @@ try{const s=localStorage.getItem('ork_z');if(s!==null)zi=+s}catch(e){}
 $('zoom').onclick=()=>{zi=(zi+1)%3;setZ()};
 $('mel').onclick=()=>{mel=(mel+1)%3;$('mel').textContent=MELT[mel]};
 ['real','str','kan','bas','drm','cnt'].forEach(id=>$(id).onclick=()=>$(id).classList.toggle('on'));
+const AKT={'-5':'🎻 Türk akordu · ince Re 440','0':'🎻 Batı · La 440'};function setAk(){$('akort').textContent=AKT[String(TR)];$('akort').classList.toggle('on',TR!==0);try{localStorage.setItem('ork_tr',TR)}catch(e){}}
+$('akort').onclick=()=>{TR=TR===0?-5:0;setAk();if(playing){stop();start()}};setAk();
 $('rep').onclick=()=>{loopOn=!loopOn;$('rep').classList.toggle('on',loopOn)};
 const tEl=$('tempo');try{tEl.value=localStorage.getItem('ork_t')||60}catch(e){}$('tv').textContent=tEl.value;
 tEl.oninput=()=>{$('tv').textContent=tEl.value;try{localStorage.setItem('ork_t',tEl.value)}catch(e){};if(mode==='fixed')spb=60/+tEl.value};
@@ -184,13 +188,13 @@ function pickMeasure(m){const now=Date.now();
 function markLoop(){Object.values(BOX).forEach(b=>b.el.classList.remove('loopA','loopB','inloop'));if(!loopA)return;const a=Math.min(loopA,loopB||loopA),b=Math.max(loopA,loopB||loopA);
  for(let m=a;m<=b;m++)BOX[m]&&BOX[m].el.classList.add('inloop');BOX[a].el.classList.add('loopA');BOX[b].el.classList.add('loopB')}
 // ===== zamanlayıcı =====
-function scheduleBeat(B,t){const s=spb;
+function scheduleBeat(B,t){const s=spb;const V=VOI[B.chord].map(n=>n+TR);
  if(on('drm')){if(B.b===0)dum(t);if(B.b===2)tek(t,.28);if(B.b===3)tek(t,.18);if(B.b===1)tek(t+s/2,.08)}
  const prev=TL.beats[bi-1];
- if(on('str')&&(!prev||prev.chord!==B.chord||B.b===0)){let n=1;while(TL.beats[bi+n]&&TL.beats[bi+n].chord===B.chord&&TL.beats[bi+n].b!==0)n++;pad(VOI[B.chord],t,n*s)}
- if(on('bas')){if(B.b===0)bass(ROOT[B.chord],t,s*1.9);if(B.b===2)bass(prev&&prev.chord===B.chord?FIFTH[B.chord]:ROOT[B.chord],t,s*1.9);else if(B.b===1&&prev&&prev.chord!==B.chord)bass(ROOT[B.chord],t,s*.9);else if(B.b===3&&prev&&prev.chord!==B.chord)bass(ROOT[B.chord],t,s*.9)}
- if(on('kan')&&useS()){harp(VOI[B.chord],t+s/2,s);if(B.b===0)harp([VOI[B.chord][0]],t,s)}
- if(MELV[mel]>0)B.notes.forEach(n=>violin(n.midi,t+n.off*s,n.dur*s,MELV[mel],n.k?-25:0));
+ if(on('str')&&(!prev||prev.chord!==B.chord||B.b===0)){let n=1;while(TL.beats[bi+n]&&TL.beats[bi+n].chord===B.chord&&TL.beats[bi+n].b!==0)n++;pad(V,t,n*s)}
+ if(on('bas')){if(B.b===0)bass(ROOT[B.chord]+TR,t,s*1.9);if(B.b===2)bass((prev&&prev.chord===B.chord?FIFTH[B.chord]:ROOT[B.chord])+TR,t,s*1.9);else if(B.b===1&&prev&&prev.chord!==B.chord)bass(ROOT[B.chord]+TR,t,s*.9);else if(B.b===3&&prev&&prev.chord!==B.chord)bass(ROOT[B.chord]+TR,t,s*.9)}
+ if(on('kan')&&useS()){harp(V,t+s/2,s);if(B.b===0)harp([V[0]],t,s)}
+ if(MELV[mel]>0)B.notes.forEach(n=>violin(n.midi+TR,t+n.off*s,n.dur*s,MELV[mel],n.k?-25:0));
  uiQ.push({t,B,s})}
 let micPos=-1,micStarted=false;
 function tick(){if(!playing)return;const a=AC;const ahead=.12;
@@ -231,16 +235,16 @@ async function startMic(){try{
 function stopMic(){cancelAnimationFrame(micRaf);if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null}an=null}
 const buf=new Float32Array(2048);
 function detect(){an.getFloatTimeDomainData(buf);let rms=0;for(let i=0;i<buf.length;i++)rms+=buf[i]*buf[i];rms=Math.sqrt(rms/buf.length);
- if(rms<.012)return{rms,f:0};const sr=AC.sampleRate;const minL=Math.floor(sr/1400),maxL=Math.floor(sr/330);let best=0,bl=0;
+ if(rms<.012)return{rms,f:0};const sr=AC.sampleRate;const minL=Math.floor(sr/1400),maxL=Math.floor(sr/240);let best=0,bl=0;
  for(let L=minL;L<=maxL;L++){let s=0,n1=0,n2=0;for(let i=0;i<1024;i++){s+=buf[i]*buf[i+L];n1+=buf[i]*buf[i];n2+=buf[i+L]*buf[i+L]}const c=s/Math.sqrt(n1*n2+1e-9);if(c>best){best=c;bl=L}}
  if(best<.86)return{rms,f:0};
  const y0=bl>minL?0:0;return{rms,f:sr/bl}}
 function micLoop(){if(!an){return}const {rms,f}=detect();$('micbar').firstChild.style.width=Math.min(100,rms*600)+'%';const now=AC.currentTime;
  let onset=false;if(rms<rmsPrev*.55)dip=true;if(dip&&rms>.03&&rms>rmsPrev*1.35){onset=true;dip=false}rmsPrev=rms*.6+rmsPrev*.4;
  if(f){const mf=69+12*Math.log2(f/440);const mr=Math.round(mf);if(mr===lastMidi)stableN++;else{stableN=1;lastMidi=mr;onset=true}
-  $('hn').textContent=(NM[mr]||'·')+(Math.abs(mf-mr)>.25?(mf>mr?' ↑':' ↓'):' ✓');
+  $('hn').textContent=(NM[mr-TR]||'·')+(Math.abs(mf-mr)>.25?(mf>mr?' ↑':' ↓'):' ✓');
   if(stableN===2||(onset&&stableN>=2)){for(let k=0;k<3&&micPtr+k<TL.expect.length;k++){const e=TL.expect[micPtr+k];
-    if(Math.abs(mf-e.midi)<.6){const same=k===0&&micPtr>0&&TL.expect[micPtr-1].midi===e.midi;if(same&&!onset&&now-lastOnsetT<.15)break;
+    if(Math.abs(mf-(e.midi+TR))<.6){const same=k===0&&micPtr>0&&TL.expect[micPtr-1].midi===e.midi;if(same&&!onset&&now-lastOnsetT<.15)break;
      matchNote(micPtr+k,now);break}}}
  }else{lastMidi=null;stableN=0}
  if(onset)lastOnsetT=now;micRaf=requestAnimationFrame(micLoop)}
