@@ -172,7 +172,7 @@ try{const s=localStorage.getItem('ork_z');if(s!==null)zi=+s}catch(e){}
 $('zoom').onclick=()=>{zi=(zi+1)%3;setZ()};
 $('mel').onclick=()=>{mel=(mel+1)%3;$('mel').textContent=MELT[mel]};
 ['real','str','kan','bas','drm','cnt'].forEach(id=>$(id).onclick=()=>$(id).classList.toggle('on'));
-const AKT={'-5':'🎻 Türk akordu · ince Re 440','0':'🎻 Batı · La 440'};function setAk(){$('akort').textContent=AKT[String(TR)];$('akort').classList.toggle('on',TR!==0);try{localStorage.setItem('ork_tr',TR)}catch(e){}}
+const AKT={'-5':'🎻 Akort: Do · Sol · Re · ince Sol','0':'🎻 Akort: yazıldığı gibi (La 440)'};function setAk(){$('akort').textContent=AKT[String(TR)];$('akort').classList.toggle('on',TR!==0);try{localStorage.setItem('ork_tr',TR)}catch(e){}}
 $('akort').onclick=()=>{TR=TR===0?-5:0;setAk();if(playing){stop();start()}};setAk();
 $('rep').onclick=()=>{loopOn=!loopOn;$('rep').classList.toggle('on',loopOn)};
 const tEl=$('tempo');try{tEl.value=localStorage.getItem('ork_t')||60}catch(e){}$('tv').textContent=tEl.value;
