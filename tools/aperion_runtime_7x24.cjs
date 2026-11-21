@@ -5,6 +5,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const { SiteSessionAdapter, redact } = require('./lib/site_session_adapter.cjs');
 const { superviseSupabaseListener } = require('./lib/supabase_listener_supervisor.cjs');
+const { probeFarmazonSession } = require('./lib/farmazon_readonly_health.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const POLICY = JSON.parse(fs.readFileSync(path.join(ROOT, 'config', 'hermes_runtime_policy_v160.json'), 'utf8'));
@@ -76,8 +77,23 @@ async function main() {
     state.watchers.bizimhesap_session = new Date().toISOString();
   }
 
+  // Farmazon seller/purchase account health only. Reuse the existing broker;
+  // do not start a browser, sign in, navigate, or recover sessions automatically.
+  if (POLICY.watchers.farmazon_session?.enabled &&
+      (FORCE_WATCHERS || due(state, 'farmazon_session', POLICY.watchers.farmazon_session.interval_minutes))) {
+    const observed = await probeFarmazonSession();
+    checks.farmazon = {
+      site_id: 'farmazon',
+      authenticated: observed.authenticated === true,
+      status: observed.status,
+      read_only: true,
+      recovery_attempted: false
+    };
+    state.watchers.farmazon_session = new Date().toISOString();
+  }
+
   for (const [key, definition] of Object.entries(POLICY.watchers)) {
-    if (!definition.enabled || key === 'bizimhesap_session' || key === 'runtime_health') continue;
+    if (!definition.enabled || ['bizimhesap_session', 'farmazon_session', 'runtime_health'].includes(key)) continue;
     if (FORCE_WATCHERS || due(state, key, definition.interval_minutes)) {
       if (key === 'gmail_finance_documents') checks[key] = run(GOOGLE_WATCHERS, ['--gmail']);
       else if (key === 'drive_operations') checks[key] = run(GOOGLE_WATCHERS, ['--drive']);

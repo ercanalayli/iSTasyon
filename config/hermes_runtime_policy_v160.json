@@ -3,15 +3,48 @@
   "canonical_workspace": "C:\\AperiON\\iSTasyon",
   "tick_seconds": 60,
   "max_retry_count": 3,
-  "backoff_seconds": [60, 300, 900],
+  "backoff_seconds": [
+    60,
+    300,
+    900
+  ],
   "notifications": "failures_and_required_user_action_only",
   "watchers": {
-    "runtime_health": { "interval_minutes": 1, "enabled": true },
-    "bizimhesap_session": { "interval_minutes": 5, "enabled": true },
-    "gmail_finance_documents": { "interval_minutes": 30, "enabled": true, "mode": "dry_run_collect" },
-    "drive_operations": { "interval_minutes": 60, "enabled": true, "mode": "metadata_only" },
-    "d1_memory_health": { "interval_minutes": 60, "enabled": true, "mode": "read_only" },
-    "chatgpt_project_memory": { "interval_minutes": 720, "enabled": true, "mode": "metadata_fingerprint_first", "read_unchanged_threads": false, "rate_limit_backoff": true }
+    "runtime_health": {
+      "interval_minutes": 1,
+      "enabled": true
+    },
+    "bizimhesap_session": {
+      "interval_minutes": 5,
+      "enabled": true
+    },
+    "gmail_finance_documents": {
+      "interval_minutes": 30,
+      "enabled": true,
+      "mode": "dry_run_collect"
+    },
+    "drive_operations": {
+      "interval_minutes": 60,
+      "enabled": true,
+      "mode": "metadata_only"
+    },
+    "d1_memory_health": {
+      "interval_minutes": 60,
+      "enabled": true,
+      "mode": "read_only"
+    },
+    "chatgpt_project_memory": {
+      "interval_minutes": 720,
+      "enabled": true,
+      "mode": "metadata_fingerprint_first",
+      "read_unchanged_threads": false,
+      "rate_limit_backoff": true
+    },
+    "farmazon_session": {
+      "interval_minutes": 5,
+      "enabled": true,
+      "mode": "read_only_health_no_login_no_recovery"
+    }
   },
   "risk_policy": {
     "read": "auto",

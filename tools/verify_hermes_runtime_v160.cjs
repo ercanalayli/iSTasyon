@@ -11,6 +11,9 @@ const policy = JSON.parse(fs.readFileSync(path.join(root, 'config', 'hermes_runt
 assert.equal(policy.canonical_workspace, 'C:\\AperiON\\iSTasyon');
 assert.equal(policy.watchers.chatgpt_project_memory.read_unchanged_threads, false);
 assert.equal(policy.watchers.chatgpt_project_memory.rate_limit_backoff, true);
+assert.equal(policy.watchers.farmazon_session.enabled, true);
+assert.equal(policy.watchers.farmazon_session.interval_minutes, 5);
+assert.equal(policy.watchers.farmazon_session.mode, 'read_only_health_no_login_no_recovery');
 assert.equal(routeCommand('bizimhesap.customer_count').risk, 'read');
 for (const command of ['ödeme kaydet', 'transfer oluştur', 'tahsilat', 'kesin fatura gönder']) {
   const route = routeCommand(command);
