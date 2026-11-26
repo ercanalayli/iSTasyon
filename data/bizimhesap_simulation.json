@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-11-25T18:29:24.652Z",
+  "created_at": "2026-11-26T17:40:34.851Z",
   "source": "bizimhesap_queue_worker dry-run",
-  "source_created_at": "2026-11-25T18:29:24.279Z",
+  "source_created_at": "2026-11-26T17:40:34.466Z",
   "company_id": "alayli",
   "policy": "Bu rapor BizimHesap worker planinin on izlemesidir; canli kayit yapmaz.",
   "summary": {
